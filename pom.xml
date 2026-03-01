@@ -49,6 +49,7 @@
 
     <modules>
         <module>journal-core</module>
+        <module>claude-code-capture</module>
     </modules>
 
     <dependencyManagement>
