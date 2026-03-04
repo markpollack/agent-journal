@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2026 Mark Pollack
+ *
+ * Licensed under the Business Source License 1.1 (BSL).
+ * See the LICENSE file in the repository root for the full license text.
+ */
+
 package io.github.markpollack.journal.storage;
 
 import io.github.markpollack.journal.Experiment;
@@ -14,7 +21,7 @@ import java.util.Optional;
  *
  * <p>Directory structure for file-based storage:
  * <pre>
- * .tuvium/
+ * .agent-journal/
  * ├── experiments/
  * │   └── {experiment-id}/
  * │       ├── experiment.json
@@ -27,7 +34,7 @@ import java.util.Optional;
  *
  * <p>Example:
  * <pre>{@code
- * JournalStorage storage = new JsonFileStorage(Path.of(".tuvium"));
+ * JournalStorage storage = new JsonFileStorage(Path.of(".agent-journal"));
  *
  * storage.saveExperiment(experiment);
  * storage.saveRun(runData);

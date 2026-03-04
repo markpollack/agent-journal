@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2026 Mark Pollack
+ *
+ * Licensed under the Business Source License 1.1 (BSL).
+ * See the LICENSE file in the repository root for the full license text.
+ */
+
 package io.github.markpollack.journal.metric;
 
 import com.fasterxml.jackson.annotation.JsonCreator;

@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2026 Mark Pollack
+ *
+ * Licensed under the Business Source License 1.1 (BSL).
+ * See the LICENSE file in the repository root for the full license text.
+ */
+
 package io.github.markpollack.journal.test;
 
 import io.github.markpollack.journal.Config;
@@ -371,9 +378,9 @@ class TestInfrastructureTest extends BaseTrackingTest {
         }
 
         @Test
-        @DisplayName("getStoragePath returns .tuvium under tempDir")
+        @DisplayName("getStoragePath returns .agent-journal under tempDir")
         void getStoragePathWorks() {
-            assertThat(getStoragePath()).isEqualTo(tempDir.resolve(".tuvium"));
+            assertThat(getStoragePath()).isEqualTo(tempDir.resolve(".agent-journal"));
         }
     }
 }

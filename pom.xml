@@ -15,7 +15,8 @@
     <licenses>
         <license>
             <name>Business Source License 1.1</name>
-            <url>https://mariadb.com/bsl11/</url>
+            <url>https://github.com/markpollack/agent-journal/blob/main/LICENSE</url>
+            <distribution>repo</distribution>
         </license>
     </licenses>
 

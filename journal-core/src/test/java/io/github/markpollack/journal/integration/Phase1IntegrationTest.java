@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2026 Mark Pollack
+ *
+ * Licensed under the Business Source License 1.1 (BSL).
+ * See the LICENSE file in the repository root for the full license text.
+ */
+
 package io.github.markpollack.journal.integration;
 
 import io.github.markpollack.journal.*;
@@ -30,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Assertions.*;
 
 /**
- * Comprehensive integration tests for Phase 1 of tuvium-runtime-core.
+ * Comprehensive integration tests for Phase 1 of agent-journal.
  *
  * <p>These tests verify that all components work together correctly in
  * realistic scenarios. Each test exercises multiple subsystems to ensure

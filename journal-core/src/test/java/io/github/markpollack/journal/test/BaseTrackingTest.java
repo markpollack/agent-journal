@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2026 Mark Pollack
+ *
+ * Licensed under the Business Source License 1.1 (BSL).
+ * See the LICENSE file in the repository root for the full license text.
+ */
+
 package io.github.markpollack.journal.test;
 
 import org.junit.jupiter.api.io.TempDir;
@@ -30,10 +37,10 @@ public abstract class BaseTrackingTest {
     protected Path tempDir;
 
     /**
-     * Returns the path where .tuvium storage would be created.
+     * Returns the path where .agent-journal storage would be created.
      * Use this for file-based storage tests.
      */
     protected Path getStoragePath() {
-        return tempDir.resolve(".tuvium");
+        return tempDir.resolve(".agent-journal");
     }
 }

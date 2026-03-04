@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2026 Mark Pollack
+ *
+ * Licensed under the Business Source License 1.1 (BSL).
+ * See the LICENSE file in the repository root for the full license text.
+ */
+
 package io.github.markpollack.journal;
 
 import io.github.markpollack.journal.storage.JournalStorage;
@@ -26,7 +33,7 @@ import io.github.markpollack.journal.storage.JournalStorage;
  * <p>Configure storage before creating runs:
  * <pre>{@code
  * // File-based storage
- * Journal.configure(new JsonFileStorage(Path.of(".tuvium")));
+ * Journal.configure(new JsonFileStorage(Path.of(".agent-journal")));
  *
  * // In-memory (default, for testing)
  * Journal.configure(new InMemoryStorage());
@@ -114,7 +121,7 @@ public final class Journal {
      * <p>Example:
      * <pre>{@code
      * // For production: file-based storage
-     * Journal.configure(new JsonFileStorage(Path.of(".tuvium")));
+     * Journal.configure(new JsonFileStorage(Path.of(".agent-journal")));
      *
      * // For testing: in-memory storage
      * Journal.configure(new InMemoryStorage());

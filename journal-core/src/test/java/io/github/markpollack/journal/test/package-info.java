@@ -1,5 +1,5 @@
 /**
- * Test fixtures and utilities for tuvium-runtime-core tests.
+ * Test fixtures and utilities for agent-journal tests.
  *
  * <p>This package provides:
  * <ul>

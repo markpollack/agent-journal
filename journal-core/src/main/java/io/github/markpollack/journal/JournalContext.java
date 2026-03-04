@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2026 Mark Pollack
+ *
+ * Licensed under the Business Source License 1.1 (BSL).
+ * See the LICENSE file in the repository root for the full license text.
+ */
+
 package io.github.markpollack.journal;
 
 import io.github.markpollack.journal.storage.InMemoryStorage;
@@ -16,7 +23,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * <p>Configuration should typically be done once at application startup:
  * <pre>{@code
  * // Use file-based storage
- * JournalContext.setStorage(new JsonFileStorage(Path.of(".tuvium")));
+ * JournalContext.setStorage(new JsonFileStorage(Path.of(".agent-journal")));
  *
  * // Or use in-memory for testing
  * JournalContext.setStorage(new InMemoryStorage());
