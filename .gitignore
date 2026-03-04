@@ -5,3 +5,5 @@ target/
 *.jar
 *.log
 .DS_Store
+CLAUDE.md
+plans/
