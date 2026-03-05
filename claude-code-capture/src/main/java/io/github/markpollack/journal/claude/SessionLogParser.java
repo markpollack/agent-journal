@@ -155,7 +155,8 @@ public class SessionLogParser {
                                 toolUseBlock.id(),
                                 toolUseBlock.name(),
                                 toolUseBlock.input()));
-                        logger.info("[{}] Tool use: {} (id: {})", phaseName, toolUseBlock.name(), toolUseBlock.id());
+                        String target = toolTarget(toolUseBlock.name(), toolUseBlock.input());
+                        logger.info("[{}] Tool use: {} {} (id: {})", phaseName, toolUseBlock.name(), target, toolUseBlock.id());
                         writeTrace(trace, phaseName,
                                 w -> w.writeToolUse(toolUseBlock.name(), toolUseBlock.id()));
                     }
@@ -229,6 +230,48 @@ public class SessionLogParser {
         } catch (IOException ex) {
             logger.warn("[{}] Trace write failed: {}", phaseName, ex.getMessage());
         }
+    }
+
+    /**
+     * Extract a short human-readable target from tool input for log readability.
+     */
+    private static String toolTarget(String toolName, Map<String, Object> input) {
+        if (input == null) {
+            return "";
+        }
+        return switch (toolName) {
+            case "Read", "Write", "Edit" -> {
+                Object path = input.get("file_path");
+                if (path instanceof String s) {
+                    // Show last 2 path segments
+                    String[] parts = s.split("/");
+                    yield parts.length > 1
+                            ? "— " + parts[parts.length - 2] + "/" + parts[parts.length - 1]
+                            : "— " + s;
+                }
+                yield "";
+            }
+            case "Bash" -> {
+                Object cmd = input.get("command");
+                if (cmd instanceof String s) {
+                    String trimmed = s.trim();
+                    if (trimmed.length() > 60) {
+                        trimmed = trimmed.substring(0, 57) + "...";
+                    }
+                    yield "— " + trimmed;
+                }
+                yield "";
+            }
+            case "Glob" -> {
+                Object pattern = input.get("pattern");
+                yield pattern instanceof String s ? "— " + s : "";
+            }
+            case "Grep" -> {
+                Object pattern = input.get("pattern");
+                yield pattern instanceof String s ? "— /" + s + "/" : "";
+            }
+            default -> "";
+        };
     }
 
     private static int getInt(Map<String, Object> map, String key) {
