@@ -29,7 +29,7 @@
         <dependency>
             <groupId>org.springaicommunity</groupId>
             <artifactId>claude-code-sdk</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${claude-code-sdk.version}</version>
         </dependency>
 
         <!-- Logging -->
