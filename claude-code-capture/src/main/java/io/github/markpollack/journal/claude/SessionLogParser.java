@@ -93,6 +93,8 @@ public class SessionLogParser {
         List<String> thinkingBlocks = new ArrayList<>();
         List<ToolUseRecord> toolUses = new ArrayList<>();
         List<ToolResultRecord> toolResults = new ArrayList<>();
+        Map<String, String> toolUseNames = new java.util.HashMap<>();
+        Map<String, Long> toolUseStartMs = new java.util.HashMap<>();
 
         // ResultMessage fields (populated from the last ResultMessage seen)
         int inputTokens = 0;
@@ -155,6 +157,8 @@ public class SessionLogParser {
                                 toolUseBlock.id(),
                                 toolUseBlock.name(),
                                 toolUseBlock.input()));
+                        toolUseNames.put(toolUseBlock.id(), toolUseBlock.name());
+                        toolUseStartMs.put(toolUseBlock.id(), System.currentTimeMillis());
                         String target = toolTarget(toolUseBlock.name(), toolUseBlock.input());
                         logger.info("[{}] Tool use: {} {} (id: {})", phaseName, toolUseBlock.name(), target, toolUseBlock.id());
                         writeTrace(trace, phaseName,
@@ -176,11 +180,18 @@ public class SessionLogParser {
                                     resultBlock.toolUseId(),
                                     content,
                                     Boolean.TRUE.equals(resultBlock.isError())));
-                            logger.debug("[{}] Tool result: id={} isError={} len={}", phaseName,
-                                    resultBlock.toolUseId(), Boolean.TRUE.equals(resultBlock.isError()),
-                                    content != null ? content.length() : 0);
+                            String resultToolName = toolUseNames.getOrDefault(resultBlock.toolUseId(), "?");
+                            Long startMs = toolUseStartMs.get(resultBlock.toolUseId());
+                            long elapsedMs = startMs != null ? System.currentTimeMillis() - startMs : -1;
                             final int len = content != null ? content.length() : 0;
                             final boolean err = Boolean.TRUE.equals(resultBlock.isError());
+                            if (elapsedMs >= 0) {
+                                logger.info("[{}] Tool result: {} {}ms isError={} len={}", phaseName,
+                                        resultToolName, elapsedMs, err, len);
+                            } else {
+                                logger.info("[{}] Tool result: {} isError={} len={}", phaseName,
+                                        resultToolName, err, len);
+                            }
                             writeTrace(trace, phaseName,
                                     w -> w.writeToolResult(resultBlock.toolUseId(), err, len));
                         }
@@ -269,6 +280,33 @@ public class SessionLogParser {
             case "Grep" -> {
                 Object pattern = input.get("pattern");
                 yield pattern instanceof String s ? "— /" + s + "/" : "";
+            }
+            // Skill invocation — show which skill was called
+            case "Skill" -> {
+                Object skill = input.get("skill");
+                Object args = input.get("args");
+                if (skill instanceof String s) {
+                    yield args instanceof String a && !a.isBlank()
+                            ? "— " + s + " (" + a + ")"
+                            : "— " + s;
+                }
+                yield "";
+            }
+            // Subagent spawn — show its description (the 3-5 word purpose summary),
+            // not the prompt text (which is the implementation detail, not the intent)
+            case "Agent" -> {
+                Object desc = input.get("description");
+                if (desc instanceof String s && !s.isBlank()) {
+                    yield "— [subagent] " + s;
+                }
+                // Fall back to first line of prompt if no description
+                Object prompt = input.get("prompt");
+                if (prompt instanceof String s) {
+                    String firstLine = s.lines().filter(l -> !l.isBlank()).findFirst().orElse("").trim();
+                    if (firstLine.length() > 60) firstLine = firstLine.substring(0, 57) + "...";
+                    yield firstLine.isBlank() ? "" : "— [subagent] " + firstLine;
+                }
+                yield "";
             }
             default -> "";
         };
