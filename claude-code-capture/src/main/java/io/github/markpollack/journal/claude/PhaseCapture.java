@@ -17,7 +17,9 @@ import java.util.List;
  * @param promptText     The prompt sent to the LLM for this phase (null if not captured)
  * @param inputTokens    Input tokens consumed
  * @param outputTokens   Output tokens consumed
- * @param thinkingTokens Thinking tokens consumed (extended thinking)
+ * @param thinkingTokens            Thinking tokens consumed (extended thinking)
+ * @param cacheCreationInputTokens  Tokens written to prompt cache
+ * @param cacheReadInputTokens      Tokens read from prompt cache
  * @param durationMs     Wall-clock duration from SDK (milliseconds)
  * @param apiDurationMs  API-only duration from SDK (milliseconds)
  * @param totalCostUsd   Total cost in USD
@@ -36,6 +38,8 @@ public record PhaseCapture(
         int inputTokens,
         int outputTokens,
         int thinkingTokens,
+        int cacheCreationInputTokens,
+        int cacheReadInputTokens,
         long durationMs,
         long apiDurationMs,
         double totalCostUsd,
@@ -49,19 +53,26 @@ public record PhaseCapture(
         List<ToolResultRecord> toolResults
 ) {
     /**
-     * Backward-compatible constructor for callers that don't provide toolResults.
+     * Backward-compatible constructor for callers that don't provide cache tokens or toolResults.
      */
     public PhaseCapture(String phaseName, String promptText, int inputTokens, int outputTokens,
             int thinkingTokens, long durationMs, long apiDurationMs, double totalCostUsd,
             String sessionId, int numTurns, boolean isError, String textOutput,
             List<String> thinkingBlocks, List<ToolUseRecord> toolUses, String rawResult) {
-        this(phaseName, promptText, inputTokens, outputTokens, thinkingTokens, durationMs,
+        this(phaseName, promptText, inputTokens, outputTokens, thinkingTokens, 0, 0, durationMs,
                 apiDurationMs, totalCostUsd, sessionId, numTurns, isError, textOutput,
                 thinkingBlocks, toolUses, rawResult, null);
     }
 
+    /**
+     * Total input tokens including prompt cache reads and cache creation.
+     */
+    public int totalInputTokens() {
+        return inputTokens + cacheCreationInputTokens + cacheReadInputTokens;
+    }
+
     public int totalTokens() {
-        return inputTokens + outputTokens + thinkingTokens;
+        return totalInputTokens() + outputTokens + thinkingTokens;
     }
 
     public boolean hasThinking() {

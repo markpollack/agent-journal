@@ -370,6 +370,44 @@ class SessionLogParserTest {
     }
 
     @Test
+    void extractsCacheTokensFromUsageMap() {
+        ResultMessage result = ResultMessage.builder()
+                .durationMs(5000)
+                .durationApiMs(4000)
+                .numTurns(3)
+                .sessionId("sess-test")
+                .totalCostUsd(0.05)
+                .usage(Map.of(
+                        "input_tokens", 14,
+                        "output_tokens", 200,
+                        "cache_creation_input_tokens", 5000,
+                        "cache_read_input_tokens", 80000
+                ))
+                .build();
+
+        List<ParsedMessage> messages = List.of(wrap(result));
+
+        PhaseCapture capture = SessionLogParser.parse(messages.iterator(), "execute", "prompt");
+
+        assertThat(capture.inputTokens()).isEqualTo(14);
+        assertThat(capture.cacheCreationInputTokens()).isEqualTo(5000);
+        assertThat(capture.cacheReadInputTokens()).isEqualTo(80000);
+        assertThat(capture.totalInputTokens()).isEqualTo(85014); // 14 + 5000 + 80000
+    }
+
+    @Test
+    void cacheTokensDefaultToZeroWhenNotInUsageMap() {
+        List<ParsedMessage> messages = List.of(
+                wrap(resultMessage(0.01, 1000, 800, 100, 50))
+        );
+
+        PhaseCapture capture = SessionLogParser.parse(messages.iterator(), "explore", "prompt");
+
+        assertThat(capture.cacheCreationInputTokens()).isZero();
+        assertThat(capture.cacheReadInputTokens()).isZero();
+    }
+
+    @Test
     void parseWithNullTraceFileWorksNormally() {
         List<ParsedMessage> messages = List.of(
                 wrap(new AssistantMessage(List.of(new TextBlock("Hello")))),

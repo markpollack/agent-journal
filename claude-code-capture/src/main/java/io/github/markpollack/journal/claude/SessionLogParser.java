@@ -100,6 +100,8 @@ public class SessionLogParser {
         int inputTokens = 0;
         int outputTokens = 0;
         int thinkingTokens = 0;
+        int cacheCreationInputTokens = 0;
+        int cacheReadInputTokens = 0;
         long durationMs = 0;
         long apiDurationMs = 0;
         double totalCostUsd = 0.0;
@@ -131,6 +133,8 @@ public class SessionLogParser {
                     inputTokens = getInt(usage, "input_tokens");
                     outputTokens = getInt(usage, "output_tokens");
                     thinkingTokens = getInt(usage, "thinking_tokens");
+                    cacheCreationInputTokens = getInt(usage, "cache_creation_input_tokens");
+                    cacheReadInputTokens = getInt(usage, "cache_read_input_tokens");
                 }
                 logger.info("[{}] Complete: {} turns, {} in + {} out tokens, ${}", phaseName, numTurns, inputTokens,
                         outputTokens, String.format("%.4f", totalCostUsd));
@@ -213,6 +217,8 @@ public class SessionLogParser {
                 inputTokens,
                 outputTokens,
                 thinkingTokens,
+                cacheCreationInputTokens,
+                cacheReadInputTokens,
                 durationMs,
                 apiDurationMs,
                 totalCostUsd,

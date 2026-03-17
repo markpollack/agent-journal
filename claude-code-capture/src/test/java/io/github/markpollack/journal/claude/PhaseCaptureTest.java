@@ -90,4 +90,33 @@ class PhaseCaptureTest {
         assertThat(capture.promptText()).isEqualTo("Generate a plan");
         assertThat(capture.rawResult()).isEqualTo("Plan complete.");
     }
+
+    @Test
+    void cacheTokensDefaultToZeroInBackwardCompatConstructor() {
+        PhaseCapture capture = new PhaseCapture("explore", null,
+                100, 50, 25, 1000, 800, 0.01, "sess-1", 2, false,
+                "output", List.of(), List.of(), null);
+
+        assertThat(capture.cacheCreationInputTokens()).isZero();
+        assertThat(capture.cacheReadInputTokens()).isZero();
+    }
+
+    @Test
+    void totalInputTokensIncludesCacheTokens() {
+        // Simulate a cached prompt: 14 bare input tokens, 5000 cache-write, 80000 cache-read
+        PhaseCapture capture = new PhaseCapture("execute", null,
+                14, 50, 0, 5000, 80000, 1000, 800, 0.01, "sess-1", 2, false,
+                "output", List.of(), List.of(), null, null);
+
+        assertThat(capture.totalInputTokens()).isEqualTo(85014); // 14 + 5000 + 80000
+    }
+
+    @Test
+    void totalTokensIncludesCacheTokens() {
+        PhaseCapture capture = new PhaseCapture("execute", null,
+                14, 50, 25, 5000, 80000, 1000, 800, 0.01, "sess-1", 2, false,
+                "output", List.of(), List.of(), null, null);
+
+        assertThat(capture.totalTokens()).isEqualTo(85089); // 14+5000+80000+50+25
+    }
 }
