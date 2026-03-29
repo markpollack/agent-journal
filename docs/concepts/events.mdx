@@ -1,0 +1,178 @@
+---
+title: "Events"
+description: "The append-only behavioral trace — what happened, in what order."
+---
+
+## What events are
+
+Events are immutable facts appended to a run's log as the agent executes. They answer the question: *what did the agent do, and in what order?*
+
+The event log is the raw data that enables downstream analysis:
+- Markov chain analysis of tool-call sequences
+- Failure cluster detection (which tool-call patterns precede errors?)
+- Cost attribution (which phases are expensive?)
+- Behavioral comparison across runs
+
+## The event hierarchy
+
+`JournalEvent` is a sealed interface. All permitted subtypes are exhaustive — the compiler enforces that consumers handle every type:
+
+```java
+switch (event) {
+    case LLMCallEvent e    -> // ...
+    case ToolCallEvent e   -> // ...
+    case StateChangeEvent e -> // ...
+    case MetricEvent e     -> // ...
+    case CustomEvent e     -> // ...
+    case GitPatchEvent e   -> // ...
+    case GitCommitEvent e  -> // ...
+    case GitBranchEvent e  -> // ...
+    case GitPullRequestEvent e -> // ...
+}
+```
+
+Every event carries a `timestamp` (Instant) and a `type` discriminator for JSON deserialization.
+
+## Event types
+
+### LLMCallEvent
+
+Records one interaction with an LLM — token counts, cost, and latency.
+
+```java
+run.logEvent(LLMCallEvent.builder()
+        .model("claude-opus-4-5")
+        .tokenUsage(TokenUsage.of(
+                1200,   // input tokens
+                450,    // output tokens
+                300,    // thinking tokens
+                800,    // cache read tokens
+                200     // cache write tokens
+        ))
+        .cost(CostBreakdown.of(
+                0.018,  // input cost USD
+                0.00675 // output cost USD
+        ))
+        .timing(TimingInfo.of(2500)) // total ms
+        .build());
+```
+
+Use this for every call to an LLM API. The `claude-code-capture` module populates these automatically from SDK response metadata.
+
+### ToolCallEvent
+
+Records one tool invocation — name, inputs, result, duration, and success.
+
+```java
+// Success
+run.logEvent(ToolCallEvent.success(
+        "Bash",
+        Map.of("command", "git status"),
+        Map.of("output", "On branch main\nnothing to commit"),
+        250  // duration ms
+));
+
+// Failure
+run.logEvent(ToolCallEvent.failure(
+        "Read",
+        Map.of("path", "/nonexistent/file.java"),
+        "File not found: /nonexistent/file.java",
+        15
+));
+```
+
+Tool call sequences are the primary input for Markov chain analysis — what tool did the agent call next, given that it just called this one?
+
+### StateChangeEvent
+
+Records named state transitions as the agent moves through phases.
+
+```java
+run.logEvent(StateChangeEvent.of("init",       "planning",   "Task parsed"));
+run.logEvent(StateChangeEvent.of("planning",   "executing",  "Plan approved"));
+run.logEvent(StateChangeEvent.of("executing",  "validating", "Code written"));
+run.logEvent(StateChangeEvent.of("validating", "complete",   "All tests pass"));
+```
+
+State events let you segment the event log by phase and ask: "which tool calls happen in the executing phase? which ones precede failures?"
+
+### Git events
+
+Four events cover code-change operations:
+
+```java
+// File-level diff
+run.logEvent(GitPatchEvent.of(
+        "main",
+        List.of(
+            GitPatchEvent.FileChange.modified("src/Service.java", 12, 3),
+            GitPatchEvent.FileChange.added("src/ServiceTest.java", 45, 0)
+        )
+));
+
+// Commit
+run.logEvent(GitCommitEvent.of("abc123", "Add vaccination feature", "main"));
+
+// Branch
+run.logEvent(GitBranchEvent.of("feature/vaccination", "main", "created"));
+
+// Pull request
+run.logEvent(GitPullRequestEvent.of(42, "Add vaccination feature", "open", "main"));
+```
+
+### MetricEvent
+
+Point-in-time metric value — useful when you want a metric in the event timeline rather than just in the MetricRegistry.
+
+```java
+run.logEvent(MetricEvent.of("thrash.score", 0.34, Tags.of("phase", "executing")));
+```
+
+### CustomEvent
+
+Arbitrary key-value pairs for domain-specific events not covered by the typed hierarchy.
+
+```java
+run.logEvent(CustomEvent.of("kb.lookup", Map.of(
+        "query", "Spring Boot test annotations",
+        "hits",  3,
+        "topResult", "Using @DataJpaTest"
+)));
+```
+
+## Logging events
+
+```java
+// Append to the run's event log
+run.logEvent(someEvent);
+
+// Read all events (returns defensive copy)
+List<JournalEvent> events = run.events();
+
+// Filter by type
+long toolCallCount = run.events().stream()
+        .filter(e -> e instanceof ToolCallEvent)
+        .count();
+```
+
+## Serialization
+
+Events serialize to JSON with a `type` discriminator:
+
+```json
+{"type":"tool_call","timestamp":"2026-03-17T14:23:01.450Z","toolName":"Bash","durationMs":250,"success":true,"input":{"command":"git status"}}
+{"type":"llm_call","timestamp":"2026-03-17T14:23:04.200Z","model":"claude-opus-4-5","totalMs":2500,"tokenUsage":{"inputTokens":1200,"outputTokens":450}}
+```
+
+In `JsonFileStorage`, events are written to `events.jsonl` — one event per line. Append-only: new events are written without reading the existing file.
+
+## Adding new event types
+
+The sealed interface provides compile-time exhaustiveness checking, but it means adding a new type requires updating the interface:
+
+1. Create the class implementing `JournalEvent`
+2. Add it to the `permits` clause in `JournalEvent.java`
+3. Add a `@JsonSubTypes.Type` entry in the annotation
+4. Add a round-trip serialization test in `EventSerializationRoundTripTest`
+
+This friction is intentional — it ensures all consumers of the event log are updated when new event types appear.

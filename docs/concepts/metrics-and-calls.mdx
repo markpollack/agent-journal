@@ -1,0 +1,142 @@
+---
+title: "Metrics & Call Tracking"
+description: "Named measurements and hierarchical call tracking within a run."
+---
+
+## MetricRegistry
+
+Every run has an embedded `MetricRegistry` with three instrument types: counters, timers, and gauges. All instruments support dimensional tags.
+
+```java
+var metrics = run.metrics();
+```
+
+### Counter
+
+Monotonically increasing count. Use for totals: API calls made, retries attempted, files changed.
+
+```java
+var toolCalls = metrics.counter("tool.calls");
+toolCalls.increment();       // +1
+toolCalls.increment(3);      // +3
+long total = toolCalls.count(); // 4
+```
+
+With tags:
+
+```java
+var calls = metrics.counter("tool.calls", Tags.of("tool", "Bash"));
+calls.increment();
+```
+
+### Timer
+
+Duration measurements. Use for latency: how long did a phase take? how long did each LLM call take?
+
+```java
+var responseTime = metrics.timer("llm.responseTime");
+
+// Manual start/stop
+var sample = responseTime.start();
+// ... timed operation ...
+sample.stop();
+
+// Record a known duration
+responseTime.record(Duration.ofMillis(2500));
+
+// Query
+Duration total   = responseTime.totalTime();
+Duration max     = responseTime.max();
+long     count   = responseTime.count();
+```
+
+### Gauge
+
+Current point-in-time value. Use for "how many X are there right now?" type measurements.
+
+```java
+var activeConnections = metrics.gauge("connections.active");
+activeConnections.set(5);
+activeConnections.set(3); // overwrites
+double current = activeConnections.value();
+```
+
+### Convenience shorthand
+
+For quick metric logging without managing instrument references:
+
+```java
+run.logMetric("tokens.total", 1650);
+run.logMetric("cost.usd", 0.02475);
+```
+
+This appends a `MetricEvent` to the event log (point-in-time snapshot), separate from the MetricRegistry instruments.
+
+## Call Tracking
+
+`CallTracker` provides hierarchical call tracking — a tree of nested operations with timing, where a run can be subdivided into phases and sub-phases.
+
+```java
+var calls = run.calls();
+
+try (Call planning = calls.start("planning")) {
+    // ... planning phase ...
+
+    try (Call llmCall = calls.start("llm-interaction")) {
+        // ... LLM call ...
+    } // llm-interaction ends, duration recorded
+
+} // planning ends, total duration recorded
+```
+
+Calls are try-with-resources. The tracker records start/end times automatically.
+
+### Use case: phase segmentation
+
+```java
+try (Run run = Journal.run("agent-task").start()) {
+    var calls = run.calls();
+
+    try (Call phase = calls.start("explore")) {
+        run.logEvent(ToolCallEvent.success("Glob", "**/*.java", 45));
+        run.logEvent(ToolCallEvent.success("Read", "src/Main.java", 20));
+    }
+
+    try (Call phase = calls.start("implement")) {
+        run.logEvent(ToolCallEvent.success("Edit", "src/Main.java", 180));
+        run.logEvent(LLMCallEvent.builder()
+                .model("claude-opus-4-5")
+                .tokenUsage(TokenUsage.of(2400, 800))
+                .build());
+    }
+
+    try (Call phase = calls.start("verify")) {
+        run.logEvent(ToolCallEvent.success("Bash", "mvn test", 8200));
+    }
+}
+```
+
+### Accessing call data
+
+```java
+// All completed calls
+List<Call> allCalls = run.calls().all();
+
+// Duration for a named call
+run.calls().all().stream()
+    .filter(c -> c.name().equals("implement"))
+    .findFirst()
+    .map(Call::duration)
+    .ifPresent(d -> System.out.println("Implement phase: " + d.toMillis() + "ms"));
+```
+
+## When to use each
+
+| Scenario | Use |
+|----------|-----|
+| "How many Bash calls did the agent make?" | `Counter` in MetricRegistry |
+| "How long did the LLM take?" | `Timer` in MetricRegistry, or `TimingInfo` in `LLMCallEvent` |
+| "How many files are open right now?" | `Gauge` in MetricRegistry |
+| "What happened and when?" | `logEvent()` — adds to the event log |
+| "How long was the planning phase?" | `CallTracker` with named calls |
+| "What was the total cost?" | `setSummary("cost.usd", ...)` at end of run |

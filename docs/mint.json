@@ -1,0 +1,71 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "agent-journal",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#1a1a2e",
+    "light": "#6c63ff",
+    "dark": "#1a1a2e"
+  },
+  "topbarLinks": [
+    {
+      "name": "GitHub",
+      "url": "https://github.com/markpollack/agent-journal"
+    }
+  ],
+  "anchors": [
+    {
+      "name": "Maven Central",
+      "icon": "box",
+      "url": "https://central.sonatype.com/artifact/io.github.markpollack/journal-core"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": [
+        "introduction",
+        "quickstart"
+      ]
+    },
+    {
+      "group": "Concepts",
+      "pages": [
+        "concepts/experiments-and-runs",
+        "concepts/events",
+        "concepts/metrics-and-calls",
+        "concepts/storage"
+      ]
+    },
+    {
+      "group": "Guides",
+      "pages": [
+        "guides/basic-usage",
+        "guides/claude-code-capture",
+        "guides/spring-ai-integration",
+        "guides/analyzing-runs"
+      ]
+    },
+    {
+      "group": "Reference",
+      "pages": [
+        "reference/event-types",
+        "reference/run-builder",
+        "reference/storage-backends"
+      ]
+    },
+    {
+      "group": "Research Context",
+      "pages": [
+        "research/landscape"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "github": "https://github.com/markpollack/agent-journal"
+  }
+}

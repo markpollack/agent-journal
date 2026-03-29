@@ -1,0 +1,135 @@
+---
+title: "Storage Backends Reference"
+description: "JournalStorage interface and built-in implementations."
+---
+
+## JournalStorage interface
+
+```java
+public interface JournalStorage {
+
+    // Experiments
+    void saveExperiment(Experiment experiment);
+    Optional<Experiment> getExperiment(String experimentId);
+    List<Experiment> listExperiments();
+
+    // Runs
+    void saveRun(RunData run);
+    Optional<RunData> getRun(String experimentId, String runId);
+    List<RunData> listRuns(String experimentId);
+
+    // Events (append-only)
+    void appendEvent(String experimentId, String runId, JournalEvent event);
+    List<JournalEvent> getEvents(String experimentId, String runId);
+
+    // Artifacts
+    void saveArtifact(String experimentId, String runId, String name, byte[] data);
+    Optional<byte[]> getArtifact(String experimentId, String runId, String name);
+    List<String> listArtifacts(String experimentId, String runId);
+}
+```
+
+## InMemoryStorage
+
+```java
+InMemoryStorage storage = new InMemoryStorage();
+Journal.configure(storage);
+
+// Direct access for test assertions
+storage.listExperiments()                       → List<Experiment>
+storage.listRuns(experimentId)                  → List<RunData>
+storage.getEvents(experimentId, runId)          → List<JournalEvent>
+storage.getArtifact(experimentId, runId, name)  → Optional<byte[]>
+```
+
+Thread-safe: `ConcurrentHashMap` for runs and experiments, `CopyOnWriteArrayList` for events. Suitable for multi-threaded test scenarios.
+
+## JsonFileStorage
+
+```java
+JsonFileStorage storage = new JsonFileStorage(Path.of(".agent-journal"));
+Journal.configure(storage);
+```
+
+### File layout
+
+```
+{baseDir}/
+└── experiments/
+    └── {experiment-id}/
+        ├── experiment.json
+        └── runs/
+            └── {run-id}/
+                ├── run.json
+                ├── events.jsonl
+                └── artifacts/
+                    └── {artifact-name}
+```
+
+### run.json schema
+
+```json
+{
+  "id":           "string (UUID)",
+  "experimentId": "string",
+  "name":         "string (optional)",
+  "agent":        "string (optional)",
+  "task":         "string (optional)",
+  "status":       "RUNNING | FINISHED | FAILED",
+  "startedAt":    "ISO-8601 instant",
+  "finishedAt":   "ISO-8601 instant (null while running)",
+  "config":       { "key": "value" },
+  "summary":      { "key": "value" },
+  "tags":         { "key": "value" },
+  "previousRunId": "string (optional)",
+  "parentRunId":   "string (optional)"
+}
+```
+
+### events.jsonl schema
+
+One JSON object per line. Each object has at minimum:
+
+```json
+{"type": "<discriminator>", "timestamp": "<ISO-8601>", ...type-specific fields}
+```
+
+Type discriminators: `llm_call`, `tool_call`, `state_change`, `metric`, `custom`, `git_patch`, `git_commit`, `git_branch`, `git_pull_request`.
+
+### Serialization details
+
+- Jackson 2.18 with `JavaTimeModule` for Instant/Duration serialization
+- `@JsonTypeInfo(property = "type")` + `@JsonSubTypes` for polymorphic event deserialization
+- Compiler `-parameters` flag enables constructor-based deserialization without `@JsonProperty` annotations
+- Events appended via `Files.writeString(path, json + "\n", APPEND, CREATE)` — no read required for appending
+
+## Implementing a custom backend
+
+```java
+public class MyCustomStorage implements JournalStorage {
+
+    @Override
+    public void appendEvent(String experimentId, String runId, JournalEvent event) {
+        // Serialize with Jackson
+        ObjectMapper mapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule());
+        String json = mapper.writeValueAsString(event);
+
+        // Write to your backend
+        myDatabase.insert("events", experimentId, runId, json);
+    }
+
+    @Override
+    public List<JournalEvent> getEvents(String experimentId, String runId) {
+        // Read and deserialize
+        List<String> rows = myDatabase.query("events", experimentId, runId);
+        return rows.stream()
+                .map(json -> mapper.readValue(json, JournalEvent.class))
+                .toList();
+    }
+
+    // ... implement remaining methods
+}
+```
+
+The Jackson `ObjectMapper` must have `JavaTimeModule` registered and must be configured with `@JsonTypeInfo`/`@JsonSubTypes` via the same annotations used on `JournalEvent`. The simplest approach is to copy the mapper configuration from `JsonFileStorage`.

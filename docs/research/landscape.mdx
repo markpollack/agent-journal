@@ -1,0 +1,117 @@
+---
+title: "Research Landscape"
+description: "How agent-journal relates to concurrent academic work on agent observability and AgentOps."
+---
+
+## Context
+
+Agent-journal was developed alongside a growing body of academic work on agent observability and AgentOps. This page places agent-journal in that landscape — both to establish what it is *not* (an OTel-based observability tool) and to show where it fits in the broader research agenda.
+
+## The four concurrent papers
+
+### AgentTrace — arXiv:2602.10133 (Feb 2026)
+
+AlSayyad, Huang, Pal. *A Structured Logging Framework for Agent System Observability.*
+
+Three-surface taxonomy: **cognitive** (reasoning/reflection), **operational** (tool calls/actions), **contextual** (environment/I-O). Instruments agents at runtime without code modification. Integrates with OpenTelemetry. Targets DevOps/SRE pipelines — Jaeger, Grafana dashboards, alerting.
+
+**Architecturally closest to agent-journal**, but different in almost every dimension that matters:
+
+| | AgentTrace | agent-journal |
+|-|------------|---------------|
+| Language | Python | Java |
+| Infrastructure | OpenTelemetry collectors, Jaeger | Zero infrastructure — a JAR |
+| Output | Spans → dashboards, alerting | Typed JSONL → DuckDB, Parquet, Markov analysis |
+| Target user | DevOps/SRE monitoring production agents | Researchers analyzing per-session agent behavior |
+| Granularity | Distributed tracing across services | Single-session deep behavioral trace |
+
+**Relationship**: Complementary. AgentTrace is better for distributed multi-agent production monitoring. Agent-journal is better for deep per-session research analytics where you want to load 1,734 tool calls into DuckDB.
+
+**Differentiation language** (for papers/blog posts):
+> "Concurrent work (AgentTrace, Feb 2026) addresses agent observability via OpenTelemetry, requiring infrastructure setup and producing span-oriented output. Agent-journal takes a different approach: a Maven library that bridges a single Claude Code SDK session directly into a typed Java event log, producing tool-call sequences at the granularity needed for Markov chain analysis."
+
+---
+
+### AgentOps taxonomy — arXiv:2411.05285 (Nov 2024)
+
+Dong, Lu, Zhu. *A Taxonomy of AgentOps for Enabling Observability of Foundation Model based Agents.*
+
+A vocabulary paper based on systematic mapping study. Defines a hierarchical span taxonomy: reasoning, planning, workflow, task, tool, LLM spans.
+
+**Role in our work**: Validates that the field has identified exactly the artifacts agent-journal captures. Good citation for "what should be captured." The taxonomy maps cleanly onto agent-journal's event types.
+
+| AgentOps span type | agent-journal equivalent |
+|--------------------|--------------------------|
+| LLM span | `LLMCallEvent` |
+| Tool span | `ToolCallEvent` |
+| Task span | `Run` with `Config`/`Summary` |
+| Workflow span | `Experiment` grouping runs |
+| Planning span | `StateChangeEvent` transitions |
+
+---
+
+### TraceSIR — arXiv:2603.00623 (Feb 2026)
+
+*A Multi-Agent Framework for Structured Analysis and Reporting of Agentic Execution Traces.*
+
+Three specialized agents that consume execution traces:
+- **StructureAgent**: Compresses traces via TraceFormat while preserving behavioral information
+- **InsightAgent**: Fine-grained failure localization, root cause analysis, optimization suggestions
+- **ReportAgent**: Aggregates insights across task instances, generates comprehensive reports
+
+**Relationship**: TraceSIR is the consumer; agent-journal is the producer. They are directly complementary.
+
+The TraceSIR pipeline maps onto what we currently do manually after each experiment run:
+
+| TraceSIR | Manual equivalent |
+|----------|-------------------|
+| StructureAgent | Markov chain compression of tool-call sequences |
+| InsightAgent | Analyst reads transition probability heatmap, identifies failure clusters |
+| ReportAgent | `markov-findings.md` — findings and KB recommendations |
+
+A TraceSIR-style InsightAgent reading agent-journal event logs could automate:
+> "EXPLORE→JAR_INSPECT transition probability is 11%. Recommended KB addition: Spring Boot test import paths for `@DataJpaTest`. Draft entry attached."
+
+This is the Stage 6 research agenda — closing the improvement loop without human-in-the-loop analysis.
+
+---
+
+### Taming Uncertainty — arXiv:2507.11277 (ASE 2025)
+
+Moshkovich, Zeltyn (IBM Research). *Observing, Analyzing, and Optimizing Agentic AI Systems.*
+
+Defines a six-stage AgentOps pipeline:
+
+| Stage | Description | Agent-journal status |
+|-------|-------------|----------------------|
+| 1. Observe | Capture tool calls, LLM calls, costs | **Complete** — `ToolCallEvent`, `LLMCallEvent`, `PhaseCapture` |
+| 2. Collect metrics | Structured metrics from traces | **Complete** — JSONL events → DuckDB/Parquet |
+| 3. Detect issues | Identify anomalous patterns | **Partial** — manual threshold checks |
+| 4. Root cause | Why did the anomaly occur? | **Manual** — human interprets heatmaps |
+| 5. Recommendations | What should change? | **Manual** — human authors KB entries |
+| 6. Runtime automation | Adapt KB/prompts between runs automatically | **Not implemented** |
+
+The IBM paper frames Stage 6 as "self-improving AI systems — not eliminating uncertainty, but taming it." Stages 4–6 are the research agenda that agent-journal enables by providing the clean Stage 1–2 foundation.
+
+**Cite this paper for**: "we implement the foundational layer (Stages 1–2) that everything else depends on."
+
+---
+
+## The correct frame: behavioral trace capture
+
+The word "observability" carries an OTel/DevOps frame with it — distributed tracing, spans, collectors, dashboards, alerting. Neither OpenTelemetry nor Micrometer was designed for loading 1,734 tool calls into DuckDB and computing Markov transition matrices.
+
+**Do not use "observability" in agent-journal documentation, blog posts, or papers.**
+
+**Use instead**: behavioral trace capture, session ledger, execution log, agent activity record.
+
+The canonical one-sentence description:
+> "Agent-journal captures the behavioral trace of a Claude Code SDK session — tool calls, LLM calls, token costs, phase boundaries — as a structured, append-only event log for offline analysis."
+
+---
+
+## Priority and complementarity note
+
+AgentTrace was published February 7, 2026. The agent-journal public repository was first committed in early March 2026. The private predecessor (`tuvium-runtime-core`) has an initial commit of December 30, 2025 — five weeks before AgentTrace — but the history was squashed before the public release.
+
+**Do not claim priority.** The public trail does not support it, and the two projects serve different purposes anyway. **Claim complementarity.**

@@ -1,0 +1,150 @@
+---
+title: "Experiments & Runs"
+description: "The core mental model: experiments answer questions, runs are the trials."
+---
+
+## The model
+
+```
+Experiment  ←  answers a research question
+  └── Run   ←  one bounded execution
+        ├── Config     immutable inputs (set at start)
+        ├── Events[]   append-only log of what happened
+        ├── Metrics    named measurements accumulated during run
+        ├── Summary    mutable outputs (set during or after)
+        └── Artifacts  named byte[] outputs (generated files, reports)
+```
+
+An **Experiment** groups related runs under a shared identifier — for example, all the times you ran the agent against the same task with varying configurations. Experiments are created lazily when you first reference their ID.
+
+A **Run** is a single bounded execution. It has a start time, an end time, a status (`RUNNING` → `FINISHED` or `FAILED`), and everything the agent produced while it ran.
+
+## Config vs Summary
+
+This separation follows the Weights & Biases pattern for ML experiments:
+
+| | Config | Summary |
+|-|--------|---------|
+| **When set** | At run creation, before `.start()` | During or after the run |
+| **Mutability** | Immutable | Mutable (last-write-wins) |
+| **Represents** | Inputs — what you gave the agent | Outputs — what the agent produced |
+| **Examples** | model, task, temperature, prompt version | filesChanged, testsPass, totalCostUsd, success |
+
+```java
+try (Run run = Journal.run("petclinic-build")
+        .config("model", "claude-opus-4-5")
+        .config("task", "add-vaccination-feature")
+        .config("promptVersion", "v3")
+        .start()) {
+
+    // ... agent runs ...
+
+    run.setSummary("filesChanged", 8);
+    run.setSummary("testsAdded", 14);
+    run.setSummary("testsPass", true);
+    run.setSummary("totalCostUsd", 0.087);
+}
+```
+
+When you load all runs for an experiment and compare `config.promptVersion` against `summary.testsPass`, you have the core feedback loop of experiment-driven agent development.
+
+## Run lifecycle
+
+Runs implement `AutoCloseable` and are designed for try-with-resources:
+
+```java
+try (Run run = Journal.run("my-experiment").start()) {
+    // status = RUNNING
+    // ... do work ...
+} // status = FINISHED
+
+// If an exception escapes the try block:
+try (Run run = Journal.run("my-experiment").start()) {
+    throw new RuntimeException("something failed");
+} catch (Exception e) {
+    // status = FAILED, exception recorded in summary
+}
+```
+
+To mark a run as failed without an escaping exception:
+
+```java
+try (Run run = Journal.run("my-experiment").start()) {
+    try {
+        riskyOperation();
+    } catch (Exception e) {
+        run.fail(e); // marks FAILED, records cause
+    }
+}
+```
+
+## Linking runs
+
+### Retry chains
+
+When a run fails and you retry, link the new run to the previous attempt:
+
+```java
+String firstAttemptId;
+try (Run attempt1 = Journal.run("implement-feature").start()) {
+    firstAttemptId = attempt1.id();
+    attempt1.fail(new RuntimeException("Tests failed"));
+}
+
+try (Run attempt2 = Journal.run("implement-feature")
+        .previousRun(firstAttemptId)
+        .start()) {
+    // attempt2.previousRunId() == firstAttemptId
+}
+```
+
+This creates a retry chain: attempt2 → attempt1. Useful for computing "how many tries did this take?" across an experiment.
+
+### Parent-child hierarchies
+
+For multi-agent systems where a supervisor spawns child agents:
+
+```java
+try (Run supervisor = Journal.run("complex-task").agent("supervisor").start()) {
+
+    try (Run codeAgent = Journal.run("complex-task")
+            .parentRun(supervisor.id())
+            .agent("code-writer")
+            .start()) {
+        // codeAgent.parentRunId() == supervisor.id()
+    }
+
+    try (Run testAgent = Journal.run("complex-task")
+            .parentRun(supervisor.id())
+            .agent("test-writer")
+            .start()) {
+        // testAgent.parentRunId() == supervisor.id()
+    }
+}
+```
+
+## RunBuilder reference
+
+```java
+Journal.run("experiment-id")       // required: experiment ID
+    .name("attempt-3")             // optional: human-readable run name
+    .agent("claude-code-sdk")      // optional: agent identifier
+    .task("issue-123")             // optional: task being solved
+    .config("key", value)          // optional: input configuration (multi-call)
+    .tag("env", "production")      // optional: tags for filtering
+    .previousRun(id)               // optional: retry chain link
+    .parentRun(id)                 // optional: parent run link
+    .start()                       // creates and returns the Run
+```
+
+## Experiments with metadata
+
+```java
+Experiment exp = Journal.experiment("oauth-implementation",
+        Experiment.create("oauth-implementation")
+                .name("OAuth 2.0 Implementation")
+                .description("Adding OAuth2 authentication — comparing prompt strategies")
+                .tags(Tags.of("feature", "auth", "sprint", "2026-Q1")));
+```
+
+If the experiment already exists (from a previous run), the builder is ignored and the existing experiment is returned.

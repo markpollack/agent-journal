@@ -1,0 +1,160 @@
+---
+title: "Storage"
+description: "In-memory for testing, file-based for persistence. Bring your own backend."
+---
+
+## Storage backends
+
+`JournalStorage` is an interface with two built-in implementations:
+
+| Implementation | Use case | Persistence |
+|---------------|----------|-------------|
+| `InMemoryStorage` | Testing, ephemeral runs | None — lost on JVM exit |
+| `JsonFileStorage` | Development, research analysis | Files on disk |
+
+Configure storage once at startup:
+
+```java
+// File-based (recommended for real work)
+Journal.configure(new JsonFileStorage(Path.of(".agent-journal")));
+
+// In-memory (default if configure() is not called)
+Journal.configure(new InMemoryStorage());
+```
+
+## InMemoryStorage
+
+HashMap-backed. Zero configuration. The default if you never call `Journal.configure()`.
+
+```java
+InMemoryStorage storage = new InMemoryStorage();
+Journal.configure(storage);
+
+// Can query storage directly in tests
+List<RunData> runs = storage.listRuns("my-experiment");
+RunData run = storage.getRun("my-experiment", runId);
+List<JournalEvent> events = storage.getEvents("my-experiment", runId);
+```
+
+Ideal for unit tests — pair with `Journal.reset()` in `@BeforeEach`/`@AfterEach` to ensure clean state.
+
+## JsonFileStorage
+
+Writes structured data to disk under a configurable base directory.
+
+```java
+Journal.configure(new JsonFileStorage(Path.of(".agent-journal")));
+```
+
+### File layout
+
+```
+.agent-journal/
+└── experiments/
+    └── {experiment-id}/
+        ├── experiment.json          ← experiment metadata
+        └── runs/
+            └── {run-id}/
+                ├── run.json         ← run metadata, config, summary
+                ├── events.jsonl     ← append-only event log, one event per line
+                └── artifacts/
+                    └── {name}       ← named binary artifacts
+```
+
+The `events.jsonl` file uses JSONL format (newline-delimited JSON) — each event is one line. This means:
+- Appending a new event is a single `write()` call, no parsing required
+- The file can be read line-by-line without loading the whole thing into memory
+- Standard tools (DuckDB, jq, grep) work directly on the file
+
+### run.json structure
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "experimentId": "implement-feature",
+  "name": "attempt-3",
+  "agent": "claude-code-sdk",
+  "status": "FINISHED",
+  "startedAt": "2026-03-17T14:20:00Z",
+  "finishedAt": "2026-03-17T14:35:42Z",
+  "config": {
+    "model": "claude-opus-4-5",
+    "task": "add-vaccination-feature",
+    "promptVersion": "v3"
+  },
+  "summary": {
+    "filesChanged": 8,
+    "testsAdded": 14,
+    "testsPass": true,
+    "totalCostUsd": 0.087
+  },
+  "tags": {"sprint": "2026-Q1"},
+  "previousRunId": null,
+  "parentRunId": null
+}
+```
+
+## Reading persisted data
+
+Load runs from storage for analysis:
+
+```java
+JournalStorage storage = new JsonFileStorage(Path.of(".agent-journal"));
+
+// List all runs for an experiment
+List<RunData> runs = storage.listRuns("implement-feature");
+
+// Read events for a specific run
+List<JournalEvent> events = storage.getEvents("implement-feature", runId);
+
+// Filter to tool calls only
+List<ToolCallEvent> toolCalls = events.stream()
+        .filter(e -> e instanceof ToolCallEvent)
+        .map(e -> (ToolCallEvent) e)
+        .toList();
+```
+
+## Custom backends
+
+Implement `JournalStorage` to write to any backend:
+
+```java
+public interface JournalStorage {
+    void saveExperiment(Experiment experiment);
+    Optional<Experiment> getExperiment(String experimentId);
+
+    void saveRun(RunData run);
+    Optional<RunData> getRun(String experimentId, String runId);
+    List<RunData> listRuns(String experimentId);
+
+    void appendEvent(String experimentId, String runId, JournalEvent event);
+    List<JournalEvent> getEvents(String experimentId, String runId);
+
+    void saveArtifact(String experimentId, String runId, String name, byte[] data);
+    Optional<byte[]> getArtifact(String experimentId, String runId, String name);
+}
+```
+
+Potential backends: SQLite, PostgreSQL, S3, Parquet files.
+
+## Storage and testing
+
+```java
+@BeforeEach
+void setUp() {
+    Journal.reset(); // clears storage and experiment registry cache
+}
+
+@Test
+void myTest(@TempDir Path tempDir) {
+    // Use a real JsonFileStorage in a temp dir for integration tests
+    Journal.configure(new JsonFileStorage(tempDir));
+
+    try (Run run = Journal.run("test-exp").start()) {
+        run.setSummary("result", "ok");
+    }
+
+    assertThat(tempDir.resolve("experiments")).exists();
+    assertThat(tempDir.resolve("experiments/test-exp/runs")).isDirectory();
+}
+```

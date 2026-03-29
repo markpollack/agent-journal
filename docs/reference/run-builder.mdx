@@ -1,0 +1,146 @@
+---
+title: "RunBuilder Reference"
+description: "Full reference for Journal.run() and the RunBuilder API."
+---
+
+## Journal static API
+
+```java
+// Start a new run
+Journal.run(String experimentId)          → RunBuilder
+
+// Get or create an experiment
+Journal.experiment(String experimentId)   → Experiment
+Journal.experiment(String id, Builder)    → Experiment
+
+// Configure storage (call once at startup)
+Journal.configure(JournalStorage storage)
+
+// Get current storage
+Journal.storage()                         → JournalStorage
+
+// Reset to defaults (for testing)
+Journal.reset()
+```
+
+## RunBuilder
+
+```java
+Journal.run("experiment-id")    // required: experiment identifier
+
+    // Run metadata
+    .name("attempt-3")          // optional: human-readable name for this run
+    .agent("claude-code-sdk")   // optional: agent identifier
+    .task("issue-123")          // optional: task or ticket being solved
+
+    // Input configuration (immutable after start)
+    .config("model", "claude-opus-4-5")
+    .config("maxTokens", 8000)
+    .config("temperature", 0.7)
+
+    // Tags for filtering and grouping
+    .tag("sprint", "2026-Q2")
+    .tag("env", "dev")
+
+    // Bulk config via Map
+    .config(Map.of("model", "claude-opus-4-5", "task", "issue-123"))
+
+    // Run linking
+    .previousRun(String runId)  // retry chain: this run retries that one
+    .parentRun(String runId)    // hierarchy: this run is a child of that one
+
+    .start()                    // creates the Run, status = RUNNING
+```
+
+## Run API
+
+```java
+// Identity
+run.id()                    → String   (UUID)
+run.experiment()            → Experiment
+run.config()                → Config   (immutable)
+
+// Events
+run.logEvent(JournalEvent)
+run.events()                → List<JournalEvent>  (defensive copy)
+
+// Summary (mutable output)
+run.setSummary(String key, Object value)
+run.summary()               → Summary
+
+// Metrics
+run.logMetric(String name, double value)
+run.metrics()               → MetricRegistry
+
+// Call tracking
+run.calls()                 → CallTracker
+
+// Artifacts
+run.logArtifact(String name, String content)
+run.logArtifact(String name, byte[] bytes)
+
+// Status
+run.status()                → RunStatus  (RUNNING, FINISHED, FAILED)
+
+// Lifecycle
+run.fail(Throwable cause)   // marks FAILED, records cause in summary
+run.finish(RunStatus)       // explicit finish with specified status
+run.close()                 // AutoCloseable — FINISHED or FAILED
+```
+
+## Config
+
+Set at run creation, immutable afterward. Represents the inputs to the agent run.
+
+```java
+Config config = run.config();
+String model        = config.get("model", String.class);
+Integer maxTokens   = config.get("maxTokens", Integer.class);
+String modelOrDef   = config.getOrDefault("model", "claude-opus-4-5");
+
+// Check for key
+boolean hasModel    = config.has("model");
+
+// All entries
+Map<String, Object> all = config.toMap();
+```
+
+## Summary
+
+Set during or after the run. Represents the outputs. Last write wins.
+
+```java
+run.setSummary("filesChanged", 8);
+run.setSummary("testsPass", true);
+run.setSummary("totalCostUsd", 0.087);
+
+Summary summary = run.summary();
+Integer files    = summary.get("filesChanged", Integer.class);
+Boolean pass     = summary.get("testsPass", Boolean.class);
+```
+
+## RunStatus
+
+```java
+RunStatus.RUNNING   // set at start()
+RunStatus.FINISHED  // set at close() with no active exception
+RunStatus.FAILED    // set at close() with active exception, or via run.fail()
+```
+
+## Experiment
+
+```java
+Experiment exp = Journal.experiment("implement-oauth");
+exp.id()          → String
+exp.name()        → String
+exp.description() → String
+exp.tags()        → Tags
+exp.createdAt()   → Instant
+
+// With metadata
+Experiment exp = Journal.experiment("implement-oauth",
+        Experiment.create("implement-oauth")
+                .name("OAuth 2.0 Implementation")
+                .description("Adding OAuth2 authentication")
+                .tags(Tags.of("feature", "auth")));
+```

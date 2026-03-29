@@ -1,0 +1,144 @@
+---
+title: "Quickstart"
+description: "Track your first agent run in under 5 minutes."
+---
+
+## Add the dependency
+
+```xml pom.xml
+<dependency>
+    <groupId>io.github.markpollack</groupId>
+    <artifactId>journal-core</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+</dependency>
+```
+
+For snapshots, add the Sonatype snapshot repository:
+
+```xml pom.xml
+<repositories>
+    <repository>
+        <id>central-snapshots</id>
+        <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+        <snapshots><enabled>true</enabled></snapshots>
+    </repository>
+</repositories>
+```
+
+## Track your first run
+
+```java
+import io.github.markpollack.journal.Journal;
+import io.github.markpollack.journal.Run;
+import io.github.markpollack.journal.event.LLMCallEvent;
+import io.github.markpollack.journal.event.ToolCallEvent;
+import io.github.markpollack.journal.event.TokenUsage;
+import io.github.markpollack.journal.event.CostBreakdown;
+
+try (Run run = Journal.run("implement-feature")
+        .name("attempt-1")
+        .config("model", "claude-opus-4-5")
+        .config("task", "issue-123")
+        .start()) {
+
+    // Log an LLM call
+    run.logEvent(LLMCallEvent.builder()
+            .model("claude-opus-4-5")
+            .tokenUsage(TokenUsage.of(1200, 450))
+            .cost(CostBreakdown.of(0.018, 0.00675))
+            .build());
+
+    // Log tool calls
+    run.logEvent(ToolCallEvent.success("Bash", "git status", 150));
+    run.logEvent(ToolCallEvent.success("Read", "src/Main.java", 20));
+
+    // Record outputs
+    run.setSummary("filesChanged", 3);
+    run.setSummary("success", true);
+
+} // Run auto-closes as FINISHED (or FAILED if an exception is active)
+```
+
+The run status is determined automatically: `FINISHED` on normal close, `FAILED` if an uncaught exception was active.
+
+## Persist to disk
+
+By default, runs are stored in memory (useful for testing). Switch to file-based storage to persist across sessions:
+
+```java
+import io.github.markpollack.journal.storage.JsonFileStorage;
+import java.nio.file.Path;
+
+// Call once at startup, before creating any runs
+Journal.configure(new JsonFileStorage(Path.of(".agent-journal")));
+```
+
+Runs are written to:
+```
+.agent-journal/
+└── experiments/implement-feature/
+    └── runs/550e8400-e29b-41d4-a716-446655440000/
+        ├── run.json        ← metadata, config, summary
+        └── events.jsonl    ← one event per line, append-only
+```
+
+## Query the event log
+
+With [DuckDB](https://duckdb.org/) installed:
+
+```sql
+-- Count tool calls by type across all runs
+SELECT json_extract_string(line, '$.toolName') AS tool,
+       COUNT(*) AS calls
+FROM read_ndjson_auto('.agent-journal/experiments/*/runs/*/events.jsonl')
+WHERE json_extract_string(line, '$.type') = 'tool_call'
+GROUP BY tool
+ORDER BY calls DESC;
+```
+
+## Testing
+
+Use `InMemoryStorage` and `Journal.reset()` to keep tests isolated:
+
+```java
+@BeforeEach
+void setUp() {
+    Journal.reset(); // clears storage and experiment registry
+}
+
+@AfterEach
+void tearDown() {
+    Journal.reset();
+}
+
+@Test
+void myAgentTest() {
+    InMemoryStorage storage = new InMemoryStorage();
+    Journal.configure(storage);
+
+    try (Run run = Journal.run("test-experiment").start()) {
+        // ... test your agent code ...
+    }
+
+    var runs = storage.listRuns("test-experiment");
+    assertThat(runs).hasSize(1);
+    assertThat(runs.get(0).status()).isEqualTo(RunStatus.FINISHED);
+}
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Experiments & Runs" icon="flask" href="/concepts/experiments-and-runs">
+    Understand retry chains, parent-child hierarchies, and the Config/Summary pattern.
+  </Card>
+  <Card title="Events" icon="list" href="/concepts/events">
+    Full reference for all event types and when to use each.
+  </Card>
+  <Card title="Claude Code Capture" icon="code" href="/guides/claude-code-capture">
+    Capture real Claude Code SDK sessions automatically.
+  </Card>
+  <Card title="Analyzing Runs" icon="chart-line" href="/guides/analyzing-runs">
+    Query event logs with DuckDB and build Markov chain analyses.
+  </Card>
+</CardGroup>

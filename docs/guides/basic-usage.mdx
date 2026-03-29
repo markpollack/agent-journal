@@ -1,0 +1,192 @@
+---
+title: "Basic Usage"
+description: "Common patterns for tracking agent runs with journal-core."
+---
+
+## Minimal run
+
+```java
+try (Run run = Journal.run("my-experiment").start()) {
+    // do work
+    run.setSummary("result", "success");
+}
+```
+
+## Run with full configuration
+
+```java
+try (Run run = Journal.run("implement-oauth")
+        .name("attempt-1")
+        .agent("claude-code-sdk")
+        .task("issue-456")
+        .config("model", "claude-opus-4-5")
+        .config("maxTokens", 8000)
+        .config("promptVersion", "v4")
+        .tag("sprint", "2026-Q2")
+        .start()) {
+
+    // Access config during the run
+    String model = run.config().get("model", String.class);
+
+    // ... agent does work ...
+
+    run.setSummary("filesChanged", 6);
+    run.setSummary("testsAdded", 10);
+    run.setSummary("success", true);
+    run.setSummary("totalCostUsd", 0.054);
+}
+```
+
+## Logging LLM calls
+
+```java
+try (Run run = Journal.run("chat-session").start()) {
+
+    // Full detail
+    run.logEvent(LLMCallEvent.builder()
+            .model("claude-opus-4-5")
+            .tokenUsage(TokenUsage.of(
+                    1200,   // input
+                    450,    // output
+                    300,    // thinking
+                    800,    // cache read
+                    200     // cache write
+            ))
+            .cost(CostBreakdown.of(0.018, 0.00675))
+            .timing(TimingInfo.of(2500))
+            .build());
+
+    // Aggregate metric shorthand
+    run.logMetric("cost.usd", 0.02475);
+}
+```
+
+## Logging tool calls
+
+```java
+try (Run run = Journal.run("agent-task").start()) {
+
+    run.logEvent(ToolCallEvent.success(
+            "Bash",
+            Map.of("command", "mvn test"),
+            Map.of("exitCode", 0, "testsRun", 42),
+            8200
+    ));
+
+    run.logEvent(ToolCallEvent.failure(
+            "Read",
+            Map.of("path", "/missing/file.java"),
+            "File not found",
+            12
+    ));
+}
+```
+
+## State transitions
+
+Track the agent's progress through phases:
+
+```java
+try (Run run = Journal.run("build-feature").start()) {
+
+    run.logEvent(StateChangeEvent.of("init", "explore",   "Starting exploration"));
+    // ... read files, understand codebase ...
+
+    run.logEvent(StateChangeEvent.of("explore", "plan",   "Context gathered"));
+    // ... plan the change ...
+
+    run.logEvent(StateChangeEvent.of("plan", "implement", "Starting implementation"));
+    // ... write code ...
+
+    run.logEvent(StateChangeEvent.of("implement", "verify", "Code written"));
+    // ... run tests ...
+
+    run.logEvent(StateChangeEvent.of("verify", "complete", "Tests pass"));
+}
+```
+
+## Failure handling
+
+```java
+// Pattern 1: explicit fail()
+try (Run run = Journal.run("risky-op").start()) {
+    try {
+        riskyOperation();
+    } catch (Exception e) {
+        run.fail(e); // marks FAILED, records message in summary
+    }
+}
+
+// Pattern 2: let the exception propagate
+// (Run auto-closes as FAILED if an exception is active)
+try (Run run = Journal.run("risky-op").start()) {
+    riskyOperation(); // if this throws, run closes as FAILED
+}
+```
+
+## Retry chains
+
+```java
+String priorId = null;
+
+for (int attempt = 1; attempt <= 3; attempt++) {
+    RunBuilder builder = Journal.run("implement-feature")
+            .name("attempt-" + attempt)
+            .config("attempt", attempt);
+
+    if (priorId != null) {
+        builder = builder.previousRun(priorId);
+    }
+
+    try (Run run = builder.start()) {
+        try {
+            doWork();
+            break; // success — exit the loop
+        } catch (Exception e) {
+            priorId = run.id();
+            run.fail(e);
+        }
+    }
+}
+```
+
+## Artifacts
+
+Store generated files, reports, or any binary output alongside the run:
+
+```java
+try (Run run = Journal.run("code-gen").start()) {
+
+    // Generated code
+    String generatedCode = generateCode();
+    run.logArtifact("Output.java", generatedCode);
+
+    // Markdown summary
+    run.logArtifact("plan.md", "# Implementation Plan\n\n...");
+
+    // JSON results
+    run.logArtifact("test-results.json", objectMapper.writeValueAsString(results));
+}
+```
+
+## Querying runs after the fact
+
+```java
+JournalStorage storage = new JsonFileStorage(Path.of(".agent-journal"));
+
+// All runs for an experiment
+List<RunData> runs = storage.listRuns("implement-oauth");
+
+// Filter to successful runs
+List<RunData> successes = runs.stream()
+        .filter(r -> r.status() == RunStatus.FINISHED)
+        .filter(r -> Boolean.TRUE.equals(r.summary().get("success")))
+        .toList();
+
+// Average cost across runs
+OptionalDouble avgCost = runs.stream()
+        .map(r -> r.summary().get("totalCostUsd", Double.class))
+        .filter(Objects::nonNull)
+        .mapToDouble(Double::doubleValue)
+        .average();
+```

@@ -1,0 +1,147 @@
+---
+title: "Claude Code Capture"
+description: "Bridge Claude Code SDK sessions into journal-core events automatically."
+---
+
+## What it does
+
+The `claude-code-capture` module wires Claude Code SDK responses into journal-core without manual event construction. Every tool call, LLM interaction, token count, and cost figure is extracted from the SDK's response stream and recorded as typed events on a `Run`.
+
+```xml
+<dependency>
+    <groupId>io.github.markpollack</groupId>
+    <artifactId>claude-code-capture</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+</dependency>
+```
+
+## The capture pipeline
+
+```
+Claude SDK response iterator
+       │
+  SessionLogParser.parse()      ← extracts token counts, tool uses, thinking blocks
+       │
+  PhaseCapture (record)         ← immutable snapshot of one SDK interaction phase
+       │
+  BaseRunRecorder.recordPhase() ← maps to LLMCallEvent, ToolCallEvent, StateChangeEvent
+       │
+  journal-core Run              ← typed events on your run
+```
+
+## PhaseCapture
+
+`PhaseCapture` is an immutable record that holds everything extracted from one SDK interaction:
+
+| Field | Description |
+|-------|-------------|
+| `phaseName` | Phase identifier ("explore", "plan", "implement", "verify") |
+| `promptText` | The prompt sent to the LLM (for reproducibility) |
+| `inputTokens` | Input tokens consumed |
+| `outputTokens` | Output tokens produced |
+| `thinkingTokens` | Extended thinking tokens |
+| `cacheCreationInputTokens` | Tokens written to prompt cache |
+| `cacheReadInputTokens` | Tokens read from prompt cache |
+| `durationMs` | Wall-clock duration (ms) |
+| `apiDurationMs` | API-only duration (ms) |
+| `totalCostUsd` | Total cost in USD |
+| `sessionId` | Claude session ID |
+| `toolUses` | List of `ToolUseRecord` (name + input) |
+| `thinkingBlocks` | Extended thinking content |
+| `toolResults` | Tool result records from user messages |
+
+## SessionLogParser
+
+`SessionLogParser` walks a Claude Code SDK message iterator and produces a `PhaseCapture`. It is stateful — one instance per SDK call.
+
+```java
+import io.github.markpollack.journal.claude.SessionLogParser;
+import io.github.markpollack.journal.claude.PhaseCapture;
+
+// After calling the Claude Code SDK
+SessionLogParser parser = new SessionLogParser();
+PhaseCapture phase = parser.parse(sdkMessageIterator, "implement");
+
+// Inspect what was captured
+System.out.println("Cost: $" + phase.totalCostUsd());
+System.out.println("Tool calls: " + phase.toolUses().size());
+System.out.println("Total tokens: " + phase.totalTokens());
+```
+
+## BaseRunRecorder
+
+Extend `BaseRunRecorder` to add domain-specific recording logic on top of the standard phase recording:
+
+```java
+public class MyAgentRecorder extends BaseRunRecorder {
+
+    public void start(String experimentId, String taskId, String model) {
+        currentRun = Journal.run(experimentId)
+                .task(taskId)
+                .config("model", model)
+                .start();
+    }
+
+    public void recordPhaseWithDomain(PhaseCapture phase, String customMetric) {
+        // Standard phase recording: StateChange, LLMCall, ToolCalls, Thinking
+        recordPhase(phase);
+
+        // Domain-specific additions
+        currentRun.logEvent(CustomEvent.of("domain_metric",
+                Map.of("phase", phase.phaseName(), "value", customMetric)));
+    }
+
+    public void finish(boolean success) {
+        currentRun.setSummary("success", success);
+        currentRun.close();
+    }
+}
+```
+
+`recordPhase()` records four event types automatically:
+
+1. **`StateChangeEvent`** — `previousPhase → phase.phaseName()`
+2. **`LLMCallEvent`** — token counts, cost, timing, session metadata
+3. **`ToolCallEvent`** — one event per tool use in the phase
+4. **`CustomEvent("thinking_block")`** — one event per extended thinking block
+
+## What a recorded phase looks like in the event log
+
+After `recordPhase()` for a phase named `"implement"` with 3 tool calls:
+
+```json
+{"type":"state_change","from":"explore","to":"implement","reason":"phase transition"}
+{"type":"llm_call","model":"claude-opus-4-5","tokenUsage":{"inputTokens":4200,"outputTokens":820,"thinkingTokens":600},"totalMs":8400,"metadata":{"phaseName":"implement","numTurns":1}}
+{"type":"tool_call","toolName":"Read","input":{"path":"src/Service.java"},"durationMs":0,"success":true}
+{"type":"tool_call","toolName":"Edit","input":{"path":"src/Service.java"},"durationMs":0,"success":true}
+{"type":"tool_call","toolName":"Bash","input":{"command":"mvn test"},"durationMs":0,"success":true}
+```
+
+## Complete example
+
+```java
+MyAgentRecorder recorder = new MyAgentRecorder();
+recorder.start("implement-oauth", "issue-456", "claude-opus-4-5");
+
+try {
+    // Phase 1: Explore
+    var exploreResult = sdk.run(explorePrompt);
+    PhaseCapture explorePhase = new SessionLogParser().parse(exploreResult, "explore");
+    recorder.recordPhase(explorePhase);
+
+    // Phase 2: Implement
+    var implResult = sdk.run(implementPrompt);
+    PhaseCapture implPhase = new SessionLogParser().parse(implResult, "implement");
+    recorder.recordPhase(implPhase);
+
+    recorder.finish(true);
+
+} catch (Exception e) {
+    recorder.failRun(e);
+    throw e;
+}
+```
+
+## Spring AI integration
+
+If you are using the Spring AI Community's `ClaudeAgentModel`, `SessionLogParser` is embedded — capture happens automatically. See the [Spring AI Integration guide](/guides/spring-ai-integration) for details.

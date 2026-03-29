@@ -1,0 +1,88 @@
+---
+title: "Introduction"
+description: "Behavioral trace capture for agent research — a typed, append-only event log for Java agent workflows."
+---
+
+## What is agent-journal?
+
+Agent-journal captures the behavioral trace of a Claude Code SDK session — tool calls, LLM calls, token costs, phase boundaries — as a structured, append-only event log for offline analysis.
+
+It is to agent research what a flight data recorder is to aviation safety: the raw record of what happened, in what order, at the right granularity.
+
+```xml
+<dependency>
+    <groupId>io.github.markpollack</groupId>
+    <artifactId>journal-core</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+</dependency>
+```
+
+## The core abstraction: Experiment / Run
+
+Agent execution is not a trace (spans with parent-child timing). It is a **run** — a bounded execution with:
+
+| Part | Description |
+|------|-------------|
+| **Config** | Immutable inputs set at run start (model, task, agent name) |
+| **Events** | Append-only log of what happened (tool calls, LLM calls, state changes) |
+| **Metrics** | Named measurements accumulated during the run |
+| **Summary** | Mutable outputs recorded at the end |
+
+Runs belong to **Experiments**. An experiment answers a question ("does this prompt reduce JAR_INSPECT calls?"). Runs are the repeated trials.
+
+## What gets captured
+
+Every run produces a typed event log:
+
+- `LLMCallEvent` — model, token counts (input/output/thinking/cache), cost breakdown, latency
+- `ToolCallEvent` — tool name, input parameters, duration, success/failure
+- `StateChangeEvent` — named state transitions as the agent progresses
+- `GitCommitEvent`, `GitPatchEvent`, `GitBranchEvent`, `GitPullRequestEvent` — code changes
+- `MetricEvent`, `CustomEvent` — measurements and domain-specific events
+
+This log persists as JSONL — one event per line, append-only — enabling downstream analysis with DuckDB, Parquet pipelines, or Markov chain analysis of tool-call sequences.
+
+## Where it fits
+
+Agent-journal implements the first two stages of the AgentOps pipeline described in academic literature:
+
+<CardGroup cols={2}>
+  <Card title="Stage 1: Observe" icon="eye">
+    Capture tool calls, LLM calls, token costs, and phase boundaries from every agent session.
+  </Card>
+  <Card title="Stage 2: Collect Metrics" icon="chart-bar">
+    Structured event logs that feed downstream analysis — Markov chains, DuckDB queries, cost attribution.
+  </Card>
+</CardGroup>
+
+Stages 3–6 (detect anomalies, root cause, recommend changes, automate improvements) are downstream consumers of the data agent-journal produces.
+
+## What it is NOT
+
+- **Not an observability tool.** OpenTelemetry is designed for distributed production monitoring — spans, collectors, dashboards, alerting. Agent-journal is for deep per-session research analytics.
+- **Not a platform.** No server, no daemon, no database. A JAR you add to your project.
+- **Not real-time.** Events are written for offline analysis, not live dashboards.
+
+## Modules
+
+| Module | Purpose |
+|--------|---------|
+| `journal-core` | Core domain: Experiment, Run, Events, Metrics, Call tracking, Storage |
+| `claude-code-capture` | Bridges Claude Code SDK responses into journal-core events |
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Track your first run in under 5 minutes.
+  </Card>
+  <Card title="Experiments & Runs" icon="flask" href="/concepts/experiments-and-runs">
+    Understand the core mental model.
+  </Card>
+  <Card title="Claude Code Capture" icon="code" href="/guides/claude-code-capture">
+    Bridge Claude Code SDK sessions into journal-core.
+  </Card>
+  <Card title="Research Landscape" icon="book" href="/research/landscape">
+    How agent-journal relates to concurrent academic work.
+  </Card>
+</CardGroup>

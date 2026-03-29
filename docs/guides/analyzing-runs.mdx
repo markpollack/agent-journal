@@ -1,0 +1,136 @@
+---
+title: "Analyzing Runs"
+description: "Query event logs with DuckDB, build Markov chains, and detect failure clusters."
+---
+
+## The data model for analysis
+
+Every run produces an `events.jsonl` file — one JSON event per line. A typical session of 400 tool calls and 4 LLM interactions generates roughly 410 lines. Multiple runs for the same experiment accumulate in separate files under the same directory tree.
+
+```
+.agent-journal/experiments/implement-oauth/runs/
+├── 550e8400-e29b-41d4-a716-446655440000/events.jsonl   ← run 1
+├── 661f9511-f30c-52e5-b827-557766551111/events.jsonl   ← run 2
+└── 772ga622-g41d-63f6-c938-668877662222/events.jsonl   ← run 3
+```
+
+Each line looks like:
+```json
+{"type":"tool_call","timestamp":"2026-03-17T14:23:01.450Z","toolName":"Bash","input":{"command":"mvn test"},"durationMs":8200,"success":true}
+{"type":"llm_call","timestamp":"2026-03-17T14:35:04.200Z","model":"claude-opus-4-5","tokenUsage":{"inputTokens":4200,"outputTokens":820},"totalMs":8400,"metadata":{"phaseName":"implement"}}
+```
+
+## DuckDB queries
+
+[DuckDB](https://duckdb.org/) reads JSONL natively. Install it once; no schema setup required.
+
+### Tool call frequency
+
+```sql
+SELECT
+    json_extract_string(line, '$.toolName') AS tool,
+    COUNT(*)                                 AS calls,
+    ROUND(AVG(CAST(json_extract(line, '$.durationMs') AS DOUBLE)), 0) AS avg_ms,
+    SUM(CASE WHEN json_extract_string(line, '$.success') = 'false' THEN 1 ELSE 0 END) AS failures
+FROM read_ndjson_auto('.agent-journal/experiments/*/runs/*/events.jsonl')
+WHERE json_extract_string(line, '$.type') = 'tool_call'
+GROUP BY tool
+ORDER BY calls DESC;
+```
+
+### Cost breakdown across runs
+
+```sql
+SELECT
+    filename,
+    SUM(CAST(json_extract(line, '$.cost.totalUsd') AS DOUBLE)) AS total_cost_usd,
+    SUM(CAST(json_extract(line, '$.tokenUsage.inputTokens') AS INTEGER)) AS input_tokens,
+    SUM(CAST(json_extract(line, '$.tokenUsage.outputTokens') AS INTEGER)) AS output_tokens
+FROM read_ndjson_auto('.agent-journal/experiments/*/runs/*/events.jsonl')
+WHERE json_extract_string(line, '$.type') = 'llm_call'
+GROUP BY filename;
+```
+
+### Tool call sequence (for Markov analysis)
+
+```sql
+-- Extract ordered tool-call sequences per run
+SELECT
+    regexp_extract(filename, 'runs/([^/]+)/events', 1) AS run_id,
+    ROW_NUMBER() OVER (PARTITION BY filename ORDER BY json_extract_string(line, '$.timestamp')) AS seq,
+    json_extract_string(line, '$.toolName') AS tool
+FROM read_ndjson_auto('.agent-journal/experiments/*/runs/*/events.jsonl')
+WHERE json_extract_string(line, '$.type') = 'tool_call'
+ORDER BY run_id, seq;
+```
+
+## Markov chain analysis
+
+The tool-call sequence is the primary input for Markov chain modeling of agent behavior. Given "the agent just called tool X, what does it call next?" you can compute transition probabilities and identify:
+
+- **High-frequency loops**: `EXPLORE → JAR_INSPECT → EXPLORE` repeating indicates the agent can't resolve a dependency
+- **Failure precursors**: transitions that consistently precede `FAILED` runs
+- **Phase signatures**: clusters of tool calls that characterize "planning" vs "implementing" behavior
+
+A first-pass transition matrix from DuckDB:
+
+```sql
+WITH tool_sequence AS (
+    SELECT
+        regexp_extract(filename, 'runs/([^/]+)/events', 1) AS run_id,
+        json_extract_string(line, '$.toolName')             AS tool,
+        ROW_NUMBER() OVER (
+            PARTITION BY filename
+            ORDER BY json_extract_string(line, '$.timestamp')
+        ) AS seq
+    FROM read_ndjson_auto('.agent-journal/experiments/*/runs/*/events.jsonl')
+    WHERE json_extract_string(line, '$.type') = 'tool_call'
+)
+SELECT
+    a.tool  AS from_tool,
+    b.tool  AS to_tool,
+    COUNT(*) AS transitions
+FROM tool_sequence a
+JOIN tool_sequence b ON a.run_id = b.run_id AND b.seq = a.seq + 1
+GROUP BY a.tool, b.tool
+ORDER BY transitions DESC;
+```
+
+## What to look for
+
+### Thrash score
+
+The fraction of tool calls that are re-reading or re-exploring already-visited content — a signal of agent confusion.
+
+```sql
+SELECT
+    COUNT(CASE WHEN json_extract_string(line, '$.toolName') IN ('Read', 'Glob', 'Grep') THEN 1 END)
+        * 1.0 / COUNT(*) AS explore_fraction
+FROM read_ndjson_auto('.agent-journal/experiments/*/runs/*/events.jsonl')
+WHERE json_extract_string(line, '$.type') = 'tool_call';
+```
+
+High explore fraction (> 40%) in the middle of a run suggests the agent is searching for context it doesn't have — a candidate for knowledge base addition.
+
+### JAR inspection pattern
+
+If the agent repeatedly calls a JAR inspection tool (decompiling dependencies), it lacks source-level knowledge of that library. This is a specific, actionable failure cluster:
+
+```sql
+SELECT COUNT(*) AS jar_inspect_calls
+FROM read_ndjson_auto('.agent-journal/experiments/*/runs/*/events.jsonl')
+WHERE json_extract_string(line, '$.type') = 'tool_call'
+  AND json_extract_string(line, '$.toolName') = 'JAR_INSPECT';
+```
+
+A threshold above 5% of total tool calls is a strong signal to add the relevant library to the knowledge base.
+
+### Fix self-loops
+
+`EDIT → BASH(test) → EDIT → BASH(test)` cycles indicate the agent is trying multiple fixes without understanding the root cause.
+
+## Connecting to the AgentOps pipeline
+
+Agent-journal implements Stage 1 (Observe) and Stage 2 (Collect metrics). The queries above are Stage 3 (Detect issues). Stages 4–6 (root cause, recommendations, automation) are where tools like TraceSIR operate, consuming the structured event log agent-journal produces.
+
+See the [Research Landscape](/research/landscape) for the academic context behind this pipeline framing.

@@ -1,0 +1,105 @@
+---
+title: "Spring AI Integration"
+description: "Zero-configuration capture for ClaudeAgentModel users."
+---
+
+## How it works
+
+The Spring AI Community's `ClaudeAgentModel` (in `agent-client`) embeds `SessionLogParser` internally. When you call `ClaudeAgentModel.call()`, the parser runs automatically and the resulting `PhaseCapture` is surfaced in `AgentResponseMetadata` — no extra instrumentation needed.
+
+This means **any `ClaudeAgentModel` consumer gets behavioral trace capture for free**.
+
+```
+ClaudeAgentModel.call(prompt)
+       │
+  messageListener (internal)
+       │
+  SessionLogParser.parse()
+       │
+  PhaseCapture → AgentResponseMetadata
+       │
+  journal-core Run (if recorder is configured)
+```
+
+## Accessing the PhaseCapture
+
+```java
+import org.springframework.ai.chat.model.ChatResponse;
+import io.github.markpollack.journal.claude.PhaseCapture;
+
+ChatResponse response = claudeAgentModel.call(new Prompt(userMessage));
+
+// PhaseCapture is in the response metadata
+AgentResponseMetadata metadata = (AgentResponseMetadata) response.getMetadata();
+PhaseCapture phase = metadata.getPhaseCapture();
+
+System.out.println("Tool calls: " + phase.toolUses().size());
+System.out.println("Cost: $" + phase.totalCostUsd());
+System.out.println("Total tokens: " + phase.totalTokens());
+```
+
+## Recording to journal-core
+
+To persist the captured data to a `Run`, add a recorder:
+
+```java
+@Component
+public class AgentService {
+
+    private final ClaudeAgentModel claudeAgentModel;
+    private final MyAgentRecorder recorder;
+
+    public AgentService(ClaudeAgentModel claudeAgentModel, MyAgentRecorder recorder) {
+        this.claudeAgentModel = claudeAgentModel;
+        this.recorder = recorder;
+    }
+
+    public AgentResult runAgent(String experimentId, String task) {
+        recorder.start(experimentId, task, "claude-opus-4-5");
+
+        try {
+            ChatResponse response = claudeAgentModel.call(new Prompt(buildPrompt(task)));
+            AgentResponseMetadata meta = (AgentResponseMetadata) response.getMetadata();
+
+            recorder.recordPhase(meta.getPhaseCapture());
+            recorder.finish(true);
+
+            return AgentResult.success(response.getResult().getOutput().getContent());
+
+        } catch (Exception e) {
+            recorder.failRun(e);
+            throw e;
+        }
+    }
+}
+```
+
+## Integration test verification
+
+The integration test `ClaudeAgentJournalCaptureIT` in `agent-client` verifies the full pipeline:
+
+```java
+// What the integration test asserts:
+PhaseCapture phase = responseMetadata.getPhaseCapture();
+
+assertThat(phase.inputTokens()).isGreaterThan(0);
+assertThat(phase.outputTokens()).isGreaterThan(0);
+assertThat(phase.totalCostUsd()).isGreaterThan(0.0);
+assertThat(phase.toolUses()).isNotEmpty();
+
+// And on the journal-core Run:
+List<JournalEvent> events = run.events();
+assertThat(events).anyMatch(e -> e instanceof LLMCallEvent);
+assertThat(events).anyMatch(e -> e instanceof ToolCallEvent);
+assertThat(events).extracting(e -> ((ToolCallEvent) e).toolName())
+        .contains("Bash", "Read");
+```
+
+## Scope
+
+This integration means agent-journal is not limited to direct Claude Code SDK users. It is embedded in the standard Java agent abstraction layer for Spring AI, giving it a wider audience than either library alone.
+
+| User type | How they get capture |
+|-----------|---------------------|
+| Direct Claude Code SDK | `SessionLogParser` + `BaseRunRecorder` manually |
+| Spring AI `ClaudeAgentModel` | Automatic via `AgentResponseMetadata.getPhaseCapture()` |

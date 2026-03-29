@@ -1,0 +1,213 @@
+---
+title: "Event Types Reference"
+description: "Complete reference for all JournalEvent subtypes."
+---
+
+All events implement `JournalEvent` (sealed interface) and carry a `timestamp` (Instant) and `type` discriminator string used for JSON deserialization.
+
+---
+
+## LLMCallEvent
+
+Records one interaction with an LLM.
+
+**Type discriminator**: `llm_call`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `model` | String | Model identifier, e.g. `claude-opus-4-5` |
+| `tokenUsage` | TokenUsage | Input, output, thinking, cache read, cache write token counts |
+| `cost` | CostBreakdown | Input and output cost in USD |
+| `timing` | TimingInfo | Total wall-clock ms and API-only ms |
+| `metadata` | Map | Arbitrary metadata (phase name, session ID, turn count) |
+
+```java
+LLMCallEvent event = LLMCallEvent.builder()
+        .model("claude-opus-4-5")
+        .tokenUsage(TokenUsage.of(1200, 450, 300, 800, 200))
+        .cost(CostBreakdown.of(0.018, 0.00675))
+        .timing(TimingInfo.of(2500, 2100))
+        .metadata(Map.of("phaseName", "implement", "numTurns", 1))
+        .build();
+```
+
+```java
+// TokenUsage.of(inputTokens, outputTokens)
+// TokenUsage.of(inputTokens, outputTokens, thinkingTokens)
+// TokenUsage.of(inputTokens, outputTokens, thinkingTokens, cacheReadTokens, cacheWriteTokens)
+```
+
+---
+
+## ToolCallEvent
+
+Records one tool invocation.
+
+**Type discriminator**: `tool_call`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `toolName` | String | Tool identifier, e.g. `Bash`, `Read`, `Edit` |
+| `input` | Map | Tool input parameters |
+| `output` | Map | Tool result (optional) |
+| `errorMessage` | String | Error description if `success=false` |
+| `durationMs` | long | Duration in milliseconds |
+| `success` | boolean | Whether the tool call succeeded |
+
+```java
+// Success with input and output
+ToolCallEvent.success("Bash",
+        Map.of("command", "mvn test"),
+        Map.of("exitCode", 0),
+        8200);
+
+// Success without output
+ToolCallEvent.success("Read", "src/Main.java", 20);
+
+// Failure
+ToolCallEvent.failure("Read",
+        Map.of("path", "/missing/file.java"),
+        "File not found",
+        12);
+```
+
+---
+
+## StateChangeEvent
+
+Records a named state transition.
+
+**Type discriminator**: `state_change`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `from` | String | Previous state name |
+| `to` | String | New state name |
+| `reason` | String | Human-readable reason for the transition |
+
+```java
+StateChangeEvent.of("exploring", "implementing", "Codebase understood");
+```
+
+---
+
+## MetricEvent
+
+Point-in-time metric snapshot. Use when you want a metric in the event timeline rather than just in the MetricRegistry.
+
+**Type discriminator**: `metric`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | String | Metric name |
+| `value` | double | Metric value |
+| `tags` | Tags | Dimensional tags |
+
+```java
+MetricEvent.of("thrash.score", 0.34, Tags.of("phase", "implement"));
+
+// Shorthand on Run:
+run.logMetric("cost.usd", 0.087);
+```
+
+---
+
+## CustomEvent
+
+Arbitrary key-value pairs for domain-specific events.
+
+**Type discriminator**: `custom`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | String | Event category name |
+| `data` | Map | Key-value payload |
+
+```java
+CustomEvent.of("kb.lookup", Map.of(
+        "query",     "Spring Boot test annotations",
+        "hits",      3,
+        "topResult", "Using @DataJpaTest"
+));
+
+CustomEvent.of("thinking_block", Map.of(
+        "phase",   "plan",
+        "content", "I need to understand the existing test structure before modifying..."
+));
+```
+
+---
+
+## GitPatchEvent
+
+Records file-level code changes.
+
+**Type discriminator**: `git_patch`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `baseBranch` | String | Base branch name |
+| `fileChanges` | List | Per-file change records |
+
+```java
+GitPatchEvent.of("main", List.of(
+        GitPatchEvent.FileChange.modified("src/Service.java", 12, 3),
+        GitPatchEvent.FileChange.added("src/ServiceTest.java", 45, 0),
+        GitPatchEvent.FileChange.deleted("src/OldService.java", 0, 80)
+));
+```
+
+---
+
+## GitCommitEvent
+
+Records a git commit.
+
+**Type discriminator**: `git_commit`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `sha` | String | Commit SHA |
+| `message` | String | Commit message |
+| `branch` | String | Branch name |
+
+```java
+GitCommitEvent.of("abc123def456", "Add vaccination feature", "feature/vaccination");
+```
+
+---
+
+## GitBranchEvent
+
+Records a branch operation.
+
+**Type discriminator**: `git_branch`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `branchName` | String | Branch being operated on |
+| `baseBranch` | String | Base branch |
+| `operation` | String | "created", "deleted", "merged" |
+
+```java
+GitBranchEvent.of("feature/vaccination", "main", "created");
+```
+
+---
+
+## GitPullRequestEvent
+
+Records a pull request operation.
+
+**Type discriminator**: `git_pull_request`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `number` | int | PR number |
+| `title` | String | PR title |
+| `state` | String | "open", "closed", "merged" |
+| `baseBranch` | String | Target branch |
+
+```java
+GitPullRequestEvent.of(42, "Add vaccination feature", "open", "main");
+```
