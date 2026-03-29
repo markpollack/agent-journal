@@ -10,6 +10,8 @@ on:
 
 jobs:
   release:
+    permissions:
+      contents: write
     uses: markpollack/build-tools/.github/workflows/maven-central-release.yml@main
     with:
       version: ${{ inputs.version }}
