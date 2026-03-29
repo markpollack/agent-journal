@@ -8,7 +8,7 @@ Execution ledger for agent workflows — structured Experiment/Run tracking, not
 <dependency>
     <groupId>io.github.markpollack</groupId>
     <artifactId>journal-core</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.9.0</version>
 </dependency>
 ```
 
