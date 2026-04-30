@@ -4,6 +4,7 @@ import io.github.markpollack.journal.Experiment;
 import io.github.markpollack.journal.event.JournalEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.BufferedWriter;
@@ -295,6 +296,15 @@ public class JsonFileStorage implements JournalStorage {
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to list artifacts for run: " + runId, e);
         }
+    }
+
+    /**
+     * Registers a domain-specific event subtype for Jackson polymorphic deserialization.
+     * Must be called before reading any JSONL files that contain this event type.
+     */
+    @Override
+    public void registerEventSubtype(String typeName, Class<? extends JournalEvent> cls) {
+        eventMapper.registerSubtypes(new NamedType(cls, typeName));
     }
 
     /**

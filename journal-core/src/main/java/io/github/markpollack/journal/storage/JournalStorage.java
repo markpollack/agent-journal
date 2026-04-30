@@ -107,6 +107,26 @@ public interface JournalStorage {
         return loadRun(experimentId, runId).isPresent();
     }
 
+    // ========== Event Type Registration ==========
+
+    /**
+     * Registers a domain-specific event subtype for Jackson polymorphic deserialization.
+     *
+     * <p>Call this at startup for any {@link JournalEvent} implementation defined outside
+     * of journal-core (e.g., {@code WorkflowStepEvent} from workflow-journal):
+     * <pre>{@code
+     * Journal.registerEventType("workflow_step", WorkflowStepEvent.class);
+     * }</pre>
+     *
+     * <p>The default implementation is a no-op (e.g., in-memory storage needs no registration).
+     *
+     * @param typeName the {@code @type} discriminator value written to JSON
+     * @param cls      the concrete class to deserialize to
+     */
+    default void registerEventSubtype(String typeName, Class<? extends JournalEvent> cls) {
+        // no-op for storage backends that don't use Jackson
+    }
+
     // ========== Event Operations ==========
 
     /**

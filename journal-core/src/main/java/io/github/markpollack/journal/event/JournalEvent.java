@@ -7,10 +7,9 @@ import java.time.Instant;
 import java.util.Map;
 
 /**
- * Base interface for all tracking events.
- * Uses sealed interface for exhaustive pattern matching.
+ * Base interface for all journal events.
  *
- * <p>Event types:
+ * <p>Core event types registered via {@code @JsonSubTypes}:
  * <ul>
  *   <li>{@link LLMCallEvent} - LLM API call with token/cost/timing metrics</li>
  *   <li>{@link ToolCallEvent} - Tool execution record</li>
@@ -19,6 +18,9 @@ import java.util.Map;
  *   <li>{@link CustomEvent} - User-defined events</li>
  *   <li>{@link GitEvent} - Git operations (patch, commit, branch, PR)</li>
  * </ul>
+ *
+ * <p>Domain-specific event types (e.g., {@code WorkflowStepEvent} from workflow-journal)
+ * can be registered at startup via {@link io.github.markpollack.journal.Journal#registerEventType}.
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "@type")
 @JsonSubTypes({
@@ -32,13 +34,7 @@ import java.util.Map;
         @JsonSubTypes.Type(value = GitBranchEvent.class, name = "git_branch"),
         @JsonSubTypes.Type(value = GitPullRequestEvent.class, name = "git_pr")
 })
-public sealed interface JournalEvent permits
-        LLMCallEvent,
-        ToolCallEvent,
-        StateChangeEvent,
-        MetricEvent,
-        CustomEvent,
-        GitEvent {
+public interface JournalEvent {
 
     /** Returns the event timestamp. */
     Instant timestamp();

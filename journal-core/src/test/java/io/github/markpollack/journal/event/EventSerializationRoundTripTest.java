@@ -358,4 +358,28 @@ class EventSerializationRoundTripTest extends BaseTrackingTest {
             assertThat(deserialized.action()).isEqualTo(original.action());
         }
     }
+
+    @Nested
+    @DisplayName("External subtype registration")
+    class ExternalSubtypeRegistrationTests {
+
+        record DomainEvent(Instant timestamp, String label) implements JournalEvent {
+            @Override public String type() { return "domain_event"; }
+            @Override public Map<String, Object> toMap() { return Map.of("label", label); }
+        }
+
+        @Test
+        @DisplayName("registered external subtype round-trips via JournalEvent")
+        void registeredSubtypeRoundTrips() throws Exception {
+            objectMapper.registerSubtypes(new com.fasterxml.jackson.databind.jsontype.NamedType(DomainEvent.class, "domain_event"));
+
+            DomainEvent original = new DomainEvent(Instant.parse("2026-04-29T10:00:00Z"), "test-label");
+
+            String json = objectMapper.writeValueAsString(original);
+            JournalEvent deserialized = objectMapper.readValue(json, JournalEvent.class);
+
+            assertThat(deserialized).isInstanceOf(DomainEvent.class);
+            assertThat(((DomainEvent) deserialized).label()).isEqualTo("test-label");
+        }
+    }
 }

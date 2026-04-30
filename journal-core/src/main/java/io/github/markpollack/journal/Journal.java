@@ -1,5 +1,6 @@
 package io.github.markpollack.journal;
 
+import io.github.markpollack.journal.event.JournalEvent;
 import io.github.markpollack.journal.storage.JournalStorage;
 
 /**
@@ -133,6 +134,23 @@ public final class Journal {
      */
     public static JournalStorage storage() {
         return JournalContext.getStorage();
+    }
+
+    /**
+     * Registers a domain-specific event type for JSON deserialization.
+     *
+     * <p>Call this at startup for any {@link JournalEvent} implementation defined outside
+     * journal-core before reading events from file storage:
+     * <pre>{@code
+     * Journal.configure(new JsonFileStorage(path));
+     * Journal.registerEventType("workflow_step", WorkflowStepEvent.class);
+     * }</pre>
+     *
+     * @param typeName the {@code @type} discriminator value written to JSON
+     * @param cls      the concrete class to deserialize to
+     */
+    public static void registerEventType(String typeName, Class<? extends JournalEvent> cls) {
+        JournalContext.getStorage().registerEventSubtype(typeName, cls);
     }
 
     /**
