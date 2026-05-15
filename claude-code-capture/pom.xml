@@ -27,7 +27,7 @@
 
         <!-- Claude Code SDK (for ParsedMessage, SDK types) -->
         <dependency>
-            <groupId>org.springaicommunity</groupId>
+            <groupId>io.github.markpollack</groupId>
             <artifactId>claude-code-sdk</artifactId>
             <version>${claude-code-sdk.version}</version>
         </dependency>

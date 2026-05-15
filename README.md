@@ -35,6 +35,13 @@ try (Run run = Journal.run("implement-feature")
 }
 ```
 
+## Modules
+
+| Module | Description |
+|--------|-------------|
+| `journal-core` | Experiment/Run tracking API, events, cost/token aggregation |
+| `claude-code-capture` | Captures Claude Code execution traces into journal runs. Depends on `io.github.markpollack:claude-code-sdk` |
+
 ## Build
 
 ```bash

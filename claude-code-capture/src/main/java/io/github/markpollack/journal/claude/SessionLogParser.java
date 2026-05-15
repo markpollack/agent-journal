@@ -1,14 +1,14 @@
 package io.github.markpollack.journal.claude;
 
-import org.springaicommunity.claude.agent.sdk.parsing.ParsedMessage;
-import org.springaicommunity.claude.agent.sdk.types.AssistantMessage;
-import org.springaicommunity.claude.agent.sdk.types.ContentBlock;
-import org.springaicommunity.claude.agent.sdk.types.ResultMessage;
-import org.springaicommunity.claude.agent.sdk.types.TextBlock;
-import org.springaicommunity.claude.agent.sdk.types.ThinkingBlock;
-import org.springaicommunity.claude.agent.sdk.types.ToolResultBlock;
-import org.springaicommunity.claude.agent.sdk.types.ToolUseBlock;
-import org.springaicommunity.claude.agent.sdk.types.UserMessage;
+import io.github.markpollack.claude.agent.sdk.parsing.ParsedMessage;
+import io.github.markpollack.claude.agent.sdk.types.AssistantMessage;
+import io.github.markpollack.claude.agent.sdk.types.ContentBlock;
+import io.github.markpollack.claude.agent.sdk.types.ResultMessage;
+import io.github.markpollack.claude.agent.sdk.types.TextBlock;
+import io.github.markpollack.claude.agent.sdk.types.ThinkingBlock;
+import io.github.markpollack.claude.agent.sdk.types.ToolResultBlock;
+import io.github.markpollack.claude.agent.sdk.types.ToolUseBlock;
+import io.github.markpollack.claude.agent.sdk.types.UserMessage;
 
 import java.io.IOException;
 import java.nio.file.Path;
