@@ -1,6 +1,7 @@
 package io.github.markpollack.journal.storage;
 
 import io.github.markpollack.journal.Experiment;
+import io.github.markpollack.journal.event.FeedbackEvent;
 import io.github.markpollack.journal.event.JournalEvent;
 
 import java.util.List;
@@ -147,6 +148,31 @@ public interface JournalStorage {
      * @return list of events in chronological order
      */
     List<JournalEvent> loadEvents(String experimentId, String runId);
+
+    // ========== Feedback Operations ==========
+
+    /**
+     * Appends a feedback event to a run's feedback log.
+     * Feedback is stored separately from execution events (feedback.jsonl sidecar).
+     *
+     * @param experimentId the experiment ID
+     * @param runId the run ID
+     * @param feedback the feedback event to append
+     */
+    default void appendFeedback(String experimentId, String runId, FeedbackEvent feedback) {
+        throw new UnsupportedOperationException("Feedback storage not supported by this implementation");
+    }
+
+    /**
+     * Loads all feedback events for a run.
+     *
+     * @param experimentId the experiment ID
+     * @param runId the run ID
+     * @return list of feedback events in chronological order
+     */
+    default List<FeedbackEvent> loadFeedback(String experimentId, String runId) {
+        return List.of();
+    }
 
     // ========== Artifact Operations ==========
 

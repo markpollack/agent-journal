@@ -17,6 +17,7 @@ import java.util.Map;
  *   <li>{@link MetricEvent} - Metric data point</li>
  *   <li>{@link CustomEvent} - User-defined events</li>
  *   <li>{@link GitEvent} - Git operations (patch, commit, branch, PR)</li>
+ *   <li>{@link FeedbackEvent} - Human feedback on agent outputs</li>
  * </ul>
  *
  * <p>Domain-specific event types (e.g., {@code WorkflowStepEvent} from workflow-journal)
@@ -32,7 +33,8 @@ import java.util.Map;
         @JsonSubTypes.Type(value = GitPatchEvent.class, name = "git_patch"),
         @JsonSubTypes.Type(value = GitCommitEvent.class, name = "git_commit"),
         @JsonSubTypes.Type(value = GitBranchEvent.class, name = "git_branch"),
-        @JsonSubTypes.Type(value = GitPullRequestEvent.class, name = "git_pr")
+        @JsonSubTypes.Type(value = GitPullRequestEvent.class, name = "git_pr"),
+        @JsonSubTypes.Type(value = FeedbackEvent.class, name = "feedback")
 })
 public interface JournalEvent {
 

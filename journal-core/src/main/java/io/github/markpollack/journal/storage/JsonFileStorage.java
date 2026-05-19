@@ -1,6 +1,7 @@
 package io.github.markpollack.journal.storage;
 
 import io.github.markpollack.journal.Experiment;
+import io.github.markpollack.journal.event.FeedbackEvent;
 import io.github.markpollack.journal.event.JournalEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -55,6 +56,7 @@ public class JsonFileStorage implements JournalStorage {
     private static final String EXPERIMENT_FILE = "experiment.json";
     private static final String RUN_FILE = "run.json";
     private static final String EVENTS_FILE = "events.jsonl";
+    private static final String FEEDBACK_FILE = "feedback.jsonl";
 
     private final Path baseDir;
     private final ObjectMapper objectMapper;
@@ -117,6 +119,10 @@ public class JsonFileStorage implements JournalStorage {
 
     private Path eventsFile(String experimentId, String runId) {
         return runDir(experimentId, runId).resolve(EVENTS_FILE);
+    }
+
+    private Path feedbackFile(String experimentId, String runId) {
+        return runDir(experimentId, runId).resolve(FEEDBACK_FILE);
     }
 
     private Path artifactsDir(String experimentId, String runId) {
@@ -253,6 +259,45 @@ public class JsonFileStorage implements JournalStorage {
             return events;
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to load events for run: " + runId, e);
+        }
+    }
+
+    // ========== Feedback Operations ==========
+
+    @Override
+    public void appendFeedback(String experimentId, String runId, FeedbackEvent feedback) {
+        try {
+            Path file = feedbackFile(experimentId, runId);
+            Files.createDirectories(file.getParent());
+
+            String json = eventMapper.writeValueAsString(feedback);
+            try (BufferedWriter writer = Files.newBufferedWriter(file,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.APPEND)) {
+                writer.write(json);
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to append feedback for run: " + runId, e);
+        }
+    }
+
+    @Override
+    public List<FeedbackEvent> loadFeedback(String experimentId, String runId) {
+        Path file = feedbackFile(experimentId, runId);
+        if (!Files.exists(file)) {
+            return List.of();
+        }
+        try {
+            List<FeedbackEvent> feedbackEvents = new ArrayList<>();
+            for (String line : Files.readAllLines(file)) {
+                if (!line.isBlank()) {
+                    feedbackEvents.add(eventMapper.readValue(line, FeedbackEvent.class));
+                }
+            }
+            return feedbackEvents;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to load feedback for run: " + runId, e);
         }
     }
 

@@ -1,6 +1,7 @@
 package io.github.markpollack.journal.storage;
 
 import io.github.markpollack.journal.Experiment;
+import io.github.markpollack.journal.event.FeedbackEvent;
 import io.github.markpollack.journal.event.JournalEvent;
 
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ public class InMemoryStorage implements JournalStorage {
     private final Map<String, Experiment> experiments = new ConcurrentHashMap<>();
     private final Map<String, Map<String, RunData>> runs = new ConcurrentHashMap<>();
     private final Map<String, Map<String, List<JournalEvent>>> events = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, List<FeedbackEvent>>> feedback = new ConcurrentHashMap<>();
     private final Map<String, Map<String, Map<String, byte[]>>> artifacts = new ConcurrentHashMap<>();
 
     @Override
@@ -100,6 +102,26 @@ public class InMemoryStorage implements JournalStorage {
     }
 
     @Override
+    public void appendFeedback(String experimentId, String runId, FeedbackEvent event) {
+        feedback.computeIfAbsent(experimentId, k -> new ConcurrentHashMap<>())
+                .computeIfAbsent(runId, k -> new CopyOnWriteArrayList<>())
+                .add(event);
+    }
+
+    @Override
+    public List<FeedbackEvent> loadFeedback(String experimentId, String runId) {
+        Map<String, List<FeedbackEvent>> experimentFeedback = feedback.get(experimentId);
+        if (experimentFeedback == null) {
+            return List.of();
+        }
+        List<FeedbackEvent> runFeedback = experimentFeedback.get(runId);
+        if (runFeedback == null) {
+            return List.of();
+        }
+        return new ArrayList<>(runFeedback);
+    }
+
+    @Override
     public void saveArtifact(String experimentId, String runId, String name, byte[] content) {
         artifacts.computeIfAbsent(experimentId, k -> new ConcurrentHashMap<>())
                 .computeIfAbsent(runId, k -> new ConcurrentHashMap<>())
@@ -141,6 +163,7 @@ public class InMemoryStorage implements JournalStorage {
         experiments.clear();
         runs.clear();
         events.clear();
+        feedback.clear();
         artifacts.clear();
     }
 
