@@ -159,7 +159,7 @@ public class SessionLogParser {
                         String target = toolTarget(toolUseBlock.name(), toolUseBlock.input());
                         logger.info("[{}] Tool use: {} {} (id: {})", phaseName, toolUseBlock.name(), target, toolUseBlock.id());
                         writeTrace(trace, phaseName,
-                                w -> w.writeToolUse(toolUseBlock.name(), toolUseBlock.id()));
+                                w -> w.writeToolUse(toolUseBlock.name(), toolUseBlock.id(), toolUseBlock.input()));
                     }
                 }
             }

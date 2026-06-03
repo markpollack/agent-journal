@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -27,9 +29,11 @@ class TraceWriter implements Closeable {
 		this.writer = Files.newBufferedWriter(traceFile);
 	}
 
-	void writeToolUse(String name, String id) throws IOException {
-		String line = String.format("{\"ts\":\"%s\",\"seq\":%d,\"type\":\"tool_use\",\"name\":\"%s\",\"id\":\"%s\"}",
-				Instant.now().toString(), seq.getAndIncrement(), escapeJson(name), escapeJson(id));
+	void writeToolUse(String name, String id, Map<String, Object> input) throws IOException {
+		String inputJson = toJson(input);
+		String line = String.format(
+				"{\"ts\":\"%s\",\"seq\":%d,\"type\":\"tool_use\",\"name\":\"%s\",\"id\":\"%s\",\"input\":%s}",
+				Instant.now().toString(), seq.getAndIncrement(), escapeJson(name), escapeJson(id), inputJson);
 		writeLine(line);
 	}
 
@@ -77,7 +81,50 @@ class TraceWriter implements Closeable {
 		if (value == null) {
 			return "";
 		}
-		return value.replace("\\", "\\\\").replace("\"", "\\\"");
+		return value.replace("\\", "\\\\")
+				.replace("\"", "\\\"")
+				.replace("\n", "\\n")
+				.replace("\r", "\\r")
+				.replace("\t", "\\t");
+	}
+
+	@SuppressWarnings("unchecked")
+	static String toJson(Object value) {
+		if (value == null) {
+			return "null";
+		}
+		if (value instanceof String s) {
+			return "\"" + escapeJson(s) + "\"";
+		}
+		if (value instanceof Number || value instanceof Boolean) {
+			return value.toString();
+		}
+		if (value instanceof Map<?, ?> map) {
+			StringBuilder sb = new StringBuilder("{");
+			boolean first = true;
+			for (Map.Entry<?, ?> entry : map.entrySet()) {
+				if (!first) {
+					sb.append(",");
+				}
+				sb.append("\"").append(escapeJson(String.valueOf(entry.getKey()))).append("\":");
+				sb.append(toJson(entry.getValue()));
+				first = false;
+			}
+			sb.append("}");
+			return sb.toString();
+		}
+		if (value instanceof List<?> list) {
+			StringBuilder sb = new StringBuilder("[");
+			for (int i = 0; i < list.size(); i++) {
+				if (i > 0) {
+					sb.append(",");
+				}
+				sb.append(toJson(list.get(i)));
+			}
+			sb.append("]");
+			return sb.toString();
+		}
+		return "\"" + escapeJson(value.toString()) + "\"";
 	}
 
 }

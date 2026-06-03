@@ -356,10 +356,83 @@ class SessionLogParserTest {
         List<String> lines = Files.readAllLines(traceFile);
         assertThat(lines).hasSize(5); // thinking, tool_use, text, tool_result, result
         assertThat(lines.get(0)).contains("\"type\":\"thinking\"");
-        assertThat(lines.get(1)).contains("\"type\":\"tool_use\"").contains("\"name\":\"Read\"");
+        assertThat(lines.get(1)).contains("\"type\":\"tool_use\"").contains("\"name\":\"Read\"")
+                .contains("\"input\":{").contains("\"file_path\":\"/pom.xml\"");
         assertThat(lines.get(2)).contains("\"type\":\"text\"");
         assertThat(lines.get(3)).contains("\"type\":\"tool_result\"").contains("\"isError\":false");
         assertThat(lines.get(4)).contains("\"type\":\"result\"").contains("\"inputTokens\":400");
+    }
+
+    @Test
+    void traceFileIncludesToolInputs(@TempDir Path tempDir) throws IOException {
+        ToolUseBlock readTool = ToolUseBlock.builder()
+                .id("tool-1")
+                .name("Read")
+                .input(Map.of("file_path", "/project/pom.xml"))
+                .build();
+        ToolUseBlock bashTool = ToolUseBlock.builder()
+                .id("tool-2")
+                .name("Bash")
+                .input(Map.of("command", "./mvnw test"))
+                .build();
+        ToolUseBlock grepTool = ToolUseBlock.builder()
+                .id("tool-3")
+                .name("Grep")
+                .input(Map.of("pattern", "TODO", "path", "src/main"))
+                .build();
+
+        List<ParsedMessage> messages = List.of(
+                wrap(new AssistantMessage(List.of(readTool, bashTool, grepTool))),
+                wrap(resultMessage(0.03, 3000, 2500, 400, 200))
+        );
+
+        Path traceFile = tempDir.resolve("trace-inputs.jsonl");
+        SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile);
+
+        List<String> lines = Files.readAllLines(traceFile);
+        // 3 tool_use + 1 result = 4 lines
+        assertThat(lines).hasSize(4);
+
+        // Read tool includes file_path
+        assertThat(lines.get(0)).contains("\"name\":\"Read\"")
+                .contains("\"file_path\":\"/project/pom.xml\"");
+
+        // Bash tool includes command
+        assertThat(lines.get(1)).contains("\"name\":\"Bash\"")
+                .contains("\"command\":\"./mvnw test\"");
+
+        // Grep tool includes pattern
+        assertThat(lines.get(2)).contains("\"name\":\"Grep\"")
+                .contains("\"pattern\":\"TODO\"")
+                .contains("\"path\":\"src/main\"");
+    }
+
+    @Test
+    void traceFileEscapesNewlinesInToolInput(@TempDir Path tempDir) throws IOException {
+        String multiLineContent = "# Status Report\n> Period: 2026-06-03\n\nAll good.\r\nDone.\tEnd.";
+        ToolUseBlock writeTool = ToolUseBlock.builder()
+                .id("tool-1")
+                .name("Write")
+                .input(Map.of("file_path", "/project/status.md", "content", multiLineContent))
+                .build();
+
+        List<ParsedMessage> messages = List.of(
+                wrap(new AssistantMessage(List.of(writeTool))),
+                wrap(resultMessage(0.01, 1000, 800, 100, 50))
+        );
+
+        Path traceFile = tempDir.resolve("trace-newlines.jsonl");
+        SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile);
+
+        List<String> lines = Files.readAllLines(traceFile);
+        // 1 tool_use + 1 result = 2 lines (not more — newlines must be escaped)
+        assertThat(lines).hasSize(2);
+
+        String toolUseLine = lines.get(0);
+        assertThat(toolUseLine).contains("\"name\":\"Write\"");
+        // Verify escaped sequences appear in the JSON, not raw control characters
+        assertThat(toolUseLine).contains("\\n").contains("\\r").contains("\\t");
+        assertThat(toolUseLine).doesNotContain("\n").doesNotContain("\r").doesNotContain("\t");
     }
 
     @Test
