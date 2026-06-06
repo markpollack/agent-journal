@@ -1,130 +1,201 @@
 package io.github.markpollack.journal.claude;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Writes one JSON line per event to a JSONL trace file. Each line is flushed
- * immediately so {@code tail -f} works during long-running agent sessions.
+ * Writes one JSON line per event to a JSONL trace file (schema v2). Each line is
+ * flushed immediately so {@code tail -f} works during long-running agent sessions.
  *
  * <p>
- * No Jackson dependency — uses simple {@code String.format()} for JSON
- * construction.
+ * Line types: {@code header} (first line, run identity), {@code tool_use},
+ * {@code tool_result}, {@code text}, {@code thinking}, {@code result}.
+ *
+ * <p>
+ * <strong>Additive evolution contract:</strong> the Markov analysis loader
+ * (markov-agent-analysis {@code loaders.py}) depends on {@code tool_use.name},
+ * {@code tool_use.input}, the last {@code result} line's
+ * {@code costUsd}/{@code durationMs}/{@code inputTokens}/{@code outputTokens}, and line
+ * ordering. Those keys are preserved byte-for-byte; every v2 field is an addition.
+ * Never rename existing keys.
+ *
+ * <p>
+ * Content capture is governed by {@link TraceContentMode}. The canonical length fields
+ * ({@code length}, {@code contentLength}) always carry the original, pre-truncation
+ * size; there is deliberately no separate {@code originalLength} field. Thinking lines
+ * carry {@code hasSignature} so an upstream-redacted block ({@code length:0,
+ * hasSignature:true}) is self-diagnosing — content is recorded as it arrived, never
+ * fabricated.
+ *
+ * <p>
+ * Serialization uses Jackson, which escapes all control characters correctly — the
+ * hand-rolled escaper this replaced covered only {@code \ " \n \r \t} and silently
+ * produced malformed lines that downstream loaders skipped. Note: the JSONL trace and
+ * the journal-event metadata maps ({@code BaseRunRecorder}, {@code PhaseCaptureSources})
+ * are two intentionally separate projections of {@link PhaseCapture}; do not unify them
+ * casually.
  */
 class TraceWriter implements Closeable {
 
-	private final BufferedWriter writer;
+    /**
+     * Per-item content cap in {@link TraceContentMode#TRUNCATED} mode — matches Claude
+     * Code's own OTel 60KB-per-item truncation. A disk guarantee only; full content
+     * still transits memory.
+     */
+    static final int MAX_TRACE_CONTENT_CHARS = 60_000;
 
-	private final AtomicInteger seq = new AtomicInteger(0);
+    static final int SCHEMA_VERSION = 2;
 
-	TraceWriter(Path traceFile) throws IOException {
-		Files.createDirectories(traceFile.getParent());
-		this.writer = Files.newBufferedWriter(traceFile);
-	}
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
-	void writeToolUse(String name, String id, Map<String, Object> input) throws IOException {
-		String inputJson = toJson(input);
-		String line = String.format(
-				"{\"ts\":\"%s\",\"seq\":%d,\"type\":\"tool_use\",\"name\":\"%s\",\"id\":\"%s\",\"input\":%s}",
-				Instant.now().toString(), seq.getAndIncrement(), escapeJson(name), escapeJson(id), inputJson);
-		writeLine(line);
-	}
+    private final BufferedWriter writer;
 
-	void writeToolResult(String id, boolean isError, int contentLength) throws IOException {
-		String line = String.format(
-				"{\"ts\":\"%s\",\"seq\":%d,\"type\":\"tool_result\",\"id\":\"%s\",\"isError\":%s,\"contentLength\":%d}",
-				Instant.now().toString(), seq.getAndIncrement(), escapeJson(id), isError, contentLength);
-		writeLine(line);
-	}
+    private final AtomicInteger seq = new AtomicInteger(0);
 
-	void writeText(int length) throws IOException {
-		String line = String.format("{\"ts\":\"%s\",\"seq\":%d,\"type\":\"text\",\"length\":%d}",
-				Instant.now().toString(), seq.getAndIncrement(), length);
-		writeLine(line);
-	}
+    private final TraceContentMode contentMode;
 
-	void writeThinking(int length) throws IOException {
-		String line = String.format("{\"ts\":\"%s\",\"seq\":%d,\"type\":\"thinking\",\"length\":%d}",
-				Instant.now().toString(), seq.getAndIncrement(), length);
-		writeLine(line);
-	}
+    private final String runId;
 
-	void writeResult(int inputTokens, int outputTokens, double costUsd, int numTurns, long durationMs)
-			throws IOException {
-		String line = String.format(
-				"{\"ts\":\"%s\",\"seq\":%d,\"type\":\"result\",\"inputTokens\":%d,\"outputTokens\":%d,"
-						+ "\"costUsd\":%.6f,\"numTurns\":%d,\"durationMs\":%d}",
-				Instant.now().toString(), seq.getAndIncrement(), inputTokens, outputTokens, costUsd, numTurns,
-				durationMs);
-		writeLine(line);
-	}
+    TraceWriter(Path traceFile, TraceContentMode contentMode, String runId, String phase) throws IOException {
+        Files.createDirectories(traceFile.getParent());
+        this.writer = Files.newBufferedWriter(traceFile);
+        this.contentMode = contentMode;
+        this.runId = runId;
+        Map<String, Object> line = baseLine("header");
+        line.put("schemaVersion", SCHEMA_VERSION);
+        if (runId != null) {
+            line.put("runId", runId);
+        }
+        if (phase != null) {
+            line.put("phase", phase);
+        }
+        line.put("contentMode", contentMode.name());
+        writeLine(line);
+    }
 
-	private void writeLine(String line) throws IOException {
-		writer.write(line);
-		writer.newLine();
-		writer.flush();
-	}
+    void writeToolUse(String name, String id, Map<String, Object> input) throws IOException {
+        Map<String, Object> line = baseLine("tool_use");
+        line.put("name", name);
+        line.put("id", id);
+        line.put("input", input != null ? input : Map.of());
+        writeLine(line);
+    }
 
-	@Override
-	public void close() throws IOException {
-		writer.close();
-	}
+    /**
+     * @param source pointer to where the full content lives (file path or command),
+     * written to the line only when the content is actually truncated; may be null
+     */
+    void writeToolResult(String id, boolean isError, String content, Map<String, Object> source) throws IOException {
+        Map<String, Object> line = baseLine("tool_result");
+        line.put("id", id);
+        line.put("isError", isError);
+        line.put("contentLength", content != null ? content.length() : 0);
+        boolean truncated = putContent(line, content);
+        if (truncated && source != null) {
+            line.put("source", source);
+        }
+        writeLine(line);
+    }
 
-	private static String escapeJson(String value) {
-		if (value == null) {
-			return "";
-		}
-		return value.replace("\\", "\\\\")
-				.replace("\"", "\\\"")
-				.replace("\n", "\\n")
-				.replace("\r", "\\r")
-				.replace("\t", "\\t");
-	}
+    void writeText(String text) throws IOException {
+        Map<String, Object> line = baseLine("text");
+        line.put("length", text != null ? text.length() : 0);
+        putContent(line, text);
+        writeLine(line);
+    }
 
-	@SuppressWarnings("unchecked")
-	static String toJson(Object value) {
-		if (value == null) {
-			return "null";
-		}
-		if (value instanceof String s) {
-			return "\"" + escapeJson(s) + "\"";
-		}
-		if (value instanceof Number || value instanceof Boolean) {
-			return value.toString();
-		}
-		if (value instanceof Map<?, ?> map) {
-			StringBuilder sb = new StringBuilder("{");
-			boolean first = true;
-			for (Map.Entry<?, ?> entry : map.entrySet()) {
-				if (!first) {
-					sb.append(",");
-				}
-				sb.append("\"").append(escapeJson(String.valueOf(entry.getKey()))).append("\":");
-				sb.append(toJson(entry.getValue()));
-				first = false;
-			}
-			sb.append("}");
-			return sb.toString();
-		}
-		if (value instanceof List<?> list) {
-			StringBuilder sb = new StringBuilder("[");
-			for (int i = 0; i < list.size(); i++) {
-				if (i > 0) {
-					sb.append(",");
-				}
-				sb.append(toJson(list.get(i)));
-			}
-			sb.append("]");
-			return sb.toString();
-		}
-		return "\"" + escapeJson(value.toString()) + "\"";
-	}
+    void writeThinking(String thinking, boolean hasSignature) throws IOException {
+        Map<String, Object> line = baseLine("thinking");
+        line.put("length", thinking != null ? thinking.length() : 0);
+        putContent(line, thinking);
+        line.put("hasSignature", hasSignature);
+        writeLine(line);
+    }
+
+    void writeResult(int inputTokens, int outputTokens, double costUsd, int numTurns, long durationMs,
+            ResultMeta meta) throws IOException {
+        Map<String, Object> line = baseLine("result");
+        // The 5 Markov-contract keys, byte-for-byte (costUsd stays 6dp)
+        line.put("inputTokens", inputTokens);
+        line.put("outputTokens", outputTokens);
+        line.put("costUsd", BigDecimal.valueOf(costUsd).setScale(6, RoundingMode.HALF_UP));
+        line.put("numTurns", numTurns);
+        line.put("durationMs", durationMs);
+        if (meta != null) {
+            if (meta.sessionId() != null) {
+                line.put("sessionId", meta.sessionId());
+            }
+            line.put("isError", meta.isError());
+            if (meta.subtype() != null) {
+                line.put("subtype", meta.subtype());
+            }
+            line.put("durationApiMs", meta.durationApiMs());
+            line.put("thinkingTokens", meta.thinkingTokens());
+            line.put("cacheCreationInputTokens", meta.cacheCreationInputTokens());
+            line.put("cacheReadInputTokens", meta.cacheReadInputTokens());
+            if (meta.structuredOutput() != null) {
+                line.put("structuredOutput", meta.structuredOutput());
+            }
+        }
+        if (runId != null) {
+            line.put("runId", runId);
+        }
+        writeLine(line);
+    }
+
+    /**
+     * Adds {@code content}/{@code truncated} to the line per the content mode.
+     * @return whether the content was truncated
+     */
+    private boolean putContent(Map<String, Object> line, String content) {
+        if (contentMode == TraceContentMode.LENGTHS) {
+            return false;
+        }
+        String body = content != null ? content : "";
+        boolean truncate = contentMode == TraceContentMode.TRUNCATED && body.length() > MAX_TRACE_CONTENT_CHARS;
+        line.put("content", truncate ? body.substring(0, MAX_TRACE_CONTENT_CHARS) : body);
+        line.put("truncated", truncate);
+        return truncate;
+    }
+
+    private Map<String, Object> baseLine(String type) {
+        Map<String, Object> line = new LinkedHashMap<>();
+        line.put("ts", Instant.now().toString());
+        line.put("seq", seq.getAndIncrement());
+        line.put("type", type);
+        return line;
+    }
+
+    private void writeLine(Map<String, Object> line) throws IOException {
+        writer.write(MAPPER.writeValueAsString(line));
+        writer.newLine();
+        writer.flush();
+    }
+
+    @Override
+    public void close() throws IOException {
+        writer.close();
+    }
+
+    /**
+     * Enrichment fields for the result line beyond the 5 Markov-contract keys.
+     * {@code structuredOutput} is likely null under stream-json invocation (it
+     * populates with {@code --output-format json} / {@code --json-schema}) — captured
+     * anyway for completeness.
+     */
+    record ResultMeta(String sessionId, boolean isError, String subtype, long durationApiMs, int thinkingTokens,
+            int cacheCreationInputTokens, int cacheReadInputTokens, Object structuredOutput) {
+    }
 
 }

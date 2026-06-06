@@ -32,6 +32,12 @@
             <version>${claude-code-sdk.version}</version>
         </dependency>
 
+        <!-- JSON processing (TraceWriter line serialization; version managed by parent) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
         <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>

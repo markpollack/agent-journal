@@ -354,13 +354,16 @@ class SessionLogParserTest {
         assertThat(traceFile).exists();
 
         List<String> lines = Files.readAllLines(traceFile);
-        assertThat(lines).hasSize(5); // thinking, tool_use, text, tool_result, result
-        assertThat(lines.get(0)).contains("\"type\":\"thinking\"");
-        assertThat(lines.get(1)).contains("\"type\":\"tool_use\"").contains("\"name\":\"Read\"")
+        assertThat(lines).hasSize(6); // header, thinking, tool_use, text, tool_result, result
+        assertThat(lines.get(0)).contains("\"type\":\"header\"").contains("\"schemaVersion\":2");
+        assertThat(lines.get(1)).contains("\"type\":\"thinking\"").contains("\"content\":\"analyzing...\"");
+        assertThat(lines.get(2)).contains("\"type\":\"tool_use\"").contains("\"name\":\"Read\"")
                 .contains("\"input\":{").contains("\"file_path\":\"/pom.xml\"");
-        assertThat(lines.get(2)).contains("\"type\":\"text\"");
-        assertThat(lines.get(3)).contains("\"type\":\"tool_result\"").contains("\"isError\":false");
-        assertThat(lines.get(4)).contains("\"type\":\"result\"").contains("\"inputTokens\":400");
+        assertThat(lines.get(3)).contains("\"type\":\"text\"").contains("\"content\":\"Done reading\"");
+        assertThat(lines.get(4)).contains("\"type\":\"tool_result\"").contains("\"isError\":false")
+                .contains("\"content\":\"<project>data</project>\"");
+        assertThat(lines.get(5)).contains("\"type\":\"result\"").contains("\"inputTokens\":400")
+                .contains("\"sessionId\":\"sess-test\"");
     }
 
     @Test
@@ -390,19 +393,19 @@ class SessionLogParserTest {
         SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile);
 
         List<String> lines = Files.readAllLines(traceFile);
-        // 3 tool_use + 1 result = 4 lines
-        assertThat(lines).hasSize(4);
+        // 1 header + 3 tool_use + 1 result = 5 lines
+        assertThat(lines).hasSize(5);
 
         // Read tool includes file_path
-        assertThat(lines.get(0)).contains("\"name\":\"Read\"")
+        assertThat(lines.get(1)).contains("\"name\":\"Read\"")
                 .contains("\"file_path\":\"/project/pom.xml\"");
 
         // Bash tool includes command
-        assertThat(lines.get(1)).contains("\"name\":\"Bash\"")
+        assertThat(lines.get(2)).contains("\"name\":\"Bash\"")
                 .contains("\"command\":\"./mvnw test\"");
 
         // Grep tool includes pattern
-        assertThat(lines.get(2)).contains("\"name\":\"Grep\"")
+        assertThat(lines.get(3)).contains("\"name\":\"Grep\"")
                 .contains("\"pattern\":\"TODO\"")
                 .contains("\"path\":\"src/main\"");
     }
@@ -425,10 +428,10 @@ class SessionLogParserTest {
         SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile);
 
         List<String> lines = Files.readAllLines(traceFile);
-        // 1 tool_use + 1 result = 2 lines (not more — newlines must be escaped)
-        assertThat(lines).hasSize(2);
+        // 1 header + 1 tool_use + 1 result = 3 lines (not more — newlines must be escaped)
+        assertThat(lines).hasSize(3);
 
-        String toolUseLine = lines.get(0);
+        String toolUseLine = lines.get(1);
         assertThat(toolUseLine).contains("\"name\":\"Write\"");
         // Verify escaped sequences appear in the JSON, not raw control characters
         assertThat(toolUseLine).contains("\\n").contains("\\r").contains("\\t");
@@ -471,6 +474,75 @@ class SessionLogParserTest {
 
         assertThat(capture.cacheCreationInputTokens()).isZero();
         assertThat(capture.cacheReadInputTokens()).isZero();
+    }
+
+    @Test
+    void traceCapturesEmptyThinkingWithSignatureFaithfully(@TempDir Path tempDir) throws IOException {
+        // The empirically-common upstream-redaction case: thinking:"" with a signature.
+        // The trace must record what arrived (length 0, hasSignature true) — never
+        // fabricate content.
+        List<ParsedMessage> messages = List.of(
+                wrap(new AssistantMessage(List.of(new ThinkingBlock("", "sig-base64-blob")))),
+                wrap(resultMessage(0.01, 1000, 800, 100, 50))
+        );
+
+        Path traceFile = tempDir.resolve("trace-redacted.jsonl");
+        SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile);
+
+        List<String> lines = Files.readAllLines(traceFile);
+        assertThat(lines.get(1)).contains("\"type\":\"thinking\"")
+                .contains("\"length\":0")
+                .contains("\"hasSignature\":true");
+        // The 2KB signature blob itself is never written
+        assertThat(lines.get(1)).doesNotContain("sig-base64-blob");
+    }
+
+    @Test
+    void lengthsModePinsLengthOnlyBehavior(@TempDir Path tempDir) throws IOException {
+        List<ParsedMessage> messages = List.of(
+                wrap(new AssistantMessage(List.of(new TextBlock("secret content")))),
+                wrap(resultMessage(0.01, 1000, 800, 100, 50))
+        );
+
+        Path traceFile = tempDir.resolve("trace-lengths.jsonl");
+        SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile, TraceContentMode.LENGTHS);
+
+        List<String> lines = Files.readAllLines(traceFile);
+        assertThat(lines.get(0)).contains("\"contentMode\":\"LENGTHS\"");
+        assertThat(lines.get(1)).contains("\"type\":\"text\"").contains("\"length\":14")
+                .doesNotContain("secret content");
+    }
+
+    @Test
+    void truncatedToolResultGetsSourcePointerFromMatchingToolUse(@TempDir Path tempDir) throws IOException {
+        ToolUseBlock readTool = ToolUseBlock.builder()
+                .id("tool-1")
+                .name("Read")
+                .input(Map.of("file_path", "/work/big.dat"))
+                .build();
+        String bigContent = "x".repeat(60_001);
+        ToolResultBlock result = ToolResultBlock.builder()
+                .toolUseId("tool-1")
+                .content(bigContent)
+                .isError(false)
+                .build();
+
+        List<ParsedMessage> messages = List.of(
+                wrap(new AssistantMessage(List.of(readTool))),
+                wrap(UserMessage.of(List.of(result))),
+                wrap(resultMessage(0.02, 2000, 1500, 300, 100))
+        );
+
+        Path traceFile = tempDir.resolve("trace-truncated.jsonl");
+        SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile);
+
+        List<String> lines = Files.readAllLines(traceFile);
+        String toolResultLine = lines.get(2);
+        assertThat(toolResultLine).contains("\"type\":\"tool_result\"")
+                .contains("\"contentLength\":60001")
+                .contains("\"truncated\":true")
+                .contains("\"kind\":\"file_path\"")
+                .contains("\"value\":\"/work/big.dat\"");
     }
 
     @Test

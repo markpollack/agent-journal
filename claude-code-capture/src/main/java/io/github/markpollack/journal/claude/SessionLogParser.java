@@ -48,7 +48,8 @@ public class SessionLogParser {
 
     /**
      * Parse a Claude SDK response iterator into a PhaseCapture, optionally writing
-     * a JSONL trace file for each event.
+     * a JSONL trace file for each event with the default content mode
+     * ({@link TraceContentMode#TRUNCATED}).
      *
      * @param response   the SDK response iterator
      * @param phaseName  the phase name for this capture ("explore", "plan", "execute", etc.)
@@ -58,10 +59,32 @@ public class SessionLogParser {
      */
     public static PhaseCapture parse(Iterator<ParsedMessage> response, String phaseName, String promptText,
             Path traceFile) {
+        return parse(response, phaseName, promptText, traceFile, TraceContentMode.TRUNCATED);
+    }
+
+    /**
+     * Parse a Claude SDK response iterator into a PhaseCapture, optionally writing
+     * a JSONL trace file for each event.
+     *
+     * <p>
+     * Note on identity: callers (e.g. agent-client's ClaudeAgentModel) currently pass
+     * their per-run trace id as {@code phaseName}, so the trace header records it as
+     * both {@code runId} and {@code phase}. A first-class run-id parameter is deferred
+     * to the identity cleanup (Semantic Journal Roadmap).
+     *
+     * @param response    the SDK response iterator
+     * @param phaseName   the phase name for this capture ("explore", "plan", "execute", etc.)
+     * @param promptText  the prompt that was sent for this phase (null if not captured)
+     * @param traceFile   optional path to a JSONL trace file (null to skip tracing)
+     * @param contentMode content capture policy for trace lines
+     * @return a PhaseCapture with all extracted data
+     */
+    public static PhaseCapture parse(Iterator<ParsedMessage> response, String phaseName, String promptText,
+            Path traceFile, TraceContentMode contentMode) {
         TraceWriter trace = null;
         if (traceFile != null) {
             try {
-                trace = new TraceWriter(traceFile);
+                trace = new TraceWriter(traceFile, contentMode, phaseName, phaseName);
             } catch (IOException ex) {
                 logger.warn("[{}] Failed to open trace file {}: {}", phaseName, traceFile, ex.getMessage());
             }
@@ -87,6 +110,7 @@ public class SessionLogParser {
         List<ToolUseRecord> toolUses = new ArrayList<>();
         List<ToolResultRecord> toolResults = new ArrayList<>();
         Map<String, String> toolUseNames = new java.util.HashMap<>();
+        Map<String, Map<String, Object>> toolUseInputs = new java.util.HashMap<>();
         Map<String, Long> toolUseStartMs = new java.util.HashMap<>();
 
         // ResultMessage fields (populated from the last ResultMessage seen)
@@ -136,7 +160,10 @@ public class SessionLogParser {
                 final double fCost = totalCostUsd;
                 final int fTurns = numTurns;
                 final long fDur = durationMs;
-                writeTrace(trace, phaseName, w -> w.writeResult(fIn, fOut, fCost, fTurns, fDur));
+                final TraceWriter.ResultMeta fMeta = new TraceWriter.ResultMeta(sessionId, isError,
+                        resultMsg.subtype(), apiDurationMs, thinkingTokens, cacheCreationInputTokens,
+                        cacheReadInputTokens, resultMsg.structuredOutput());
+                writeTrace(trace, phaseName, w -> w.writeResult(fIn, fOut, fCost, fTurns, fDur, fMeta));
             }
 
             if (message instanceof AssistantMessage assistantMsg) {
@@ -144,17 +171,24 @@ public class SessionLogParser {
                     if (block instanceof TextBlock textBlock) {
                         textOutput.append(textBlock.text());
                         logger.debug("[{}] Text: {} chars", phaseName, textBlock.text().length());
-                        writeTrace(trace, phaseName, w -> w.writeText(textBlock.text().length()));
+                        writeTrace(trace, phaseName, w -> w.writeText(textBlock.text()));
                     } else if (block instanceof ThinkingBlock thinkingBlock) {
-                        thinkingBlocks.add(thinkingBlock.thinking());
-                        logger.debug("[{}] Thinking: {} chars", phaseName, thinkingBlock.thinking().length());
-                        writeTrace(trace, phaseName, w -> w.writeThinking(thinkingBlock.thinking().length()));
+                        String thinking = thinkingBlock.thinking() != null ? thinkingBlock.thinking() : "";
+                        thinkingBlocks.add(thinking);
+                        logger.debug("[{}] Thinking: {} chars", phaseName, thinking.length());
+                        // hasSignature makes upstream redaction self-diagnosing:
+                        // length:0 + hasSignature:true means the block arrived empty,
+                        // not that capture dropped it.
+                        final boolean hasSignature = thinkingBlock.signature() != null
+                                && !thinkingBlock.signature().isEmpty();
+                        writeTrace(trace, phaseName, w -> w.writeThinking(thinking, hasSignature));
                     } else if (block instanceof ToolUseBlock toolUseBlock) {
                         toolUses.add(new ToolUseRecord(
                                 toolUseBlock.id(),
                                 toolUseBlock.name(),
                                 toolUseBlock.input()));
                         toolUseNames.put(toolUseBlock.id(), toolUseBlock.name());
+                        toolUseInputs.put(toolUseBlock.id(), toolUseBlock.input());
                         toolUseStartMs.put(toolUseBlock.id(), System.currentTimeMillis());
                         String target = toolTarget(toolUseBlock.name(), toolUseBlock.input());
                         logger.info("[{}] Tool use: {} {} (id: {})", phaseName, toolUseBlock.name(), target, toolUseBlock.id());
@@ -180,6 +214,7 @@ public class SessionLogParser {
                             String resultToolName = toolUseNames.getOrDefault(resultBlock.toolUseId(), "?");
                             Long startMs = toolUseStartMs.get(resultBlock.toolUseId());
                             long elapsedMs = startMs != null ? System.currentTimeMillis() - startMs : -1;
+                            final String fContent = content;
                             final int len = content != null ? content.length() : 0;
                             final boolean err = Boolean.TRUE.equals(resultBlock.isError());
                             if (elapsedMs >= 0) {
@@ -189,8 +224,10 @@ public class SessionLogParser {
                                 logger.info("[{}] Tool result: {} isError={} len={}", phaseName,
                                         resultToolName, err, len);
                             }
+                            final Map<String, Object> source = sourceRef(resultToolName,
+                                    toolUseInputs.get(resultBlock.toolUseId()));
                             writeTrace(trace, phaseName,
-                                    w -> w.writeToolResult(resultBlock.toolUseId(), err, len));
+                                    w -> w.writeToolResult(resultBlock.toolUseId(), err, fContent, source));
                         }
                     }
                 }
@@ -240,6 +277,38 @@ public class SessionLogParser {
         } catch (IOException ex) {
             logger.warn("[{}] Trace write failed: {}", phaseName, ex.getMessage());
         }
+    }
+
+    /**
+     * Derives a pointer to where truncated tool_result content can be re-read: the
+     * file for path-bearing tools (Read/Write/Edit/Glob), the command for Bash.
+     * Written to the trace only when the content is actually truncated — a truncated
+     * item is then self-describing: head(60KB) + canonical length + source. Note the
+     * source file may have been edited by analysis time; the transcript archive is
+     * the reliable backstop.
+     */
+    private static Map<String, Object> sourceRef(String toolName, Map<String, Object> input) {
+        Map<String, Object> source = new java.util.LinkedHashMap<>();
+        if (input != null) {
+            Object path = input.get("file_path");
+            if (path == null) {
+                path = input.get("path");
+            }
+            if (path instanceof String s && !s.isBlank()) {
+                source.put("kind", "file_path");
+                source.put("value", s);
+                return source;
+            }
+            Object cmd = input.get("command");
+            if (cmd instanceof String s && !s.isBlank()) {
+                source.put("kind", "command");
+                source.put("value", s);
+                return source;
+            }
+        }
+        source.put("kind", "unknown");
+        source.put("value", toolName != null ? toolName : "");
+        return source;
     }
 
     /**
