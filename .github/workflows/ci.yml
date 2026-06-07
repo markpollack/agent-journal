@@ -10,4 +10,7 @@ jobs:
   build:
     uses: markpollack/build-tools/.github/workflows/ci-build.yml@main
     with:
-      java-version: '17'
+      # 21: claude-code-sdk 1.1.0+ artifacts are Java 21 builds (class file 65.0);
+      # compiling against them on a 17 JDK fails with "bad class file".
+      # CI Build had been red since 2026-05-15 because of this.
+      java-version: '21'
