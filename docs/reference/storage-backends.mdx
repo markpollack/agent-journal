@@ -98,7 +98,7 @@ Type discriminators: `llm_call`, `tool_call`, `state_change`, `metric`, `custom`
 
 ### Serialization details
 
-- Jackson 2.18 with `JavaTimeModule` for Instant/Duration serialization
+- Jackson 2.21.2 (via jackson-bom import) with `JavaTimeModule` for Instant/Duration serialization
 - `@JsonTypeInfo(property = "type")` + `@JsonSubTypes` for polymorphic event deserialization
 - Compiler `-parameters` flag enables constructor-based deserialization without `@JsonProperty` annotations
 - Events appended via `Files.writeString(path, json + "\n", APPEND, CREATE)` — no read required for appending

@@ -52,21 +52,85 @@ Claude SDK response iterator
 
 ## SessionLogParser
 
-`SessionLogParser` walks a Claude Code SDK message iterator and produces a `PhaseCapture`. It is stateful — one instance per SDK call.
+`SessionLogParser` walks a Claude Code SDK message iterator and produces a `PhaseCapture`. All methods are static.
 
 ```java
 import io.github.markpollack.journal.claude.SessionLogParser;
 import io.github.markpollack.journal.claude.PhaseCapture;
 
-// After calling the Claude Code SDK
-SessionLogParser parser = new SessionLogParser();
-PhaseCapture phase = parser.parse(sdkMessageIterator, "implement");
+// After calling the Claude Code SDK — basic (no trace file)
+PhaseCapture phase = SessionLogParser.parse(sdkMessageIterator, "implement", promptText);
+
+// With a JSONL trace file (uses TRUNCATED content mode by default)
+PhaseCapture phase = SessionLogParser.parse(sdkMessageIterator, "implement", promptText,
+        Path.of(".agent-journal/traces/session.jsonl"));
 
 // Inspect what was captured
 System.out.println("Cost: $" + phase.totalCostUsd());
 System.out.println("Tool calls: " + phase.toolUses().size());
 System.out.println("Total tokens: " + phase.totalTokens());
 ```
+
+### SessionLogParser.parse() overloads
+
+| Signature | Trace file | Content mode |
+|-----------|-----------|-------------|
+| `parse(response, phaseName, promptText)` | none | — |
+| `parse(response, phaseName, promptText, traceFile)` | written | TRUNCATED (default) |
+| `parse(response, phaseName, promptText, traceFile, contentMode)` | written | caller-specified |
+
+Pass `null` for `promptText` if you do not need it in the `PhaseCapture`.
+
+## Trace files and TraceContentMode
+
+When you pass a `traceFile` path, `SessionLogParser` writes a JSONL file (schema v2) alongside the `PhaseCapture`. This gives you a per-session behavioral trace for offline analysis — one JSON line per event flushed immediately so `tail -f` works during long-running sessions.
+
+### TraceContentMode
+
+```java
+import io.github.markpollack.journal.claude.TraceContentMode;
+```
+
+| Value | Behaviour | Use case |
+|-------|-----------|----------|
+| `TRUNCATED` | Content bodies included, capped at 60,000 chars per item (matches Claude Code's own OTel cap). Truncated items carry a `source` pointer (file path or command) and the original pre-truncation length. | **Default.** Local / dev analysis. |
+| `FULL` | Content bodies never truncated. Trace files can grow to megabytes (large file reads/writes). | Deep inspection; treat files as sensitive. |
+| `LENGTHS` | No content bodies — lengths only. Minimal disk footprint, equivalent to pre-1.4.0 behaviour. | Cost-budget or privacy-sensitive environments. |
+
+```java
+// Use LENGTHS to minimise disk footprint
+PhaseCapture phase = SessionLogParser.parse(sdkMessageIterator, "implement", promptText,
+        Path.of(".agent-journal/traces/session.jsonl"),
+        TraceContentMode.LENGTHS);
+```
+
+### Sensitivity
+
+**Starting in 1.4.0, `TRUNCATED` is the default** — traces now contain message and tool content by default. Trace files may include prompts, file contents, command output, and secrets. Treat them as sensitive local artifacts:
+
+- Do not commit trace files to version control (add `.agent-journal/traces/` to `.gitignore`).
+- Use `TraceContentMode.LENGTHS` if you need the pre-1.4.0 lengths-only footprint.
+
+### Schema v2 format
+
+Every trace file begins with a `header` line recording the run identity, schema version, and content mode:
+
+```json
+{"ts":"2026-06-06T...","seq":0,"type":"header","schemaVersion":2,"runId":"implement","phase":"implement","contentMode":"TRUNCATED"}
+```
+
+Subsequent line types: `tool_use`, `tool_result`, `text`, `thinking`, `result`.
+
+Key fields added in schema v2:
+
+| Line type | New v2 fields |
+|-----------|--------------|
+| All lines | `ts` (ISO-8601), `seq` (monotonic integer) |
+| `tool_result` | `contentLength` (original length), `content` + `truncated` (when mode ≠ LENGTHS), `source` (when truncated: `{kind, value}`) |
+| `thinking` | `length` (original), `content` + `truncated`, `hasSignature` |
+| `result` | `durationApiMs`, `thinkingTokens`, `cacheCreationInputTokens`, `cacheReadInputTokens`, `subtype`, `structuredOutput` |
+
+The five Markov-contract keys on `result` lines (`inputTokens`, `outputTokens`, `costUsd`, `numTurns`, `durationMs`) are preserved byte-for-byte from schema v1 — existing loaders are unaffected.
 
 ## BaseRunRecorder
 
@@ -126,12 +190,12 @@ recorder.start("implement-oauth", "issue-456", "claude-opus-4-5");
 try {
     // Phase 1: Explore
     var exploreResult = sdk.run(explorePrompt);
-    PhaseCapture explorePhase = new SessionLogParser().parse(exploreResult, "explore");
+    PhaseCapture explorePhase = SessionLogParser.parse(exploreResult, "explore", explorePrompt);
     recorder.recordPhase(explorePhase);
 
     // Phase 2: Implement
     var implResult = sdk.run(implementPrompt);
-    PhaseCapture implPhase = new SessionLogParser().parse(implResult, "implement");
+    PhaseCapture implPhase = SessionLogParser.parse(implResult, "implement", implementPrompt);
     recorder.recordPhase(implPhase);
 
     recorder.finish(true);
