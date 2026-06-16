@@ -81,10 +81,34 @@ public class SessionLogParser {
      */
     public static PhaseCapture parse(Iterator<ParsedMessage> response, String phaseName, String promptText,
             Path traceFile, TraceContentMode contentMode) {
+        return parse(response, phaseName, promptText, traceFile, contentMode, TraceRawMode.NONE);
+    }
+
+    /**
+     * Parse a Claude SDK response iterator into a PhaseCapture, optionally writing a JSONL
+     * trace file with a content-capture policy and a raw-capture policy.
+     *
+     * <p>
+     * When {@code rawMode} is {@link TraceRawMode#FULL}, each vendor wire message is also
+     * persisted verbatim as a {@code raw} trace line ({@link TraceWriter#writeRaw}), so
+     * unmodeled fields (the sub-agent envelope, {@code permission_denials},
+     * {@code modelUsage}) are recoverable even though the typed {@code Message} drops them.
+     * Requires {@code claude-code-sdk} &ge; 1.3.0 for {@code RegularMessage.rawJson}.
+     *
+     * @param response    the SDK response iterator
+     * @param phaseName   the phase name for this capture
+     * @param promptText  the prompt that was sent for this phase (null if not captured)
+     * @param traceFile   optional path to a JSONL trace file (null to skip tracing)
+     * @param contentMode content capture policy for trace lines
+     * @param rawMode     verbatim raw-wire capture policy
+     * @return a PhaseCapture with all extracted data
+     */
+    public static PhaseCapture parse(Iterator<ParsedMessage> response, String phaseName, String promptText,
+            Path traceFile, TraceContentMode contentMode, TraceRawMode rawMode) {
         TraceWriter trace = null;
         if (traceFile != null) {
             try {
-                trace = new TraceWriter(traceFile, contentMode, phaseName, phaseName);
+                trace = new TraceWriter(traceFile, contentMode, phaseName, phaseName, rawMode);
             } catch (IOException ex) {
                 logger.warn("[{}] Failed to open trace file {}: {}", phaseName, traceFile, ex.getMessage());
             }
@@ -132,6 +156,13 @@ public class SessionLogParser {
             if (!parsed.isRegularMessage()) {
                 continue;
             }
+
+            // R2.1: persist the verbatim wire message before its typed decomposition, so
+            // the sub-agent envelope (isSidechain/parentUuid/parent_tool_use_id) and other
+            // unmodeled fields survive. No-op unless rawMode=FULL; rawJson is null for
+            // programmatically-constructed messages and SDK < 1.3.0.
+            final String rawJson = parsed instanceof ParsedMessage.RegularMessage regular ? regular.rawJson() : null;
+            writeTrace(trace, phaseName, w -> w.writeRaw(rawJson));
 
             var message = parsed.asMessage();
 

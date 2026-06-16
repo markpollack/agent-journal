@@ -546,6 +546,51 @@ class SessionLogParserTest {
     }
 
     @Test
+    void rawModeFullPersistsVerbatimWireWithUnmodeledFields(@TempDir Path tempDir) throws IOException {
+        // The wire envelope the typed Message drops (sub-agent linkage + permission_denials).
+        String assistantWire = "{\"type\":\"assistant\",\"isSidechain\":true,\"parentUuid\":\"u-1\","
+                + "\"parent_tool_use_id\":\"toolu_parent\","
+                + "\"message\":{\"content\":[{\"type\":\"text\",\"text\":\"Hello\"}]}}";
+        String resultWire = "{\"type\":\"result\",\"permission_denials\":[{\"tool\":\"Bash\"}]}";
+
+        List<ParsedMessage> messages = List.of(
+                wrapRaw(new AssistantMessage(List.of(new TextBlock("Hello"))), assistantWire),
+                wrapRaw(resultMessage(0.01, 1000, 800, 100, 50), resultWire));
+
+        Path traceFile = tempDir.resolve("trace-raw.jsonl");
+        SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile, TraceContentMode.TRUNCATED,
+                TraceRawMode.FULL);
+
+        List<String> lines = Files.readAllLines(traceFile);
+        assertThat(lines.get(0)).contains("\"rawMode\":\"FULL\"");
+
+        // Both raw lines present; the dropped envelope + permission_denials are recoverable.
+        long rawLines = lines.stream().filter(l -> l.contains("\"type\":\"raw\"")).count();
+        assertThat(rawLines).isEqualTo(2);
+        assertThat(lines).anySatisfy(l -> assertThat(l).contains("\"isSidechain\":true")
+                .contains("\"parent_tool_use_id\":\"toolu_parent\""));
+        assertThat(lines).anySatisfy(l -> assertThat(l).contains("\"permission_denials\""));
+
+        // The modeled lines (text, result) are still written alongside the raw lines.
+        assertThat(lines).anySatisfy(l -> assertThat(l).contains("\"type\":\"text\"").contains("\"content\":\"Hello\""));
+        assertThat(lines).anySatisfy(l -> assertThat(l).contains("\"type\":\"result\""));
+    }
+
+    @Test
+    void defaultParseEmitsNoRawLines(@TempDir Path tempDir) throws IOException {
+        List<ParsedMessage> messages = List.of(
+                wrapRaw(new AssistantMessage(List.of(new TextBlock("Hello"))), "{\"type\":\"assistant\"}"),
+                wrap(resultMessage(0.01, 1000, 800, 100, 50)));
+
+        Path traceFile = tempDir.resolve("trace-default.jsonl");
+        SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile);
+
+        List<String> lines = Files.readAllLines(traceFile);
+        assertThat(lines.get(0)).contains("\"rawMode\":\"NONE\"");
+        assertThat(lines).noneMatch(l -> l.contains("\"type\":\"raw\""));
+    }
+
+    @Test
     void parseWithNullTraceFileWorksNormally() {
         List<ParsedMessage> messages = List.of(
                 wrap(new AssistantMessage(List.of(new TextBlock("Hello")))),
@@ -561,6 +606,10 @@ class SessionLogParserTest {
 
     private static ParsedMessage wrap(io.github.markpollack.claude.agent.sdk.types.Message message) {
         return ParsedMessage.RegularMessage.of(message);
+    }
+
+    private static ParsedMessage wrapRaw(io.github.markpollack.claude.agent.sdk.types.Message message, String rawJson) {
+        return ParsedMessage.RegularMessage.of(message, rawJson);
     }
 
     private static ResultMessage resultMessage(double cost, int durationMs, int apiDurationMs,

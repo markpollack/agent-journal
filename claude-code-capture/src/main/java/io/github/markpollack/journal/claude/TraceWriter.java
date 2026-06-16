@@ -1,5 +1,6 @@
 package io.github.markpollack.journal.claude;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.BufferedWriter;
@@ -65,12 +66,23 @@ class TraceWriter implements Closeable {
 
     private final TraceContentMode contentMode;
 
+    private final TraceRawMode rawMode;
+
     private final String runId;
 
+    /**
+     * Back-compat constructor: raw capture disabled ({@link TraceRawMode#NONE}).
+     */
     TraceWriter(Path traceFile, TraceContentMode contentMode, String runId, String phase) throws IOException {
+        this(traceFile, contentMode, runId, phase, TraceRawMode.NONE);
+    }
+
+    TraceWriter(Path traceFile, TraceContentMode contentMode, String runId, String phase, TraceRawMode rawMode)
+            throws IOException {
         Files.createDirectories(traceFile.getParent());
         this.writer = Files.newBufferedWriter(traceFile);
         this.contentMode = contentMode;
+        this.rawMode = rawMode != null ? rawMode : TraceRawMode.NONE;
         this.runId = runId;
         Map<String, Object> line = baseLine("header");
         line.put("schemaVersion", SCHEMA_VERSION);
@@ -81,6 +93,7 @@ class TraceWriter implements Closeable {
             line.put("phase", phase);
         }
         line.put("contentMode", contentMode.name());
+        line.put("rawMode", this.rawMode.name());
         writeLine(line);
     }
 
@@ -150,6 +163,35 @@ class TraceWriter implements Closeable {
         }
         if (runId != null) {
             line.put("runId", runId);
+        }
+        writeLine(line);
+    }
+
+    /**
+     * Emits one verbatim {@code raw} line carrying the complete original vendor wire
+     * message, so unmodeled fields ({@code permission_denials}, {@code modelUsage}, the
+     * {@code isSidechain}/{@code parentUuid} sub-agent envelope) are never lost. A no-op
+     * unless {@link TraceRawMode#FULL} is active and {@code rawJson} is non-null
+     * (programmatic SDK construction yields null). The raw payload is embedded as parsed
+     * JSON when well-formed (queryable, lossless round-trip); if it fails to parse it is
+     * stored as the original string under {@code raw} plus a {@code rawParseError} — still
+     * lossless. The {@code type:"raw"} line is silently skipped by the Markov loader.
+     *
+     * @param rawJson the verbatim wire line ({@code RegularMessage.rawJson}), or null
+     */
+    void writeRaw(String rawJson) throws IOException {
+        if (rawMode != TraceRawMode.FULL || rawJson == null) {
+            return;
+        }
+        Map<String, Object> line = baseLine("raw");
+        try {
+            JsonNode node = MAPPER.readTree(rawJson);
+            line.put("raw", node);
+        } catch (IOException ex) {
+            // Wire JSON is expected to be valid; if it ever isn't, keep it verbatim
+            // as a string rather than dropping it.
+            line.put("raw", rawJson);
+            line.put("rawParseError", ex.getMessage());
         }
         writeLine(line);
     }
