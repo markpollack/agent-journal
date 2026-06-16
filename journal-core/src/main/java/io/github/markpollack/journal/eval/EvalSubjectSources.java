@@ -61,10 +61,14 @@ public final class EvalSubjectSources {
 	}
 
 	private static EvalSubject mapEvent(JournalEvent event, String runId, int index) {
-		String id = "journal:" + runId + ":" + index;
+		// Prefer a stable native id (R2.3): the tool_use id for tool calls, the response id
+		// for LLM calls. Fall back to the legacy positional id only for events with no native
+		// identity — never reuse a position as identity for a judgeable step.
+		String positionalId = "journal:" + runId + ":" + index;
 		String source = "journal";
 
 		if (event instanceof LLMCallEvent llm) {
+			String id = llm.responseId() != null ? llm.responseId() : positionalId;
 			Map<String, Object> metadata = new LinkedHashMap<>();
 			metadata.put("timestamp", llm.timestamp().toString());
 			if (llm.provider() != null) {
@@ -97,6 +101,7 @@ public final class EvalSubjectSources {
 		}
 
 		if (event instanceof ToolCallEvent tool) {
+			String id = tool.id() != null ? tool.id() : positionalId;
 			Map<String, Object> metadata = new LinkedHashMap<>();
 			metadata.put("timestamp", tool.timestamp().toString());
 			metadata.put("toolName", tool.toolName());
@@ -111,6 +116,7 @@ public final class EvalSubjectSources {
 		}
 
 		if (event instanceof StateChangeEvent state) {
+			String id = positionalId;
 			Map<String, Object> metadata = new LinkedHashMap<>();
 			metadata.put("timestamp", state.timestamp().toString());
 			metadata.put("fromState", state.fromState());
@@ -125,6 +131,7 @@ public final class EvalSubjectSources {
 		}
 
 		if (event instanceof CustomEvent custom) {
+			String id = positionalId;
 			Map<String, Object> metadata = new LinkedHashMap<>();
 			metadata.put("timestamp", custom.timestamp().toString());
 			metadata.put("eventName", custom.name());

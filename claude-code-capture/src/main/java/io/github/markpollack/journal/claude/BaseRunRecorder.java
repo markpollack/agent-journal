@@ -61,11 +61,12 @@ public abstract class BaseRunRecorder {
                 .metadata(metadata)
                 .build());
 
-        // Tool call events
+        // Tool call events — carry the vendor tool_use id as the stable step identity
+        // (R2.3) so feedback/eval can target a step without depending on reload order.
         if (phase.hasToolUses()) {
             for (ToolUseRecord toolUse : phase.toolUses()) {
                 currentRun.logEvent(ToolCallEvent.success(
-                        toolUse.name(), toolUse.input(), null, 0));
+                        toolUse.id(), toolUse.name(), toolUse.input(), null, 0));
             }
         }
 

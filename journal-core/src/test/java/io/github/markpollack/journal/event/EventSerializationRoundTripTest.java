@@ -116,6 +116,19 @@ class EventSerializationRoundTripTest extends BaseTrackingTest {
             assertThat(deserialized.success()).isFalse();
             assertThat(deserialized.errorMessage()).isEqualTo(original.errorMessage());
         }
+
+        @Test
+        @DisplayName("persists the stable tool_use id across serialization (R2.3)")
+        void roundTripsStableId() throws Exception {
+            ToolCallEvent original = ToolCallEvent.success("toolu_abc123", "Bash",
+                    Map.of("command", "ls"), "out", 5);
+
+            String json = objectMapper.writeValueAsString(original);
+            ToolCallEvent deserialized = objectMapper.readValue(json, ToolCallEvent.class);
+
+            assertThat(json).contains("\"id\":\"toolu_abc123\"");
+            assertThat(deserialized.id()).isEqualTo("toolu_abc123");
+        }
     }
 
     @Nested
