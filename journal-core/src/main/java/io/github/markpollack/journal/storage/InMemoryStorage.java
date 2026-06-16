@@ -1,6 +1,7 @@
 package io.github.markpollack.journal.storage;
 
 import io.github.markpollack.journal.Experiment;
+import io.github.markpollack.journal.derived.DerivedEvent;
 import io.github.markpollack.journal.event.FeedbackEvent;
 import io.github.markpollack.journal.event.JournalEvent;
 
@@ -40,6 +41,7 @@ public class InMemoryStorage implements JournalStorage {
     private final Map<String, Map<String, RunData>> runs = new ConcurrentHashMap<>();
     private final Map<String, Map<String, List<JournalEvent>>> events = new ConcurrentHashMap<>();
     private final Map<String, Map<String, List<FeedbackEvent>>> feedback = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, List<DerivedEvent>>> derivedEvents = new ConcurrentHashMap<>();
     private final Map<String, Map<String, Map<String, byte[]>>> artifacts = new ConcurrentHashMap<>();
 
     @Override
@@ -122,6 +124,26 @@ public class InMemoryStorage implements JournalStorage {
     }
 
     @Override
+    public void appendDerivedEvent(String experimentId, String runId, DerivedEvent event) {
+        derivedEvents.computeIfAbsent(experimentId, k -> new ConcurrentHashMap<>())
+                .computeIfAbsent(runId, k -> new CopyOnWriteArrayList<>())
+                .add(event);
+    }
+
+    @Override
+    public List<DerivedEvent> loadDerivedEvents(String experimentId, String runId) {
+        Map<String, List<DerivedEvent>> experimentDerived = derivedEvents.get(experimentId);
+        if (experimentDerived == null) {
+            return List.of();
+        }
+        List<DerivedEvent> runDerived = experimentDerived.get(runId);
+        if (runDerived == null) {
+            return List.of();
+        }
+        return new ArrayList<>(runDerived);
+    }
+
+    @Override
     public void saveArtifact(String experimentId, String runId, String name, byte[] content) {
         artifacts.computeIfAbsent(experimentId, k -> new ConcurrentHashMap<>())
                 .computeIfAbsent(runId, k -> new ConcurrentHashMap<>())
@@ -164,6 +186,7 @@ public class InMemoryStorage implements JournalStorage {
         runs.clear();
         events.clear();
         feedback.clear();
+        derivedEvents.clear();
         artifacts.clear();
     }
 

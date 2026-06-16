@@ -1,6 +1,7 @@
 package io.github.markpollack.journal.storage;
 
 import io.github.markpollack.journal.Experiment;
+import io.github.markpollack.journal.derived.DerivedEvent;
 import io.github.markpollack.journal.event.FeedbackEvent;
 import io.github.markpollack.journal.event.JournalEvent;
 
@@ -171,6 +172,33 @@ public interface JournalStorage {
      * @return list of feedback events in chronological order
      */
     default List<FeedbackEvent> loadFeedback(String experimentId, String runId) {
+        return List.of();
+    }
+
+    // ========== Derived Analysis Operations ==========
+
+    /**
+     * Appends a derived analysis event to a run's analysis log.
+     * Derived events (inferred post-run: cost attribution, scores, …) are stored separately
+     * from immutable execution events — in an {@code analysis.jsonl} sidecar — so the two
+     * record kinds never look equivalent. Joined to execution events by {@code stepId}/{@code runId}.
+     *
+     * @param experimentId the experiment ID
+     * @param runId the run ID
+     * @param event the derived event to append
+     */
+    default void appendDerivedEvent(String experimentId, String runId, DerivedEvent event) {
+        throw new UnsupportedOperationException("Derived event storage not supported by this implementation");
+    }
+
+    /**
+     * Loads all derived analysis events for a run.
+     *
+     * @param experimentId the experiment ID
+     * @param runId the run ID
+     * @return list of derived events in append order
+     */
+    default List<DerivedEvent> loadDerivedEvents(String experimentId, String runId) {
         return List.of();
     }
 
