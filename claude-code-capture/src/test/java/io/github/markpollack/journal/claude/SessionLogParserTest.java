@@ -1,5 +1,7 @@
 package io.github.markpollack.journal.claude;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import io.github.markpollack.claude.agent.sdk.parsing.ParsedMessage;
@@ -15,6 +17,7 @@ import io.github.markpollack.claude.agent.sdk.types.UserMessage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +26,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
 class SessionLogParserTest {
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @Test
     void parsesTextFromAssistantMessage() {
@@ -355,7 +360,9 @@ class SessionLogParserTest {
         assertThat(traceFile).exists();
 
         List<String> lines = Files.readAllLines(traceFile);
-        assertThat(lines).hasSize(6); // header, thinking, tool_use, text, tool_result, result
+        // header, thinking, tool_use, text, tool_result, result, + 1 trailing step_cost (R2.4)
+        assertThat(lines).hasSize(7);
+        assertThat(lines.get(6)).contains("\"type\":\"step_cost\"");
         assertThat(lines.get(0)).contains("\"type\":\"header\"").contains("\"schemaVersion\":2");
         assertThat(lines.get(1)).contains("\"type\":\"thinking\"").contains("\"content\":\"analyzing...\"");
         assertThat(lines.get(2)).contains("\"type\":\"tool_use\"").contains("\"name\":\"Read\"")
@@ -394,8 +401,8 @@ class SessionLogParserTest {
         SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile);
 
         List<String> lines = Files.readAllLines(traceFile);
-        // 1 header + 3 tool_use + 1 result = 5 lines
-        assertThat(lines).hasSize(5);
+        // 1 header + 3 tool_use + 1 result + 3 trailing step_cost (R2.4) = 8 lines
+        assertThat(lines).hasSize(8);
 
         // Read tool includes file_path
         assertThat(lines.get(1)).contains("\"name\":\"Read\"")
@@ -429,8 +436,9 @@ class SessionLogParserTest {
         SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile);
 
         List<String> lines = Files.readAllLines(traceFile);
-        // 1 header + 1 tool_use + 1 result = 3 lines (not more — newlines must be escaped)
-        assertThat(lines).hasSize(3);
+        // 1 header + 1 tool_use + 1 result + 1 trailing step_cost (R2.4) = 4 lines
+        // (still no line splitting — newlines must be escaped)
+        assertThat(lines).hasSize(4);
 
         String toolUseLine = lines.get(1);
         assertThat(toolUseLine).contains("\"name\":\"Write\"");
@@ -653,6 +661,54 @@ class SessionLogParserTest {
 
         assertThat(capture.hasTurns()).isFalse();
         assertThat(capture.hasModelCosts()).isFalse();
+    }
+
+    @Test
+    void emitsTrailingStepCostLinesThatSumToTotalAndAreNonUniform(@TempDir Path tempDir) throws IOException {
+        // Two single-tool turns (100 / 300 output tokens), total $0.04 → 0.01 / 0.03.
+        String w1 = "{\"type\":\"assistant\",\"message\":{\"id\":\"msg_1\",\"model\":\"claude-opus-4-8\","
+                + "\"usage\":{\"input_tokens\":10,\"output_tokens\":100,\"cache_creation_input_tokens\":0,"
+                + "\"cache_read_input_tokens\":0}}}";
+        String w2 = "{\"type\":\"assistant\",\"message\":{\"id\":\"msg_2\",\"model\":\"claude-opus-4-8\","
+                + "\"usage\":{\"input_tokens\":10,\"output_tokens\":300,\"cache_creation_input_tokens\":0,"
+                + "\"cache_read_input_tokens\":0}}}";
+        ToolUseBlock t1 = ToolUseBlock.builder().id("toolu_1").name("Read").input(Map.of("file_path", "/a")).build();
+        ToolUseBlock t2 = ToolUseBlock.builder().id("toolu_2").name("Bash").input(Map.of("command", "ls")).build();
+
+        List<ParsedMessage> messages = List.of(
+                wrapRaw(new AssistantMessage(List.of(t1)), w1),
+                wrapRaw(new AssistantMessage(List.of(t2)), w2),
+                wrap(resultMessage(0.04, 2000, 1500, 300, 400)));
+
+        Path traceFile = tempDir.resolve("trace-stepcost.jsonl");
+        SessionLogParser.parse(messages.iterator(), "run-x", "prompt", traceFile);
+
+        List<String> all = Files.readAllLines(traceFile);
+        List<JsonNode> stepCosts = new ArrayList<>();
+        int resultIdx = -1;
+        for (int i = 0; i < all.size(); i++) {
+            JsonNode node = MAPPER.readTree(all.get(i));
+            if ("result".equals(node.get("type").asText())) {
+                resultIdx = i;
+            }
+            if ("step_cost".equals(node.get("type").asText())) {
+                stepCosts.add(node);
+                // trailing: every step_cost comes after the result line
+                assertThat(i).isGreaterThan(resultIdx);
+            }
+        }
+
+        assertThat(stepCosts).hasSize(2);
+        assertThat(stepCosts).extracting(n -> n.get("stepId").asText()).containsExactly("toolu_1", "toolu_2");
+        assertThat(stepCosts).allSatisfy(n -> {
+            assertThat(n.get("attributionMethod").asText()).isEqualTo("OUTPUT_TOKEN_PROPORTIONAL");
+            assertThat(n.get("actualRunCostUsd").asDouble()).isEqualTo(0.04);
+        });
+        double sum = stepCosts.stream().mapToDouble(n -> n.get("attributedCostUsd").asDouble()).sum();
+        assertThat(sum).isCloseTo(0.04, within(1e-9));
+        // non-uniform — the high-output step costs more
+        assertThat(stepCosts.get(1).get("attributedCostUsd").asDouble())
+                .isGreaterThan(stepCosts.get(0).get("attributedCostUsd").asDouble());
     }
 
     @Test

@@ -120,7 +120,16 @@ public class SessionLogParser {
         }
 
         try {
-            return doParse(response, phaseName, promptText, trace);
+            PhaseCapture capture = doParse(response, phaseName, promptText, trace);
+            if (trace != null) {
+                // R2.4: emit derived per-step cost as trailing step_cost lines. Cost is only
+                // knowable post-run (the total arrives on the last result line), so attribution
+                // happens here, after doParse, rather than on the streaming tool_use line.
+                for (JournalStep step : JournalSteps.fromPhaseCapture(capture, phaseName)) {
+                    writeTrace(trace, phaseName, w -> w.writeStepCost(step));
+                }
+            }
+            return capture;
         } finally {
             if (trace != null) {
                 try {

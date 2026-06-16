@@ -197,6 +197,43 @@ class TraceWriter implements Closeable {
     }
 
     /**
+     * Emits a {@code step_cost} line — a <strong>derived, post-execution analysis artifact</strong>,
+     * not part of the immutable execution history. Per-step cost can only be computed once the run
+     * finishes (the total arrives on the last {@code result} line), so these lines trail the
+     * execution lines rather than mutating the streaming {@code tool_use} line. Joined back to the
+     * execution stream by {@code stepId} (the tool_use id) / {@code turnId}.
+     *
+     * <p>
+     * This is the first of an emerging derived-analysis line family (future: {@code step_score},
+     * {@code markov_state}, {@code judge_verdict}), all keyed by {@code stepId}. {@code attributionMethod}
+     * is embedded so a later reader knows how the cost was allocated; {@code actualRunCostUsd} is the
+     * ground-truth total carried alongside the allocated {@code attributedCostUsd} so the two are never
+     * confused. Additive and additive-safe — the Markov loader skips unknown line types.
+     */
+    void writeStepCost(JournalStep step) throws IOException {
+        Map<String, Object> line = baseLine("step_cost");
+        line.put("stepId", step.stepId());
+        if (step.turnId() != null) {
+            line.put("turnId", step.turnId());
+        }
+        if (step.toolName() != null) {
+            line.put("toolName", step.toolName());
+        }
+        line.put("inputTokens", step.inputTokens());
+        line.put("outputTokens", step.outputTokens());
+        line.put("attributedCostUsd", BigDecimal.valueOf(step.attributedCostUsd()).setScale(6, RoundingMode.HALF_UP));
+        line.put("actualRunCostUsd", BigDecimal.valueOf(step.actualRunCostUsd()).setScale(6, RoundingMode.HALF_UP));
+        if (step.attributionMethod() != null) {
+            line.put("attributionMethod", step.attributionMethod().name());
+        }
+        line.put("isError", step.isError());
+        if (runId != null) {
+            line.put("runId", runId);
+        }
+        writeLine(line);
+    }
+
+    /**
      * Adds {@code content}/{@code truncated} to the line per the content mode.
      * @return whether the content was truncated
      */
