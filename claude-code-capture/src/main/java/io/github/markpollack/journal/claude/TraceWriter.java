@@ -227,6 +227,11 @@ class TraceWriter implements Closeable {
             line.put("attributionMethod", step.attributionMethod().name());
         }
         line.put("isError", step.isError());
+        if (step.isSubagentSpawn()) {
+            // Sub-agent boundary marker (R2.5a): the interior steps are not in the stream —
+            // they are archived from subagents/*.jsonl (R2.5b). Never flatten a spawn.
+            line.put("subagentSpawn", true);
+        }
         if (runId != null) {
             line.put("runId", runId);
         }

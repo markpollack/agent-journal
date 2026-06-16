@@ -126,6 +126,27 @@ class JournalStepsTest {
         assertThat(sum).isEqualTo(0.10); // exact, residual folded into the last step
     }
 
+    @Test
+    void marksSubagentSpawnStepsWithoutFlattening() {
+        // A Task tool call is a sub-agent spawn — its interior steps are not in the stream
+        // (they live in subagents/*.jsonl, R2.5b). The spawn must be marked, not flattened.
+        List<ParsedMessage> messages = List.of(
+                assistantTurn("msg_1", "toolu_read", "Read", 10, 100),
+                assistantTurn("msg_2", "toolu_task", "Task", 10, 300),
+                wrap(result(0.04)));
+
+        PhaseCapture phase = SessionLogParser.parse(messages.iterator(), RUN, "p");
+        List<JournalStep> steps = JournalSteps.fromPhaseCapture(phase, RUN);
+
+        JournalStep read = steps.stream().filter(s -> s.stepId().equals("toolu_read")).findFirst().orElseThrow();
+        JournalStep task = steps.stream().filter(s -> s.stepId().equals("toolu_task")).findFirst().orElseThrow();
+        assertThat(read.isSubagentSpawn()).isFalse();
+        assertThat(task.isSubagentSpawn()).isTrue();
+        assertThat(task.toolName()).isEqualTo("Task");
+        // still a real, cost-bearing step — not dropped
+        assertThat(task.attributedCostUsd()).isGreaterThan(0.0);
+    }
+
     // --- helpers ---
 
     private static ParsedMessage assistantTurn(String msgId, String toolId, String toolName, long in, long out) {

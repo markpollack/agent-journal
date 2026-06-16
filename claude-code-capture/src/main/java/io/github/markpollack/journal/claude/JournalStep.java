@@ -42,6 +42,11 @@ package io.github.markpollack.journal.claude;
  * @param isError           whether this step errored (tool_result isError; false for turn steps)
  * @param agentState        Markov-state slot, filled by the analysis layer (null here)
  * @param vendor            capture vendor, e.g. {@code claude-code}
+ * @param isSubagentSpawn   whether this step spawned a sub-agent (a {@code Task}/{@code Agent}
+ *                          tool call). The sub-agent's interior steps are NOT in the SDK stream
+ *                          — they live in {@code subagents/*.jsonl} and are captured by archival
+ *                          (R2.5b, agent-client). This flag marks the boundary so a spawn is never
+ *                          flattened into an ordinary tool call.
  */
 public record JournalStep(
         String runId,
@@ -55,6 +60,7 @@ public record JournalStep(
         AttributionMethod attributionMethod,
         boolean isError,
         String agentState,
-        String vendor
+        String vendor,
+        boolean isSubagentSpawn
 ) {
 }

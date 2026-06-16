@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Builds attributed per-step {@link JournalStep}s from a {@link PhaseCapture}.
@@ -28,6 +29,9 @@ public final class JournalSteps {
 
     /** Vendor tag for Claude Code captures. */
     public static final String VENDOR_CLAUDE_CODE = "claude-code";
+
+    /** Tools that spawn a sub-agent (whose interior steps live in {@code subagents/*.jsonl}). */
+    private static final Set<String> SUBAGENT_TOOLS = Set.of("Task", "Agent");
 
     private JournalSteps() {
     }
@@ -62,13 +66,15 @@ public final class JournalSteps {
                     // Tool-less turn (e.g. final text answer) → one turn-level step.
                     steps.add(new JournalStep(runId, turn.messageId(), turn.messageId(), null,
                             turn.inputTokens(), turn.outputTokens(), turnCost, actualCost, method, false, null,
-                            vendor));
+                            vendor, false));
                 } else {
                     double perTool = turnCost / tools.size();
                     for (String toolId : tools) {
-                        steps.add(new JournalStep(runId, turn.messageId(), toolId, toolNames.get(toolId),
+                        String toolName = toolNames.get(toolId);
+                        steps.add(new JournalStep(runId, turn.messageId(), toolId, toolName,
                                 turn.inputTokens(), turn.outputTokens(), perTool, actualCost, method,
-                                Boolean.TRUE.equals(toolErrors.get(toolId)), null, vendor));
+                                Boolean.TRUE.equals(toolErrors.get(toolId)), null, vendor,
+                                SUBAGENT_TOOLS.contains(toolName)));
                     }
                 }
             }
@@ -80,7 +86,8 @@ public final class JournalSteps {
                 double perTool = actualCost / toolUses.size();
                 for (ToolUseRecord tu : toolUses) {
                     steps.add(new JournalStep(runId, null, tu.id(), tu.name(), 0, 0, perTool, actualCost, method,
-                            Boolean.TRUE.equals(toolErrors.get(tu.id())), null, vendor));
+                            Boolean.TRUE.equals(toolErrors.get(tu.id())), null, vendor,
+                            SUBAGENT_TOOLS.contains(tu.name())));
                 }
             }
         }
@@ -104,7 +111,7 @@ public final class JournalSteps {
             steps.set(i, new JournalStep(last.runId(), last.turnId(), last.stepId(), last.toolName(),
                     last.inputTokens(), last.outputTokens(), last.attributedCostUsd() + residual,
                     last.actualRunCostUsd(), last.attributionMethod(), last.isError(), last.agentState(),
-                    last.vendor()));
+                    last.vendor(), last.isSubagentSpawn()));
         }
         return steps;
     }
