@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.github.markpollack</groupId>
+        <artifactId>agent-journal-parent</artifactId>
+        <version>1.5.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>gemini-cli-capture</artifactId>
+    <packaging>jar</packaging>
+
+    <name>Gemini CLI Capture</name>
+    <description>Gemini CLI SDK to journal-core bridge: a parallel vendor extractor to claude-code-capture, projecting Gemini query results into the shared portable trace (TraceWriter / JournalStep)</description>
+
+    <dependencies>
+        <!-- Journal Core (owns the portable TraceWriter / JournalStep since R2.7) -->
+        <dependency>
+            <groupId>io.github.markpollack</groupId>
+            <artifactId>journal-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Gemini CLI SDK (for GeminiClient, QueryResult, Message, Metadata types) -->
+        <dependency>
+            <groupId>io.github.markpollack</groupId>
+            <artifactId>gemini-cli-sdk</artifactId>
+            <version>${gemini-cli-sdk.version}</version>
+        </dependency>
+
+        <!-- JSON processing (version managed by parent) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

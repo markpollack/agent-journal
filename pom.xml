@@ -43,6 +43,7 @@
 
         <!-- Dependency versions -->
         <claude-code-sdk.version>1.4.0</claude-code-sdk.version>
+        <gemini-cli-sdk.version>0.22.0</gemini-cli-sdk.version>
         <jackson.version>2.21.2</jackson.version>
         <slf4j.version>2.0.17</slf4j.version>
 
@@ -60,6 +61,7 @@
     <modules>
         <module>journal-core</module>
         <module>claude-code-capture</module>
+        <module>gemini-cli-capture</module>
     </modules>
 
     <dependencyManagement>
