@@ -1,5 +1,7 @@
 package io.github.markpollack.journal.claude;
 
+import java.util.List;
+
 /**
  * Per-turn usage for one assistant message (one API request), parsed from the wire
  * {@code message.usage} block. The typed {@code AssistantMessage} exposes only
@@ -24,6 +26,9 @@ package io.github.markpollack.journal.claude;
  * @param outputTokens            output tokens generated this turn
  * @param cacheCreationInputTokens tokens written to the prompt cache this turn
  * @param cacheReadInputTokens    tokens read from the prompt cache this turn
+ * @param toolUseIds              ids of the tool calls issued in this turn (empty if none);
+ *                                used by {@code JournalSteps} to attribute the turn's cost
+ *                                to its tool calls (R2.3)
  */
 public record TurnUsage(
         String messageId,
@@ -31,8 +36,17 @@ public record TurnUsage(
         long inputTokens,
         long outputTokens,
         long cacheCreationInputTokens,
-        long cacheReadInputTokens
+        long cacheReadInputTokens,
+        List<String> toolUseIds
 ) {
+
+    /**
+     * Back-compat constructor for callers that don't supply tool-call ids.
+     */
+    public TurnUsage(String messageId, String model, long inputTokens, long outputTokens,
+            long cacheCreationInputTokens, long cacheReadInputTokens) {
+        this(messageId, model, inputTokens, outputTokens, cacheCreationInputTokens, cacheReadInputTokens, List.of());
+    }
 
     /**
      * Total input including prompt-cache reads and cache creation.

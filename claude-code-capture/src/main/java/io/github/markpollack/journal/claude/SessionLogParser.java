@@ -215,12 +215,9 @@ public class SessionLogParser {
             }
 
             if (message instanceof AssistantMessage assistantMsg) {
-                // R2.2: per-turn usage from message.usage / message.model (wire-only; the typed
-                // AssistantMessage carries content alone).
-                TurnUsage turn = parseTurnUsage(rawRoot);
-                if (turn != null) {
-                    turns.add(turn);
-                }
+                // R2.3: collect this turn's tool_use ids so per-step cost can be attributed
+                // to the tool calls that belong to the same assistant message.
+                List<String> turnToolIds = new ArrayList<>();
                 for (ContentBlock block : assistantMsg.content()) {
                     if (block instanceof TextBlock textBlock) {
                         textOutput.append(textBlock.text());
@@ -241,6 +238,7 @@ public class SessionLogParser {
                                 toolUseBlock.id(),
                                 toolUseBlock.name(),
                                 toolUseBlock.input()));
+                        turnToolIds.add(toolUseBlock.id());
                         toolUseNames.put(toolUseBlock.id(), toolUseBlock.name());
                         toolUseInputs.put(toolUseBlock.id(), toolUseBlock.input());
                         toolUseStartMs.put(toolUseBlock.id(), System.currentTimeMillis());
@@ -249,6 +247,11 @@ public class SessionLogParser {
                         writeTrace(trace, phaseName,
                                 w -> w.writeToolUse(toolUseBlock.name(), toolUseBlock.id(), toolUseBlock.input()));
                     }
+                }
+                // R2.2/R2.3: per-turn usage (wire-only) carrying this turn's tool_use ids.
+                TurnUsage turn = parseTurnUsage(rawRoot, turnToolIds);
+                if (turn != null) {
+                    turns.add(turn);
                 }
             }
 
@@ -457,7 +460,7 @@ public class SessionLogParser {
      * Per-turn usage from an assistant wire message's {@code message.usage} block (snake_case
      * keys). Returns null when the raw wire is unavailable or carries no usage object.
      */
-    private static TurnUsage parseTurnUsage(JsonNode rawRoot) {
+    private static TurnUsage parseTurnUsage(JsonNode rawRoot, List<String> toolUseIds) {
         if (rawRoot == null) {
             return null;
         }
@@ -472,7 +475,8 @@ public class SessionLogParser {
                 usage.path("input_tokens").asLong(0),
                 usage.path("output_tokens").asLong(0),
                 usage.path("cache_creation_input_tokens").asLong(0),
-                usage.path("cache_read_input_tokens").asLong(0));
+                usage.path("cache_read_input_tokens").asLong(0),
+                List.copyOf(toolUseIds));
     }
 
     /**
