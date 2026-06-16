@@ -25,12 +25,13 @@ import java.util.Map;
  * proves better later, the two can be merged, but mixing them early is hard to undo.
  *
  * <p>
- * Implemented so far: {@link StepCostEvent}. Planned siblings (not yet built):
- * {@code StepOutcomeEvent}, {@code MarkovStateEvent}, {@code JudgeVerdictEvent}.
+ * Implemented: {@link StepCostEvent} (R2.4/R2.10), {@link StepOutcomeEvent} (R2.6). Planned
+ * siblings (not yet built): {@code MarkovStateEvent}, {@code JudgeVerdictEvent}.
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "@type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = StepCostEvent.class, name = "step_cost")
+        @JsonSubTypes.Type(value = StepCostEvent.class, name = "step_cost"),
+        @JsonSubTypes.Type(value = StepOutcomeEvent.class, name = "step_outcome")
 })
 public interface DerivedEvent {
 
