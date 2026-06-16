@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 class SessionLogParserTest {
 
@@ -588,6 +589,70 @@ class SessionLogParserTest {
         List<String> lines = Files.readAllLines(traceFile);
         assertThat(lines.get(0)).contains("\"rawMode\":\"NONE\"");
         assertThat(lines).noneMatch(l -> l.contains("\"type\":\"raw\""));
+    }
+
+    @Test
+    void capturesPerTurnUsageFromAssistantWire() {
+        // Per-turn usage lives on the wire message.usage (snake_case); the typed
+        // AssistantMessage carries only content, so this comes via rawJson.
+        String turn1 = "{\"type\":\"assistant\",\"message\":{\"id\":\"msg_1\",\"model\":\"claude-opus-4-8\","
+                + "\"usage\":{\"input_tokens\":3528,\"cache_creation_input_tokens\":18646,"
+                + "\"cache_read_input_tokens\":0,\"output_tokens\":196}}}";
+        String turn2 = "{\"type\":\"assistant\",\"message\":{\"id\":\"msg_2\",\"model\":\"claude-opus-4-8\","
+                + "\"usage\":{\"input_tokens\":3528,\"cache_creation_input_tokens\":2734,"
+                + "\"cache_read_input_tokens\":15857,\"output_tokens\":135}}}";
+
+        List<ParsedMessage> messages = List.of(
+                wrapRaw(new AssistantMessage(List.of(new TextBlock("a"))), turn1),
+                wrapRaw(new AssistantMessage(List.of(new TextBlock("b"))), turn2),
+                wrap(resultMessage(0.05, 5000, 4000, 800, 100)));
+
+        PhaseCapture capture = SessionLogParser.parse(messages.iterator(), "execute", "prompt");
+
+        assertThat(capture.hasTurns()).isTrue();
+        assertThat(capture.turns()).hasSize(2);
+        TurnUsage t1 = capture.turns().get(0);
+        assertThat(t1.messageId()).isEqualTo("msg_1");
+        assertThat(t1.model()).isEqualTo("claude-opus-4-8");
+        assertThat(t1.outputTokens()).isEqualTo(196);
+        assertThat(t1.cacheCreationInputTokens()).isEqualTo(18646);
+        assertThat(t1.totalInputTokens()).isEqualTo(3528 + 18646 + 0);
+        assertThat(capture.turns().get(1).outputTokens()).isEqualTo(135);
+    }
+
+    @Test
+    void capturesModelCostsThatSumToTotal() {
+        // The result wire's modelUsage (camelCase, costUSD) — the exact cost decomposition.
+        String resultWire = "{\"type\":\"result\",\"total_cost_usd\":0.094841,\"modelUsage\":{"
+                + "\"claude-opus-4-8[1m]\":{\"inputTokens\":3532,\"outputTokens\":288,"
+                + "\"cacheReadInputTokens\":56778,\"cacheCreationInputTokens\":6568,\"costUSD\":0.094299},"
+                + "\"claude-haiku-4-5-20251001\":{\"inputTokens\":467,\"outputTokens\":15,\"costUSD\":0.000542}}}";
+
+        List<ParsedMessage> messages = List.of(
+                wrapRaw(resultMessage(0.094841, 7534, 11560, 3532, 288), resultWire));
+
+        PhaseCapture capture = SessionLogParser.parse(messages.iterator(), "execute", "prompt");
+
+        assertThat(capture.hasModelCosts()).isTrue();
+        assertThat(capture.modelCosts()).hasSize(2);
+        assertThat(capture.modelCosts().get(0).model()).isEqualTo("claude-opus-4-8[1m]");
+        assertThat(capture.modelCosts().get(0).costUsd()).isEqualTo(0.094299);
+        // R2.2 acceptance: the per-model decomposition sums to the run total (±rounding).
+        assertThat(capture.modelCostSum()).isCloseTo(0.094841, within(1e-9));
+        assertThat(capture.modelCostSum()).isCloseTo(capture.totalCostUsd(), within(1e-9));
+    }
+
+    @Test
+    void noPerTurnUsageWhenRawJsonAbsent() {
+        // Programmatic construction (wrap → rawJson null) yields no per-turn records.
+        List<ParsedMessage> messages = List.of(
+                wrap(new AssistantMessage(List.of(new TextBlock("hi")))),
+                wrap(resultMessage(0.01, 1000, 800, 100, 50)));
+
+        PhaseCapture capture = SessionLogParser.parse(messages.iterator(), "execute", "prompt");
+
+        assertThat(capture.hasTurns()).isFalse();
+        assertThat(capture.hasModelCosts()).isFalse();
     }
 
     @Test

@@ -1,5 +1,8 @@
 package io.github.markpollack.journal.claude;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.github.markpollack.claude.agent.sdk.parsing.ParsedMessage;
 import io.github.markpollack.claude.agent.sdk.types.AssistantMessage;
 import io.github.markpollack.claude.agent.sdk.types.ContentBlock;
@@ -33,6 +36,8 @@ import org.slf4j.LoggerFactory;
 public class SessionLogParser {
 
     private static final Logger logger = LoggerFactory.getLogger(SessionLogParser.class);
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**
      * Parse a Claude SDK response iterator into a PhaseCapture.
@@ -133,6 +138,9 @@ public class SessionLogParser {
         List<String> thinkingBlocks = new ArrayList<>();
         List<ToolUseRecord> toolUses = new ArrayList<>();
         List<ToolResultRecord> toolResults = new ArrayList<>();
+        // R2.2: per-turn usage (one per assistant message) + per-model cost decomposition
+        List<TurnUsage> turns = new ArrayList<>();
+        List<ModelCost> modelCosts = new ArrayList<>();
         Map<String, String> toolUseNames = new java.util.HashMap<>();
         Map<String, Map<String, Object>> toolUseInputs = new java.util.HashMap<>();
         Map<String, Long> toolUseStartMs = new java.util.HashMap<>();
@@ -163,6 +171,7 @@ public class SessionLogParser {
             // programmatically-constructed messages and SDK < 1.3.0.
             final String rawJson = parsed instanceof ParsedMessage.RegularMessage regular ? regular.rawJson() : null;
             writeTrace(trace, phaseName, w -> w.writeRaw(rawJson));
+            JsonNode rawRoot = parseRaw(rawJson);
 
             var message = parsed.asMessage();
 
@@ -195,9 +204,23 @@ public class SessionLogParser {
                         resultMsg.subtype(), apiDurationMs, thinkingTokens, cacheCreationInputTokens,
                         cacheReadInputTokens, resultMsg.structuredOutput());
                 writeTrace(trace, phaseName, w -> w.writeResult(fIn, fOut, fCost, fTurns, fDur, fMeta));
+                // R2.2: the exact per-model cost decomposition (sums to totalCostUsd) lives in
+                // the result wire's modelUsage sibling — not on the typed ResultMessage. Last
+                // result wins.
+                List<ModelCost> parsed2 = parseModelCosts(rawRoot);
+                if (!parsed2.isEmpty()) {
+                    modelCosts.clear();
+                    modelCosts.addAll(parsed2);
+                }
             }
 
             if (message instanceof AssistantMessage assistantMsg) {
+                // R2.2: per-turn usage from message.usage / message.model (wire-only; the typed
+                // AssistantMessage carries content alone).
+                TurnUsage turn = parseTurnUsage(rawRoot);
+                if (turn != null) {
+                    turns.add(turn);
+                }
                 for (ContentBlock block : assistantMsg.content()) {
                     if (block instanceof TextBlock textBlock) {
                         textOutput.append(textBlock.text());
@@ -290,7 +313,9 @@ public class SessionLogParser {
                 thinkingBlocks,
                 toolUses,
                 rawResult,
-                toolResults
+                toolResults,
+                turns,
+                modelCosts
         );
     }
 
@@ -409,6 +434,76 @@ public class SessionLogParser {
             }
             default -> "";
         };
+    }
+
+    /**
+     * Parses a raw wire line into a JsonNode, or null when absent/malformed. Wire JSON is
+     * expected to be valid; a malformed line simply yields no per-turn record rather than
+     * failing the parse.
+     */
+    private static JsonNode parseRaw(String rawJson) {
+        if (rawJson == null) {
+            return null;
+        }
+        try {
+            return MAPPER.readTree(rawJson);
+        } catch (IOException ex) {
+            logger.debug("Could not parse raw wire line for per-turn usage: {}", ex.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Per-turn usage from an assistant wire message's {@code message.usage} block (snake_case
+     * keys). Returns null when the raw wire is unavailable or carries no usage object.
+     */
+    private static TurnUsage parseTurnUsage(JsonNode rawRoot) {
+        if (rawRoot == null) {
+            return null;
+        }
+        JsonNode msg = rawRoot.path("message");
+        JsonNode usage = msg.path("usage");
+        if (!usage.isObject()) {
+            return null;
+        }
+        return new TurnUsage(
+                textOrNull(msg, "id"),
+                textOrNull(msg, "model"),
+                usage.path("input_tokens").asLong(0),
+                usage.path("output_tokens").asLong(0),
+                usage.path("cache_creation_input_tokens").asLong(0),
+                usage.path("cache_read_input_tokens").asLong(0));
+    }
+
+    /**
+     * Per-model cost decomposition from the result wire's {@code modelUsage} object
+     * (camelCase keys, {@code costUSD}). Empty list when absent.
+     */
+    private static List<ModelCost> parseModelCosts(JsonNode rawRoot) {
+        if (rawRoot == null) {
+            return List.of();
+        }
+        JsonNode modelUsage = rawRoot.path("modelUsage");
+        if (!modelUsage.isObject()) {
+            return List.of();
+        }
+        List<ModelCost> costs = new ArrayList<>();
+        modelUsage.fields().forEachRemaining(entry -> {
+            JsonNode m = entry.getValue();
+            costs.add(new ModelCost(
+                    entry.getKey(),
+                    m.path("inputTokens").asLong(0),
+                    m.path("outputTokens").asLong(0),
+                    m.path("cacheReadInputTokens").asLong(0),
+                    m.path("cacheCreationInputTokens").asLong(0),
+                    m.path("costUSD").asDouble(0.0)));
+        });
+        return costs;
+    }
+
+    private static String textOrNull(JsonNode node, String field) {
+        JsonNode v = node.path(field);
+        return v.isMissingNode() || v.isNull() ? null : v.asText();
     }
 
     private static int getInt(Map<String, Object> map, String key) {
