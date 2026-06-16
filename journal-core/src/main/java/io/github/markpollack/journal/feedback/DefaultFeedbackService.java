@@ -1,6 +1,7 @@
 package io.github.markpollack.journal.feedback;
 
 import io.github.markpollack.journal.event.FeedbackEvent;
+import io.github.markpollack.journal.event.FeedbackTarget;
 import io.github.markpollack.journal.storage.JournalStorage;
 import io.github.markpollack.journal.storage.RunData;
 
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalDouble;
 
 /**
  * Default implementation of {@link FeedbackService} backed by {@link JournalStorage}.
@@ -49,9 +51,69 @@ public class DefaultFeedbackService implements FeedbackService {
 
 	@Override
 	public Map<String, Double> computeJudgeAgreement(String experimentId, String runId,
-			double threshold) {
-		throw new UnsupportedOperationException(
-				"Judge agreement requires judge scores — not yet available in journal-core");
+			String humanReviewer, double threshold) {
+		// Reduce each reviewer to its latest normalized score per target (append order → last wins).
+		Map<String, Map<String, Double>> scoresByReviewer = new LinkedHashMap<>();
+		for (FeedbackEvent fb : storage.loadFeedback(experimentId, runId)) {
+			if (fb.reviewer() == null || fb.score() == null) {
+				continue;
+			}
+			OptionalDouble normalized = fb.score().normalized();
+			if (normalized.isEmpty()) {
+				continue; // categorical-only feedback is not comparable
+			}
+			scoresByReviewer.computeIfAbsent(fb.reviewer(), k -> new LinkedHashMap<>())
+					.put(targetKey(fb.target()), normalized.getAsDouble());
+		}
+
+		Map<String, Double> agreement = new LinkedHashMap<>();
+		Map<String, Double> humanScores = scoresByReviewer.get(humanReviewer);
+		if (humanScores == null || humanScores.isEmpty()) {
+			return agreement; // no human baseline → nothing to agree with
+		}
+
+		for (Map.Entry<String, Map<String, Double>> entry : scoresByReviewer.entrySet()) {
+			String reviewer = entry.getKey();
+			if (reviewer.equals(humanReviewer)) {
+				continue;
+			}
+			int shared = 0;
+			int agree = 0;
+			for (Map.Entry<String, Double> judged : entry.getValue().entrySet()) {
+				Double humanScore = humanScores.get(judged.getKey());
+				if (humanScore == null) {
+					continue; // only targets both scored
+				}
+				shared++;
+				boolean humanPass = humanScore >= threshold;
+				boolean judgePass = judged.getValue() >= threshold;
+				if (humanPass == judgePass) {
+					agree++;
+				}
+			}
+			if (shared > 0) {
+				agreement.put(reviewer, (double) agree / shared);
+			}
+		}
+		return agreement;
+	}
+
+	/**
+	 * Stable identity for a feedback target: the {@code subjectId} (step grain, R2.3) when present,
+	 * else the {@code itemId}, else run-level. Human and judge feedback on the "same target" must
+	 * key identically here.
+	 */
+	private static String targetKey(FeedbackTarget target) {
+		if (target == null) {
+			return "run";
+		}
+		if (target.subjectId() != null) {
+			return "subject:" + target.subjectId();
+		}
+		if (target.itemId() != null) {
+			return "item:" + target.itemId();
+		}
+		return "run";
 	}
 
 	@Override

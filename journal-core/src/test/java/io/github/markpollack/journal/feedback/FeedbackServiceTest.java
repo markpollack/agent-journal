@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("FeedbackService")
 class FeedbackServiceTest {
@@ -181,11 +180,51 @@ class FeedbackServiceTest {
 	@DisplayName("computeJudgeAgreement")
 	class JudgeAgreement {
 
+		private FeedbackEvent verdict(String subjectId, String reviewer, boolean pass) {
+			return new FeedbackEvent(java.time.Instant.now(),
+					FeedbackTarget.subject(null, subjectId, "TOOL_CALL"),
+					FeedbackScore.binary(pass), null, reviewer, Map.of());
+		}
+
 		@Test
-		@DisplayName("throws UnsupportedOperationException in v1")
-		void notYetImplemented() {
-			assertThatThrownBy(() -> service.computeJudgeAgreement(EXP_ID, RUN_ID, 0.5))
-					.isInstanceOf(UnsupportedOperationException.class);
+		@DisplayName("computes per-judge agreement over targets both scored")
+		void computesAgreement() {
+			// human vs judge-A: agree on s1 (pass/pass) and s3 (pass/pass), disagree on s2 → 2/3
+			service.recordFeedback(EXP_ID, RUN_ID, verdict("s1", "human", true));
+			service.recordFeedback(EXP_ID, RUN_ID, verdict("s2", "human", false));
+			service.recordFeedback(EXP_ID, RUN_ID, verdict("s3", "human", true));
+			service.recordFeedback(EXP_ID, RUN_ID, verdict("s1", "judge-A", true));
+			service.recordFeedback(EXP_ID, RUN_ID, verdict("s2", "judge-A", true));
+			service.recordFeedback(EXP_ID, RUN_ID, verdict("s3", "judge-A", true));
+			// judge-B disagrees on its only shared target s1 → 0/1
+			service.recordFeedback(EXP_ID, RUN_ID, verdict("s1", "judge-B", false));
+
+			Map<String, Double> agreement = service.computeJudgeAgreement(EXP_ID, RUN_ID, "human", 0.5);
+
+			assertThat(agreement).containsOnlyKeys("judge-A", "judge-B");
+			assertThat(agreement.get("judge-A")).isEqualTo(2.0 / 3.0);
+			assertThat(agreement.get("judge-B")).isEqualTo(0.0);
+		}
+
+		@Test
+		@DisplayName("latest verdict wins and only shared targets count")
+		void latestWinsAndOnlyShared() {
+			service.recordFeedback(EXP_ID, RUN_ID, verdict("s1", "human", true));
+			// judge scored s1 twice — latest (pass) wins → agrees with human
+			service.recordFeedback(EXP_ID, RUN_ID, verdict("s1", "judge", false));
+			service.recordFeedback(EXP_ID, RUN_ID, verdict("s1", "judge", true));
+			// judge also scored s9 the human never touched — not counted
+			service.recordFeedback(EXP_ID, RUN_ID, verdict("s9", "judge", false));
+
+			Map<String, Double> agreement = service.computeJudgeAgreement(EXP_ID, RUN_ID, "human", 0.5);
+			assertThat(agreement.get("judge")).isEqualTo(1.0);
+		}
+
+		@Test
+		@DisplayName("empty when the human gave no usable feedback")
+		void emptyWithoutHumanBaseline() {
+			service.recordFeedback(EXP_ID, RUN_ID, verdict("s1", "judge-A", true));
+			assertThat(service.computeJudgeAgreement(EXP_ID, RUN_ID, "human", 0.5)).isEmpty();
 		}
 	}
 

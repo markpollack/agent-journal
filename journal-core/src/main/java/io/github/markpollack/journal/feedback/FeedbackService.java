@@ -46,18 +46,26 @@ public interface FeedbackService {
 	List<FeedbackEvent> getFeedbackForItem(String experimentId, String itemId);
 
 	/**
-	 * Compute agreement between human feedback and automated judge scores.
+	 * Compute agreement between a human reviewer's feedback and each automated judge's scores,
+	 * over targets both scored (the same {@code FeedbackTarget}, keyed by {@code subjectId} when
+	 * present, else {@code itemId}).
 	 *
-	 * <p>Considers only feedback events whose {@code FeedbackScore.normalized()}
-	 * is present. Categorical-only feedback is skipped.
+	 * <p>For each shared target, both sides are reduced to a binary pass/fail via
+	 * {@code normalized() >= threshold}; agreement for a judge is the fraction of shared targets
+	 * where the human and judge pass/fail verdicts match. Only feedback whose
+	 * {@code FeedbackScore.normalized()} is present is considered (categorical-only is skipped);
+	 * when a reviewer scores the same target more than once, the latest wins. Judges with no
+	 * shared target are omitted.
 	 *
 	 * @param experimentId the experiment ID
 	 * @param runId the run ID
+	 * @param humanReviewer the reviewer id treated as the human baseline
 	 * @param threshold score threshold for binary pass/fail comparison
-	 * @return map of judge name to agreement rate [0.0, 1.0]
+	 * @return map of judge reviewer id to agreement rate [0.0, 1.0]; empty if the human gave no
+	 *         usable feedback
 	 */
 	Map<String, Double> computeJudgeAgreement(String experimentId, String runId,
-			double threshold);
+			String humanReviewer, double threshold);
 
 	/**
 	 * Export reviewed items for golden dataset creation.
