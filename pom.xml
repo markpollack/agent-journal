@@ -42,7 +42,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
         <!-- Dependency versions -->
-        <claude-code-sdk.version>1.2.0</claude-code-sdk.version>
+        <claude-code-sdk.version>1.4.0</claude-code-sdk.version>
         <jackson.version>2.21.2</jackson.version>
         <slf4j.version>2.0.17</slf4j.version>
 
