@@ -6,6 +6,8 @@ import io.github.markpollack.claude.agent.sdk.types.Message;
 import io.github.markpollack.claude.agent.sdk.types.ResultMessage;
 import io.github.markpollack.claude.agent.sdk.types.TextBlock;
 import io.github.markpollack.claude.agent.sdk.types.ToolUseBlock;
+import io.github.markpollack.journal.trace.AttributionMethod;
+import io.github.markpollack.journal.trace.JournalStep;
 
 import java.util.List;
 import java.util.Map;

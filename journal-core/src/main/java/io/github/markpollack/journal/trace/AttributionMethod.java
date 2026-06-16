@@ -1,4 +1,4 @@
-package io.github.markpollack.journal.claude;
+package io.github.markpollack.journal.trace;
 
 /**
  * How a per-step {@code attributedCostUsd} was derived from the run's actual cost.

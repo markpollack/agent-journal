@@ -1,4 +1,4 @@
-package io.github.markpollack.journal.claude;
+package io.github.markpollack.journal.trace;
 
 /**
  * Portable per-step record — the unit the ACT analysis layer consumes for state-weighted
@@ -26,8 +26,8 @@ package io.github.markpollack.journal.claude;
  * {@code agentState} is an unfilled slot — the Markov state classifier in
  * {@code agent-control-theory} populates it; journal never classifies. {@code raw} is not
  * duplicated here: the verbatim wire lives on the per-message {@code type:"raw"} trace line
- * (R2.1), joined by {@code turnId}. Lives in {@code claude-code-capture} for now; moves to
- * {@code journal-core} as the shared portable writer in R2.7.
+ * (R2.1), joined by {@code turnId}. Vendor-neutral and owned by {@code journal-core} (R2.7);
+ * per-vendor extractors project into it (Claude via {@code JournalSteps}; Gemini/Codex later).
  *
  * @param runId             the run this step belongs to
  * @param turnId            the assistant message id (e.g. {@code msg_…}); joins to the raw line

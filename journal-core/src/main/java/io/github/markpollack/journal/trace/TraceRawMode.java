@@ -1,4 +1,4 @@
-package io.github.markpollack.journal.claude;
+package io.github.markpollack.journal.trace;
 
 /**
  * Raw-capture policy for the JSONL trace files written by {@code TraceWriter}

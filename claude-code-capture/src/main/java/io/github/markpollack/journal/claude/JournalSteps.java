@@ -1,5 +1,8 @@
 package io.github.markpollack.journal.claude;
 
+import io.github.markpollack.journal.trace.AttributionMethod;
+import io.github.markpollack.journal.trace.JournalStep;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;

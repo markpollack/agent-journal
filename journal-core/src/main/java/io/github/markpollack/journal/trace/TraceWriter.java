@@ -1,4 +1,4 @@
-package io.github.markpollack.journal.claude;
+package io.github.markpollack.journal.trace;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,8 +20,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  * flushed immediately so {@code tail -f} works during long-running agent sessions.
  *
  * <p>
- * Line types: {@code header} (first line, run identity), {@code tool_use},
- * {@code tool_result}, {@code text}, {@code thinking}, {@code result}.
+ * This is the <strong>vendor-neutral</strong> portable writer (owned by {@code journal-core},
+ * R2.7): per-vendor extractors (Claude Code, and later Gemini/Codex) project their captures
+ * into these line types rather than each owning a writer.
+ *
+ * <p>
+ * Execution line types: {@code header} (first line, run identity), {@code tool_use},
+ * {@code tool_result}, {@code text}, {@code thinking}, {@code result}; plus the verbatim
+ * {@code raw} escape hatch ({@code rawMode}) and the derived {@code step_cost} analysis line.
  *
  * <p>
  * <strong>Additive evolution contract:</strong> the Markov analysis loader
@@ -44,19 +50,19 @@ import java.util.concurrent.atomic.AtomicInteger;
  * hand-rolled escaper this replaced covered only {@code \ " \n \r \t} and silently
  * produced malformed lines that downstream loaders skipped. Note: the JSONL trace and
  * the journal-event metadata maps ({@code BaseRunRecorder}, {@code PhaseCaptureSources})
- * are two intentionally separate projections of {@link PhaseCapture}; do not unify them
- * casually.
+ * are two intentionally separate projections of a vendor capture (e.g. {@code PhaseCapture});
+ * do not unify them casually.
  */
-class TraceWriter implements Closeable {
+public class TraceWriter implements Closeable {
 
     /**
      * Per-item content cap in {@link TraceContentMode#TRUNCATED} mode — matches Claude
      * Code's own OTel 60KB-per-item truncation. A disk guarantee only; full content
      * still transits memory.
      */
-    static final int MAX_TRACE_CONTENT_CHARS = 60_000;
+    public static final int MAX_TRACE_CONTENT_CHARS = 60_000;
 
-    static final int SCHEMA_VERSION = 2;
+    public static final int SCHEMA_VERSION = 2;
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -73,11 +79,11 @@ class TraceWriter implements Closeable {
     /**
      * Back-compat constructor: raw capture disabled ({@link TraceRawMode#NONE}).
      */
-    TraceWriter(Path traceFile, TraceContentMode contentMode, String runId, String phase) throws IOException {
+    public TraceWriter(Path traceFile, TraceContentMode contentMode, String runId, String phase) throws IOException {
         this(traceFile, contentMode, runId, phase, TraceRawMode.NONE);
     }
 
-    TraceWriter(Path traceFile, TraceContentMode contentMode, String runId, String phase, TraceRawMode rawMode)
+    public TraceWriter(Path traceFile, TraceContentMode contentMode, String runId, String phase, TraceRawMode rawMode)
             throws IOException {
         Files.createDirectories(traceFile.getParent());
         this.writer = Files.newBufferedWriter(traceFile);
@@ -97,7 +103,7 @@ class TraceWriter implements Closeable {
         writeLine(line);
     }
 
-    void writeToolUse(String name, String id, Map<String, Object> input) throws IOException {
+    public void writeToolUse(String name, String id, Map<String, Object> input) throws IOException {
         Map<String, Object> line = baseLine("tool_use");
         line.put("name", name);
         line.put("id", id);
@@ -109,7 +115,8 @@ class TraceWriter implements Closeable {
      * @param source pointer to where the full content lives (file path or command),
      * written to the line only when the content is actually truncated; may be null
      */
-    void writeToolResult(String id, boolean isError, String content, Map<String, Object> source) throws IOException {
+    public void writeToolResult(String id, boolean isError, String content, Map<String, Object> source)
+            throws IOException {
         Map<String, Object> line = baseLine("tool_result");
         line.put("id", id);
         line.put("isError", isError);
@@ -121,14 +128,14 @@ class TraceWriter implements Closeable {
         writeLine(line);
     }
 
-    void writeText(String text) throws IOException {
+    public void writeText(String text) throws IOException {
         Map<String, Object> line = baseLine("text");
         line.put("length", text != null ? text.length() : 0);
         putContent(line, text);
         writeLine(line);
     }
 
-    void writeThinking(String thinking, boolean hasSignature) throws IOException {
+    public void writeThinking(String thinking, boolean hasSignature) throws IOException {
         Map<String, Object> line = baseLine("thinking");
         line.put("length", thinking != null ? thinking.length() : 0);
         putContent(line, thinking);
@@ -136,7 +143,7 @@ class TraceWriter implements Closeable {
         writeLine(line);
     }
 
-    void writeResult(int inputTokens, int outputTokens, double costUsd, int numTurns, long durationMs,
+    public void writeResult(int inputTokens, int outputTokens, double costUsd, int numTurns, long durationMs,
             ResultMeta meta) throws IOException {
         Map<String, Object> line = baseLine("result");
         // The 5 Markov-contract keys, byte-for-byte (costUsd stays 6dp)
@@ -179,7 +186,7 @@ class TraceWriter implements Closeable {
      *
      * @param rawJson the verbatim wire line ({@code RegularMessage.rawJson}), or null
      */
-    void writeRaw(String rawJson) throws IOException {
+    public void writeRaw(String rawJson) throws IOException {
         if (rawMode != TraceRawMode.FULL || rawJson == null) {
             return;
         }
@@ -210,7 +217,7 @@ class TraceWriter implements Closeable {
      * ground-truth total carried alongside the allocated {@code attributedCostUsd} so the two are never
      * confused. Additive and additive-safe — the Markov loader skips unknown line types.
      */
-    void writeStepCost(JournalStep step) throws IOException {
+    public void writeStepCost(JournalStep step) throws IOException {
         Map<String, Object> line = baseLine("step_cost");
         line.put("stepId", step.stepId());
         if (step.turnId() != null) {
@@ -278,7 +285,7 @@ class TraceWriter implements Closeable {
      * populates with {@code --output-format json} / {@code --json-schema}) — captured
      * anyway for completeness.
      */
-    record ResultMeta(String sessionId, boolean isError, String subtype, long durationApiMs, int thinkingTokens,
+    public record ResultMeta(String sessionId, boolean isError, String subtype, long durationApiMs, int thinkingTokens,
             int cacheCreationInputTokens, int cacheReadInputTokens, Object structuredOutput) {
     }
 
