@@ -11,7 +11,9 @@ package io.github.markpollack.journal.event;
  * when targeting EvalSubjects.
  *
  * @param itemId dataset item identifier (null for run-level feedback)
- * @param subjectId EvalSubject id, event id, or other subject identifier (null for item-level)
+ * @param subjectId stable step/subject id — the EvalSubject id, which now derives from the
+ *                  vendor tool_use id (tool calls) or response id (LLM calls) rather than a
+ *                  reload-order-dependent list position (R2.3); null for item-level targets
  * @param subjectKind kind string, e.g. "TOOL_CALL", "LLM_CALL" (null for item-level)
  */
 public record FeedbackTarget(

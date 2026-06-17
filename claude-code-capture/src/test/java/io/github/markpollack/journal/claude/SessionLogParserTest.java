@@ -1,7 +1,11 @@
 package io.github.markpollack.journal.claude;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import io.github.markpollack.journal.trace.TraceContentMode;
+import io.github.markpollack.journal.trace.TraceRawMode;
 import io.github.markpollack.claude.agent.sdk.parsing.ParsedMessage;
 import io.github.markpollack.claude.agent.sdk.types.AssistantMessage;
 import io.github.markpollack.claude.agent.sdk.types.ContentBlock;
@@ -15,13 +19,17 @@ import io.github.markpollack.claude.agent.sdk.types.UserMessage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 class SessionLogParserTest {
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @Test
     void parsesTextFromAssistantMessage() {
@@ -354,7 +362,9 @@ class SessionLogParserTest {
         assertThat(traceFile).exists();
 
         List<String> lines = Files.readAllLines(traceFile);
-        assertThat(lines).hasSize(6); // header, thinking, tool_use, text, tool_result, result
+        // header, thinking, tool_use, text, tool_result, result, + 1 trailing step_cost (R2.4)
+        assertThat(lines).hasSize(7);
+        assertThat(lines.get(6)).contains("\"type\":\"step_cost\"");
         assertThat(lines.get(0)).contains("\"type\":\"header\"").contains("\"schemaVersion\":2");
         assertThat(lines.get(1)).contains("\"type\":\"thinking\"").contains("\"content\":\"analyzing...\"");
         assertThat(lines.get(2)).contains("\"type\":\"tool_use\"").contains("\"name\":\"Read\"")
@@ -393,8 +403,8 @@ class SessionLogParserTest {
         SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile);
 
         List<String> lines = Files.readAllLines(traceFile);
-        // 1 header + 3 tool_use + 1 result = 5 lines
-        assertThat(lines).hasSize(5);
+        // 1 header + 3 tool_use + 1 result + 3 trailing step_cost (R2.4) = 8 lines
+        assertThat(lines).hasSize(8);
 
         // Read tool includes file_path
         assertThat(lines.get(1)).contains("\"name\":\"Read\"")
@@ -428,8 +438,9 @@ class SessionLogParserTest {
         SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile);
 
         List<String> lines = Files.readAllLines(traceFile);
-        // 1 header + 1 tool_use + 1 result = 3 lines (not more — newlines must be escaped)
-        assertThat(lines).hasSize(3);
+        // 1 header + 1 tool_use + 1 result + 1 trailing step_cost (R2.4) = 4 lines
+        // (still no line splitting — newlines must be escaped)
+        assertThat(lines).hasSize(4);
 
         String toolUseLine = lines.get(1);
         assertThat(toolUseLine).contains("\"name\":\"Write\"");
@@ -546,6 +557,163 @@ class SessionLogParserTest {
     }
 
     @Test
+    void rawModeFullPersistsVerbatimWireWithUnmodeledFields(@TempDir Path tempDir) throws IOException {
+        // The wire envelope the typed Message drops (sub-agent linkage + permission_denials).
+        String assistantWire = "{\"type\":\"assistant\",\"isSidechain\":true,\"parentUuid\":\"u-1\","
+                + "\"parent_tool_use_id\":\"toolu_parent\","
+                + "\"message\":{\"content\":[{\"type\":\"text\",\"text\":\"Hello\"}]}}";
+        String resultWire = "{\"type\":\"result\",\"permission_denials\":[{\"tool\":\"Bash\"}]}";
+
+        List<ParsedMessage> messages = List.of(
+                wrapRaw(new AssistantMessage(List.of(new TextBlock("Hello"))), assistantWire),
+                wrapRaw(resultMessage(0.01, 1000, 800, 100, 50), resultWire));
+
+        Path traceFile = tempDir.resolve("trace-raw.jsonl");
+        SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile, TraceContentMode.TRUNCATED,
+                TraceRawMode.FULL);
+
+        List<String> lines = Files.readAllLines(traceFile);
+        assertThat(lines.get(0)).contains("\"rawMode\":\"FULL\"");
+
+        // Both raw lines present; the dropped envelope + permission_denials are recoverable.
+        long rawLines = lines.stream().filter(l -> l.contains("\"type\":\"raw\"")).count();
+        assertThat(rawLines).isEqualTo(2);
+        assertThat(lines).anySatisfy(l -> assertThat(l).contains("\"isSidechain\":true")
+                .contains("\"parent_tool_use_id\":\"toolu_parent\""));
+        assertThat(lines).anySatisfy(l -> assertThat(l).contains("\"permission_denials\""));
+
+        // The modeled lines (text, result) are still written alongside the raw lines.
+        assertThat(lines).anySatisfy(l -> assertThat(l).contains("\"type\":\"text\"").contains("\"content\":\"Hello\""));
+        assertThat(lines).anySatisfy(l -> assertThat(l).contains("\"type\":\"result\""));
+    }
+
+    @Test
+    void defaultParseEmitsNoRawLines(@TempDir Path tempDir) throws IOException {
+        List<ParsedMessage> messages = List.of(
+                wrapRaw(new AssistantMessage(List.of(new TextBlock("Hello"))), "{\"type\":\"assistant\"}"),
+                wrap(resultMessage(0.01, 1000, 800, 100, 50)));
+
+        Path traceFile = tempDir.resolve("trace-default.jsonl");
+        SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile);
+
+        List<String> lines = Files.readAllLines(traceFile);
+        assertThat(lines.get(0)).contains("\"rawMode\":\"NONE\"");
+        assertThat(lines).noneMatch(l -> l.contains("\"type\":\"raw\""));
+    }
+
+    @Test
+    void capturesPerTurnUsageFromAssistantWire() {
+        // Per-turn usage lives on the wire message.usage (snake_case); the typed
+        // AssistantMessage carries only content, so this comes via rawJson.
+        String turn1 = "{\"type\":\"assistant\",\"message\":{\"id\":\"msg_1\",\"model\":\"claude-opus-4-8\","
+                + "\"usage\":{\"input_tokens\":3528,\"cache_creation_input_tokens\":18646,"
+                + "\"cache_read_input_tokens\":0,\"output_tokens\":196}}}";
+        String turn2 = "{\"type\":\"assistant\",\"message\":{\"id\":\"msg_2\",\"model\":\"claude-opus-4-8\","
+                + "\"usage\":{\"input_tokens\":3528,\"cache_creation_input_tokens\":2734,"
+                + "\"cache_read_input_tokens\":15857,\"output_tokens\":135}}}";
+
+        List<ParsedMessage> messages = List.of(
+                wrapRaw(new AssistantMessage(List.of(new TextBlock("a"))), turn1),
+                wrapRaw(new AssistantMessage(List.of(new TextBlock("b"))), turn2),
+                wrap(resultMessage(0.05, 5000, 4000, 800, 100)));
+
+        PhaseCapture capture = SessionLogParser.parse(messages.iterator(), "execute", "prompt");
+
+        assertThat(capture.hasTurns()).isTrue();
+        assertThat(capture.turns()).hasSize(2);
+        TurnUsage t1 = capture.turns().get(0);
+        assertThat(t1.messageId()).isEqualTo("msg_1");
+        assertThat(t1.model()).isEqualTo("claude-opus-4-8");
+        assertThat(t1.outputTokens()).isEqualTo(196);
+        assertThat(t1.cacheCreationInputTokens()).isEqualTo(18646);
+        assertThat(t1.totalInputTokens()).isEqualTo(3528 + 18646 + 0);
+        assertThat(capture.turns().get(1).outputTokens()).isEqualTo(135);
+    }
+
+    @Test
+    void capturesModelCostsThatSumToTotal() {
+        // The result wire's modelUsage (camelCase, costUSD) — the exact cost decomposition.
+        String resultWire = "{\"type\":\"result\",\"total_cost_usd\":0.094841,\"modelUsage\":{"
+                + "\"claude-opus-4-8[1m]\":{\"inputTokens\":3532,\"outputTokens\":288,"
+                + "\"cacheReadInputTokens\":56778,\"cacheCreationInputTokens\":6568,\"costUSD\":0.094299},"
+                + "\"claude-haiku-4-5-20251001\":{\"inputTokens\":467,\"outputTokens\":15,\"costUSD\":0.000542}}}";
+
+        List<ParsedMessage> messages = List.of(
+                wrapRaw(resultMessage(0.094841, 7534, 11560, 3532, 288), resultWire));
+
+        PhaseCapture capture = SessionLogParser.parse(messages.iterator(), "execute", "prompt");
+
+        assertThat(capture.hasModelCosts()).isTrue();
+        assertThat(capture.modelCosts()).hasSize(2);
+        assertThat(capture.modelCosts().get(0).model()).isEqualTo("claude-opus-4-8[1m]");
+        assertThat(capture.modelCosts().get(0).costUsd()).isEqualTo(0.094299);
+        // R2.2 acceptance: the per-model decomposition sums to the run total (±rounding).
+        assertThat(capture.modelCostSum()).isCloseTo(0.094841, within(1e-9));
+        assertThat(capture.modelCostSum()).isCloseTo(capture.totalCostUsd(), within(1e-9));
+    }
+
+    @Test
+    void noPerTurnUsageWhenRawJsonAbsent() {
+        // Programmatic construction (wrap → rawJson null) yields no per-turn records.
+        List<ParsedMessage> messages = List.of(
+                wrap(new AssistantMessage(List.of(new TextBlock("hi")))),
+                wrap(resultMessage(0.01, 1000, 800, 100, 50)));
+
+        PhaseCapture capture = SessionLogParser.parse(messages.iterator(), "execute", "prompt");
+
+        assertThat(capture.hasTurns()).isFalse();
+        assertThat(capture.hasModelCosts()).isFalse();
+    }
+
+    @Test
+    void emitsTrailingStepCostLinesThatSumToTotalAndAreNonUniform(@TempDir Path tempDir) throws IOException {
+        // Two single-tool turns (100 / 300 output tokens), total $0.04 → 0.01 / 0.03.
+        String w1 = "{\"type\":\"assistant\",\"message\":{\"id\":\"msg_1\",\"model\":\"claude-opus-4-8\","
+                + "\"usage\":{\"input_tokens\":10,\"output_tokens\":100,\"cache_creation_input_tokens\":0,"
+                + "\"cache_read_input_tokens\":0}}}";
+        String w2 = "{\"type\":\"assistant\",\"message\":{\"id\":\"msg_2\",\"model\":\"claude-opus-4-8\","
+                + "\"usage\":{\"input_tokens\":10,\"output_tokens\":300,\"cache_creation_input_tokens\":0,"
+                + "\"cache_read_input_tokens\":0}}}";
+        ToolUseBlock t1 = ToolUseBlock.builder().id("toolu_1").name("Read").input(Map.of("file_path", "/a")).build();
+        ToolUseBlock t2 = ToolUseBlock.builder().id("toolu_2").name("Bash").input(Map.of("command", "ls")).build();
+
+        List<ParsedMessage> messages = List.of(
+                wrapRaw(new AssistantMessage(List.of(t1)), w1),
+                wrapRaw(new AssistantMessage(List.of(t2)), w2),
+                wrap(resultMessage(0.04, 2000, 1500, 300, 400)));
+
+        Path traceFile = tempDir.resolve("trace-stepcost.jsonl");
+        SessionLogParser.parse(messages.iterator(), "run-x", "prompt", traceFile);
+
+        List<String> all = Files.readAllLines(traceFile);
+        List<JsonNode> stepCosts = new ArrayList<>();
+        int resultIdx = -1;
+        for (int i = 0; i < all.size(); i++) {
+            JsonNode node = MAPPER.readTree(all.get(i));
+            if ("result".equals(node.get("type").asText())) {
+                resultIdx = i;
+            }
+            if ("step_cost".equals(node.get("type").asText())) {
+                stepCosts.add(node);
+                // trailing: every step_cost comes after the result line
+                assertThat(i).isGreaterThan(resultIdx);
+            }
+        }
+
+        assertThat(stepCosts).hasSize(2);
+        assertThat(stepCosts).extracting(n -> n.get("stepId").asText()).containsExactly("toolu_1", "toolu_2");
+        assertThat(stepCosts).allSatisfy(n -> {
+            assertThat(n.get("attributionMethod").asText()).isEqualTo("OUTPUT_TOKEN_PROPORTIONAL");
+            assertThat(n.get("actualRunCostUsd").asDouble()).isEqualTo(0.04);
+        });
+        double sum = stepCosts.stream().mapToDouble(n -> n.get("attributedCostUsd").asDouble()).sum();
+        assertThat(sum).isCloseTo(0.04, within(1e-9));
+        // non-uniform — the high-output step costs more
+        assertThat(stepCosts.get(1).get("attributedCostUsd").asDouble())
+                .isGreaterThan(stepCosts.get(0).get("attributedCostUsd").asDouble());
+    }
+
+    @Test
     void parseWithNullTraceFileWorksNormally() {
         List<ParsedMessage> messages = List.of(
                 wrap(new AssistantMessage(List.of(new TextBlock("Hello")))),
@@ -561,6 +729,10 @@ class SessionLogParserTest {
 
     private static ParsedMessage wrap(io.github.markpollack.claude.agent.sdk.types.Message message) {
         return ParsedMessage.RegularMessage.of(message);
+    }
+
+    private static ParsedMessage wrapRaw(io.github.markpollack.claude.agent.sdk.types.Message message, String rawJson) {
+        return ParsedMessage.RegularMessage.of(message, rawJson);
     }
 
     private static ResultMessage resultMessage(double cost, int durationMs, int apiDurationMs,

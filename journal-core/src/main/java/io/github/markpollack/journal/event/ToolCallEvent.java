@@ -14,6 +14,9 @@ import java.util.Map;
  * @param durationMs execution duration in milliseconds
  * @param success whether the tool call succeeded
  * @param errorMessage error message if failed (null if succeeded)
+ * @param id stable identity for this step — the vendor tool_use id (e.g. {@code toolu_…})
+ *           when available, null otherwise. Persisted so feedback/eval can target a step
+ *           by a stable id instead of a reload-order-dependent list position. (Round 2 R2.3)
  */
 public record ToolCallEvent(
         Instant timestamp,
@@ -22,8 +25,15 @@ public record ToolCallEvent(
         Object output,
         long durationMs,
         boolean success,
-        String errorMessage
+        String errorMessage,
+        String id
 ) implements JournalEvent {
+
+    /** Back-compat constructor for events without a stable id. */
+    public ToolCallEvent(Instant timestamp, String toolName, Map<String, Object> input, Object output,
+            long durationMs, boolean success, String errorMessage) {
+        this(timestamp, toolName, input, output, durationMs, success, errorMessage, null);
+    }
 
     @Override
     public String type() {
@@ -36,10 +46,22 @@ public record ToolCallEvent(
         return new ToolCallEvent(Instant.now(), toolName, input, output, durationMs, true, null);
     }
 
+    /** Creates a successful tool call event with a stable id (the vendor tool_use id). */
+    public static ToolCallEvent success(String id, String toolName, Map<String, Object> input,
+                                        Object output, long durationMs) {
+        return new ToolCallEvent(Instant.now(), toolName, input, output, durationMs, true, null, id);
+    }
+
     /** Creates a failed tool call event. */
     public static ToolCallEvent failure(String toolName, Map<String, Object> input,
                                         String error, long durationMs) {
         return new ToolCallEvent(Instant.now(), toolName, input, null, durationMs, false, error);
+    }
+
+    /** Creates a failed tool call event with a stable id (the vendor tool_use id). */
+    public static ToolCallEvent failure(String id, String toolName, Map<String, Object> input,
+                                        String error, long durationMs) {
+        return new ToolCallEvent(Instant.now(), toolName, input, null, durationMs, false, error, id);
     }
 
     /** Creates a builder for ToolCallEvent. */
@@ -58,6 +80,9 @@ public record ToolCallEvent(
         if (errorMessage != null) {
             map.put("error", errorMessage);
         }
+        if (id != null) {
+            map.put("id", id);
+        }
         return map;
     }
 
@@ -70,6 +95,7 @@ public record ToolCallEvent(
         private long durationMs;
         private boolean success = true;
         private String errorMessage;
+        private String id;
 
         public Builder timestamp(Instant timestamp) {
             this.timestamp = timestamp;
@@ -106,8 +132,13 @@ public record ToolCallEvent(
             return this;
         }
 
+        public Builder id(String id) {
+            this.id = id;
+            return this;
+        }
+
         public ToolCallEvent build() {
-            return new ToolCallEvent(timestamp, toolName, input, output, durationMs, success, errorMessage);
+            return new ToolCallEvent(timestamp, toolName, input, output, durationMs, success, errorMessage, id);
         }
     }
 }

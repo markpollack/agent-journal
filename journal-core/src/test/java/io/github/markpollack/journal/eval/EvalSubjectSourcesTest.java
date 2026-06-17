@@ -2,6 +2,7 @@ package io.github.markpollack.journal.eval;
 
 import io.github.markpollack.journal.Experiment;
 import io.github.markpollack.journal.event.JournalEvent;
+import io.github.markpollack.journal.event.ToolCallEvent;
 import io.github.markpollack.journal.storage.InMemoryStorage;
 import io.github.markpollack.journal.storage.RunData;
 import io.github.markpollack.journal.test.TestEvents;
@@ -157,7 +158,7 @@ class EvalSubjectSourcesTest {
 		}
 
 		@Test
-		@DisplayName("generates deterministic sequential IDs")
+		@DisplayName("falls back to positional IDs only when no native id is present")
 		void generatesSequentialIds() {
 			storage.appendEvent(EXP_ID, RUN_ID, TestEvents.llmCall());
 			storage.appendEvent(EXP_ID, RUN_ID, TestEvents.bashSuccess());
@@ -167,6 +168,20 @@ class EvalSubjectSourcesTest {
 
 			assertThat(subjects.get(0).id()).isEqualTo("journal:" + RUN_ID + ":0");
 			assertThat(subjects.get(1).id()).isEqualTo("journal:" + RUN_ID + ":1");
+		}
+
+		@Test
+		@DisplayName("uses the tool_use id as the stable subject id, not a list position (R2.3)")
+		void usesToolUseIdAsStableSubjectId() {
+			var event = ToolCallEvent.success("toolu_abc123", "Bash", Map.of("command", "ls"), "out", 5);
+			storage.appendEvent(EXP_ID, RUN_ID, event);
+
+			EvalSubjectSource source = EvalSubjectSources.fromJournal(storage, EXP_ID, RUN_ID);
+			EvalSubject subject = source.subjects().toList().get(0);
+
+			// Order-independent identity: feedback keyed to this resolves regardless of reload order
+			assertThat(subject.id()).isEqualTo("toolu_abc123");
+			assertThat(subject.kind()).isEqualTo(EvalSubjectKind.TOOL_CALL);
 		}
 	}
 

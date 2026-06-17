@@ -24,6 +24,10 @@ import java.util.List;
  * @param toolUses       Tool use records from assistant messages
  * @param rawResult      ResultMessage.result() content (null if not available)
  * @param toolResults    Tool result records from user messages (null for older captures)
+ * @param turns          Per-turn usage (one per assistant message), parsed from the wire;
+ *                       empty when rawJson is unavailable (SDK &lt; 1.3.0 or programmatic). R2.2.
+ * @param modelCosts     Per-model cost decomposition from the result's modelUsage; the
+ *                       costs sum to {@code totalCostUsd}. Empty when unavailable. R2.2.
  */
 public record PhaseCapture(
         String phaseName,
@@ -43,7 +47,9 @@ public record PhaseCapture(
         List<String> thinkingBlocks,
         List<ToolUseRecord> toolUses,
         String rawResult,
-        List<ToolResultRecord> toolResults
+        List<ToolResultRecord> toolResults,
+        List<TurnUsage> turns,
+        List<ModelCost> modelCosts
 ) {
     /**
      * Backward-compatible constructor for callers that don't provide cache tokens or toolResults.
@@ -55,6 +61,20 @@ public record PhaseCapture(
         this(phaseName, promptText, inputTokens, outputTokens, thinkingTokens, 0, 0, durationMs,
                 apiDurationMs, totalCostUsd, sessionId, numTurns, isError, textOutput,
                 thinkingBlocks, toolUses, rawResult, null);
+    }
+
+    /**
+     * Backward-compatible constructor for callers that predate per-turn usage capture
+     * (R2.2): {@code turns} and {@code modelCosts} default to empty.
+     */
+    public PhaseCapture(String phaseName, String promptText, int inputTokens, int outputTokens,
+            int thinkingTokens, int cacheCreationInputTokens, int cacheReadInputTokens, long durationMs,
+            long apiDurationMs, double totalCostUsd, String sessionId, int numTurns, boolean isError,
+            String textOutput, List<String> thinkingBlocks, List<ToolUseRecord> toolUses, String rawResult,
+            List<ToolResultRecord> toolResults) {
+        this(phaseName, promptText, inputTokens, outputTokens, thinkingTokens, cacheCreationInputTokens,
+                cacheReadInputTokens, durationMs, apiDurationMs, totalCostUsd, sessionId, numTurns, isError,
+                textOutput, thinkingBlocks, toolUses, rawResult, toolResults, List.of(), List.of());
     }
 
     /**
@@ -78,5 +98,24 @@ public record PhaseCapture(
 
     public boolean hasToolResults() {
         return toolResults != null && !toolResults.isEmpty();
+    }
+
+    public boolean hasTurns() {
+        return turns != null && !turns.isEmpty();
+    }
+
+    public boolean hasModelCosts() {
+        return modelCosts != null && !modelCosts.isEmpty();
+    }
+
+    /**
+     * Sum of per-model {@code costUsd} from {@link #modelCosts()} — the exact run cost
+     * decomposition (equals {@code totalCostUsd} ±float rounding when modelUsage is present).
+     */
+    public double modelCostSum() {
+        if (modelCosts == null) {
+            return 0.0;
+        }
+        return modelCosts.stream().mapToDouble(ModelCost::costUsd).sum();
     }
 }

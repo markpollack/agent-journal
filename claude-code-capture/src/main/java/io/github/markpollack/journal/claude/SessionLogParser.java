@@ -1,5 +1,13 @@
 package io.github.markpollack.journal.claude;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.github.markpollack.journal.trace.JournalStep;
+import io.github.markpollack.journal.trace.TraceContentMode;
+import io.github.markpollack.journal.trace.TraceRawMode;
+import io.github.markpollack.journal.trace.TraceWriter;
+
 import io.github.markpollack.claude.agent.sdk.parsing.ParsedMessage;
 import io.github.markpollack.claude.agent.sdk.types.AssistantMessage;
 import io.github.markpollack.claude.agent.sdk.types.ContentBlock;
@@ -33,6 +41,8 @@ import org.slf4j.LoggerFactory;
 public class SessionLogParser {
 
     private static final Logger logger = LoggerFactory.getLogger(SessionLogParser.class);
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**
      * Parse a Claude SDK response iterator into a PhaseCapture.
@@ -81,17 +91,50 @@ public class SessionLogParser {
      */
     public static PhaseCapture parse(Iterator<ParsedMessage> response, String phaseName, String promptText,
             Path traceFile, TraceContentMode contentMode) {
+        return parse(response, phaseName, promptText, traceFile, contentMode, TraceRawMode.NONE);
+    }
+
+    /**
+     * Parse a Claude SDK response iterator into a PhaseCapture, optionally writing a JSONL
+     * trace file with a content-capture policy and a raw-capture policy.
+     *
+     * <p>
+     * When {@code rawMode} is {@link TraceRawMode#FULL}, each vendor wire message is also
+     * persisted verbatim as a {@code raw} trace line ({@link TraceWriter#writeRaw}), so
+     * unmodeled fields (the sub-agent envelope, {@code permission_denials},
+     * {@code modelUsage}) are recoverable even though the typed {@code Message} drops them.
+     * Requires {@code claude-code-sdk} &ge; 1.3.0 for {@code RegularMessage.rawJson}.
+     *
+     * @param response    the SDK response iterator
+     * @param phaseName   the phase name for this capture
+     * @param promptText  the prompt that was sent for this phase (null if not captured)
+     * @param traceFile   optional path to a JSONL trace file (null to skip tracing)
+     * @param contentMode content capture policy for trace lines
+     * @param rawMode     verbatim raw-wire capture policy
+     * @return a PhaseCapture with all extracted data
+     */
+    public static PhaseCapture parse(Iterator<ParsedMessage> response, String phaseName, String promptText,
+            Path traceFile, TraceContentMode contentMode, TraceRawMode rawMode) {
         TraceWriter trace = null;
         if (traceFile != null) {
             try {
-                trace = new TraceWriter(traceFile, contentMode, phaseName, phaseName);
+                trace = new TraceWriter(traceFile, contentMode, phaseName, phaseName, rawMode);
             } catch (IOException ex) {
                 logger.warn("[{}] Failed to open trace file {}: {}", phaseName, traceFile, ex.getMessage());
             }
         }
 
         try {
-            return doParse(response, phaseName, promptText, trace);
+            PhaseCapture capture = doParse(response, phaseName, promptText, trace);
+            if (trace != null) {
+                // R2.4: emit derived per-step cost as trailing step_cost lines. Cost is only
+                // knowable post-run (the total arrives on the last result line), so attribution
+                // happens here, after doParse, rather than on the streaming tool_use line.
+                for (JournalStep step : JournalSteps.fromPhaseCapture(capture, phaseName)) {
+                    writeTrace(trace, phaseName, w -> w.writeStepCost(step));
+                }
+            }
+            return capture;
         } finally {
             if (trace != null) {
                 try {
@@ -109,6 +152,9 @@ public class SessionLogParser {
         List<String> thinkingBlocks = new ArrayList<>();
         List<ToolUseRecord> toolUses = new ArrayList<>();
         List<ToolResultRecord> toolResults = new ArrayList<>();
+        // R2.2: per-turn usage (one per assistant message) + per-model cost decomposition
+        List<TurnUsage> turns = new ArrayList<>();
+        List<ModelCost> modelCosts = new ArrayList<>();
         Map<String, String> toolUseNames = new java.util.HashMap<>();
         Map<String, Map<String, Object>> toolUseInputs = new java.util.HashMap<>();
         Map<String, Long> toolUseStartMs = new java.util.HashMap<>();
@@ -132,6 +178,14 @@ public class SessionLogParser {
             if (!parsed.isRegularMessage()) {
                 continue;
             }
+
+            // R2.1: persist the verbatim wire message before its typed decomposition, so
+            // the sub-agent envelope (isSidechain/parentUuid/parent_tool_use_id) and other
+            // unmodeled fields survive. No-op unless rawMode=FULL; rawJson is null for
+            // programmatically-constructed messages and SDK < 1.3.0.
+            final String rawJson = parsed instanceof ParsedMessage.RegularMessage regular ? regular.rawJson() : null;
+            writeTrace(trace, phaseName, w -> w.writeRaw(rawJson));
+            JsonNode rawRoot = parseRaw(rawJson);
 
             var message = parsed.asMessage();
 
@@ -164,9 +218,20 @@ public class SessionLogParser {
                         resultMsg.subtype(), apiDurationMs, thinkingTokens, cacheCreationInputTokens,
                         cacheReadInputTokens, resultMsg.structuredOutput());
                 writeTrace(trace, phaseName, w -> w.writeResult(fIn, fOut, fCost, fTurns, fDur, fMeta));
+                // R2.2: the exact per-model cost decomposition (sums to totalCostUsd) lives in
+                // the result wire's modelUsage sibling — not on the typed ResultMessage. Last
+                // result wins.
+                List<ModelCost> parsed2 = parseModelCosts(rawRoot);
+                if (!parsed2.isEmpty()) {
+                    modelCosts.clear();
+                    modelCosts.addAll(parsed2);
+                }
             }
 
             if (message instanceof AssistantMessage assistantMsg) {
+                // R2.3: collect this turn's tool_use ids so per-step cost can be attributed
+                // to the tool calls that belong to the same assistant message.
+                List<String> turnToolIds = new ArrayList<>();
                 for (ContentBlock block : assistantMsg.content()) {
                     if (block instanceof TextBlock textBlock) {
                         textOutput.append(textBlock.text());
@@ -187,6 +252,7 @@ public class SessionLogParser {
                                 toolUseBlock.id(),
                                 toolUseBlock.name(),
                                 toolUseBlock.input()));
+                        turnToolIds.add(toolUseBlock.id());
                         toolUseNames.put(toolUseBlock.id(), toolUseBlock.name());
                         toolUseInputs.put(toolUseBlock.id(), toolUseBlock.input());
                         toolUseStartMs.put(toolUseBlock.id(), System.currentTimeMillis());
@@ -195,6 +261,11 @@ public class SessionLogParser {
                         writeTrace(trace, phaseName,
                                 w -> w.writeToolUse(toolUseBlock.name(), toolUseBlock.id(), toolUseBlock.input()));
                     }
+                }
+                // R2.2/R2.3: per-turn usage (wire-only) carrying this turn's tool_use ids.
+                TurnUsage turn = parseTurnUsage(rawRoot, turnToolIds);
+                if (turn != null) {
+                    turns.add(turn);
                 }
             }
 
@@ -259,7 +330,9 @@ public class SessionLogParser {
                 thinkingBlocks,
                 toolUses,
                 rawResult,
-                toolResults
+                toolResults,
+                turns,
+                modelCosts
         );
     }
 
@@ -378,6 +451,77 @@ public class SessionLogParser {
             }
             default -> "";
         };
+    }
+
+    /**
+     * Parses a raw wire line into a JsonNode, or null when absent/malformed. Wire JSON is
+     * expected to be valid; a malformed line simply yields no per-turn record rather than
+     * failing the parse.
+     */
+    private static JsonNode parseRaw(String rawJson) {
+        if (rawJson == null) {
+            return null;
+        }
+        try {
+            return MAPPER.readTree(rawJson);
+        } catch (IOException ex) {
+            logger.debug("Could not parse raw wire line for per-turn usage: {}", ex.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Per-turn usage from an assistant wire message's {@code message.usage} block (snake_case
+     * keys). Returns null when the raw wire is unavailable or carries no usage object.
+     */
+    private static TurnUsage parseTurnUsage(JsonNode rawRoot, List<String> toolUseIds) {
+        if (rawRoot == null) {
+            return null;
+        }
+        JsonNode msg = rawRoot.path("message");
+        JsonNode usage = msg.path("usage");
+        if (!usage.isObject()) {
+            return null;
+        }
+        return new TurnUsage(
+                textOrNull(msg, "id"),
+                textOrNull(msg, "model"),
+                usage.path("input_tokens").asLong(0),
+                usage.path("output_tokens").asLong(0),
+                usage.path("cache_creation_input_tokens").asLong(0),
+                usage.path("cache_read_input_tokens").asLong(0),
+                List.copyOf(toolUseIds));
+    }
+
+    /**
+     * Per-model cost decomposition from the result wire's {@code modelUsage} object
+     * (camelCase keys, {@code costUSD}). Empty list when absent.
+     */
+    private static List<ModelCost> parseModelCosts(JsonNode rawRoot) {
+        if (rawRoot == null) {
+            return List.of();
+        }
+        JsonNode modelUsage = rawRoot.path("modelUsage");
+        if (!modelUsage.isObject()) {
+            return List.of();
+        }
+        List<ModelCost> costs = new ArrayList<>();
+        modelUsage.fields().forEachRemaining(entry -> {
+            JsonNode m = entry.getValue();
+            costs.add(new ModelCost(
+                    entry.getKey(),
+                    m.path("inputTokens").asLong(0),
+                    m.path("outputTokens").asLong(0),
+                    m.path("cacheReadInputTokens").asLong(0),
+                    m.path("cacheCreationInputTokens").asLong(0),
+                    m.path("costUSD").asDouble(0.0)));
+        });
+        return costs;
+    }
+
+    private static String textOrNull(JsonNode node, String field) {
+        JsonNode v = node.path(field);
+        return v.isMissingNode() || v.isNull() ? null : v.asText();
     }
 
     private static int getInt(Map<String, Object> map, String key) {

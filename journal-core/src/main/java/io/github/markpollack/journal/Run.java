@@ -1,6 +1,7 @@
 package io.github.markpollack.journal;
 
 import io.github.markpollack.journal.call.CallTracker;
+import io.github.markpollack.journal.derived.DerivedEvent;
 import io.github.markpollack.journal.event.JournalEvent;
 import io.github.markpollack.journal.metric.MetricRegistry;
 import io.github.markpollack.journal.metric.Tags;
@@ -78,6 +79,19 @@ public interface Run extends AutoCloseable {
      * @param event the event to log
      */
     void logEvent(JournalEvent event);
+
+    /**
+     * Logs a derived (post-hoc analysis) event to the run's analysis log, which is
+     * <em>physically separate</em> from the immutable execution event log: derived events
+     * land in {@code analysis.jsonl}, never in {@code events.jsonl}. Use this for inferred
+     * interpretation computed from the run — e.g. per-step cost attribution
+     * ({@link io.github.markpollack.journal.derived.StepCostEvent}) — so an inferred value is
+     * never mistaken for recorded execution history. Derived events are not added to the
+     * in-memory execution event list returned for the run.
+     *
+     * @param event the derived event to log
+     */
+    void logDerivedEvent(DerivedEvent event);
 
     /**
      * Logs a metric value.
