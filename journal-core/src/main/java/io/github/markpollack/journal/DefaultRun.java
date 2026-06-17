@@ -2,6 +2,7 @@ package io.github.markpollack.journal;
 
 import io.github.markpollack.journal.call.CallTracker;
 import io.github.markpollack.journal.call.DefaultCallTracker;
+import io.github.markpollack.journal.derived.DerivedEvent;
 import io.github.markpollack.journal.event.MetricEvent;
 import io.github.markpollack.journal.event.JournalEvent;
 import io.github.markpollack.journal.metric.InMemoryMetricRegistry;
@@ -151,6 +152,14 @@ public final class DefaultRun implements Run {
         ensureRunning();
         events.add(event);
         storage.appendEvent(experiment.id(), id, event);
+    }
+
+    @Override
+    public void logDerivedEvent(DerivedEvent event) {
+        ensureRunning();
+        // Derived (analysis) events go only to the analysis.jsonl sidecar, never to the
+        // in-memory execution list — execution history and inferred interpretation stay separate.
+        storage.appendDerivedEvent(experiment.id(), id, event);
     }
 
     @Override

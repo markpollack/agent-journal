@@ -2,6 +2,7 @@ package io.github.markpollack.journal.claude;
 
 import io.github.markpollack.journal.Run;
 import io.github.markpollack.journal.RunStatus;
+import io.github.markpollack.journal.derived.StepCostEvent;
 import io.github.markpollack.journal.event.CostBreakdown;
 import io.github.markpollack.journal.event.CustomEvent;
 import io.github.markpollack.journal.event.LLMCallEvent;
@@ -9,7 +10,9 @@ import io.github.markpollack.journal.event.StateChangeEvent;
 import io.github.markpollack.journal.event.TimingInfo;
 import io.github.markpollack.journal.event.TokenUsage;
 import io.github.markpollack.journal.event.ToolCallEvent;
+import io.github.markpollack.journal.trace.JournalStep;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -77,6 +80,15 @@ public abstract class BaseRunRecorder {
                         "phase", phase.phaseName(),
                         "content", thinking)));
             }
+        }
+
+        // Derived per-step cost → analysis.jsonl (R2.10 emission). The run reports only a
+        // total cost; JournalSteps attributes a fair share per step (joined to the execution
+        // ToolCallEvent above by the shared tool_use id). This is inferred interpretation, so it
+        // is a DerivedEvent in the analysis log — never mixed into the execution event stream.
+        Instant analyzedAt = Instant.now();
+        for (JournalStep step : JournalSteps.fromPhaseCapture(phase, currentRun.id())) {
+            currentRun.logDerivedEvent(StepCostEvent.fromStep(step, analyzedAt));
         }
     }
 
