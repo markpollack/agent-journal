@@ -112,6 +112,44 @@ class JournalStepsTest {
     }
 
     @Test
+    void stampsEvenSplitWhenNoPerTurnUsage() {
+        // No rawJson → no turns → the whole allocation degrades to a flat even split → EVEN_SPLIT (A1).
+        ToolUseBlock a = ToolUseBlock.builder().id("toolu_a").name("Read").input(Map.of("file_path", "/x")).build();
+        ToolUseBlock b = ToolUseBlock.builder().id("toolu_b").name("Bash").input(Map.of("command", "ls")).build();
+        List<ParsedMessage> messages = List.of(
+                wrap(new AssistantMessage(List.of(a, b))),
+                wrap(result(0.03)));
+
+        PhaseCapture phase = SessionLogParser.parse(messages.iterator(), RUN, "p");
+        assertThat(phase.hasTurns()).isFalse();
+
+        List<JournalStep> steps = JournalSteps.fromPhaseCapture(phase, RUN);
+        assertThat(steps).isNotEmpty();
+        assertThat(steps).extracting(JournalStep::attributionMethod)
+                .containsOnly(AttributionMethod.EVEN_SPLIT);
+    }
+
+    @Test
+    void withinTurnParallelToolSplitStaysProportional() {
+        // Per-turn tokens ARE present; the even split among a turn's parallel tools is part of the
+        // proportional method, NOT the coarse fallback (A1).
+        ToolUseBlock a = ToolUseBlock.builder().id("toolu_a").name("Read").input(Map.of("file_path", "/x")).build();
+        ToolUseBlock b = ToolUseBlock.builder().id("toolu_b").name("Read").input(Map.of("file_path", "/y")).build();
+        String wire = "{\"type\":\"assistant\",\"message\":{\"id\":\"msg_1\",\"model\":\"claude-opus-4-8\","
+                + "\"usage\":{\"input_tokens\":10,\"output_tokens\":200,\"cache_creation_input_tokens\":0,"
+                + "\"cache_read_input_tokens\":0}}}";
+        List<ParsedMessage> messages = List.of(
+                wrapRaw(new AssistantMessage(List.of(a, b)), wire),
+                wrap(result(0.02)));
+
+        PhaseCapture phase = SessionLogParser.parse(messages.iterator(), RUN, "p");
+        List<JournalStep> steps = JournalSteps.fromPhaseCapture(phase, RUN);
+
+        assertThat(steps).extracting(JournalStep::attributionMethod)
+                .containsOnly(AttributionMethod.OUTPUT_TOKEN_PROPORTIONAL);
+    }
+
+    @Test
     void residualKeepsSumExactlyEqualToTotal() {
         // Output tokens 1/1/1 across three single-tool turns: 0.10/3 doesn't divide evenly.
         List<ParsedMessage> messages = List.of(

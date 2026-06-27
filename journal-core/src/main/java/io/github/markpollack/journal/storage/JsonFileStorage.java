@@ -327,6 +327,15 @@ public class JsonFileStorage implements JournalStorage {
         }
     }
 
+    /**
+     * File storage writes derived events to a durable {@code analysis.jsonl} sidecar, so they
+     * survive process exit and the derived layer is regenerable from disk.
+     */
+    @Override
+    public boolean persistsDerivedEvents() {
+        return true;
+    }
+
     @Override
     public List<DerivedEvent> loadDerivedEvents(String experimentId, String runId) {
         Path file = analysisFile(experimentId, runId);

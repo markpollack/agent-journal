@@ -1,5 +1,7 @@
 package io.github.markpollack.journal.claude;
 
+import io.github.markpollack.journal.trace.JournalStep;
+
 import java.util.List;
 
 /**
@@ -106,6 +108,28 @@ public record PhaseCapture(
 
     public boolean hasModelCosts() {
         return modelCosts != null && !modelCosts.isEmpty();
+    }
+
+    /**
+     * Eager, pure per-step attributed cost computed from this capture's own {@code turns},
+     * {@code toolUses}, and {@code totalCostUsd} — no storage, no {@code Run}, no clock (DESIGN §4).
+     *
+     * <p>
+     * This makes derived cost inseparable from any capture: a consumer that never opens a {@code Run}
+     * still gets the per-step split. The shares sum to {@code totalCostUsd} (±float; residual folded
+     * into the last step) under {@link io.github.markpollack.journal.trace.AttributionMethod#OUTPUT_TOKEN_PROPORTIONAL}.
+     *
+     * <p>
+     * Returns {@link JournalStep} (the {@code List<JournalStep>} latitude the contract allows) rather
+     * than {@code StepCostEvent} precisely because purity forbids the post-run analysis timestamp a
+     * {@code StepCostEvent} carries — the recorder stamps that at persist time via
+     * {@link io.github.markpollack.journal.derived.StepCostEvent#fromStep}. {@code runId} is {@code null}
+     * here (the capture has no run yet); a recorder re-derives with the real id.
+     *
+     * @return the per-step attributed costs for this capture (empty only if there is nothing to attribute)
+     */
+    public List<JournalStep> stepCosts() {
+        return JournalSteps.fromPhaseCapture(this, null);
     }
 
     /**

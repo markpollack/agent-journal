@@ -13,7 +13,8 @@ import io.github.markpollack.journal.event.ToolCallEvent;
 import io.github.markpollack.journal.trace.JournalStep;
 
 import java.time.Instant;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,6 +33,13 @@ public abstract class BaseRunRecorder {
     protected String previousPhase = "init";
 
     /**
+     * Count of derived {@link StepCostEvent}s emitted across all {@link #recordPhase} calls. The
+     * production recorder reads this to fail loud when derived events were produced but the storage
+     * backend can't durably persist them (DESIGN §4 fail-loud contract).
+     */
+    protected int derivedEventsEmitted = 0;
+
+    /**
      * Records a single phase with full event data:
      * state transition, prompt capture, LLM call, tool calls, thinking blocks.
      */
@@ -47,14 +55,19 @@ public abstract class BaseRunRecorder {
                     "text", phase.promptText())));
         }
 
-        // LLM call with full token/cost/timing data
-        Map<String, Object> metadata = new HashMap<>();
+        // LLM call with full token/cost/timing data. The per-turn breakdown rides as additive
+        // metadata (JournalSteps.META_TURNS) — raw wire data, not derived — so the immutable log
+        // alone regenerates per-step cost offline via JournalSteps.fromEvents (DESIGN §2.2 closure).
+        Map<String, Object> metadata = new LinkedHashMap<>();
         metadata.put("phaseName", phase.phaseName());
         if (phase.sessionId() != null) {
             metadata.put("sessionId", phase.sessionId());
         }
         metadata.put("numTurns", phase.numTurns());
         metadata.put("isError", phase.isError());
+        if (phase.hasTurns()) {
+            metadata.put(JournalSteps.META_TURNS, JournalSteps.turnsToMetadata(phase.turns()));
+        }
 
         currentRun.logEvent(LLMCallEvent.builder()
                 .model(currentRun.config().getOrDefault("model", "unknown"))
@@ -65,11 +78,25 @@ public abstract class BaseRunRecorder {
                 .build());
 
         // Tool call events — carry the vendor tool_use id as the stable step identity
-        // (R2.3) so feedback/eval can target a step without depending on reload order.
+        // (R2.3) so feedback/eval can target a step without depending on reload order. The
+        // tool_result error bit is recorded as success/failure so isError round-trips through the
+        // execution stream (so fromEvents matches fromPhaseCapture on the error flag).
         if (phase.hasToolUses()) {
+            Map<String, ToolResultRecord> resultsById = new LinkedHashMap<>();
+            if (phase.toolResults() != null) {
+                for (ToolResultRecord tr : phase.toolResults()) {
+                    resultsById.put(tr.toolUseId(), tr);
+                }
+            }
             for (ToolUseRecord toolUse : phase.toolUses()) {
-                currentRun.logEvent(ToolCallEvent.success(
-                        toolUse.id(), toolUse.name(), toolUse.input(), null, 0));
+                ToolResultRecord result = resultsById.get(toolUse.id());
+                if (result != null && result.isError()) {
+                    currentRun.logEvent(ToolCallEvent.failure(
+                            toolUse.id(), toolUse.name(), toolUse.input(), result.content(), 0));
+                } else {
+                    currentRun.logEvent(ToolCallEvent.success(
+                            toolUse.id(), toolUse.name(), toolUse.input(), null, 0));
+                }
             }
         }
 
@@ -87,9 +114,11 @@ public abstract class BaseRunRecorder {
         // ToolCallEvent above by the shared tool_use id). This is inferred interpretation, so it
         // is a DerivedEvent in the analysis log — never mixed into the execution event stream.
         Instant analyzedAt = Instant.now();
-        for (JournalStep step : JournalSteps.fromPhaseCapture(phase, currentRun.id())) {
+        List<JournalStep> steps = JournalSteps.fromPhaseCapture(phase, currentRun.id());
+        for (JournalStep step : steps) {
             currentRun.logDerivedEvent(StepCostEvent.fromStep(step, analyzedAt));
         }
+        derivedEventsEmitted += steps.size();
     }
 
     public void failRun(Throwable error) {

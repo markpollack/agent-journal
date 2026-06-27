@@ -202,6 +202,25 @@ public interface JournalStorage {
         return List.of();
     }
 
+    /**
+     * Whether derived analysis events are persisted <em>durably</em> — i.e. survive process
+     * exit so {@code analysis.jsonl} can be reloaded and the derived layer regenerated later.
+     *
+     * <p>This is the seam the fail-loud capture contract reads (DESIGN §4): a recorder that
+     * emits {@link DerivedEvent}s onto a non-durable backend is silently losing the most
+     * measurement-critical signal, so the production recorder warns or throws at
+     * {@code run.finish()} when this is {@code false}.
+     *
+     * <p>Defaults to {@code false}: the bare interface's {@link #appendDerivedEvent} throws, and
+     * {@link InMemoryStorage} holds derived events only in memory (lost on exit). File-backed
+     * storage that writes {@code analysis.jsonl} overrides this to {@code true}.
+     *
+     * @return true if {@link #appendDerivedEvent} writes to durable storage
+     */
+    default boolean persistsDerivedEvents() {
+        return false;
+    }
+
     // ========== Artifact Operations ==========
 
     /**
