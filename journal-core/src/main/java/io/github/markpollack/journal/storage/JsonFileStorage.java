@@ -4,6 +4,7 @@ import io.github.markpollack.journal.Experiment;
 import io.github.markpollack.journal.derived.DerivedEvent;
 import io.github.markpollack.journal.event.FeedbackEvent;
 import io.github.markpollack.journal.event.JournalEvent;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
@@ -16,7 +17,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -50,6 +53,19 @@ import java.util.stream.Stream;
  * }</pre>
  */
 public class JsonFileStorage implements JournalStorage {
+
+    /**
+     * Schema version of the Path-A canonical streams ({@code events.jsonl} + {@code analysis.jsonl}),
+     * stamped on the {@code @type:"header"} first line of each file (A5). Lets a reader version-route
+     * where it already reads — the event stream — instead of sniffing for fields. Bumped only on a
+     * <strong>non-additive</strong> change (rename/remove/semantic shift); additive fields and new
+     * enum values do not bump it. <strong>Independent</strong> of the Path-B trace's own
+     * {@code schemaVersion} (a different artifact — do not conflate).
+     */
+    public static final int SCHEMA_VERSION = 1;
+
+    /** {@code @type} discriminator of the per-file header line (skipped when loading events). */
+    public static final String HEADER_TYPE = "header";
 
     private static final String EXPERIMENTS_DIR = "experiments";
     private static final String RUNS_DIR = "runs";
@@ -137,6 +153,39 @@ public class JsonFileStorage implements JournalStorage {
 
     private Path artifactFile(String experimentId, String runId, String name) {
         return artifactsDir(experimentId, runId).resolve(name);
+    }
+
+    // ========== Path-A header (A5) ==========
+
+    /**
+     * Writes the schema-version header as the <em>first</em> line of a Path-A stream file the first
+     * time it is created (A5): {@code {"@type":"header","schemaVersion":N,"stream":"…","runId":"…"}}.
+     * Readers ({@link #loadEvents}/{@link #loadDerivedEvents}) and the trace loader skip any
+     * {@code @type:"header"} line, so this is additive and tolerant. Not synchronized: a run is
+     * written by one recorder, and on the rare concurrent first-write the duplicate header is simply
+     * skipped on read (so correctness holds; at worst a cosmetic extra header line).
+     */
+    private void writeHeaderIfNew(Path file, String stream, String runId) throws IOException {
+        if (Files.exists(file)) {
+            return;
+        }
+        Files.createDirectories(file.getParent());
+        Map<String, Object> header = new LinkedHashMap<>();
+        header.put("@type", HEADER_TYPE);
+        header.put("schemaVersion", SCHEMA_VERSION);
+        header.put("stream", stream);
+        if (runId != null) {
+            header.put("runId", runId);
+        }
+        try (BufferedWriter writer = Files.newBufferedWriter(file,
+                StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+            writer.write(eventMapper.writeValueAsString(header));
+            writer.newLine();
+        }
+    }
+
+    private static boolean isHeader(JsonNode node) {
+        return node != null && HEADER_TYPE.equals(node.path("@type").asText(null));
     }
 
     // ========== Experiment Operations ==========
@@ -235,7 +284,7 @@ public class JsonFileStorage implements JournalStorage {
     public void appendEvent(String experimentId, String runId, JournalEvent event) {
         try {
             Path file = eventsFile(experimentId, runId);
-            Files.createDirectories(file.getParent());
+            writeHeaderIfNew(file, "events", runId);
 
             String json = eventMapper.writeValueAsString(event);
             try (BufferedWriter writer = Files.newBufferedWriter(file,
@@ -258,9 +307,14 @@ public class JsonFileStorage implements JournalStorage {
         try {
             List<JournalEvent> events = new ArrayList<>();
             for (String line : Files.readAllLines(file)) {
-                if (!line.isBlank()) {
-                    events.add(eventMapper.readValue(line, JournalEvent.class));
+                if (line.isBlank()) {
+                    continue;
                 }
+                JsonNode node = eventMapper.readTree(line);
+                if (isHeader(node)) {
+                    continue; // A5 schema-version header line — not an execution event
+                }
+                events.add(eventMapper.treeToValue(node, JournalEvent.class));
             }
             return events;
         } catch (IOException e) {
@@ -313,7 +367,7 @@ public class JsonFileStorage implements JournalStorage {
     public void appendDerivedEvent(String experimentId, String runId, DerivedEvent event) {
         try {
             Path file = analysisFile(experimentId, runId);
-            Files.createDirectories(file.getParent());
+            writeHeaderIfNew(file, "analysis", runId);
 
             String json = eventMapper.writeValueAsString(event);
             try (BufferedWriter writer = Files.newBufferedWriter(file,
@@ -345,9 +399,14 @@ public class JsonFileStorage implements JournalStorage {
         try {
             List<DerivedEvent> derived = new ArrayList<>();
             for (String line : Files.readAllLines(file)) {
-                if (!line.isBlank()) {
-                    derived.add(eventMapper.readValue(line, DerivedEvent.class));
+                if (line.isBlank()) {
+                    continue;
                 }
+                JsonNode node = eventMapper.readTree(line);
+                if (isHeader(node)) {
+                    continue; // A5 schema-version header line — not a derived event
+                }
+                derived.add(eventMapper.treeToValue(node, DerivedEvent.class));
             }
             return derived;
         } catch (IOException e) {

@@ -209,6 +209,9 @@ class JournalCaptureClosureTest {
             // The distinct value is the durable signal — assert it is actually on the wire.
             Path analysis = dir.resolve("experiments/exp/runs/" + runId + "/analysis.jsonl");
             for (String line : Files.readAllLines(analysis)) {
+                if (line.isBlank() || line.contains("\"@type\":\"header\"")) {
+                    continue; // A5 schema-version header line
+                }
                 assertThat(line).contains("\"attributionMethod\":\"EVEN_SPLIT\"");
             }
         }

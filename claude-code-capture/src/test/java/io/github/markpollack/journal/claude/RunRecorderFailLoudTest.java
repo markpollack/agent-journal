@@ -117,6 +117,9 @@ class RunRecorderFailLoudTest {
         Path analysis = dir.resolve("experiments/exp/runs/" + runId + "/analysis.jsonl");
         assertThat(analysis).exists();
         for (String line : Files.readAllLines(analysis)) {
+            if (line.isBlank() || line.contains("\"@type\":\"header\"")) {
+                continue; // A5 schema-version header line
+            }
             assertThat(line).contains("\"attributionMethod\":\"OUTPUT_TOKEN_PROPORTIONAL\"");
         }
     }
