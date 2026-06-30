@@ -44,6 +44,41 @@ public record TokenUsage(
         return inputTokens + outputTokens + thinkingTokens;
     }
 
+    /**
+     * Field-wise sum of two usage vectors — the per-type aggregator. Vendor-neutral, so any capture
+     * adapter (Claude/Gemini/Codex) builds a cost-bearing aggregate the same way: Σ per-turn usage by
+     * token type. Null is treated as the zero vector.
+     */
+    public TokenUsage plus(TokenUsage other) {
+        if (other == null) {
+            return this;
+        }
+        return new TokenUsage(
+                inputTokens + other.inputTokens,
+                outputTokens + other.outputTokens,
+                thinkingTokens + other.thinkingTokens,
+                cacheCreationTokens + other.cacheCreationTokens,
+                cacheReadTokens + other.cacheReadTokens,
+                toolUseTokens + other.toolUseTokens);
+    }
+
+    /**
+     * Field-wise sum of a sequence of usage vectors (empty/null → the zero vector). This is the
+     * cost-bearing aggregate: each token type is billed every turn, so summing per-turn usage by type
+     * is additive and reconciles to the run cost (unlike the context-size view, where cache re-reads
+     * over-count). Caveat: fields are {@code int}; an aggregate above ~2.1B tokens of a single type
+     * would overflow (not reachable for current runs).
+     */
+    public static TokenUsage sum(Iterable<TokenUsage> usages) {
+        TokenUsage acc = new TokenUsage(0, 0, 0, 0, 0, 0);
+        if (usages != null) {
+            for (TokenUsage u : usages) {
+                acc = acc.plus(u);
+            }
+        }
+        return acc;
+    }
+
     /** Effective input tokens accounting for cache. */
     public int effectiveInputTokens() {
         return inputTokens - cacheReadTokens;

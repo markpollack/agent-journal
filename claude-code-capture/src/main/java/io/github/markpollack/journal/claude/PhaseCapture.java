@@ -1,7 +1,9 @@
 package io.github.markpollack.journal.claude;
 
+import io.github.markpollack.journal.event.TokenUsage;
 import io.github.markpollack.journal.trace.JournalStep;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -130,6 +132,55 @@ public record PhaseCapture(
      */
     public List<JournalStep> stepCosts() {
         return JournalSteps.fromPhaseCapture(this, null);
+    }
+
+    /**
+     * The <strong>cost-bearing</strong> per-type token aggregate: Σ over {@link #turns()} of each
+     * token type ({@code input + output + cacheCreation + cacheRead}). This is the headline vector
+     * a cost-to-go must price — every turn's cache re-read is billed, so summing per-turn usage by
+     * type is additive and reconciles to {@code totalCostUsd} (unlike the per-turn token <em>size</em>
+     * view of R2.2, and unlike the snapshot, which takes the final {@code ResultMessage} usage and
+     * drops cache entirely). Pure, no I/O.
+     *
+     * <p>
+     * <strong>Thinking</strong> is recorded but never double-counted: Claude bills thinking inside
+     * {@code output} and exposes no per-turn thinking count, so the priced sum is input+output+cache;
+     * the best available run-level {@code thinkingTokens} is carried on the result as a documented
+     * subset of {@code output} (so it is not dropped), never added to the billed total.
+     *
+     * <p>
+     * When {@code turns} is empty (SDK &lt; 1.3.0 / programmatic capture), there is no per-turn truth
+     * to sum, so this falls back to the final-snapshot vector — coarse (context-size, not Σ-billed),
+     * but it still carries the snapshot's cache fields (unlike the legacy
+     * {@code TokenUsage.of(in, out, thinking)} headline, which zeroed them).
+     *
+     * @return the cost-bearing token aggregate for this phase
+     */
+    public TokenUsage aggregateUsage() {
+        if (turns == null || turns.isEmpty()) {
+            return new TokenUsage(inputTokens, outputTokens, thinkingTokens,
+                    cacheCreationInputTokens, cacheReadInputTokens, 0);
+        }
+        List<TokenUsage> perTurn = new ArrayList<>(turns.size());
+        for (TurnUsage t : turns) {
+            perTurn.add(new TokenUsage((int) t.inputTokens(), (int) t.outputTokens(), 0,
+                    (int) t.cacheCreationInputTokens(), (int) t.cacheReadInputTokens(), 0));
+        }
+        TokenUsage summed = TokenUsage.sum(perTurn);
+        // Carry the available run-level thinking (subset of output), recorded but not in the billed sum.
+        return new TokenUsage(summed.inputTokens(), summed.outputTokens(), thinkingTokens,
+                summed.cacheCreationTokens(), summed.cacheReadTokens(), summed.toolUseTokens());
+    }
+
+    /**
+     * The <strong>final-snapshot / context-size</strong> token view — the last {@code ResultMessage}
+     * usage as captured (point-in-time, not Σ-billed). Exposed explicitly so callers choose intent;
+     * for <em>cost</em> use {@link #aggregateUsage()}. The scalar accessors
+     * ({@link #inputTokens()}/{@link #outputTokens()}/{@link #thinkingTokens()}) are this same view.
+     */
+    public TokenUsage snapshotUsage() {
+        return new TokenUsage(inputTokens, outputTokens, thinkingTokens,
+                cacheCreationInputTokens, cacheReadInputTokens, 0);
     }
 
     /**
