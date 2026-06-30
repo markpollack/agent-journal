@@ -8,7 +8,6 @@ import io.github.markpollack.journal.event.CustomEvent;
 import io.github.markpollack.journal.event.LLMCallEvent;
 import io.github.markpollack.journal.event.StateChangeEvent;
 import io.github.markpollack.journal.event.TimingInfo;
-import io.github.markpollack.journal.event.TokenUsage;
 import io.github.markpollack.journal.event.ToolCallEvent;
 import io.github.markpollack.journal.trace.JournalStep;
 
@@ -69,9 +68,13 @@ public abstract class BaseRunRecorder {
             metadata.put(JournalSteps.META_TURNS, JournalSteps.turnsToMetadata(phase.turns()));
         }
 
+        // Headline token vector = the cost-bearing per-type aggregate (Σ per-turn by type, incl.
+        // cache), NOT the final-snapshot scalars (CM). The snapshot under-counts on long runs and
+        // dropped cache entirely; aggregateUsage() reconciles to totalCostUsd. Same field, corrected
+        // value — additive on §4. (No-turns captures fall back to the snapshot vector, now with cache.)
         currentRun.logEvent(LLMCallEvent.builder()
                 .model(currentRun.config().getOrDefault("model", "unknown"))
-                .tokenUsage(TokenUsage.of(phase.inputTokens(), phase.outputTokens(), phase.thinkingTokens()))
+                .tokenUsage(phase.aggregateUsage())
                 .cost(CostBreakdown.of(phase.totalCostUsd()))
                 .timing(TimingInfo.of(phase.durationMs(), phase.apiDurationMs()))
                 .metadata(metadata)

@@ -10,6 +10,18 @@ import java.util.List;
  * Captures all data from one SDK interaction phase.
  * Unified record merging agent/PhaseResult and spring-upgrade-agent/PhaseCapture.
  *
+ * <p>
+ * <strong>Two token views — pick by intent (CM):</strong>
+ * <ul>
+ *   <li>{@link #aggregateUsage()} — the <em>cost-bearing</em> aggregate (Σ per-turn by type, incl.
+ *       cache). Use this for anything that prices tokens or computes cost-to-go; it reconciles to
+ *       {@code totalCostUsd}.</li>
+ *   <li>The scalar accessors {@link #inputTokens()}/{@link #outputTokens()}/{@link #thinkingTokens()}
+ *       (and {@link #snapshotUsage()}) — the <em>final-snapshot / context-size</em> view from the last
+ *       {@code ResultMessage}. <strong>Deprecated as a cost basis</strong>: it is point-in-time and
+ *       under-counts long runs. Kept for size/diagnostic use and back-compat.</li>
+ * </ul>
+ *
  * @param phaseName      Phase identifier ("explore", "act", "plan", "execute", "reflexion")
  * @param promptText     The prompt sent to the LLM for this phase (null if not captured)
  * @param inputTokens    Input tokens consumed

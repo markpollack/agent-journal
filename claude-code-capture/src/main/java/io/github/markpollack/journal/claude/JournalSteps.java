@@ -2,6 +2,7 @@ package io.github.markpollack.journal.claude;
 
 import io.github.markpollack.journal.event.JournalEvent;
 import io.github.markpollack.journal.event.LLMCallEvent;
+import io.github.markpollack.journal.event.TokenUsage;
 import io.github.markpollack.journal.event.ToolCallEvent;
 import io.github.markpollack.journal.trace.AttributionMethod;
 import io.github.markpollack.journal.trace.JournalStep;
@@ -126,6 +127,42 @@ public final class JournalSteps {
             steps.addAll(attributePhase(currentLlm, phaseTools, phaseToolErrors, runId, vendor));
         }
         return steps;
+    }
+
+    /**
+     * Offline re-derivation of the cost-bearing token aggregate from the persisted immutable log —
+     * the usage analog of {@link #fromEvents} (the slice-1 closure, now for usage). Sums each
+     * per-phase {@link LLMCallEvent}'s {@code META_TURNS} by token type across the run; per phase this
+     * equals {@link PhaseCapture#aggregateUsage()} (thinking read back from the recorded headline,
+     * since the per-turn wire carries none). An {@link LLMCallEvent} without {@code META_TURNS}
+     * (no per-turn truth) contributes its recorded headline vector as-is.
+     *
+     * @param events the run's execution events ({@code events.jsonl})
+     * @return the run-level cost-bearing aggregate, regenerable from {@code events.jsonl} alone
+     */
+    public static TokenUsage aggregateUsageFromEvents(List<JournalEvent> events) {
+        TokenUsage total = new TokenUsage(0, 0, 0, 0, 0, 0);
+        for (JournalEvent e : nullSafe(events)) {
+            if (!(e instanceof LLMCallEvent llm)) {
+                continue;
+            }
+            List<TurnUsage> turns = turnsFromMetadata(llm.metadata() != null ? llm.metadata().get(META_TURNS) : null);
+            if (turns.isEmpty()) {
+                // No per-turn truth in events → use the recorded headline vector as-is.
+                total = total.plus(llm.tokenUsage() != null ? llm.tokenUsage() : new TokenUsage(0, 0, 0, 0, 0, 0));
+                continue;
+            }
+            List<TokenUsage> perTurn = new ArrayList<>(turns.size());
+            for (TurnUsage t : turns) {
+                perTurn.add(new TokenUsage((int) t.inputTokens(), (int) t.outputTokens(), 0,
+                        (int) t.cacheCreationInputTokens(), (int) t.cacheReadInputTokens(), 0));
+            }
+            TokenUsage summed = TokenUsage.sum(perTurn);
+            int thinking = llm.tokenUsage() != null ? llm.tokenUsage().thinkingTokens() : 0;
+            total = total.plus(new TokenUsage(summed.inputTokens(), summed.outputTokens(), thinking,
+                    summed.cacheCreationTokens(), summed.cacheReadTokens(), summed.toolUseTokens()));
+        }
+        return total;
     }
 
     private static List<JournalStep> attributePhase(LLMCallEvent llm, List<ToolUseRecord> tools,
