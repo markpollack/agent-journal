@@ -66,6 +66,8 @@ The `events.jsonl` file uses JSONL format (newline-delimited JSON) — each even
 - The file can be read line-by-line without loading the whole thing into memory
 - Standard tools (DuckDB, jq, grep) work directly on the file
 
+Since 1.6.0, the first line of `events.jsonl` (and of the derived `analysis.jsonl`) is a schema-version header — `{"@type":"header","schemaVersion":1}` — which loaders skip. It lets readers detect the on-disk format independently of the individual event schemas.
+
 ### run.json structure
 
 ```json
