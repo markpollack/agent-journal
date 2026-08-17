@@ -16,9 +16,13 @@ Every run produces an `events.jsonl` file — one JSON event per line. A typical
 
 Each line looks like:
 ```json
-{"type":"tool_call","timestamp":"2026-03-17T14:23:01.450Z","toolName":"Bash","input":{"command":"mvn test"},"durationMs":8200,"success":true}
-{"type":"llm_call","timestamp":"2026-03-17T14:35:04.200Z","model":"claude-opus-4-5","tokenUsage":{"inputTokens":4200,"outputTokens":820},"totalMs":8400,"metadata":{"phaseName":"implement"}}
+{"@type":"header","schemaVersion":1,"stream":"events","runId":"550e8400-…"}
+{"@type":"tool_call","timestamp":"2026-03-17T14:23:01.450Z","toolName":"Bash","input":{"command":"mvn test"},"output":"BUILD SUCCESS","durationMs":8200,"success":true,"errorMessage":null,"id":"toolu_01abc"}
+{"@type":"llm_call","timestamp":"2026-03-17T14:35:04.200Z","provider":null,"model":"claude-opus-4-5","tokenUsage":{"inputTokens":4200,"outputTokens":820,"thinkingTokens":0,"cacheCreationTokens":0,"cacheReadTokens":0,"toolUseTokens":0},"cost":{"inputCostUsd":0.063,"outputCostUsd":0.061,"thinkingCostUsd":0.0,"cacheSavingsUsd":0.0},"timing":{"totalDurationMs":8400,"apiDurationMs":8000,"timeToFirstTokenMs":0},"metadata":{"phaseName":"implement"}}
 ```
+
+The first line of every file is the schema-version header described in
+[Storage](/concepts/storage); the event discriminator is `@type`.
 
 ## DuckDB queries
 
@@ -28,12 +32,13 @@ Each line looks like:
 
 ```sql
 SELECT
-    json_extract_string(line, '$.toolName') AS tool,
-    COUNT(*)                                 AS calls,
-    ROUND(AVG(CAST(json_extract(line, '$.durationMs') AS DOUBLE)), 0) AS avg_ms,
-    SUM(CASE WHEN json_extract_string(line, '$.success') = 'false' THEN 1 ELSE 0 END) AS failures
-FROM read_ndjson_auto('.agent-journal/experiments/*/runs/*/events.jsonl')
-WHERE json_extract_string(line, '$.type') = 'tool_call'
+    toolName                             AS tool,
+    COUNT(*)                             AS calls,
+    ROUND(AVG(durationMs), 0)            AS avg_ms,
+    COUNT(*) FILTER (WHERE NOT success)  AS failures
+FROM read_ndjson_auto('.agent-journal/experiments/*/runs/*/events.jsonl',
+                      union_by_name = true)
+WHERE "@type" = 'tool_call'
 GROUP BY tool
 ORDER BY calls DESC;
 ```
@@ -43,13 +48,18 @@ ORDER BY calls DESC;
 ```sql
 SELECT
     filename,
-    SUM(CAST(json_extract(line, '$.cost.totalUsd') AS DOUBLE)) AS total_cost_usd,
-    SUM(CAST(json_extract(line, '$.tokenUsage.inputTokens') AS INTEGER)) AS input_tokens,
-    SUM(CAST(json_extract(line, '$.tokenUsage.outputTokens') AS INTEGER)) AS output_tokens
-FROM read_ndjson_auto('.agent-journal/experiments/*/runs/*/events.jsonl')
-WHERE json_extract_string(line, '$.type') = 'llm_call'
+    SUM(cost.inputCostUsd + cost.outputCostUsd + cost.thinkingCostUsd) AS total_cost_usd,
+    SUM(tokenUsage.inputTokens)  AS input_tokens,
+    SUM(tokenUsage.outputTokens) AS output_tokens
+FROM read_ndjson_auto('.agent-journal/experiments/*/runs/*/events.jsonl',
+                      union_by_name = true, filename = true)
+WHERE "@type" = 'llm_call'
 GROUP BY filename;
 ```
+
+`CostBreakdown` is serialized as its four components; there is no `totalUsd` field on
+the wire, so sum the components you want. Ask for `filename = true` explicitly — DuckDB
+does not add that column on its own.
 
 ### Tool call sequence (for Markov analysis)
 
@@ -57,10 +67,11 @@ GROUP BY filename;
 -- Extract ordered tool-call sequences per run
 SELECT
     regexp_extract(filename, 'runs/([^/]+)/events', 1) AS run_id,
-    ROW_NUMBER() OVER (PARTITION BY filename ORDER BY json_extract_string(line, '$.timestamp')) AS seq,
-    json_extract_string(line, '$.toolName') AS tool
-FROM read_ndjson_auto('.agent-journal/experiments/*/runs/*/events.jsonl')
-WHERE json_extract_string(line, '$.type') = 'tool_call'
+    ROW_NUMBER() OVER (PARTITION BY filename ORDER BY timestamp) AS seq,
+    toolName AS tool
+FROM read_ndjson_auto('.agent-journal/experiments/*/runs/*/events.jsonl',
+                      union_by_name = true, filename = true)
+WHERE "@type" = 'tool_call'
 ORDER BY run_id, seq;
 ```
 
@@ -78,13 +89,14 @@ A first-pass transition matrix from DuckDB:
 WITH tool_sequence AS (
     SELECT
         regexp_extract(filename, 'runs/([^/]+)/events', 1) AS run_id,
-        json_extract_string(line, '$.toolName')             AS tool,
+        toolName                                           AS tool,
         ROW_NUMBER() OVER (
             PARTITION BY filename
-            ORDER BY json_extract_string(line, '$.timestamp')
+            ORDER BY timestamp
         ) AS seq
-    FROM read_ndjson_auto('.agent-journal/experiments/*/runs/*/events.jsonl')
-    WHERE json_extract_string(line, '$.type') = 'tool_call'
+    FROM read_ndjson_auto('.agent-journal/experiments/*/runs/*/events.jsonl',
+                          union_by_name = true, filename = true)
+    WHERE "@type" = 'tool_call'
 )
 SELECT
     a.tool  AS from_tool,
@@ -104,10 +116,11 @@ The fraction of tool calls that are re-reading or re-exploring already-visited c
 
 ```sql
 SELECT
-    COUNT(CASE WHEN json_extract_string(line, '$.toolName') IN ('Read', 'Glob', 'Grep') THEN 1 END)
+    COUNT(*) FILTER (WHERE toolName IN ('Read', 'Glob', 'Grep'))
         * 1.0 / COUNT(*) AS explore_fraction
-FROM read_ndjson_auto('.agent-journal/experiments/*/runs/*/events.jsonl')
-WHERE json_extract_string(line, '$.type') = 'tool_call';
+FROM read_ndjson_auto('.agent-journal/experiments/*/runs/*/events.jsonl',
+                      union_by_name = true)
+WHERE "@type" = 'tool_call';
 ```
 
 High explore fraction (> 40%) in the middle of a run suggests the agent is searching for context it doesn't have — a candidate for knowledge base addition.
@@ -118,9 +131,10 @@ If the agent repeatedly calls a JAR inspection tool (decompiling dependencies), 
 
 ```sql
 SELECT COUNT(*) AS jar_inspect_calls
-FROM read_ndjson_auto('.agent-journal/experiments/*/runs/*/events.jsonl')
-WHERE json_extract_string(line, '$.type') = 'tool_call'
-  AND json_extract_string(line, '$.toolName') = 'JAR_INSPECT';
+FROM read_ndjson_auto('.agent-journal/experiments/*/runs/*/events.jsonl',
+                      union_by_name = true)
+WHERE "@type" = 'tool_call'
+  AND toolName = 'JAR_INSPECT';
 ```
 
 A threshold above 5% of total tool calls is a strong signal to add the relevant library to the knowledge base.

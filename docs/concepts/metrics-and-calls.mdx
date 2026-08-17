@@ -98,12 +98,15 @@ try (Run run = Journal.run("agent-task").start()) {
     var calls = run.calls();
 
     try (Call phase = calls.start("explore")) {
-        run.logEvent(ToolCallEvent.success("Glob", "**/*.java", 45));
-        run.logEvent(ToolCallEvent.success("Read", "src/Main.java", 20));
+        run.logEvent(ToolCallEvent.success(
+                "Glob", Map.of("pattern", "**/*.java"), List.of("src/Main.java"), 45));
+        run.logEvent(ToolCallEvent.success(
+                "Read", Map.of("path", "src/Main.java"), "package com...", 20));
     }
 
     try (Call phase = calls.start("implement")) {
-        run.logEvent(ToolCallEvent.success("Edit", "src/Main.java", 180));
+        run.logEvent(ToolCallEvent.success(
+                "Edit", Map.of("path", "src/Main.java"), "1 edit applied", 180));
         run.logEvent(LLMCallEvent.builder()
                 .model("claude-opus-4-5")
                 .tokenUsage(TokenUsage.of(2400, 800))
@@ -111,7 +114,8 @@ try (Run run = Journal.run("agent-task").start()) {
     }
 
     try (Call phase = calls.start("verify")) {
-        run.logEvent(ToolCallEvent.success("Bash", "mvn test", 8200));
+        run.logEvent(ToolCallEvent.success(
+                "Bash", Map.of("command", "mvn test"), Map.of("exitCode", 0), 8200));
     }
 }
 ```

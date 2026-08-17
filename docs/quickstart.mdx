@@ -49,8 +49,10 @@ try (Run run = Journal.run("implement-feature")
             .build());
 
     // Log tool calls
-    run.logEvent(ToolCallEvent.success("Bash", "git status", 150));
-    run.logEvent(ToolCallEvent.success("Read", "src/Main.java", 20));
+    run.logEvent(ToolCallEvent.success(
+            "Bash", Map.of("command", "git status"), "clean", 150));
+    run.logEvent(ToolCallEvent.success(
+            "Read", Map.of("path", "src/Main.java"), "package com...", 20));
 
     // Record outputs
     run.setSummary("filesChanged", 3);
@@ -88,13 +90,20 @@ With [DuckDB](https://duckdb.org/) installed:
 
 ```sql
 -- Count tool calls by type across all runs
-SELECT json_extract_string(line, '$.toolName') AS tool,
-       COUNT(*) AS calls
-FROM read_ndjson_auto('.agent-journal/experiments/*/runs/*/events.jsonl')
-WHERE json_extract_string(line, '$.type') = 'tool_call'
+SELECT toolName AS tool,
+       COUNT(*)  AS calls
+FROM read_ndjson_auto('.agent-journal/experiments/*/runs/*/events.jsonl',
+                      union_by_name = true)
+WHERE "@type" = 'tool_call'
 GROUP BY tool
 ORDER BY calls DESC;
 ```
+
+`read_ndjson_auto` infers real columns from the log, so events are queried as columns
+rather than through JSON extraction. Two details matter: the event discriminator is
+`@type` and needs quoting, and `union_by_name = true` reconciles the differing field
+sets of the event types. The schema-version header line is skipped for free — its
+`@type` is `header`.
 
 ## Testing
 

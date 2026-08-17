@@ -7,3 +7,5 @@ target/
 .DS_Store
 CLAUDE.md
 plans/
+.claude/
+.campus/

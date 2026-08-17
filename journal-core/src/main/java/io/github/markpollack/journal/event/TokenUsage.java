@@ -39,7 +39,13 @@ public record TokenUsage(
         return new TokenUsage(input, output, thinking, 0, 0, 0);
     }
 
-    /** Total tokens including all categories. */
+    /**
+     * Sum of the input, output and thinking tokens — the tokens the model generated or was
+     * charged for reading fresh. Cache creation, cache read and tool-use tokens are
+     * deliberately <em>excluded</em>; add those components explicitly when you need them.
+     * This is the value published as {@code total_tokens} by {@link #toMap()} and returned
+     * by {@code LLMCallEvent.totalTokens()}.
+     */
     public int total() {
         return inputTokens + outputTokens + thinkingTokens;
     }

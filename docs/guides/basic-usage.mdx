@@ -180,7 +180,7 @@ List<RunData> runs = storage.listRuns("implement-oauth");
 // Filter to successful runs
 List<RunData> successes = runs.stream()
         .filter(r -> r.status() == RunStatus.FINISHED)
-        .filter(r -> Boolean.TRUE.equals(r.summary().get("success")))
+        .filter(r -> Boolean.TRUE.equals(r.summary().get("success", Boolean.class)))
         .toList();
 
 // Average cost across runs

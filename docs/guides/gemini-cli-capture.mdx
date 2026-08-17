@@ -1,0 +1,84 @@
+---
+title: "Gemini CLI Capture"
+description: "Record Gemini CLI query results into the same journal streams as Claude."
+---
+
+`gemini-cli-capture` is the second vendor extractor. It projects Gemini CLI results into
+the **same** journal-core streams, trace format and cost schema as
+[Claude Code Capture](/guides/claude-code-capture), so one analysis pipeline reads runs
+from either runtime.
+
+```xml
+<dependency>
+    <groupId>io.github.markpollack</groupId>
+    <artifactId>gemini-cli-capture</artifactId>
+    <version>1.6.0</version>
+</dependency>
+```
+
+Requires a Java 21 runtime — `gemini-cli-sdk` is published as Java 21 bytecode.
+
+## Recording a query
+
+```java
+import io.github.markpollack.journal.Journal;
+import io.github.markpollack.journal.Run;
+import io.github.markpollack.journal.gemini.GeminiPhaseCapture;
+import io.github.markpollack.journal.gemini.GeminiRunRecorder;
+import io.github.markpollack.journal.gemini.GeminiSessionParser;
+
+QueryResult result = geminiClient.query("summarize the repo");
+
+try (Run run = Journal.run("repo-summary").agent("gemini-cli").start()) {
+    GeminiPhaseCapture phase =
+            GeminiSessionParser.parse(result, "query", "summarize the repo");
+
+    new GeminiRunRecorder(run).recordPhase(phase);
+}
+```
+
+`recordPhase` writes to both streams: an `LLMCallEvent` carrying the turn's tokens, cost
+and timing into `events.jsonl`, and a turn-level `StepCostEvent` into `analysis.jsonl`.
+
+## Writing the portable trace
+
+`parse` optionally writes the shared JSONL trace, using the same `TraceWriter` and the
+same `TraceContentMode` as the Claude path:
+
+```java
+import io.github.markpollack.journal.trace.TraceContentMode;
+import java.nio.file.Path;
+
+GeminiPhaseCapture phase = GeminiSessionParser.parse(
+        result, "query", "summarize the repo",
+        Path.of("traces/gemini-query.jsonl"),
+        TraceContentMode.TRUNCATED);
+```
+
+A Gemini trace is `header` + `text` line(s) + `result` + `step_cost`. The `result` line
+carries the same loader-contract keys as a Claude trace — `inputTokens`, `outputTokens`,
+`costUsd`, `durationMs` — so the same downstream loader reads either.
+
+The trace content warning from the Claude guide applies here too: at `TRUNCATED` (the
+default) the trace contains prompt and output text. Treat trace files as sensitive local
+artifacts, or use `TraceContentMode.LENGTHS`.
+
+## How it differs from the Claude path
+
+Gemini's typed SDK model is coarser than Claude's, and the capture is honest about it
+rather than inventing detail:
+
+| | `claude-code-capture` | `gemini-cli-capture` |
+|---|---|---|
+| Input | streaming message iterator | one synchronous `QueryResult` |
+| Grain | per tool call and per turn | turn/result only — the typed SDK models no tool calls |
+| Trace lines | `header`, `text`, `thinking`, `tool_use`, `tool_result`, `result`, `step_cost` | `header`, `text`, `result`, `step_cost` |
+| Step id | the vendor `tool_use` id, a real stable id | synthesized `{phase}:turn`, deterministic per capture |
+| Raw wire capture | `rawMode` keeps the verbatim envelope | none — the typed `Message` carries no envelope |
+| Cost | derived from per-turn usage and model pricing | SDK-provided pricing-derived total |
+
+Because a Gemini query produces exactly one step, the
+`AttributionMethod.OUTPUT_TOKEN_PROPORTIONAL` split that spreads cost across Claude tool
+steps trivially assigns the whole run cost to that single step. Per-tool Gemini detail
+exists only in Gemini's OTEL telemetry (`gemini_cli.tool_call`), a separate and heavier
+channel that this module does not consume.

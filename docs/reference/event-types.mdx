@@ -24,7 +24,7 @@ Records one interaction with an LLM.
 ```java
 LLMCallEvent event = LLMCallEvent.builder()
         .model("claude-opus-4-5")
-        .tokenUsage(TokenUsage.of(1200, 450, 300, 800, 200))
+        .tokenUsage(new TokenUsage(1200, 450, 300, 800, 200, 0))
         .cost(CostBreakdown.of(0.018, 0.00675))
         .timing(TimingInfo.of(2500, 2100))
         .metadata(Map.of("phaseName", "implement", "numTurns", 1))
@@ -34,7 +34,11 @@ LLMCallEvent event = LLMCallEvent.builder()
 ```java
 // TokenUsage.of(inputTokens, outputTokens)
 // TokenUsage.of(inputTokens, outputTokens, thinkingTokens)
-// TokenUsage.of(inputTokens, outputTokens, thinkingTokens, cacheReadTokens, cacheWriteTokens)
+//
+// Cache and tool-use tokens have no factory overload; use the canonical
+// constructor, which takes all six components in this order:
+// new TokenUsage(inputTokens, outputTokens, thinkingTokens,
+//                cacheCreationTokens, cacheReadTokens, toolUseTokens)
 ```
 
 ---
@@ -61,8 +65,11 @@ ToolCallEvent.success("Bash",
         Map.of("exitCode", 0),
         8200);
 
-// Success without output
-ToolCallEvent.success("Read", "src/Main.java", 20);
+// Success with a stable vendor tool_use id
+ToolCallEvent.success("toolu_01abc", "Read",
+        Map.of("path", "src/Main.java"),
+        "package com...",
+        20);
 
 // Failure
 ToolCallEvent.failure("Read",

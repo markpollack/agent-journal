@@ -5,7 +5,7 @@ description: "Behavioral trace capture for agent research — a typed, append-on
 
 ## What is agent-journal?
 
-Agent-journal captures the behavioral trace of a Claude Code SDK session — tool calls, LLM calls, token costs, phase boundaries — as a structured, append-only event log for offline analysis.
+Agent-journal captures the behavioral trace of an agent session — tool calls, LLM calls, token costs, phase boundaries — as a structured, append-only event log for offline analysis. Claude Code and Gemini CLI sessions are captured into the same event, trace and cost schema, so one analysis pipeline reads both.
 
 It is to agent research what a flight data recorder is to aviation safety: the raw record of what happened, in what order, at the right granularity.
 
@@ -65,10 +65,14 @@ Stages 3–6 (detect anomalies, root cause, recommend changes, automate improvem
 
 ## Modules
 
-| Module | Purpose |
-|--------|---------|
-| `journal-core` | Core domain: Experiment, Run, Events, Metrics, Call tracking, Storage |
-| `claude-code-capture` | Bridges Claude Code SDK responses into journal-core events |
+| Module | Purpose | Java |
+|--------|---------|------|
+| `journal-core` | Core domain: Experiment, Run, Events, Metrics, Call tracking, Storage, portable `TraceWriter` | 17 |
+| `claude-code-capture` | Bridges Claude Code SDK responses into journal-core events | 21 |
+| `gemini-cli-capture` | Bridges Gemini CLI query results into the same events and trace | 21 |
+
+`journal-core` depends on nothing but Jackson. The capture modules bind vendor SDKs
+published as Java 21 bytecode and therefore need a Java 21 runtime.
 
 ## Next steps
 
@@ -81,6 +85,9 @@ Stages 3–6 (detect anomalies, root cause, recommend changes, automate improvem
   </Card>
   <Card title="Claude Code Capture" icon="code" href="/guides/claude-code-capture">
     Bridge Claude Code SDK sessions into journal-core.
+  </Card>
+  <Card title="Gemini CLI Capture" icon="code" href="/guides/gemini-cli-capture">
+    The same streams and cost schema from a Gemini CLI run.
   </Card>
   <Card title="Research Landscape" icon="book" href="/research/landscape">
     How agent-journal relates to concurrent academic work.
