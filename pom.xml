@@ -233,9 +233,29 @@
         </plugins>
     </build>
     <profiles>
-        <!-- OWASP dependency-check: build-time CVE gate (fails on HIGH+). Run: ./mvnw -Powasp verify -->
+        <!--
+            OWASP dependency-check — the local CVE path. It is deliberately not wired into
+            GitHub Actions: the NVD acquisition is slow, shared across the portfolio, and
+            failed nightly for weeks without telling anyone anything about this repository.
+
+            Complete inventory first, enforcement second:
+
+              inventory (never fails, scans every module):
+                ./mvnw -Powasp verify -DskipTests -Downed.cvss.threshold=11
+
+              gate (fails on CVSS >= 7.0 in the shipped closure):
+                ./mvnw -Powasp verify -DskipTests
+
+            Add -DnvdAutoUpdate=false to reuse an already-prepared database. Scanner
+            identity corrections live in owasp-suppressions.xml, one exact package URL at a
+            time.
+        -->
         <profile>
             <id>owasp</id>
+            <properties>
+                <owned.cvss.threshold>7.0</owned.cvss.threshold>
+                <nvdAutoUpdate>true</nvdAutoUpdate>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -243,8 +263,16 @@
                         <artifactId>dependency-check-maven</artifactId>
                         <version>12.1.0</version>
                         <configuration>
-                            <failBuildOnCVSS>7.0</failBuildOnCVSS>
+                            <failBuildOnCVSS>${owned.cvss.threshold}</failBuildOnCVSS>
+                            <autoUpdate>${nvdAutoUpdate}</autoUpdate>
                             <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
+                            <suppressionFiles>
+                                <suppressionFile>${maven.multiModuleProjectDirectory}/owasp-suppressions.xml</suppressionFile>
+                            </suppressionFiles>
+                            <formats>
+                                <format>HTML</format>
+                                <format>JSON</format>
+                            </formats>
                         </configuration>
                         <executions>
                             <execution>
