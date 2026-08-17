@@ -17,6 +17,12 @@
     <name>Gemini CLI Capture</name>
     <description>Gemini CLI SDK to journal-core bridge: a parallel vendor extractor to claude-code-capture, projecting Gemini query results into the shared portable trace (TraceWriter / JournalStep)</description>
 
+    <properties>
+        <!-- gemini-cli-sdk publishes Java 21 bytecode (class file 65); see the same note in
+             claude-code-capture. journal-core keeps the 17 baseline. -->
+        <java.version>21</java.version>
+    </properties>
+
     <dependencies>
         <!-- Journal Core (owns the portable TraceWriter / JournalStep since R2.7) -->
         <dependency>

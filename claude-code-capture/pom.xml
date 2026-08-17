@@ -17,6 +17,13 @@
     <name>Claude Code Capture</name>
     <description>Claude Code SDK to journal-core bridge: phase capture, session parsing, and base run recording</description>
 
+    <properties>
+        <!-- claude-code-sdk publishes Java 21 bytecode (class file 65), so this module
+             cannot be compiled or run on 17 whatever the parent declares. journal-core
+             keeps the 17 baseline; only the modules that bind a 21 SDK move up. -->
+        <java.version>21</java.version>
+    </properties>
+
     <dependencies>
         <!-- Journal Core -->
         <dependency>
