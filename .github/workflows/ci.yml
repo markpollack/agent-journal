@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Lets a release candidate be built at its exact SHA on its own branch, without
+  # pushing to main and without publishing a snapshot. Dispatch with
+  # `gh workflow run ci.yml --ref <branch>`; GitHub only offers workflow_dispatch
+  # once this trigger is present on the default branch.
+  workflow_dispatch:
 
 jobs:
   build:
