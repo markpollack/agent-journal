@@ -45,6 +45,21 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
+        <!-- Jackson 3 enters through claude-code-sdk -> MCP. These direct declarations
+             publish the parent's managed floor to standalone consumers. -->
+        <dependency>
+            <groupId>tools.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tools.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tools.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+        </dependency>
+
         <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>

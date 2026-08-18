@@ -19,3 +19,20 @@ jobs:
       # compiling against them on a 17 JDK fails with "bad class file".
       # CI Build had been red since 2026-05-15 because of this.
       java-version: '21'
+
+  consumer-resolution:
+    name: Standalone consumer resolution
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+          cache: maven
+      - name: Verify standalone consumer dependency floors
+        run: ./scripts/check-consumer-resolution.py

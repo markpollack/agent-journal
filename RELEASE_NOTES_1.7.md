@@ -6,25 +6,29 @@ what you receive, so read the first two sections before upgrading.
 
 ## Security — Jackson moved to CVE-clear floors
 
-`journal-core` declares `jackson-databind` without a version and lets the parent's imported
-`jackson-bom` decide it. Through 1.6.0 that resolved **2.21.2**, which is inside the affected
-range of `CVE-2026-54512` and `CVE-2026-54513` (both CVSS 8.1, published 2026-06-23) — two
-`PolymorphicTypeValidator` allowlist bypasses — along with seven further advisories in the same
-cluster. Any consumer that did not manage Jackson itself inherited that version.
+Through 1.6.0, standalone consumers could resolve Jackson **2.21.2** from either capture SDK.
+That version is inside the affected range of `CVE-2026-54512` and `CVE-2026-54513` (both CVSS
+8.1, published 2026-06-23) — two `PolymorphicTypeValidator` allowlist bypasses — along with
+seven further advisories in the same cluster.
 
-1.7.0 manages Jackson 2 at **2.21.6**. The minimum fix for the headline pair is 2.21.4, but
-`CVE-2026-59889` and `GHSA-mhm7-754m-9p8w` are only fixed at 2.21.5, so the release takes the
-head of the patch line. This matches the floor `agentworks-bom` already publishes, so importing
-the BOM cannot resolve you back to a vulnerable version.
+1.7.0 manages Jackson 2 at **2.21.6** and publishes `jackson-core` as a direct dependency of
+`journal-core`, which is also a direct dependency of both capture modules. The minimum fix for
+the headline pair is 2.21.4, but `CVE-2026-59889` and `GHSA-mhm7-754m-9p8w` are only fixed at
+2.21.5, so the release takes the head of the patch line.
 
 `claude-code-capture` also acquired Jackson 3 transitively (`claude-code-sdk` → `mcp` →
 `mcp-json-jackson3`) at **3.0.3** on the compile path, affected by the same cluster and by
-`CVE-2026-29062`. 1.7.0 imports the `tools.jackson` BOM at **3.1.6** to converge it.
+`CVE-2026-29062`. 1.7.0 publishes direct dependencies on Jackson 3 core, databind and YAML at
+the managed **3.1.6** line.
 
-Verified with a current-database scan at the release commit: 90 findings before, 0 after.
+The two Jackson BOM imports remain in the parent for this reactor's alignment. The direct
+declarations are what make Maven's nearest-wins resolution safe for an ordinary consumer of any
+one module without `agentworks-bom`; a repository gate verifies all three consumer shapes.
+This is a dependency-resolution correction, not a Jackson 3 migration: Agent Journal's source,
+APIs, schemas and stored-journal format continue to use Jackson 2 unchanged.
 
-If you pin Jackson yourself, make sure your pin is at least 2.21.5 (and 3.1.5 for Jackson 3) —
-this release cannot raise a version you manage.
+If you pin Jackson yourself, keep the same accepted floors: 2.21.6 for Jackson 2 and 3.1.6 for
+Jackson 3. This release cannot raise a version you manage.
 
 ## Licensing — the LICENSE now ships inside the artifacts
 

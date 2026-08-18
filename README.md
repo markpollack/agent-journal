@@ -91,6 +91,13 @@ Java 17 target.
 ./mvnw clean verify
 ```
 
+Verify that all three modules resolve safe Jackson versions for standalone consumers
+without importing `agentworks-bom`:
+
+```bash
+./scripts/check-consumer-resolution.py
+```
+
 Local vulnerability scanning is a documented local path, not a CI job:
 
 ```bash
