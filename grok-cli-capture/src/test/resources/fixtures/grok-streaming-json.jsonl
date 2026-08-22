@@ -1,0 +1,85 @@
+{"type":"thought","data":"The"}
+{"type":"thought","data":" user"}
+{"type":"thought","data":" wants"}
+{"type":"thought","data":" me"}
+{"type":"thought","data":" to"}
+{"type":"thought","data":" read"}
+{"type":"thought","data":" NOTE"}
+{"type":"thought","data":".txt"}
+{"type":"thought","data":" and"}
+{"type":"thought","data":" OTHER"}
+{"type":"thought","data":".txt"}
+{"type":"thought","data":" in"}
+{"type":"thought","data":" the"}
+{"type":"thought","data":" current"}
+{"type":"thought","data":" directory"}
+{"type":"thought","data":","}
+{"type":"thought","data":" then"}
+{"type":"thought","data":" say"}
+{"type":"thought","data":" what"}
+{"type":"thought","data":" NOTE"}
+{"type":"thought","data":".txt"}
+{"type":"thought","data":" contains"}
+{"type":"thought","data":"."}
+{"type":"thought","data":" Let"}
+{"type":"thought","data":" me"}
+{"type":"thought","data":" read"}
+{"type":"thought","data":" both"}
+{"type":"thought","data":" files"}
+{"type":"thought","data":"."}
+{"type":"text","data":"I'll"}
+{"type":"text","data":" read"}
+{"type":"text","data":" both"}
+{"type":"text","data":" files"}
+{"type":"text","data":" now"}
+{"type":"text","data":" and"}
+{"type":"text","data":" then"}
+{"type":"text","data":" tell"}
+{"type":"text","data":" you"}
+{"type":"text","data":" what"}
+{"type":"text","data":" NOTE"}
+{"type":"text","data":".txt"}
+{"type":"text","data":" contains"}
+{"type":"text","data":"."}
+{"type":"usage","usage":{"input_tokens":10174,"output_tokens":76,"cache_read_input_tokens":5760,"cache_creation_input_tokens":0,"reasoning_tokens":32},"signature":"+nn9jgiwa49Cf1Ktr0/56u/+qkAV6gtpJCQU5NCiCctwHI6zHMnmTKFJhIOLPTTV55B/ubD+/9KbRKpsNgFn9t9ZXeCRL86++UeZTXtW6B+WuY7hrmu/ShcnRiRloSsF0Dzc0FcluEYYbn8Gg+CtgkTaymoRQIUvzXoFk1YPInCxAW19W/LY3P2ESe3UWlC6whYPbuQYfUbTIcG6f1uD"}
+{"type":"tool_call","toolCallId":"call-9e2d41c5-ed9e-4483-83a5-7509df9f8f99-0","title":"read_file","kind":"read","status":"pending","toolName":"read_file","rawInput":{"target_file":"NOTE.txt"},"content":[],"locations":[]}
+{"type":"tool_call_update","toolCallId":"call-9e2d41c5-ed9e-4483-83a5-7509df9f8f99-0","status":null,"content":[],"rawOutput":null,"locations":[{"path":"NOTE.txt"}]}
+{"type":"tool_call","toolCallId":"call-9e2d41c5-ed9e-4483-83a5-7509df9f8f99-1","title":"read_file","kind":"read","status":"pending","toolName":"read_file","rawInput":{"target_file":"OTHER.txt"},"content":[],"locations":[]}
+{"type":"tool_call_update","toolCallId":"call-9e2d41c5-ed9e-4483-83a5-7509df9f8f99-1","status":null,"content":[],"rawOutput":null,"locations":[{"path":"OTHER.txt"}]}
+{"type":"tool_call_update","toolCallId":"call-9e2d41c5-ed9e-4483-83a5-7509df9f8f99-0","status":"completed","content":[{"type":"content","content":{"type":"text","text":"1→the answer is 42\n"}}],"rawOutput":{"type":"ReadFile","FileContent":{"content":"1→the answer is 42\n","content_concise":"1→the answer is 42\n","absolute_path":"/tmp/grokstream/NOTE.txt","offset":null,"raw_output":"the answer is 42\n","total_lines":2}},"locations":[]}
+{"type":"tool_call_update","toolCallId":"call-9e2d41c5-ed9e-4483-83a5-7509df9f8f99-1","status":"completed","content":[{"type":"content","content":{"type":"text","text":"1→second file\n"}}],"rawOutput":{"type":"ReadFile","FileContent":{"content":"1→second file\n","content_concise":"1→second file\n","absolute_path":"/tmp/grokstream/OTHER.txt","offset":null,"raw_output":"second file\n","total_lines":2}},"locations":[]}
+{"type":"thought","data":"The"}
+{"type":"thought","data":" user"}
+{"type":"thought","data":" asked"}
+{"type":"thought","data":" me"}
+{"type":"thought","data":" to"}
+{"type":"thought","data":" read"}
+{"type":"thought","data":" NOTE"}
+{"type":"thought","data":".txt"}
+{"type":"thought","data":" and"}
+{"type":"thought","data":" OTHER"}
+{"type":"thought","data":".txt"}
+{"type":"thought","data":","}
+{"type":"thought","data":" then"}
+{"type":"thought","data":" say"}
+{"type":"thought","data":" what"}
+{"type":"thought","data":" NOTE"}
+{"type":"thought","data":".txt"}
+{"type":"thought","data":" contains"}
+{"type":"thought","data":"."}
+{"type":"thought","data":" Simple"}
+{"type":"thought","data":" and"}
+{"type":"thought","data":" straightforward"}
+{"type":"thought","data":"."}
+{"type":"text","data":"NOTE"}
+{"type":"text","data":".txt"}
+{"type":"text","data":" contains"}
+{"type":"text","data":":\n\n"}
+{"type":"text","data":">"}
+{"type":"text","data":" the"}
+{"type":"text","data":" answer"}
+{"type":"text","data":" is"}
+{"type":"text","data":" "}
+{"type":"text","data":"42"}
+{"type":"usage","usage":{"input_tokens":160,"output_tokens":40,"cache_read_input_tokens":15872,"cache_creation_input_tokens":0,"reasoning_tokens":26},"signature":"TjN3PABETfAupEo6Xl3bLYg6zE6sBx7UXZ/ORpUhaEdfXEb7bnJ+TOT5CKRVBCVNea/qu5vLC07D20xRm+wQSQaORylY4sTSDKsB+mzbW9y4K75uLYv6676lszzMrgveErVJn7pDO3cI2lztic7xOEYAPuROITIrtVOOoN1mp9rxyCwrT8e/ZjK/"}
+{"type":"end","stopReason":"end_turn","sessionId":"01a02ab6-a08e-7062-8679-b599c5c7d4e6","requestId":"0764b56f-9cee-4b41-9957-89d35bf415ec","usage":{"input_tokens":10334,"cache_read_input_tokens":21632,"cache_creation_input_tokens":0,"output_tokens":116,"reasoning_tokens":58,"total_tokens":32082},"num_turns":2,"total_cost_usd":0.0054706,"total_cost_usd_ticks":54706000,"modelUsage":{"grok-4.6-build":{"inputTokens":10334,"outputTokens":116,"cacheReadInputTokens":21632,"cacheCreationInputTokens":0,"modelCalls":2,"costUSD":0.0054706}}}
