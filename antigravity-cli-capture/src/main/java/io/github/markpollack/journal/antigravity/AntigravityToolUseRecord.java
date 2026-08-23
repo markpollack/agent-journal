@@ -1,5 +1,7 @@
 package io.github.markpollack.journal.antigravity;
 
+import io.github.markpollack.journal.event.ToolKind;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -8,6 +10,7 @@ import java.util.Map;
 public record AntigravityToolUseRecord(
         String id,
         int stepIndex,
+        ToolKind kind,
         String name,
         Map<String, Object> input,
         Object output,
@@ -18,12 +21,13 @@ public record AntigravityToolUseRecord(
 ) {
 
     public AntigravityToolUseRecord {
+        kind = kind != null ? kind : ToolKind.OTHER;
         input = input == null
                 ? Map.of()
                 : Collections.unmodifiableMap(new LinkedHashMap<>(input));
     }
 
     public String classification() {
-        return name;
+        return kind.wireValue();
     }
 }

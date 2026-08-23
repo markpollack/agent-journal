@@ -3,6 +3,7 @@ package io.github.markpollack.journal.grok;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.markpollack.journal.event.ToolKind;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -90,7 +91,7 @@ public final class GrokSessionParser {
             }
             MutableToolCall tool = tools.computeIfAbsent(id, MutableToolCall::new);
             tool.name = firstNonBlank(text(event, "toolName"), text(event, "title"), text(event, "kind"));
-            tool.kind = text(event, "kind");
+            tool.kind = ToolKind.fromWireValue(text(event, "kind"));
             tool.status = text(event, "status");
             tool.input = asMap(event.get("rawInput"));
             if (event.hasNonNull("rawOutput")) {
@@ -175,7 +176,7 @@ public final class GrokSessionParser {
     private static final class MutableToolCall {
         private final String id;
         private String name;
-        private String kind;
+        private ToolKind kind = ToolKind.OTHER;
         private Map<String, Object> input = Map.of();
         private Object output;
         private String status;

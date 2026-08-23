@@ -3,6 +3,7 @@ package io.github.markpollack.journal.codex;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.markpollack.journal.event.ToolKind;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -98,8 +99,8 @@ public final class CodexSessionParser {
             String rawInput = payload.path("input").asText("");
             CodexToolClassifier.Classification classification = CodexToolClassifier.classify(rawName, rawInput);
             MutableToolCall tool = tools.computeIfAbsent(id, MutableToolCall::new);
-            tool.name = classification.name();
-            tool.rawName = rawName;
+            tool.kind = classification.kind();
+            tool.name = rawName;
             tool.input = classification.input();
             String status = text(payload, "status");
             if (status != null && !"completed".equalsIgnoreCase(status)) {
@@ -155,8 +156,8 @@ public final class CodexSessionParser {
 
     private static final class MutableToolCall {
         private final String id;
-        private String name = "Shell";
-        private String rawName;
+        private ToolKind kind = ToolKind.OTHER;
+        private String name = "unknown";
         private Map<String, Object> input = Map.of();
         private Object output;
         private boolean isError;
@@ -167,7 +168,7 @@ public final class CodexSessionParser {
         }
 
         CodexToolUseRecord freeze() {
-            return new CodexToolUseRecord(id, name, rawName, input, output, isError, errorMessage);
+            return new CodexToolUseRecord(id, kind, name, input, output, isError, errorMessage);
         }
     }
 

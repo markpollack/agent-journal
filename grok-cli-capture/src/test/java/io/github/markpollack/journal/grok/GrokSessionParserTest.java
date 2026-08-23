@@ -6,6 +6,7 @@ import io.github.markpollack.journal.derived.DerivedEvent;
 import io.github.markpollack.journal.derived.StepCostEvent;
 import io.github.markpollack.journal.event.JournalEvent;
 import io.github.markpollack.journal.event.ToolCallEvent;
+import io.github.markpollack.journal.event.ToolKind;
 import io.github.markpollack.journal.storage.InMemoryStorage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,8 @@ class GrokSessionParserTest {
                 .containsExactly("read_file", "read_file");
         assertThat(capture.toolUses()).extracting(GrokToolUseRecord::classification)
                 .containsOnly("read");
+        assertThat(capture.toolUses()).extracting(GrokToolUseRecord::kind)
+                .containsOnly(ToolKind.READ);
         assertThat(capture.toolUses()).allSatisfy(tool -> {
             assertThat(tool.output()).isNotNull();
             assertThat(tool.status()).isEqualTo("completed");
@@ -57,8 +60,8 @@ class GrokSessionParserTest {
         assertThat(capture.toolUses()).extracting(GrokToolUseRecord::name)
                 .contains("run_terminal_command", "read_file")
                 .doesNotHaveDuplicates();
-        assertThat(capture.toolUses()).extracting(GrokToolUseRecord::classification)
-                .contains("execute", "read")
+        assertThat(capture.toolUses()).extracting(GrokToolUseRecord::kind)
+                .contains(ToolKind.EXECUTE, ToolKind.READ)
                 .doesNotHaveDuplicates();
 
         InMemoryStorage storage = new InMemoryStorage();
@@ -73,6 +76,9 @@ class GrokSessionParserTest {
         assertThat(events).filteredOn(ToolCallEvent.class::isInstance)
                 .extracting(event -> ((ToolCallEvent) event).toolName())
                 .containsExactly("run_terminal_command", "read_file");
+        assertThat(events).filteredOn(ToolCallEvent.class::isInstance)
+                .extracting(event -> ((ToolCallEvent) event).kind())
+                .containsExactly(ToolKind.EXECUTE, ToolKind.READ);
 
         List<DerivedEvent> derived = storage.loadDerivedEvents("grok-experiment", runId);
         assertThat(derived).hasSize(2).allSatisfy(event -> assertThat(event).isInstanceOf(StepCostEvent.class));

@@ -51,6 +51,7 @@ public final class GrokRunRecorder {
             ToolCallEvent event = ToolCallEvent.builder()
                     .id(tool.id())
                     .toolName(tool.name())
+                    .kind(tool.kind())
                     .input(tool.input())
                     .output(tool.output())
                     .success(!tool.isError())

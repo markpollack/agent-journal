@@ -8,7 +8,7 @@ import java.util.Map;
  * Records a tool execution.
  *
  * @param timestamp when the tool was called
- * @param toolName name of the tool (e.g., "Bash", "Read", "Write")
+ * @param toolName raw vendor name of the tool (e.g., "Bash", "view_file", "exec")
  * @param input tool input parameters
  * @param output tool output (null if failed)
  * @param durationMs execution duration in milliseconds
@@ -17,6 +17,7 @@ import java.util.Map;
  * @param id stable identity for this step — the vendor tool_use id (e.g. {@code toolu_…})
  *           when available, null otherwise. Persisted so feedback/eval can target a step
  *           by a stable id instead of a reload-order-dependent list position. (Round 2 R2.3)
+ * @param kind canonical ACP-aligned tool category
  */
 public record ToolCallEvent(
         Instant timestamp,
@@ -26,13 +27,24 @@ public record ToolCallEvent(
         long durationMs,
         boolean success,
         String errorMessage,
-        String id
+        String id,
+        ToolKind kind
 ) implements JournalEvent {
+
+    public ToolCallEvent {
+        kind = kind != null ? kind : ToolKind.OTHER;
+    }
+
+    /** Back-compat constructor for events written before canonical tool kinds were added. */
+    public ToolCallEvent(Instant timestamp, String toolName, Map<String, Object> input, Object output,
+            long durationMs, boolean success, String errorMessage, String id) {
+        this(timestamp, toolName, input, output, durationMs, success, errorMessage, id, ToolKind.OTHER);
+    }
 
     /** Back-compat constructor for events without a stable id. */
     public ToolCallEvent(Instant timestamp, String toolName, Map<String, Object> input, Object output,
             long durationMs, boolean success, String errorMessage) {
-        this(timestamp, toolName, input, output, durationMs, success, errorMessage, null);
+        this(timestamp, toolName, input, output, durationMs, success, errorMessage, null, ToolKind.OTHER);
     }
 
     @Override
@@ -75,6 +87,7 @@ public record ToolCallEvent(
         map.put("type", type());
         map.put("timestamp", timestamp.toString());
         map.put("tool", toolName);
+        map.put("kind", kind.wireValue());
         map.put("duration_ms", durationMs);
         map.put("success", success);
         if (errorMessage != null) {
@@ -96,6 +109,7 @@ public record ToolCallEvent(
         private boolean success = true;
         private String errorMessage;
         private String id;
+        private ToolKind kind = ToolKind.OTHER;
 
         public Builder timestamp(Instant timestamp) {
             this.timestamp = timestamp;
@@ -137,8 +151,13 @@ public record ToolCallEvent(
             return this;
         }
 
+        public Builder kind(ToolKind kind) {
+            this.kind = kind;
+            return this;
+        }
+
         public ToolCallEvent build() {
-            return new ToolCallEvent(timestamp, toolName, input, output, durationMs, success, errorMessage, id);
+            return new ToolCallEvent(timestamp, toolName, input, output, durationMs, success, errorMessage, id, kind);
         }
     }
 }

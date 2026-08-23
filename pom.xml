@@ -44,6 +44,7 @@
         <!-- Dependency versions -->
         <claude-code-sdk.version>1.5.0</claude-code-sdk.version>
         <gemini-cli-sdk.version>0.22.0</gemini-cli-sdk.version>
+        <acp-core.version>0.14.0</acp-core.version>
         <!-- 2.21.4+ clears the 2026-06-23 jackson-databind cluster (CVE-2026-54512 /
              CVE-2026-54513, CVSS 8.1) that affects 2.19.0 -> 2.21.3. 2.21.6 is the head of
              that patch line and matches the agentworks-bom floor, so a consumer importing

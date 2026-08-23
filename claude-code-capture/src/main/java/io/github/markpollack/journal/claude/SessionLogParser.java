@@ -250,6 +250,7 @@ public class SessionLogParser {
                     } else if (block instanceof ToolUseBlock toolUseBlock) {
                         toolUses.add(new ToolUseRecord(
                                 toolUseBlock.id(),
+                                ClaudeToolClassifier.classify(toolUseBlock.name()),
                                 toolUseBlock.name(),
                                 toolUseBlock.input()));
                         turnToolIds.add(toolUseBlock.id());

@@ -101,6 +101,7 @@ class EventSerializationRoundTripTest extends BaseTrackingTest {
             ToolCallEvent deserialized = objectMapper.readValue(json, ToolCallEvent.class);
 
             assertThat(deserialized.toolName()).isEqualTo(original.toolName());
+            assertThat(deserialized.kind()).isEqualTo(original.kind());
             assertThat(deserialized.success()).isEqualTo(original.success());
             assertThat(deserialized.durationMs()).isEqualTo(original.durationMs());
         }
@@ -128,6 +129,39 @@ class EventSerializationRoundTripTest extends BaseTrackingTest {
 
             assertThat(json).contains("\"id\":\"toolu_abc123\"");
             assertThat(deserialized.id()).isEqualTo("toolu_abc123");
+        }
+
+        @Test
+        @DisplayName("round-trips the ACP-aligned canonical kind beside the raw vendor name")
+        void roundTripsCanonicalKind() throws Exception {
+            ToolCallEvent original = ToolCallEvent.builder()
+                    .id("toolu_read")
+                    .toolName("view_file")
+                    .kind(ToolKind.READ)
+                    .input(Map.of("path", "README.md"))
+                    .build();
+
+            String json = objectMapper.writeValueAsString(original);
+            ToolCallEvent deserialized = objectMapper.readValue(json, ToolCallEvent.class);
+
+            assertThat(json).contains("\"toolName\":\"view_file\"")
+                    .contains("\"kind\":\"read\"");
+            assertThat(deserialized.toolName()).isEqualTo("view_file");
+            assertThat(deserialized.kind()).isEqualTo(ToolKind.READ);
+        }
+
+        @Test
+        @DisplayName("loads pre-kind events as OTHER")
+        void loadsLegacyEventWithoutCanonicalKind() throws Exception {
+            String json = """
+                    {"@type":"tool_call","timestamp":"2026-08-22T00:00:00Z","toolName":"Bash","input":{},
+                     "output":null,"durationMs":0,"success":true,"errorMessage":null,"id":"toolu_1"}
+                    """;
+
+            ToolCallEvent deserialized = objectMapper.readValue(json, ToolCallEvent.class);
+
+            assertThat(deserialized.toolName()).isEqualTo("Bash");
+            assertThat(deserialized.kind()).isEqualTo(ToolKind.OTHER);
         }
     }
 

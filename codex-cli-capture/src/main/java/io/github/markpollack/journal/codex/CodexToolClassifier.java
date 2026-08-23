@@ -2,9 +2,9 @@ package io.github.markpollack.journal.codex;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.markpollack.journal.event.ToolKind;
 
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -37,7 +37,7 @@ final class CodexToolClassifier {
     static Classification classify(String rawName, String rawInput) {
         Matcher invocation = TOOL_INVOCATION.matcher(rawInput != null ? rawInput : "");
         if (!invocation.find()) {
-            return new Classification(fallbackName(rawName), Map.of("raw_input", nullToEmpty(rawInput)));
+            return new Classification(ToolKind.OTHER, Map.of("raw_input", nullToEmpty(rawInput)));
         }
 
         String codexTool = invocation.group(1);
@@ -56,26 +56,27 @@ final class CodexToolClassifier {
                 normalized.put("file_path", shell.filePath());
             }
             normalized.put("classification_source", "input.tools.exec_command.cmd");
-            return new Classification(shell.name(), normalized);
+            return new Classification(shell.kind(), normalized);
         }
 
         normalized.put("classification_source", "input.tools." + codexTool);
         return new Classification(classifyCodexTool(codexTool), normalized);
     }
 
-    private static String classifyCodexTool(String tool) {
+    private static ToolKind classifyCodexTool(String tool) {
         return switch (tool) {
-            case "apply_patch" -> "Edit";
-            case "view_image", "read_mcp_resource" -> "Read";
-            case "web__run" -> "Fetch";
-            case "write_stdin", "wait" -> "Process";
-            default -> tool;
+            case "apply_patch" -> ToolKind.EDIT;
+            case "view_image", "read_mcp_resource" -> ToolKind.READ;
+            case "web__run" -> ToolKind.FETCH;
+            case "write_stdin" -> ToolKind.EXECUTE;
+            case "wait" -> ToolKind.THINK;
+            default -> ToolKind.OTHER;
         };
     }
 
     private static ShellClassification classifyShell(String command) {
         if (command == null || command.isBlank()) {
-            return new ShellClassification("Shell", null);
+            return new ShellClassification(ToolKind.EXECUTE, null);
         }
 
         String[] segments = command.split("\\s*(?:&&|\\|\\||;|\\|)\\s*");
@@ -87,38 +88,34 @@ final class CodexToolClassifier {
             }
             if (NAVIGATION.contains(token.executable())) {
                 if (navigationFallback == null) {
-                    navigationFallback = new ShellClassification("Inspect", null);
+                    navigationFallback = new ShellClassification(ToolKind.READ, null);
                 }
                 continue;
             }
             return classifyExecutable(token.executable(), segment);
         }
-        return navigationFallback != null ? navigationFallback : new ShellClassification("Shell", null);
+        return navigationFallback != null ? navigationFallback : new ShellClassification(ToolKind.EXECUTE, null);
     }
 
     private static ShellClassification classifyExecutable(String executable, String segment) {
         return switch (executable) {
-            case "rg", "grep", "find", "fd" -> new ShellClassification("Search", null);
+            case "rg", "grep", "find", "fd" -> new ShellClassification(ToolKind.SEARCH, null);
             case "sed", "cat", "head", "tail", "less", "bat", "nl" ->
-                    new ShellClassification("Read", lastArgument(segment));
-            case "wc", "ls", "tree", "stat", "file" -> new ShellClassification("Inspect", null);
+                    new ShellClassification(ToolKind.READ, lastArgument(segment));
+            case "wc", "ls", "tree", "stat", "file" -> new ShellClassification(ToolKind.READ, null);
             case "mvn", "mvnw", "gradle", "gradlew", "pytest", "ctest" ->
-                    new ShellClassification(isVerification(segment) ? "Test" : "Build", null);
+                    new ShellClassification(ToolKind.EXECUTE, null);
             case "npm", "pnpm", "yarn", "cargo", "go" ->
-                    new ShellClassification(isVerification(segment) ? "Test" : "Build", null);
-            case "git", "gh" -> new ShellClassification("Git", null);
-            case "curl", "wget" -> new ShellClassification("Fetch", null);
-            case "cp", "mv", "mkdir", "touch", "install" -> new ShellClassification("Edit", null);
-            case "rm", "rmdir" -> new ShellClassification("Delete", null);
+                    new ShellClassification(ToolKind.EXECUTE, null);
+            case "git", "gh" -> new ShellClassification(ToolKind.EXECUTE, null);
+            case "curl", "wget" -> new ShellClassification(ToolKind.FETCH, null);
+            case "cp", "mkdir", "touch", "install" -> new ShellClassification(ToolKind.EDIT, null);
+            case "mv" -> new ShellClassification(ToolKind.MOVE, null);
+            case "rm", "rmdir" -> new ShellClassification(ToolKind.DELETE, null);
             case "python", "python3", "node", "bash", "sh", "zsh" ->
-                    new ShellClassification("Script", null);
-            default -> new ShellClassification("Shell", null);
+                    new ShellClassification(ToolKind.EXECUTE, null);
+            default -> new ShellClassification(ToolKind.EXECUTE, null);
         };
-    }
-
-    private static boolean isVerification(String segment) {
-        String lower = segment.toLowerCase(Locale.ROOT);
-        return lower.matches(".*\\b(test|tests|verify|check)\\b.*");
     }
 
     private static CommandToken commandToken(String segment) {
@@ -203,10 +200,6 @@ final class CodexToolClassifier {
         return value != null && value.isTextual() ? value.asText() : null;
     }
 
-    private static String fallbackName(String rawName) {
-        return rawName == null || rawName.isBlank() || "exec".equals(rawName) ? "Shell" : rawName;
-    }
-
     private static String stripQuotes(String value) {
         if (value.length() >= 2 && ((value.startsWith("\"") && value.endsWith("\""))
                 || (value.startsWith("'") && value.endsWith("'")))) {
@@ -219,12 +212,12 @@ final class CodexToolClassifier {
         return value == null ? "" : value;
     }
 
-    record Classification(String name, Map<String, Object> input) {
+    record Classification(ToolKind kind, Map<String, Object> input) {
     }
 
     private record CommandToken(String executable) {
     }
 
-    private record ShellClassification(String name, String filePath) {
+    private record ShellClassification(ToolKind kind, String filePath) {
     }
 }

@@ -117,7 +117,7 @@ public final class JournalSteps {
                 phaseTools = new ArrayList<>();
                 phaseToolErrors = new LinkedHashMap<>();
             } else if (e instanceof ToolCallEvent tc && currentLlm != null) {
-                phaseTools.add(new ToolUseRecord(tc.id(), tc.toolName(), Map.of()));
+                phaseTools.add(new ToolUseRecord(tc.id(), tc.kind(), tc.toolName(), Map.of()));
                 if (tc.id() != null) {
                     phaseToolErrors.put(tc.id(), !tc.success());
                 }

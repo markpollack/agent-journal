@@ -151,7 +151,8 @@ public final class AntigravitySessionParser {
 
         AntigravityToolUseRecord freeze(String conversationId) {
             String prefix = conversationId != null ? conversationId : "antigravity";
-            return new AntigravityToolUseRecord(prefix + ":step:" + stepIndex, stepIndex, name,
+            return new AntigravityToolUseRecord(prefix + ":step:" + stepIndex, stepIndex,
+                    AntigravityToolClassifier.classify(name), name,
                     input, output, durationMs, state, isError, errorMessage);
         }
     }
