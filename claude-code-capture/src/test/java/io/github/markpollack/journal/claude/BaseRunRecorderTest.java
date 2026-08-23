@@ -6,6 +6,7 @@ import io.github.markpollack.journal.derived.DerivedEvent;
 import io.github.markpollack.journal.derived.StepCostEvent;
 import io.github.markpollack.journal.event.JournalEvent;
 import io.github.markpollack.journal.event.ToolCallEvent;
+import io.github.markpollack.journal.event.ToolKind;
 import io.github.markpollack.journal.storage.InMemoryStorage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -100,6 +101,10 @@ class BaseRunRecorderTest {
                 .map(e -> ((ToolCallEvent) e).id())
                 .toList();
         assertThat(toolIds).containsExactly("toolu_1");
+        assertThat(events).filteredOn(ToolCallEvent.class::isInstance)
+                .extracting(event -> ((ToolCallEvent) event).toolName(),
+                        event -> ((ToolCallEvent) event).kind())
+                .containsExactly(org.assertj.core.groups.Tuple.tuple("Bash", ToolKind.EXECUTE));
 
         // No derived cost leaked into the execution stream.
         assertThat(events).noneSatisfy(e -> assertThat(e).isInstanceOf(StepCostEvent.class));

@@ -93,13 +93,15 @@ public abstract class BaseRunRecorder {
             }
             for (ToolUseRecord toolUse : phase.toolUses()) {
                 ToolResultRecord result = resultsById.get(toolUse.id());
-                if (result != null && result.isError()) {
-                    currentRun.logEvent(ToolCallEvent.failure(
-                            toolUse.id(), toolUse.name(), toolUse.input(), result.content(), 0));
-                } else {
-                    currentRun.logEvent(ToolCallEvent.success(
-                            toolUse.id(), toolUse.name(), toolUse.input(), null, 0));
-                }
+                boolean isError = result != null && result.isError();
+                currentRun.logEvent(ToolCallEvent.builder()
+                        .id(toolUse.id())
+                        .toolName(toolUse.name())
+                        .kind(toolUse.kind())
+                        .input(toolUse.input())
+                        .success(!isError)
+                        .errorMessage(isError ? result.content() : null)
+                        .build());
             }
         }
 

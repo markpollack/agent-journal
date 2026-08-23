@@ -1,5 +1,7 @@
 package io.github.markpollack.journal.grok;
 
+import io.github.markpollack.journal.event.ToolKind;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -9,7 +11,7 @@ import java.util.Map;
  *
  * @param id stable ACP tool-call identity
  * @param name Grok's concrete tool name
- * @param kind ACP's semantic tool kind (read, edit, execute, and so on)
+ * @param kind ACP's semantic tool kind, passed through without vendor remapping
  * @param input raw tool input
  * @param output final raw tool output, when present
  * @param status final ACP tool-call status
@@ -19,7 +21,7 @@ import java.util.Map;
 public record GrokToolUseRecord(
         String id,
         String name,
-        String kind,
+        ToolKind kind,
         Map<String, Object> input,
         Object output,
         String status,
@@ -28,13 +30,14 @@ public record GrokToolUseRecord(
 ) {
 
     public GrokToolUseRecord {
+        kind = kind != null ? kind : ToolKind.OTHER;
         input = input == null
                 ? Map.of()
                 : Collections.unmodifiableMap(new LinkedHashMap<>(input));
     }
 
-    /** Semantic classification supplied by ACP, falling back to the concrete tool name. */
+    /** ACP wire spelling retained for compatibility with the original string classification API. */
     public String classification() {
-        return kind != null && !kind.isBlank() ? kind : name;
+        return kind.wireValue();
     }
 }

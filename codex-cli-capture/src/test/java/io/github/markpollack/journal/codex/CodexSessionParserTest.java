@@ -4,6 +4,7 @@ import io.github.markpollack.journal.Journal;
 import io.github.markpollack.journal.Run;
 import io.github.markpollack.journal.derived.StepCostEvent;
 import io.github.markpollack.journal.event.ToolCallEvent;
+import io.github.markpollack.journal.event.ToolKind;
 import io.github.markpollack.journal.storage.InMemoryStorage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -25,10 +26,11 @@ class CodexSessionParserTest {
         CodexPhaseCapture capture = CodexSessionParser.parse(fixture(), "codex-fixture", "release work");
 
         assertThat(capture.toolUses()).hasSize(6);
-        assertThat(capture.toolUses()).extracting(CodexToolUseRecord::rawName).containsOnly("exec");
-        assertThat(capture.toolUses()).extracting(CodexToolUseRecord::classification)
-                .containsExactly("Search", "Inspect", "Read", "Read", "Inspect", "Read");
-        assertThat(capture.toolUses().stream().map(CodexToolUseRecord::classification).distinct())
+        assertThat(capture.toolUses()).extracting(CodexToolUseRecord::name).containsOnly("exec");
+        assertThat(capture.toolUses()).extracting(CodexToolUseRecord::kind)
+                .containsExactly(ToolKind.SEARCH, ToolKind.READ, ToolKind.READ,
+                        ToolKind.READ, ToolKind.READ, ToolKind.READ);
+        assertThat(capture.toolUses().stream().map(CodexToolUseRecord::kind).distinct())
                 .hasSizeGreaterThanOrEqualTo(2);
         assertThat(capture.toolUses()).extracting(CodexToolUseRecord::id).doesNotHaveDuplicates();
         assertThat(capture.toolUses()).allSatisfy(tool -> assertThat(tool.output()).isNotNull());
@@ -59,7 +61,12 @@ class CodexSessionParserTest {
         assertThat(storage.loadEvents("codex-experiment", runId))
                 .filteredOn(ToolCallEvent.class::isInstance)
                 .extracting(event -> ((ToolCallEvent) event).toolName())
-                .containsExactly("Search", "Inspect", "Read", "Read", "Inspect", "Read");
+                .containsOnly("exec");
+        assertThat(storage.loadEvents("codex-experiment", runId))
+                .filteredOn(ToolCallEvent.class::isInstance)
+                .extracting(event -> ((ToolCallEvent) event).kind())
+                .containsExactly(ToolKind.SEARCH, ToolKind.READ, ToolKind.READ,
+                        ToolKind.READ, ToolKind.READ, ToolKind.READ);
         assertThat(storage.loadDerivedEvents("codex-experiment", runId))
                 .hasSize(6)
                 .allSatisfy(event -> assertThat(event).isInstanceOf(StepCostEvent.class));

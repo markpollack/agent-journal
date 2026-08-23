@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import io.github.markpollack.journal.trace.TraceContentMode;
 import io.github.markpollack.journal.trace.TraceRawMode;
+import io.github.markpollack.journal.event.ToolKind;
 import io.github.markpollack.claude.agent.sdk.parsing.ParsedMessage;
 import io.github.markpollack.claude.agent.sdk.types.AssistantMessage;
 import io.github.markpollack.claude.agent.sdk.types.ContentBlock;
@@ -165,6 +166,9 @@ class SessionLogParserTest {
         assertThat(capture.toolUses().get(0).name()).isEqualTo("Read");
         assertThat(capture.toolUses().get(0).id()).isEqualTo("tool-1");
         assertThat(capture.toolUses().get(1).name()).isEqualTo("Write");
+        assertThat(capture.toolUses()).extracting(ToolUseRecord::kind)
+                .containsExactly(ToolKind.READ, ToolKind.EDIT)
+                .doesNotHaveDuplicates();
     }
 
     @Test

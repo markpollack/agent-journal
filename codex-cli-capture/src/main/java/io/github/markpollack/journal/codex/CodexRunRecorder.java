@@ -54,6 +54,7 @@ public final class CodexRunRecorder {
             run.logEvent(ToolCallEvent.builder()
                     .id(tool.id())
                     .toolName(tool.name())
+                    .kind(tool.kind())
                     .input(tool.input())
                     .output(tool.output())
                     .success(!tool.isError())
