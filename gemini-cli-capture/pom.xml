@@ -43,6 +43,12 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
+        <!-- Export the parent's maintained annotation alignment to standalone
+             consumers; reactor dependency management is not transitive. -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
 
         <!-- Logging -->
         <dependency>
