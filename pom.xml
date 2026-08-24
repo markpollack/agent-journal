@@ -49,25 +49,25 @@
              CVE-2026-54513, CVSS 8.1) that affects 2.19.0 -> 2.21.3. 2.21.6 is the head of
              that patch line and matches the agentworks-bom floor, so a consumer importing
              the BOM cannot resolve back to a vulnerable version. -->
-        <jackson.version>2.21.6</jackson.version>
+        <jackson.version>2.22.2</jackson.version>
         <!-- Jackson 3 (tools.jackson) arrives transitively through
              claude-code-sdk -> mcp -> mcp-json-jackson3 at 3.0.3, which is inside the
              affected range of the same CVE-2026-545xx cluster (fixed in 3.1.4) and of
              CVE-2026-29062. Converge it to the agentworks-bom floor. -->
-        <jackson3.version>3.1.6</jackson3.version>
-        <slf4j.version>2.0.17</slf4j.version>
+        <jackson3.version>3.2.2</jackson3.version>
+        <slf4j.version>2.0.18</slf4j.version>
 
         <!-- Test dependency versions -->
-        <junit.version>5.11.3</junit.version>
-        <assertj.version>3.26.3</assertj.version>
-        <logback.version>1.5.12</logback.version>
+        <junit.version>5.14.4</junit.version>
+        <assertj.version>3.27.7</assertj.version>
+        <logback.version>1.6.3</logback.version>
 
         <!-- Plugin versions -->
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
         <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-        <cyclonedx-maven-plugin.version>2.9.2</cyclonedx-maven-plugin.version>
+        <cyclonedx-maven-plugin.version>2.9.3</cyclonedx-maven-plugin.version>
     </properties>
 
     <modules>
