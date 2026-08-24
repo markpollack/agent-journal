@@ -20,7 +20,7 @@ jobs:
       java-version: '21'
       # Curated notes are the GitHub Release body. The reusable workflow requires this to
       # name one tracked ordinary file; without it the body falls back to a raw commit log.
-      release-notes-file: RELEASE_NOTES_1.8.md
+      release-notes-file: RELEASE_NOTES_1.8.1.md
     secrets:
       MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
       MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
