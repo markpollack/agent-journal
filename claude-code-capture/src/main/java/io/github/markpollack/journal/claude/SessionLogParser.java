@@ -3,6 +3,7 @@ package io.github.markpollack.journal.claude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.github.markpollack.journal.event.StopReason;
 import io.github.markpollack.journal.trace.JournalStep;
 import io.github.markpollack.journal.trace.TraceContentMode;
 import io.github.markpollack.journal.trace.TraceRawMode;
@@ -43,6 +44,12 @@ public class SessionLogParser {
     private static final Logger logger = LoggerFactory.getLogger(SessionLogParser.class);
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    /**
+     * Sentinel for "no turn ceiling reported" — distinct from a ceiling of 0, and the reason the
+     * ceiling is recorded as -1 rather than silently omitted.
+     */
+    public static final int UNKNOWN_MAX_TURNS = -1;
 
     /**
      * Parse a Claude SDK response iterator into a PhaseCapture.
@@ -115,6 +122,38 @@ public class SessionLogParser {
      */
     public static PhaseCapture parse(Iterator<ParsedMessage> response, String phaseName, String promptText,
             Path traceFile, TraceContentMode contentMode, TraceRawMode rawMode) {
+        return parse(response, phaseName, promptText, traceFile, contentMode, rawMode, UNKNOWN_MAX_TURNS);
+    }
+
+    /**
+     * Parse a Claude SDK response, additionally recording the <strong>turn ceiling</strong> the
+     * run was launched with.
+     *
+     * <p>
+     * <strong>Why this overload exists.</strong> {@code numTurns} on its own cannot be
+     * interpreted: a run reporting 55 turns either finished or was cut off at its limit, and an
+     * absorbing-state analysis that cannot distinguish those is modelling two different processes
+     * as one. The stop reason answers half of it and is on the wire; the ceiling answers the other
+     * half and is <em>not</em> — Claude Code takes {@code maxTurns} as a caller-side
+     * {@code QueryOptions} value and never echoes it back. So the caller that set the ceiling is
+     * the only reliable source, and this is where it hands it over. The parser still probes the
+     * wire first, in case a future CLI version starts reporting it.
+     *
+     * <p>
+     * Callers that did not set a ceiling should pass {@link #UNKNOWN_MAX_TURNS}, which records
+     * "no ceiling reported" — distinct from a ceiling of zero.
+     *
+     * @param response    the SDK response iterator
+     * @param phaseName   the phase name for this capture
+     * @param promptText  the prompt that was sent for this phase (null if not captured)
+     * @param traceFile   optional path to a JSONL trace file (null to skip tracing)
+     * @param contentMode content capture policy for trace lines
+     * @param rawMode     verbatim raw-wire capture policy
+     * @param maxTurns    the turn ceiling this run was launched with, or {@link #UNKNOWN_MAX_TURNS}
+     * @return a PhaseCapture with all extracted data
+     */
+    public static PhaseCapture parse(Iterator<ParsedMessage> response, String phaseName, String promptText,
+            Path traceFile, TraceContentMode contentMode, TraceRawMode rawMode, int maxTurns) {
         TraceWriter trace = null;
         if (traceFile != null) {
             try {
@@ -125,7 +164,7 @@ public class SessionLogParser {
         }
 
         try {
-            PhaseCapture capture = doParse(response, phaseName, promptText, trace);
+            PhaseCapture capture = doParse(response, phaseName, promptText, trace, maxTurns);
             if (trace != null) {
                 // R2.4: emit derived per-step cost as trailing step_cost lines. Cost is only
                 // knowable post-run (the total arrives on the last result line), so attribution
@@ -147,7 +186,7 @@ public class SessionLogParser {
     }
 
     private static PhaseCapture doParse(Iterator<ParsedMessage> response, String phaseName, String promptText,
-            TraceWriter trace) {
+            TraceWriter trace, int callerMaxTurns) {
         StringBuilder textOutput = new StringBuilder();
         List<String> thinkingBlocks = new ArrayList<>();
         List<ToolUseRecord> toolUses = new ArrayList<>();
@@ -158,6 +197,13 @@ public class SessionLogParser {
         Map<String, String> toolUseNames = new java.util.HashMap<>();
         Map<String, Map<String, Object>> toolUseInputs = new java.util.HashMap<>();
         Map<String, Long> toolUseStartMs = new java.util.HashMap<>();
+        // 0-based ordinal of the assistant turn currently being read, and the last turn's wire
+        // stop_reason (the run-level fallback when no result subtype resolves).
+        int turnIndex = 0;
+        String lastTurnStopReason = null;
+        boolean sawResult = false;
+        String resultSubtype = null;
+        int wireMaxTurns = UNKNOWN_MAX_TURNS;
 
         // ResultMessage fields (populated from the last ResultMessage seen)
         int inputTokens = 0;
@@ -189,7 +235,16 @@ public class SessionLogParser {
 
             var message = parsed.asMessage();
 
+            // A future CLI may report the turn ceiling on the wire (an init/system envelope or the
+            // result itself). Probe for it on every message; the caller-supplied value still wins.
+            int probed = parseMaxTurns(rawRoot);
+            if (probed != UNKNOWN_MAX_TURNS) {
+                wireMaxTurns = probed;
+            }
+
             if (message instanceof ResultMessage resultMsg) {
+                sawResult = true;
+                resultSubtype = resultMsg.subtype();
                 totalCostUsd = resultMsg.totalCostUsd() != null ? resultMsg.totalCostUsd() : 0.0;
                 durationMs = resultMsg.durationMs();
                 apiDurationMs = resultMsg.durationApiMs();
@@ -214,10 +269,20 @@ public class SessionLogParser {
                 final double fCost = totalCostUsd;
                 final int fTurns = numTurns;
                 final long fDur = durationMs;
+                // J3: the stop reason and the ceiling it ran against go onto the result line
+                // together — either alone leaves numTurns uninterpretable.
+                final StopReason fStop = ClaudeStopReasons.resolveRunStopReason(resultMsg.subtype(), isError,
+                        true, lastTurnStopReason);
+                final int fMax = callerMaxTurns != UNKNOWN_MAX_TURNS ? callerMaxTurns : wireMaxTurns;
                 final TraceWriter.ResultMeta fMeta = new TraceWriter.ResultMeta(sessionId, isError,
                         resultMsg.subtype(), apiDurationMs, thinkingTokens, cacheCreationInputTokens,
-                        cacheReadInputTokens, resultMsg.structuredOutput());
+                        cacheReadInputTokens, resultMsg.structuredOutput(), fStop, fMax);
                 writeTrace(trace, phaseName, w -> w.writeResult(fIn, fOut, fCost, fTurns, fDur, fMeta));
+                if (fStop == StopReason.MAX_TURNS) {
+                    logger.warn("[{}] Run hit its turn ceiling (maxTurns={}, numTurns={}) — this trajectory is "
+                            + "right-censored: its step count is a lower bound, not a measurement.",
+                            phaseName, fMax, numTurns);
+                }
                 // R2.2: the exact per-model cost decomposition (sums to totalCostUsd) lives in
                 // the result wire's modelUsage sibling — not on the typed ResultMessage. Last
                 // result wins.
@@ -232,6 +297,9 @@ public class SessionLogParser {
                 // R2.3: collect this turn's tool_use ids so per-step cost can be attributed
                 // to the tool calls that belong to the same assistant message.
                 List<String> turnToolIds = new ArrayList<>();
+                // J4: the turn ordinal and identity every tool call in this turn is stamped with.
+                final int currentTurnIndex = turnIndex++;
+                final String currentTurnId = turnIdOf(rawRoot);
                 for (ContentBlock block : assistantMsg.content()) {
                     if (block instanceof TextBlock textBlock) {
                         textOutput.append(textBlock.text());
@@ -252,21 +320,27 @@ public class SessionLogParser {
                                 toolUseBlock.id(),
                                 ClaudeToolClassifier.classify(toolUseBlock.name()),
                                 toolUseBlock.name(),
-                                toolUseBlock.input()));
+                                toolUseBlock.input(),
+                                currentTurnId,
+                                currentTurnIndex));
                         turnToolIds.add(toolUseBlock.id());
                         toolUseNames.put(toolUseBlock.id(), toolUseBlock.name());
                         toolUseInputs.put(toolUseBlock.id(), toolUseBlock.input());
                         toolUseStartMs.put(toolUseBlock.id(), System.currentTimeMillis());
                         String target = toolTarget(toolUseBlock.name(), toolUseBlock.input());
                         logger.info("[{}] Tool use: {} {} (id: {})", phaseName, toolUseBlock.name(), target, toolUseBlock.id());
-                        writeTrace(trace, phaseName,
-                                w -> w.writeToolUse(toolUseBlock.name(), toolUseBlock.id(), toolUseBlock.input()));
+                        writeTrace(trace, phaseName, w -> w.writeToolUse(toolUseBlock.name(), toolUseBlock.id(),
+                                toolUseBlock.input(), currentTurnIndex, currentTurnId));
                     }
                 }
-                // R2.2/R2.3: per-turn usage (wire-only) carrying this turn's tool_use ids.
-                TurnUsage turn = parseTurnUsage(rawRoot, turnToolIds);
+                // R2.2/R2.3: per-turn usage (wire-only) carrying this turn's tool_use ids, and
+                // (1.9.0) its thinking tokens, wire stop_reason and ordinal.
+                TurnUsage turn = parseTurnUsage(rawRoot, turnToolIds, currentTurnIndex);
                 if (turn != null) {
                     turns.add(turn);
+                    if (turn.stopReason() != null) {
+                        lastTurnStopReason = turn.stopReason();
+                    }
                 }
             }
 
@@ -279,14 +353,18 @@ public class SessionLogParser {
                             if (content == null && resultBlock.content() != null) {
                                 content = resultBlock.content().toString();
                             }
+                            String resultToolName = toolUseNames.getOrDefault(resultBlock.toolUseId(), "?");
+                            Long startMs = toolUseStartMs.get(resultBlock.toolUseId());
+                            // J4: this was already being computed and thrown away after the log
+                            // line. It is the dwell time — persist it.
+                            long elapsedMs = startMs != null ? System.currentTimeMillis() - startMs : -1;
                             toolResults.add(new ToolResultRecord(
                                     resultBlock.toolUseId(),
                                     content,
-                                    Boolean.TRUE.equals(resultBlock.isError())));
-                            String resultToolName = toolUseNames.getOrDefault(resultBlock.toolUseId(), "?");
-                            Long startMs = toolUseStartMs.get(resultBlock.toolUseId());
-                            long elapsedMs = startMs != null ? System.currentTimeMillis() - startMs : -1;
+                                    Boolean.TRUE.equals(resultBlock.isError()),
+                                    elapsedMs));
                             final String fContent = content;
+                            final long fElapsed = elapsedMs;
                             final int len = content != null ? content.length() : 0;
                             final boolean err = Boolean.TRUE.equals(resultBlock.isError());
                             if (elapsedMs >= 0) {
@@ -299,19 +377,34 @@ public class SessionLogParser {
                             final Map<String, Object> source = sourceRef(resultToolName,
                                     toolUseInputs.get(resultBlock.toolUseId()));
                             writeTrace(trace, phaseName,
-                                    w -> w.writeToolResult(resultBlock.toolUseId(), err, fContent, source));
+                                    w -> w.writeToolResult(resultBlock.toolUseId(), err, fContent, source, fElapsed));
                         }
                     }
                 }
             }
         }
 
-        // If thinking_tokens not in usage map, estimate from captured thinking blocks
-        // (~4 chars/token is a standard heuristic for English text)
+        // Thinking tokens, best source first:
+        //   1. the result's own usage.thinking_tokens, when the CLI reports one;
+        //   2. Σ per-turn usage.output_tokens_details.thinking_tokens — EXACT, and on the wire all
+        //      along. Before 1.9.0 this was skipped straight to the estimate below;
+        //   3. only then the ~4 chars/token estimate over captured thinking blocks.
+        if (thinkingTokens == 0 && !turns.isEmpty()) {
+            long fromTurns = turns.stream().mapToLong(TurnUsage::thinkingTokens).sum();
+            if (fromTurns > 0) {
+                thinkingTokens = (int) fromTurns;
+            }
+        }
         if (thinkingTokens == 0 && !thinkingBlocks.isEmpty()) {
             int totalChars = thinkingBlocks.stream().mapToInt(String::length).sum();
             thinkingTokens = totalChars / 4;
         }
+
+        // J3: resolve the stop reason even when no terminal ResultMessage arrived (an aborted or
+        // truncated stream), falling back to the last turn's own wire stop_reason.
+        StopReason stopReason = ClaudeStopReasons.resolveRunStopReason(resultSubtype, isError, sawResult,
+                lastTurnStopReason);
+        int effectiveMaxTurns = callerMaxTurns != UNKNOWN_MAX_TURNS ? callerMaxTurns : wireMaxTurns;
 
         return new PhaseCapture(
                 phaseName,
@@ -333,7 +426,9 @@ public class SessionLogParser {
                 rawResult,
                 toolResults,
                 turns,
-                modelCosts
+                modelCosts,
+                stopReason,
+                effectiveMaxTurns
         );
     }
 
@@ -475,7 +570,7 @@ public class SessionLogParser {
      * Per-turn usage from an assistant wire message's {@code message.usage} block (snake_case
      * keys). Returns null when the raw wire is unavailable or carries no usage object.
      */
-    private static TurnUsage parseTurnUsage(JsonNode rawRoot, List<String> toolUseIds) {
+    private static TurnUsage parseTurnUsage(JsonNode rawRoot, List<String> toolUseIds, int turnIndex) {
         if (rawRoot == null) {
             return null;
         }
@@ -491,7 +586,53 @@ public class SessionLogParser {
                 usage.path("output_tokens").asLong(0),
                 usage.path("cache_creation_input_tokens").asLong(0),
                 usage.path("cache_read_input_tokens").asLong(0),
-                List.copyOf(toolUseIds));
+                List.copyOf(toolUseIds),
+                // Nested one level deeper than the rest of the vector, which is why it was
+                // missed: usage.output_tokens_details.thinking_tokens. A subset of output_tokens.
+                usage.path("output_tokens_details").path("thinking_tokens").asLong(0),
+                textOrNull(msg, "stop_reason"),
+                turnIndex);
+    }
+
+    /**
+     * This turn's identity for stamping onto its tool calls — the wire {@code message.id}.
+     * Null when the raw wire is unavailable (programmatic construction / SDK &lt; 1.3.0).
+     */
+    private static String turnIdOf(JsonNode rawRoot) {
+        return rawRoot == null ? null : textOrNull(rawRoot.path("message"), "id");
+    }
+
+    /**
+     * Probes the raw wire for a reported turn ceiling.
+     *
+     * <p>
+     * Claude Code does <strong>not</strong> currently emit one — {@code maxTurns} is a caller-side
+     * {@code QueryOptions} value and is never echoed back — so in practice this returns
+     * {@link #UNKNOWN_MAX_TURNS} and the caller-supplied value is what gets recorded. It probes
+     * the handful of places a future CLI version would plausibly put it (the init/system envelope
+     * carries session options) so that if the CLI ever starts reporting the ceiling, capture picks
+     * it up without a code change. It never guesses: an absent field yields "unknown", not a
+     * default.
+     *
+     * @param rawRoot the parsed wire line, or null
+     * @return the reported ceiling, or {@link #UNKNOWN_MAX_TURNS}
+     */
+    private static int parseMaxTurns(JsonNode rawRoot) {
+        if (rawRoot == null) {
+            return UNKNOWN_MAX_TURNS;
+        }
+        for (JsonNode scope : new JsonNode[] { rawRoot, rawRoot.path("options"), rawRoot.path("data") }) {
+            if (scope == null || scope.isMissingNode()) {
+                continue;
+            }
+            for (String key : new String[] { "max_turns", "maxTurns" }) {
+                JsonNode v = scope.path(key);
+                if (v.isIntegralNumber()) {
+                    return v.asInt();
+                }
+            }
+        }
+        return UNKNOWN_MAX_TURNS;
     }
 
     /**

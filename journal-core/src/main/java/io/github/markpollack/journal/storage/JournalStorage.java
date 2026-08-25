@@ -5,6 +5,7 @@ import io.github.markpollack.journal.derived.DerivedEvent;
 import io.github.markpollack.journal.event.FeedbackEvent;
 import io.github.markpollack.journal.event.JournalEvent;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +25,8 @@ import java.util.Optional;
  * │           └── {run-id}/
  * │               ├── run.json
  * │               ├── events.jsonl
- * │               └── artifacts/
+ * │               ├── artifacts/
+ * │               └── raw/
  * </pre>
  *
  * <p>Example:
@@ -251,4 +253,46 @@ public interface JournalStorage {
      * @return list of artifact names
      */
     List<String> listArtifacts(String experimentId, String runId);
+
+    // ========== Raw Provider Artifacts (contract only — see rawDirectory) ==========
+
+    /**
+     * The directory a run's <strong>verbatim provider artifacts</strong> live in, when this
+     * backend has one.
+     *
+     * <p>
+     * <strong>This is a contract, not a copier.</strong> The journal reserves and locates
+     * {@code raw/} within the run directory so raw provider artifacts — the Claude Code
+     * {@code .jsonl} session log and its equivalents — are <em>findable from the run record</em>,
+     * keyed by {@code runId}. Producing the copies is deliberately <em>not</em> the journal's
+     * job: copying the provider session file belongs to {@code agent-experiment}, which knows
+     * what it launched and when. The journal's half is this — a stable, discoverable location a
+     * copier can write into and an analysis can read back from, so a run record is never a dead
+     * end.
+     *
+     * <p>
+     * <strong>Why it matters.</strong> Nearly every capture gap found in the 2026-08-24
+     * measurement audit — per-step tokens, stop reason, per-tool duration — was plausibly
+     * already present in the raw provider log and was discarded at parse time. Keeping raw
+     * turns "we cannot answer that" into "re-derive it", at the price of storage rather than a
+     * re-run. Capture is one-shot; analysis is free to redo.
+     *
+     * <p>
+     * Contents are expected to be <strong>content-addressed</strong> (named by a digest of the
+     * bytes), so the same provider artifact copied twice is stored once and any copy is
+     * verifiable against its own name. The journal neither parses nor validates what lands
+     * here: raw is immutable evidence, not a schema.
+     *
+     * <p>
+     * The default implementation returns empty — a backend with no filesystem (in-memory) has
+     * nowhere to put raw, and says so rather than inventing a path.
+     *
+     * @param experimentId the experiment ID
+     * @param runId the run ID
+     * @return the run's raw-artifact directory, or empty when this backend has none. The
+     *         directory is not created by this call and need not already exist.
+     */
+    default Optional<Path> rawDirectory(String experimentId, String runId) {
+        return Optional.empty();
+    }
 }

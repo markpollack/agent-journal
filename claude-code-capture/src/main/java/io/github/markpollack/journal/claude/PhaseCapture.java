@@ -1,5 +1,6 @@
 package io.github.markpollack.journal.claude;
 
+import io.github.markpollack.journal.event.StopReason;
 import io.github.markpollack.journal.event.TokenUsage;
 import io.github.markpollack.journal.trace.JournalStep;
 
@@ -44,6 +45,17 @@ import java.util.List;
  *                       empty when rawJson is unavailable (SDK &lt; 1.3.0 or programmatic). R2.2.
  * @param modelCosts     Per-model cost decomposition from the result's modelUsage; the
  *                       costs sum to {@code totalCostUsd}. Empty when unavailable. R2.2.
+ * @param stopReason     Why this phase stopped, normalized (1.9.0). Never null — an
+ *                       unreported reason is {@link StopReason#UNKNOWN}, which is information,
+ *                       not an absence.
+ * @param maxTurns       The turn ceiling this phase ran against, or -1 when none was reported.
+ *                       <strong>Recorded together with {@code stopReason} and never separately:</strong>
+ *                       {@code numTurns = 55} is uninterpretable on its own — finished, or cut
+ *                       off? — and a ceiling with no outcome answers just as little. Claude Code
+ *                       does not put the ceiling on the wire (it is a caller-side
+ *                       {@code QueryOptions.maxTurns}), so the reliable source is the
+ *                       {@code SessionLogParser.parse(..., maxTurns)} overload; the parser still
+ *                       probes the wire first in case a future CLI version reports it.
  */
 public record PhaseCapture(
         String phaseName,
@@ -65,8 +77,31 @@ public record PhaseCapture(
         String rawResult,
         List<ToolResultRecord> toolResults,
         List<TurnUsage> turns,
-        List<ModelCost> modelCosts
+        List<ModelCost> modelCosts,
+        StopReason stopReason,
+        int maxTurns
 ) {
+
+    /** Normalizes a null {@code stopReason} to {@link StopReason#UNKNOWN}. */
+    public PhaseCapture {
+        stopReason = stopReason != null ? stopReason : StopReason.UNKNOWN;
+    }
+
+    /**
+     * Back-compat constructor for callers written before the stop reason and turn ceiling were
+     * captured (1.9.0): {@code stopReason} becomes {@link StopReason#UNKNOWN} and
+     * {@code maxTurns} -1 ("no ceiling reported").
+     */
+    public PhaseCapture(String phaseName, String promptText, int inputTokens, int outputTokens,
+            int thinkingTokens, int cacheCreationInputTokens, int cacheReadInputTokens, long durationMs,
+            long apiDurationMs, double totalCostUsd, String sessionId, int numTurns, boolean isError,
+            String textOutput, List<String> thinkingBlocks, List<ToolUseRecord> toolUses, String rawResult,
+            List<ToolResultRecord> toolResults, List<TurnUsage> turns, List<ModelCost> modelCosts) {
+        this(phaseName, promptText, inputTokens, outputTokens, thinkingTokens, cacheCreationInputTokens,
+                cacheReadInputTokens, durationMs, apiDurationMs, totalCostUsd, sessionId, numTurns, isError,
+                textOutput, thinkingBlocks, toolUses, rawResult, toolResults, turns, modelCosts,
+                StopReason.UNKNOWN, -1);
+    }
     /**
      * Backward-compatible constructor for callers that don't provide cache tokens or toolResults.
      */
@@ -204,5 +239,57 @@ public record PhaseCapture(
             return 0.0;
         }
         return modelCosts.stream().mapToDouble(ModelCost::costUsd).sum();
+    }
+
+    /**
+     * Tolerance for the cost identity below — a tenth of a cent, comfortably above float
+     * accumulation error and well below any real per-model cost.
+     */
+    public static final double COST_RECONCILIATION_TOLERANCE_USD = 1e-4;
+
+    /**
+     * The reconciliation that actually holds: Σ per-model {@code costUsd} equals
+     * {@code totalCostUsd}.
+     *
+     * <p>
+     * <strong>This is deliberately a cost check and not a token check.</strong> The known caveat
+     * {@code PER_TURN_INPUT_NOT_ADDITIVE} (documented on {@link TurnUsage}) is that per-turn token
+     * fields do not sum to the run's reported totals — the input and cache fields are per-request
+     * measurements over an accumulating context window, so summing them answers a different
+     * question than the result's final-request snapshot. That discrepancy is a property of the
+     * data and is recorded as a named caveat rather than papered over. The cost decomposition, by
+     * contrast, <em>is</em> additive and is therefore the honest closure check on a capture.
+     *
+     * @return true when the per-model costs reconcile to the run total within
+     *         {@link #COST_RECONCILIATION_TOLERANCE_USD}; false when they disagree.
+     *         <strong>Also false when {@code modelUsage} was unavailable</strong> — with nothing to
+     *         reconcile against, the identity is unverified, and unverified must not read as
+     *         verified. Check {@link #hasModelCosts()} to tell the two apart.
+     */
+    public boolean reconcilesToModelCosts() {
+        if (!hasModelCosts()) {
+            return false;
+        }
+        return Math.abs(modelCostSum() - totalCostUsd) <= COST_RECONCILIATION_TOLERANCE_USD;
+    }
+
+    /**
+     * Σ per-turn {@code thinking_tokens} — the exact extended-thinking volume for this phase,
+     * read from the wire rather than estimated. A subset of output tokens; never add it to a
+     * billed total. Returns 0 when no per-turn usage was captured.
+     */
+    public long thinkingTokensFromTurns() {
+        if (turns == null) {
+            return 0L;
+        }
+        return turns.stream().mapToLong(TurnUsage::thinkingTokens).sum();
+    }
+
+    /**
+     * Whether this phase was cut short rather than finishing on its own — the runs whose step
+     * counts are lower bounds instead of measurements.
+     */
+    public boolean wasTruncated() {
+        return stopReason != null && stopReason.isTruncatedRun();
     }
 }

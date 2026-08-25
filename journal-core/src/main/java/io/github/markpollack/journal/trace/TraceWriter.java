@@ -3,6 +3,8 @@ package io.github.markpollack.journal.trace;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.github.markpollack.journal.event.StopReason;
+
 import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.IOException;
@@ -28,6 +30,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Execution line types: {@code header} (first line, run identity), {@code tool_use},
  * {@code tool_result}, {@code text}, {@code thinking}, {@code result}; plus the verbatim
  * {@code raw} escape hatch ({@code rawMode}) and the derived {@code step_cost} analysis line.
+ *
+ * <p>
+ * As of 1.9.0 the {@code result} line carries {@code stopReason} + {@code maxTurns} together
+ * (so {@code numTurns} is interpretable), {@code tool_use} carries {@code turnIndex}/{@code turnId},
+ * {@code tool_result} carries {@code durationMs}, and {@code step_cost} carries the full per-turn
+ * token vector plus {@code turnIndex}/{@code durationMs}. All additive.
  *
  * <p>
  * <strong>Additive evolution contract:</strong> the Markov analysis loader
@@ -103,23 +111,46 @@ public class TraceWriter implements Closeable {
         writeLine(line);
     }
 
+    /** Back-compat overload: no turn ordinal or turn id recorded. */
     public void writeToolUse(String name, String id, Map<String, Object> input) throws IOException {
+        writeToolUse(name, id, input, -1, null);
+    }
+
+    /**
+     * @param turnIndex 0-based ordinal of the model turn that issued this call, or -1 when unknown
+     * @param turnId    the assistant message id that issued this call, or null when unknown
+     */
+    public void writeToolUse(String name, String id, Map<String, Object> input, int turnIndex, String turnId)
+            throws IOException {
         Map<String, Object> line = baseLine("tool_use");
         line.put("name", name);
         line.put("id", id);
         line.put("input", input != null ? input : Map.of());
+        line.put("turnIndex", turnIndex);
+        if (turnId != null) {
+            line.put("turnId", turnId);
+        }
         writeLine(line);
     }
 
-    /**
-     * @param source pointer to where the full content lives (file path or command),
-     * written to the line only when the content is actually truncated; may be null
-     */
+    /** Back-compat overload: no step duration recorded. */
     public void writeToolResult(String id, boolean isError, String content, Map<String, Object> source)
             throws IOException {
+        writeToolResult(id, isError, content, source, -1L);
+    }
+
+    /**
+     * @param source     pointer to where the full content lives (file path or command),
+     * written to the line only when the content is actually truncated; may be null
+     * @param durationMs interval between the tool call being issued and this result arriving,
+     * or -1 when not measured
+     */
+    public void writeToolResult(String id, boolean isError, String content, Map<String, Object> source,
+            long durationMs) throws IOException {
         Map<String, Object> line = baseLine("tool_result");
         line.put("id", id);
         line.put("isError", isError);
+        line.put("durationMs", durationMs);
         line.put("contentLength", content != null ? content.length() : 0);
         boolean truncated = putContent(line, content);
         if (truncated && source != null) {
@@ -164,6 +195,11 @@ public class TraceWriter implements Closeable {
             line.put("thinkingTokens", meta.thinkingTokens());
             line.put("cacheCreationInputTokens", meta.cacheCreationInputTokens());
             line.put("cacheReadInputTokens", meta.cacheReadInputTokens());
+            // Written as a pair, always: numTurns is uninterpretable without the ceiling it ran
+            // against, and the ceiling means nothing without knowing whether it was hit. A
+            // maxTurns of -1 records "no ceiling reported", which is itself information.
+            line.put("stopReason", (meta.stopReason() != null ? meta.stopReason() : StopReason.UNKNOWN).name());
+            line.put("maxTurns", meta.maxTurns());
             if (meta.structuredOutput() != null) {
                 line.put("structuredOutput", meta.structuredOutput());
             }
@@ -228,6 +264,11 @@ public class TraceWriter implements Closeable {
         }
         line.put("inputTokens", step.inputTokens());
         line.put("outputTokens", step.outputTokens());
+        line.put("thinkingTokens", step.thinkingTokens());
+        line.put("cacheCreationTokens", step.cacheCreationTokens());
+        line.put("cacheReadTokens", step.cacheReadTokens());
+        line.put("turnIndex", step.turnIndex());
+        line.put("durationMs", step.durationMs());
         line.put("attributedCostUsd", BigDecimal.valueOf(step.attributedCostUsd()).setScale(6, RoundingMode.HALF_UP));
         line.put("actualRunCostUsd", BigDecimal.valueOf(step.actualRunCostUsd()).setScale(6, RoundingMode.HALF_UP));
         if (step.attributionMethod() != null) {
@@ -286,7 +327,19 @@ public class TraceWriter implements Closeable {
      * anyway for completeness.
      */
     public record ResultMeta(String sessionId, boolean isError, String subtype, long durationApiMs, int thinkingTokens,
-            int cacheCreationInputTokens, int cacheReadInputTokens, Object structuredOutput) {
+            int cacheCreationInputTokens, int cacheReadInputTokens, Object structuredOutput, StopReason stopReason,
+            int maxTurns) {
+
+        /**
+         * Back-compat constructor for callers written before the stop reason and turn ceiling
+         * were carried (1.9.0): {@code stopReason} normalizes to {@link StopReason#UNKNOWN} and
+         * {@code maxTurns} to -1 ("no ceiling reported").
+         */
+        public ResultMeta(String sessionId, boolean isError, String subtype, long durationApiMs, int thinkingTokens,
+                int cacheCreationInputTokens, int cacheReadInputTokens, Object structuredOutput) {
+            this(sessionId, isError, subtype, durationApiMs, thinkingTokens, cacheCreationInputTokens,
+                    cacheReadInputTokens, structuredOutput, StopReason.UNKNOWN, -1);
+        }
     }
 
 }

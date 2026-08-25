@@ -57,14 +57,32 @@ Journal.configure(new JsonFileStorage(Path.of(".agent-journal")));
             └── {run-id}/
                 ├── run.json         ← run metadata, config, summary
                 ├── events.jsonl     ← append-only event log, one event per line
-                └── artifacts/
-                    └── {name}       ← named binary artifacts
+                ├── artifacts/
+                │   └── {name}       ← named binary artifacts
+                └── raw/             ← verbatim provider artifacts (reserved; see below)
 ```
 
 The `events.jsonl` file uses JSONL format (newline-delimited JSON) — each event is one line. This means:
 - Appending a new event is a single `write()` call, no parsing required
 - The file can be read line-by-line without loading the whole thing into memory
 - Standard tools (DuckDB, jq, grep) work directly on the file
+
+### `raw/` — verbatim provider artifacts
+
+Since 1.9.0 the run directory reserves `raw/` for **verbatim provider artifacts**: the Claude Code
+`.jsonl` session log and its equivalents for other CLIs, stored content-addressed and keyed to the
+run. Resolve it with `JournalStorage.rawDirectory(experimentId, runId)`; a backend with no
+filesystem (in-memory) returns empty rather than inventing a path.
+
+This is a **location contract, not a copier**. The journal reserves and locates raw so it stays
+findable from the run record; producing the copies belongs to the experiment harness, which knows
+what it launched and when. Resolving the directory does not create it, so an absent `raw/`
+correctly means "nothing was archived for this run" rather than "archival failed".
+
+Why keep raw at all: capture is one-shot per run, while analysis is free to redo. A field that was
+never captured cannot be backfilled, but a field still present in an archived provider log can be
+re-derived at any time. Keeping raw converts "we cannot answer that" into "re-derive it", at the
+price of storage rather than a re-run.
 
 Since 1.6.0, the first line of `events.jsonl` (and of the derived `analysis.jsonl`) is a schema-version header — `{"@type":"header","schemaVersion":1}` — which loaders skip. It lets readers detect the on-disk format independently of the individual event schemas.
 
