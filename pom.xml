@@ -43,7 +43,7 @@
 
         <!-- Dependency versions -->
         <claude-code-sdk.version>1.5.1</claude-code-sdk.version>
-        <gemini-cli-sdk.version>0.29.0</gemini-cli-sdk.version>
+        <gemini-cli-sdk.version>0.29.2</gemini-cli-sdk.version>
         <acp-core.version>0.16.1</acp-core.version>
         <!-- 2.21.4+ clears the 2026-06-23 jackson-databind cluster (CVE-2026-54512 /
              CVE-2026-54513, CVSS 8.1) that affects 2.19.0 -> 2.21.3. 2.21.6 is the head of
@@ -67,7 +67,6 @@
         <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
         <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-        <cyclonedx-maven-plugin.version>2.9.3</cyclonedx-maven-plugin.version>
     </properties>
 
     <modules>
@@ -195,38 +194,6 @@
                 </executions>
             </plugin>
 
-            <!-- One consumer-scoped CycloneDX 1.6 JSON attachment per artifact. -->
-            <plugin>
-                <groupId>org.cyclonedx</groupId>
-                <artifactId>cyclonedx-maven-plugin</artifactId>
-                <version>${cyclonedx-maven-plugin.version}</version>
-                <configuration>
-                    <projectType>library</projectType>
-                    <schemaVersion>1.6</schemaVersion>
-                    <includeBomSerialNumber>true</includeBomSerialNumber>
-                    <includeCompileScope>true</includeCompileScope>
-                    <includeProvidedScope>false</includeProvidedScope>
-                    <includeRuntimeScope>true</includeRuntimeScope>
-                    <includeSystemScope>false</includeSystemScope>
-                    <includeTestScope>false</includeTestScope>
-                    <includeLicenseText>false</includeLicenseText>
-                    <outputReactorProjects>false</outputReactorProjects>
-                    <!-- Central Publishing replaces Maven's standard deploy path. -->
-                    <skipNotDeployed>false</skipNotDeployed>
-                    <outputFormat>json</outputFormat>
-                    <outputName>${project.artifactId}-${project.version}-cyclonedx</outputName>
-                    <classifier>cyclonedx</classifier>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>consumer-cyclonedx-sbom</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>makeBom</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
     <profiles>
