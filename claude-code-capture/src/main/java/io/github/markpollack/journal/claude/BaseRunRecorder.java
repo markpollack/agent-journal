@@ -7,6 +7,7 @@ import io.github.markpollack.journal.event.CostBreakdown;
 import io.github.markpollack.journal.event.CustomEvent;
 import io.github.markpollack.journal.event.LLMCallEvent;
 import io.github.markpollack.journal.event.StateChangeEvent;
+import io.github.markpollack.journal.event.StopReason;
 import io.github.markpollack.journal.event.TimingInfo;
 import io.github.markpollack.journal.event.ToolCallEvent;
 import io.github.markpollack.journal.trace.JournalStep;
@@ -64,6 +65,15 @@ public abstract class BaseRunRecorder {
         }
         metadata.put("numTurns", phase.numTurns());
         metadata.put("isError", phase.isError());
+        // J3: the stop reason and the ceiling it ran against, written together and
+        // unconditionally. numTurns alone cannot say whether a run finished or was cut off, and a
+        // ceiling with no outcome answers as little — so neither is ever omitted, not even when
+        // unknown. maxTurns = -1 records "no ceiling reported", which is itself a fact about the
+        // run; leaving the key out would make "not captured" indistinguishable from "not looked
+        // for" once the WARN has scrolled away.
+        metadata.put(JournalSteps.META_STOP_REASON,
+                (phase.stopReason() != null ? phase.stopReason() : StopReason.UNKNOWN).name());
+        metadata.put(JournalSteps.META_MAX_TURNS, phase.maxTurns());
         if (phase.hasTurns()) {
             metadata.put(JournalSteps.META_TURNS, JournalSteps.turnsToMetadata(phase.turns()));
         }
@@ -99,6 +109,13 @@ public abstract class BaseRunRecorder {
                         .toolName(toolUse.name())
                         .kind(toolUse.kind())
                         .input(toolUse.input())
+                        // J4: the dwell-time pair. The duration was previously computed at parse
+                        // time, written to a log line, and dropped; the turn ordinal was never
+                        // captured at all after v1. Without both, a semi-Markov model has no
+                        // holding time and no way to order the trajectory.
+                        .durationMs(result != null ? result.durationMs() : -1L)
+                        .turnIndex(toolUse.turnIndex())
+                        .turnId(toolUse.turnId())
                         .success(!isError)
                         .errorMessage(isError ? result.content() : null)
                         .build());

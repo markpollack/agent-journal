@@ -55,8 +55,21 @@ Records one tool invocation.
 | `input` | Map | Tool input parameters |
 | `output` | Map | Tool result (optional) |
 | `errorMessage` | String | Error description if `success=false` |
-| `durationMs` | long | Duration in milliseconds |
+| `durationMs` | long | Duration in milliseconds — the interval between the call being issued and its result arriving. `-1` when never measured. |
+| `turnIndex` | int | 0-based ordinal of the model turn that issued this call (since 1.9.0). `-1` when unknown — never `0`, so "not captured" is distinguishable from "the first turn". |
+| `turnId` | String | Identity of that turn (the assistant message id, e.g. `msg_…`), since 1.9.0. Joins a tool call to its turn's token vector. |
 | `success` | boolean | Whether the tool call succeeded |
+
+`durationMs` together with `turnIndex` is the dwell-time pair a semi-Markov analysis needs: the
+ordinal places the step in the trajectory, the duration gives the state its holding time. Both were
+carried by the earliest capture format, silently lost in a later one, and restored in 1.9.0.
+
+<Note>
+`durationMs` is the **observed** interval on the SDK stream, not a vendor-reported tool latency —
+Claude Code reports none. For a live capture it is the tool's wall-clock time as seen by the
+consumer; for a replay of an already-recorded stream it measures the replay. Near-zero durations
+across a whole run are a replay signature, not instant tools.
+</Note>
 
 ```java
 // Success with input and output

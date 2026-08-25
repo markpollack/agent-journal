@@ -67,6 +67,19 @@ public final class JournalSteps {
     static final String META_TURN_CACHE_CREATION = "cacheCreationInputTokens";
     static final String META_TURN_CACHE_READ = "cacheReadInputTokens";
     static final String META_TURN_TOOL_USE_IDS = "toolUseIds";
+    static final String META_TURN_THINKING_TOKENS = "thinkingTokens";
+    static final String META_TURN_STOP_REASON = "stopReason";
+    static final String META_TURN_INDEX = "turnIndex";
+
+    /**
+     * Additive {@code LLMCallEvent.metadata} keys for the run's stop reason and the turn ceiling
+     * it ran against. Written as a pair by {@code BaseRunRecorder} and never separately — see
+     * {@link io.github.markpollack.journal.event.StopReason}.
+     */
+    public static final String META_STOP_REASON = "stopReason";
+
+    /** @see #META_STOP_REASON */
+    public static final String META_MAX_TURNS = "maxTurns";
 
     /** Logged at most once per process when attribution is coarsened (turns absent). */
     private static final AtomicBoolean COARSENED_WARNED = new AtomicBoolean(false);
@@ -80,10 +93,13 @@ public final class JournalSteps {
 
     public static List<JournalStep> fromPhaseCapture(PhaseCapture phase, String runId, String vendor) {
         Map<String, Boolean> toolErrors = new LinkedHashMap<>();
+        Map<String, Long> toolDurations = new LinkedHashMap<>();
         for (ToolResultRecord tr : nullSafe(phase.toolResults())) {
             toolErrors.put(tr.toolUseId(), tr.isError());
+            toolDurations.put(tr.toolUseId(), tr.durationMs());
         }
-        return attribute(phase.turns(), nullSafe(phase.toolUses()), toolErrors, phase.totalCostUsd(), runId, vendor);
+        return attribute(phase.turns(), nullSafe(phase.toolUses()), toolErrors, toolDurations,
+                phase.totalCostUsd(), runId, vendor);
     }
 
     /**
@@ -108,23 +124,28 @@ public final class JournalSteps {
         LLMCallEvent currentLlm = null;
         List<ToolUseRecord> phaseTools = new ArrayList<>();
         Map<String, Boolean> phaseToolErrors = new LinkedHashMap<>();
+        Map<String, Long> phaseToolDurations = new LinkedHashMap<>();
         for (JournalEvent e : nullSafe(events)) {
             if (e instanceof LLMCallEvent llm) {
                 if (currentLlm != null) {
-                    steps.addAll(attributePhase(currentLlm, phaseTools, phaseToolErrors, runId, vendor));
+                    steps.addAll(attributePhase(currentLlm, phaseTools, phaseToolErrors, phaseToolDurations,
+                            runId, vendor));
                 }
                 currentLlm = llm;
                 phaseTools = new ArrayList<>();
                 phaseToolErrors = new LinkedHashMap<>();
+                phaseToolDurations = new LinkedHashMap<>();
             } else if (e instanceof ToolCallEvent tc && currentLlm != null) {
-                phaseTools.add(new ToolUseRecord(tc.id(), tc.kind(), tc.toolName(), Map.of()));
+                phaseTools.add(new ToolUseRecord(tc.id(), tc.kind(), tc.toolName(), Map.of(), tc.turnId(),
+                        tc.turnIndex()));
                 if (tc.id() != null) {
                     phaseToolErrors.put(tc.id(), !tc.success());
+                    phaseToolDurations.put(tc.id(), tc.durationMs());
                 }
             }
         }
         if (currentLlm != null) {
-            steps.addAll(attributePhase(currentLlm, phaseTools, phaseToolErrors, runId, vendor));
+            steps.addAll(attributePhase(currentLlm, phaseTools, phaseToolErrors, phaseToolDurations, runId, vendor));
         }
         return steps;
     }
@@ -158,7 +179,12 @@ public final class JournalSteps {
                         (int) t.cacheCreationInputTokens(), (int) t.cacheReadInputTokens(), 0));
             }
             TokenUsage summed = TokenUsage.sum(perTurn);
-            int thinking = llm.tokenUsage() != null ? llm.tokenUsage().thinkingTokens() : 0;
+            // Prefer the exact Σ per-turn thinking (1.9.0, read from the wire) over the recorded
+            // headline, which may still be the pre-1.9.0 chars/4 estimate.
+            long thinkingFromTurns = turns.stream().mapToLong(TurnUsage::thinkingTokens).sum();
+            int thinking = thinkingFromTurns > 0
+                    ? (int) thinkingFromTurns
+                    : (llm.tokenUsage() != null ? llm.tokenUsage().thinkingTokens() : 0);
             total = total.plus(new TokenUsage(summed.inputTokens(), summed.outputTokens(), thinking,
                     summed.cacheCreationTokens(), summed.cacheReadTokens(), summed.toolUseTokens()));
         }
@@ -166,9 +192,10 @@ public final class JournalSteps {
     }
 
     private static List<JournalStep> attributePhase(LLMCallEvent llm, List<ToolUseRecord> tools,
-            Map<String, Boolean> toolErrors, String runId, String vendor) {
+            Map<String, Boolean> toolErrors, Map<String, Long> toolDurations, String runId, String vendor) {
         Object rawTurns = (llm.metadata() != null) ? llm.metadata().get(META_TURNS) : null;
-        return attribute(turnsFromMetadata(rawTurns), tools, toolErrors, llm.totalCostUsd(), runId, vendor);
+        return attribute(turnsFromMetadata(rawTurns), tools, toolErrors, toolDurations, llm.totalCostUsd(), runId,
+                vendor);
     }
 
     /**
@@ -177,7 +204,8 @@ public final class JournalSteps {
      * / id→error maps, it produces the per-step shares and folds the float residual into the last step.
      */
     private static List<JournalStep> attribute(List<TurnUsage> turns, List<ToolUseRecord> toolUses,
-            Map<String, Boolean> toolErrors, double actualCost, String runId, String vendor) {
+            Map<String, Boolean> toolErrors, Map<String, Long> toolDurations, double actualCost, String runId,
+            String vendor) {
         Map<String, String> toolNames = new LinkedHashMap<>();
         for (ToolUseRecord tu : nullSafe(toolUses)) {
             toolNames.put(tu.id(), tu.name());
@@ -195,10 +223,12 @@ public final class JournalSteps {
                 double turnCost = actualCost * weight;
                 List<String> tools = turn.toolUseIds();
                 if (tools == null || tools.isEmpty()) {
-                    // Tool-less turn (e.g. final text answer) → one turn-level step.
+                    // Tool-less turn (e.g. final text answer) → one turn-level step. It has no tool
+                    // result, so no observed duration: -1, not 0.
                     steps.add(new JournalStep(runId, turn.messageId(), turn.messageId(), null,
                             turn.inputTokens(), turn.outputTokens(), turnCost, actualCost, method, false, null,
-                            vendor, false));
+                            vendor, false, turn.thinkingTokens(), turn.cacheCreationInputTokens(),
+                            turn.cacheReadInputTokens(), turn.turnIndex(), -1L));
                 } else {
                     double perTool = turnCost / tools.size();
                     for (String toolId : tools) {
@@ -206,7 +236,9 @@ public final class JournalSteps {
                         steps.add(new JournalStep(runId, turn.messageId(), toolId, toolName,
                                 turn.inputTokens(), turn.outputTokens(), perTool, actualCost, method,
                                 Boolean.TRUE.equals(toolErrors.get(toolId)), null, vendor,
-                                SUBAGENT_TOOLS.contains(toolName)));
+                                SUBAGENT_TOOLS.contains(toolName), turn.thinkingTokens(),
+                                turn.cacheCreationInputTokens(), turn.cacheReadInputTokens(), turn.turnIndex(),
+                                durationOf(toolDurations, toolId)));
                     }
                 }
             }
@@ -221,9 +253,12 @@ public final class JournalSteps {
                 warnCoarsenedOnce();
                 double perTool = actualCost / tools.size();
                 for (ToolUseRecord tu : tools) {
-                    steps.add(new JournalStep(runId, null, tu.id(), tu.name(), 0, 0, perTool, actualCost, method,
-                            Boolean.TRUE.equals(toolErrors.get(tu.id())), null, vendor,
-                            SUBAGENT_TOOLS.contains(tu.name())));
+                    // No per-turn usage means no token vector to carry, but the tool's own turn
+                    // linkage and observed duration survive independently of the cost split.
+                    steps.add(new JournalStep(runId, tu.turnId(), tu.id(), tu.name(), 0, 0, perTool, actualCost,
+                            method, Boolean.TRUE.equals(toolErrors.get(tu.id())), null, vendor,
+                            SUBAGENT_TOOLS.contains(tu.name()), 0L, 0L, 0L, tu.turnIndex(),
+                            durationOf(toolDurations, tu.id())));
                 }
             }
         }
@@ -247,7 +282,8 @@ public final class JournalSteps {
             steps.set(i, new JournalStep(last.runId(), last.turnId(), last.stepId(), last.toolName(),
                     last.inputTokens(), last.outputTokens(), last.attributedCostUsd() + residual,
                     last.actualRunCostUsd(), last.attributionMethod(), last.isError(), last.agentState(),
-                    last.vendor(), last.isSubagentSpawn()));
+                    last.vendor(), last.isSubagentSpawn(), last.thinkingTokens(), last.cacheCreationTokens(),
+                    last.cacheReadTokens(), last.turnIndex(), last.durationMs()));
         }
         return steps;
     }
@@ -272,6 +308,11 @@ public final class JournalSteps {
             m.put(META_TURN_CACHE_CREATION, t.cacheCreationInputTokens());
             m.put(META_TURN_CACHE_READ, t.cacheReadInputTokens());
             m.put(META_TURN_TOOL_USE_IDS, new ArrayList<>(nullSafe(t.toolUseIds())));
+            m.put(META_TURN_THINKING_TOKENS, t.thinkingTokens());
+            if (t.stopReason() != null) {
+                m.put(META_TURN_STOP_REASON, t.stopReason());
+            }
+            m.put(META_TURN_INDEX, t.turnIndex());
             out.add(m);
         }
         return out;
@@ -294,9 +335,21 @@ public final class JournalSteps {
                     asLong(m.get(META_TURN_OUTPUT_TOKENS)),
                     asLong(m.get(META_TURN_CACHE_CREATION)),
                     asLong(m.get(META_TURN_CACHE_READ)),
-                    asStringList(m.get(META_TURN_TOOL_USE_IDS))));
+                    asStringList(m.get(META_TURN_TOOL_USE_IDS)),
+                    asLong(m.get(META_TURN_THINKING_TOKENS)),
+                    asString(m.get(META_TURN_STOP_REASON)),
+                    asInt(m.get(META_TURN_INDEX), -1)));
         }
         return turns;
+    }
+
+    /** Observed duration for a step, or -1 when none was recorded (never 0 by default). */
+    private static long durationOf(Map<String, Long> toolDurations, String toolId) {
+        if (toolDurations == null) {
+            return -1L;
+        }
+        Long d = toolDurations.get(toolId);
+        return d != null ? d : -1L;
     }
 
     private static void warnCoarsenedOnce() {
@@ -310,6 +363,11 @@ public final class JournalSteps {
 
     private static long asLong(Object o) {
         return (o instanceof Number n) ? n.longValue() : 0L;
+    }
+
+    /** Reads an int with an explicit "absent" default, so a missing ordinal never reads as turn 0. */
+    private static int asInt(Object o, int absent) {
+        return (o instanceof Number n) ? n.intValue() : absent;
     }
 
     private static String asString(Object o) {

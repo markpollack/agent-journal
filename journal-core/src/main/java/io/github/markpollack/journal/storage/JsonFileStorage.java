@@ -36,9 +36,17 @@ import java.util.stream.Stream;
  * │           └── {run-id}/
  * │               ├── run.json
  * │               ├── events.jsonl
- * │               └── artifacts/
- * │                   └── {artifact-name}
+ * │               ├── artifacts/
+ * │               │   └── {artifact-name}
+ * │               └── raw/
+ * │                   └── {content-addressed provider artifact}
  * </pre>
+ *
+ * <p>{@code raw/} is a <strong>reserved location, not a feature this class populates</strong>
+ * (1.9.0). It is where verbatim provider artifacts — the Claude Code {@code .jsonl} session log
+ * and its equivalents — belong, so they stay findable from the run record; the copier that fills
+ * it lives in {@code agent-experiment}, not here. See
+ * {@link JournalStorage#rawDirectory(String, String)}.
  *
  * <p>Events are stored in JSON Lines format (one JSON object per line) for
  * efficient append-only writes.
@@ -70,6 +78,7 @@ public class JsonFileStorage implements JournalStorage {
     private static final String EXPERIMENTS_DIR = "experiments";
     private static final String RUNS_DIR = "runs";
     private static final String ARTIFACTS_DIR = "artifacts";
+    private static final String RAW_DIR = "raw";
     private static final String EXPERIMENT_FILE = "experiment.json";
     private static final String RUN_FILE = "run.json";
     private static final String EVENTS_FILE = "events.jsonl";
@@ -149,6 +158,19 @@ public class JsonFileStorage implements JournalStorage {
 
     private Path artifactsDir(String experimentId, String runId) {
         return runDir(experimentId, runId).resolve(ARTIFACTS_DIR);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Resolves {@code {baseDir}/experiments/{experimentId}/runs/{runId}/raw}. The directory is
+     * <strong>not created</strong> — this backend reserves and locates raw, it does not write it;
+     * an absent directory correctly means "nothing was archived for this run" rather than
+     * "archival failed".
+     */
+    @Override
+    public Optional<Path> rawDirectory(String experimentId, String runId) {
+        return Optional.of(runDir(experimentId, runId).resolve(RAW_DIR));
     }
 
     private Path artifactFile(String experimentId, String runId, String name) {
