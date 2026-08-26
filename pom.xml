@@ -76,6 +76,7 @@
         <module>grok-cli-capture</module>
         <module>codex-cli-capture</module>
         <module>antigravity-cli-capture</module>
+        <module>junie-cli-capture</module>
     </modules>
 
     <dependencyManagement>
