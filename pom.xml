@@ -252,6 +252,44 @@
             <id>release</id>
             <build>
                 <plugins>
+                    <!--
+                      Inline inherited metadata into every published module pom.
+
+                      Without this, a child module publishes a pom carrying only <parent> and its
+                      own coordinates. The licence, description, url, scm and developers are all
+                      declared once in the parent and are reachable only by resolving the parent
+                      chain. Maven does that; licence scanners, SBOM generators and dependency
+                      audits frequently do not, and read the artifact's own pom alone.
+
+                      Measured on 2026-08-30: journal-core 1.10.0's published pom declares NO
+                      licence, while agent-journal-parent 1.10.0 declares Business Source License
+                      1.1. Nothing was unlicensed - the jar carries META-INF/LICENSE and the parent
+                      declares it - but an acquirer's automated crawl read the estate as partly
+                      unlicensed, because the surface tools read had nothing on it.
+
+                      agent-client already published correctly for exactly this reason; it had
+                      flatten and these modules did not.
+                    -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>flatten-maven-plugin</artifactId>
+                        <version>1.7.3</version>
+                        <configuration>
+                            <flattenMode>ossrh</flattenMode>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>flatten</id>
+                                <phase>process-resources</phase>
+                                <goals><goal>flatten</goal></goals>
+                            </execution>
+                            <execution>
+                                <id>flatten.clean</id>
+                                <phase>clean</phase>
+                                <goals><goal>clean</goal></goals>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <plugin>
                         <groupId>org.sonatype.central</groupId>
                         <artifactId>central-publishing-maven-plugin</artifactId>
