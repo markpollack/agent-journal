@@ -1,72 +1,53 @@
 package io.github.markpollack.journal.trace;
 
 /**
- * Portable per-step record — the unit the ACT analysis layer consumes for state-weighted
- * cost-to-go. One step is either a single tool call or a tool-less assistant turn.
+ * One step of an agent's trajectory, with its tokens and its share of the cost: a tool call, or a
+ * model turn that made no tool call. Each capture module builds steps from its phase capture with
+ * its own {@code *JournalSteps} class, such as Claude Code's {@code JournalSteps}. The run
+ * recorders store them as {@link io.github.markpollack.journal.derived.StepCostEvent}s, and the
+ * session parsers that write traces add them as {@code step_cost} lines with
+ * {@link TraceWriter#writeStepCost(JournalStep)}. Use steps to see where in a trajectory the cost
+ * built up.
  *
- * <p>
- * <strong>Cost fields are kept deliberately separate so ground truth and allocation are
- * never confused</strong> (per the R2.3 decision):
- * <ul>
- *   <li>{@code actualRunCostUsd} — the run's true cost ({@code total_cost_usd}); identical
- *       across every step of a run.</li>
- *   <li>{@code attributedCostUsd} — this step's fair share of the run cost under
- *       {@code attributionMethod}; the per-step costs sum to {@code actualRunCostUsd}.</li>
- *   <li>{@code attributionMethod} — how the split was computed.</li>
- * </ul>
- * Nobody should mistake an attributed share for a measured cost — Claude Code does not
- * report per-step cost; the share is an allocation, the total is real.
+ * <p>Agents report the cost of a whole call, not of each step, so a step's cost is an allocation,
+ * not a measurement. {@link #actualRunCostUsd()} is the reported total that was split, the same on
+ * every step it was split across; {@link #attributedCostUsd()} is this step's share; and
+ * {@link #attributionMethod()} says how the share was worked out. The shares of the steps built
+ * from one phase add up to that phase's total. Despite its name, {@code actualRunCostUsd} is the
+ * total of one phase (one agent call), so it differs between the phases of a run. It is 0 when
+ * the agent reports no cost.
  *
- * <p>
- * Token fields are the <em>turn's</em> full five-field vector (not split): {@code input},
- * {@code output}, {@code thinking}, {@code cacheCreation}, {@code cacheRead}. For the common
- * one-tool-per-turn case they are exact; for a multi-tool turn each step carries its turn's
- * shared tokens (documented — tokens are a turn property, cost is the thing that is split).
- * {@code thinkingTokens} is a <em>subset of</em> {@code outputTokens} (the provider bills
- * thinking inside output), so it is never added to a billed total; it is carried because the
- * cache and thinking components are what make a per-state cost priceable at all.
+ * <p>The token counts belong to the step's turn and are not split: when one turn makes several
+ * tool calls, each of their steps carries the whole turn's tokens, so do not add up tokens over
+ * steps. {@code thinkingTokens} is part of {@code outputTokens}. Steps split with
+ * {@link AttributionMethod#EVEN_SPLIT} have zero token counts.
  *
- * <p>
- * {@code turnIndex} and {@code durationMs} restore the dwell-time half of the semi-Markov
- * question: without a turn ordinal a step cannot be placed in the trajectory, and without a
- * duration a state has no holding time. Both were carried by the v1 capture and lost by v3/v4.
+ * <p>This library leaves {@code agentState} {@code null}, for an analysis tool to fill in. The
+ * record does not check its values.
  *
- * <p>
- * {@code agentState} is an unfilled slot — the Markov state classifier in
- * {@code agent-control-theory} populates it; journal never classifies. {@code raw} is not
- * duplicated here: the verbatim wire lives on the per-message {@code type:"raw"} trace line
- * (R2.1), joined by {@code turnId}. Vendor-neutral and owned by {@code journal-core} (R2.7);
- * per-vendor extractors project into it (Claude via {@code JournalSteps}; Gemini/Codex later).
- *
- * @param runId             the run this step belongs to
- * @param turnId            the assistant message id (e.g. {@code msg_…}); joins to the raw line
- * @param stepId            stable step identity: the tool_use id ({@code toolu_…}) for tool
- *                          steps, the turn id for tool-less turns
- * @param toolName          the tool invoked, or null for a tool-less turn step
- * @param inputTokens       the turn's non-cached input tokens
- * @param outputTokens      the turn's output tokens
- * @param attributedCostUsd this step's fair share of the run cost
- * @param actualRunCostUsd  the run's true total cost (ground truth, repeated per step)
- * @param attributionMethod how {@code attributedCostUsd} was derived
- * @param isError           whether this step errored (tool_result isError; false for turn steps)
- * @param agentState        Markov-state slot, filled by the analysis layer (null here)
- * @param vendor            capture vendor, e.g. {@code claude-code}
- * @param isSubagentSpawn   whether this step spawned a sub-agent (a {@code Task}/{@code Agent}
- *                          tool call). The sub-agent's interior steps are NOT in the SDK stream
- *                          — they live in {@code subagents/*.jsonl} and are captured by archival
- *                          (R2.5b, agent-client). This flag marks the boundary so a spawn is never
- *                          flattened into an ordinary tool call.
- * @param thinkingTokens    the turn's extended-thinking tokens — a documented <em>subset</em> of
- *                          {@code outputTokens}, never additive to a billed total. 0 when the
- *                          provider reports none.
+ * @param runId the ID of the run the step belongs to, or {@code null} when it was built without
+ *        a run
+ * @param turnId the ID of the step's model turn (the assistant message ID, such as
+ *        {@code msg_...}), or {@code null} if not known
+ * @param stepId the step's ID: the vendor's tool-call ID for a tool call, otherwise the turn ID or
+ *        an ID made by the capture module
+ * @param toolName the tool's name, or {@code null} for a turn without a tool call
+ * @param inputTokens the turn's input tokens, without cache reads and writes
+ * @param outputTokens the turn's output tokens
+ * @param attributedCostUsd this step's share of the cost, in US dollars
+ * @param actualRunCostUsd the reported total cost that was split, in US dollars
+ * @param attributionMethod how {@code attributedCostUsd} was worked out
+ * @param isError whether the step's tool call failed; {@code false} for a turn without a tool call
+ * @param agentState a state label for analysis tools; {@code null} from this library
+ * @param vendor the agent the step came from, such as {@code "claude-code"}
+ * @param isSubagentSpawn whether the tool call started a sub-agent; the sub-agent's own steps are
+ *        not included
+ * @param thinkingTokens the turn's thinking tokens, which are part of {@code outputTokens}
  * @param cacheCreationTokens the turn's tokens written to the prompt cache
- * @param cacheReadTokens   the turn's tokens read from the prompt cache
- * @param turnIndex         0-based ordinal of this step's turn within the capture, or -1 when
- *                          unknown (no per-turn usage available). Orders the trajectory.
- * @param durationMs        observed duration of this step in milliseconds, or -1 when unknown.
- *                          For a tool step this is the interval between the tool call being
- *                          issued and its result arriving; see {@code ToolResultRecord.durationMs}
- *                          for the measurement caveat.
+ * @param cacheReadTokens the turn's tokens read from the prompt cache
+ * @param turnIndex the 0-based number of the step's turn, or -1 if not known
+ * @param durationMs the time from the tool call to its result, in milliseconds, or -1 if not
+ *        measured
  */
 public record JournalStep(
         String runId,
@@ -90,9 +71,22 @@ public record JournalStep(
 ) {
 
     /**
-     * Back-compat constructor for callers written before the full per-turn token vector,
-     * turn ordinal and step duration were carried (1.9.0). The added fields default to
-     * "not captured": zero tokens, {@code turnIndex = -1}, {@code durationMs = -1}.
+     * Creates a step without thinking and cache tokens, turn number or duration, for code written
+     * before 1.9.0. Those tokens are 0, and {@code turnIndex} and {@code durationMs} are -1.
+     *
+     * @param runId the run ID, or {@code null}
+     * @param turnId the turn ID, or {@code null}
+     * @param stepId the step ID
+     * @param toolName the tool's name, or {@code null}
+     * @param inputTokens the turn's input tokens
+     * @param outputTokens the turn's output tokens
+     * @param attributedCostUsd this step's share of the cost
+     * @param actualRunCostUsd the total that was split
+     * @param attributionMethod how the share was worked out
+     * @param isError whether the tool call failed
+     * @param agentState a state label, or {@code null}
+     * @param vendor the agent the step came from
+     * @param isSubagentSpawn whether the tool call started a sub-agent
      */
     public JournalStep(String runId, String turnId, String stepId, String toolName, long inputTokens,
             long outputTokens, double attributedCostUsd, double actualRunCostUsd,
@@ -103,14 +97,20 @@ public record JournalStep(
     }
 
     /**
-     * The turn's total input including prompt-cache reads and cache creation — the input side
-     * of what was actually billed, as opposed to the non-cached {@link #inputTokens()} alone.
+     * Returns all input tokens of the step's turn: input plus cache writes plus cache reads.
+     *
+     * @return the sum of {@code inputTokens}, {@code cacheCreationTokens} and
+     *         {@code cacheReadTokens}
      */
     public long totalInputTokens() {
         return inputTokens + cacheCreationTokens + cacheReadTokens;
     }
 
-    /** Whether a step duration was actually observed (as opposed to never captured). */
+    /**
+     * Returns whether the step's duration was measured.
+     *
+     * @return {@code true} if {@code durationMs} is 0 or more
+     */
     public boolean hasDuration() {
         return durationMs >= 0;
     }

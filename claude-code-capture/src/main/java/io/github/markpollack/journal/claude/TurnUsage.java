@@ -3,60 +3,38 @@ package io.github.markpollack.journal.claude;
 import java.util.List;
 
 /**
- * Per-turn usage for one assistant message (one API request), parsed from the wire
- * {@code message.usage} block. The typed {@code AssistantMessage} exposes only
- * {@code content}, so this is recovered from {@code RegularMessage.rawJson} (SDK
- * &ge; 1.3.0) — see {@code SessionLogParser}.
+ * The token usage of one turn of a Claude Code call; a turn is one assistant message, which is
+ * one API request. {@link SessionLogParser} reads it from the usage of each assistant message,
+ * and {@link PhaseCapture#turns()} holds one per turn. {@link JournalSteps} uses the turns to
+ * split a phase's cost across its steps, and the run recorder stores them with the phase's LLM
+ * call so that the split can be done again from the events.
  *
- * <p>
- * Tokens are the per-turn breakdown; <strong>cost is intentionally absent.</strong>
- * Claude Code does not put a per-turn {@code cost_usd} on the wire — the only native cost
- * is the run total ({@code total_cost_usd}) and its per-model decomposition
- * ({@link ModelCost}). Per-turn / per-step cost is <em>attributed</em> downstream
- * (Round 2 R2.3) from those anchors plus a documented split rule, not read here.
+ * <p>A turn has no cost: Claude Code reports cost only for the whole call and per model
+ * ({@link ModelCost}).
  *
- * <p>
- * <strong>Named caveat: {@code PER_TURN_INPUT_NOT_ADDITIVE}.</strong> Per-turn token fields do
- * <em>not</em> sum to the run aggregate reported on the terminal {@code ResultMessage}, and this
- * is a property of the data, not a capture defect. {@code input_tokens} and the cache fields are
- * a <em>per-request</em> measurement over an accumulating context window: the same prompt prefix
- * is re-read on every turn, so Σ per-turn input exceeds any notion of "the input of the run",
- * while the result's own {@code usage} block is a final-request snapshot that under-counts a long
- * run. Neither is wrong; they measure different things.
+ * <p>The turns' token counts do not add up to the counts on the final result message, and are
+ * not meant to. Each turn's input and cache counts measure one request over a context that grows,
+ * so the same prompt is counted again on every turn, while the result message reports a
+ * snapshot. For a total to price, add up each token type over the turns, as
+ * {@link PhaseCapture#aggregateUsage()} does. To check that a capture is complete, compare costs
+ * with {@link PhaseCapture#reconcilesToModelCosts()}, not tokens.
  *
- * <p>
- * The reconciliation that <em>does</em> hold is the cost identity, not a token identity: Σ
- * {@link ModelCost#costUsd()} over {@code modelUsage} equals {@code total_cost_usd} (±float).
- * That is the check to run — see {@code PhaseCapture.reconcilesToModelCosts()}. Anything that
- * needs a summable token figure must sum <em>by type across turns</em>
- * ({@code PhaseCapture.aggregateUsage()}) and treat the result as billed volume, never as
- * context size. Do not "fix" the discrepancy by making the numbers agree; they are answers to
- * different questions.
+ * <p>The parser needs each message's original JSON, so turns are captured only with
+ * claude-code-sdk 1.3.0 or later. The record does not copy {@code toolUseIds}.
  *
- * @param messageId               the wire {@code message.id} ({@code msg_...}); turn identity
- * @param model                   the model that served this turn (e.g. {@code claude-opus-4-8})
- * @param inputTokens             non-cached input tokens for this turn
- * @param outputTokens            output tokens generated this turn
- * @param cacheCreationInputTokens tokens written to the prompt cache this turn
- * @param cacheReadInputTokens    tokens read from the prompt cache this turn
- * @param toolUseIds              ids of the tool calls issued in this turn (empty if none);
- *                                used by {@code JournalSteps} to attribute the turn's cost
- *                                to its tool calls (R2.3)
- * @param thinkingTokens          extended-thinking tokens for this turn, read from the wire's
- *                                {@code usage.output_tokens_details.thinking_tokens}. This is a
- *                                <strong>subset of {@code outputTokens}</strong> — the provider
- *                                bills thinking inside output — so it must never be added to a
- *                                billed total. 0 when the provider reports none. Before 1.9.0
- *                                this was not captured per turn at all and the run-level figure
- *                                was a chars/4 estimate; the exact per-turn count was on the wire
- *                                the whole time and was discarded at parse time.
- * @param stopReason              the wire {@code message.stop_reason} for this turn, verbatim
- *                                ({@code end_turn}, {@code tool_use}, {@code max_tokens},
- *                                {@code stop_sequence}, {@code refusal}), or null when absent.
- *                                Normalized by {@link ClaudeStopReasons}; kept raw here so an
- *                                unrecognized future value survives capture.
- * @param turnIndex               0-based ordinal of this turn within the capture, or -1 when
- *                                unknown. Orders the trajectory for dwell-time analysis.
+ * @param messageId the assistant message ID, such as {@code msg_...}, which identifies the turn,
+ *        or {@code null} if not reported
+ * @param model the model that served the turn, such as {@code claude-opus-4-8}, or {@code null}
+ * @param inputTokens the input tokens, not counting cache reads and writes
+ * @param outputTokens the output tokens, including thinking tokens
+ * @param cacheCreationInputTokens the tokens written to the prompt cache
+ * @param cacheReadInputTokens the tokens read from the prompt cache
+ * @param toolUseIds the IDs of the tool calls the turn made, in order; empty if it made none
+ * @param thinkingTokens the thinking tokens, which are part of {@code outputTokens}, or 0 if none
+ *        were reported
+ * @param stopReason why the turn stopped, as Claude reported it, such as {@code end_turn},
+ *        {@code tool_use} or {@code max_tokens}, or {@code null} if not reported
+ * @param turnIndex the 0-based number of the turn within the phase, or -1 if not known
  */
 public record TurnUsage(
         String messageId,
@@ -72,7 +50,16 @@ public record TurnUsage(
 ) {
 
     /**
-     * Back-compat constructor for callers that don't supply tool-call ids.
+     * Creates a turn without tool calls, thinking tokens, stop reason or turn number: the list of
+     * tool-call IDs is empty, thinking tokens are 0, the stop reason is {@code null} and the turn
+     * index is -1.
+     *
+     * @param messageId the assistant message ID, or {@code null}
+     * @param model the model, or {@code null}
+     * @param inputTokens the input tokens
+     * @param outputTokens the output tokens
+     * @param cacheCreationInputTokens the tokens written to the prompt cache
+     * @param cacheReadInputTokens the tokens read from the prompt cache
      */
     public TurnUsage(String messageId, String model, long inputTokens, long outputTokens,
             long cacheCreationInputTokens, long cacheReadInputTokens) {
@@ -80,9 +67,16 @@ public record TurnUsage(
     }
 
     /**
-     * Back-compat constructor for callers written before per-turn thinking tokens, the wire stop
-     * reason and the turn ordinal were captured (1.9.0). Those default to "not captured": 0, null
-     * and -1 respectively.
+     * Creates a turn without thinking tokens, stop reason or turn number, for code written before
+     * 1.9.0. Thinking tokens are 0, the stop reason is {@code null} and the turn index is -1.
+     *
+     * @param messageId the assistant message ID, or {@code null}
+     * @param model the model, or {@code null}
+     * @param inputTokens the input tokens
+     * @param outputTokens the output tokens
+     * @param cacheCreationInputTokens the tokens written to the prompt cache
+     * @param cacheReadInputTokens the tokens read from the prompt cache
+     * @param toolUseIds the IDs of the turn's tool calls
      */
     public TurnUsage(String messageId, String model, long inputTokens, long outputTokens,
             long cacheCreationInputTokens, long cacheReadInputTokens, List<String> toolUseIds) {
@@ -91,15 +85,24 @@ public record TurnUsage(
     }
 
     /**
-     * Total input including prompt-cache reads and cache creation.
+     * Returns all input tokens of the turn: input plus cache writes plus cache reads.
+     *
+     * @return the sum of {@code inputTokens}, {@code cacheCreationInputTokens} and
+     *         {@code cacheReadInputTokens}
      */
     public long totalInputTokens() {
         return inputTokens + cacheCreationInputTokens + cacheReadInputTokens;
     }
 
     /**
-     * This turn's wire stop reason normalized onto the portable
-     * {@link io.github.markpollack.journal.event.StopReason}.
+     * Returns the turn's stop reason as a vendor-neutral
+     * {@link io.github.markpollack.journal.event.StopReason}, using
+     * {@link ClaudeStopReasons#fromTurnStopReason(String)}: {@code end_turn} and
+     * {@code stop_sequence} become {@code NATURAL_DONE}, {@code tool_use} becomes
+     * {@code TOOL_USE}, {@code max_tokens} becomes {@code MAX_TOKENS}, {@code refusal} becomes
+     * {@code REFUSAL}, and anything else, or no reason, becomes {@code UNKNOWN}.
+     *
+     * @return the stop reason; never {@code null}
      */
     public io.github.markpollack.journal.event.StopReason normalizedStopReason() {
         return ClaudeStopReasons.fromTurnStopReason(stopReason);

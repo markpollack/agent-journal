@@ -13,14 +13,42 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Factory for creating {@link EvalSubjectSource} instances backed by
- * journal-core data sources.
+ * Makes {@link EvalSubjectSource}s from journal events, so that a run's recorded behaviour can be
+ * judged. {@link #fromJournal} reads a stored run; {@link #fromEvents} takes events you already
+ * have. Each LLM call, tool call, state change and custom event becomes one {@link EvalSubject}
+ * with source {@code "journal"}, in event order; metric, Git, feedback and other events are
+ * skipped. A capture module can have its own factory that reads its phase captures instead, such
+ * as Claude Code's {@code PhaseCaptureSources}.
  *
- * <p>Source adapters for other modules:
+ * <p>Each kind of event becomes a subject like this:
  * <ul>
- *   <li>{@code PhaseCaptureSources.fromPhaseCaptures()} in claude-code-capture</li>
- *   <li>{@code fromStepTransitions()} deferred — StepTransition lives in agent-workflow</li>
+ *   <li>{@link LLMCallEvent}: kind {@code LLM_CALL}, goal {@code "LLM call to <model>"}, no input
+ *       or output. Metadata: {@code timestamp}, {@code model}, and when present
+ *       {@code provider}, {@code inputTokens}, {@code outputTokens}, {@code totalTokens},
+ *       {@code costUsd}, {@code durationMs}, {@code finishReason} and {@code responseId}; then
+ *       the event's own metadata, which wins when a key is the same.
+ *   <li>{@link ToolCallEvent}: kind {@code TOOL_CALL}, goal {@code "Tool call: <name>"}, the
+ *       tool's input and output. Metadata: {@code timestamp}, {@code toolName},
+ *       {@code durationMs}, {@code success}, and {@code errorMessage} when present.
+ *   <li>{@link StateChangeEvent}: kind {@code STATE_CHANGE}, goal
+ *       {@code "State: <from> → <to>"}, the old state as input and the new state as output.
+ *       Metadata: {@code timestamp}, {@code fromState}, {@code toState}, and {@code reason} when
+ *       present.
+ *   <li>{@link CustomEvent}: kind {@code CUSTOM}, goal {@code "Custom: <name>"}, no input or
+ *       output. Metadata: {@code timestamp}, {@code eventName}, and the event's attributes.
  * </ul>
+ *
+ * <p>An LLM call's subject ID is its response ID and a tool call's is its tool-call ID. An event
+ * without such an ID, and every state change and custom event, gets {@code journal:<runId>:<n>},
+ * where {@code n} is the event's 0-based position among all the events given, skipped ones
+ * included. Such an ID changes if the events are filtered or reordered, so feedback should target
+ * subjects with their own IDs where it can. The capture modules' recorders give each tool call
+ * its vendor's ID but set no response ID, so LLM calls from recorded runs get positional IDs.
+ *
+ * <p>Subject metadata is an unmodifiable map that cannot hold {@code null} values, and the order
+ * of its keys is not kept. So the events must have no {@code null} timestamp, model, tool name,
+ * state or custom event name, and no {@code null} values in their metadata or attributes; one
+ * such event makes the whole conversion fail.
  */
 public final class EvalSubjectSources {
 
@@ -28,11 +56,17 @@ public final class EvalSubjectSources {
 	}
 
 	/**
-	 * Extract subjects from Journal events for a specific run.
-	 * @param storage the journal storage backend
-	 * @param experimentId the experiment containing the run
-	 * @param runId the run to extract subjects from
-	 * @return a source producing EvalSubjects from the run's events
+	 * Returns a source of subjects for a stored run. The run's events are loaded from
+	 * {@code storage}, and converted, each time {@link EvalSubjectSource#subjects()} is called, not
+	 * when this method is called. So every result of a query reads the run again, and sees events
+	 * logged since. A run without events gives no subjects, and so does a run that the built-in
+	 * storages do not have. Exceptions from loading or converting reach the caller of
+	 * {@code subjects()}.
+	 *
+	 * @param storage the storage to read; must not be {@code null}
+	 * @param experimentId the ID of the experiment the run belongs to
+	 * @param runId the ID of the run, which is also put on each subject and in positional IDs
+	 * @return a source that loads the run's events on each call
 	 */
 	public static EvalSubjectSource fromJournal(JournalStorage storage, String experimentId, String runId) {
 		return () -> {
@@ -42,10 +76,14 @@ public final class EvalSubjectSources {
 	}
 
 	/**
-	 * Extract subjects from a pre-loaded list of Journal events.
-	 * @param events the events to convert
-	 * @param runId the run these events belong to
-	 * @return a source producing EvalSubjects from the events
+	 * Returns a source of subjects for events you already have. The events are converted now,
+	 * once, so this call fails if one cannot be converted; every call to
+	 * {@link EvalSubjectSource#subjects()} then streams the same subjects.
+	 *
+	 * @param events the events, in the order they were logged; must not be {@code null}
+	 * @param runId the ID of the run they belong to, which is also put on each subject and in
+	 *        positional IDs
+	 * @return a source of the converted subjects
 	 */
 	public static EvalSubjectSource fromEvents(List<JournalEvent> events, String runId) {
 		List<EvalSubject> subjects = mapEvents(events, runId);
