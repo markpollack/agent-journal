@@ -7,13 +7,23 @@ import java.time.Instant;
 import java.util.Map;
 
 /**
- * Represents a single call in a hierarchical call tree.
+ * One named operation inside a run, such as an agent loop, a turn or a tool call, timed from when
+ * it starts until it is closed. Start a top-level call with {@link CallTracker#startCall(String)}
+ * on {@link io.github.markpollack.journal.Run#calls()}, start nested calls with
+ * {@link #child(String)}, and close each one with try-with-resources. Calls are kept in memory
+ * only: nothing about them is written to storage. To record an operation in the run's event
+ * log, log a {@link io.github.markpollack.journal.event.JournalEvent} on the run instead.
  *
- * <p>Calls track the execution of operations within an agent workflow,
- * supporting parent-child relationships for nested operations. Each call
- * automatically tracks its duration when closed.
+ * <p>A call ends when it is closed or failed. To record a failure, call
+ * {@link #fail(Throwable)} inside the try block: it ends the call, and the later {@code close()}
+ * does nothing. Once a call has ended, {@link #child(String, Tags)},
+ * {@link #event(String, Map)} and {@link #setAttribute(String, Object)} throw
+ * {@link IllegalStateException}. Closing a call does not close its children.
  *
- * <p>Example usage:
+ * <p>The calls a run's tracker creates are safe for use from several threads. Implementations
+ * must make {@code close()} and {@code fail} do nothing on a call that has already ended.
+ *
+ * <p>Example:
  * <pre>{@code
  * try (Call agentLoop = run.calls().startCall("agent-loop")) {
  *     for (int turn = 0; turn < 10; turn++) {
@@ -37,114 +47,148 @@ import java.util.Map;
 public interface Call extends AutoCloseable {
 
     /**
-     * Returns the unique identifier for this call.
+     * Returns the ID of this call, a random UUID.
+     *
+     * @return the ID, never {@code null}
      */
     String id();
 
     /**
-     * Returns the operation name for this call.
+     * Returns the name of the operation, as passed when the call was started.
+     *
+     * @return the operation name
      */
     String operation();
 
     /**
-     * Returns the tags associated with this call.
+     * Returns the tags given when the call was started.
+     *
+     * @return the tags, empty if none were given
      */
     Tags tags();
 
     /**
-     * Returns the parent call, or null if this is a root call.
+     * Returns the call this one was started from with {@link #child(String)}.
+     *
+     * @return the parent call, or {@code null} for a call started by {@link CallTracker}
      */
     Call parent();
 
     /**
-     * Returns the start time of this call.
+     * Returns when this call started.
+     *
+     * @return the start time
      */
     Instant startTime();
 
     /**
-     * Returns the end time of this call, or null if still running.
+     * Returns when this call was closed or failed.
+     *
+     * @return the end time, or {@code null} while the call is open
      */
     Instant endTime();
 
     /**
-     * Returns the duration of this call, or null if still running.
+     * Returns how long this call ran, from its start to its end.
+     *
+     * @return the duration, or {@code null} while the call is open
      */
     Duration duration();
 
     /**
-     * Returns true if this call has completed (either successfully or with failure).
+     * Returns whether this call has ended, by {@link #close()} or {@link #fail(Throwable)}.
+     *
+     * @return {@code true} if the call has ended
      */
     boolean isComplete();
 
     /**
-     * Returns true if this call failed.
+     * Returns whether this call ended through {@link #fail(Throwable)}.
+     *
+     * @return {@code true} if the call failed
      */
     boolean isFailed();
 
     /**
-     * Returns the failure cause, or null if not failed.
+     * Returns the error passed to {@link #fail(Throwable)}.
+     *
+     * @return the cause, or {@code null} if the call has not failed
      */
     Throwable failureCause();
 
     /**
-     * Creates a child call with the given operation name.
+     * Starts a call nested in this one, with no tags. Close it before this call.
+     * The default calls {@link #child(String, Tags)} with {@link Tags#empty()}.
      *
-     * @param operation the operation name for the child call
-     * @return a new child call
+     * @param operation the name of the nested operation, such as {@code "turn"}
+     * @return the new call, already started
+     * @throws IllegalStateException if this call has ended
      */
     default Call child(String operation) {
         return child(operation, Tags.empty());
     }
 
     /**
-     * Creates a child call with the given operation name and tags.
+     * Starts a call nested in this one. The new call becomes the current call of the calling
+     * thread (see {@link CallTracker#currentCall()}). Close it before this call.
      *
-     * @param operation the operation name for the child call
-     * @param tags tags for the child call
-     * @return a new child call
+     * @param operation the name of the nested operation
+     * @param tags the tags for the new call; {@code null} gives no tags
+     * @return the new call, already started
+     * @throws IllegalStateException if this call has ended
      */
     Call child(String operation, Tags tags);
 
     /**
-     * Logs an event within this call.
+     * Records a named moment inside this call, with no attributes.
+     * The default calls {@link #event(String, Map)} with an empty map.
      *
-     * @param name the event name
+     * @param name the name of the moment, such as {@code "retry"}
+     * @throws IllegalStateException if this call has ended
      */
     default void event(String name) {
         event(name, Map.of());
     }
 
     /**
-     * Logs an event with attributes within this call.
+     * Records a named moment inside this call, with attributes and the current time. The moment
+     * is kept with the call in memory, not in the run's event log, and this interface has no
+     * method to read it back; {@link DefaultCall#events()} returns them.
      *
-     * @param name the event name
-     * @param attributes event attributes
+     * @param name the name of the moment
+     * @param attributes details of the moment
+     * @throws IllegalStateException if this call has ended
      */
     void event(String name, Map<String, Object> attributes);
 
     /**
-     * Sets a custom attribute on this call.
+     * Sets an attribute of this call, such as the model or the tool used, replacing any earlier
+     * value for the key.
      *
-     * @param key the attribute key
-     * @param value the attribute value
+     * @param key the attribute name
+     * @param value the value
+     * @throws IllegalStateException if this call has ended
      */
     void setAttribute(String key, Object value);
 
     /**
-     * Returns the attributes set on this call.
+     * Returns the attributes set on this call so far.
+     *
+     * @return an unmodifiable copy of the attributes, in the order they were first set
      */
     Map<String, Object> attributes();
 
     /**
-     * Marks this call as failed with the given error.
+     * Ends this call as failed and records the error. Does nothing if the call has already ended.
+     * Call it inside the try block: the later {@code close()} then does nothing.
      *
-     * @param error the error that caused the failure
+     * @param error the cause of the failure; must not be {@code null}
      */
     void fail(Throwable error);
 
     /**
-     * Closes this call, recording its end time and duration.
-     * If the call has not been explicitly failed, it is considered successful.
+     * Ends this call and records its end time, unless it has already ended. A call that was not
+     * failed counts as successful. Try-with-resources calls this at the end of the block.
      */
     @Override
     void close();

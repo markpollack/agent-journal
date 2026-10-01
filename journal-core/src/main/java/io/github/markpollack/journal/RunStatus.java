@@ -1,33 +1,60 @@
 package io.github.markpollack.journal;
 
 /**
- * Run lifecycle status.
+ * Where a {@link Run} is in its life: still running, or ended and how. Read it from
+ * {@link Run#status()} while the run is open, or from the stored run record
+ * ({@link io.github.markpollack.journal.storage.RunData}) afterwards. {@link #FINISHED},
+ * {@link #FAILED} and {@link #CRASHED} are terminal: once a run has one, it accepts no more events
+ * or summary values.
  *
- * <p>Follows W&B's proven lifecycle model:
- * {@code INIT → RUNNING → FINISHED/FAILED/CRASHED}
+ * <p>The library sets three of the five values itself. {@link RunBuilder#start()} gives a new run
+ * {@link #RUNNING}; {@link Run#close()} gives {@link #FINISHED} unless the run has already ended;
+ * {@link Run#fail(Throwable)} gives {@link #FAILED}. It never sets {@link #INIT} on a run, and it
+ * sets {@link #CRASHED} only when a caller passes it to {@link Run#finish(RunStatus)}. If the
+ * process dies before the run ends, nothing marks it: the stored record keeps {@link #RUNNING}.
  */
 public enum RunStatus {
-    /** Run created, config can be set. */
+    /**
+     * Not started. No run started by {@link RunBuilder#start()} has this status; it is the
+     * default of {@link io.github.markpollack.journal.storage.RunData#builder()}.
+     */
     INIT,
 
-    /** Active execution, events being logged. */
+    /** Started and not yet ended; the status of every new run. */
     RUNNING,
 
-    /** Successful completion. */
+    /**
+     * Ended normally, set by {@link Run#close()} or {@code finish(FINISHED)}. It says the run
+     * completed, not that the agent reached its goal; for that, read the {@code success} value of
+     * the {@link Summary}.
+     */
     FINISHED,
 
-    /** Exception during execution. */
+    /** Ended by {@link Run#fail(Throwable)}, which also records the error in the summary. */
     FAILED,
 
-    /** Abnormal termination. */
+    /**
+     * Ended abnormally. The library never chooses this value; a caller that detects a crash, such
+     * as a lost agent process, passes it to {@link Run#finish(RunStatus)}.
+     */
     CRASHED;
 
-    /** Returns true if this is a terminal status. */
+    /**
+     * Returns whether this status ends a run: {@link #FINISHED}, {@link #FAILED} or
+     * {@link #CRASHED}.
+     *
+     * @return {@code true} for a terminal status, {@code false} for {@link #INIT} and
+     *         {@link #RUNNING}
+     */
     public boolean isTerminal() {
         return this == FINISHED || this == FAILED || this == CRASHED;
     }
 
-    /** Returns true if this represents a successful completion. */
+    /**
+     * Returns whether this status is {@link #FINISHED}.
+     *
+     * @return {@code true} only for {@link #FINISHED}
+     */
     public boolean isSuccessful() {
         return this == FINISHED;
     }

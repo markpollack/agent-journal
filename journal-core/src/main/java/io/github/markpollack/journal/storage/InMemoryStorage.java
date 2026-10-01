@@ -13,26 +13,35 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * In-memory implementation of {@link JournalStorage}.
+ * A {@link JournalStorage} that keeps every record in memory, for tests and short-lived work.
+ * Pass one to {@link io.github.markpollack.journal.Journal#configure(JournalStorage)} and read the
+ * results back through the load methods; nothing outlives the JVM. It is also the storage
+ * {@link io.github.markpollack.journal.Journal} creates on first use when none was configured. Use
+ * {@link JsonFileStorage} when runs must be kept.
  *
- * <p>Stores all data in thread-safe collections. Useful for:
- * <ul>
- *   <li>Testing</li>
- *   <li>Short-lived runs that don't need persistence</li>
- *   <li>Development and debugging</li>
- * </ul>
+ * <p>It keeps experiments, run records, events, derived events, feedback and artifacts. It keeps
+ * the objects it is given, not copies, except for artifact content, which it copies on save and
+ * on load. The load and list methods return new lists, so changing them does not change what is
+ * stored. It does not check that a run's experiment was saved first.
  *
- * <p>Thread-safe: all operations are safe for concurrent access.
+ * <p>Derived events are kept, but {@link #persistsDerivedEvents()} returns {@code false} because
+ * they do not outlive the JVM. Claude Code's {@code RunRecorder} therefore throws when a run it
+ * recorded ends on this storage, unless it was made lenient. Event types defined outside
+ * journal-core need no registration here, because events are kept as objects.
+ *
+ * <p>All methods are safe to call from several threads.
  *
  * <p>Example:
  * <pre>{@code
  * InMemoryStorage storage = new InMemoryStorage();
- *
- * storage.saveExperiment(experiment);
- * storage.saveRun(runData);
- *
- * // Later...
- * Optional<RunData> loaded = storage.loadRun("exp-id", "run-id");
+ * Journal.configure(storage);
+ * String runId;
+ * try (Run run = Journal.run("my-experiment").start()) {
+ *     runId = run.id();
+ *     run.logEvent(LLMCallEvent.of("claude-opus-4.5", 1200, 450, 0.023));
+ * }
+ * List<JournalEvent> events = storage.loadEvents("my-experiment", runId);
+ * storage.clear(); // between tests
  * }</pre>
  */
 public class InMemoryStorage implements JournalStorage {
@@ -103,6 +112,11 @@ public class InMemoryStorage implements JournalStorage {
         return new ArrayList<>(runEvents);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Keeps the feedback event in memory; unlike the interface default, it does not throw.
+     */
     @Override
     public void appendFeedback(String experimentId, String runId, FeedbackEvent event) {
         feedback.computeIfAbsent(experimentId, k -> new ConcurrentHashMap<>())
@@ -123,6 +137,12 @@ public class InMemoryStorage implements JournalStorage {
         return new ArrayList<>(runFeedback);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Keeps the derived event in memory; unlike the interface default, it does not throw. The
+     * event is lost when the JVM exits.
+     */
     @Override
     public void appendDerivedEvent(String experimentId, String runId, DerivedEvent event) {
         derivedEvents.computeIfAbsent(experimentId, k -> new ConcurrentHashMap<>())
@@ -143,6 +163,12 @@ public class InMemoryStorage implements JournalStorage {
         return new ArrayList<>(runDerived);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Keeps a copy of {@code content}, so later changes to the array do not change the stored
+     * artifact. {@code content} must not be {@code null}.
+     */
     @Override
     public void saveArtifact(String experimentId, String runId, String name, byte[] content) {
         artifacts.computeIfAbsent(experimentId, k -> new ConcurrentHashMap<>())
@@ -150,6 +176,11 @@ public class InMemoryStorage implements JournalStorage {
                 .put(name, content.clone()); // Clone to prevent external modification
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Returns a new copy of the content on each call.
+     */
     @Override
     public Optional<byte[]> loadArtifact(String experimentId, String runId, String name) {
         Map<String, Map<String, byte[]>> experimentArtifacts = artifacts.get(experimentId);
@@ -178,8 +209,8 @@ public class InMemoryStorage implements JournalStorage {
     }
 
     /**
-     * Clears all stored data.
-     * Useful for test cleanup.
+     * Removes every stored record: experiments, runs, events, derived events, feedback and
+     * artifacts. Call it between tests that share this storage.
      */
     public void clear() {
         experiments.clear();
@@ -192,20 +223,27 @@ public class InMemoryStorage implements JournalStorage {
 
     /**
      * Returns the number of stored experiments.
+     *
+     * @return the number of experiments
      */
     public int experimentCount() {
         return experiments.size();
     }
 
     /**
-     * Returns the total number of stored runs across all experiments.
+     * Returns the number of stored run records, over all experiments.
+     *
+     * @return the number of runs
      */
     public int runCount() {
         return runs.values().stream().mapToInt(Map::size).sum();
     }
 
     /**
-     * Returns the total number of stored events across all runs.
+     * Returns the number of stored events, over all runs. Derived events and feedback are not
+     * counted.
+     *
+     * @return the number of events
      */
     public int eventCount() {
         return events.values().stream()

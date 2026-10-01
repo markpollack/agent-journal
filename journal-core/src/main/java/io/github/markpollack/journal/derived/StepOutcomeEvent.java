@@ -5,26 +5,27 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * A generic per-step outcome / goal-distance channel — the second {@link DerivedEvent} (R2.6).
+ * Outcome values that the caller measured for one step of a run, or for the whole run, as a
+ * {@link DerivedEvent}: for example the exit code of a command, a test result or the change in
+ * coverage. The library never creates these itself and gives the values no meaning; the code
+ * that judges the work decides what to record. Make one with
+ * {@link #of(String, String, Map)} or {@link #withGoalDistance(String, String, double, Map)},
+ * log it with {@link io.github.markpollack.journal.Run#logDerivedEvent(DerivedEvent)}, and match
+ * it to the step's {@link StepCostEvent} or tool call event by {@link #stepId()}.
  *
- * <p>
- * The ACT runtime Lyapunov needs a per-step {@code goalDistance_t} plus outcome signals
- * ({@code exit_code}, {@code test_result}, {@code coverage_delta}, {@code files_touched}, …),
- * but those are <strong>domain-specific</strong>. So journal provides only the <em>channel</em>,
- * keyed to a step; the <strong>experiment supplies the values</strong>. No domain semantics are
- * baked in here — {@code goalDistance} is the one generic typed slot the analysis layer reads
- * directly, and {@code metrics} is a free-form bag for everything else.
+ * <p>{@link #goalDistance()} is the one typed value: a number the caller defines for how far the
+ * work still is from its goal. Everything else goes in {@link #metrics()}, a map of names to
+ * values. Its keys and values must not be {@code null}, and on file storage the values should be
+ * plain JSON values (strings, numbers, booleans, lists and maps); they come back as JSON types,
+ * for example whole numbers as {@code Integer}.
  *
- * <p>
- * Like all derived events this is inferred/measured after the step and lives in
- * {@code analysis.jsonl}, joined to the execution step by {@code stepId}.
- *
- * @param timestamp    when the outcome was recorded
- * @param runId        join key — the run
- * @param stepId       join key — the execution step (tool_use id); null for run-level
- * @param turnId       the model turn this step belongs to (optional)
- * @param goalDistance generic distance-to-goal the experiment supplies (null if not provided)
- * @param metrics      free-form experiment-supplied outcome signals (never empty-null; no domain semantics)
+ * @param timestamp when the outcome was recorded; must not be {@code null}
+ * @param runId the ID of the run
+ * @param stepId the ID of the step, or {@code null} for an outcome of the whole run
+ * @param turnId the ID of the model turn the step belongs to, or {@code null}
+ * @param goalDistance how far the work is from its goal, in the caller's own measure, or
+ *        {@code null} if not given
+ * @param metrics the other outcome values by name; an immutable copy, empty if none were given
  */
 public record StepOutcomeEvent(
         Instant timestamp,
@@ -35,8 +36,20 @@ public record StepOutcomeEvent(
         Map<String, Object> metrics
 ) implements DerivedEvent {
 
+    /** The type name of this event, {@value}, used as its {@code @type} name in JSON. */
     public static final String TYPE = "step_outcome";
 
+    /**
+     * Creates an outcome event, copying the metrics.
+     *
+     * @param timestamp when the outcome was recorded; must not be {@code null}
+     * @param runId the run ID
+     * @param stepId the step ID, or {@code null} for the whole run
+     * @param turnId the turn ID, or {@code null}
+     * @param goalDistance the distance to the goal, or {@code null}
+     * @param metrics the outcome values, or {@code null} for none
+     * @throws NullPointerException if {@code metrics} holds a {@code null} key or value
+     */
     public StepOutcomeEvent {
         metrics = metrics != null ? Map.copyOf(metrics) : Map.of();
     }
@@ -46,12 +59,30 @@ public record StepOutcomeEvent(
         return TYPE;
     }
 
-    /** Minimal channel: outcome metrics for a step (timestamp now, no goal distance). */
+    /**
+     * Creates an outcome event with the current time, no turn ID and no goal distance.
+     *
+     * @param runId the run ID
+     * @param stepId the step ID, or {@code null} for the whole run
+     * @param metrics the outcome values, such as {@code Map.of("exit_code", 0)}, or {@code null}
+     *        for none
+     * @return the outcome event
+     * @throws NullPointerException if {@code metrics} holds a {@code null} key or value
+     */
     public static StepOutcomeEvent of(String runId, String stepId, Map<String, Object> metrics) {
         return new StepOutcomeEvent(Instant.now(), runId, stepId, null, null, metrics);
     }
 
-    /** Channel with an explicit goal-distance signal for the ACT runtime. */
+    /**
+     * Creates an outcome event with a goal distance, the current time and no turn ID.
+     *
+     * @param runId the run ID
+     * @param stepId the step ID, or {@code null} for the whole run
+     * @param goalDistance how far the work is from its goal, in the caller's own measure
+     * @param metrics the other outcome values, or {@code null} for none
+     * @return the outcome event
+     * @throws NullPointerException if {@code metrics} holds a {@code null} key or value
+     */
     public static StepOutcomeEvent withGoalDistance(String runId, String stepId, double goalDistance,
             Map<String, Object> metrics) {
         return new StepOutcomeEvent(Instant.now(), runId, stepId, null, goalDistance, metrics);

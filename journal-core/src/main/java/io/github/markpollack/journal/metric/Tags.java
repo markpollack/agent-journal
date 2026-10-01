@@ -8,10 +8,19 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Immutable set of key-value tags for metric classification.
+ * An immutable set of string labels, each a name and a value, used to group and filter what a
+ * journal records. A {@link io.github.markpollack.journal.Run} carries the tags set on its
+ * {@link io.github.markpollack.journal.RunBuilder}; metrics in a {@link MetricRegistry},
+ * {@link io.github.markpollack.journal.event.MetricEvent}s and
+ * {@link io.github.markpollack.journal.call.Call}s carry their own. Methods that add tags
+ * return a new instance and leave this one unchanged, so tags are safe to share between threads.
  *
- * <p>Tags are used to categorize and filter metrics. They are immutable;
- * all modification operations return new instances.
+ * <p>Names and values must not be {@code null}. The {@code of} methods check this and throw
+ * {@link NullPointerException}; {@link #and(String, String)} and {@link #fromMap(Map)} do not
+ * check, and such tags fail later, when {@link #toMap()} is called to write them to file
+ * storage.
+ *
+ * <p>Two tag sets are equal when they hold the same names and values, in any order.
  *
  * <p>Example:
  * <pre>{@code
@@ -30,12 +39,22 @@ public final class Tags {
         this.values = values;
     }
 
-    /** Returns an empty tag set. */
+    /**
+     * Returns a tag set with no tags.
+     *
+     * @return the empty tag set
+     */
     public static Tags empty() {
         return EMPTY;
     }
 
-    /** Creates a tag set from a map. Used by Jackson for deserialization. */
+    /**
+     * Creates a tag set from a copy of a map; JSON reading uses it.
+     *
+     * @param values the tags by name, or {@code null} for no tags; the names and values in it
+     *        must not be {@code null}
+     * @return the tag set
+     */
     @JsonCreator
     public static Tags fromMap(Map<String, String> values) {
         if (values == null || values.isEmpty()) {
@@ -44,56 +63,121 @@ public final class Tags {
         return new Tags(new LinkedHashMap<>(values));
     }
 
-    /** Creates a tag set with one tag. */
+    /**
+     * Creates a tag set with one tag.
+     *
+     * @param k1 the name
+     * @param v1 the value
+     * @return the tag set
+     * @throws NullPointerException if a name or value is {@code null}
+     */
     public static Tags of(String k1, String v1) {
         return new Tags(Map.of(k1, v1));
     }
 
-    /** Creates a tag set with two tags. */
+    /**
+     * Creates a tag set with two tags.
+     *
+     * @param k1 the first name
+     * @param v1 the first value
+     * @param k2 the second name
+     * @param v2 the second value
+     * @return the tag set
+     * @throws NullPointerException if a name or value is {@code null}
+     * @throws IllegalArgumentException if two names are equal
+     */
     public static Tags of(String k1, String v1, String k2, String v2) {
         return new Tags(Map.of(k1, v1, k2, v2));
     }
 
-    /** Creates a tag set with three tags. */
+    /**
+     * Creates a tag set with three tags.
+     *
+     * @param k1 the first name
+     * @param v1 the first value
+     * @param k2 the second name
+     * @param v2 the second value
+     * @param k3 the third name
+     * @param v3 the third value
+     * @return the tag set
+     * @throws NullPointerException if a name or value is {@code null}
+     * @throws IllegalArgumentException if two names are equal
+     */
     public static Tags of(String k1, String v1, String k2, String v2, String k3, String v3) {
         return new Tags(Map.of(k1, v1, k2, v2, k3, v3));
     }
 
-    /** Returns a new Tags with the additional tag. */
+    /**
+     * Returns a copy of this tag set with one tag added, replacing any earlier value for the
+     * name.
+     *
+     * @param key the name; must not be {@code null}
+     * @param value the value; must not be {@code null}
+     * @return the new tag set
+     */
     public Tags and(String key, String value) {
         var newValues = new LinkedHashMap<>(values);
         newValues.put(key, value);
         return new Tags(newValues);
     }
 
-    /** Returns a new Tags merged with another. */
+    /**
+     * Returns a copy of this tag set with all tags of another added. Where both have a name, the
+     * other's value wins.
+     *
+     * @param other the tags to add; must not be {@code null}
+     * @return the new tag set
+     */
     public Tags merge(Tags other) {
         var newValues = new LinkedHashMap<>(values);
         newValues.putAll(other.values);
         return new Tags(newValues);
     }
 
-    /** Gets a tag value by key. */
+    /**
+     * Returns the value of a tag.
+     *
+     * @param key the name
+     * @return the value, or {@code null} if there is no tag with that name
+     */
     public String get(String key) {
         return values.get(key);
     }
 
-    /** Checks if tags contain a key. */
+    /**
+     * Returns whether there is a tag with the given name.
+     *
+     * @param key the name
+     * @return {@code true} if the tag is present
+     */
     public boolean contains(String key) {
         return values.containsKey(key);
     }
 
-    /** Returns true if there are no tags. */
+    /**
+     * Returns whether this set has no tags.
+     *
+     * @return {@code true} if there are no tags
+     */
     public boolean isEmpty() {
         return values.isEmpty();
     }
 
-    /** Returns the number of tags. */
+    /**
+     * Returns the number of tags.
+     *
+     * @return the number of tags
+     */
     public int size() {
         return values.size();
     }
 
-    /** Returns an unmodifiable copy of the tag map. Used by Jackson for serialization. */
+    /**
+     * Returns the tags as a map; JSON writing uses it. The map is an immutable copy in no set
+     * order.
+     *
+     * @return the tags by name
+     */
     @JsonValue
     public Map<String, String> toMap() {
         return Map.copyOf(values);

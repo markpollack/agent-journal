@@ -8,33 +8,44 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Derived per-step cost — the Path-A (journal events) analog of the trace's {@code step_cost}
- * line (R2.4). The first {@link DerivedEvent}.
+ * The cost and token use of one step of a run, a {@link DerivedEvent}. A step is one tool call, or
+ * a model turn that called no tool. The capture modules' run recorders log one per step, made
+ * with {@link #fromStep(JournalStep, Instant)}; read them back with
+ * {@link io.github.markpollack.journal.storage.JournalStorage#loadDerivedEvents} and match each
+ * to its {@link io.github.markpollack.journal.event.ToolCallEvent} by {@link #stepId()}.
  *
- * <p>
- * Ground truth and allocation are kept distinct (the R2.3 decision): {@code actualRunCostUsd} is
- * the run's true total (identical across a run's steps); {@code attributedCostUsd} is this step's
- * fair share under {@code attributionMethod}. Cost is inferred after the run — that's why this is
- * a derived event in {@code analysis.jsonl}, not an execution event in {@code events.jsonl}.
- * Joined to the execution {@code ToolCallEvent} by {@code stepId} (both are the tool_use id).
+ * <p>The agent CLIs do not report a cost for each step, so the per-step cost is a share of the
+ * run's total. {@link #actualRunCostUsd()} is the run's total as reported, the same in every
+ * step of the run; {@link #attributedCostUsd()} is this step's share, split as
+ * {@link #attributionMethod()} says. Add up the shares, not the totals, to get a cost per tool or
+ * per turn.
  *
- * @param timestamp         when the attribution was computed (post-run)
- * @param runId             join key — the run
- * @param stepId            join key — the execution step (tool_use id); the turn id for tool-less turns
- * @param turnId            the model turn (assistant message id) this step belongs to
- * @param toolName          the tool invoked, or null for a tool-less turn step
- * @param inputTokens       the turn's input tokens
- * @param outputTokens      the turn's output tokens
- * @param attributedCostUsd this step's fair share of the run cost
- * @param actualRunCostUsd  the run's true total cost (ground truth)
- * @param attributionMethod how {@code attributedCostUsd} was derived
- * @param vendor            capture vendor (e.g. {@code claude-code}, {@code gemini-cli})
- * @param thinkingTokens    the turn's extended-thinking tokens — a subset of {@code outputTokens},
- *                          never additive to a billed total
- * @param cacheCreationTokens the turn's tokens written to the prompt cache
- * @param cacheReadTokens   the turn's tokens read from the prompt cache
- * @param turnIndex         0-based ordinal of this step's turn, or -1 when unknown
- * @param durationMs        observed step duration in milliseconds, or -1 when unknown
+ * <p>Token counts belong to the step's turn. When one turn makes several tool calls, every one of
+ * its steps repeats the turn's counts, so do not add tokens up over steps. The counts are as the
+ * capture module reports them; with Claude Code, {@link #inputTokens()} leaves out prompt-cache
+ * tokens. {@link #thinkingTokens()} are part of {@link #outputTokens()}, not extra.
+ *
+ * <p>Records written before the token, turn and duration fields were added still load: missing
+ * token counts read as 0, and a missing {@link #turnIndex()} or {@link #durationMs()} as -1.
+ *
+ * @param timestamp when the cost was split, not when the step ran; must not be {@code null}
+ * @param runId the ID of the run
+ * @param stepId the ID of the step: for a tool step, the tool call's ID; for a turn without a
+ *        tool, an ID the capture module gives the turn
+ * @param turnId the ID of the model turn the step belongs to, such as the assistant message ID
+ * @param toolName the name of the tool called, or {@code null} for a turn without a tool
+ * @param inputTokens the input tokens of the step's turn
+ * @param outputTokens the output tokens of the step's turn
+ * @param attributedCostUsd this step's share of the run's cost, in US dollars
+ * @param actualRunCostUsd the run's total cost as reported, in US dollars
+ * @param attributionMethod how the run's cost was split into shares
+ * @param vendor the capture module that made the step, such as {@code "claude-code"} or
+ *        {@code "gemini-cli"}
+ * @param thinkingTokens the thinking tokens of the step's turn, included in {@code outputTokens}
+ * @param cacheCreationTokens the tokens the step's turn wrote to the prompt cache
+ * @param cacheReadTokens the tokens the step's turn read from the prompt cache
+ * @param turnIndex the position of the step's turn in the run, counting from 0, or -1 if unknown
+ * @param durationMs how long the step took in milliseconds, or -1 if unknown
  */
 public record StepCostEvent(
         Instant timestamp,
@@ -55,13 +66,25 @@ public record StepCostEvent(
         long durationMs
 ) implements DerivedEvent {
 
+    /** The type name of this event, {@value}, used as its {@code @type} name in JSON. */
     public static final String TYPE = "step_cost";
 
     /**
-     * Back-compat constructor for events written before the full per-turn token vector, turn
-     * ordinal and step duration were carried (1.9.0). Reading an older {@code analysis.jsonl}
-     * through this constructor yields "not captured" defaults rather than fabricated zeros
-     * masquerading as measurements — {@code turnIndex} and {@code durationMs} are -1.
+     * Creates a step cost without thinking, cache, turn position or duration details: the three
+     * token counts are 0, and {@code turnIndex} and {@code durationMs} are -1 (unknown). See the
+     * class comment for the meaning of each value.
+     *
+     * @param timestamp when the cost was split; must not be {@code null}
+     * @param runId the run ID
+     * @param stepId the step ID
+     * @param turnId the turn ID
+     * @param toolName the tool name, or {@code null}
+     * @param inputTokens the turn's input tokens
+     * @param outputTokens the turn's output tokens
+     * @param attributedCostUsd this step's share of the cost
+     * @param actualRunCostUsd the run's total cost
+     * @param attributionMethod how the cost was split
+     * @param vendor the capture module
      */
     public StepCostEvent(Instant timestamp, String runId, String stepId, String turnId, String toolName,
             long inputTokens, long outputTokens, double attributedCostUsd, double actualRunCostUsd,
@@ -76,9 +99,14 @@ public record StepCostEvent(
     }
 
     /**
-     * Bridges a portable {@link JournalStep} (produced capture-side by {@code JournalSteps} /
-     * {@code GeminiJournalSteps}) into a stored derived event. {@code timestamp} is the analysis
-     * time — when the cost was attributed, not when the step ran.
+     * Creates a step cost from a {@link JournalStep}, the per-step record that the capture modules
+     * build. It copies the step's IDs, tool name, token counts, costs, method, vendor, turn
+     * position and duration; the step's error flag, agent state and sub-agent flag are not
+     * carried over.
+     *
+     * @param step the step to copy; must not be {@code null}
+     * @param timestamp when the cost was split, usually now; must not be {@code null}
+     * @return the step cost
      */
     public static StepCostEvent fromStep(JournalStep step, Instant timestamp) {
         return new StepCostEvent(timestamp, step.runId(), step.stepId(), step.turnId(), step.toolName(),
