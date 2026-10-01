@@ -13,15 +13,74 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** Records a Junie capture into journal-core execution and derived streams. */
+/**
+ * Logs Junie CLI {@link JuniePhaseCapture}s as events on an open {@link Run}. Use it after
+ * {@link JunieSessionParser} has parsed a session file: create one around the run and call
+ * {@link #recordPhase(JuniePhaseCapture)} once per phase. It does not end the run, so close the
+ * run yourself, and call {@link Run#fail(Throwable)} first if the work failed.
+ *
+ * <p>Unlike Claude Code's {@code RunRecorder}, it logs no phase
+ * {@link io.github.markpollack.journal.event.StateChangeEvent}, it never ends the run, and it
+ * does not check that the storage keeps derived events. Like it, it logs one
+ * {@code thinking_block} event per thinking block, and it logs the cost Junie reported together
+ * with the stop reason and the turn limit, which for Junie is always -1. It has no method that
+ * returns the run, so keep your own reference. On
+ * {@link io.github.markpollack.journal.storage.InMemoryStorage} the per-step costs are kept only
+ * in memory and are lost, without a warning, when the JVM exits; use
+ * {@link io.github.markpollack.journal.storage.JsonFileStorage} to keep them.
+ *
+ * <p>A recorder serves one run and is not safe for use from several threads.
+ *
+ * <p>Example:
+ * <pre>{@code
+ * Journal.configure(new JsonFileStorage(Path.of(".agent-journal")));
+ * JuniePhaseCapture capture = JunieSessionParser.parse(eventsFile, "execute", prompt);
+ * try (Run run = Journal.run("my-exp").start()) {
+ *     new JunieRunRecorder(run).recordPhase(capture);
+ * }
+ * }</pre>
+ */
 public final class JunieRunRecorder {
 
     private final Run run;
 
+    /**
+     * Creates a recorder that logs to the given run.
+     *
+     * @param run the open run to log to
+     */
     public JunieRunRecorder(Run run) {
         this.run = run;
     }
 
+    /**
+     * Logs one phase as events on the run, then logs its per-step costs as derived events.
+     *
+     * <p>It logs, in order: a {@code prompt} custom event with the phase name and the prompt, if
+     * the prompt was captured; one {@link LLMCallEvent} with provider {@code "jetbrains"}, the
+     * capture's model (or {@code "unknown"}), its token usage, total cost and duration, and
+     * Junie's error code (such as {@code "Submit"}) as the finish reason; one
+     * {@link ToolCallEvent} per tool step, with its ID, name, kind, input, output and error; and
+     * one {@code thinking_block} custom event per thinking block.
+     *
+     * <p>The metadata of the LLM call event holds the phase name, the number of model calls, the
+     * error flag, the stop reason, the turn limit (-1), and the task ID, task state and error code
+     * when they are known. It holds the context-window use and size when Junie reported a size.
+     * {@code costAvailable} is {@code true} when Junie reported per-call costs, and
+     * {@code costReconciles} says whether they add up to the total; see
+     * {@link JuniePhaseCapture#reconcilesToModelCosts()}. {@code agentKind} is always
+     * {@code "MainAgent"}.
+     *
+     * <p>Then it logs one {@link StepCostEvent} per tool step, each with an equal share of the
+     * total cost, marked {@link io.github.markpollack.journal.trace.AttributionMethod#EVEN_SPLIT}.
+     * Any rounding remainder goes to the last step, so the shares add up to the total. A phase with
+     * no tool steps has no derived events.
+     *
+     * @param phase the parsed Junie session; its phase name must not be {@code null}
+     * @throws IllegalStateException if the run has ended
+     * @throws UnsupportedOperationException if the phase has tool steps and the run's storage
+     *         cannot keep derived events at all; the other events are logged by then
+     */
     public void recordPhase(JuniePhaseCapture phase) {
         if (phase.promptText() != null && !phase.promptText().isEmpty()) {
             run.logEvent(CustomEvent.of("prompt", Map.of(

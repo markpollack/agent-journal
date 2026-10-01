@@ -18,30 +18,72 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Base tracking recorder with shared phase recording logic.
+ * The phase-logging logic that Claude Code's {@link RunRecorder} inherits. Use
+ * {@code RunRecorder} rather than this class: it adds the check that the storage keeps derived
+ * events, and it ends the run. Extend this class only to build your own recorder for Claude Code
+ * {@link PhaseCapture}s, for example one with extra methods for your own events.
  *
- * Subclasses provide domain-specific methods:
- * - agent/RunRecorder: recordIteration(), recordSemanticDiff()
- * - spring-upgrade-agent/UpgradeRunRecorder: recordBuildResult(), recordStepCompletion()
+ * <p>{@link #recordPhase(PhaseCapture)} logs one phase as events on the run and its per-step
+ * costs as derived events; its comment lists them. {@link #failRun(Throwable)} and
+ * {@link #failRun()} end the run as failed. Nothing in this class ends a run as finished, so a
+ * subclass or its caller must do that, for example with {@link Run#close()}.
  *
- * Both share identical phase recording (state transitions, LLM calls, tool uses,
- * thinking blocks, prompt capture).
+ * <p>Subclasses must set {@link #currentRun} before {@code recordPhase} is called, normally in
+ * their constructor; this class has no constructor that takes a run. The other protected fields
+ * hold the name of the previous phase and the number of derived events logged so far, which
+ * {@code RunRecorder} uses for its storage check.
+ *
+ * <p>A recorder serves one run and is not safe for use from several threads.
  */
 public abstract class BaseRunRecorder {
 
+    /**
+     * The run that {@link #recordPhase(PhaseCapture)} and the {@code failRun} methods act on.
+     * Subclasses set it, normally in their constructor; it is {@code null} until then.
+     */
     protected Run currentRun;
+
+    /**
+     * The name of the last phase recorded, which the next phase's {@link StateChangeEvent} starts
+     * from. It is {@code "init"} before the first phase.
+     */
     protected String previousPhase = "init";
 
     /**
-     * Count of derived {@link StepCostEvent}s emitted across all {@link #recordPhase} calls. The
-     * production recorder reads this to fail loud when derived events were produced but the storage
-     * backend can't durably persist them (DESIGN §4 fail-loud contract).
+     * The number of {@link StepCostEvent}s that {@link #recordPhase(PhaseCapture)} has logged so
+     * far, over all phases. {@link RunRecorder} reads it to decide whether the storage must keep
+     * derived events.
      */
     protected int derivedEventsEmitted = 0;
 
     /**
-     * Records a single phase with full event data:
-     * state transition, prompt capture, LLM call, tool calls, thinking blocks.
+     * Logs one phase as events on the run, then logs its per-step costs as derived events.
+     *
+     * <p>It logs, in order:
+     * <ul>
+     *   <li>a {@link StateChangeEvent} from the previous phase to this one; the first phase starts
+     *       from {@code "init"}
+     *   <li>a {@code prompt} custom event with the phase name and the prompt, if the prompt was
+     *       captured
+     *   <li>one {@link LLMCallEvent} with the phase's token usage summed over turns
+     *       ({@link PhaseCapture#aggregateUsage()}), its total cost and its timing. Its model is
+     *       the run's {@code model} config value, which must be a string, or {@code "unknown"}.
+     *       Its metadata holds the phase name, session ID, turn count, error flag, stop reason,
+     *       turn limit and, when captured, the usage of each turn
+     *   <li>one {@link ToolCallEvent} per tool call, with the tool call's ID, name, kind and input,
+     *       its turn, and the duration and error of its result
+     *   <li>one {@code thinking_block} custom event per thinking block
+     * </ul>
+     *
+     * <p>Then it logs one {@link StepCostEvent} per step as a derived event, with the cost split as
+     * in {@link PhaseCapture#stepCosts()}, and adds their number to
+     * {@link #derivedEventsEmitted}.
+     *
+     * @param phase the parsed Claude Code call; its phase name must not be {@code null}
+     * @throws NullPointerException if no run has been set
+     * @throws IllegalStateException if the run has ended
+     * @throws UnsupportedOperationException if the phase has steps and the run's storage cannot
+     *         keep derived events at all; the other events are logged by then
      */
     public void recordPhase(PhaseCapture phase) {
         // State transition
@@ -143,18 +185,35 @@ public abstract class BaseRunRecorder {
         derivedEventsEmitted += steps.size();
     }
 
+    /**
+     * Ends the run {@code FAILED} and records the error, as {@link Run#fail(Throwable)} does: the
+     * summary gets {@code success=false}, the error message and the error's class name. Does
+     * nothing if the run has already ended or no run has been set.
+     *
+     * @param error the cause of the failure
+     */
     public void failRun(Throwable error) {
         if (currentRun != null) {
             currentRun.fail(error);
         }
     }
 
+    /**
+     * Ends the run {@code FAILED} without an error. Unlike {@link #failRun(Throwable)}, it writes
+     * nothing to the summary, so the run record has no {@code success} value and no error. Does
+     * nothing if the run has already ended or no run has been set.
+     */
     public void failRun() {
         if (currentRun != null) {
             currentRun.finish(RunStatus.FAILED);
         }
     }
 
+    /**
+     * Returns the run this recorder logs to.
+     *
+     * @return the run, or {@code null} if no run has been set
+     */
     public Run getCurrentRun() {
         return currentRun;
     }

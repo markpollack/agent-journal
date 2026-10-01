@@ -16,35 +16,45 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Parses Junie's durable {@code ~/.junie/sessions/<sessionId>/events.jsonl} trace.
+ * Reads a Junie CLI session file and returns a {@link JuniePhaseCapture}: the agent's final result
+ * and patch, its tool steps, its thinking, its token usage and cost, and why it stopped. Use it
+ * after a Junie session has ended: pass the {@code events.jsonl} file that Junie keeps under
+ * {@code ~/.junie/sessions/<sessionId>/}, or a reader over its lines, to a {@code parse} method.
+ * To store the result as a journal run, pass the capture to a {@link JunieRunRecorder}.
  *
- * <p>
- * <strong>The discriminator is two levels deeper than the envelope.</strong> Nearly every line has
- * top-level {@code kind = "SessionA2uxEvent"} (238 of 240 in the rich fixture), which says nothing.
- * The real event type is {@code event.agentEvent.kind}. A handful of lines — {@code TaskStartedEvent},
- * {@code UserPromptEvent}, {@code TaskState}, {@code UserMessagesCommittedToHistory} — carry their
- * type at the top level instead, so this parser reads both positions.
+ * <p>Like the Codex parser, and unlike Claude Code's {@code SessionLogParser}, it reads the
+ * session record that Junie writes for itself, not the output stream of a call, and it writes no
+ * trace. It reads the files of plain CLI runs and of runs over the Agent Client Protocol; see
+ * {@link JuniePhaseCapture} for what each kind records.
  *
- * <p>
- * <strong>Block events are incremental and must be folded.</strong> The same {@code stepId} is
- * re-emitted as its {@code status} progresses, and the ACP path re-emits every terminal state again
- * at the end of the session. Counting lines would report 21 tool events for the 4 real steps of the
- * ACP fixture. Steps are therefore folded by {@code stepId} with last-write-wins on each field, and
- * two different block kinds sharing a {@code stepId} are one step described twice — Junie emits a
- * prose {@code ToolBlockUpdatedEvent} ({@code "Open calc.py"}) alongside the structured
- * {@code ViewFilesBlockUpdatedEvent} for the same read.
+ * <p>Each line is a JSON object. Most lines have the top-level {@code kind}
+ * {@code SessionA2uxEvent} and carry the real event kind in {@code event.agentEvent.kind}; a few,
+ * such as {@code TaskStartedEvent}, {@code UserPromptEvent} and {@code TaskState}, carry it at the
+ * top level. The parser reads both places. It takes the task ID, prompt, launch model and task
+ * state from the top-level lines; the usage and cost of each model call from
+ * {@code LlmResponseMetadataEvent}; the task name, thinking text, patch, context-window reports
+ * and final result from the matching agent events; and the session's total cost and its start and
+ * end times from the {@code completion} object that some lines carry. Blank lines and kinds it
+ * does not know are skipped.
  *
- * <p>
- * <strong>Environment variables are read and dropped on the floor, deliberately.</strong> Junie's
- * {@code EnvironmentVariablesUpdatedEvent} carries the agent's entire environment with values
- * unredacted — the captured traces contain live {@code OPENAI_API_KEY}, {@code E2B_API_KEY},
- * {@code ELEVENLABS_API_KEY} and session tokens. Nothing from that event reaches
- * {@link JuniePhaseCapture}, because a capture flows into {@code events.jsonl} and from there into
- * whatever repository holds the run. Do not "improve" this by capturing env for reproducibility.
+ * <p>Junie sends a step again each time its status changes, and over the Agent Client Protocol it
+ * sends every finished step once more at the end. The parser joins all updates with the same
+ * {@code stepId} into one tool record that keeps the latest value of each field. Junie gives steps
+ * no tool name, so the record's name is the kind of event that described the step, and its
+ * {@link io.github.markpollack.journal.event.ToolKind} follows from it:
+ * {@code TerminalBlockUpdatedEvent} is {@code EXECUTE}, {@code ViewFilesBlockUpdatedEvent} is
+ * {@code READ}, {@code FileChangesBlockUpdatedEvent} is {@code EDIT}, and
+ * {@code ToolBlockUpdatedEvent}, a prose description such as {@code "Open calc.py"}, is
+ * {@code OTHER}. When one of the first three describes the same step as the prose, it names the
+ * step, and the prose is kept in the tool's input map under {@code description}. A step is an
+ * error if its last status is {@code FAILED} or its exit code is above 0.
  *
- * <p>
- * Unknown event kinds are ignored rather than rejected, so a future Junie release that adds a kind
- * still yields a capture.
+ * <p>A Junie session file also records the agent's environment variables, unredacted, which can
+ * include API keys. The parser never copies them into the capture, so they do not reach the
+ * journal, but treat the session file itself as secret.
+ *
+ * <p>All methods are static and keep no state between calls. Calls from several threads are safe
+ * if each has its own input.
  */
 public final class JunieSessionParser {
 
@@ -53,12 +63,33 @@ public final class JunieSessionParser {
     private JunieSessionParser() {
     }
 
+    /**
+     * Parses a session file, read as UTF-8.
+     *
+     * @param eventsFile the session's {@code events.jsonl} file
+     * @param phaseName the caller's name for this session, such as {@code "execute"}
+     * @param promptText the prompt that was sent, or {@code null} if not captured; a prompt
+     *        recorded in the file is used instead when there is one
+     * @return the capture, never {@code null}
+     * @throws IOException if the file cannot be read or a line is not valid JSON
+     */
     public static JuniePhaseCapture parse(Path eventsFile, String phaseName, String promptText) throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(eventsFile)) {
             return parse(reader, phaseName, promptText);
         }
     }
 
+    /**
+     * Parses session lines from a reader, reading it to the end. The reader is not closed.
+     *
+     * @param reader the lines of a session's {@code events.jsonl} file
+     * @param phaseName the caller's name for this session, such as {@code "execute"}
+     * @param promptText the prompt that was sent, or {@code null} if not captured; a prompt
+     *        recorded in the lines is used instead when there is one
+     * @return the capture, never {@code null}
+     * @throws IOException if reading fails, or if a line is not valid JSON; the message gives the
+     *         line number
+     */
     public static JuniePhaseCapture parse(BufferedReader reader, String phaseName, String promptText)
             throws IOException {
         ParserState state = new ParserState();

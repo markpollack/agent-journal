@@ -5,32 +5,42 @@ import io.github.markpollack.journal.metric.Tags;
 import java.util.Objects;
 
 /**
- * Builder for creating and configuring runs.
+ * Sets up a new {@link Run} and starts it. Get one from {@link Journal#run(String)}, set the run's
+ * name, agent, config and tags, then call {@link #start()}, which saves the run with status
+ * {@link RunStatus#RUNNING} and returns it. Use {@link #previousRun(String)} to link a retry to the
+ * attempt before it, and {@link #parentRun(String)} to link a sub-agent's run to the run that
+ * started it.
+ *
+ * <p>The {@link Config} holds the run's inputs, such as the model, and cannot change once the run
+ * has started. {@link Tags} are string labels for finding runs later. The run record keeps the
+ * name, agent ID, config, tags and the linked run IDs. {@link #task(String)} and
+ * {@link #repository(String)} accept a value, but the run does not keep it: nothing reads it and
+ * it is not saved.
+ *
+ * <p>One builder can start several runs. Each {@link #start()} makes a new run, with a new ID,
+ * from the builder's settings at that moment; later changes to the builder do not affect runs
+ * already started. A builder is not safe for use from several threads.
  *
  * <p>Example:
  * <pre>{@code
- * Run run = RunBuilder.forExperiment("my-experiment")
- *     .name("attempt-1")
- *     .config("model", "claude-opus-4.5")
- *     .config("temperature", 0.7)
- *     .tag("type", "test")
- *     .agent("code-reviewer")
- *     .start();
- * }</pre>
+ * try (Run run = Journal.run("my-experiment")
+ *         .name("attempt-1")
+ *         .agent("code-reviewer")
+ *         .config("model", "claude-opus-4.5")
+ *         .config("temperature", 0.7)
+ *         .tag("type", "test")
+ *         .start()) {
+ *     // log events
+ * }
  *
- * <p>For retry chains, link runs together:
- * <pre>{@code
- * Run retry = RunBuilder.forExperiment("my-experiment")
- *     .previousRun(failedRun.id())
- *     .start();
- * }</pre>
+ * // A retry, linked to the attempt that failed
+ * Run retry = Journal.run("my-experiment").previousRun(failedRun.id()).start();
  *
- * <p>For multi-agent hierarchies:
- * <pre>{@code
- * Run childRun = RunBuilder.forExperiment("my-experiment")
- *     .parentRun(supervisorRun.id())
- *     .agent("sub-agent")
- *     .start();
+ * // A sub-agent's run, linked to its supervisor's run
+ * Run child = Journal.run("my-experiment")
+ *         .parentRun(supervisorRun.id())
+ *         .agent("sub-agent")
+ *         .start();
  * }</pre>
  */
 public final class RunBuilder {
@@ -50,19 +60,24 @@ public final class RunBuilder {
     }
 
     /**
-     * Creates a new RunBuilder for the given experiment.
+     * Returns a builder for a new run in the given experiment. {@link Journal#run(String)} does the
+     * same.
      *
-     * @param experimentId the experiment identifier
-     * @return a new RunBuilder
+     * @param experimentId the ID of the experiment the run belongs to, such as
+     *        {@code "implement-oauth"}
+     * @return a new builder with no settings
+     * @throws NullPointerException if {@code experimentId} is {@code null}
      */
     public static RunBuilder forExperiment(String experimentId) {
         return new RunBuilder(experimentId);
     }
 
     /**
-     * Sets the task identifier (e.g., issue number, ticket ID).
+     * Accepts the ID of the task the run works on, such as an issue number, but does not keep it:
+     * the run does not read the value and it is not saved, so it cannot be read back. To record
+     * the task, put it in the config or a tag, for example {@code config("taskId", id)}.
      *
-     * @param taskId the task identifier
+     * @param taskId the task ID
      * @return this builder
      */
     public RunBuilder task(String taskId) {
@@ -71,9 +86,9 @@ public final class RunBuilder {
     }
 
     /**
-     * Sets the run configuration.
+     * Replaces the config with the given one, dropping any values set before.
      *
-     * @param config the configuration
+     * @param config the run's inputs; {@code null} gives an empty config
      * @return this builder
      */
     public RunBuilder config(Config config) {
@@ -82,11 +97,12 @@ public final class RunBuilder {
     }
 
     /**
-     * Adds a configuration value.
+     * Adds one value to the config, replacing any earlier value for the key.
      *
-     * @param key the configuration key
-     * @param value the configuration value
+     * @param key the name of the input, such as {@code "model"}
+     * @param value the value of the input
      * @return this builder
+     * @throws NullPointerException if {@code key} or {@code value} is {@code null}
      */
     public RunBuilder config(String key, Object value) {
         this.config = this.config.with(key, value);
@@ -94,9 +110,9 @@ public final class RunBuilder {
     }
 
     /**
-     * Sets run tags.
+     * Replaces the tags with the given ones, dropping any tags set before.
      *
-     * @param tags the tags
+     * @param tags the run's tags; {@code null} gives no tags
      * @return this builder
      */
     public RunBuilder tags(Tags tags) {
@@ -105,10 +121,10 @@ public final class RunBuilder {
     }
 
     /**
-     * Adds a tag.
+     * Adds one tag, replacing any earlier value for the key.
      *
-     * @param key the tag key
-     * @param value the tag value
+     * @param key the tag's name; must not be {@code null}
+     * @param value the tag's value; must not be {@code null}
      * @return this builder
      */
     public RunBuilder tag(String key, String value) {
@@ -117,9 +133,11 @@ public final class RunBuilder {
     }
 
     /**
-     * Sets a human-readable name for the run.
+     * Sets a name for people to read, such as {@code "attempt-1"}. It need not be unique; the run's
+     * ID identifies it. Without a name, the run is named {@code run-} followed by the first eight
+     * characters of its ID.
      *
-     * @param name the run name
+     * @param name the run's name, or {@code null} for the default
      * @return this builder
      */
     public RunBuilder name(String name) {
@@ -128,12 +146,11 @@ public final class RunBuilder {
     }
 
     /**
-     * Links this run to a previous attempt.
-     * Essential for tracking sequential runs on the same task.
+     * Links this run to an earlier attempt at the same task, such as the failed run it retries.
+     * The ID is saved in the run record; the library does not check that a run with that ID
+     * exists.
      *
-     * <p>Example: Run 2 is a retry after Run 1 failed.
-     *
-     * @param runId the ID of the previous run attempt
+     * @param runId the ID of the earlier run, or {@code null} for none
      * @return this builder
      */
     public RunBuilder previousRun(String runId) {
@@ -142,10 +159,11 @@ public final class RunBuilder {
     }
 
     /**
-     * Links this run as a sub-run of a parent.
-     * Used for multi-agent workflows where a supervisor spawns child agents.
+     * Marks this run as part of another run, such as the run of a sub-agent that a supervisor agent
+     * started. The ID is saved in the run record; the library does not check that a run with that
+     * ID exists.
      *
-     * @param runId the ID of the parent run
+     * @param runId the ID of the parent run, or {@code null} for none
      * @return this builder
      */
     public RunBuilder parentRun(String runId) {
@@ -154,10 +172,10 @@ public final class RunBuilder {
     }
 
     /**
-     * Sets the agent identifier.
-     * Examples: "claude-sdk-sync", "code-reviewer", "test-runner"
+     * Sets the ID of the agent that does the work, such as {@code "code-reviewer"} or
+     * {@code "claude-code"}. It is saved in the run record.
      *
-     * @param agentId the agent identifier
+     * @param agentId the agent ID, or {@code null} for none
      * @return this builder
      */
     public RunBuilder agent(String agentId) {
@@ -166,10 +184,11 @@ public final class RunBuilder {
     }
 
     /**
-     * Sets the git repository path for this run.
-     * Enables automatic git state capture at run start/end.
+     * Accepts the path of the git repository the run works in, but does not keep it: the run does
+     * not read the value, it is not saved, and no git state is captured. To record the path, put
+     * it in the config, for example {@code config("repository", path)}.
      *
-     * @param path the path to the git repository
+     * @param path the repository path
      * @return this builder
      */
     public RunBuilder repository(String path) {
@@ -178,12 +197,13 @@ public final class RunBuilder {
     }
 
     /**
-     * Creates and starts the run.
+     * Starts a new run and returns it with status {@link RunStatus#RUNNING}. It first gets the
+     * run's {@link Experiment}, creating it with default settings and saving it if it does not
+     * exist. Then it saves the run record to the storage that {@link Journal#storage()} returns
+     * now; the run writes to that storage until it ends, even if {@link Journal#configure} is
+     * called later.
      *
-     * <p>The run is persisted to the configured storage backend.
-     * The experiment is automatically created if it doesn't exist.
-     *
-     * @return the started run
+     * @return the new run, never {@code null}
      */
     public Run start() {
         Experiment experiment = ExperimentRegistry.getOrCreate(experimentId);

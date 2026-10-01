@@ -14,32 +14,59 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Records a Gemini CLI {@link GeminiPhaseCapture} into a {@link Run} — the Gemini analog of
- * {@code claude-code-capture}'s {@code BaseRunRecorder}, projecting into the <em>same</em>
- * journal-core streams so a Gemini run produces the identical shape as a Claude run:
- * <ul>
- *   <li>execution events ({@code events.jsonl}) — the prompt and an {@link LLMCallEvent} carrying
- *       the turn's tokens / cost / timing;</li>
- *   <li>derived events ({@code analysis.jsonl}) — the per-step {@link StepCostEvent}, the
- *       inferred cost attribution, kept out of the execution stream.</li>
- * </ul>
+ * Logs Gemini CLI {@link GeminiPhaseCapture}s as events on an open {@link Run}. Use it after
+ * {@link GeminiSessionParser} has parsed a query result: create one around the run and call
+ * {@link #recordPhase(GeminiPhaseCapture)} once per phase. It does not end the run, so close the
+ * run yourself, and call {@link Run#fail(Throwable)} first if the work failed.
  *
- * <p>
- * Concrete (not abstract like the Claude base) because Gemini capture is single-grain: the typed
- * SDK exposes no tool calls, so one query result is one turn-level step (see
- * {@link GeminiPhaseCapture} and {@link GeminiJournalSteps}). The cost is SDK-provided
- * (pricing-derived); {@code actualRunCostUsd} stays the ground-truth total.
+ * <p>Unlike Claude Code's {@code RunRecorder}, it logs no phase
+ * {@link io.github.markpollack.journal.event.StateChangeEvent} and no thinking events, it never
+ * ends the run, and it does not check that the storage keeps derived events. The Gemini SDK
+ * reports no tool calls, so it logs no tool call events either: the whole query is one step,
+ * which carries the whole cost. On
+ * {@link io.github.markpollack.journal.storage.InMemoryStorage} that step's cost is kept only in
+ * memory and is lost, without a warning, when the JVM exits; use
+ * {@link io.github.markpollack.journal.storage.JsonFileStorage} to keep it.
+ *
+ * <p>A recorder serves one run and is not safe for use from several threads.
+ *
+ * <p>Example:
+ * <pre>{@code
+ * Journal.configure(new JsonFileStorage(Path.of(".agent-journal")));
+ * GeminiPhaseCapture capture = GeminiSessionParser.parse(queryResult, "execute", prompt);
+ * try (Run run = Journal.run("my-exp").start()) {
+ *     new GeminiRunRecorder(run).recordPhase(capture);
+ * }
+ * }</pre>
  */
 public class GeminiRunRecorder {
 
     private final Run run;
 
+    /**
+     * Creates a recorder that logs to the given run.
+     *
+     * @param run the open run to log to
+     */
     public GeminiRunRecorder(Run run) {
         this.run = run;
     }
 
     /**
-     * Records one Gemini query capture: writes the execution events and the derived per-step cost.
+     * Logs one phase as events on the run, then logs its cost as one derived event.
+     *
+     * <p>It logs, in order: a {@code prompt} custom event with the phase name and the prompt, if
+     * the prompt was captured; and one {@link LLMCallEvent} with the capture's model (or
+     * {@code "unknown"}), its prompt and completion tokens, its total cost and its duration. The
+     * event names no provider, and its metadata holds the phase name, status and error flag. Then
+     * it logs one {@link StepCostEvent} for the whole query, with step ID {@code <runId>:turn}
+     * and the whole cost, marked
+     * {@link io.github.markpollack.journal.trace.AttributionMethod#OUTPUT_TOKEN_PROPORTIONAL}.
+     *
+     * @param phase the parsed Gemini query; its phase name must not be {@code null}
+     * @throws IllegalStateException if the run has ended
+     * @throws UnsupportedOperationException if the run's storage cannot keep derived events at
+     *         all; the other events are logged by then
      */
     public void recordPhase(GeminiPhaseCapture phase) {
         // Prompt capture — record the exact prompt sent for reproducibility.
@@ -72,6 +99,11 @@ public class GeminiRunRecorder {
         }
     }
 
+    /**
+     * Returns the run this recorder logs to.
+     *
+     * @return the run given to the constructor
+     */
     public Run run() {
         return run;
     }

@@ -18,25 +18,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Extracts a Gemini CLI {@link QueryResult} into a {@link GeminiPhaseCapture}, optionally
- * writing the shared portable JSONL trace. The Gemini analog of {@code claude-code-capture}'s
- * {@code SessionLogParser} — same pipeline shape (parse → capture → trace + trailing
- * {@code step_cost}), feeding the <em>same</em> journal-core {@link TraceWriter}.
+ * Reads the result of one Gemini CLI query and returns a {@link GeminiPhaseCapture}: the agent's
+ * text, its token usage and cost, how long it took, and its status. Use it after running a query
+ * through the Gemini CLI SDK: pass the SDK's {@link QueryResult} to a {@code parse} method. To
+ * store the result as a journal run, pass the capture to a {@link GeminiRunRecorder}.
  *
- * <p>
- * Differences from the Claude parser, driven by Gemini's coarser SDK model (see
- * {@link GeminiPhaseCapture}):
- * <ul>
- *   <li>input is a synchronous {@link QueryResult} (a {@code List<Message>} + {@code Metadata}),
- *       not a streaming message iterator;</li>
- *   <li>no {@code thinking}/{@code tool_use}/{@code tool_result} lines — Gemini's typed model has
- *       only text messages + result-level usage/cost; the trace is {@code header} +
- *       {@code text}(s) + {@code result} + {@code step_cost};</li>
- *   <li>no {@code rawMode} — the typed {@code Message} carries no verbatim wire envelope.</li>
- * </ul>
- * The {@code result} line still carries the loader-contract keys
- * ({@code inputTokens}/{@code outputTokens}/{@code costUsd}/{@code durationMs}), so the same
- * Markov/ACT loader reads a Gemini trace.
+ * <p>Gemini is unlike the other non-Claude parsers: like Claude Code's {@code SessionLogParser},
+ * it reads SDK objects, not JSON Lines text, and it can write a trace with {@link TraceWriter}.
+ * Unlike Claude Code's parser, it gets one finished result, not a stream of messages, and that
+ * result holds only text messages and totals: no tool calls, no thinking and no per-turn usage.
+ * So a Gemini trace has only a {@code header} line, one {@code text} line per assistant message,
+ * a {@code result} line and one {@code step_cost} line, and there is no raw mode.
+ *
+ * <p>The parser joins the text of the assistant messages, with nothing between them, and skips
+ * all other messages, including error messages. It takes the model, duration, token counts and
+ * cost from the result's metadata, and the status from the result. A trace's header records
+ * {@code phaseName} as both the run ID and the phase, its result line records one turn, and its
+ * {@code step_cost} line gives the whole cost to one step with ID {@code <phaseName>:turn}. A
+ * trace file that cannot be opened or written is logged as a warning and does not stop parsing;
+ * the capture is the same with or without a trace.
+ *
+ * <p>All methods are static and keep no state between calls. Calls from several threads are safe
+ * if each has its own trace file.
  */
 public final class GeminiSessionParser {
 
@@ -45,14 +48,46 @@ public final class GeminiSessionParser {
     private GeminiSessionParser() {
     }
 
+    /**
+     * Parses a query result into a capture, without writing a trace.
+     *
+     * @param result the SDK's result of the query
+     * @param phaseName the caller's name for this query, such as {@code "plan"} or
+     *        {@code "execute"}
+     * @param promptText the prompt that was sent, or {@code null} if not captured
+     * @return the capture, never {@code null}
+     */
     public static GeminiPhaseCapture parse(QueryResult result, String phaseName, String promptText) {
         return parse(result, phaseName, promptText, null);
     }
 
+    /**
+     * Parses a query result into a capture and, if {@code traceFile} is not {@code null}, writes a
+     * trace using {@link TraceContentMode#TRUNCATED}.
+     *
+     * @param result the SDK's result of the query
+     * @param phaseName the caller's name for this query, such as {@code "plan"} or
+     *        {@code "execute"}
+     * @param promptText the prompt that was sent, or {@code null} if not captured
+     * @param traceFile the trace file to write, or {@code null} for no trace
+     * @return the capture, never {@code null}
+     */
     public static GeminiPhaseCapture parse(QueryResult result, String phaseName, String promptText, Path traceFile) {
         return parse(result, phaseName, promptText, traceFile, TraceContentMode.TRUNCATED);
     }
 
+    /**
+     * Parses a query result into a capture and, if {@code traceFile} is not {@code null}, writes a
+     * trace with the given content mode.
+     *
+     * @param result the SDK's result of the query
+     * @param phaseName the caller's name for this query
+     * @param promptText the prompt that was sent, or {@code null} if not captured
+     * @param traceFile the trace file to write, or {@code null} for no trace
+     * @param contentMode how much message content the trace keeps; must not be {@code null} when
+     *        {@code traceFile} is given
+     * @return the capture, never {@code null}
+     */
     public static GeminiPhaseCapture parse(QueryResult result, String phaseName, String promptText, Path traceFile,
             TraceContentMode contentMode) {
         TraceWriter trace = null;
