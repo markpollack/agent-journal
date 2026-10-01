@@ -1,42 +1,30 @@
 package io.github.markpollack.journal.trace;
 
 /**
- * Raw-capture policy for the JSONL trace files written by {@code TraceWriter}
- * (schema v2), orthogonal to {@link TraceContentMode}.
+ * Whether a capture trace also keeps each vendor message exactly as it arrived, next to the lines
+ * the parser builds from it. Only Claude Code's {@code SessionLogParser} takes this setting; the
+ * other parsers never write raw lines. It is independent of {@link TraceContentMode}, which
+ * applies only to the parsed lines. {@link TraceWriter} applies it.
  *
- * <p>
- * Where {@link TraceContentMode} governs the <em>modeled</em> lines (the portable subset
- * journal extracts and the Markov loader reads), this governs whether the
- * <strong>verbatim vendor wire</strong> is also preserved. The principle (per the
- * per-turn-cost spec): capture-everything-raw + model-the-portable-intersection. The
- * modeled lines are queryable and stable; the raw line is the future-proof escape hatch
- * for anything the typed parse drops — {@code permission_denials}, {@code modelUsage},
- * structured {@code tool_use_result}, and the sub-agent envelope ({@code isSidechain},
- * {@code parentUuid}, {@code parent_tool_use_id}). These live only on
- * {@code RegularMessage.rawJson} (SDK &ge; 1.3.0), never on the typed {@code Message}.
+ * <p>Raw lines keep fields that the parsed lines and the SDK's typed messages drop, such as
+ * {@code permission_denials} and {@code modelUsage}, so they can be recovered later. Each one is a
+ * line of type {@code raw}, so a reader that looks only for other line types is not affected. The
+ * header line records the mode. A message is kept as parsed JSON, or, if it is not valid JSON, as
+ * a string with a {@code rawParseError} field. Raw lines need claude-code-sdk 1.3.0 or later; with
+ * older versions, messages carry no original JSON and no raw lines are written.
  *
- * <p>
- * A {@code raw} line is additive and additive-safe: the Markov loader keys off
- * {@code type == "tool_use"} / {@code "result"} and silently skips every other line type,
- * so emitting {@code type:"raw"} lines never perturbs existing consumers. The header
- * records the active {@code rawMode} so a trace is self-describing.
- *
- * <p>
- * <strong>Sensitivity:</strong> a {@link #FULL} raw line contains the complete, unredacted
- * vendor message — at least as sensitive as a {@link TraceContentMode#FULL} content body.
- * Treat raw-capturing traces as sensitive local artifacts.
+ * <p>A raw line holds the whole message, unredacted and never shortened. Treat traces written with
+ * {@link #FULL} as sensitive files.
  */
 public enum TraceRawMode {
 
     /**
-     * Default. No raw escape-hatch lines — only the modeled (content-mode-governed) lines
-     * are written. The pre-existing schema-v2 behaviour.
+     * Writes no raw lines. The parsers use this mode when no mode is given.
      */
     NONE,
 
     /**
-     * Emit one verbatim {@code raw} line per vendor wire message, carrying the complete
-     * original JSON ({@code RegularMessage.rawJson}) so no unmodeled field is ever lost.
+     * Writes one {@code raw} line for each message that carries its original JSON.
      */
     FULL
 

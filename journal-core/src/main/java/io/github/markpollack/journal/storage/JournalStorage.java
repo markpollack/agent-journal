@@ -10,65 +10,61 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Storage backend interface for persisting tracking data.
+ * The backend that keeps a journal's records: experiments, run records, events, derived events,
+ * feedback and artifacts. Choose an implementation and pass it to
+ * {@link io.github.markpollack.journal.Journal#configure(JournalStorage)}:
+ * {@link JsonFileStorage} keeps records as files that outlive the JVM, and
+ * {@link InMemoryStorage} keeps them in memory, for tests. Most code does not call these methods
+ * directly: a {@link io.github.markpollack.journal.Run} writes through them, and analysis code
+ * such as {@code EvalSubjectSources} reads through them.
  *
- * <p>Implementations handle the actual persistence mechanism (memory, JSON files,
- * database, etc.). All operations are synchronous; async variants may be added later.
+ * <p>Records are found by experiment ID and run ID. Events, derived events and feedback are only
+ * appended, and load back in the order they were appended. An experiment or a run record
+ * ({@link RunData}) is replaced each time it is saved. All methods are synchronous, and load and
+ * list methods return an empty result, never {@code null}, when nothing is stored.
  *
- * <p>Directory structure for file-based storage:
- * <pre>
- * .agent-journal/
- * ├── experiments/
- * │   └── {experiment-id}/
- * │       ├── experiment.json
- * │       └── runs/
- * │           └── {run-id}/
- * │               ├── run.json
- * │               ├── events.jsonl
- * │               ├── artifacts/
- * │               └── raw/
- * </pre>
+ * <p>To write a new backend, implement the abstract methods for experiments, runs, events and
+ * artifacts. The other methods have defaults for a backend that lacks those features: feedback
+ * and derived events cannot be appended (the append methods throw
+ * {@link UnsupportedOperationException}) and load as empty, {@link #persistsDerivedEvents()}
+ * returns {@code false}, {@link #rawDirectory(String, String)} returns empty, and
+ * {@link #registerEventSubtype(String, Class)} does nothing.
  *
- * <p>Example:
- * <pre>{@code
- * JournalStorage storage = new JsonFileStorage(Path.of(".agent-journal"));
- *
- * storage.saveExperiment(experiment);
- * storage.saveRun(runData);
- * storage.appendEvent(experimentId, runId, event);
- * }</pre>
+ * <p>This interface does not require thread safety. {@link InMemoryStorage} is safe for
+ * concurrent use; {@link JsonFileStorage} expects one writer per run.
  */
 public interface JournalStorage {
 
     // ========== Experiment Operations ==========
 
     /**
-     * Saves an experiment.
+     * Saves an experiment, replacing any stored experiment with the same ID.
      *
      * @param experiment the experiment to save
      */
     void saveExperiment(Experiment experiment);
 
     /**
-     * Loads an experiment by ID.
+     * Returns the stored experiment with the given ID.
      *
      * @param id the experiment ID
-     * @return the experiment, or empty if not found
+     * @return the experiment, or empty if none is stored
      */
     Optional<Experiment> loadExperiment(String id);
 
     /**
-     * Lists all experiments.
+     * Returns every stored experiment, in no set order.
      *
-     * @return list of all experiments
+     * @return the experiments, empty if there are none
      */
     List<Experiment> listExperiments();
 
     /**
-     * Checks if an experiment exists.
+     * Returns whether an experiment with the given ID is stored. The default calls
+     * {@link #loadExperiment(String)}.
      *
      * @param id the experiment ID
-     * @return true if the experiment exists
+     * @return {@code true} if the experiment is stored
      */
     default boolean experimentExists(String id) {
         return loadExperiment(id).isPresent();
@@ -77,35 +73,37 @@ public interface JournalStorage {
     // ========== Run Operations ==========
 
     /**
-     * Saves run data.
+     * Saves a run record, replacing any stored record of the same run. A run saves its record when
+     * it starts and again when it ends.
      *
-     * @param runData the run data to save
+     * @param runData the run record to save
      */
     void saveRun(RunData runData);
 
     /**
-     * Loads run data by experiment and run ID.
+     * Returns the stored record of a run.
      *
      * @param experimentId the experiment ID
      * @param runId the run ID
-     * @return the run data, or empty if not found
+     * @return the run record, or empty if none is stored
      */
     Optional<RunData> loadRun(String experimentId, String runId);
 
     /**
-     * Lists all runs for an experiment.
+     * Returns the records of every stored run of an experiment, in no set order.
      *
      * @param experimentId the experiment ID
-     * @return list of run data for the experiment
+     * @return the run records, empty if there are none
      */
     List<RunData> listRuns(String experimentId);
 
     /**
-     * Checks if a run exists.
+     * Returns whether a record of the run is stored. The default calls
+     * {@link #loadRun(String, String)}.
      *
      * @param experimentId the experiment ID
      * @param runId the run ID
-     * @return true if the run exists
+     * @return {@code true} if the run record is stored
      */
     default boolean runExists(String experimentId, String runId) {
         return loadRun(experimentId, runId).isPresent();
@@ -114,18 +112,16 @@ public interface JournalStorage {
     // ========== Event Type Registration ==========
 
     /**
-     * Registers a domain-specific event subtype for Jackson polymorphic deserialization.
+     * Registers an event type defined outside journal-core, so that stored events of that type can
+     * be loaded back. Register it before loading any run that contains it. Most callers use
+     * {@link io.github.markpollack.journal.Journal#registerEventType(String, Class)}, which
+     * registers on the configured storage.
      *
-     * <p>Call this at startup for any {@link JournalEvent} implementation defined outside
-     * of journal-core (e.g., {@code WorkflowStepEvent} from workflow-journal):
-     * <pre>{@code
-     * Journal.registerEventType("workflow_step", WorkflowStepEvent.class);
-     * }</pre>
+     * <p>The default does nothing, which suits a backend that keeps event objects as they are,
+     * such as {@link InMemoryStorage}.
      *
-     * <p>The default implementation is a no-op (e.g., in-memory storage needs no registration).
-     *
-     * @param typeName the {@code @type} discriminator value written to JSON
-     * @param cls      the concrete class to deserialize to
+     * @param typeName the {@code @type} value written for events of this type
+     * @param cls the class to load such events as
      */
     default void registerEventSubtype(String typeName, Class<? extends JournalEvent> cls) {
         // no-op for storage backends that don't use Jackson
@@ -134,8 +130,7 @@ public interface JournalStorage {
     // ========== Event Operations ==========
 
     /**
-     * Appends an event to a run's event log.
-     * Events are stored in append-only fashion (JSONL format for file storage).
+     * Appends an event to a run's events. An appended event is never changed or removed.
      *
      * @param experimentId the experiment ID
      * @param runId the run ID
@@ -144,34 +139,35 @@ public interface JournalStorage {
     void appendEvent(String experimentId, String runId, JournalEvent event);
 
     /**
-     * Loads all events for a run.
+     * Returns a run's events.
      *
      * @param experimentId the experiment ID
      * @param runId the run ID
-     * @return list of events in chronological order
+     * @return the events in the order they were appended, empty if there are none
      */
     List<JournalEvent> loadEvents(String experimentId, String runId);
 
     // ========== Feedback Operations ==========
 
     /**
-     * Appends a feedback event to a run's feedback log.
-     * Feedback is stored separately from execution events (feedback.jsonl sidecar).
+     * Appends a feedback event, a verdict on the run or on part of it, to a run. Feedback is kept
+     * apart from the run's events. The default throws, for a backend that does not keep feedback.
      *
      * @param experimentId the experiment ID
      * @param runId the run ID
      * @param feedback the feedback event to append
+     * @throws UnsupportedOperationException if this storage does not keep feedback
      */
     default void appendFeedback(String experimentId, String runId, FeedbackEvent feedback) {
         throw new UnsupportedOperationException("Feedback storage not supported by this implementation");
     }
 
     /**
-     * Loads all feedback events for a run.
+     * Returns a run's feedback events. The default returns an empty list.
      *
      * @param experimentId the experiment ID
      * @param runId the run ID
-     * @return list of feedback events in chronological order
+     * @return the feedback events in the order they were appended, empty if there are none
      */
     default List<FeedbackEvent> loadFeedback(String experimentId, String runId) {
         return List.of();
@@ -180,44 +176,42 @@ public interface JournalStorage {
     // ========== Derived Analysis Operations ==========
 
     /**
-     * Appends a derived analysis event to a run's analysis log.
-     * Derived events (inferred post-run: cost attribution, scores, …) are stored separately
-     * from immutable execution events — in an {@code analysis.jsonl} sidecar — so the two
-     * record kinds never look equivalent. Joined to execution events by {@code stepId}/{@code runId}.
+     * Appends a derived event to a run: a conclusion computed after the fact, such as a step's
+     * share of the cost. Derived events are kept apart from the run's events and point back to
+     * them by step ID and run ID. The default throws, for a backend that does not keep derived
+     * events.
      *
      * @param experimentId the experiment ID
      * @param runId the run ID
      * @param event the derived event to append
+     * @throws UnsupportedOperationException if this storage does not keep derived events
      */
     default void appendDerivedEvent(String experimentId, String runId, DerivedEvent event) {
         throw new UnsupportedOperationException("Derived event storage not supported by this implementation");
     }
 
     /**
-     * Loads all derived analysis events for a run.
+     * Returns a run's derived events. The default returns an empty list.
      *
      * @param experimentId the experiment ID
      * @param runId the run ID
-     * @return list of derived events in append order
+     * @return the derived events in the order they were appended, empty if there are none
      */
     default List<DerivedEvent> loadDerivedEvents(String experimentId, String runId) {
         return List.of();
     }
 
     /**
-     * Whether derived analysis events are persisted <em>durably</em> — i.e. survive process
-     * exit so {@code analysis.jsonl} can be reloaded and the derived layer regenerated later.
+     * Returns whether derived events outlive the JVM, so they can be loaded again after the
+     * process exits. Claude Code's {@code RunRecorder} checks this when a run ends, and by default
+     * throws if it recorded derived events that would be lost.
      *
-     * <p>This is the seam the fail-loud capture contract reads (DESIGN §4): a recorder that
-     * emits {@link DerivedEvent}s onto a non-durable backend is silently losing the most
-     * measurement-critical signal, so the production recorder warns or throws at
-     * {@code run.finish()} when this is {@code false}.
+     * <p>The default returns {@code false}. {@link InMemoryStorage} keeps the default;
+     * {@link JsonFileStorage} returns {@code true}. A backend whose
+     * {@link #appendDerivedEvent(String, String, DerivedEvent)} writes to lasting storage should
+     * return {@code true}.
      *
-     * <p>Defaults to {@code false}: the bare interface's {@link #appendDerivedEvent} throws, and
-     * {@link InMemoryStorage} holds derived events only in memory (lost on exit). File-backed
-     * storage that writes {@code analysis.jsonl} overrides this to {@code true}.
-     *
-     * @return true if {@link #appendDerivedEvent} writes to durable storage
+     * @return {@code true} if derived events are kept after the JVM exits
      */
     default boolean persistsDerivedEvents() {
         return false;
@@ -226,71 +220,49 @@ public interface JournalStorage {
     // ========== Artifact Operations ==========
 
     /**
-     * Saves an artifact.
+     * Saves named content for a run, replacing an artifact of the same name.
      *
      * @param experimentId the experiment ID
      * @param runId the run ID
      * @param name the artifact name
-     * @param content the artifact content
+     * @param content the content
      */
     void saveArtifact(String experimentId, String runId, String name, byte[] content);
 
     /**
-     * Loads an artifact.
+     * Returns a run's artifact.
      *
      * @param experimentId the experiment ID
      * @param runId the run ID
      * @param name the artifact name
-     * @return the artifact content, or empty if not found
+     * @return the content, or empty if the run has no artifact of that name
      */
     Optional<byte[]> loadArtifact(String experimentId, String runId, String name);
 
     /**
-     * Lists artifact names for a run.
+     * Returns the names of a run's artifacts, in no set order.
      *
      * @param experimentId the experiment ID
      * @param runId the run ID
-     * @return list of artifact names
+     * @return the artifact names, empty if there are none
      */
     List<String> listArtifacts(String experimentId, String runId);
 
     // ========== Raw Provider Artifacts (contract only — see rawDirectory) ==========
 
     /**
-     * The directory a run's <strong>verbatim provider artifacts</strong> live in, when this
-     * backend has one.
+     * Returns the directory where copies of the agent's own session files for a run belong, if this
+     * storage has one. Keeping those files lets later analysis recover data that the parsers
+     * dropped.
      *
-     * <p>
-     * <strong>This is a contract, not a copier.</strong> The journal reserves and locates
-     * {@code raw/} within the run directory so raw provider artifacts — the Claude Code
-     * {@code .jsonl} session log and its equivalents — are <em>findable from the run record</em>,
-     * keyed by {@code runId}. Producing the copies is deliberately <em>not</em> the journal's
-     * job: copying the provider session file belongs to {@code agent-experiment}, which knows
-     * what it launched and when. The journal's half is this — a stable, discoverable location a
-     * copier can write into and an analysis can read back from, so a run record is never a dead
-     * end.
-     *
-     * <p>
-     * <strong>Why it matters.</strong> Nearly every capture gap found in the 2026-08-24
-     * measurement audit — per-step tokens, stop reason, per-tool duration — was plausibly
-     * already present in the raw provider log and was discarded at parse time. Keeping raw
-     * turns "we cannot answer that" into "re-derive it", at the price of storage rather than a
-     * re-run. Capture is one-shot; analysis is free to redo.
-     *
-     * <p>
-     * Contents are expected to be <strong>content-addressed</strong> (named by a digest of the
-     * bytes), so the same provider artifact copied twice is stored once and any copy is
-     * verifiable against its own name. The journal neither parses nor validates what lands
-     * here: raw is immutable evidence, not a schema.
-     *
-     * <p>
-     * The default implementation returns empty — a backend with no filesystem (in-memory) has
-     * nowhere to put raw, and says so rather than inventing a path.
+     * <p>This method only names the directory: it does not create it, and journal-core never
+     * writes to it or reads from it. A caller that archives session files, such as
+     * agent-experiment, writes them there, so they can be found from the run. The default returns
+     * empty, for storage without a file system.
      *
      * @param experimentId the experiment ID
      * @param runId the run ID
-     * @return the run's raw-artifact directory, or empty when this backend has none. The
-     *         directory is not created by this call and need not already exist.
+     * @return the directory, which may not exist yet, or empty if this storage has none
      */
     default Optional<Path> rawDirectory(String experimentId, String runId) {
         return Optional.empty();

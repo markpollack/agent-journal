@@ -1,45 +1,41 @@
 package io.github.markpollack.journal.trace;
 
 /**
- * Content capture policy for the JSONL trace files written by {@code TraceWriter}
- * (schema v2).
+ * How much message content a capture trace keeps: all of it, the start of each item, or only
+ * lengths. Pass it to a session parser that writes a trace, such as Claude Code's
+ * {@code SessionLogParser} or {@code GeminiSessionParser}; {@link TraceWriter} applies it. Use
+ * {@link #LENGTHS} for small traces, and {@link #FULL} only when you need every character.
+ * Whether the trace also keeps each vendor message as it arrived is set separately, by
+ * {@link TraceRawMode}.
  *
- * <p>
- * All modes emit schema v2: a {@code header} first line (run identity, schema version,
- * content mode) and an enriched {@code result} line. The mode controls only whether
- * large content bodies (thinking text, assistant text, tool_result content) are written.
- * v1 compatibility is contractual at the loader level — existing keys and line types are
- * preserved byte-for-byte and all v2 fields are additive — not byte-for-byte file
- * identity. In particular, {@link #LENGTHS} is <strong>not</strong> the v1 format.
+ * <p>The mode applies to the content of {@code text}, {@code thinking} and {@code tool_result}
+ * lines. Every mode writes the same line types, and the header line records the mode. Each of
+ * those lines records the content's original length in {@code length} or {@code contentLength},
+ * so a reader can tell how much was left out. Tool inputs on {@code tool_use} lines are written
+ * whole in every mode.
  *
- * <p>
- * <strong>Sensitivity:</strong> content-carrying traces may include prompts, file
- * contents, command output, secrets, and customer data. {@link #TRUNCATED} (the
- * default) is intended for local/dev analysis; treat {@link #FULL} traces as sensitive
- * artifacts. A future {@code REDACTED}/{@code FILTERED} mode is reserved for
- * privacy-preserving capture but is not implemented in this round.
+ * <p>Traces can hold prompts, file contents, command output and secrets. A {@link #LENGTHS}
+ * trace still holds tool inputs, which can include file contents, so treat every trace as a
+ * sensitive file.
  */
 public enum TraceContentMode {
 
     /**
-     * Full content bodies, never truncated. Trace lines can grow to megabytes (large
-     * file reads/writes); treat the resulting files as sensitive artifacts.
+     * Keeps every content item whole. A line can be very large, for example when the agent reads
+     * or writes a big file.
      */
     FULL,
 
     /**
-     * Default. Content bodies are truncated at 60,000 characters per item (matching
-     * Claude Code's own OTel per-item cap). The canonical length fields
-     * ({@code length}, {@code contentLength}) always carry the original pre-truncation
-     * size, and truncated tool results carry a {@code source} pointer to where the
-     * full content lives (file path or command).
+     * Keeps the first {@link TraceWriter#MAX_TRACE_CONTENT_CHARS} (60,000) characters of each
+     * content item and marks a shortened item with {@code "truncated": true}. A shortened tool
+     * result also records where the full content can be found, such as a file path or a command,
+     * when the parser supplies one. The parsers use this mode when no mode is given.
      */
     TRUNCATED,
 
     /**
-     * No content bodies — lengths only. Pins the pre-content-capture disk footprint
-     * for cost-budget consumers. Still schema v2: the header line and enriched result
-     * fields are written.
+     * Keeps no content, only each item's length.
      */
     LENGTHS
 

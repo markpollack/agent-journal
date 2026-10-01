@@ -13,7 +13,33 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Parses Antigravity CLI {@code --output-format stream-json} output. */
+/**
+ * Reads the output of one Antigravity CLI call and returns an {@link AntigravityPhaseCapture}: the
+ * agent's final response, its tool steps, its token usage, how long it took, and whether it
+ * succeeded. Use it after running the CLI with {@code --output-format stream-json}: pass the saved
+ * output file, or a reader over the output, to a {@code parse} method. To store the result as a
+ * journal run, pass the capture to an {@link AntigravityRunRecorder}.
+ *
+ * <p>Unlike Claude Code's {@code SessionLogParser}, it reads JSON Lines text, not SDK objects, and
+ * writes no trace. Antigravity reports no cost.
+ *
+ * <p>Each line is one event, named by its {@code event} field. The parser takes the conversation
+ * ID and model from {@code init}, tool steps from {@code step_update} events whose
+ * {@code step_type} is {@code tool}, and the status, final response, error, duration, turn count
+ * and token counts from the final {@code result}. Blank lines, other events and other step types
+ * are skipped, including the usage and text on other step updates.
+ *
+ * <p>Antigravity sends several updates for one tool step, for example {@code ACTIVE} and then
+ * {@code DONE} or {@code ERROR}. The parser joins them by {@code step_index} into one tool record
+ * that keeps the latest name, parameters, output, state and duration. A step is an error if its
+ * state is {@code ERROR} or it carries an {@code error} object. Antigravity gives tool steps no
+ * ID, so the record's ID is built as {@code <conversationId>:step:<index>}, with
+ * {@code antigravity} in place of a missing conversation ID. The
+ * {@link io.github.markpollack.journal.event.ToolKind} comes from the tool name.
+ *
+ * <p>All methods are static and keep no state between calls. Calls from several threads are safe
+ * if each has its own input.
+ */
 public final class AntigravitySessionParser {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -21,6 +47,16 @@ public final class AntigravitySessionParser {
     private AntigravitySessionParser() {
     }
 
+    /**
+     * Parses a saved output file, read as UTF-8.
+     *
+     * @param streamFile the file holding the CLI's {@code stream-json} output
+     * @param phaseName the caller's name for this call, such as {@code "plan"} or
+     *        {@code "execute"}
+     * @param promptText the prompt that was sent, or {@code null} if not captured
+     * @return the capture, never {@code null}
+     * @throws IOException if the file cannot be read or a line is not valid JSON
+     */
     public static AntigravityPhaseCapture parse(Path streamFile, String phaseName, String promptText)
             throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(streamFile)) {
@@ -28,6 +64,17 @@ public final class AntigravitySessionParser {
         }
     }
 
+    /**
+     * Parses the CLI's output from a reader, reading it to the end. The reader is not closed.
+     *
+     * @param reader the CLI's {@code stream-json} output
+     * @param phaseName the caller's name for this call, such as {@code "plan"} or
+     *        {@code "execute"}
+     * @param promptText the prompt that was sent, or {@code null} if not captured
+     * @return the capture, never {@code null}
+     * @throws IOException if reading fails, or if a line is not valid JSON; the message gives the
+     *         line number
+     */
     public static AntigravityPhaseCapture parse(BufferedReader reader, String phaseName, String promptText)
             throws IOException {
         ParserState state = new ParserState();

@@ -9,27 +9,28 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Groups related runs for a common goal or task.
+ * A named group of runs that answer one question, such as {@code "implement-oauth"}; every
+ * {@link Run} belongs to one experiment. You rarely build one yourself:
+ * {@link RunBuilder#start()} creates the experiment and saves it the first time its ID is used.
+ * Build one with {@link #create(String)} only to give a new experiment a name, description or
+ * tags, and pass the builder to {@link Journal#experiment(String, Builder)}.
  *
- * <p>An experiment represents a logical grouping of execution attempts,
- * such as "implement-oauth" or "sync-anthropic-sdk-v1.2". All runs within
- * an experiment share a common objective.
+ * <p>An experiment is identified by its ID alone: two experiments with the same ID are equal,
+ * whatever their other fields. Once an experiment exists, its fields do not change; a builder
+ * passed later for the same ID is ignored. File storage keeps it as {@code experiment.json} in
+ * the experiment's directory, next to its runs; see
+ * {@link io.github.markpollack.journal.storage.JsonFileStorage}.
  *
- * <p>Example:
+ * <p>An experiment is immutable and can be shared between threads. A {@link Builder} is not safe
+ * for use from several threads.
+ *
+ * <p>Example (use the same ID in both places):
  * <pre>{@code
- * Experiment exp = Experiment.create("implement-oauth")
- *     .description("Add OAuth2 authentication support")
- *     .tags(Tags.of("feature", "auth"))
- *     .build();
+ * Experiment exp = Journal.experiment("implement-oauth",
+ *     Experiment.create("implement-oauth")
+ *         .description("Add OAuth2 authentication support")
+ *         .tags(Tags.of("feature", "auth")));
  * }</pre>
- *
- * <p>Storage layout:
- * <pre>
- * .agent-journal/experiments/{id}/
- * ├── experiment.json
- * └── runs/
- *     └── {runId}/
- * </pre>
  */
 public final class Experiment {
 
@@ -61,41 +62,73 @@ public final class Experiment {
         this.tags = tags != null ? tags : Tags.empty();
     }
 
-    /** Creates a new experiment builder with the given ID. */
+    /**
+     * Returns a builder for a new experiment with the given ID. The ID is checked when
+     * {@link Builder#build()} is called, not here.
+     *
+     * @param id the experiment ID; it must not be {@code null} when the builder is built
+     * @return a new builder
+     */
     public static Builder create(String id) {
         return new Builder(id);
     }
 
-    /** Returns the unique experiment identifier. */
+    /**
+     * Returns the ID that identifies this experiment. File storage also uses it as the name of the
+     * experiment's directory.
+     *
+     * @return the ID, never {@code null}
+     */
     @JsonProperty("id")
     public String id() {
         return id;
     }
 
-    /** Returns the human-readable experiment name. */
+    /**
+     * Returns the name to show to people.
+     *
+     * @return the name, or the ID if no name was set; never {@code null}
+     */
     @JsonProperty("name")
     public String name() {
         return name;
     }
 
-    /** Returns when the experiment was created. */
+    /**
+     * Returns when the experiment was created.
+     *
+     * @return the creation time, by default the time the experiment was built; never
+     *         {@code null}
+     */
     @JsonProperty("createdAt")
     public Instant createdAt() {
         return createdAt;
     }
 
-    /** Returns the experiment description, if set. */
+    /**
+     * Returns the description.
+     *
+     * @return the description, or {@code null} if none was set
+     */
     @JsonProperty("description")
     public String description() {
         return description;
     }
 
-    /** Returns the experiment description as Optional. */
+    /**
+     * Returns the description as an {@link Optional}.
+     *
+     * @return the description, or an empty {@code Optional} if none was set
+     */
     public Optional<String> descriptionOptional() {
         return Optional.ofNullable(description);
     }
 
-    /** Returns the experiment tags. */
+    /**
+     * Returns the tags.
+     *
+     * @return the tags, empty if none were set; never {@code null}
+     */
     @JsonProperty("tags")
     public Tags tags() {
         return tags;
@@ -119,7 +152,11 @@ public final class Experiment {
         return "Experiment{id='" + id + "', name='" + name + "'}";
     }
 
-    /** Builder for Experiment. */
+    /**
+     * Collects the fields of a new {@link Experiment}. Get one from
+     * {@link Experiment#create(String)}; each setter returns this builder. Fields left unset get
+     * defaults when {@link #build()} is called.
+     */
     public static final class Builder {
         private final String id;
         private String name;
@@ -131,31 +168,59 @@ public final class Experiment {
             this.id = id;
         }
 
-        /** Sets the human-readable name. Defaults to ID if not set. */
+        /**
+         * Sets the name to show to people.
+         *
+         * @param name the name, or {@code null} to use the ID
+         * @return this builder
+         */
         public Builder name(String name) {
             this.name = name;
             return this;
         }
 
-        /** Sets the creation timestamp. Defaults to now. */
+        /**
+         * Sets the creation time.
+         *
+         * @param createdAt the creation time, or {@code null} to use the time of
+         *        {@link #build()}
+         * @return this builder
+         */
         public Builder createdAt(Instant createdAt) {
             this.createdAt = createdAt;
             return this;
         }
 
-        /** Sets the experiment description. */
+        /**
+         * Sets a free-text description.
+         *
+         * @param description the description, or {@code null} for none
+         * @return this builder
+         */
         public Builder description(String description) {
             this.description = description;
             return this;
         }
 
-        /** Sets the experiment tags. */
+        /**
+         * Sets the tags.
+         *
+         * @param tags the tags, or {@code null} for none
+         * @return this builder
+         */
         public Builder tags(Tags tags) {
             this.tags = tags;
             return this;
         }
 
-        /** Builds the experiment. */
+        /**
+         * Returns a new experiment with the fields set so far. The builder can be used again, and
+         * each call returns a new experiment.
+         *
+         * @return the new experiment
+         * @throws NullPointerException if the ID given to {@link Experiment#create(String)} is
+         *         {@code null}
+         */
         public Experiment build() {
             return new Experiment(this);
         }

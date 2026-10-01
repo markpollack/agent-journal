@@ -15,7 +15,29 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Parses Grok CLI {@code --output-format streaming-json} output from a file or reader. */
+/**
+ * Reads the output of one Grok CLI call and returns a {@link GrokPhaseCapture}: the agent's text,
+ * thinking and tool calls, its token usage and cost, and why it stopped. Use it after running the
+ * CLI with {@code --output-format streaming-json}: pass the saved output file, or a reader over
+ * the output, to a {@code parse} method. To store the result as a journal run, pass the capture to
+ * a {@link GrokRunRecorder}.
+ *
+ * <p>Unlike Claude Code's {@code SessionLogParser}, it reads JSON Lines text, not SDK objects, and
+ * writes no trace. Each line is one event with a {@code type}. The parser joins the {@code text}
+ * and {@code thought} pieces, pairs each {@code tool_call} with its {@code tool_call_update}s by
+ * {@code toolCallId}, and takes the session ID, stop reason, turn count, cost, model and token
+ * counts from the final {@code end} line. If that line has no usage, the token counts are the sum
+ * of the {@code usage} lines. Blank lines, lines without a {@code type} and types it does not know
+ * are skipped.
+ *
+ * <p>A tool call is named by Grok's {@code toolName}, else its {@code title}, else its
+ * {@code kind}, else {@code "unknown"}. Its {@link io.github.markpollack.journal.event.ToolKind}
+ * comes from Grok's {@code kind} field, and it is marked as an error if its last status is
+ * {@code failed}.
+ *
+ * <p>All methods are static and keep no state between calls. Calls from several threads are safe
+ * if each has its own input.
+ */
 public final class GrokSessionParser {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -23,12 +45,33 @@ public final class GrokSessionParser {
     private GrokSessionParser() {
     }
 
+    /**
+     * Parses a saved output file, read as UTF-8.
+     *
+     * @param streamFile the file holding the CLI's {@code streaming-json} output
+     * @param phaseName the caller's name for this call, such as {@code "plan"} or
+     *        {@code "execute"}
+     * @param promptText the prompt that was sent, or {@code null} if not captured
+     * @return the capture, never {@code null}
+     * @throws IOException if the file cannot be read or a line is not valid JSON
+     */
     public static GrokPhaseCapture parse(Path streamFile, String phaseName, String promptText) throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(streamFile)) {
             return parse(reader, phaseName, promptText);
         }
     }
 
+    /**
+     * Parses the CLI's output from a reader, reading it to the end. The reader is not closed.
+     *
+     * @param reader the CLI's {@code streaming-json} output
+     * @param phaseName the caller's name for this call, such as {@code "plan"} or
+     *        {@code "execute"}
+     * @param promptText the prompt that was sent, or {@code null} if not captured
+     * @return the capture, never {@code null}
+     * @throws IOException if reading fails, or if a line is not valid JSON; the message gives the
+     *         line number
+     */
     public static GrokPhaseCapture parse(BufferedReader reader, String phaseName, String promptText)
             throws IOException {
         ParserState state = new ParserState();

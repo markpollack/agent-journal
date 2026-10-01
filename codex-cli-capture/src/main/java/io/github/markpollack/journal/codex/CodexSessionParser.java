@@ -14,7 +14,40 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Parses the durable {@code ~/.codex/sessions/.../rollout-*.jsonl} format. */
+/**
+ * Reads a Codex CLI rollout file and returns a {@link CodexPhaseCapture}: the agent's final
+ * message, its tool calls, its token usage and how long it took. Use it after a Codex session
+ * has ended: pass the rollout file that Codex keeps under {@code ~/.codex/sessions/}, or a reader
+ * over its lines, to a {@code parse} method. To store the result as a journal run, pass the
+ * capture to a {@link CodexRunRecorder}.
+ *
+ * <p>Unlike the Claude Code and Grok parsers, it reads the session record that Codex writes for
+ * itself, not the output stream of a call, and it writes no trace. Codex reports no cost, turn
+ * count or stop reason, and the parser does not keep the agent's thinking or its earlier
+ * messages, so the capture has none of these.
+ *
+ * <p>Each line is a JSON envelope with a {@code type} and a {@code payload}. The parser takes the
+ * session ID and CLI version from {@code session_meta}, the model from the last
+ * {@code turn_context}, the token counts from the last {@code token_count} (Codex's running total
+ * for the session), and the duration and final message from {@code task_complete}. It pairs each
+ * {@code custom_tool_call} with its {@code custom_tool_call_output} by {@code call_id}. Blank
+ * lines and other record types are skipped.
+ *
+ * <p>Codex names almost every tool call {@code exec} and puts the real action in the call's
+ * input, for example {@code tools.exec_command({"cmd":"rg ..."})}. So the parser reads that input,
+ * without running it, and sets the {@link io.github.markpollack.journal.event.ToolKind} from the
+ * shell command it finds: {@code rg} is {@code SEARCH}, {@code ls} is {@code READ}, and a command
+ * it does not know is {@code EXECUTE}. Other Codex tools, such as {@code apply_patch}, have fixed
+ * kinds, and input with no such call is {@code OTHER}. The tool name
+ * stays {@code exec}; the parsed command and the raw input are kept in the tool's input map, so
+ * the call can be classified again later.
+ *
+ * <p>A tool call is marked as an error when its status is anything other than
+ * {@code completed}, or when its output text matches one of the parser's failure patterns.
+ *
+ * <p>All methods are static and keep no state between calls. Calls from several threads are safe
+ * if each has its own input.
+ */
 public final class CodexSessionParser {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -22,12 +55,33 @@ public final class CodexSessionParser {
     private CodexSessionParser() {
     }
 
+    /**
+     * Parses a rollout file, read as UTF-8.
+     *
+     * @param rolloutFile the Codex rollout file, a {@code rollout-*.jsonl} file
+     * @param phaseName the caller's name for this session or part of it, such as
+     *        {@code "execute"}
+     * @param promptText the prompt that was sent, or {@code null} if not captured
+     * @return the capture, never {@code null}
+     * @throws IOException if the file cannot be read or a line is not valid JSON
+     */
     public static CodexPhaseCapture parse(Path rolloutFile, String phaseName, String promptText) throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(rolloutFile)) {
             return parse(reader, phaseName, promptText);
         }
     }
 
+    /**
+     * Parses rollout lines from a reader, reading it to the end. The reader is not closed.
+     *
+     * @param reader the rollout lines
+     * @param phaseName the caller's name for this session or part of it, such as
+     *        {@code "execute"}
+     * @param promptText the prompt that was sent, or {@code null} if not captured
+     * @return the capture, never {@code null}
+     * @throws IOException if reading fails, or if a line is not valid JSON; the message gives the
+     *         line number
+     */
     public static CodexPhaseCapture parse(BufferedReader reader, String phaseName, String promptText)
             throws IOException {
         ParserState state = new ParserState();
