@@ -27,13 +27,19 @@ plus a human-feedback API for judge calibration and golden datasets.
 
 | Module | Description | Java | Key dependency |
 |---|---|---|---|
-| `journal-core` | Experiment/Run tracking, the sealed event hierarchy, storage, cost and token aggregation, `EvalSubject` extraction, feedback, and the portable `TraceWriter` | 17 | Jackson only |
+| `journal-core` | Experiment/Run tracking, the extensible event model (an open `JournalEvent` interface with runtime subtype registration via `Journal.registerEventType`; only the `GitEvent` family is sealed), storage, cost and token aggregation, `EvalSubject` extraction, feedback, and the portable `TraceWriter` | 17 | Jackson only |
 | `claude-code-capture` | Claude Code SDK → journal bridge: phase capture, session parsing, per-turn usage, step cost attribution | 21 | `claude-code-sdk` |
 | `gemini-cli-capture` | Gemini CLI → journal bridge: a parallel vendor extractor emitting the same portable trace and cost schema | 21 | `gemini-cli-sdk` |
+| `grok-cli-capture` | Grok CLI → journal bridge: parses Grok's `streaming-json` output into an ordered tool trajectory with the session's reported cost | 17 | `journal-core` |
+| `codex-cli-capture` | Codex CLI → journal bridge: parses the durable rollout file, classifying each tool call from its payload rather than the outer `exec` name | 17 | `journal-core` |
+| `antigravity-cli-capture` | Antigravity CLI → journal bridge: parses Antigravity's streaming JSON into an ordered tool trajectory | 17 | `journal-core` |
+| `junie-cli-capture` | Junie CLI → journal bridge: parses Junie's durable session `events.jsonl` into an ordered tool trajectory with per-call cost that reconciles to the session total | 17 | `journal-core` |
 
-`journal-core` targets Java 17 and depends on nothing but Jackson. The two capture
-modules bind vendor SDKs published as Java 21 bytecode and therefore require a Java 21
-runtime.
+`journal-core` targets Java 17 and depends on nothing but Jackson. The Claude Code and
+Gemini capture modules bind vendor SDKs published as Java 21 bytecode and therefore
+require a Java 21 runtime. The Grok, Codex, Antigravity and Junie capture modules parse
+their CLI's own output directly, carry no vendor SDK, and target Java 17 like
+`journal-core`.
 
 ## Usage
 
@@ -41,7 +47,7 @@ runtime.
 <dependency>
     <groupId>io.github.markpollack</groupId>
     <artifactId>journal-core</artifactId>
-    <version>1.6.0</version>
+    <version>1.10.1</version>
 </dependency>
 ```
 
@@ -91,8 +97,8 @@ Java 17 target.
 ./mvnw clean verify
 ```
 
-Verify that all three modules resolve safe Jackson versions for standalone consumers
-without importing `agentworks-bom`:
+Verify that `journal-core` and the two SDK-bound capture modules (Claude Code, Gemini)
+resolve safe Jackson versions for standalone consumers without importing `agentworks-bom`:
 
 ```bash
 ./scripts/check-consumer-resolution.py
