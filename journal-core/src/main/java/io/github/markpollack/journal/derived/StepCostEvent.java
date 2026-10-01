@@ -14,9 +14,10 @@ import java.util.Map;
  * {@link io.github.markpollack.journal.storage.JournalStorage#loadDerivedEvents} and match each
  * to its {@link io.github.markpollack.journal.event.ToolCallEvent} by {@link #stepId()}.
  *
- * <p>The agent CLIs do not report a cost for each step, so the per-step cost is a share of the
- * run's total. {@link #actualRunCostUsd()} is the run's total as reported, the same in every
- * step of the run; {@link #attributedCostUsd()} is this step's share, split as
+ * <p>The agent CLIs do not report a cost for each step, so the per-step cost is a share of a
+ * reported total. Despite its name, {@link #actualRunCostUsd()} is the total of the phase (one
+ * agent call) the step belongs to, the same in every step of that phase; it is the run's total
+ * only when the run has one phase. {@link #attributedCostUsd()} is this step's share, split as
  * {@link #attributionMethod()} says. Add up the shares, not the totals, to get a cost per tool or
  * per turn.
  *
@@ -37,7 +38,7 @@ import java.util.Map;
  * @param inputTokens the input tokens of the step's turn
  * @param outputTokens the output tokens of the step's turn
  * @param attributedCostUsd this step's share of the run's cost, in US dollars
- * @param actualRunCostUsd the run's total cost as reported, in US dollars
+ * @param actualRunCostUsd the phase's total cost as reported, in US dollars
  * @param attributionMethod how the run's cost was split into shares
  * @param vendor the capture module that made the step, such as {@code "claude-code"} or
  *        {@code "gemini-cli"}
@@ -82,7 +83,7 @@ public record StepCostEvent(
      * @param inputTokens the turn's input tokens
      * @param outputTokens the turn's output tokens
      * @param attributedCostUsd this step's share of the cost
-     * @param actualRunCostUsd the run's total cost
+     * @param actualRunCostUsd the phase's total cost
      * @param attributionMethod how the cost was split
      * @param vendor the capture module
      */

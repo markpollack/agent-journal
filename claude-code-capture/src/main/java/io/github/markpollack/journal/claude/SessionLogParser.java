@@ -40,8 +40,10 @@ import org.slf4j.LoggerFactory;
  * trace file, it also writes the messages there as JSON Lines with {@link TraceWriter}.
  *
  * <p>{@code parse} reads the iterator to the end. Exceptions thrown by the iterator reach the
- * caller. A trace file that cannot be opened or written is logged as a warning and does not stop
- * parsing; the capture is the same with or without a trace.
+ * caller. A trace file that cannot be opened or written because of an I/O error is logged as a
+ * warning and does not stop parsing; the capture is the same with or without a trace. Pass a
+ * trace path that has a parent directory: a bare file name makes the trace writer fail outside
+ * that handling.
  *
  * <p>All methods are static and keep no state between calls. Calls from several threads are safe
  * if each has its own iterator and trace file.
