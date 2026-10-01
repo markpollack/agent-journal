@@ -24,55 +24,61 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
- * JSON file-based implementation of {@link JournalStorage}.
+ * A {@link JournalStorage} that keeps journals as JSON files in a local directory, so runs
+ * outlive the JVM and can be read back, compared, or queried with tools such as DuckDB. Pass one
+ * to {@link io.github.markpollack.journal.Journal#configure(JournalStorage)} for real runs; use
+ * {@link InMemoryStorage} for tests. Each run gets a directory with a {@code run.json} record and
+ * JSON Lines files (one JSON object per line) for its events, derived events and feedback.
  *
- * <p>Stores data in the following directory structure:
+ * <p>The layout under the base directory:
  * <pre>
  * {baseDir}/
- * ├── experiments/
- * │   └── {experiment-id}/
- * │       ├── experiment.json
- * │       └── runs/
- * │           └── {run-id}/
- * │               ├── run.json
- * │               ├── events.jsonl
- * │               ├── artifacts/
- * │               │   └── {artifact-name}
- * │               └── raw/
- * │                   └── {content-addressed provider artifact}
+ * └── experiments/
+ *     └── {experimentId}/
+ *         ├── experiment.json
+ *         └── runs/
+ *             └── {runId}/
+ *                 ├── run.json          run record, rewritten on each save
+ *                 ├── events.jsonl      what happened, appended
+ *                 ├── analysis.jsonl    derived events, appended
+ *                 ├── feedback.jsonl    feedback, appended
+ *                 ├── artifacts/{name}
+ *                 └── raw/              reserved, not written by this class
  * </pre>
  *
- * <p>{@code raw/} is a <strong>reserved location, not a feature this class populates</strong>
- * (1.9.0). It is where verbatim provider artifacts — the Claude Code {@code .jsonl} session log
- * and its equivalents — belong, so they stay findable from the run record; the copier that fills
- * it lives in {@code agent-experiment}, not here. See
- * {@link JournalStorage#rawDirectory(String, String)}.
+ * <p>{@code events.jsonl} and {@code analysis.jsonl} start with a header line that carries
+ * {@link #SCHEMA_VERSION}; {@code feedback.jsonl} has no header. The load methods skip header
+ * lines and read the whole file into memory. Event types defined outside journal-core must be
+ * registered with {@link #registerEventSubtype(String, Class)} before they can be loaded.
  *
- * <p>Events are stored in JSON Lines format (one JSON object per line) for
- * efficient append-only writes.
+ * <p>{@code raw/} is where copies of the agent's own session files belong, so they can be found
+ * from the run; agent-experiment fills it, this class only locates it. See
+ * {@link #rawDirectory(String, String)}.
+ *
+ * <p>Limits: experiment IDs, run IDs and artifact names are used as path parts without checks,
+ * so pass only trusted values. The class does no locking: use one writer per run, and do not
+ * share a run's files between processes. File errors are thrown as
+ * {@link UncheckedIOException}.
  *
  * <p>Example:
  * <pre>{@code
- * JournalStorage storage = new JsonFileStorage(Path.of(".agent-journal"));
- *
- * storage.saveExperiment(experiment);
- * storage.saveRun(runData);
- * storage.appendEvent(experimentId, runId, llmCallEvent);
+ * Journal.configure(new JsonFileStorage(Path.of(".agent-journal")));
  * }</pre>
  */
 public class JsonFileStorage implements JournalStorage {
 
     /**
-     * Schema version of the Path-A canonical streams ({@code events.jsonl} + {@code analysis.jsonl}),
-     * stamped on the {@code @type:"header"} first line of each file (A5). Lets a reader version-route
-     * where it already reads — the event stream — instead of sniffing for fields. Bumped only on a
-     * <strong>non-additive</strong> change (rename/remove/semantic shift); additive fields and new
-     * enum values do not bump it. <strong>Independent</strong> of the Path-B trace's own
-     * {@code schemaVersion} (a different artifact — do not conflate).
+     * The schema version written in the header line of {@code events.jsonl} and
+     * {@code analysis.jsonl}, so a reader can tell which format a file uses. It changes only when
+     * a field is renamed, removed or given a new meaning; new fields and new enum values do not
+     * change it. Trace files have their own, separate schema version.
      */
     public static final int SCHEMA_VERSION = 1;
 
-    /** {@code @type} discriminator of the per-file header line (skipped when loading events). */
+    /**
+     * The {@code @type} value of the header line at the start of {@code events.jsonl} and
+     * {@code analysis.jsonl}. The load methods skip lines of this type.
+     */
     public static final String HEADER_TYPE = "header";
 
     private static final String EXPERIMENTS_DIR = "experiments";
@@ -90,9 +96,10 @@ public class JsonFileStorage implements JournalStorage {
     private final ObjectMapper eventMapper;
 
     /**
-     * Creates a new JsonFileStorage with the given base directory.
+     * Creates a storage that writes under the given directory. Nothing is written until the first
+     * save; directories are created as needed.
      *
-     * @param baseDir the base directory for storage
+     * @param baseDir the directory to write under
      */
     public JsonFileStorage(Path baseDir) {
         this.baseDir = baseDir;
@@ -163,10 +170,8 @@ public class JsonFileStorage implements JournalStorage {
     /**
      * {@inheritDoc}
      *
-     * <p>Resolves {@code {baseDir}/experiments/{experimentId}/runs/{runId}/raw}. The directory is
-     * <strong>not created</strong> — this backend reserves and locates raw, it does not write it;
-     * an absent directory correctly means "nothing was archived for this run" rather than
-     * "archival failed".
+     * <p>Returns {@code {baseDir}/experiments/{experimentId}/runs/{runId}/raw}. This class does
+     * not create the directory; if it is missing, nothing was archived for the run.
      */
     @Override
     public Optional<Path> rawDirectory(String experimentId, String runId) {
@@ -212,6 +217,13 @@ public class JsonFileStorage implements JournalStorage {
 
     // ========== Experiment Operations ==========
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Writes {@code experiment.json}, replacing any earlier version.
+     *
+     * @throws UncheckedIOException if the file cannot be written
+     */
     @Override
     public void saveExperiment(Experiment experiment) {
         try {
@@ -223,6 +235,13 @@ public class JsonFileStorage implements JournalStorage {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Reads {@code experiment.json}.
+     *
+     * @throws UncheckedIOException if the file exists but cannot be read
+     */
     @Override
     public Optional<Experiment> loadExperiment(String id) {
         Path file = experimentFile(id);
@@ -236,6 +255,13 @@ public class JsonFileStorage implements JournalStorage {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Lists the experiment directories that contain an {@code experiment.json}.
+     *
+     * @throws UncheckedIOException if the directory cannot be listed or a file cannot be read
+     */
     @Override
     public List<Experiment> listExperiments() {
         Path dir = experimentsDir();
@@ -257,6 +283,13 @@ public class JsonFileStorage implements JournalStorage {
 
     // ========== Run Operations ==========
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Writes {@code run.json}, replacing any earlier version.
+     *
+     * @throws UncheckedIOException if the file cannot be written
+     */
     @Override
     public void saveRun(RunData runData) {
         try {
@@ -268,6 +301,13 @@ public class JsonFileStorage implements JournalStorage {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Reads {@code run.json}.
+     *
+     * @throws UncheckedIOException if the file exists but cannot be read
+     */
     @Override
     public Optional<RunData> loadRun(String experimentId, String runId) {
         Path file = runFile(experimentId, runId);
@@ -281,6 +321,13 @@ public class JsonFileStorage implements JournalStorage {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Lists the run directories of the experiment that contain a {@code run.json}.
+     *
+     * @throws UncheckedIOException if the directory cannot be listed or a file cannot be read
+     */
     @Override
     public List<RunData> listRuns(String experimentId) {
         Path dir = runsDir(experimentId);
@@ -302,6 +349,14 @@ public class JsonFileStorage implements JournalStorage {
 
     // ========== Event Operations ==========
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Appends one line to {@code events.jsonl}, first writing the header line if the file
+     * is new.
+     *
+     * @throws UncheckedIOException if the file cannot be written
+     */
     @Override
     public void appendEvent(String experimentId, String runId, JournalEvent event) {
         try {
@@ -320,6 +375,13 @@ public class JsonFileStorage implements JournalStorage {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Reads {@code events.jsonl}, skipping the header line.
+     *
+     * @throws UncheckedIOException if the file exists but cannot be read or parsed
+     */
     @Override
     public List<JournalEvent> loadEvents(String experimentId, String runId) {
         Path file = eventsFile(experimentId, runId);
@@ -346,6 +408,13 @@ public class JsonFileStorage implements JournalStorage {
 
     // ========== Feedback Operations ==========
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Appends one line to {@code feedback.jsonl}. This file has no header line.
+     *
+     * @throws UncheckedIOException if the file cannot be written
+     */
     @Override
     public void appendFeedback(String experimentId, String runId, FeedbackEvent feedback) {
         try {
@@ -364,6 +433,13 @@ public class JsonFileStorage implements JournalStorage {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Reads {@code feedback.jsonl}.
+     *
+     * @throws UncheckedIOException if the file exists but cannot be read or parsed
+     */
     @Override
     public List<FeedbackEvent> loadFeedback(String experimentId, String runId) {
         Path file = feedbackFile(experimentId, runId);
@@ -385,6 +461,14 @@ public class JsonFileStorage implements JournalStorage {
 
     // ========== Derived Analysis Operations ==========
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Appends one line to {@code analysis.jsonl}, first writing the header line if the file
+     * is new.
+     *
+     * @throws UncheckedIOException if the file cannot be written
+     */
     @Override
     public void appendDerivedEvent(String experimentId, String runId, DerivedEvent event) {
         try {
@@ -404,14 +488,23 @@ public class JsonFileStorage implements JournalStorage {
     }
 
     /**
-     * File storage writes derived events to a durable {@code analysis.jsonl} sidecar, so they
-     * survive process exit and the derived layer is regenerable from disk.
+     * Returns {@code true}: derived events are written to {@code analysis.jsonl} and outlive the
+     * JVM.
+     *
+     * @return {@code true}
      */
     @Override
     public boolean persistsDerivedEvents() {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Reads {@code analysis.jsonl}, skipping the header line.
+     *
+     * @throws UncheckedIOException if the file exists but cannot be read or parsed
+     */
     @Override
     public List<DerivedEvent> loadDerivedEvents(String experimentId, String runId) {
         Path file = analysisFile(experimentId, runId);
@@ -438,6 +531,13 @@ public class JsonFileStorage implements JournalStorage {
 
     // ========== Artifact Operations ==========
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Writes the content to {@code artifacts/{name}}, replacing a file of the same name.
+     *
+     * @throws UncheckedIOException if the file cannot be written
+     */
     @Override
     public void saveArtifact(String experimentId, String runId, String name, byte[] content) {
         try {
@@ -449,6 +549,13 @@ public class JsonFileStorage implements JournalStorage {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Reads {@code artifacts/{name}}.
+     *
+     * @throws UncheckedIOException if the file exists but cannot be read
+     */
     @Override
     public Optional<byte[]> loadArtifact(String experimentId, String runId, String name) {
         Path file = artifactFile(experimentId, runId, name);
@@ -462,6 +569,13 @@ public class JsonFileStorage implements JournalStorage {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Lists the file names in the run's {@code artifacts} directory.
+     *
+     * @throws UncheckedIOException if the directory cannot be listed
+     */
     @Override
     public List<String> listArtifacts(String experimentId, String runId) {
         Path dir = artifactsDir(experimentId, runId);
@@ -479,8 +593,10 @@ public class JsonFileStorage implements JournalStorage {
     }
 
     /**
-     * Registers a domain-specific event subtype for Jackson polymorphic deserialization.
-     * Must be called before reading any JSONL files that contain this event type.
+     * {@inheritDoc}
+     *
+     * <p>The registration applies to this storage object only. Register a type before loading
+     * any file that contains it.
      */
     @Override
     public void registerEventSubtype(String typeName, Class<? extends JournalEvent> cls) {
@@ -488,7 +604,9 @@ public class JsonFileStorage implements JournalStorage {
     }
 
     /**
-     * Returns the base directory for this storage.
+     * Returns the directory this storage writes under.
+     *
+     * @return the base directory given to the constructor
      */
     public Path baseDir() {
         return baseDir;

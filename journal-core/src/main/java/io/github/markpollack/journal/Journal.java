@@ -4,13 +4,19 @@ import io.github.markpollack.journal.event.JournalEvent;
 import io.github.markpollack.journal.storage.JournalStorage;
 
 /**
- * Main entry point for the tracking API.
+ * The static entry point for recording agent runs: choose where records go, then start runs.
+ * Call {@link #configure(JournalStorage)} once at startup, for example with a
+ * {@link io.github.markpollack.journal.storage.JsonFileStorage}, then call {@link #run(String)}
+ * for a {@link RunBuilder} and start a {@link Run}. Runs are grouped into an {@link Experiment},
+ * which is created the first time it is used.
  *
- * <p>Journal provides static factory methods for creating runs and managing
- * experiments. It is the primary interface users interact with.
+ * <p>The storage is shared by the whole process. If none is configured, the first use creates an
+ * in-memory storage, and nothing is kept after the JVM exits.
  *
  * <h2>Basic Usage</h2>
  * <pre>{@code
+ * Journal.configure(new JsonFileStorage(Path.of(".agent-journal")));
+ *
  * try (Run run = Journal.run("implement-oauth")
  *         .config("model", "claude-opus-4.5")
  *         .tag("type", "feature")
@@ -20,24 +26,18 @@ import io.github.markpollack.journal.storage.JournalStorage;
  *     run.logMetric("tokens.total", 1650);
  *     run.setSummary("filesChanged", 5);
  *
- * } // Auto-finish with SUCCESS (or FAILED on exception)
+ * } // close() ends the run as FINISHED; call run.fail(e) inside the block to record a failure
  * }</pre>
  *
- * <h2>Configuration</h2>
- * <p>Configure storage before creating runs:
+ * <h2>Tests</h2>
+ * <p>Use in-memory storage and reset between tests:
  * <pre>{@code
- * // File-based storage
- * Journal.configure(new JsonFileStorage(Path.of(".agent-journal")));
- *
- * // In-memory (default, for testing)
  * Journal.configure(new InMemoryStorage());
+ * // ...
+ * Journal.reset();
  * }</pre>
  *
- * <h2>Experiments</h2>
- * <p>Get or create experiments:
- * <pre>{@code
- * Experiment exp = Journal.experiment("implement-oauth");
- * }</pre>
+ * <p>All methods are safe to call from several threads.
  *
  * @see Run
  * @see RunBuilder
@@ -48,10 +48,9 @@ public final class Journal {
     private Journal() {} // Utility class
 
     /**
-     * Starts building a new run for the given experiment.
-     *
-     * <p>This is the primary method for creating runs. The returned builder
-     * can be used to configure the run before starting it.
+     * Returns a builder for a new run in the given experiment. Set the run's name, config and tags
+     * on the builder, then call {@link RunBuilder#start()}, which creates the experiment if needed
+     * and saves the new run.
      *
      * <p>Example:
      * <pre>{@code
@@ -63,31 +62,31 @@ public final class Journal {
      * }
      * }</pre>
      *
-     * @param experimentId the experiment identifier (e.g., "implement-oauth")
-     * @return a builder for configuring the run
+     * @param experimentId the ID of the experiment the run belongs to, such as
+     *        {@code "implement-oauth"}
+     * @return a new run builder
+     * @throws NullPointerException if {@code experimentId} is {@code null}
      */
     public static RunBuilder run(String experimentId) {
         return RunBuilder.forExperiment(experimentId);
     }
 
     /**
-     * Gets or creates an experiment by ID.
+     * Returns the experiment with the given ID, creating it with default settings if it does not
+     * exist. It looks in a process-wide cache first, then in the configured storage, and saves a
+     * new experiment to storage. The cache is kept until {@link #reset()}.
      *
-     * <p>If the experiment doesn't exist, a new one is created with
-     * default settings. The experiment is cached and persisted to storage.
-     *
-     * @param experimentId the experiment identifier
-     * @return the experiment
+     * @param experimentId the experiment ID
+     * @return the experiment, never {@code null}
+     * @throws NullPointerException if {@code experimentId} is {@code null}
      */
     public static Experiment experiment(String experimentId) {
         return ExperimentRegistry.getOrCreate(experimentId);
     }
 
     /**
-     * Gets or creates an experiment with custom settings.
-     *
-     * <p>If the experiment already exists, the builder is ignored and
-     * the existing experiment is returned.
+     * Returns the experiment with the given ID, creating it from {@code builder} if it does not
+     * exist. If the experiment is already cached or stored, {@code builder} is ignored.
      *
      * <p>Example:
      * <pre>{@code
@@ -98,66 +97,68 @@ public final class Journal {
      * );
      * }</pre>
      *
-     * @param experimentId the experiment identifier
-     * @param builder the builder with custom settings
-     * @return the experiment
+     * @param experimentId the experiment ID
+     * @param builder the settings for a new experiment, or {@code null} for default settings
+     * @return the experiment, never {@code null}
+     * @throws NullPointerException if {@code experimentId} is {@code null}
      */
     public static Experiment experiment(String experimentId, Experiment.Builder builder) {
         return ExperimentRegistry.getOrCreate(experimentId, builder);
     }
 
     /**
-     * Configures the storage backend.
+     * Sets the storage that runs in this process write to. Call it once at startup, before
+     * starting runs. A run keeps the storage it started with, so runs already started are not
+     * moved.
      *
-     * <p>This should be called once at application startup before creating
-     * any runs. If not called, an in-memory storage is used by default.
+     * <p>Event types registered with {@link #registerEventType(String, Class)} belong to one
+     * storage, so register them after this call.
      *
      * <p>Example:
      * <pre>{@code
-     * // For production: file-based storage
+     * // Records kept on disk
      * Journal.configure(new JsonFileStorage(Path.of(".agent-journal")));
      *
-     * // For testing: in-memory storage
+     * // Records kept in memory, for tests
      * Journal.configure(new InMemoryStorage());
      * }</pre>
      *
-     * @param storage the storage implementation
+     * @param storage the storage to use
+     * @throws NullPointerException if {@code storage} is {@code null}
      */
     public static void configure(JournalStorage storage) {
         JournalContext.setStorage(storage);
     }
 
     /**
-     * Returns the current storage backend.
+     * Returns the storage runs write to, creating an in-memory storage if none was configured.
      *
-     * @return the configured storage
+     * @return the current storage, never {@code null}
      */
     public static JournalStorage storage() {
         return JournalContext.getStorage();
     }
 
     /**
-     * Registers a domain-specific event type for JSON deserialization.
-     *
-     * <p>Call this at startup for any {@link JournalEvent} implementation defined outside
-     * journal-core before reading events from file storage:
+     * Registers an event type defined outside journal-core, so that file storage can read events
+     * of that type back. The type is registered on the storage configured at the time of the call,
+     * so call this after {@link #configure(JournalStorage)}:
      * <pre>{@code
      * Journal.configure(new JsonFileStorage(path));
      * Journal.registerEventType("workflow_step", WorkflowStepEvent.class);
      * }</pre>
      *
-     * @param typeName the {@code @type} discriminator value written to JSON
-     * @param cls      the concrete class to deserialize to
+     * @param typeName the {@code @type} value that events of this type are written with
+     * @param cls the {@link JournalEvent} class to read those events into
      */
     public static void registerEventType(String typeName, Class<? extends JournalEvent> cls) {
         JournalContext.getStorage().registerEventSubtype(typeName, cls);
     }
 
     /**
-     * Resets the tracking context to defaults.
-     *
-     * <p>This clears all configuration and cached data. Primarily useful
-     * for testing to ensure clean state between test cases.
+     * Returns to the initial state: forgets the configured storage and clears the experiment
+     * cache. The next use creates a new in-memory storage; event types registered on the old
+     * storage are not carried over. Meant for tests:
      *
      * <pre>{@code
      * @AfterEach

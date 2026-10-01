@@ -8,54 +8,63 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Captures all data from one SDK interaction phase.
- * Unified record merging agent/PhaseResult and spring-upgrade-agent/PhaseCapture.
+ * The parsed record of one Claude Code call: what the agent wrote and did, the tokens it used,
+ * what it cost, and why it stopped. {@link SessionLogParser} builds one from the Claude SDK's
+ * message stream. Pass it to a {@link RunRecorder} to log it as events on a
+ * {@link io.github.markpollack.journal.Run}, or read its fields when you only need usage and cost.
  *
- * <p>
- * <strong>Two token views — pick by intent (CM):</strong>
+ * <p>A phase is one call to the agent with one prompt. The caller names it, for example
+ * {@code "plan"} or {@code "execute"}, and one run can record several phases. Other agent CLIs
+ * have their own records of the same kind, such as {@code GrokPhaseCapture}.
+ *
+ * <p>The record offers two token views, for different questions:
  * <ul>
- *   <li>{@link #aggregateUsage()} — the <em>cost-bearing</em> aggregate (Σ per-turn by type, incl.
- *       cache). Use this for anything that prices tokens or computes cost-to-go; it reconciles to
- *       {@code totalCostUsd}.</li>
- *   <li>The scalar accessors {@link #inputTokens()}/{@link #outputTokens()}/{@link #thinkingTokens()}
- *       (and {@link #snapshotUsage()}) — the <em>final-snapshot / context-size</em> view from the last
- *       {@code ResultMessage}. <strong>Deprecated as a cost basis</strong>: it is point-in-time and
- *       under-counts long runs. Kept for size/diagnostic use and back-compat.</li>
+ *   <li>{@link #aggregateUsage()} adds up each token type over every turn, including cache
+ *       writes and reads. Use it for anything that prices tokens.
+ *   <li>{@link #snapshotUsage()} and the token accessors such as {@link #inputTokens()} hold the
+ *       usage reported on the final result message. It is a point-in-time figure that
+ *       under-counts long runs, so do not use it as a cost basis.
  * </ul>
  *
- * @param phaseName      Phase identifier ("explore", "act", "plan", "execute", "reflexion")
- * @param promptText     The prompt sent to the LLM for this phase (null if not captured)
- * @param inputTokens    Input tokens consumed
- * @param outputTokens   Output tokens consumed
- * @param thinkingTokens            Thinking tokens consumed (extended thinking)
- * @param cacheCreationInputTokens  Tokens written to prompt cache
- * @param cacheReadInputTokens      Tokens read from prompt cache
- * @param durationMs     Wall-clock duration from SDK (milliseconds)
- * @param apiDurationMs  API-only duration from SDK (milliseconds)
- * @param totalCostUsd   Total cost in USD
- * @param sessionId      Claude session identifier
- * @param numTurns       Number of conversation turns
- * @param isError        Whether the SDK reported an error
- * @param textOutput     Concatenated text blocks from assistant messages
- * @param thinkingBlocks Each ThinkingBlock.thinking() content
- * @param toolUses       Tool use records from assistant messages
- * @param rawResult      ResultMessage.result() content (null if not available)
- * @param toolResults    Tool result records from user messages (null for older captures)
- * @param turns          Per-turn usage (one per assistant message), parsed from the wire;
- *                       empty when rawJson is unavailable (SDK &lt; 1.3.0 or programmatic). R2.2.
- * @param modelCosts     Per-model cost decomposition from the result's modelUsage; the
- *                       costs sum to {@code totalCostUsd}. Empty when unavailable. R2.2.
- * @param stopReason     Why this phase stopped, normalized (1.9.0). Never null — an
- *                       unreported reason is {@link StopReason#UNKNOWN}, which is information,
- *                       not an absence.
- * @param maxTurns       The turn ceiling this phase ran against, or -1 when none was reported.
- *                       <strong>Recorded together with {@code stopReason} and never separately:</strong>
- *                       {@code numTurns = 55} is uninterpretable on its own — finished, or cut
- *                       off? — and a ceiling with no outcome answers just as little. Claude Code
- *                       does not put the ceiling on the wire (it is a caller-side
- *                       {@code QueryOptions.maxTurns}), so the reliable source is the
- *                       {@code SessionLogParser.parse(..., maxTurns)} overload; the parser still
- *                       probes the wire first in case a future CLI version reports it.
+ * <p>The turn limit ({@code maxTurns}) means something only next to the stop reason: 55 turns
+ * alone does not say whether the agent finished or was cut off at its limit. Claude Code does not
+ * report the limit, so it comes from the caller through
+ * {@link SessionLogParser#parse(java.util.Iterator, String, String, java.nio.file.Path,
+ * io.github.markpollack.journal.trace.TraceContentMode,
+ * io.github.markpollack.journal.trace.TraceRawMode, int)}.
+ *
+ * <p>Treat the lists in a capture as read-only. A capture whose lists nobody changes can be
+ * shared between threads.
+ *
+ * @param phaseName the caller's name for this phase, such as {@code "plan"} or {@code "execute"}
+ * @param promptText the prompt sent for this phase, or {@code null} if it was not captured
+ * @param inputTokens the non-cached input tokens on the final result message
+ * @param outputTokens the output tokens on the final result message
+ * @param thinkingTokens the extended-thinking tokens, which are part of {@code outputTokens}; the
+ *        parser uses the result's own count, else the sum over turns, else an estimate of one
+ *        token per four characters of {@code thinkingBlocks}
+ * @param cacheCreationInputTokens the tokens written to the prompt cache, on the final result
+ *        message
+ * @param cacheReadInputTokens the tokens read from the prompt cache, on the final result message
+ * @param durationMs the wall-clock time of the call reported by the SDK, in milliseconds
+ * @param apiDurationMs the time spent in API requests reported by the SDK, in milliseconds
+ * @param totalCostUsd the total cost reported by the SDK, in US dollars, or 0 if none was reported
+ * @param sessionId the Claude Code session ID, or {@code null} if no result message arrived
+ * @param numTurns the number of turns reported by the SDK
+ * @param isError whether the SDK reported the call as an error
+ * @param textOutput the text of all assistant messages, joined in order
+ * @param thinkingBlocks the text of each thinking block, in order
+ * @param toolUses the tool calls the agent made, in order
+ * @param rawResult the final result text, or {@code null} if there was none
+ * @param toolResults the tool results sent back to the agent, or {@code null} for captures made
+ *        before tool results were recorded
+ * @param turns the usage of each turn (one per assistant message), or an empty list when the raw
+ *        messages were not available (claude-code-sdk before 1.3.0, or a capture built in code)
+ * @param modelCosts the cost of each model used, which adds up to {@code totalCostUsd}, or an empty
+ *        list when the SDK did not report it
+ * @param stopReason why the phase stopped; never {@code null}, because a missing reason becomes
+ *        {@link StopReason#UNKNOWN}
+ * @param maxTurns the turn limit the phase ran against, or -1 if none was reported
  */
 public record PhaseCapture(
         String phaseName,
@@ -82,15 +91,38 @@ public record PhaseCapture(
         int maxTurns
 ) {
 
-    /** Normalizes a null {@code stopReason} to {@link StopReason#UNKNOWN}. */
+    /**
+     * Creates a capture from all of its parts. A {@code null} {@code stopReason} becomes
+     * {@link StopReason#UNKNOWN}.
+     */
     public PhaseCapture {
         stopReason = stopReason != null ? stopReason : StopReason.UNKNOWN;
     }
 
     /**
-     * Back-compat constructor for callers written before the stop reason and turn ceiling were
-     * captured (1.9.0): {@code stopReason} becomes {@link StopReason#UNKNOWN} and
-     * {@code maxTurns} -1 ("no ceiling reported").
+     * Creates a capture without a stop reason or turn limit, for code written before 1.9.0. The
+     * stop reason becomes {@link StopReason#UNKNOWN} and {@code maxTurns} becomes -1.
+     *
+     * @param phaseName the caller's name for this phase
+     * @param promptText the prompt, or {@code null}
+     * @param inputTokens the non-cached input tokens
+     * @param outputTokens the output tokens
+     * @param thinkingTokens the thinking tokens
+     * @param cacheCreationInputTokens the tokens written to the prompt cache
+     * @param cacheReadInputTokens the tokens read from the prompt cache
+     * @param durationMs the wall-clock time, in milliseconds
+     * @param apiDurationMs the API time, in milliseconds
+     * @param totalCostUsd the total cost, in US dollars
+     * @param sessionId the session ID, or {@code null}
+     * @param numTurns the number of turns
+     * @param isError whether the SDK reported an error
+     * @param textOutput the assistant text
+     * @param thinkingBlocks the thinking blocks
+     * @param toolUses the tool calls
+     * @param rawResult the final result text, or {@code null}
+     * @param toolResults the tool results, or {@code null}
+     * @param turns the usage of each turn
+     * @param modelCosts the cost of each model
      */
     public PhaseCapture(String phaseName, String promptText, int inputTokens, int outputTokens,
             int thinkingTokens, int cacheCreationInputTokens, int cacheReadInputTokens, long durationMs,
@@ -103,7 +135,26 @@ public record PhaseCapture(
                 StopReason.UNKNOWN, -1);
     }
     /**
-     * Backward-compatible constructor for callers that don't provide cache tokens or toolResults.
+     * Creates a capture without cache tokens, tool results, per-turn usage or per-model costs, for
+     * older code. Cache tokens are 0, {@code toolResults} is {@code null}, {@code turns} and
+     * {@code modelCosts} are empty, the stop reason is {@link StopReason#UNKNOWN} and
+     * {@code maxTurns} is -1.
+     *
+     * @param phaseName the caller's name for this phase
+     * @param promptText the prompt, or {@code null}
+     * @param inputTokens the non-cached input tokens
+     * @param outputTokens the output tokens
+     * @param thinkingTokens the thinking tokens
+     * @param durationMs the wall-clock time, in milliseconds
+     * @param apiDurationMs the API time, in milliseconds
+     * @param totalCostUsd the total cost, in US dollars
+     * @param sessionId the session ID, or {@code null}
+     * @param numTurns the number of turns
+     * @param isError whether the SDK reported an error
+     * @param textOutput the assistant text
+     * @param thinkingBlocks the thinking blocks
+     * @param toolUses the tool calls
+     * @param rawResult the final result text, or {@code null}
      */
     public PhaseCapture(String phaseName, String promptText, int inputTokens, int outputTokens,
             int thinkingTokens, long durationMs, long apiDurationMs, double totalCostUsd,
@@ -115,8 +166,28 @@ public record PhaseCapture(
     }
 
     /**
-     * Backward-compatible constructor for callers that predate per-turn usage capture
-     * (R2.2): {@code turns} and {@code modelCosts} default to empty.
+     * Creates a capture without per-turn usage or per-model costs, for older code.
+     * {@code turns} and {@code modelCosts} are empty, the stop reason is
+     * {@link StopReason#UNKNOWN} and {@code maxTurns} is -1.
+     *
+     * @param phaseName the caller's name for this phase
+     * @param promptText the prompt, or {@code null}
+     * @param inputTokens the non-cached input tokens
+     * @param outputTokens the output tokens
+     * @param thinkingTokens the thinking tokens
+     * @param cacheCreationInputTokens the tokens written to the prompt cache
+     * @param cacheReadInputTokens the tokens read from the prompt cache
+     * @param durationMs the wall-clock time, in milliseconds
+     * @param apiDurationMs the API time, in milliseconds
+     * @param totalCostUsd the total cost, in US dollars
+     * @param sessionId the session ID, or {@code null}
+     * @param numTurns the number of turns
+     * @param isError whether the SDK reported an error
+     * @param textOutput the assistant text
+     * @param thinkingBlocks the thinking blocks
+     * @param toolUses the tool calls
+     * @param rawResult the final result text, or {@code null}
+     * @param toolResults the tool results, or {@code null}
      */
     public PhaseCapture(String phaseName, String promptText, int inputTokens, int outputTokens,
             int thinkingTokens, int cacheCreationInputTokens, int cacheReadInputTokens, long durationMs,
@@ -129,79 +200,99 @@ public record PhaseCapture(
     }
 
     /**
-     * Total input tokens including prompt cache reads and cache creation.
+     * Returns all input tokens in the snapshot view: non-cached input plus cache writes and cache
+     * reads.
+     *
+     * @return the sum of {@code inputTokens}, {@code cacheCreationInputTokens} and
+     *         {@code cacheReadInputTokens}
      */
     public int totalInputTokens() {
         return inputTokens + cacheCreationInputTokens + cacheReadInputTokens;
     }
 
+    /**
+     * Returns {@link #totalInputTokens()} plus {@code outputTokens} and {@code thinkingTokens}.
+     * This is a snapshot figure; for cost, use {@link #aggregateUsage()}.
+     *
+     * @return the sum of the snapshot input, output and thinking tokens
+     */
     public int totalTokens() {
         return totalInputTokens() + outputTokens + thinkingTokens;
     }
 
+    /**
+     * Returns whether any thinking blocks were captured.
+     *
+     * @return {@code true} if {@code thinkingBlocks} is not {@code null} and not empty
+     */
     public boolean hasThinking() {
         return thinkingBlocks != null && !thinkingBlocks.isEmpty();
     }
 
+    /**
+     * Returns whether the agent made any tool calls.
+     *
+     * @return {@code true} if {@code toolUses} is not {@code null} and not empty
+     */
     public boolean hasToolUses() {
         return toolUses != null && !toolUses.isEmpty();
     }
 
+    /**
+     * Returns whether any tool results were captured.
+     *
+     * @return {@code true} if {@code toolResults} is not {@code null} and not empty
+     */
     public boolean hasToolResults() {
         return toolResults != null && !toolResults.isEmpty();
     }
 
+    /**
+     * Returns whether per-turn usage was captured.
+     *
+     * @return {@code true} if {@code turns} is not {@code null} and not empty
+     */
     public boolean hasTurns() {
         return turns != null && !turns.isEmpty();
     }
 
+    /**
+     * Returns whether per-model costs were captured.
+     *
+     * @return {@code true} if {@code modelCosts} is not {@code null} and not empty
+     */
     public boolean hasModelCosts() {
         return modelCosts != null && !modelCosts.isEmpty();
     }
 
     /**
-     * Eager, pure per-step attributed cost computed from this capture's own {@code turns},
-     * {@code toolUses}, and {@code totalCostUsd} — no storage, no {@code Run}, no clock (DESIGN §4).
+     * Splits {@code totalCostUsd} across the steps of this phase and returns one
+     * {@link JournalStep} per step. Claude Code reports only a total cost, so each turn gets a
+     * share in proportion to its output tokens, divided evenly among that turn's tool calls; the
+     * shares add up to the total. The steps record this as
+     * {@link io.github.markpollack.journal.trace.AttributionMethod#OUTPUT_TOKEN_PROPORTIONAL}.
      *
-     * <p>
-     * This makes derived cost inseparable from any capture: a consumer that never opens a {@code Run}
-     * still gets the per-step split. The shares sum to {@code totalCostUsd} (±float; residual folded
-     * into the last step) under {@link io.github.markpollack.journal.trace.AttributionMethod#OUTPUT_TOKEN_PROPORTIONAL}.
+     * <p>No run, storage or clock is needed, so code that never records a run still gets the cost
+     * of each step. The steps have a {@code null} run ID; a {@link RunRecorder} computes them again
+     * with the real run ID.
      *
-     * <p>
-     * Returns {@link JournalStep} (the {@code List<JournalStep>} latitude the contract allows) rather
-     * than {@code StepCostEvent} precisely because purity forbids the post-run analysis timestamp a
-     * {@code StepCostEvent} carries — the recorder stamps that at persist time via
-     * {@link io.github.markpollack.journal.derived.StepCostEvent#fromStep}. {@code runId} is {@code null}
-     * here (the capture has no run yet); a recorder re-derives with the real id.
-     *
-     * @return the per-step attributed costs for this capture (empty only if there is nothing to attribute)
+     * @return the steps of this phase with their share of the cost, in order
      */
     public List<JournalStep> stepCosts() {
         return JournalSteps.fromPhaseCapture(this, null);
     }
 
     /**
-     * The <strong>cost-bearing</strong> per-type token aggregate: Σ over {@link #turns()} of each
-     * token type ({@code input + output + cacheCreation + cacheRead}). This is the headline vector
-     * a cost-to-go must price — every turn's cache re-read is billed, so summing per-turn usage by
-     * type is additive and reconciles to {@code totalCostUsd} (unlike the per-turn token <em>size</em>
-     * view of R2.2, and unlike the snapshot, which takes the final {@code ResultMessage} usage and
-     * drops cache entirely). Pure, no I/O.
+     * Returns the token usage to price: each token type (input, output, cache writes, cache reads)
+     * added up over all {@link #turns()}. Every turn re-reads the cache and is billed for it, so
+     * this sum, not the snapshot, is the one that matches what was billed.
      *
-     * <p>
-     * <strong>Thinking</strong> is recorded but never double-counted: Claude bills thinking inside
-     * {@code output} and exposes no per-turn thinking count, so the priced sum is input+output+cache;
-     * the best available run-level {@code thinkingTokens} is carried on the result as a documented
-     * subset of {@code output} (so it is not dropped), never added to the billed total.
+     * <p>The result carries {@code thinkingTokens} as captured, but thinking is billed as part of
+     * output, so do not add it to a billed total.
      *
-     * <p>
-     * When {@code turns} is empty (SDK &lt; 1.3.0 / programmatic capture), there is no per-turn truth
-     * to sum, so this falls back to the final-snapshot vector — coarse (context-size, not Σ-billed),
-     * but it still carries the snapshot's cache fields (unlike the legacy
-     * {@code TokenUsage.of(in, out, thinking)} headline, which zeroed them).
+     * <p>If no per-turn usage was captured, returns the same values as {@link #snapshotUsage()}.
      *
-     * @return the cost-bearing token aggregate for this phase
+     * @return the usage of this phase, added up by token type
      */
     public TokenUsage aggregateUsage() {
         if (turns == null || turns.isEmpty()) {
@@ -220,10 +311,11 @@ public record PhaseCapture(
     }
 
     /**
-     * The <strong>final-snapshot / context-size</strong> token view — the last {@code ResultMessage}
-     * usage as captured (point-in-time, not Σ-billed). Exposed explicitly so callers choose intent;
-     * for <em>cost</em> use {@link #aggregateUsage()}. The scalar accessors
-     * ({@link #inputTokens()}/{@link #outputTokens()}/{@link #thinkingTokens()}) are this same view.
+     * Returns the token usage reported on the final result message, including the cache fields.
+     * This is a point-in-time view, not a billed total; for cost, use {@link #aggregateUsage()}.
+     * The token accessors such as {@link #inputTokens()} return the same values.
+     *
+     * @return the usage on the final result message
      */
     public TokenUsage snapshotUsage() {
         return new TokenUsage(inputTokens, outputTokens, thinkingTokens,
@@ -231,8 +323,10 @@ public record PhaseCapture(
     }
 
     /**
-     * Sum of per-model {@code costUsd} from {@link #modelCosts()} — the exact run cost
-     * decomposition (equals {@code totalCostUsd} ±float rounding when modelUsage is present).
+     * Returns the sum of the per-model costs in {@link #modelCosts()}. When the SDK reported
+     * per-model costs, this equals {@code totalCostUsd} up to rounding.
+     *
+     * @return the summed cost in US dollars, or 0 if there are no per-model costs
      */
     public double modelCostSum() {
         if (modelCosts == null) {
@@ -242,29 +336,21 @@ public record PhaseCapture(
     }
 
     /**
-     * Tolerance for the cost identity below — a tenth of a cent, comfortably above float
-     * accumulation error and well below any real per-model cost.
+     * The largest difference, in US dollars, that {@link #reconcilesToModelCosts()} accepts
+     * between the sum of the per-model costs and {@code totalCostUsd}. The value is 0.0001.
      */
     public static final double COST_RECONCILIATION_TOLERANCE_USD = 1e-4;
 
     /**
-     * The reconciliation that actually holds: Σ per-model {@code costUsd} equals
-     * {@code totalCostUsd}.
+     * Returns whether the per-model costs add up to {@code totalCostUsd}, within
+     * {@link #COST_RECONCILIATION_TOLERANCE_USD}. Use it to check that a capture is complete.
      *
-     * <p>
-     * <strong>This is deliberately a cost check and not a token check.</strong> The known caveat
-     * {@code PER_TURN_INPUT_NOT_ADDITIVE} (documented on {@link TurnUsage}) is that per-turn token
-     * fields do not sum to the run's reported totals — the input and cache fields are per-request
-     * measurements over an accumulating context window, so summing them answers a different
-     * question than the result's final-request snapshot. That discrepancy is a property of the
-     * data and is recorded as a named caveat rather than papered over. The cost decomposition, by
-     * contrast, <em>is</em> additive and is therefore the honest closure check on a capture.
+     * <p>The check compares costs, not tokens. Per-turn token counts are not expected to add up to
+     * the totals on the result message, because each turn re-reads a growing context; see
+     * {@link TurnUsage}.
      *
-     * @return true when the per-model costs reconcile to the run total within
-     *         {@link #COST_RECONCILIATION_TOLERANCE_USD}; false when they disagree.
-     *         <strong>Also false when {@code modelUsage} was unavailable</strong> — with nothing to
-     *         reconcile against, the identity is unverified, and unverified must not read as
-     *         verified. Check {@link #hasModelCosts()} to tell the two apart.
+     * @return {@code true} if the costs agree; {@code false} if they disagree or if no per-model
+     *         costs were captured (use {@link #hasModelCosts()} to tell these apart)
      */
     public boolean reconcilesToModelCosts() {
         if (!hasModelCosts()) {
@@ -274,9 +360,11 @@ public record PhaseCapture(
     }
 
     /**
-     * Σ per-turn {@code thinking_tokens} — the exact extended-thinking volume for this phase,
-     * read from the wire rather than estimated. A subset of output tokens; never add it to a
-     * billed total. Returns 0 when no per-turn usage was captured.
+     * Returns the thinking tokens added up over all turns, as the API reported them for each turn.
+     * Unlike {@code thinkingTokens}, this is never an estimate. Thinking tokens are part of output
+     * tokens, so do not add them to a billed total.
+     *
+     * @return the thinking tokens of all turns, or 0 if no per-turn usage was captured
      */
     public long thinkingTokensFromTurns() {
         if (turns == null) {
@@ -286,8 +374,12 @@ public record PhaseCapture(
     }
 
     /**
-     * Whether this phase was cut short rather than finishing on its own — the runs whose step
-     * counts are lower bounds instead of measurements.
+     * Returns whether this phase was cut off instead of finishing on its own: it hit its turn or
+     * token limit, failed, or was cancelled. For such a phase, counts such as {@code numTurns} are
+     * lower bounds, not measurements.
+     *
+     * @return {@code true} if the stop reason is one that {@link StopReason#isTruncatedRun()}
+     *         treats as a cut-off
      */
     public boolean wasTruncated() {
         return stopReason != null && stopReason.isTruncatedRun();

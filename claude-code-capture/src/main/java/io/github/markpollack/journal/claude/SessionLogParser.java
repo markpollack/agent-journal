@@ -30,14 +30,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Extracts full SDK data from a response iteration into a {@link PhaseCapture}.
+ * Reads the messages of one Claude Code call and returns a {@link PhaseCapture}: the agent's
+ * text, thinking, tool calls and tool results, its token usage and cost, and why it stopped. Use
+ * it after sending a prompt through the Claude SDK: pass the SDK's
+ * {@code Iterator<ParsedMessage>} to a {@code parse} method. To store the result as a journal
+ * run, pass the capture to a {@link RunRecorder}.
  *
- * Consolidates the parsing logic previously duplicated across:
- * - agent/RefactoringAgent.consumeResponse()
- * - spring-upgrade-agent/SessionLogParser.parse()
+ * <p>Despite its name, it reads the live SDK message stream, not a session log file. If given a
+ * trace file, it also writes the messages there as JSON Lines with {@link TraceWriter}.
  *
- * Captures everything the SDK provides: tokens, cost, timing, thinking blocks,
- * tool uses, session metadata, raw result, and prompt text.
+ * <p>{@code parse} reads the iterator to the end. Exceptions thrown by the iterator reach the
+ * caller. A trace file that cannot be opened or written is logged as a warning and does not stop
+ * parsing; the capture is the same with or without a trace.
+ *
+ * <p>All methods are static and keep no state between calls. Calls from several threads are safe
+ * if each has its own iterator and trace file.
  */
 public class SessionLogParser {
 
@@ -46,33 +53,34 @@ public class SessionLogParser {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**
-     * Sentinel for "no turn ceiling reported" — distinct from a ceiling of 0, and the reason the
-     * ceiling is recorded as -1 rather than silently omitted.
+     * The turn limit value that means no limit was reported: -1. It is different from a limit of
+     * 0.
      */
     public static final int UNKNOWN_MAX_TURNS = -1;
 
     /**
-     * Parse a Claude SDK response iterator into a PhaseCapture.
+     * Parses the messages of one call into a capture, without writing a trace.
      *
-     * @param response   the SDK response iterator
-     * @param phaseName  the phase name for this capture ("explore", "plan", "execute", etc.)
-     * @param promptText the prompt that was sent for this phase (null if not captured)
-     * @return a PhaseCapture with all extracted data
+     * @param response the SDK's messages for one call, read to the end
+     * @param phaseName the caller's name for this call, such as {@code "plan"} or
+     *        {@code "execute"}
+     * @param promptText the prompt that was sent, or {@code null} if not captured
+     * @return the capture, never {@code null}
      */
     public static PhaseCapture parse(Iterator<ParsedMessage> response, String phaseName, String promptText) {
         return parse(response, phaseName, promptText, null);
     }
 
     /**
-     * Parse a Claude SDK response iterator into a PhaseCapture, optionally writing
-     * a JSONL trace file for each event with the default content mode
-     * ({@link TraceContentMode#TRUNCATED}).
+     * Parses the messages of one call into a capture and, if {@code traceFile} is not
+     * {@code null}, writes a trace using {@link TraceContentMode#TRUNCATED}.
      *
-     * @param response   the SDK response iterator
-     * @param phaseName  the phase name for this capture ("explore", "plan", "execute", etc.)
-     * @param promptText the prompt that was sent for this phase (null if not captured)
-     * @param traceFile  optional path to a JSONL trace file (null to skip tracing)
-     * @return a PhaseCapture with all extracted data
+     * @param response the SDK's messages for one call, read to the end
+     * @param phaseName the caller's name for this call, such as {@code "plan"} or
+     *        {@code "execute"}
+     * @param promptText the prompt that was sent, or {@code null} if not captured
+     * @param traceFile the trace file to write, or {@code null} for no trace
+     * @return the capture, never {@code null}
      */
     public static PhaseCapture parse(Iterator<ParsedMessage> response, String phaseName, String promptText,
             Path traceFile) {
@@ -80,21 +88,16 @@ public class SessionLogParser {
     }
 
     /**
-     * Parse a Claude SDK response iterator into a PhaseCapture, optionally writing
-     * a JSONL trace file for each event.
+     * Parses the messages of one call into a capture and, if {@code traceFile} is not
+     * {@code null}, writes a trace with the given content mode and no raw messages.
      *
-     * <p>
-     * Note on identity: callers (e.g. agent-client's ClaudeAgentModel) currently pass
-     * their per-run trace id as {@code phaseName}, so the trace header records it as
-     * both {@code runId} and {@code phase}. A first-class run-id parameter is deferred
-     * to the identity cleanup (Semantic Journal Roadmap).
-     *
-     * @param response    the SDK response iterator
-     * @param phaseName   the phase name for this capture ("explore", "plan", "execute", etc.)
-     * @param promptText  the prompt that was sent for this phase (null if not captured)
-     * @param traceFile   optional path to a JSONL trace file (null to skip tracing)
-     * @param contentMode content capture policy for trace lines
-     * @return a PhaseCapture with all extracted data
+     * @param response the SDK's messages for one call, read to the end
+     * @param phaseName the caller's name for this call, such as {@code "plan"} or
+     *        {@code "execute"}
+     * @param promptText the prompt that was sent, or {@code null} if not captured
+     * @param traceFile the trace file to write, or {@code null} for no trace
+     * @param contentMode how much message content the trace keeps
+     * @return the capture, never {@code null}
      */
     public static PhaseCapture parse(Iterator<ParsedMessage> response, String phaseName, String promptText,
             Path traceFile, TraceContentMode contentMode) {
@@ -102,23 +105,21 @@ public class SessionLogParser {
     }
 
     /**
-     * Parse a Claude SDK response iterator into a PhaseCapture, optionally writing a JSONL
-     * trace file with a content-capture policy and a raw-capture policy.
+     * Parses the messages of one call into a capture and, if {@code traceFile} is not
+     * {@code null}, writes a trace with the given content and raw modes.
      *
-     * <p>
-     * When {@code rawMode} is {@link TraceRawMode#FULL}, each vendor wire message is also
-     * persisted verbatim as a {@code raw} trace line ({@link TraceWriter#writeRaw}), so
-     * unmodeled fields (the sub-agent envelope, {@code permission_denials},
-     * {@code modelUsage}) are recoverable even though the typed {@code Message} drops them.
-     * Requires {@code claude-code-sdk} &ge; 1.3.0 for {@code RegularMessage.rawJson}.
+     * <p>With {@link TraceRawMode#FULL}, the trace also keeps each message exactly as Claude Code
+     * sent it, as a {@code raw} line. Fields that the SDK's typed messages drop, such as
+     * {@code permission_denials} and {@code modelUsage}, can then be recovered. Raw lines need
+     * claude-code-sdk 1.3.0 or later.
      *
-     * @param response    the SDK response iterator
-     * @param phaseName   the phase name for this capture
-     * @param promptText  the prompt that was sent for this phase (null if not captured)
-     * @param traceFile   optional path to a JSONL trace file (null to skip tracing)
-     * @param contentMode content capture policy for trace lines
-     * @param rawMode     verbatim raw-wire capture policy
-     * @return a PhaseCapture with all extracted data
+     * @param response the SDK's messages for one call, read to the end
+     * @param phaseName the caller's name for this call
+     * @param promptText the prompt that was sent, or {@code null} if not captured
+     * @param traceFile the trace file to write, or {@code null} for no trace
+     * @param contentMode how much message content the trace keeps
+     * @param rawMode whether the trace also keeps the messages as sent
+     * @return the capture, never {@code null}
      */
     public static PhaseCapture parse(Iterator<ParsedMessage> response, String phaseName, String promptText,
             Path traceFile, TraceContentMode contentMode, TraceRawMode rawMode) {
@@ -126,31 +127,26 @@ public class SessionLogParser {
     }
 
     /**
-     * Parse a Claude SDK response, additionally recording the <strong>turn ceiling</strong> the
-     * run was launched with.
+     * Parses the messages of one call into a capture, records the turn limit the caller set, and,
+     * if {@code traceFile} is not {@code null}, writes a trace.
      *
-     * <p>
-     * <strong>Why this overload exists.</strong> {@code numTurns} on its own cannot be
-     * interpreted: a run reporting 55 turns either finished or was cut off at its limit, and an
-     * absorbing-state analysis that cannot distinguish those is modelling two different processes
-     * as one. The stop reason answers half of it and is on the wire; the ceiling answers the other
-     * half and is <em>not</em> — Claude Code takes {@code maxTurns} as a caller-side
-     * {@code QueryOptions} value and never echoes it back. So the caller that set the ceiling is
-     * the only reliable source, and this is where it hands it over. The parser still probes the
-     * wire first, in case a future CLI version starts reporting it.
+     * <p>Pass the turn limit you gave the SDK. Claude Code does not report it back, and without it
+     * a turn count cannot show whether the agent finished or was cut off at its limit. Pass
+     * {@link #UNKNOWN_MAX_TURNS} if you set no limit. If a message ever reports a limit, it is used
+     * only when the caller passed {@link #UNKNOWN_MAX_TURNS}.
      *
-     * <p>
-     * Callers that did not set a ceiling should pass {@link #UNKNOWN_MAX_TURNS}, which records
-     * "no ceiling reported" — distinct from a ceiling of zero.
+     * <p>A trace ends with one {@code step_cost} line per step, split as in
+     * {@link PhaseCapture#stepCosts()}. The trace header records {@code phaseName} as both the run
+     * ID and the phase; there is no separate run ID parameter.
      *
-     * @param response    the SDK response iterator
-     * @param phaseName   the phase name for this capture
-     * @param promptText  the prompt that was sent for this phase (null if not captured)
-     * @param traceFile   optional path to a JSONL trace file (null to skip tracing)
-     * @param contentMode content capture policy for trace lines
-     * @param rawMode     verbatim raw-wire capture policy
-     * @param maxTurns    the turn ceiling this run was launched with, or {@link #UNKNOWN_MAX_TURNS}
-     * @return a PhaseCapture with all extracted data
+     * @param response the SDK's messages for one call, read to the end
+     * @param phaseName the caller's name for this call
+     * @param promptText the prompt that was sent, or {@code null} if not captured
+     * @param traceFile the trace file to write, or {@code null} for no trace
+     * @param contentMode how much message content the trace keeps
+     * @param rawMode whether the trace also keeps the messages as sent
+     * @param maxTurns the turn limit set for this call, or {@link #UNKNOWN_MAX_TURNS}
+     * @return the capture, never {@code null}
      */
     public static PhaseCapture parse(Iterator<ParsedMessage> response, String phaseName, String promptText,
             Path traceFile, TraceContentMode contentMode, TraceRawMode rawMode, int maxTurns) {
