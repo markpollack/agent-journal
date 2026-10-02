@@ -43,7 +43,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * where {@code n} is the event's 0-based position among all the events given, skipped ones
  * included. Such an ID changes if the events are filtered or reordered, so feedback should target
  * subjects with their own IDs where it can. The capture modules' recorders give each tool call
- * its vendor's ID but set no response ID, so LLM calls from recorded runs get positional IDs.
+ * its vendor's ID. Claude Code's recorder gives its LLM call the message ID of the phase's last
+ * turn as the response ID, when turns were captured; the other recorders set no response ID, so
+ * their LLM calls get positional IDs.
  *
  * <p>Subject metadata is an unmodifiable map that cannot hold {@code null} values, and the order
  * of its keys is not kept. So the events must have no {@code null} timestamp, model, tool name,

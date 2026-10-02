@@ -19,7 +19,8 @@ import java.util.Map;
  * {@code isError}, and vendor details such as {@code numTurns} or {@code sessionId}. Claude Code's
  * recorder also stores each turn's usage there, so the cost of each step can be computed again
  * from the events alone. The Grok, Codex, Antigravity and Junie recorders set
- * {@link #provider()}; the Claude Code and Gemini recorders leave it {@code null}.
+ * {@link #provider()}; the Claude Code and Gemini recorders leave it {@code null}. Only Claude
+ * Code's recorder sets {@link #responseId()}, to the message ID of the phase's last turn.
  *
  * <p>Every component may be {@code null}; {@link #totalTokens()} and {@link #totalCostUsd()}
  * return 0 when the usage or cost is missing, but {@link #toMap()} needs a timestamp. The record

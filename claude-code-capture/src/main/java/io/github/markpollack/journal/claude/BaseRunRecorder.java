@@ -69,8 +69,9 @@ public abstract class BaseRunRecorder {
      *   <li>one {@link LLMCallEvent} with the phase's token usage summed over turns
      *       ({@link PhaseCapture#aggregateUsage()}), its total cost and its timing. Its model is
      *       the run's {@code model} config value as text, or {@code "unknown"} if there is none.
-     *       Its metadata holds the phase name, session ID, turn count, error flag, stop reason,
-     *       turn limit and, when captured, the usage of each turn
+     *       Its response ID is the message ID of the phase's last turn, or {@code null} when no
+     *       turns were captured. Its metadata holds the phase name, session ID, turn count, error
+     *       flag, stop reason, turn limit and, when captured, the usage of each turn
      *   <li>one {@link ToolCallEvent} per tool call, with the tool call's ID, name, kind and input,
      *       its turn, and the duration and error of its result
      *   <li>one {@code thinking_block} custom event per thinking block
@@ -130,6 +131,7 @@ public abstract class BaseRunRecorder {
                 .tokenUsage(phase.aggregateUsage())
                 .cost(CostBreakdown.of(phase.totalCostUsd()))
                 .timing(TimingInfo.of(phase.durationMs(), phase.apiDurationMs()))
+                .responseId(lastMessageId(phase))
                 .metadata(metadata)
                 .build());
 
@@ -217,6 +219,20 @@ public abstract class BaseRunRecorder {
      */
     public Run getCurrentRun() {
         return currentRun;
+    }
+
+    // The message ID of the phase's last turn: the API's ID for the response that ended the phase,
+    // which gives the LLM call a stable evaluation subject ID instead of a positional one.
+    private static String lastMessageId(PhaseCapture phase) {
+        String id = null;
+        if (phase.hasTurns()) {
+            for (TurnUsage turn : phase.turns()) {
+                if (turn.messageId() != null) {
+                    id = turn.messageId();
+                }
+            }
+        }
+        return id;
     }
 
     // Not Map.of, which throws NullPointerException for a capture with no phase name; such a

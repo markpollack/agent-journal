@@ -158,4 +158,18 @@ class BaseRunRecorderTest {
                 .extracting(JournalEvent::type)
                 .containsExactly("prompt", "thinking_block");
     }
+
+    @Test
+    @DisplayName("the LLM call carries the message ID of the phase's last turn as its response ID")
+    void llmCallCarriesTheLastTurnMessageIdAsResponseId() {
+        Run run = Journal.run("exp-1").start();
+
+        new TestRecorder(run).recordPhase(capture());
+
+        assertThat(storage.loadEvents("exp-1", run.id()))
+                .filteredOn(e -> e instanceof io.github.markpollack.journal.event.LLMCallEvent)
+                .singleElement()
+                .extracting(e -> ((io.github.markpollack.journal.event.LLMCallEvent) e).responseId())
+                .isEqualTo("msg_2");
+    }
 }
