@@ -6,6 +6,8 @@ import io.github.markpollack.journal.event.GitPatchEvent.FileChange.ChangeType;
 import io.github.markpollack.journal.event.GitPullRequestEvent.PullRequestAction;
 import io.github.markpollack.journal.test.BaseTrackingTest;
 import io.github.markpollack.journal.test.TestEvents;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -418,6 +420,34 @@ class GitEventTest extends BaseTrackingTest {
             var events = TestEvents.allGitEventTypes();
 
             assertThat(events).allSatisfy(event -> assertThat(event.toMap()).isNotEmpty());
+        }
+    }
+
+    @Nested
+    @DisplayName("Missing lists")
+    class MissingListTests {
+
+        private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+
+        @Test
+        @DisplayName("a commit read from JSON without filesChanged has no changed files")
+        void commitJsonWithoutFilesChangedReadsAsEmptyList() throws Exception {
+            String json = "{\"@type\":\"git_commit\",\"timestamp\":\"2026-01-01T00:00:00Z\",\"sha\":\"abc1234def\","
+                    + "\"shortSha\":\"abc1234\",\"message\":\"m\",\"branch\":\"main\"}";
+
+            GitCommitEvent event = mapper.readValue(json, GitCommitEvent.class);
+
+            assertThat(event.filesChanged()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("a patch read from JSON without fileChanges has no file changes")
+        void patchJsonWithoutFileChangesReadsAsEmptyList() throws Exception {
+            String json = "{\"@type\":\"git_patch\",\"timestamp\":\"2026-01-01T00:00:00Z\",\"baseBranch\":\"main\"}";
+
+            GitPatchEvent event = mapper.readValue(json, GitPatchEvent.class);
+
+            assertThat(event.fileChanges()).isEmpty();
         }
     }
 }

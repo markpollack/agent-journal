@@ -19,7 +19,9 @@ import java.util.Map;
  * they are committed, or changes that never are. It has a {@link FileChange} per file, and no
  * SHA. The factory methods add up the line counts of the file changes; the canonical constructor
  * takes the totals as given and does not check them. The record copies {@code fileChanges} into
- * an unmodifiable list, and a {@code null} list or element throws {@link NullPointerException}. A
+ * an unmodifiable list; a {@code null} list becomes an empty one, so a JSON line without
+ * {@code fileChanges} reads back with no file changes, and a {@code null} element throws
+ * {@link NullPointerException}. A
  * diff is written whole into {@code events.jsonl}, so it can make the file large. The record is
  * immutable.
  *
@@ -40,7 +42,8 @@ public record GitPatchEvent(
 ) implements GitEvent {
 
     /**
-     * Creates a patch event, copying {@code fileChanges} into an unmodifiable list.
+     * Creates a patch event, copying {@code fileChanges} into an unmodifiable list, or using an
+     * empty list if it is {@code null}.
      *
      * @param timestamp when the patch was made
      * @param baseBranch the base branch or commit
@@ -48,10 +51,10 @@ public record GitPatchEvent(
      * @param linesAdded the total lines added
      * @param linesRemoved the total lines removed
      * @param patchContent the unified diff
-     * @throws NullPointerException if {@code fileChanges} or one of its elements is {@code null}
+     * @throws NullPointerException if one of the elements of {@code fileChanges} is {@code null}
      */
     public GitPatchEvent {
-        fileChanges = List.copyOf(fileChanges);
+        fileChanges = fileChanges == null ? List.of() : List.copyOf(fileChanges);
     }
 
     @Override

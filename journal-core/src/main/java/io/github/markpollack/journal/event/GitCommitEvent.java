@@ -17,9 +17,9 @@ import java.util.Map;
  *
  * <p>{@link #of(String, String, String)} and the builder compute {@code shortSha} as the first
  * seven characters of the SHA; the canonical constructor takes it as given. The record copies
- * {@code filesChanged} into an unmodifiable list, and a {@code null} list or element throws
- * {@link NullPointerException}, so a JSON line without {@code filesChanged} cannot be read back.
- * The record is immutable.
+ * {@code filesChanged} into an unmodifiable list; a {@code null} list becomes an empty one, so a
+ * JSON line without {@code filesChanged} reads back with no changed files, and a {@code null}
+ * element throws {@link NullPointerException}. The record is immutable.
  *
  * @param timestamp when the commit was made
  * @param sha the full commit SHA
@@ -42,7 +42,8 @@ public record GitCommitEvent(
 ) implements GitEvent {
 
     /**
-     * Creates a commit event, copying {@code filesChanged} into an unmodifiable list.
+     * Creates a commit event, copying {@code filesChanged} into an unmodifiable list, or using an
+     * empty list if it is {@code null}.
      *
      * @param timestamp when the commit was made
      * @param sha the full SHA
@@ -52,10 +53,10 @@ public record GitCommitEvent(
      * @param filesChanged the changed file paths
      * @param linesAdded the lines added
      * @param linesRemoved the lines removed
-     * @throws NullPointerException if {@code filesChanged} or one of its elements is {@code null}
+     * @throws NullPointerException if one of the elements of {@code filesChanged} is {@code null}
      */
     public GitCommitEvent {
-        filesChanged = List.copyOf(filesChanged);
+        filesChanged = filesChanged == null ? List.of() : List.copyOf(filesChanged);
     }
 
     @Override
