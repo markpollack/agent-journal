@@ -9,8 +9,12 @@ import io.github.markpollack.journal.storage.InMemoryStorage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.BufferedReader;
+import java.io.StringReader;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -70,6 +74,48 @@ class CodexSessionParserTest {
         assertThat(storage.loadDerivedEvents("codex-experiment", runId))
                 .hasSize(6)
                 .allSatisfy(event -> assertThat(event).isInstanceOf(StepCostEvent.class));
+    }
+
+    @Test
+    void exitCodeZeroInToolOutputIsNotAFailure() throws Exception {
+        CodexPhaseCapture capture = parseWithFirstOutput("Process exited with code 0\\nOutput:\\nok");
+
+        assertThat(capture.toolUses().get(0).isError()).isFalse();
+    }
+
+    @Test
+    void nonZeroExitCodeInToolOutputIsAFailure() throws Exception {
+        CodexPhaseCapture capture = parseWithFirstOutput("Process exited with code 1\\nOutput:\\nboom");
+
+        assertThat(capture.toolUses().get(0).isError()).isTrue();
+        assertThat(capture.toolUses().get(0).errorMessage()).contains("Process exited with code 1");
+    }
+
+    @Test
+    void scriptFailedInToolOutputIsStillAFailure() throws Exception {
+        CodexPhaseCapture capture = parseWithFirstOutput("Script failed\\nboom");
+
+        assertThat(capture.toolUses().get(0).isError()).isTrue();
+    }
+
+    /**
+     * Parses the recorded rollout with the redacted text of its first tool output replaced, so the
+     * output patterns can be checked on the real envelope.
+     */
+    private static CodexPhaseCapture parseWithFirstOutput(String outputText) throws Exception {
+        List<String> lines = Files.readAllLines(fixture());
+        String redacted = "Verified output redacted at the public-repository boundary.";
+        StringBuilder rollout = new StringBuilder();
+        boolean replaced = false;
+        for (String line : lines) {
+            if (!replaced && line.contains("custom_tool_call_output") && line.contains(redacted)) {
+                line = line.replace(redacted, outputText);
+                replaced = true;
+            }
+            rollout.append(line).append('\n');
+        }
+        assertThat(replaced).isTrue();
+        return CodexSessionParser.parse(new BufferedReader(new StringReader(rollout.toString())), "p", null);
     }
 
     private static Path fixture() throws URISyntaxException {

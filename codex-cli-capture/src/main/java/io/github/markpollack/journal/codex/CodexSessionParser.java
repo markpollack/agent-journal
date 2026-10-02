@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Reads a Codex CLI rollout file and returns a {@link CodexPhaseCapture}: the agent's final
@@ -43,7 +45,8 @@ import java.util.Map;
  * the call can be classified again later.
  *
  * <p>A tool call is marked as an error when its status is anything other than
- * {@code completed}, or when its output text matches one of the parser's failure patterns.
+ * {@code completed}, or when its output text contains {@code Script failed} or reports a non-zero
+ * exit code ({@code Process exited with code N} with N other than 0).
  *
  * <p>All methods are static and keep no state between calls. Calls from several threads are safe
  * if each has its own input.
@@ -51,6 +54,8 @@ import java.util.Map;
 public final class CodexSessionParser {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    private static final Pattern EXIT_CODE = Pattern.compile("Process exited with code (\\d+)");
 
     private CodexSessionParser() {
     }
@@ -171,7 +176,7 @@ public final class CodexSessionParser {
             MutableToolCall tool = tools.computeIfAbsent(id, MutableToolCall::new);
             tool.output = asObject(payload.get("output"));
             String outputText = payload.path("output").toString();
-            if (outputText.contains("Script failed") || outputText.contains("Process exited with code")) {
+            if (outputText.contains("Script failed") || hasNonZeroExitCode(outputText)) {
                 tool.isError = true;
                 tool.errorMessage = outputText;
             }
@@ -224,6 +229,16 @@ public final class CodexSessionParser {
         CodexToolUseRecord freeze() {
             return new CodexToolUseRecord(id, kind, name, input, output, isError, errorMessage);
         }
+    }
+
+    private static boolean hasNonZeroExitCode(String outputText) {
+        Matcher exit = EXIT_CODE.matcher(outputText);
+        while (exit.find()) {
+            if (!exit.group(1).matches("0+")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static String text(JsonNode node, String field) {
