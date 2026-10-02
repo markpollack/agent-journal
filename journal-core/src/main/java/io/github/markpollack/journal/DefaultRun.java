@@ -230,6 +230,9 @@ public final class DefaultRun implements Run {
 
     @Override
     public void finish(RunStatus status) {
+        if (!status.isTerminal()) {
+            throw new IllegalArgumentException("A run can only finish with a terminal status, not " + status);
+        }
         if (this.status.isTerminal()) {
             return; // Already finished
         }

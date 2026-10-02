@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Tests that what a run records reaches its storage, not only its in-memory state.
@@ -54,5 +55,17 @@ class RunPersistenceTest {
         RunData saved = stored(run);
         assertThat(saved.status()).isEqualTo(RunStatus.RUNNING);
         assertThat(saved.summary().values()).containsEntry("filesChanged", 5);
+    }
+
+    @Test
+    void finishWithAStatusThatIsNotTerminalIsRejectedAndLeavesTheRunOpen() {
+        Run run = Journal.run("exp").start();
+
+        assertThatThrownBy(() -> run.finish(RunStatus.RUNNING)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> run.finish(RunStatus.INIT)).isInstanceOf(IllegalArgumentException.class);
+
+        RunData saved = stored(run);
+        assertThat(run.status()).isEqualTo(RunStatus.RUNNING);
+        assertThat(saved.endTime()).isNull();
     }
 }

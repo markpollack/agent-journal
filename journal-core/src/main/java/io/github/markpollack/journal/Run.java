@@ -241,6 +241,8 @@ public interface Run extends AutoCloseable {
      *
      * @param status the final status, such as {@link RunStatus#FINISHED} or
      *        {@link RunStatus#CRASHED}
+     * @throws IllegalArgumentException if {@code status} is not terminal, that is
+     *         {@link RunStatus#INIT} or {@link RunStatus#RUNNING}; the run is left as it was
      */
     void finish(RunStatus status);
 
