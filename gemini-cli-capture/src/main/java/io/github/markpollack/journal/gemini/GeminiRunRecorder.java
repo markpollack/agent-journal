@@ -76,8 +76,9 @@ public class GeminiRunRecorder {
                     phaseAttributes(phase.phaseName(), "text", phase.promptText())));
         }
 
-        // LLM call with token/cost/timing data. Gemini's typed model has no thinking tokens and no
-        // separate API duration, so those slots are 0.
+        // LLM call with token/cost/timing data. Gemini's typed model has no thinking tokens, so
+        // that slot is 0, and no separate API duration, so the API time is the total, as for the
+        // other recorders that know only the total.
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("phaseName", phase.phaseName());
         metadata.put("status", phase.status());
@@ -87,7 +88,7 @@ public class GeminiRunRecorder {
                 .model(phase.model() != null ? phase.model() : "unknown")
                 .tokenUsage(TokenUsage.of(phase.promptTokens(), phase.completionTokens(), 0))
                 .cost(CostBreakdown.of(phase.totalCostUsd()))
-                .timing(TimingInfo.of(phase.durationMs(), 0))
+                .timing(TimingInfo.of(phase.durationMs()))
                 .metadata(metadata)
                 .build());
 

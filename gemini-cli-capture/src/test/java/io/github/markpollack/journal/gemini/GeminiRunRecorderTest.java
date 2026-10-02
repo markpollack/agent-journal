@@ -79,4 +79,19 @@ class GeminiRunRecorderTest {
         // The derived cost is not mixed into the execution stream.
         assertThat(events).noneSatisfy(e -> assertThat(e).isInstanceOf(StepCostEvent.class));
     }
+
+    @Test
+    @DisplayName("records the duration as both total and API time, as other total-only recorders do")
+    void recordsTheDurationAsTotalAndApiTime() {
+        Run run = Journal.run("exp-gemini").start();
+
+        new GeminiRunRecorder(run).recordPhase(capture());
+
+        LLMCallEvent call = storage.loadEvents("exp-gemini", run.id()).stream()
+                .filter(LLMCallEvent.class::isInstance).map(LLMCallEvent.class::cast)
+                .findFirst().orElseThrow();
+        assertThat(call.timing().totalDurationMs()).isEqualTo(800L);
+        assertThat(call.timing().apiDurationMs()).isEqualTo(800L);
+        assertThat(call.timing().overheadRatio()).isZero();
+    }
 }

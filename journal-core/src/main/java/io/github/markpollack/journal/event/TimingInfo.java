@@ -7,9 +7,8 @@ import java.util.Map;
  * How long an LLM call took, in milliseconds: the total wall-clock time, the part spent in the
  * model API, and the time until the first token arrived. It is part of an {@link LLMCallEvent}.
  * The run recorders fill it from the durations the agent reports. Claude Code's recorder records
- * the total and the API time; the Codex, Antigravity and Junie recorders record only the total;
- * the Gemini recorder records the total with an API time of 0; and the Grok recorder records no
- * timing.
+ * the total and the API time; the Codex, Antigravity, Junie and Gemini recorders record only the
+ * total; and the Grok recorder records no timing.
  *
  * <p>{@link #of(long)} sets the API time equal to the total, so {@link #overheadRatio()} is 0 when
  * only the total is known. A time to first token of 0 means it was not measured; no recorder sets
