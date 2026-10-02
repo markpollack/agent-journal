@@ -119,4 +119,22 @@ class GeminiSessionParserTest {
         assertThat(capture.textOutput()).isEqualTo("hi");
         assertThat(Path.of("no-parent-trace.jsonl")).doesNotExist();
     }
+
+    @Test
+    void costTooLargeForADoubleDoesNotStopParsing(@TempDir Path tempDir) throws IOException {
+        // A BigDecimal cost cannot be NaN, but one beyond the double range becomes infinite.
+        Usage usage = new Usage(100, 50, 150);
+        Cost cost = new Cost(BigDecimal.ZERO, BigDecimal.ZERO, new BigDecimal("1E+400"));
+        Metadata metadata = new Metadata("gemini-2.5-pro", Instant.parse("2026-06-16T00:00:00Z"),
+                Duration.ofMillis(1500), usage, cost);
+        QueryResult result = QueryResult.of(List.of(TextMessage.user("q"), TextMessage.assistant("hi")), metadata,
+                ResultStatus.SUCCESS);
+        Path traceFile = tempDir.resolve("gemini-trace.jsonl");
+
+        GeminiPhaseCapture capture = GeminiSessionParser.parse(result, "run-1", "p", traceFile);
+
+        assertThat(capture.textOutput()).isEqualTo("hi");
+        assertThat(capture.totalCostUsd()).isInfinite();
+        assertThat(Files.readAllLines(traceFile).get(0)).contains("\"type\":\"header\"");
+    }
 }

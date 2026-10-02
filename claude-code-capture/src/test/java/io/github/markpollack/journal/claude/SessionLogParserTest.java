@@ -765,6 +765,20 @@ class SessionLogParserTest {
     }
 
     @Test
+    void costThatIsNotANumberDoesNotStopParsing(@TempDir Path tempDir) throws IOException {
+        Path traceFile = tempDir.resolve("trace.jsonl");
+        List<ParsedMessage> messages = List.of(
+                wrap(new AssistantMessage(List.of(new TextBlock("Hello world")))),
+                wrap(resultMessage(Double.NaN, 1000, 500, 100, 50)));
+
+        PhaseCapture capture = SessionLogParser.parse(messages.iterator(), "explore", "p", traceFile);
+
+        assertThat(capture.textOutput()).isEqualTo("Hello world");
+        assertThat(capture.totalCostUsd()).isNaN();
+        assertThat(Files.readAllLines(traceFile).get(0)).contains("\"type\":\"header\"");
+    }
+
+    @Test
     void nullContentModeStillWritesTheTrace(@TempDir Path tempDir) {
         Path traceFile = tempDir.resolve("trace.jsonl");
         List<ParsedMessage> messages = List.of(

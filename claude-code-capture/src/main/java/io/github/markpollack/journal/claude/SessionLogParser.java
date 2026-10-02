@@ -41,8 +41,9 @@ import org.slf4j.LoggerFactory;
  *
  * <p>{@code parse} reads the iterator to the end. Exceptions thrown by the iterator reach the
  * caller. A trace file that cannot be opened, for any reason, including a bare file name with no
- * parent directory, is logged as a warning and does not stop parsing, and neither does an I/O
- * error while writing it; the capture is the same with or without a trace. A {@code null}
+ * parent directory, is logged as a warning and does not stop parsing, and neither does an
+ * error while writing a line, such as an I/O error or a cost that is not a finite number; the
+ * capture is the same with or without a trace. A {@code null}
  * content mode means {@link TraceContentMode#TRUNCATED}.
  *
  * <p>All methods are static and keep no state between calls. Calls from several threads are safe
@@ -441,7 +442,7 @@ public class SessionLogParser {
         }
         try {
             action.execute(trace);
-        } catch (IOException ex) {
+        } catch (IOException | RuntimeException ex) {
             logger.warn("[{}] Trace write failed: {}", phaseName, ex.getMessage());
         }
     }
