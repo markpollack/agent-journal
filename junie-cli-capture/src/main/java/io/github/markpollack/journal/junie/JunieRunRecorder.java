@@ -76,16 +76,15 @@ public final class JunieRunRecorder {
      * Any rounding remainder goes to the last step, so the shares add up to the total. A phase with
      * no tool steps has no derived events.
      *
-     * @param phase the parsed Junie session; its phase name must not be {@code null}
+     * @param phase the parsed Junie session; a {@code null} phase name is recorded as {@code null}
      * @throws IllegalStateException if the run has ended
      * @throws UnsupportedOperationException if the phase has tool steps and the run's storage
      *         cannot keep derived events at all; the other events are logged by then
      */
     public void recordPhase(JuniePhaseCapture phase) {
         if (phase.promptText() != null && !phase.promptText().isEmpty()) {
-            run.logEvent(CustomEvent.of("prompt", Map.of(
-                    "phase", phase.phaseName(),
-                    "text", phase.promptText())));
+            run.logEvent(CustomEvent.of("prompt",
+                    phaseAttributes(phase.phaseName(), "text", phase.promptText())));
         }
 
         Map<String, Object> metadata = new LinkedHashMap<>();
@@ -141,14 +140,22 @@ public final class JunieRunRecorder {
         }
 
         for (String thinking : phase.thinkingBlocks()) {
-            run.logEvent(CustomEvent.of("thinking_block", Map.of(
-                    "phase", phase.phaseName(),
-                    "content", thinking)));
+            run.logEvent(CustomEvent.of("thinking_block",
+                    phaseAttributes(phase.phaseName(), "content", thinking)));
         }
 
         Instant analyzedAt = Instant.now();
         for (JournalStep step : JunieJournalSteps.fromPhaseCapture(phase, run.id())) {
             run.logDerivedEvent(StepCostEvent.fromStep(step, analyzedAt));
         }
+    }
+
+    // A LinkedHashMap, not Map.of, so a capture with no phase name is recorded rather than
+    // throwing NullPointerException.
+    private static Map<String, Object> phaseAttributes(String phaseName, String key, Object value) {
+        Map<String, Object> attributes = new LinkedHashMap<>();
+        attributes.put("phase", phaseName);
+        attributes.put(key, value);
+        return attributes;
     }
 }

@@ -63,16 +63,15 @@ public final class GrokRunRecorder {
      * rounding remainder goes to the last step, so the shares add up to the total. A phase with no
      * tool calls has no derived events.
      *
-     * @param phase the parsed Grok call; its phase name must not be {@code null}
+     * @param phase the parsed Grok call; a {@code null} phase name is recorded as {@code null}
      * @throws IllegalStateException if the run has ended
      * @throws UnsupportedOperationException if the phase has tool calls and the run's storage
      *         cannot keep derived events at all; the other events are logged by then
      */
     public void recordPhase(GrokPhaseCapture phase) {
         if (phase.promptText() != null && !phase.promptText().isEmpty()) {
-            run.logEvent(CustomEvent.of("prompt", Map.of(
-                    "phase", phase.phaseName(),
-                    "text", phase.promptText())));
+            run.logEvent(CustomEvent.of("prompt",
+                    phaseAttributes(phase.phaseName(), "text", phase.promptText())));
         }
 
         Map<String, Object> metadata = new LinkedHashMap<>();
@@ -120,5 +119,14 @@ public final class GrokRunRecorder {
      */
     public Run run() {
         return run;
+    }
+
+    // A LinkedHashMap, not Map.of, so a capture with no phase name is recorded rather than
+    // throwing NullPointerException.
+    private static Map<String, Object> phaseAttributes(String phaseName, String key, Object value) {
+        Map<String, Object> attributes = new LinkedHashMap<>();
+        attributes.put("phase", phaseName);
+        attributes.put(key, value);
+        return attributes;
     }
 }

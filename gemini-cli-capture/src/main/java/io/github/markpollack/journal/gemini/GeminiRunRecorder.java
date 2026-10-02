@@ -11,6 +11,7 @@ import io.github.markpollack.journal.trace.JournalStep;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -63,7 +64,7 @@ public class GeminiRunRecorder {
      * and the whole cost, marked
      * {@link io.github.markpollack.journal.trace.AttributionMethod#OUTPUT_TOKEN_PROPORTIONAL}.
      *
-     * @param phase the parsed Gemini query; its phase name must not be {@code null}
+     * @param phase the parsed Gemini query; a {@code null} phase name is recorded as {@code null}
      * @throws IllegalStateException if the run has ended
      * @throws UnsupportedOperationException if the run's storage cannot keep derived events at
      *         all; the other events are logged by then
@@ -71,9 +72,8 @@ public class GeminiRunRecorder {
     public void recordPhase(GeminiPhaseCapture phase) {
         // Prompt capture — record the exact prompt sent for reproducibility.
         if (phase.promptText() != null && !phase.promptText().isEmpty()) {
-            run.logEvent(CustomEvent.of("prompt", Map.of(
-                    "phase", phase.phaseName(),
-                    "text", phase.promptText())));
+            run.logEvent(CustomEvent.of("prompt",
+                    phaseAttributes(phase.phaseName(), "text", phase.promptText())));
         }
 
         // LLM call with token/cost/timing data. Gemini's typed model has no thinking tokens and no
@@ -106,5 +106,14 @@ public class GeminiRunRecorder {
      */
     public Run run() {
         return run;
+    }
+
+    // A LinkedHashMap, not Map.of, so a capture with no phase name is recorded rather than
+    // throwing NullPointerException.
+    private static Map<String, Object> phaseAttributes(String phaseName, String key, Object value) {
+        Map<String, Object> attributes = new LinkedHashMap<>();
+        attributes.put("phase", phaseName);
+        attributes.put(key, value);
+        return attributes;
     }
 }

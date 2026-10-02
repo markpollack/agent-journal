@@ -141,4 +141,19 @@ class BaseRunRecorderTest {
                 .extracting(e -> ((io.github.markpollack.journal.event.LLMCallEvent) e).model())
                 .isEqualTo("42");
     }
+
+    @Test
+    @DisplayName("a phase without a name but with a prompt and thinking is recorded")
+    void phaseWithoutANameButWithAPromptIsRecorded() {
+        Run run = Journal.run("exp-1").start();
+        PhaseCapture phase = new PhaseCapture(null, "the prompt", 10, 5, 0, 0, 0, 100L, 90L, 0.01,
+                "s1", 1, false, "done", List.of("a thought"), List.of(), "done", List.of());
+
+        new TestRecorder(run).recordPhase(phase);
+
+        assertThat(storage.loadEvents("exp-1", run.id()))
+                .filteredOn(e -> e instanceof io.github.markpollack.journal.event.CustomEvent)
+                .extracting(JournalEvent::type)
+                .containsExactly("prompt", "thinking_block");
+    }
 }

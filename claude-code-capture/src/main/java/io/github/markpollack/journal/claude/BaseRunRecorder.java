@@ -80,7 +80,8 @@ public abstract class BaseRunRecorder {
      * in {@link PhaseCapture#stepCosts()}, and adds their number to
      * {@link #derivedEventsEmitted}.
      *
-     * @param phase the parsed Claude Code call; its phase name must not be {@code null}
+     * @param phase the parsed Claude Code call; a {@code null}
+     *        phase name is recorded as {@code null}
      * @throws NullPointerException if no run has been set
      * @throws IllegalStateException if the run has ended
      * @throws UnsupportedOperationException if the phase has steps and the run's storage cannot
@@ -93,9 +94,8 @@ public abstract class BaseRunRecorder {
 
         // Prompt capture — record the exact prompt sent for reproducibility
         if (phase.promptText() != null && !phase.promptText().isEmpty()) {
-            currentRun.logEvent(CustomEvent.of("prompt", Map.of(
-                    "phase", phase.phaseName(),
-                    "text", phase.promptText())));
+            currentRun.logEvent(CustomEvent.of("prompt",
+                    phaseAttributes(phase.phaseName(), "text", phase.promptText())));
         }
 
         // LLM call with full token/cost/timing data. The per-turn breakdown rides as additive
@@ -168,9 +168,8 @@ public abstract class BaseRunRecorder {
         // Thinking block events
         if (phase.hasThinking()) {
             for (String thinking : phase.thinkingBlocks()) {
-                currentRun.logEvent(CustomEvent.of("thinking_block", Map.of(
-                        "phase", phase.phaseName(),
-                        "content", thinking)));
+                currentRun.logEvent(CustomEvent.of("thinking_block",
+                        phaseAttributes(phase.phaseName(), "content", thinking)));
             }
         }
 
@@ -218,5 +217,14 @@ public abstract class BaseRunRecorder {
      */
     public Run getCurrentRun() {
         return currentRun;
+    }
+
+    // A LinkedHashMap, not Map.of, so a capture with no phase name is recorded rather than
+    // throwing NullPointerException.
+    private static Map<String, Object> phaseAttributes(String phaseName, String key, Object value) {
+        Map<String, Object> attributes = new LinkedHashMap<>();
+        attributes.put("phase", phaseName);
+        attributes.put(key, value);
+        return attributes;
     }
 }
