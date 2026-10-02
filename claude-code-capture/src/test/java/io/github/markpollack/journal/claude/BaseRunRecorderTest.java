@@ -127,4 +127,18 @@ class BaseRunRecorderTest {
         assertThat(storage.loadRun("exp-1", run.id()).orElseThrow().summary().values())
                 .containsEntry("success", false);
     }
+
+    @Test
+    @DisplayName("a model config value that is not a string is recorded as its text")
+    void modelConfigValueThatIsNotAStringIsRecordedAsText() {
+        Run run = Journal.run("exp-1").config("model", 42).start();
+
+        new TestRecorder(run).recordPhase(capture());
+
+        assertThat(storage.loadEvents("exp-1", run.id()))
+                .filteredOn(e -> e instanceof io.github.markpollack.journal.event.LLMCallEvent)
+                .singleElement()
+                .extracting(e -> ((io.github.markpollack.journal.event.LLMCallEvent) e).model())
+                .isEqualTo("42");
+    }
 }

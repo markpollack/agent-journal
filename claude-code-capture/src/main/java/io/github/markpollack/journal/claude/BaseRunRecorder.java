@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * The phase-logging logic that Claude Code's {@link RunRecorder} inherits. Use
@@ -67,7 +68,7 @@ public abstract class BaseRunRecorder {
      *       captured
      *   <li>one {@link LLMCallEvent} with the phase's token usage summed over turns
      *       ({@link PhaseCapture#aggregateUsage()}), its total cost and its timing. Its model is
-     *       the run's {@code model} config value, which must be a string, or {@code "unknown"}.
+     *       the run's {@code model} config value as text, or {@code "unknown"} if there is none.
      *       Its metadata holds the phase name, session ID, turn count, error flag, stop reason,
      *       turn limit and, when captured, the usage of each turn
      *   <li>one {@link ToolCallEvent} per tool call, with the tool call's ID, name, kind and input,
@@ -125,7 +126,7 @@ public abstract class BaseRunRecorder {
         // dropped cache entirely; aggregateUsage() reconciles to totalCostUsd. Same field, corrected
         // value — additive on §4. (No-turns captures fall back to the snapshot vector, now with cache.)
         currentRun.logEvent(LLMCallEvent.builder()
-                .model(currentRun.config().getOrDefault("model", "unknown"))
+                .model(Objects.toString(currentRun.config().values().get("model"), "unknown"))
                 .tokenUsage(phase.aggregateUsage())
                 .cost(CostBreakdown.of(phase.totalCostUsd()))
                 .timing(TimingInfo.of(phase.durationMs(), phase.apiDurationMs()))
