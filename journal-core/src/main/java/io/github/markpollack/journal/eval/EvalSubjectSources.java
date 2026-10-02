@@ -7,6 +7,7 @@ import io.github.markpollack.journal.event.StateChangeEvent;
 import io.github.markpollack.journal.event.ToolCallEvent;
 import io.github.markpollack.journal.storage.JournalStorage;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,10 +48,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  * turn as the response ID, when turns were captured; the other recorders set no response ID, so
  * their LLM calls get positional IDs.
  *
- * <p>Subject metadata is an unmodifiable map that cannot hold {@code null} values, and the order
- * of its keys is not kept. So the events must have no {@code null} timestamp, model, tool name,
- * state or custom event name, and no {@code null} values in their metadata or attributes; one
- * such event makes the whole conversion fail.
+ * <p>Subject metadata is an unmodifiable map that keeps the order in which its keys are added:
+ * the event's own fields first, then its metadata or attributes in their order. It holds no
+ * {@code null} values: a {@code null} model, tool name, state or custom event name, and a
+ * {@code null} value in an event's metadata or attributes, are left out. The events must have no
+ * {@code null} timestamp; one such event makes the whole conversion fail.
  */
 public final class EvalSubjectSources {
 
@@ -137,7 +139,7 @@ public final class EvalSubjectSources {
 			}
 
 			return new EvalSubject(id, EvalSubjectKind.LLM_CALL, source, runId, null,
-					"LLM call to " + llm.model(), null, null, Map.copyOf(metadata));
+					"LLM call to " + llm.model(), null, null, withoutNulls(metadata));
 		}
 
 		if (event instanceof ToolCallEvent tool) {
@@ -152,7 +154,7 @@ public final class EvalSubjectSources {
 			}
 
 			return new EvalSubject(id, EvalSubjectKind.TOOL_CALL, source, runId, null,
-					"Tool call: " + tool.toolName(), tool.input(), tool.output(), Map.copyOf(metadata));
+					"Tool call: " + tool.toolName(), tool.input(), tool.output(), withoutNulls(metadata));
 		}
 
 		if (event instanceof StateChangeEvent state) {
@@ -167,7 +169,7 @@ public final class EvalSubjectSources {
 
 			return new EvalSubject(id, EvalSubjectKind.STATE_CHANGE, source, runId, null,
 					"State: " + state.fromState() + " → " + state.toState(),
-					state.fromState(), state.toState(), Map.copyOf(metadata));
+					state.fromState(), state.toState(), withoutNulls(metadata));
 		}
 
 		if (event instanceof CustomEvent custom) {
@@ -180,11 +182,22 @@ public final class EvalSubjectSources {
 			}
 
 			return new EvalSubject(id, EvalSubjectKind.CUSTOM, source, runId, null,
-					"Custom: " + custom.name(), null, null, Map.copyOf(metadata));
+					"Custom: " + custom.name(), null, null, withoutNulls(metadata));
 		}
 
 		// MetricEvent and GitEvents are not judgeable behavior units — skip
 		return null;
+	}
+
+	/** An unmodifiable copy in insertion order, without the entries whose value is null. */
+	private static Map<String, Object> withoutNulls(Map<String, Object> metadata) {
+		Map<String, Object> copy = new LinkedHashMap<>();
+		metadata.forEach((key, value) -> {
+			if (value != null) {
+				copy.put(key, value);
+			}
+		});
+		return Collections.unmodifiableMap(copy);
 	}
 
 }

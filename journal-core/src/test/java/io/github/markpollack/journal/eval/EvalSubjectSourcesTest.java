@@ -2,6 +2,7 @@ package io.github.markpollack.journal.eval;
 
 import io.github.markpollack.journal.Experiment;
 import io.github.markpollack.journal.event.JournalEvent;
+import io.github.markpollack.journal.event.LLMCallEvent;
 import io.github.markpollack.journal.event.ToolCallEvent;
 import io.github.markpollack.journal.storage.InMemoryStorage;
 import io.github.markpollack.journal.storage.RunData;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -200,6 +202,33 @@ class EvalSubjectSourcesTest {
 			assertThat(subjects).hasSize(2);
 			assertThat(subjects.get(0).kind()).isEqualTo(EvalSubjectKind.LLM_CALL);
 			assertThat(subjects.get(1).kind()).isEqualTo(EvalSubjectKind.TOOL_CALL);
+		}
+
+		@Test
+		@DisplayName("leaves out a null metadata value and keeps key order")
+		void dropsNullMetadataValuesAndKeepsOrder() {
+			Map<String, Object> eventMetadata = new LinkedHashMap<>();
+			eventMetadata.put("phaseName", "explore");
+			eventMetadata.put("status", null);
+			eventMetadata.put("turns", 3);
+			LLMCallEvent llm = LLMCallEvent.builder().model("gemini-2.5-pro").metadata(eventMetadata).build();
+
+			List<EvalSubject> subjects = EvalSubjectSources.fromEvents(List.of(llm), RUN_ID).subjects().toList();
+
+			assertThat(subjects).hasSize(1);
+			Map<String, Object> metadata = subjects.get(0).metadata();
+			assertThat(metadata).doesNotContainKey("status");
+			assertThat(metadata.keySet()).containsExactly("timestamp", "model", "phaseName", "turns");
+		}
+
+		@Test
+		@DisplayName("keeps the metadata key order of a tool call")
+		void keepsToolCallMetadataOrder() {
+			List<EvalSubject> subjects = EvalSubjectSources.fromEvents(List.of(TestEvents.toolFailure()), RUN_ID)
+					.subjects().toList();
+
+			assertThat(subjects.get(0).metadata().keySet())
+					.containsExactly("timestamp", "toolName", "durationMs", "success", "errorMessage");
 		}
 
 		@Test
