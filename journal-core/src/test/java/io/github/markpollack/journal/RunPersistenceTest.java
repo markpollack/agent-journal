@@ -44,4 +44,15 @@ class RunPersistenceTest {
         assertThat(saved.summary().get("errorType", String.class)).isEqualTo("java.lang.RuntimeException");
         assertThat(saved.endTime()).isNotNull();
     }
+
+    @Test
+    void setSummaryWritesTheValueToStorageWhileTheRunIsOpen() {
+        Run run = Journal.run("exp").start();
+
+        run.setSummary("filesChanged", 5);
+
+        RunData saved = stored(run);
+        assertThat(saved.status()).isEqualTo(RunStatus.RUNNING);
+        assertThat(saved.summary().values()).containsEntry("filesChanged", 5);
+    }
 }

@@ -187,8 +187,9 @@ public interface Run extends AutoCloseable {
     void logArtifact(String name, byte[] content, Map<String, Object> metadata);
 
     /**
-     * Sets a summary value, replacing any earlier value for the key. Use the summary for the run's
-     * outputs, such as {@code filesChanged}.
+     * Sets a summary value, replacing any earlier value for the key, and saves the run record so
+     * the value is in storage at once. Use the summary for the run's outputs, such as
+     * {@code filesChanged}.
      *
      * @param key the key
      * @param value the value

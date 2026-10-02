@@ -13,10 +13,11 @@ import java.util.Map;
  * value, so the last value for a name wins; read it with {@link Run#summary()}. Put the run's
  * inputs in its {@link Config} instead, which cannot change after the run starts.
  *
- * <p>The run writes the summary to storage only when the run record is saved: when the run
- * starts, with an empty summary, and when it ends through {@link Run#close()},
- * {@link Run#finish(RunStatus)} or {@link Run#fail(Throwable)}. Values set in between are held in
- * memory, so if the process dies before the run ends, they are lost.
+ * <p>The run writes the summary to storage each time the run record is saved: when the run
+ * starts, with an empty summary, on each {@link Run#setSummary(String, Object)}, and when it ends
+ * through {@link Run#close()}, {@link Run#finish(RunStatus)} or {@link Run#fail(Throwable)}. A
+ * value set while the run is open is therefore kept even if the process dies before the run
+ * ends.
  *
  * <p>The run sets three names itself. {@code fail(error)} sets {@code success} to {@code false},
  * {@code error} to the exception's message, if it has one, and {@code errorType} to its class

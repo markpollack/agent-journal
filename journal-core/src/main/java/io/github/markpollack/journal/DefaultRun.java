@@ -194,6 +194,7 @@ public final class DefaultRun implements Run {
     public void setSummary(String key, Object value) {
         ensureRunning();
         this.summary = this.summary.with(key, value);
+        persistRun();
     }
 
     @Override
