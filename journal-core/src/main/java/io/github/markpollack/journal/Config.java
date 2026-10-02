@@ -3,8 +3,10 @@ package io.github.markpollack.journal;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * The inputs of a {@link Run}, such as the model, the prompt version or the temperature, as an
@@ -15,10 +17,12 @@ import java.util.Map;
  *
  * <p>Keys and values must not be {@code null}: every method that makes a config throws
  * {@link NullPointerException} for a {@code null} key or value, and lookups throw it for a
- * {@code null} key. The map does not keep the order in which entries were added. A config read
- * back from file storage holds JSON types: whole numbers come back as {@code Integer} or
- * {@code Long} and decimals as {@code Double}, so read numbers as {@link Number}. A config is
- * safe to share between threads.
+ * {@code null} key. The map keeps its entries in the order they were added, by a builder or by
+ * {@code with}, or in the order of the map it was made from; the {@code of} methods promise no
+ * order. File storage writes the entries in that order and reads them back in the order of the
+ * file. A config read back from file storage holds JSON types: whole numbers come back as
+ * {@code Integer} or {@code Long} and decimals as {@code Double}, so read numbers as
+ * {@link Number}. A config is safe to share between threads.
  *
  * <p>Example:
  * <pre>{@code
@@ -41,7 +45,7 @@ public record Config(@JsonValue Map<String, Object> values) {
      *         or value
      */
     public Config {
-        values = Map.copyOf(values);
+        values = orderedCopy(values);
     }
 
     /**
@@ -145,7 +149,7 @@ public record Config(@JsonValue Map<String, Object> values) {
      */
     @SuppressWarnings("unchecked")
     public <T> T get(String key, Class<T> type) {
-        Object value = values.get(key);
+        Object value = values.get(Objects.requireNonNull(key, "key"));
         if (value == null) {
             return null;
         }
@@ -167,7 +171,7 @@ public record Config(@JsonValue Map<String, Object> values) {
      */
     @SuppressWarnings("unchecked")
     public <T> T getOrDefault(String key, T defaultValue) {
-        T value = (T) values.get(key);
+        T value = (T) values.get(Objects.requireNonNull(key, "key"));
         return value != null ? value : defaultValue;
     }
 
@@ -219,5 +223,13 @@ public record Config(@JsonValue Map<String, Object> values) {
         public Config build() {
             return new Config(values);
         }
+    }
+
+    /** An unmodifiable copy that keeps the order of {@code values} and rejects a null key or value. */
+    private static Map<String, Object> orderedCopy(Map<String, Object> values) {
+        Map<String, Object> copy = new LinkedHashMap<>();
+        values.forEach((key, value) -> copy.put(Objects.requireNonNull(key, "key"),
+                Objects.requireNonNull(value, () -> "value of " + key)));
+        return Collections.unmodifiableMap(copy);
     }
 }

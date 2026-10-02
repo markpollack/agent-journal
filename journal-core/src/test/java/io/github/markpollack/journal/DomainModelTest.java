@@ -6,7 +6,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -208,6 +211,64 @@ class DomainModelTest extends BaseTrackingTest {
             Summary summary = Summary.of("key", "value");
 
             assertThatThrownBy(() -> summary.values().put("newKey", "newValue"))
+                    .isInstanceOf(UnsupportedOperationException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("Key order")
+    class KeyOrderTests {
+
+        private final ObjectMapper mapper = new ObjectMapper();
+
+        @Test
+        @DisplayName("config keeps insertion order through build, with and a JSON round trip")
+        void configKeepsInsertionOrder() throws Exception {
+            Config config = Config.builder().set("zeta", 1).set("alpha", "a").set("mid", 2.5).set("beta", true)
+                    .set("omega", "o").build().with("kappa", 3);
+
+            assertThat(config.values().keySet()).containsExactly("zeta", "alpha", "mid", "beta", "omega", "kappa");
+            Config read = mapper.readValue(mapper.writeValueAsString(config), Config.class);
+            assertThat(read.values().keySet()).containsExactly("zeta", "alpha", "mid", "beta", "omega", "kappa");
+            assertThat(read).isEqualTo(config);
+        }
+
+        @Test
+        @DisplayName("summary keeps insertion order through build, with, merge and a JSON round trip")
+        void summaryKeepsInsertionOrder() throws Exception {
+            Summary summary = Summary.builder().set("zz", 1).set("aa", 2).set("mm", "x").build()
+                    .with("filesChanged", 5).merge(Map.of("success", true));
+
+            assertThat(summary.values().keySet()).containsExactly("zz", "aa", "mm", "filesChanged", "success");
+            Summary read = mapper.readValue(mapper.writeValueAsString(summary), Summary.class);
+            assertThat(read.values().keySet()).containsExactly("zz", "aa", "mm", "filesChanged", "success");
+            assertThat(read).isEqualTo(summary);
+        }
+
+        @Test
+        @DisplayName("a null key or value is still rejected, and so is a null lookup key")
+        void nullsAreStillRejected() {
+            Map<String, Object> nullValue = new HashMap<>();
+            nullValue.put("k", null);
+            Map<String, Object> nullKey = new HashMap<>();
+            nullKey.put(null, "v");
+
+            assertThatThrownBy(() -> new Config(nullValue)).isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new Config(nullKey)).isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> Config.builder().set("k", null).build())
+                    .isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new Summary(nullValue)).isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> new Summary(nullKey)).isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> Summary.empty().with("k", null)).isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> Config.of("k", "v").get(null, String.class))
+                    .isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> Config.of("k", "v").getOrDefault(null, "d"))
+                    .isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> Summary.of("k", "v").get(null, String.class))
+                    .isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> Summary.of("k", "v").getOrDefault(null, "d"))
+                    .isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> Config.of("k", "v").values().put("x", "y"))
                     .isInstanceOf(UnsupportedOperationException.class);
         }
     }
