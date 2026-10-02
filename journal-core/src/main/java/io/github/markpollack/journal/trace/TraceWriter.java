@@ -82,7 +82,8 @@ public class TraceWriter implements Closeable {
      * {@link TraceRawMode#NONE}.
      *
      * @param traceFile the file to write; its path must include a parent directory
-     * @param contentMode how much content to keep; must not be {@code null}
+     * @param contentMode how much content to keep; {@code null} means
+     *        {@link TraceContentMode#TRUNCATED}
      * @param runId the run ID to record, or {@code null}
      * @param phase the phase name to record, or {@code null}
      * @throws IOException if the directories or the file cannot be created, or the header cannot
@@ -99,11 +100,12 @@ public class TraceWriter implements Closeable {
      * the names of the content mode and raw mode.
      *
      * <p>The path must include a parent directory, such as {@code traces/plan.jsonl} or an
-     * absolute path; a bare file name such as {@code plan.jsonl} is not accepted.
+     * absolute path; a bare file name such as {@code plan.jsonl} is not accepted. If the header
+     * cannot be written, the file is closed before the exception is thrown.
      *
      * @param traceFile the file to write; its path must include a parent directory
-     * @param contentMode how much text, thinking and tool-result content to keep; must not be
-     *        {@code null}
+     * @param contentMode how much text, thinking and tool-result content to keep; {@code null}
+     *        means {@link TraceContentMode#TRUNCATED}
      * @param runId the run ID to write on the {@code header}, {@code result} and
      *        {@code step_cost} lines, or {@code null} to leave it out
      * @param phase the phase name to write on the header line, or {@code null} to leave it out
@@ -114,22 +116,32 @@ public class TraceWriter implements Closeable {
      */
     public TraceWriter(Path traceFile, TraceContentMode contentMode, String runId, String phase, TraceRawMode rawMode)
             throws IOException {
-        Files.createDirectories(traceFile.getParent());
-        this.writer = Files.newBufferedWriter(traceFile);
-        this.contentMode = contentMode;
+        this.contentMode = contentMode != null ? contentMode : TraceContentMode.TRUNCATED;
         this.rawMode = rawMode != null ? rawMode : TraceRawMode.NONE;
         this.runId = runId;
-        Map<String, Object> line = baseLine("header");
-        line.put("schemaVersion", SCHEMA_VERSION);
-        if (runId != null) {
-            line.put("runId", runId);
+        Files.createDirectories(traceFile.getParent());
+        this.writer = Files.newBufferedWriter(traceFile);
+        try {
+            Map<String, Object> line = baseLine("header");
+            line.put("schemaVersion", SCHEMA_VERSION);
+            if (runId != null) {
+                line.put("runId", runId);
+            }
+            if (phase != null) {
+                line.put("phase", phase);
+            }
+            line.put("contentMode", this.contentMode.name());
+            line.put("rawMode", this.rawMode.name());
+            writeLine(line);
+        } catch (IOException | RuntimeException ex) {
+            // Do not leak the open file when the constructor fails
+            try {
+                this.writer.close();
+            } catch (IOException suppressed) {
+                ex.addSuppressed(suppressed);
+            }
+            throw ex;
         }
-        if (phase != null) {
-            line.put("phase", phase);
-        }
-        line.put("contentMode", contentMode.name());
-        line.put("rawMode", this.rawMode.name());
-        writeLine(line);
     }
 
     /**

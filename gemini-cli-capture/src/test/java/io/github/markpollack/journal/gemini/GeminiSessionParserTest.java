@@ -99,4 +99,24 @@ class GeminiSessionParserTest {
         }
         throw new AssertionError("no line of type " + type);
     }
+
+    @Test
+    void nullContentModeStillWritesTheTrace(@TempDir Path tempDir) throws IOException {
+        Path traceFile = tempDir.resolve("gemini-trace.jsonl");
+
+        GeminiPhaseCapture capture = GeminiSessionParser.parse(
+                successResult("hi", 100, 50, 0.003, 1500), "run-1", "p", traceFile, null);
+
+        assertThat(capture.textOutput()).isEqualTo("hi");
+        assertThat(Files.readAllLines(traceFile).get(0)).contains("\"contentMode\":\"TRUNCATED\"");
+    }
+
+    @Test
+    void traceFileWithoutParentDirectoryDoesNotStopParsing() {
+        GeminiPhaseCapture capture = GeminiSessionParser.parse(
+                successResult("hi", 100, 50, 0.003, 1500), "run-1", "p", Path.of("no-parent-trace.jsonl"));
+
+        assertThat(capture.textOutput()).isEqualTo("hi");
+        assertThat(Path.of("no-parent-trace.jsonl")).doesNotExist();
+    }
 }

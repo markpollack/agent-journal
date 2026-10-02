@@ -750,4 +750,30 @@ class SessionLogParserTest {
                 .usage(Map.of("input_tokens", inputTokens, "output_tokens", outputTokens))
                 .build();
     }
+
+    @Test
+    void traceFileWithoutParentDirectoryDoesNotStopParsing() {
+        List<ParsedMessage> messages = List.of(
+                wrap(new AssistantMessage(List.of(new TextBlock("Hello world")))),
+                wrap(resultMessage(0.01, 1000, 500, 100, 50)));
+
+        PhaseCapture capture = SessionLogParser.parse(messages.iterator(), "explore", "p",
+                Path.of("no-parent-trace.jsonl"));
+
+        assertThat(capture.textOutput()).isEqualTo("Hello world");
+        assertThat(Path.of("no-parent-trace.jsonl")).doesNotExist();
+    }
+
+    @Test
+    void nullContentModeStillWritesTheTrace(@TempDir Path tempDir) {
+        Path traceFile = tempDir.resolve("trace.jsonl");
+        List<ParsedMessage> messages = List.of(
+                wrap(new AssistantMessage(List.of(new TextBlock("Hello world")))),
+                wrap(resultMessage(0.01, 1000, 500, 100, 50)));
+
+        PhaseCapture capture = SessionLogParser.parse(messages.iterator(), "explore", "p", traceFile, null);
+
+        assertThat(capture.textOutput()).isEqualTo("Hello world");
+        assertThat(traceFile).exists();
+    }
 }

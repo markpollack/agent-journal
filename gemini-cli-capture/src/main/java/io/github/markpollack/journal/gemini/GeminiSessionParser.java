@@ -35,8 +35,9 @@ import org.slf4j.LoggerFactory;
  * cost from the result's metadata, and the status from the result. A trace's header records
  * {@code phaseName} as both the run ID and the phase, its result line records one turn, and its
  * {@code step_cost} line gives the whole cost to one step with ID {@code <phaseName>:turn}. A
- * trace file that cannot be opened or written is logged as a warning and does not stop parsing;
- * the capture is the same with or without a trace.
+ * trace file that cannot be opened, for any reason, including a bare file name with no parent
+ * directory, is logged as a warning and does not stop parsing, and neither does an I/O error
+ * while writing it; the capture is the same with or without a trace.
  *
  * <p>All methods are static and keep no state between calls. Calls from several threads are safe
  * if each has its own trace file.
@@ -84,8 +85,8 @@ public final class GeminiSessionParser {
      * @param phaseName the caller's name for this query
      * @param promptText the prompt that was sent, or {@code null} if not captured
      * @param traceFile the trace file to write, or {@code null} for no trace
-     * @param contentMode how much message content the trace keeps; must not be {@code null} when
-     *        {@code traceFile} is given
+     * @param contentMode how much message content the trace keeps; {@code null} means
+     *        {@link TraceContentMode#TRUNCATED}
      * @return the capture, never {@code null}
      */
     public static GeminiPhaseCapture parse(QueryResult result, String phaseName, String promptText, Path traceFile,
@@ -94,7 +95,7 @@ public final class GeminiSessionParser {
         if (traceFile != null) {
             try {
                 trace = new TraceWriter(traceFile, contentMode, phaseName, phaseName);
-            } catch (IOException ex) {
+            } catch (IOException | RuntimeException ex) {
                 logger.warn("[{}] Failed to open trace file {}: {}", phaseName, traceFile, ex.getMessage());
             }
         }
