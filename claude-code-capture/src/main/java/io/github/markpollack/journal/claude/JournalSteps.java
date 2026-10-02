@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * When the capture has the usage of each turn, each turn gets a share of the total in proportion
  * to its output tokens (an equal share if no turn has any), divided evenly among the turn's tool
  * calls, and a turn without tool calls becomes one step whose ID is the turn ID. Only the tool
- * calls that a turn lists get a step. These steps are labelled
+ * calls that a turn lists get a step; when some are listed by no turn, their cost goes to the
+ * other steps and a warning is logged. These steps are labelled
  * {@link AttributionMethod#OUTPUT_TOKEN_PROPORTIONAL}. Without per-turn usage (claude-code-sdk
  * before 1.3.0, or a capture built in code), the total is divided equally among the tool calls,
  * the steps have no token counts, they are labelled {@link AttributionMethod#EVEN_SPLIT}, and a
@@ -268,6 +270,7 @@ public final class JournalSteps {
             // Precise: split the run total across turns by output tokens; the within-turn even split
             // among parallel tools is part of this proportional method (A1) → OUTPUT_TOKEN_PROPORTIONAL.
             final AttributionMethod method = AttributionMethod.OUTPUT_TOKEN_PROPORTIONAL;
+            warnUnlistedTools(turns, toolUses);
             long totalOutput = turns.stream().mapToLong(TurnUsage::outputTokens).sum();
             for (TurnUsage turn : turns) {
                 double weight = totalOutput > 0 ? (double) turn.outputTokens() / totalOutput : 1.0 / turns.size();
@@ -406,6 +409,27 @@ public final class JournalSteps {
         }
         Long d = toolDurations.get(toolId);
         return d != null ? d : -1L;
+    }
+
+    /**
+     * Logs one warning when some tool calls are listed by no turn. They get no step, so their
+     * cost goes to the other steps; the split itself is left as it is.
+     */
+    private static void warnUnlistedTools(List<TurnUsage> turns, List<ToolUseRecord> toolUses) {
+        Set<String> listed = new HashSet<>();
+        for (TurnUsage turn : turns) {
+            listed.addAll(nullSafe(turn.toolUseIds()));
+        }
+        List<String> unlisted = new ArrayList<>();
+        for (ToolUseRecord tu : nullSafe(toolUses)) {
+            if (!listed.contains(tu.id())) {
+                unlisted.add(tu.id());
+            }
+        }
+        if (!unlisted.isEmpty()) {
+            log.warn("{} tool call(s) are listed by no turn and get no step; their cost is attributed to "
+                    + "the other steps: {}", unlisted.size(), unlisted);
+        }
     }
 
     private static void warnCoarsenedOnce() {

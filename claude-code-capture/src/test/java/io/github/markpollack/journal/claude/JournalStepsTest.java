@@ -10,6 +10,12 @@ import io.github.markpollack.journal.event.ToolKind;
 import io.github.markpollack.journal.trace.AttributionMethod;
 import io.github.markpollack.journal.trace.JournalStep;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 import java.util.Map;
 
@@ -215,6 +221,49 @@ class JournalStepsTest {
         assertThat(steps.get(0).toolName()).isNull();
         assertThat(steps.get(0).isSubagentSpawn()).isFalse();
         assertThat(steps.get(0).attributionMethod()).isEqualTo(AttributionMethod.EVEN_SPLIT);
+    }
+
+    @Test
+    void warnsOnceWhenATurnListsNotEveryToolCall() {
+        ToolUseRecord listed = new ToolUseRecord("toolu_1", ToolKind.READ, "Read", Map.of());
+        ToolUseRecord unlisted = new ToolUseRecord("toolu_2", ToolKind.EXECUTE, "Bash", Map.of());
+        ToolUseRecord alsoUnlisted = new ToolUseRecord("toolu_3", ToolKind.EXECUTE, "Bash", Map.of());
+        TurnUsage turn = new TurnUsage("msg_1", "claude-opus-4-8", 10, 100, 0, 0, List.of("toolu_1"), 0, null, 0);
+        PhaseCapture phase = captureWith(List.of(listed, unlisted, alsoUnlisted), List.of(turn), 0.02);
+
+        List<ILoggingEvent> logged = captureLogs(() -> {
+            List<JournalStep> steps = JournalSteps.fromPhaseCapture(phase, RUN);
+            // Steps and the cost split are unchanged: only the listed call gets a step
+            assertThat(steps).extracting(JournalStep::stepId).containsExactly("toolu_1");
+            assertThat(steps.get(0).attributedCostUsd()).isEqualTo(0.02);
+        });
+
+        assertThat(logged).filteredOn(e -> e.getLevel() == Level.WARN).singleElement()
+                .satisfies(e -> assertThat(e.getFormattedMessage()).contains("toolu_2", "toolu_3"));
+    }
+
+    @Test
+    void doesNotWarnWhenEveryToolCallIsListed() {
+        ToolUseRecord listed = new ToolUseRecord("toolu_1", ToolKind.READ, "Read", Map.of());
+        TurnUsage turn = new TurnUsage("msg_1", "claude-opus-4-8", 10, 100, 0, 0, List.of("toolu_1"), 0, null, 0);
+        PhaseCapture phase = captureWith(List.of(listed), List.of(turn), 0.02);
+
+        List<ILoggingEvent> logged = captureLogs(() -> JournalSteps.fromPhaseCapture(phase, RUN));
+
+        assertThat(logged).noneMatch(e -> e.getLevel() == Level.WARN);
+    }
+
+    private static List<ILoggingEvent> captureLogs(Runnable action) {
+        Logger logger = (Logger) LoggerFactory.getLogger(JournalSteps.class);
+        ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        logger.addAppender(appender);
+        try {
+            action.run();
+        } finally {
+            logger.detachAppender(appender);
+        }
+        return appender.list;
     }
 
     // --- helpers ---
