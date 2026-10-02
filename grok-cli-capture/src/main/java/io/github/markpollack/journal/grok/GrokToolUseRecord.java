@@ -21,11 +21,13 @@ import java.util.Map;
  * reports the kind itself, in the Agent Client Protocol's terms, so it is not worked out from
  * the tool name.
  *
- * <p>The parser sets {@code isError} when an update has the status {@code failed}, ignoring case,
- * and it stays set even if a later update reports another status; {@code errorMessage} comes from
- * that update's raw output. The record does not check {@code isError} against {@code status}. A
- * {@code null} kind becomes {@link ToolKind#OTHER}, and {@code input} is copied into an
- * unmodifiable map, with {@code null} becoming an empty map. {@code output} is not copied.
+ * <p>The parser sets {@code isError} when the last status Grok reported, on the {@code tool_call}
+ * line or a later update, is {@code failed}, ignoring case; a call that failed and then completed
+ * is not an error. {@code errorMessage} comes from the raw output of the last line that reported
+ * {@code failed}, and is {@code null} when the call is not an error. The record does not check
+ * {@code isError} against {@code status}. A {@code null} kind becomes {@link ToolKind#OTHER}, and
+ * {@code input} is copied into an unmodifiable map, with {@code null} becoming an empty map.
+ * {@code output} is not copied.
  *
  * @param id Grok's ID for the tool call (its {@code toolCallId})
  * @param name Grok's name for the tool; the parser uses {@code "unknown"} when Grok gives none

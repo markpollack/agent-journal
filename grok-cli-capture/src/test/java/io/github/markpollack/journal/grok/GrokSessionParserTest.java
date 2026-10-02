@@ -121,6 +121,41 @@ class GrokSessionParserTest {
         assertThat(capture.model()).isEqualTo("grok-4.6-build");
     }
 
+    @Test
+    void toolCallThatIsBornFailedWithNoUpdateIsAnError() throws Exception {
+        String stream = String.join("\n",
+                "{\"type\":\"tool_call\",\"toolCallId\":\"call-1\",\"toolName\":\"run_terminal_command\","
+                        + "\"kind\":\"execute\",\"status\":\"failed\",\"rawInput\":{\"command\":\"false\"},"
+                        + "\"rawOutput\":{\"error\":{\"message\":\"exit 1\"}}}",
+                "{\"type\":\"end\",\"stopReason\":\"end_turn\"}") + "\n";
+
+        GrokPhaseCapture capture = GrokSessionParser.parse(new BufferedReader(new StringReader(stream)), "p", "q");
+
+        GrokToolUseRecord tool = capture.toolUses().get(0);
+        assertThat(tool.status()).isEqualTo("failed");
+        assertThat(tool.isError()).isTrue();
+        assertThat(tool.errorMessage()).isEqualTo("exit 1");
+    }
+
+    @Test
+    void toolCallThatFailsAndThenCompletesIsNotAnError() throws Exception {
+        String stream = String.join("\n",
+                "{\"type\":\"tool_call\",\"toolCallId\":\"call-1\",\"toolName\":\"read_file\","
+                        + "\"kind\":\"read\",\"status\":\"pending\",\"rawInput\":{\"target_file\":\"A.txt\"}}",
+                "{\"type\":\"tool_call_update\",\"toolCallId\":\"call-1\",\"status\":\"failed\","
+                        + "\"rawOutput\":{\"message\":\"busy\"}}",
+                "{\"type\":\"tool_call_update\",\"toolCallId\":\"call-1\",\"status\":\"completed\","
+                        + "\"rawOutput\":{\"content\":\"text\"}}",
+                "{\"type\":\"end\",\"stopReason\":\"end_turn\"}") + "\n";
+
+        GrokPhaseCapture capture = GrokSessionParser.parse(new BufferedReader(new StringReader(stream)), "p", "q");
+
+        GrokToolUseRecord tool = capture.toolUses().get(0);
+        assertThat(tool.status()).isEqualTo("completed");
+        assertThat(tool.isError()).isFalse();
+        assertThat(tool.errorMessage()).isNull();
+    }
+
     private static Path fixture(String name) throws URISyntaxException {
         return Path.of(GrokSessionParserTest.class.getResource("/fixtures/" + name).toURI());
     }

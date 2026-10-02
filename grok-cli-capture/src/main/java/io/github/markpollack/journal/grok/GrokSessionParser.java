@@ -145,6 +145,7 @@ public final class GrokSessionParser {
             if (event.hasNonNull("rawOutput")) {
                 tool.output = asObject(event.get("rawOutput"));
             }
+            tool.noteFailure(event);
         }
 
         private void acceptToolUpdate(JsonNode event) {
@@ -162,10 +163,7 @@ public final class GrokSessionParser {
             } else if (event.hasNonNull("content") && event.path("content").size() > 0) {
                 tool.output = asObject(event.get("content"));
             }
-            if ("failed".equalsIgnoreCase(tool.status)) {
-                tool.isError = true;
-                tool.errorMessage = errorMessage(event.path("rawOutput"));
-            }
+            tool.noteFailure(event);
         }
 
         private void acceptEnd(JsonNode event) {
@@ -243,16 +241,28 @@ public final class GrokSessionParser {
         private Map<String, Object> input = Map.of();
         private Object output;
         private String status;
-        private boolean isError;
         private String errorMessage;
 
         MutableToolCall(String id) {
             this.id = id;
         }
 
+        /** Keeps the error message of the latest line that reported the call as failed. */
+        void noteFailure(JsonNode event) {
+            if (isFailed(text(event, "status"))) {
+                errorMessage = errorMessage(event.path("rawOutput"));
+            }
+        }
+
         GrokToolUseRecord freeze() {
+            // Whether the call failed follows its final status alone
+            boolean isError = isFailed(status);
             return new GrokToolUseRecord(id, name != null ? name : "unknown", kind, input, output,
-                    status, isError, errorMessage);
+                    status, isError, isError ? errorMessage : null);
+        }
+
+        private static boolean isFailed(String status) {
+            return "failed".equalsIgnoreCase(status);
         }
     }
 
