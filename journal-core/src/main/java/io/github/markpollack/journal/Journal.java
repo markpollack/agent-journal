@@ -100,9 +100,11 @@ public final class Journal {
      * }</pre>
      *
      * @param experimentId the experiment ID
-     * @param builder the settings for a new experiment, or {@code null} for default settings
+     * @param builder the settings for a new experiment, or {@code null} for default settings; it
+     *        must be for the same ID
      * @return the experiment, never {@code null}
      * @throws NullPointerException if {@code experimentId} is {@code null}
+     * @throws IllegalArgumentException if {@code builder} was created for a different ID
      */
     public static Experiment experiment(String experimentId, Experiment.Builder builder) {
         return ExperimentRegistry.getOrCreate(experimentId, builder);

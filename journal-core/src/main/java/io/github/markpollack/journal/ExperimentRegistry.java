@@ -72,9 +72,14 @@ public final class ExperimentRegistry {
      * @param builder the builder to use if experiment doesn't exist (can be null)
      * @return the experiment
      * @throws NullPointerException if experimentId is null
+     * @throws IllegalArgumentException if {@code builder} is for a different experiment ID
      */
     public static Experiment getOrCreate(String experimentId, Experiment.Builder builder) {
         Objects.requireNonNull(experimentId, "experimentId cannot be null");
+        if (builder != null && !experimentId.equals(builder.id())) {
+            throw new IllegalArgumentException("Builder is for experiment '" + builder.id()
+                    + "', not '" + experimentId + "'");
+        }
         return getOrCreateCached(experimentId, builder);
     }
 

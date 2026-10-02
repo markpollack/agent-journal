@@ -125,4 +125,13 @@ class RunPersistenceTest {
 
         assertThat(second.loadExperiment("exp")).isPresent();
     }
+
+    @Test
+    void experimentWithABuilderForADifferentIdIsRejected() {
+        assertThatThrownBy(() -> Journal.experiment("x1", Experiment.create("other-id")))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        assertThat(storage.loadExperiment("other-id")).isEmpty();
+        assertThat(storage.loadExperiment("x1")).isEmpty();
+    }
 }

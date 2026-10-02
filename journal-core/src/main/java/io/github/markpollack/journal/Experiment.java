@@ -168,6 +168,10 @@ public final class Experiment {
             this.id = id;
         }
 
+        String id() {
+            return id;
+        }
+
         /**
          * Sets the name to show to people.
          *
