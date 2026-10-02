@@ -66,8 +66,9 @@ public final class JunieRunRecorder {
      * <p>The metadata of the LLM call event holds the phase name, the number of model calls, the
      * error flag, the stop reason, the turn limit (-1), and the task ID, task state and error code
      * when they are known. It holds the context-window use and size when Junie reported a size.
-     * {@code costAvailable} is {@code true} when Junie reported per-call costs, and
-     * {@code costReconciles} says whether they add up to the total; see
+     * {@code costAvailable} is {@code true} when Junie reported per-call costs or a non-zero total
+     * cost, and {@code costReconciles} says whether per-call costs were reported and add up to the
+     * total; see
      * {@link JuniePhaseCapture#reconcilesToModelCosts()}. {@code agentKind} is always
      * {@code "MainAgent"}.
      *
@@ -92,9 +93,12 @@ public final class JunieRunRecorder {
         metadata.put("numLlmCalls", phase.numLlmCalls());
         metadata.put("isError", phase.isError());
         // Junie prices every LLM call and its per-call costs reconcile to the session total, so
-        // unlike the Grok/Codex/Antigravity adapters this is a reported cost, not an absence.
-        metadata.put("costAvailable", phase.hasModelCosts());
-        metadata.put("costSource", phase.hasModelCosts() ? "reported" : "unreported");
+        // unlike the Grok/Codex/Antigravity adapters this is a reported cost, not an absence. A
+        // non-zero total can only have come from Junie, so it counts as reported even when the
+        // per-call costs are missing; costReconciles still says whether those were present.
+        boolean costReported = phase.hasModelCosts() || phase.totalCostUsd() != 0.0;
+        metadata.put("costAvailable", costReported);
+        metadata.put("costSource", costReported ? "reported" : "unreported");
         metadata.put("costReconciles", phase.reconcilesToModelCosts());
         // The stop reason and the ceiling it ran against, written together and unconditionally
         // (1.9.0 rule). Junie enforces no ceiling, so maxTurns is always -1 = "not reported".
