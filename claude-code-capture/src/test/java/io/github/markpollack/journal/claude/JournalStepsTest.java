@@ -6,6 +6,7 @@ import io.github.markpollack.claude.agent.sdk.types.Message;
 import io.github.markpollack.claude.agent.sdk.types.ResultMessage;
 import io.github.markpollack.claude.agent.sdk.types.TextBlock;
 import io.github.markpollack.claude.agent.sdk.types.ToolUseBlock;
+import io.github.markpollack.journal.event.ToolKind;
 import io.github.markpollack.journal.trace.AttributionMethod;
 import io.github.markpollack.journal.trace.JournalStep;
 
@@ -187,7 +188,41 @@ class JournalStepsTest {
         assertThat(task.attributedCostUsd()).isGreaterThan(0.0);
     }
 
+    @Test
+    void toolCallWithoutNameIsNotASubagentSpawnWithPerTurnUsage() {
+        // A turn lists a tool call that has no name, and an ID that has no tool call at all.
+        ToolUseRecord unnamed = new ToolUseRecord("toolu_1", ToolKind.OTHER, null, Map.of());
+        TurnUsage turn = new TurnUsage("msg_1", "claude-opus-4-8", 10, 100, 0, 0,
+                List.of("toolu_1", "toolu_unknown"), 0, null, 0);
+        PhaseCapture phase = captureWith(List.of(unnamed), List.of(turn), 0.02);
+
+        List<JournalStep> steps = JournalSteps.fromPhaseCapture(phase, RUN);
+
+        assertThat(steps).extracting(JournalStep::stepId).containsExactly("toolu_1", "toolu_unknown");
+        assertThat(steps).extracting(JournalStep::toolName).containsOnlyNulls();
+        assertThat(steps).noneMatch(JournalStep::isSubagentSpawn);
+        assertThat(steps.stream().mapToDouble(JournalStep::attributedCostUsd).sum()).isCloseTo(0.02, within(1e-12));
+    }
+
+    @Test
+    void toolCallWithoutNameIsNotASubagentSpawnWithoutPerTurnUsage() {
+        ToolUseRecord unnamed = new ToolUseRecord("toolu_1", ToolKind.OTHER, null, Map.of());
+        PhaseCapture phase = captureWith(List.of(unnamed), null, 0.02);
+
+        List<JournalStep> steps = JournalSteps.fromPhaseCapture(phase, RUN);
+
+        assertThat(steps).hasSize(1);
+        assertThat(steps.get(0).toolName()).isNull();
+        assertThat(steps.get(0).isSubagentSpawn()).isFalse();
+        assertThat(steps.get(0).attributionMethod()).isEqualTo(AttributionMethod.EVEN_SPLIT);
+    }
+
     // --- helpers ---
+
+    private static PhaseCapture captureWith(List<ToolUseRecord> toolUses, List<TurnUsage> turns, double cost) {
+        return new PhaseCapture("p", null, 10, 100, 0, 0, 0, 1000L, 800L, cost, "sess", 1, false, null,
+                List.of(), toolUses, null, List.of(), turns, List.of());
+    }
 
     private static ParsedMessage assistantTurn(String msgId, String toolId, String toolName, long in, long out) {
         ToolUseBlock tool = ToolUseBlock.builder().id(toolId).name(toolName)

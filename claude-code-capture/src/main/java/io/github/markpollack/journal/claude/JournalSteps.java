@@ -112,9 +112,9 @@ public final class JournalSteps {
      * the phase's {@code totalCostUsd}; its tool results give each tool step its error flag and
      * duration, and a tool call without a result has no error and a duration of -1.
      *
-     * <p>Every tool-call ID that a turn lists must belong to one of the phase's tool calls, and
-     * without per-turn usage every tool call must have a name. Captures from
-     * {@link SessionLogParser} meet both conditions.
+     * <p>A tool-call ID that a turn lists but that belongs to none of the phase's tool calls still
+     * gets a step, with no tool name. A tool call with no name gets a step that is not marked as a
+     * sub-agent spawn.
      *
      * @param phase the phase; must not be {@code null}
      * @param runId the run ID to put on each step, or {@code null}
@@ -155,8 +155,9 @@ public final class JournalSteps {
      * call's error flag is the opposite of its {@code success}.
      *
      * <p>Use it on events from Claude Code's recorder. Other LLM and tool call events also give
-     * steps, but these are even splits with the vendor you pass. Every tool-call ID that a turn
-     * lists must appear on a tool call event of its phase that has a tool name.
+     * steps, but these are even splits with the vendor you pass. A tool-call ID that a turn lists
+     * but that no tool call event of its phase carries, or that has no tool name, gets a step with
+     * no tool name.
      *
      * @param events the run's events, in the order they were logged, or {@code null} for none
      * @param runId the run ID to put on each step, or {@code null}
@@ -286,7 +287,7 @@ public final class JournalSteps {
                         steps.add(new JournalStep(runId, turn.messageId(), toolId, toolName,
                                 turn.inputTokens(), turn.outputTokens(), perTool, actualCost, method,
                                 Boolean.TRUE.equals(toolErrors.get(toolId)), null, vendor,
-                                SUBAGENT_TOOLS.contains(toolName), turn.thinkingTokens(),
+                                isSubagentTool(toolName), turn.thinkingTokens(),
                                 turn.cacheCreationInputTokens(), turn.cacheReadInputTokens(), turn.turnIndex(),
                                 durationOf(toolDurations, toolId)));
                     }
@@ -307,7 +308,7 @@ public final class JournalSteps {
                     // linkage and observed duration survive independently of the cost split.
                     steps.add(new JournalStep(runId, tu.turnId(), tu.id(), tu.name(), 0, 0, perTool, actualCost,
                             method, Boolean.TRUE.equals(toolErrors.get(tu.id())), null, vendor,
-                            SUBAGENT_TOOLS.contains(tu.name()), 0L, 0L, 0L, tu.turnIndex(),
+                            isSubagentTool(tu.name()), 0L, 0L, 0L, tu.turnIndex(),
                             durationOf(toolDurations, tu.id())));
                 }
             }
@@ -391,6 +392,11 @@ public final class JournalSteps {
                     asInt(m.get(META_TURN_INDEX), -1)));
         }
         return turns;
+    }
+
+    /** Whether a tool name spawns a sub-agent; a tool call with no name never does. */
+    private static boolean isSubagentTool(String name) {
+        return name != null && SUBAGENT_TOOLS.contains(name);
     }
 
     /** Observed duration for a step, or -1 when none was recorded (never 0 by default). */
