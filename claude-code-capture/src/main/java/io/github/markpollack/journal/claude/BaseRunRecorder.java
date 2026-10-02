@@ -199,9 +199,10 @@ public abstract class BaseRunRecorder {
     }
 
     /**
-     * Ends the run {@code FAILED} without an error. Unlike {@link #failRun(Throwable)}, it writes
-     * nothing to the summary, so the run record has no {@code success} value and no error. Does
-     * nothing if the run has already ended or no run has been set.
+     * Ends the run {@code FAILED} without an error, through {@link Run#finish(RunStatus)}. The
+     * summary gets {@code success=false} unless it already has a {@code success} value; unlike
+     * {@link #failRun(Throwable)}, no error message or class is recorded. Does nothing if the run
+     * has already ended or no run has been set.
      */
     public void failRun() {
         if (currentRun != null) {

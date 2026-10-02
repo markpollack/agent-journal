@@ -81,4 +81,26 @@ class RunPersistenceTest {
         byte[] saved = storage.loadArtifact(run.experiment().id(), run.id(), "notes.txt").orElseThrow();
         assertThat(saved).isEqualTo(text.getBytes(StandardCharsets.UTF_8));
     }
+
+    @Test
+    void finishingAsFailedOrCrashedRecordsSuccessFalse() {
+        Run failed = Journal.run("exp").start();
+        Run crashed = Journal.run("exp").start();
+
+        failed.finish(RunStatus.FAILED);
+        crashed.finish(RunStatus.CRASHED);
+
+        assertThat(stored(failed).summary().values()).containsEntry("success", false);
+        assertThat(stored(crashed).summary().values()).containsEntry("success", false);
+    }
+
+    @Test
+    void finishingAsFailedKeepsASuccessValueTheCallerSet() {
+        Run run = Journal.run("exp").start();
+        run.setSummary("success", true);
+
+        run.finish(RunStatus.FAILED);
+
+        assertThat(stored(run).summary().values()).containsEntry("success", true);
+    }
 }

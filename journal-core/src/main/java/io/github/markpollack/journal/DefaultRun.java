@@ -240,9 +240,9 @@ public final class DefaultRun implements Run {
         this.status = status;
         this.endTime = Instant.now();
 
-        // Record success status in summary if finishing successfully
-        if (status == RunStatus.FINISHED && !summary.values().containsKey("success")) {
-            this.summary = this.summary.with("success", true);
+        // Record the outcome in the summary unless the caller already set one
+        if (!summary.values().containsKey("success")) {
+            this.summary = this.summary.with("success", status == RunStatus.FINISHED);
         }
 
         persistRun();

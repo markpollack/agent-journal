@@ -116,4 +116,15 @@ class BaseRunRecorderTest {
                 .findFirst().orElseThrow();
         assertThat(toolStep.toolName()).isEqualTo("Bash");
     }
+
+    @Test
+    @DisplayName("failRun() without an error records success=false")
+    void failRunWithoutAnErrorRecordsSuccessFalse() {
+        Run run = Journal.run("exp-1").start();
+
+        new TestRecorder(run).failRun();
+
+        assertThat(storage.loadRun("exp-1", run.id()).orElseThrow().summary().values())
+                .containsEntry("success", false);
+    }
 }

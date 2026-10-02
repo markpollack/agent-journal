@@ -236,9 +236,10 @@ public interface Run extends AutoCloseable {
     void fail(Throwable error);
 
     /**
-     * Ends this run with the given status and saves it. If the status is
-     * {@link RunStatus#FINISHED} and the summary has no {@code success} key, sets
-     * {@code success=true}. Does nothing if the run has already ended.
+     * Ends this run with the given status and saves it. If the summary has no {@code success}
+     * key, sets {@code success=true} for {@link RunStatus#FINISHED} and {@code success=false} for
+     * {@link RunStatus#FAILED} or {@link RunStatus#CRASHED}. Unlike {@link #fail(Throwable)}, it
+     * records no error. Does nothing if the run has already ended.
      *
      * @param status the final status, such as {@link RunStatus#FINISHED} or
      *        {@link RunStatus#CRASHED}

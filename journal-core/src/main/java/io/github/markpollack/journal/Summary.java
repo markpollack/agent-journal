@@ -21,8 +21,10 @@ import java.util.Map;
  *
  * <p>The run sets three names itself. {@code fail(error)} sets {@code success} to {@code false},
  * {@code error} to the exception's message, if it has one, and {@code errorType} to its class
- * name. Ending as {@link RunStatus#FINISHED} sets {@code success} to {@code true} unless a
- * {@code success} value is already present. Other names, such as {@code filesChanged}, are the caller's choice.
+ * name. Ending through {@link Run#finish(RunStatus)} or {@link Run#close()} sets {@code success}
+ * to {@code true} for {@link RunStatus#FINISHED} and to {@code false} for {@link RunStatus#FAILED}
+ * or {@link RunStatus#CRASHED}, unless a {@code success} value is already present. Other names,
+ * such as {@code filesChanged}, are the caller's choice.
  *
  * <p>Keys and values must not be {@code null}: every method that makes a summary throws
  * {@link NullPointerException} for a {@code null} key or value, and lookups throw it for a
