@@ -106,6 +106,21 @@ class GrokSessionParserTest {
     }
 
 
+    @Test
+    void modelIsTheOneThatUsedTheMostTokensWhenTheEndLineNamesSeveral() throws Exception {
+        List<String> lines = Files.readAllLines(fixture("grok-streaming-json.jsonl"));
+        String end = lines.get(lines.size() - 1);
+        String small = "\"modelUsage\":{\"grok-small\":{\"inputTokens\":10,\"outputTokens\":1,"
+                + "\"cacheReadInputTokens\":0,\"cacheCreationInputTokens\":0,\"modelCalls\":1,\"costUSD\":0.0001},";
+        assertThat(end).contains("\"modelUsage\":{");
+        lines.set(lines.size() - 1, end.replace("\"modelUsage\":{", small));
+
+        GrokPhaseCapture capture = GrokSessionParser.parse(
+                new BufferedReader(new StringReader(String.join("\n", lines) + "\n")), "grok-fixture", "p");
+
+        assertThat(capture.model()).isEqualTo("grok-4.6-build");
+    }
+
     private static Path fixture(String name) throws URISyntaxException {
         return Path.of(GrokSessionParserTest.class.getResource("/fixtures/" + name).toURI());
     }

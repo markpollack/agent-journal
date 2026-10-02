@@ -22,8 +22,9 @@ import java.util.List;
  *
  * @param phaseName the caller's name for this phase, such as {@code "plan"} or {@code "execute"}
  * @param promptText the prompt sent for this phase, or {@code null} if it was not captured
- * @param model the first model named in the {@code end} line's {@code modelUsage}, or
- *        {@code null} if none was named
+ * @param model the model in the {@code end} line's {@code modelUsage} that used the most tokens
+ *        (input, output and cache), the first named on a tie; {@code null} if none was named. The
+ *        other models of a call that used several are not kept
  * @param inputTokens the input tokens, not counting cache reads
  * @param outputTokens the output tokens
  * @param thinkingTokens the reasoning tokens Grok reported

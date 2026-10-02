@@ -176,11 +176,22 @@ public final class GrokSessionParser {
             totalCostUsd = event.path("total_cost_usd").asDouble(0.0);
             acceptUsage(event.path("usage"), true);
 
+            // When several models served the call, name the one that used the most tokens; the
+            // first one named wins a tie.
             JsonNode modelUsage = event.path("modelUsage");
             if (modelUsage.isObject()) {
-                Iterator<String> names = modelUsage.fieldNames();
-                if (names.hasNext()) {
-                    model = names.next();
+                long most = -1;
+                Iterator<Map.Entry<String, JsonNode>> entries = modelUsage.fields();
+                while (entries.hasNext()) {
+                    Map.Entry<String, JsonNode> entry = entries.next();
+                    JsonNode usage = entry.getValue();
+                    long tokens = usage.path("inputTokens").asLong(0) + usage.path("outputTokens").asLong(0)
+                            + usage.path("cacheReadInputTokens").asLong(0)
+                            + usage.path("cacheCreationInputTokens").asLong(0);
+                    if (tokens > most) {
+                        most = tokens;
+                        model = entry.getKey();
+                    }
                 }
             }
         }
