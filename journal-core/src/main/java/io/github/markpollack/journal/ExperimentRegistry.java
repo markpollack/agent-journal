@@ -49,13 +49,17 @@ public final class ExperimentRegistry {
      *   <li>Persist to storage and cache</li>
      * </ol>
      *
+     * <p>If the experiment is cached but the storage configured now does not have it, for example
+     * after {@link Journal#configure} was given a new storage, the cached experiment is saved to
+     * that storage.
+     *
      * @param experimentId the unique experiment identifier
      * @return the experiment
      * @throws NullPointerException if experimentId is null
      */
     public static Experiment getOrCreate(String experimentId) {
         Objects.requireNonNull(experimentId, "experimentId cannot be null");
-        return cache.computeIfAbsent(experimentId, id -> loadOrCreate(id, null));
+        return getOrCreateCached(experimentId, null);
     }
 
     /**
@@ -71,7 +75,7 @@ public final class ExperimentRegistry {
      */
     public static Experiment getOrCreate(String experimentId, Experiment.Builder builder) {
         Objects.requireNonNull(experimentId, "experimentId cannot be null");
-        return cache.computeIfAbsent(experimentId, id -> loadOrCreate(id, builder));
+        return getOrCreateCached(experimentId, builder);
     }
 
     /**
@@ -114,6 +118,20 @@ public final class ExperimentRegistry {
      */
     public static int cacheSize() {
         return cache.size();
+    }
+
+    private static Experiment getOrCreateCached(String experimentId, Experiment.Builder builder) {
+        Experiment cached = cache.get(experimentId);
+        if (cached == null) {
+            return cache.computeIfAbsent(experimentId, id -> loadOrCreate(id, builder));
+        }
+        // The cache outlives Journal.configure, so the storage configured now may never have
+        // seen this experiment; write it there if it is missing.
+        JournalStorage storage = JournalContext.getStorage();
+        if (storage.loadExperiment(experimentId).isEmpty()) {
+            storage.saveExperiment(cached);
+        }
+        return cached;
     }
 
     private static Experiment loadOrCreate(String experimentId, Experiment.Builder builder) {

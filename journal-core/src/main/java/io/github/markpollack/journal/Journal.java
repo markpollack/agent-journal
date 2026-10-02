@@ -74,7 +74,9 @@ public final class Journal {
     /**
      * Returns the experiment with the given ID, creating it with default settings if it does not
      * exist. It looks in a process-wide cache first, then in the configured storage, and saves a
-     * new experiment to storage. The cache is kept until {@link #reset()}.
+     * new experiment to storage. The cache is kept until {@link #reset()}, even when
+     * {@link #configure(JournalStorage)} sets a new storage; a cached experiment that the current
+     * storage does not have is written to it.
      *
      * @param experimentId the experiment ID
      * @return the experiment, never {@code null}

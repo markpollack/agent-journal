@@ -103,4 +103,26 @@ class RunPersistenceTest {
 
         assertThat(stored(run).summary().values()).containsEntry("success", true);
     }
+
+    @Test
+    void aRunStartedAfterConfiguringNewStorageWritesTheExperimentToThatStorage() {
+        Journal.run("exp").start().close();
+        InMemoryStorage second = new InMemoryStorage();
+        Journal.configure(second);
+
+        Journal.run("exp").start().close();
+
+        assertThat(second.loadExperiment("exp")).isPresent();
+    }
+
+    @Test
+    void experimentLookupAfterConfiguringNewStorageWritesTheExperimentToThatStorage() {
+        Journal.experiment("exp");
+        InMemoryStorage second = new InMemoryStorage();
+        Journal.configure(second);
+
+        Journal.experiment("exp");
+
+        assertThat(second.loadExperiment("exp")).isPresent();
+    }
 }

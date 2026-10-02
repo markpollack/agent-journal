@@ -198,8 +198,8 @@ public final class RunBuilder {
 
     /**
      * Starts a new run and returns it with status {@link RunStatus#RUNNING}. It first gets the
-     * run's {@link Experiment}, creating it with default settings and saving it if it does not
-     * exist. Then it saves the run record to the storage that {@link Journal#storage()} returns
+     * run's {@link Experiment}, creating it with default settings if it does not exist, and saves
+     * it to the current storage if that storage does not have it yet. Then it saves the run record to the storage that {@link Journal#storage()} returns
      * now; the run writes to that storage until it ends, even if {@link Journal#configure} is
      * called later.
      *
