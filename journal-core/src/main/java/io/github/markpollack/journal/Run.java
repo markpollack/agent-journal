@@ -223,7 +223,9 @@ public interface Run extends AutoCloseable {
 
     /**
      * Ends this run as {@link RunStatus#FAILED}, records the error in the summary
-     * ({@code success=false}, {@code error} and {@code errorType}) and saves the run. Does nothing
+     * ({@code success=false}, {@code error} and {@code errorType}) and saves the run. An exception
+     * with no message, such as many {@link NullPointerException}s, gets no {@code error} value,
+     * only {@code success} and {@code errorType}. Does nothing
      * if the run has already ended. It is not called for you: when an exception leaves a
      * try-with-resources block, the run is already closed, so call this inside the block.
      *

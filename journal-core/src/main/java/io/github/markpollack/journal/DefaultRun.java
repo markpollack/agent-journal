@@ -211,15 +211,18 @@ public final class DefaultRun implements Run {
         if (status.isTerminal()) {
             return; // Already finished
         }
+        // Build the new summary before changing any state, so a bad value cannot leave the run
+        // terminal in memory but unsaved. Many exceptions have no message; then no error is written.
+        Summary failed = this.summary.with("success", false);
+        if (error.getMessage() != null) {
+            failed = failed.with("error", error.getMessage());
+        }
+        failed = failed.with("errorType", error.getClass().getName());
+
+        this.summary = failed;
         this.failureCause = error;
         this.status = RunStatus.FAILED;
         this.endTime = Instant.now();
-
-        // Record failure in summary
-        this.summary = this.summary
-                .with("success", false)
-                .with("error", error.getMessage())
-                .with("errorType", error.getClass().getName());
 
         persistRun();
     }
