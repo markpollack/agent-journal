@@ -196,29 +196,30 @@ public record LLMCallEvent(
         }
 
         /**
-         * Sets the token usage to {@code TokenUsage.of(inputTokens, outputTokens)}, taking the
-         * output tokens from the usage already set, or 0.
+         * Sets the input tokens of the token usage, keeping the other counts of the usage already
+         * set. With no usage set, the other counts are 0.
          *
          * @param inputTokens the input tokens
          * @return this builder
          */
         public Builder inputTokens(int inputTokens) {
-            this.tokenUsage = TokenUsage.of(inputTokens,
-                    this.tokenUsage != null ? this.tokenUsage.outputTokens() : 0);
+            TokenUsage cur = this.tokenUsage != null ? this.tokenUsage : TokenUsage.of(0, 0);
+            this.tokenUsage = new TokenUsage(inputTokens, cur.outputTokens(), cur.thinkingTokens(),
+                    cur.cacheCreationTokens(), cur.cacheReadTokens(), cur.toolUseTokens());
             return this;
         }
 
         /**
-         * Sets the token usage to {@code TokenUsage.of(inputTokens, outputTokens)}, taking the
-         * input tokens from the usage already set, or 0.
+         * Sets the output tokens of the token usage, keeping the other counts of the usage already
+         * set. With no usage set, the other counts are 0.
          *
          * @param outputTokens the output tokens
          * @return this builder
          */
         public Builder outputTokens(int outputTokens) {
-            this.tokenUsage = TokenUsage.of(
-                    this.tokenUsage != null ? this.tokenUsage.inputTokens() : 0,
-                    outputTokens);
+            TokenUsage cur = this.tokenUsage != null ? this.tokenUsage : TokenUsage.of(0, 0);
+            this.tokenUsage = new TokenUsage(cur.inputTokens(), outputTokens, cur.thinkingTokens(),
+                    cur.cacheCreationTokens(), cur.cacheReadTokens(), cur.toolUseTokens());
             return this;
         }
 
