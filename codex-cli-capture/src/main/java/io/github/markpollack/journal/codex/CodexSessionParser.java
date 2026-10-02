@@ -31,9 +31,11 @@ import java.util.regex.Pattern;
  * <p>Each line is a JSON envelope with a {@code type} and a {@code payload}. The parser takes the
  * session ID and CLI version from {@code session_meta}, the model from the last
  * {@code turn_context}, the token counts from the last {@code token_count} (Codex's running total
- * for the session), and the duration and final message from {@code task_complete}. It pairs each
- * {@code custom_tool_call} with its {@code custom_tool_call_output} by {@code call_id}. Blank
- * lines and other record types are skipped.
+ * for the session), and the duration and final message from {@code task_complete}. A rollout with
+ * no {@code task_complete}, as when Codex was killed or the turn was interrupted, is an error with
+ * no duration and no final message. It pairs each {@code custom_tool_call} with its
+ * {@code custom_tool_call_output} by {@code call_id}. Blank lines and other record types are
+ * skipped.
  *
  * <p>Codex names almost every tool call {@code exec} and puts the real action in the call's
  * input, for example {@code tools.exec_command({"cmd":"rg ..."})}. So the parser reads that input,
@@ -119,6 +121,7 @@ public final class CodexSessionParser {
         private int cachedInputTokens;
         private long durationMs;
         private boolean isError;
+        private boolean sawTaskComplete;
         private String textOutput = "";
 
         void accept(JsonNode envelope) {
@@ -195,6 +198,7 @@ public final class CodexSessionParser {
         }
 
         private void acceptTaskComplete(JsonNode payload) {
+            sawTaskComplete = true;
             durationMs = payload.path("duration_ms").asLong(0L);
             textOutput = payload.path("last_agent_message").asText("");
             if (payload.has("status") && !"completed".equalsIgnoreCase(payload.path("status").asText())) {
@@ -209,7 +213,7 @@ public final class CodexSessionParser {
             }
             return new CodexPhaseCapture(phaseName, promptText, model, cliVersion, sessionId,
                     inputTokens, outputTokens, reasoningOutputTokens, cacheWriteInputTokens,
-                    cachedInputTokens, durationMs, isError, textOutput, toolUses);
+                    cachedInputTokens, durationMs, isError || !sawTaskComplete, textOutput, toolUses);
         }
     }
 

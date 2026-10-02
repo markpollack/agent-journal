@@ -11,8 +11,11 @@ import io.github.markpollack.journal.storage.InMemoryStorage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.BufferedReader;
+import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.nio.file.Files;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -88,6 +91,20 @@ class GrokSessionParserTest {
                 .sum();
         assertThat(attributed).isCloseTo(capture.totalCostUsd(), within(1e-12));
     }
+
+    @Test
+    void streamCutOffBeforeItsEndLineIsRecordedAsAnIncompleteError() throws Exception {
+        List<String> lines = Files.readAllLines(fixture("grok-streaming-json.jsonl"));
+        String truncated = String.join("\n", lines.subList(0, lines.size() - 1)) + "\n";
+
+        GrokPhaseCapture capture = GrokSessionParser.parse(new BufferedReader(new StringReader(truncated)),
+                "grok-fixture", "read both files");
+
+        assertThat(capture.isError()).isTrue();
+        assertThat(capture.stopReason()).isEqualTo("incomplete");
+        assertThat(capture.toolUses()).isNotEmpty();
+    }
+
 
     private static Path fixture(String name) throws URISyntaxException {
         return Path.of(GrokSessionParserTest.class.getResource("/fixtures/" + name).toURI());

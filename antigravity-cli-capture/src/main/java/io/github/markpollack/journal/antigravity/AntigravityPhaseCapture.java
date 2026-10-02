@@ -33,10 +33,10 @@ import java.util.List;
  * @param durationMs the duration of the call that Antigravity reported, in milliseconds, or 0
  *        if no {@code result} event arrived
  * @param numTurns the number of turns Antigravity reported
- * @param isError whether the call ended in error; the parser sets it when a status is present
- *        and is not {@code SUCCESS}, ignoring case
- * @param status the final status, such as {@code "SUCCESS"}, or {@code null} if no
- *        {@code result} event arrived
+ * @param isError whether the call ended in error; the parser sets it when the status is not
+ *        {@code SUCCESS}, ignoring case, which includes a stream with no {@code result} event
+ * @param status the final status, such as {@code "SUCCESS"}; {@code "INCOMPLETE"} when no
+ *        {@code result} event arrived; or {@code null} if the {@code result} event had none
  * @param textOutput the agent's final response; empty if there was none
  * @param errorMessage the error text of the {@code result} event, or {@code null} if there was
  *        none

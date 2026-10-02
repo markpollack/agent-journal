@@ -35,8 +35,8 @@ import java.util.List;
  * @param cachedInputTokens the input tokens read from the prompt cache
  * @param durationMs the duration of the task that Codex reported, in milliseconds, or 0 if no
  *        {@code task_complete} record was read
- * @param isError whether the {@code task_complete} record has a status other than
- *        {@code completed}; a failed tool call does not set it
+ * @param isError whether the rollout has no {@code task_complete} record, or one with a status
+ *        other than {@code completed}; a failed tool call does not set it
  * @param textOutput the agent's last message, from {@code task_complete}; empty if there was none
  * @param toolUses the tool calls, in the order they first appeared; never {@code null}
  */

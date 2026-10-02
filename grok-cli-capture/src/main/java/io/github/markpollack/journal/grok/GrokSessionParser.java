@@ -27,8 +27,10 @@ import java.util.Map;
  * and {@code thought} pieces, pairs each {@code tool_call} with its {@code tool_call_update}s by
  * {@code toolCallId}, and takes the session ID, stop reason, turn count, cost, model and token
  * counts from the final {@code end} line. If that line has no usage, the token counts are the sum
- * of the {@code usage} lines. Blank lines, lines without a {@code type} and types it does not know
- * are skipped.
+ * of the {@code usage} lines. If there is no {@code end} line, as when the CLI was killed, the
+ * capture is an error with stop reason {@code "incomplete"}, and the session ID, cost and model
+ * are {@code null} or 0. Blank lines, lines without a {@code type} and types it does not know are
+ * skipped.
  *
  * <p>A tool call is named by Grok's {@code toolName}, else its {@code title}, else its
  * {@code kind}, else {@code "unknown"}. Its {@link io.github.markpollack.journal.event.ToolKind}
@@ -41,6 +43,8 @@ import java.util.Map;
 public final class GrokSessionParser {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    private static final String INCOMPLETE = "incomplete";
 
     private GrokSessionParser() {
     }
@@ -107,6 +111,7 @@ public final class GrokSessionParser {
         private String sessionId;
         private int numTurns;
         private String stopReason;
+        private boolean sawEnd;
         private String model;
 
         void accept(JsonNode event) {
@@ -164,6 +169,7 @@ public final class GrokSessionParser {
         }
 
         private void acceptEnd(JsonNode event) {
+            sawEnd = true;
             sessionId = text(event, "sessionId");
             numTurns = event.path("num_turns").asInt(0);
             stopReason = text(event, "stopReason");
@@ -208,7 +214,10 @@ public final class GrokSessionParser {
             for (MutableToolCall tool : tools.values()) {
                 toolUses.add(tool.freeze());
             }
-            boolean isError = "error".equalsIgnoreCase(stopReason)
+            // A stream with no end line was cut off, for example because the CLI was killed
+            String stopReason = sawEnd ? this.stopReason : INCOMPLETE;
+            boolean isError = !sawEnd
+                    || "error".equalsIgnoreCase(stopReason)
                     || "cancelled".equalsIgnoreCase(stopReason);
             return new GrokPhaseCapture(phaseName, promptText, model, inputTokens, outputTokens,
                     thinkingTokens, cacheCreationInputTokens, cacheReadInputTokens, totalCostUsd,

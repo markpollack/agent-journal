@@ -33,9 +33,10 @@ import java.util.List;
  * @param sessionId the Grok session ID, or {@code null} if no {@code end} line arrived
  * @param numTurns the number of turns Grok reported, or 0 if none was reported
  * @param isError whether the call ended in error; the parser sets it when the stop reason is
- *        {@code error} or {@code cancelled}, ignoring case
- * @param stopReason Grok's stop reason, such as {@code "end_turn"}, or {@code null} if none was
- *        reported
+ *        {@code error} or {@code cancelled}, ignoring case, or when the output has no {@code end}
+ *        line
+ * @param stopReason Grok's stop reason, such as {@code "end_turn"}; {@code "incomplete"} when the
+ *        parser found no {@code end} line; or {@code null} if the {@code end} line reported none
  * @param textOutput the agent's text, joined in order
  * @param thinkingOutput the agent's thinking text, joined in order with nothing added between
  *        pieces, so the thinking of different turns runs together

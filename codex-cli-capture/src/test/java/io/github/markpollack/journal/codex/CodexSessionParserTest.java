@@ -98,6 +98,26 @@ class CodexSessionParserTest {
         assertThat(capture.toolUses().get(0).isError()).isTrue();
     }
 
+    @Test
+    void rolloutCutOffBeforeTaskCompleteIsRecordedAsAnError() throws Exception {
+        List<String> lines = Files.readAllLines(fixture());
+        assertThat(lines.get(lines.size() - 1)).contains("task_complete");
+        String truncated = String.join("\n", lines.subList(0, lines.size() - 1)) + "\n";
+
+        CodexPhaseCapture capture = CodexSessionParser.parse(new BufferedReader(new StringReader(truncated)),
+                "codex-fixture", "release work");
+
+        assertThat(capture.isError()).isTrue();
+        assertThat(capture.toolUses()).hasSize(6);
+    }
+
+    @Test
+    void completeRolloutIsNotAnError() throws Exception {
+        CodexPhaseCapture capture = CodexSessionParser.parse(fixture(), "codex-fixture", "release work");
+
+        assertThat(capture.isError()).isFalse();
+    }
+
     /**
      * Parses the recorded rollout with the redacted text of its first tool output replaced, so the
      * output patterns can be checked on the real envelope.

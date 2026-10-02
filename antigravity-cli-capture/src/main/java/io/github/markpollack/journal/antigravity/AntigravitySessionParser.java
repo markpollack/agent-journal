@@ -26,8 +26,10 @@ import java.util.Map;
  * <p>Each line is one event, named by its {@code event} field. The parser takes the conversation
  * ID and model from {@code init}, tool steps from {@code step_update} events whose
  * {@code step_type} is {@code tool}, and the status, final response, error, duration, turn count
- * and token counts from the final {@code result}. Blank lines, other events and other step types
- * are skipped, including the usage and text on other step updates.
+ * and token counts from the final {@code result}. If there is no {@code result} event, as when
+ * the CLI was killed, the capture is an error with status {@code "INCOMPLETE"}, no duration and no
+ * token counts. Blank lines, other events and other step types are skipped, including the usage
+ * and text on other step updates.
  *
  * <p>Antigravity sends several updates for one tool step, for example {@code ACTIVE} and then
  * {@code DONE} or {@code ERROR}. The parser joins them by {@code step_index} into one tool record
@@ -109,6 +111,7 @@ public final class AntigravitySessionParser {
         private String status;
         private String textOutput = "";
         private String errorMessage;
+        private boolean sawResult;
 
         void accept(JsonNode event) {
             String eventType = text(event, "event");
@@ -157,6 +160,7 @@ public final class AntigravitySessionParser {
         }
 
         private void acceptResult(JsonNode result) {
+            sawResult = true;
             conversationId = firstNonBlank(text(result, "conversation_id"), conversationId);
             status = text(result, "status");
             isError = status != null && !"SUCCESS".equalsIgnoreCase(status);
@@ -176,9 +180,11 @@ public final class AntigravitySessionParser {
             for (MutableToolCall tool : tools.values()) {
                 toolUses.add(tool.freeze(conversationId));
             }
+            // A stream with no result event was cut off, for example because the CLI was killed
             return new AntigravityPhaseCapture(phaseName, promptText, model, conversationId,
                     inputTokens, outputTokens, thinkingTokens, cacheReadTokens, durationMs,
-                    numTurns, isError, status, textOutput, errorMessage, toolUses);
+                    numTurns, isError || !sawResult, sawResult ? status : "INCOMPLETE",
+                    textOutput, errorMessage, toolUses);
         }
     }
 

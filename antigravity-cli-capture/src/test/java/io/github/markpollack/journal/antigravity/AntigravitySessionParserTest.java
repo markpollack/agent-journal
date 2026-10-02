@@ -11,9 +11,12 @@ import io.github.markpollack.journal.storage.InMemoryStorage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.BufferedReader;
+import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -99,6 +102,20 @@ class AntigravitySessionParserTest {
         assertThat(advertised).allSatisfy(name ->
                 assertThat(AntigravityToolClassifier.classify(name)).isNotNull());
     }
+
+    @Test
+    void streamCutOffBeforeItsResultIsRecordedAsAnIncompleteError() throws Exception {
+        List<String> lines = Files.readAllLines(fixture("antigravity-clean-stream-json.jsonl"));
+        String truncated = String.join("\n", lines.subList(0, lines.size() - 1)) + "\n";
+
+        AntigravityPhaseCapture capture = AntigravitySessionParser.parse(
+                new BufferedReader(new StringReader(truncated)), "antigravity-clean", "list then read");
+
+        assertThat(capture.isError()).isTrue();
+        assertThat(capture.status()).isEqualTo("INCOMPLETE");
+        assertThat(capture.toolUses()).isNotEmpty();
+    }
+
 
     private static Path fixture(String name) throws URISyntaxException {
         return Path.of(AntigravitySessionParserTest.class.getResource("/fixtures/" + name).toURI());
