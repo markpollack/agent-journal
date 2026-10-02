@@ -126,6 +126,7 @@ public final class RunBuilder {
      * @param key the tag's name; must not be {@code null}
      * @param value the tag's value; must not be {@code null}
      * @return this builder
+     * @throws NullPointerException if {@code key} or {@code value} is {@code null}
      */
     public RunBuilder tag(String key, String value) {
         this.tags = this.tags.and(key, value);

@@ -1,5 +1,6 @@
 package io.github.markpollack.journal;
 
+import io.github.markpollack.journal.metric.Tags;
 import io.github.markpollack.journal.storage.InMemoryStorage;
 import io.github.markpollack.journal.storage.RunData;
 import org.junit.jupiter.api.AfterEach;
@@ -7,6 +8,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -133,5 +136,22 @@ class RunPersistenceTest {
 
         assertThat(storage.loadExperiment("other-id")).isEmpty();
         assertThat(storage.loadExperiment("x1")).isEmpty();
+    }
+
+    @Test
+    void aNullTagIsRejectedWhenSetNotWhenTheRunStarts() {
+        RunBuilder builder = Journal.run("exp");
+
+        assertThatThrownBy(() -> builder.tag("item", null)).isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> builder.tag(null, "v")).isInstanceOf(NullPointerException.class);
+        assertThat(storage.loadExperiment("exp")).isEmpty();
+    }
+
+    @Test
+    void tagsFromAMapWithANullValueAreRejected() {
+        Map<String, String> values = new HashMap<>();
+        values.put("item", null);
+
+        assertThatThrownBy(() -> Tags.fromMap(values)).isInstanceOf(NullPointerException.class);
     }
 }

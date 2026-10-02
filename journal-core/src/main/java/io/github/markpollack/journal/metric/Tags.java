@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -15,10 +16,9 @@ import java.util.stream.Collectors;
  * {@link io.github.markpollack.journal.call.Call}s carry their own. Methods that add tags
  * return a new instance and leave this one unchanged, so tags are safe to share between threads.
  *
- * <p>Names and values must not be {@code null}. The {@code of} methods check this and throw
- * {@link NullPointerException}; {@link #and(String, String)} and {@link #fromMap(Map)} do not
- * check, and such tags fail later, when {@link #toMap()} is called to write them to file
- * storage.
+ * <p>Names and values must not be {@code null}. Every method that makes a tag set checks this
+ * and throws {@link NullPointerException}, so a bad tag fails where it is added, not later when
+ * the tags are written to storage.
  *
  * <p>Two tag sets are equal when they hold the same names and values, in any order.
  *
@@ -54,13 +54,16 @@ public final class Tags {
      * @param values the tags by name, or {@code null} for no tags; the names and values in it
      *        must not be {@code null}
      * @return the tag set
+     * @throws NullPointerException if the map holds a {@code null} name or value
      */
     @JsonCreator
     public static Tags fromMap(Map<String, String> values) {
         if (values == null || values.isEmpty()) {
             return EMPTY;
         }
-        return new Tags(new LinkedHashMap<>(values));
+        var copy = new LinkedHashMap<String, String>();
+        values.forEach((k, v) -> copy.put(requireName(k), requireValue(k, v)));
+        return new Tags(copy);
     }
 
     /**
@@ -114,10 +117,11 @@ public final class Tags {
      * @param key the name; must not be {@code null}
      * @param value the value; must not be {@code null}
      * @return the new tag set
+     * @throws NullPointerException if {@code key} or {@code value} is {@code null}
      */
     public Tags and(String key, String value) {
         var newValues = new LinkedHashMap<>(values);
-        newValues.put(key, value);
+        newValues.put(requireName(key), requireValue(key, value));
         return new Tags(newValues);
     }
 
@@ -181,6 +185,14 @@ public final class Tags {
     @JsonValue
     public Map<String, String> toMap() {
         return Map.copyOf(values);
+    }
+
+    private static String requireName(String key) {
+        return Objects.requireNonNull(key, "tag name must not be null");
+    }
+
+    private static String requireValue(String key, String value) {
+        return Objects.requireNonNull(value, () -> "value of tag '" + key + "' must not be null");
     }
 
     @Override
