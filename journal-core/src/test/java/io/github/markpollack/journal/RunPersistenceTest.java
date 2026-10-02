@@ -6,6 +6,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -67,5 +69,16 @@ class RunPersistenceTest {
         RunData saved = stored(run);
         assertThat(run.status()).isEqualTo(RunStatus.RUNNING);
         assertThat(saved.endTime()).isNull();
+    }
+
+    @Test
+    void textArtifactIsSavedAsUtf8WhateverThePlatformCharset() {
+        Run run = Journal.run("exp").start();
+        String text = "caf\u00e9 \u2713 \u65e5\u672c";
+
+        run.logArtifact("notes.txt", text);
+
+        byte[] saved = storage.loadArtifact(run.experiment().id(), run.id(), "notes.txt").orElseThrow();
+        assertThat(saved).isEqualTo(text.getBytes(StandardCharsets.UTF_8));
     }
 }

@@ -11,6 +11,7 @@ import io.github.markpollack.journal.metric.Tags;
 import io.github.markpollack.journal.storage.RunData;
 import io.github.markpollack.journal.storage.JournalStorage;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -179,7 +180,7 @@ public final class DefaultRun implements Run {
 
     @Override
     public void logArtifact(String name, String content) {
-        logArtifact(name, content.getBytes(), Map.of("type", "text"));
+        logArtifact(name, content.getBytes(StandardCharsets.UTF_8), Map.of("type", "text"));
     }
 
     @Override

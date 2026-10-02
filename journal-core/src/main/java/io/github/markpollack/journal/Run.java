@@ -167,7 +167,8 @@ public interface Run extends AutoCloseable {
     void logMetric(String name, double value, Tags tags);
 
     /**
-     * Saves text content as an artifact of this run, such as a plan or a final report.
+     * Saves text content as an artifact of this run, such as a plan or a final report. The text is
+     * encoded as UTF-8, whatever the platform's default charset.
      *
      * @param name the artifact name, such as {@code "plan.md"}; file storage uses it as the file
      *        name
