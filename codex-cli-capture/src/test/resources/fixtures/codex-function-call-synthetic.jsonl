@@ -1,0 +1,19 @@
+{"timestamp":"2026-01-01T00:00:01.000Z","type":"session_meta","payload":{"id":"synthetic-session-0001","cli_version":"0.0.0-synthetic","source":"cli","model_provider":"openai"}}
+{"timestamp":"2026-01-01T00:00:02.000Z","type":"turn_context","payload":{"model":"synthetic-model"}}
+{"timestamp":"2026-01-01T00:00:03.000Z","type":"response_item","payload":{"type":"function_call","name":"exec_command","arguments":"{\"cmd\":\"rg --files\",\"workdir\":\"/workspace\"}","call_id":"call_synthetic_1"}}
+{"timestamp":"2026-01-01T00:00:04.000Z","type":"response_item","payload":{"type":"function_call_output","call_id":"call_synthetic_1","output":"Process exited with code 0\nOutput:\nREADME.md\n"}}
+{"timestamp":"2026-01-01T00:00:05.000Z","type":"response_item","payload":{"type":"function_call","name":"shell","arguments":"{\"command\":[\"bash\",\"-lc\",\"cat README.md\"],\"workdir\":\"/workspace\"}","call_id":"call_synthetic_2"}}
+{"timestamp":"2026-01-01T00:00:06.000Z","type":"response_item","payload":{"type":"function_call_output","call_id":"call_synthetic_2","output":"Exit code: 0\nWall time: 0.1 seconds\nOutput:\n# Example\n"}}
+{"timestamp":"2026-01-01T00:00:07.000Z","type":"response_item","payload":{"type":"function_call","name":"shell_command","arguments":"{\"command\":\"mvn -q test\"}","call_id":"call_synthetic_3"}}
+{"timestamp":"2026-01-01T00:00:08.000Z","type":"response_item","payload":{"type":"function_call_output","call_id":"call_synthetic_3","output":"Exit code: 1\nWall time: 2.0 seconds\nOutput:\nBUILD FAILURE\n"}}
+{"timestamp":"2026-01-01T00:00:09.000Z","type":"response_item","payload":{"type":"function_call","name":"apply_patch","arguments":"{\"input\":\"*** Begin Patch\\n*** Add File: hello.txt\\n+hello\\n*** End Patch\\n\"}","call_id":"call_synthetic_4"}}
+{"timestamp":"2026-01-01T00:00:10.000Z","type":"response_item","payload":{"type":"function_call_output","call_id":"call_synthetic_4","output":[{"type":"input_text","text":"Done"}]}}
+{"timestamp":"2026-01-01T00:00:11.000Z","type":"response_item","payload":{"type":"function_call","name":"update_plan","arguments":"{\"plan\":[]}","call_id":"call_synthetic_5"}}
+{"timestamp":"2026-01-01T00:00:12.000Z","type":"response_item","payload":{"type":"function_call_output","call_id":"call_synthetic_5","output":"Plan updated"}}
+{"timestamp":"2026-01-01T00:00:13.000Z","type":"response_item","payload":{"type":"function_call","name":"exec_command","arguments":"not json","call_id":"call_synthetic_6"}}
+{"timestamp":"2026-01-01T00:00:14.000Z","type":"response_item","payload":{"type":"function_call_output","call_id":"call_synthetic_6","output":"Process exited with code 0\nOutput:\n"}}
+{"timestamp":"2026-01-01T00:00:15.000Z","type":"response_item","payload":{"type":"function_call_output","call_id":"call_synthetic_7","output":"Exit code: 0\nOutput:\norphan\n"}}
+{"timestamp":"2026-01-01T00:00:16.000Z","type":"response_item","payload":{"type":"custom_tool_call","status":"completed","call_id":"call_synthetic_8","name":"exec","input":"const r = await tools.exec_command({\"cmd\":\"ls\"});\ntext(r.output);\n"}}
+{"timestamp":"2026-01-01T00:00:17.000Z","type":"response_item","payload":{"type":"custom_tool_call_output","call_id":"call_synthetic_8","output":[{"type":"input_text","text":"README.md"}]}}
+{"timestamp":"2026-01-01T00:00:18.000Z","type":"event_msg","payload":{"type":"token_count","info":{"total_token_usage":{"input_tokens":100,"cached_input_tokens":0,"cache_write_input_tokens":0,"output_tokens":20,"reasoning_output_tokens":5,"total_tokens":120}}}}
+{"timestamp":"2026-01-01T00:00:19.000Z","type":"event_msg","payload":{"type":"task_complete","duration_ms":1000,"last_agent_message":"Synthetic task done."}}

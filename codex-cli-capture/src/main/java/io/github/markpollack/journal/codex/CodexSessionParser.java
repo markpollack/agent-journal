@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.markpollack.journal.event.ToolKind;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -34,8 +36,11 @@ import java.util.regex.Pattern;
  * for the session), and the duration and final message from {@code task_complete}. A rollout with
  * no {@code task_complete}, as when Codex was killed or the turn was interrupted, is an error with
  * no duration and no final message. It pairs each {@code custom_tool_call} with its
- * {@code custom_tool_call_output} by {@code call_id}. Blank lines and other record types are
- * skipped.
+ * {@code custom_tool_call_output}, and each {@code function_call} with its
+ * {@code function_call_output}, by {@code call_id}, keeping the calls in the order they are first
+ * seen. An output whose call is missing gives a call named {@code unknown}, and a record with no
+ * {@code call_id} is skipped. Blank lines and other record types are skipped; another record type
+ * that carries a {@code call_id} is logged at debug level.
  *
  * <p>Codex names almost every tool call {@code exec} and puts the real action in the call's
  * input, for example {@code tools.exec_command({"cmd":"rg ..."})}. So the parser reads that input,
@@ -46,18 +51,36 @@ import java.util.regex.Pattern;
  * stays {@code exec}; the parsed command and the raw input are kept in the tool's input map, so
  * the call can be classified again later.
  *
- * <p>A tool call is marked as an error when its status is anything other than
+ * <p>A {@code function_call} keeps its own name, such as {@code exec_command} or {@code shell}.
+ * Its input map holds {@code codex_record_type} {@code "function_call"}, the name as
+ * {@code codex_tool}, the {@code arguments} string unchanged as {@code raw_input}, and, when that
+ * string is a JSON object, the parsed object unchanged as {@code arguments}. The command the kind
+ * was taken from is added as {@code command_text} beside them, never in their place, and
+ * {@code classification_source} says where the kind came from.
+ *
+ * <p>A {@code custom_tool_call} is marked as an error when its status is anything other than
  * {@code completed}, or when its output text contains {@code Script failed} or reports a non-zero
- * exit code ({@code Process exited with code N} with N other than 0).
+ * exit code ({@code Process exited with code N} with N other than 0). A {@code function_call} has
+ * no status; it is an error when its output text contains {@code Script failed},
+ * {@code Process exited with code N}, {@code Exit code: N} or an {@code exit_code} field of N, with
+ * N other than 0.
  *
  * <p>All methods are static and keep no state between calls. Calls from several threads are safe
  * if each has its own input.
  */
 public final class CodexSessionParser {
 
+    private static final Logger log = LoggerFactory.getLogger(CodexSessionParser.class);
+
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private static final Pattern EXIT_CODE = Pattern.compile("Process exited with code (\\d+)");
+
+    // Only function_call_output is checked for these, so custom tool call records stay as they were.
+    private static final Pattern SHELL_EXIT_CODE = Pattern.compile("Exit code: (-?\\d+)");
+
+    // Matches the field in the output's JSON text, where a string output escapes its quotes.
+    private static final Pattern STRUCTURED_EXIT_CODE = Pattern.compile("exit_code\\\\?\"\\s*:\\s*(-?\\d+)");
 
     private CodexSessionParser() {
     }
@@ -144,10 +167,16 @@ public final class CodexSessionParser {
             switch (payloadType) {
                 case "custom_tool_call" -> acceptToolCall(payload);
                 case "custom_tool_call_output" -> acceptToolOutput(payload);
+                case "function_call" -> acceptFunctionCall(payload);
+                case "function_call_output" -> acceptFunctionCallOutput(payload);
                 case "token_count" -> acceptTokenCount(payload);
                 case "task_complete" -> acceptTaskComplete(payload);
                 default -> {
                     // Reasoning, messages, rate limits, and future records do not alter tool pairing.
+                    if (text(payload, "call_id") != null) {
+                        log.debug("Skipping Codex record of type {} with call_id {}", payloadType,
+                                text(payload, "call_id"));
+                    }
                 }
             }
         }
@@ -180,6 +209,35 @@ public final class CodexSessionParser {
             tool.output = asObject(payload.get("output"));
             String outputText = payload.path("output").toString();
             if (outputText.contains("Script failed") || hasNonZeroExitCode(outputText)) {
+                tool.isError = true;
+                tool.errorMessage = outputText;
+            }
+        }
+
+        private void acceptFunctionCall(JsonNode payload) {
+            String id = text(payload, "call_id");
+            if (id == null) {
+                return;
+            }
+            String name = firstNonBlank(text(payload, "name"), "unknown");
+            CodexToolClassifier.Classification classification =
+                    CodexToolClassifier.classifyFunctionCall(name, argumentsText(payload.get("arguments")));
+            MutableToolCall tool = tools.computeIfAbsent(id, MutableToolCall::new);
+            tool.kind = classification.kind();
+            tool.name = name;
+            tool.input = classification.input();
+        }
+
+        private void acceptFunctionCallOutput(JsonNode payload) {
+            String id = text(payload, "call_id");
+            if (id == null) {
+                return;
+            }
+            MutableToolCall tool = tools.computeIfAbsent(id, MutableToolCall::new);
+            tool.output = asObject(payload.get("output"));
+            String outputText = payload.path("output").toString();
+            if (outputText.contains("Script failed") || hasNonZeroExitCode(outputText)
+                    || hasNonZero(SHELL_EXIT_CODE, outputText) || hasNonZero(STRUCTURED_EXIT_CODE, outputText)) {
                 tool.isError = true;
                 tool.errorMessage = outputText;
             }
@@ -243,6 +301,24 @@ public final class CodexSessionParser {
             }
         }
         return false;
+    }
+
+    private static boolean hasNonZero(Pattern exitCode, String outputText) {
+        Matcher exit = exitCode.matcher(outputText);
+        while (exit.find()) {
+            if (!exit.group(1).matches("-?0+")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Codex writes the arguments as a JSON string; anything else is kept as its JSON text.
+    private static String argumentsText(JsonNode arguments) {
+        if (arguments == null || arguments.isNull() || arguments.isMissingNode()) {
+            return "";
+        }
+        return arguments.isTextual() ? arguments.asText() : arguments.toString();
     }
 
     private static String text(JsonNode node, String field) {

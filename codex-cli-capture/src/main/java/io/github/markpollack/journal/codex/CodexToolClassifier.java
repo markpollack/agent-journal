@@ -1,10 +1,14 @@
 package io.github.markpollack.journal.codex;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import io.github.markpollack.journal.event.ToolKind;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -23,6 +27,11 @@ import java.util.regex.Pattern;
  * aliases, and scripts whose real behavior is hidden behind an interpreter may fall back to
  * {@code Shell}. The raw input and command remain in the normalized input map so a future
  * classifier can reprocess the immutable event.</p>
+ *
+ * <p>A {@code function_call} record is classified by {@link #classifyFunctionCall}, from its real
+ * name and its JSON {@code arguments}. Its arguments are nested unchanged under
+ * {@code arguments}, and the command it derives goes under {@code command_text}, so a derived
+ * value never takes the place of an argument.</p>
  */
 final class CodexToolClassifier {
 
@@ -30,6 +39,9 @@ final class CodexToolClassifier {
     private static final Pattern TOOL_INVOCATION = Pattern.compile("tools\\.([A-Za-z0-9_]+)\\s*\\(");
     private static final Pattern LEADING_ASSIGNMENT = Pattern.compile("^[A-Za-z_][A-Za-z0-9_]*=.*$");
     private static final Set<String> NAVIGATION = Set.of("cd", "pwd", "true", "echo", "printf");
+    private static final Set<String> SHELLS = Set.of("bash", "sh", "zsh");
+    private static final ObjectReader STRICT_READER =
+            MAPPER.readerFor(JsonNode.class).with(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
 
     private CodexToolClassifier() {
     }
@@ -61,6 +73,92 @@ final class CodexToolClassifier {
 
         normalized.put("classification_source", "input.tools." + codexTool);
         return new Classification(classifyCodexTool(codexTool), normalized);
+    }
+
+    /**
+     * Classifies a {@code function_call} record from its name and its {@code arguments} string.
+     *
+     * @param name the record's name, kept as {@code codex_tool}
+     * @param argumentsJson the record's {@code arguments} string, kept as {@code raw_input};
+     *        {@code ""} if absent
+     */
+    static Classification classifyFunctionCall(String name, String argumentsJson) {
+        Map<String, Object> input = new LinkedHashMap<>();
+        input.put("codex_record_type", "function_call");
+        input.put("codex_tool", name);
+        input.put("raw_input", nullToEmpty(argumentsJson));
+
+        JsonNode arguments = parseObject(argumentsJson);
+        if (arguments == null) {
+            input.put("classification_source", "function_call.unparsed");
+            return new Classification(ToolKind.OTHER, input);
+        }
+        input.put("arguments", asMap(arguments));
+
+        String command;
+        String source;
+        switch (name) {
+            case "exec_command" -> {
+                command = text(arguments, "cmd");
+                source = "function_call.arguments.cmd";
+            }
+            case "shell", "container.exec" -> {
+                command = joinedCommand(arguments.get("command"));
+                source = "function_call.arguments.command";
+            }
+            case "shell_command" -> {
+                command = text(arguments, "command");
+                source = "function_call.arguments.command";
+            }
+            default -> {
+                input.put("classification_source", "function_call.name");
+                return new Classification(classifyCodexTool(name), input);
+            }
+        }
+
+        if (command == null || command.isBlank()) {
+            input.put("classification_source", "function_call.arguments.missing_command");
+            return new Classification(classifyShell(null).kind(), input);
+        }
+        ShellClassification shell = classifyShell(command);
+        input.put("command_text", command);
+        if (shell.filePath() != null) {
+            input.put("file_path", shell.filePath());
+        }
+        input.put("classification_source", source);
+        return new Classification(shell.kind(), input);
+    }
+
+    // An argument array of strings; [bash|sh|zsh, -c|-lc, script] gives the script, anything else
+    // the elements joined with single spaces. Used for classification only.
+    private static String joinedCommand(JsonNode command) {
+        if (command == null || !command.isArray() || command.isEmpty()) {
+            return null;
+        }
+        List<String> words = new ArrayList<>(command.size());
+        for (JsonNode word : command) {
+            if (!word.isTextual()) {
+                return null;
+            }
+            words.add(word.asText());
+        }
+        if (words.size() == 3 && SHELLS.contains(words.get(0))
+                && ("-c".equals(words.get(1)) || "-lc".equals(words.get(1)))) {
+            return words.get(2);
+        }
+        return String.join(" ", words);
+    }
+
+    private static JsonNode parseObject(String json) {
+        if (json == null || json.isBlank()) {
+            return null;
+        }
+        try {
+            JsonNode node = STRICT_READER.readValue(json);
+            return node != null && node.isObject() ? node : null;
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     private static ToolKind classifyCodexTool(String tool) {

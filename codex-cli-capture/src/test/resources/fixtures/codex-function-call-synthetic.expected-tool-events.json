@@ -1,0 +1,177 @@
+[
+  {
+    "@type": "tool_call",
+    "id": "call_synthetic_1",
+    "toolName": "exec_command",
+    "kind": "search",
+    "input": {
+      "codex_record_type": "function_call",
+      "codex_tool": "exec_command",
+      "raw_input": "{\"cmd\":\"rg --files\",\"workdir\":\"/workspace\"}",
+      "arguments": {
+        "cmd": "rg --files",
+        "workdir": "/workspace"
+      },
+      "command_text": "rg --files",
+      "classification_source": "function_call.arguments.cmd"
+    },
+    "output": "Process exited with code 0\nOutput:\nREADME.md\n",
+    "success": true,
+    "errorMessage": null,
+    "durationMs": 0,
+    "turnIndex": -1,
+    "turnId": null
+  },
+  {
+    "@type": "tool_call",
+    "id": "call_synthetic_2",
+    "toolName": "shell",
+    "kind": "read",
+    "input": {
+      "codex_record_type": "function_call",
+      "codex_tool": "shell",
+      "raw_input": "{\"command\":[\"bash\",\"-lc\",\"cat README.md\"],\"workdir\":\"/workspace\"}",
+      "arguments": {
+        "command": [
+          "bash",
+          "-lc",
+          "cat README.md"
+        ],
+        "workdir": "/workspace"
+      },
+      "command_text": "cat README.md",
+      "file_path": "README.md",
+      "classification_source": "function_call.arguments.command"
+    },
+    "output": "Exit code: 0\nWall time: 0.1 seconds\nOutput:\n# Example\n",
+    "success": true,
+    "errorMessage": null,
+    "durationMs": 0,
+    "turnIndex": -1,
+    "turnId": null
+  },
+  {
+    "@type": "tool_call",
+    "id": "call_synthetic_3",
+    "toolName": "shell_command",
+    "kind": "execute",
+    "input": {
+      "codex_record_type": "function_call",
+      "codex_tool": "shell_command",
+      "raw_input": "{\"command\":\"mvn -q test\"}",
+      "arguments": {
+        "command": "mvn -q test"
+      },
+      "command_text": "mvn -q test",
+      "classification_source": "function_call.arguments.command"
+    },
+    "output": "Exit code: 1\nWall time: 2.0 seconds\nOutput:\nBUILD FAILURE\n",
+    "success": false,
+    "errorMessage": "\"Exit code: 1\\nWall time: 2.0 seconds\\nOutput:\\nBUILD FAILURE\\n\"",
+    "durationMs": 0,
+    "turnIndex": -1,
+    "turnId": null
+  },
+  {
+    "@type": "tool_call",
+    "id": "call_synthetic_4",
+    "toolName": "apply_patch",
+    "kind": "edit",
+    "input": {
+      "codex_record_type": "function_call",
+      "codex_tool": "apply_patch",
+      "raw_input": "{\"input\":\"*** Begin Patch\\n*** Add File: hello.txt\\n+hello\\n*** End Patch\\n\"}",
+      "arguments": {
+        "input": "*** Begin Patch\n*** Add File: hello.txt\n+hello\n*** End Patch\n"
+      },
+      "classification_source": "function_call.name"
+    },
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Done"
+      }
+    ],
+    "success": true,
+    "errorMessage": null,
+    "durationMs": 0,
+    "turnIndex": -1,
+    "turnId": null
+  },
+  {
+    "@type": "tool_call",
+    "id": "call_synthetic_5",
+    "toolName": "update_plan",
+    "kind": "other",
+    "input": {
+      "codex_record_type": "function_call",
+      "codex_tool": "update_plan",
+      "raw_input": "{\"plan\":[]}",
+      "arguments": {
+        "plan": []
+      },
+      "classification_source": "function_call.name"
+    },
+    "output": "Plan updated",
+    "success": true,
+    "errorMessage": null,
+    "durationMs": 0,
+    "turnIndex": -1,
+    "turnId": null
+  },
+  {
+    "@type": "tool_call",
+    "id": "call_synthetic_6",
+    "toolName": "exec_command",
+    "kind": "other",
+    "input": {
+      "codex_record_type": "function_call",
+      "codex_tool": "exec_command",
+      "raw_input": "not json",
+      "classification_source": "function_call.unparsed"
+    },
+    "output": "Process exited with code 0\nOutput:\n",
+    "success": true,
+    "errorMessage": null,
+    "durationMs": 0,
+    "turnIndex": -1,
+    "turnId": null
+  },
+  {
+    "@type": "tool_call",
+    "id": "call_synthetic_7",
+    "toolName": "unknown",
+    "kind": "other",
+    "input": {},
+    "output": "Exit code: 0\nOutput:\norphan\n",
+    "success": true,
+    "errorMessage": null,
+    "durationMs": 0,
+    "turnIndex": -1,
+    "turnId": null
+  },
+  {
+    "@type": "tool_call",
+    "id": "call_synthetic_8",
+    "toolName": "exec",
+    "kind": "read",
+    "input": {
+      "cmd": "ls",
+      "codex_tool": "exec_command",
+      "raw_input": "const r = await tools.exec_command({\"cmd\":\"ls\"});\ntext(r.output);\n",
+      "command": "ls",
+      "classification_source": "input.tools.exec_command.cmd"
+    },
+    "output": [
+      {
+        "type": "input_text",
+        "text": "README.md"
+      }
+    ],
+    "success": true,
+    "errorMessage": null,
+    "durationMs": 0,
+    "turnIndex": -1,
+    "turnId": null
+  }
+]
