@@ -5,6 +5,7 @@ import io.github.markpollack.journal.event.TokenUsage;
 import io.github.markpollack.journal.trace.JournalStep;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -33,8 +34,8 @@ import java.util.List;
  * io.github.markpollack.journal.trace.TraceContentMode,
  * io.github.markpollack.journal.trace.TraceRawMode, int)}.
  *
- * <p>Treat the lists in a capture as read-only. A capture whose lists nobody changes can be
- * shared between threads.
+ * <p>The capture keeps unmodifiable copies of the lists it is given: later changes to those lists
+ * do not reach it, and its own lists cannot be changed. A capture can be shared between threads.
  *
  * @param phaseName the caller's name for this phase, such as {@code "plan"} or {@code "execute"}
  * @param promptText the prompt sent for this phase, or {@code null} if it was not captured
@@ -93,10 +94,21 @@ public record PhaseCapture(
 
     /**
      * Creates a capture from all of its parts. A {@code null} {@code stopReason} becomes
-     * {@link StopReason#UNKNOWN}.
+     * {@link StopReason#UNKNOWN}. Each list is copied into an unmodifiable list, so later changes
+     * to the lists passed in do not reach the capture; a {@code null} list stays {@code null}.
      */
     public PhaseCapture {
         stopReason = stopReason != null ? stopReason : StopReason.UNKNOWN;
+        thinkingBlocks = copy(thinkingBlocks);
+        toolUses = copy(toolUses);
+        toolResults = copy(toolResults);
+        turns = copy(turns);
+        modelCosts = copy(modelCosts);
+    }
+
+    // Unlike List.copyOf, keeps null elements and a null list as they are
+    private static <T> List<T> copy(List<T> list) {
+        return list == null ? null : Collections.unmodifiableList(new ArrayList<>(list));
     }
 
     /**

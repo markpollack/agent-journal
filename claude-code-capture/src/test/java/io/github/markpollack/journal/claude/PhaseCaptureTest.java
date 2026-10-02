@@ -2,10 +2,12 @@ package io.github.markpollack.journal.claude;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class PhaseCaptureTest {
 
@@ -111,5 +113,22 @@ class PhaseCaptureTest {
                 "output", List.of(), List.of(), null, null);
 
         assertThat(capture.totalTokens()).isEqualTo(85089); // 14+5000+80000+50+25
+    }
+
+    @Test
+    void listsAreCopiedSoLaterChangesToTheSourceDoNotReachTheCapture() {
+        List<String> thinking = new ArrayList<>(List.of("first"));
+        List<ToolUseRecord> tools = new ArrayList<>();
+        PhaseCapture capture = new PhaseCapture("p", null, 1, 1, 0, 0, 0, 1L, 1L, 0.0, "s", 1, false, "",
+                thinking, tools, null, null);
+
+        thinking.add("second");
+        tools.add(new ToolUseRecord("t1", "Bash", Map.of()));
+
+        assertThat(capture.thinkingBlocks()).containsExactly("first");
+        assertThat(capture.toolUses()).isEmpty();
+        assertThat(capture.toolResults()).isNull();
+        assertThatThrownBy(() -> capture.thinkingBlocks().add("x"))
+                .isInstanceOf(UnsupportedOperationException.class);
     }
 }
