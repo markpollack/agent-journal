@@ -75,11 +75,8 @@ public final class DefaultCallTracker implements CallTracker {
      * @param call the completed call
      */
     void onCallComplete(DefaultCall call) {
-        Stack<DefaultCall> stack = callStack.get();
-        // Pop from stack if it's the current call
-        if (!stack.isEmpty() && stack.peek() == call) {
-            stack.pop();
-        }
+        // Remove the call wherever it is, so that a call ended out of order never stays current
+        callStack.get().remove(call);
     }
 
     /**

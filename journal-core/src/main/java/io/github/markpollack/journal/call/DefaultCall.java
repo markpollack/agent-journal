@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -140,6 +141,7 @@ public final class DefaultCall implements Call {
 
     @Override
     public void fail(Throwable error) {
+        Objects.requireNonNull(error, "error");
         if (isComplete()) {
             return; // Ignore if already complete
         }

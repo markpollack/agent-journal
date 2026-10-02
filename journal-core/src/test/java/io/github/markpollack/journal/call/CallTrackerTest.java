@@ -407,4 +407,52 @@ class CallTrackerTest extends BaseTrackingTest {
             assertThat(tracker.allCalls()).allMatch(Call::isComplete);
         }
     }
+
+    @Nested
+    @DisplayName("Out of order and invalid ends")
+    class OutOfOrderEnds {
+
+        @Test
+        @DisplayName("closing a call out of order leaves the open parent current")
+        void outOfOrderCloseLeavesOpenParentCurrent() {
+            DefaultCallTracker tracker = new DefaultCallTracker();
+            Call parent = tracker.startCall("parent");
+            Call child = parent.child("child");
+            Call grandchild = child.child("grandchild");
+
+            child.close();
+            grandchild.close();
+
+            assertThat(tracker.currentCall()).isSameAs(parent);
+            parent.close();
+            assertThat(tracker.currentCall()).isNull();
+        }
+
+        @Test
+        @DisplayName("closing a parent before its child leaves the child current")
+        void closingParentFirstLeavesChildCurrent() {
+            DefaultCallTracker tracker = new DefaultCallTracker();
+            Call parent = tracker.startCall("parent");
+            Call child = parent.child("child");
+
+            parent.close();
+
+            assertThat(tracker.currentCall()).isSameAs(child);
+            child.close();
+            assertThat(tracker.currentCall()).isNull();
+        }
+
+        @Test
+        @DisplayName("fail(null) throws and leaves the call open")
+        void failWithNullThrowsAndLeavesCallOpen() {
+            DefaultCallTracker tracker = new DefaultCallTracker();
+            Call call = tracker.startCall("op");
+
+            assertThatThrownBy(() -> call.fail(null)).isInstanceOf(NullPointerException.class);
+
+            assertThat(call.isComplete()).isFalse();
+            assertThat(call.isFailed()).isFalse();
+            assertThat(tracker.currentCall()).isSameAs(call);
+        }
+    }
 }

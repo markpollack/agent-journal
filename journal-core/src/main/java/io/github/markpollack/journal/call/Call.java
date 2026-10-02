@@ -183,6 +183,8 @@ public interface Call extends AutoCloseable {
      * Call it inside the try block: the later {@code close()} then does nothing.
      *
      * @param error the cause of the failure; must not be {@code null}
+     * @throws NullPointerException if {@code error} is {@code null}; the call is then left as it
+     *         was
      */
     void fail(Throwable error);
 

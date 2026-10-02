@@ -76,9 +76,8 @@ public interface CallTracker {
 
     /**
      * Returns the innermost open call started on the calling thread. Calls started on other
-     * threads are not seen. This holds only when calls are closed in the reverse order they were
-     * started, as try-with-resources does; otherwise the result can be a call that has already
-     * ended.
+     * threads are not seen. Calls may be ended in any order: an ended call is never returned, as
+     * long as it was ended on the thread that started it.
      *
      * @return the current call, or {@code null} if the calling thread has no open call
      */
