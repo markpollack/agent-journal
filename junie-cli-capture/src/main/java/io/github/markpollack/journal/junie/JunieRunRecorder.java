@@ -77,7 +77,8 @@ public final class JunieRunRecorder {
      * Any rounding remainder goes to the last step, so the shares add up to the total. A phase with
      * no tool steps has no derived events.
      *
-     * @param phase the parsed Junie session; a {@code null} phase name is recorded as {@code null}
+     * @param phase the parsed Junie session; with a {@code null} phase name, the {@code phase}
+     *        attribute of the prompt and thinking events is left out
      * @throws IllegalStateException if the run has ended
      * @throws UnsupportedOperationException if the phase has tool steps and the run's storage
      *         cannot keep derived events at all; the other events are logged by then
@@ -154,11 +155,13 @@ public final class JunieRunRecorder {
         }
     }
 
-    // A LinkedHashMap, not Map.of, so a capture with no phase name is recorded rather than
-    // throwing NullPointerException.
+    // Not Map.of, which throws NullPointerException for a capture with no phase name; such a
+    // capture is recorded without the phase, since attributes must not hold null values.
     private static Map<String, Object> phaseAttributes(String phaseName, String key, Object value) {
         Map<String, Object> attributes = new LinkedHashMap<>();
-        attributes.put("phase", phaseName);
+        if (phaseName != null) {
+            attributes.put("phase", phaseName);
+        }
         attributes.put(key, value);
         return attributes;
     }

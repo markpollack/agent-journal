@@ -153,6 +153,8 @@ class BaseRunRecorderTest {
 
         assertThat(storage.loadEvents("exp-1", run.id()))
                 .filteredOn(e -> e instanceof io.github.markpollack.journal.event.CustomEvent)
+                .allSatisfy(e -> assertThat(((io.github.markpollack.journal.event.CustomEvent) e).attributes())
+                        .doesNotContainKey("phase"))
                 .extracting(JournalEvent::type)
                 .containsExactly("prompt", "thinking_block");
     }

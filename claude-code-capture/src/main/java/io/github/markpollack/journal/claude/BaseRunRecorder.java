@@ -80,8 +80,8 @@ public abstract class BaseRunRecorder {
      * in {@link PhaseCapture#stepCosts()}, and adds their number to
      * {@link #derivedEventsEmitted}.
      *
-     * @param phase the parsed Claude Code call; a {@code null}
-     *        phase name is recorded as {@code null}
+     * @param phase the parsed Claude Code call; with a {@code null} phase name, the {@code phase}
+     *        attribute of the prompt and thinking events is left out
      * @throws NullPointerException if no run has been set
      * @throws IllegalStateException if the run has ended
      * @throws UnsupportedOperationException if the phase has steps and the run's storage cannot
@@ -219,11 +219,13 @@ public abstract class BaseRunRecorder {
         return currentRun;
     }
 
-    // A LinkedHashMap, not Map.of, so a capture with no phase name is recorded rather than
-    // throwing NullPointerException.
+    // Not Map.of, which throws NullPointerException for a capture with no phase name; such a
+    // capture is recorded without the phase, since attributes must not hold null values.
     private static Map<String, Object> phaseAttributes(String phaseName, String key, Object value) {
         Map<String, Object> attributes = new LinkedHashMap<>();
-        attributes.put("phase", phaseName);
+        if (phaseName != null) {
+            attributes.put("phase", phaseName);
+        }
         attributes.put(key, value);
         return attributes;
     }

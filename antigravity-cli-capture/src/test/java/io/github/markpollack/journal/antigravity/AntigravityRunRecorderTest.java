@@ -41,6 +41,7 @@ class AntigravityRunRecorderTest {
         List<JournalEvent> events = storage.loadEvents("exp", run.id());
         assertThat(events).filteredOn(e -> e instanceof CustomEvent c && c.type().equals("prompt"))
                 .singleElement()
-                .satisfies(e -> assertThat(((CustomEvent) e).attributes()).containsEntry("text", "the prompt"));
+                .satisfies(e -> assertThat(((CustomEvent) e).attributes()).containsEntry("text", "the prompt")
+                        .doesNotContainKey("phase"));
     }
 }
