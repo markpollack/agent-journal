@@ -117,8 +117,9 @@ public interface JournalStorage {
      * {@link io.github.markpollack.journal.Journal#registerEventType(String, Class)}, which
      * registers on the configured storage.
      *
-     * <p>The default does nothing, which suits a backend that keeps event objects as they are,
-     * such as {@link InMemoryStorage}.
+     * <p>The default does nothing, which suits a backend that keeps event objects as they are.
+     * The two built-in storages keep the registration for the whole process, so it applies to
+     * every {@link JsonFileStorage}, including ones created later.
      *
      * @param typeName the {@code @type} value written for events of this type
      * @param cls the class to load such events as

@@ -115,8 +115,8 @@ public final class Journal {
      * starting runs. A run keeps the storage it started with, so runs already started are not
      * moved.
      *
-     * <p>Event types registered with {@link #registerEventType(String, Class)} belong to one
-     * storage, so register them after this call.
+     * <p>Event types registered with {@link #registerEventType(String, Class)} are kept for the
+     * whole process, so they still apply after this call swaps the storage.
      *
      * <p>Example:
      * <pre>{@code
@@ -145,8 +145,10 @@ public final class Journal {
 
     /**
      * Registers an event type defined outside journal-core, so that file storage can read events
-     * of that type back. The type is registered on the storage configured at the time of the call,
-     * so call this after {@link #configure(JournalStorage)}:
+     * of that type back. The registration is kept for the whole process: it applies to every
+     * {@link io.github.markpollack.journal.storage.JsonFileStorage}, including storages configured
+     * later and ones that have already loaded files, so it can be made before or after
+     * {@link #configure(JournalStorage)}:
      * <pre>{@code
      * Journal.configure(new JsonFileStorage(path));
      * Journal.registerEventType("workflow_step", WorkflowStepEvent.class);
@@ -161,8 +163,9 @@ public final class Journal {
 
     /**
      * Returns to the initial state: forgets the configured storage and clears the experiment
-     * cache. The next use creates a new in-memory storage; event types registered on the old
-     * storage are not carried over. Meant for tests:
+     * cache. The next use creates a new in-memory storage. Event types registered with
+     * {@link #registerEventType(String, Class)} are kept, since they belong to the process, not
+     * to a storage. Meant for tests:
      *
      * <pre>{@code
      * @AfterEach

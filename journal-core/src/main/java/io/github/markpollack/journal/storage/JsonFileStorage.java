@@ -2,8 +2,11 @@ package io.github.markpollack.journal.storage;
 
 import io.github.markpollack.journal.Experiment;
 import io.github.markpollack.journal.derived.DerivedEvent;
+import io.github.markpollack.journal.derived.StepCostEvent;
+import io.github.markpollack.journal.derived.StepOutcomeEvent;
 import io.github.markpollack.journal.event.FeedbackEvent;
 import io.github.markpollack.journal.event.JournalEvent;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -49,7 +52,14 @@ import java.util.stream.Stream;
  * <p>{@code events.jsonl} and {@code analysis.jsonl} start with a header line that carries
  * {@link #SCHEMA_VERSION}; {@code feedback.jsonl} has no header. The load methods skip header
  * lines and read the whole file into memory. Event types defined outside journal-core must be
- * registered with {@link #registerEventSubtype(String, Class)} before they can be loaded.
+ * registered with {@link #registerEventSubtype(String, Class)} before they can be loaded; a
+ * registration applies to every storage in the process, including ones created later.
+ *
+ * <p>Reading tolerates <em>unknown fields only</em>: a field that this version does not know,
+ * such as one added by a newer version, is ignored in run, experiment, event, derived event and
+ * feedback records. Everything else still fails the load with {@link UncheckedIOException}: an
+ * unknown {@code @type} name, an unknown enum value (other than a tool kind, which reads as
+ * {@code other}), and a line that is not valid JSON.
  *
  * <p>{@code raw/} is where copies of the agent's own session files belong, so they can be found
  * from the run; agent-experiment fills it, this class only locates it. See
@@ -93,7 +103,8 @@ public class JsonFileStorage implements JournalStorage {
 
     private final Path baseDir;
     private final ObjectMapper objectMapper;
-    private final ObjectMapper eventMapper;
+    private ObjectMapper eventMapper;
+    private int eventMapperGeneration;
 
     /**
      * Creates a storage that writes under the given directory. Nothing is written until the first
@@ -104,7 +115,7 @@ public class JsonFileStorage implements JournalStorage {
     public JsonFileStorage(Path baseDir) {
         this.baseDir = baseDir;
         this.objectMapper = createObjectMapper();
-        this.eventMapper = createEventMapper();
+        eventMapper();
     }
 
     private ObjectMapper createObjectMapper() {
@@ -112,6 +123,7 @@ public class JsonFileStorage implements JournalStorage {
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         return mapper;
     }
 
@@ -122,7 +134,20 @@ public class JsonFileStorage implements JournalStorage {
         // No indent for JSONL - one line per event
         mapper.disable(SerializationFeature.INDENT_OUTPUT);
         // Type info is handled via @JsonTypeInfo on JournalEvent interface
+        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        EventTypeRegistry.types().forEach((name, cls) -> mapper.registerSubtypes(new NamedType(cls, name)));
         return mapper;
+    }
+
+    // A new mapper rather than registerSubtypes on the old one: Jackson caches the reader for
+    // JournalEvent after the first load, so a subtype added later would not be seen.
+    private synchronized ObjectMapper eventMapper() {
+        int generation = EventTypeRegistry.generation();
+        if (eventMapper == null || generation != eventMapperGeneration) {
+            eventMapper = createEventMapper();
+            eventMapperGeneration = generation;
+        }
+        return eventMapper;
     }
 
     // ========== Path Helpers ==========
@@ -206,7 +231,7 @@ public class JsonFileStorage implements JournalStorage {
         }
         try (BufferedWriter writer = Files.newBufferedWriter(file,
                 StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-            writer.write(eventMapper.writeValueAsString(header));
+            writer.write(eventMapper().writeValueAsString(header));
             writer.newLine();
         }
     }
@@ -363,7 +388,7 @@ public class JsonFileStorage implements JournalStorage {
             Path file = eventsFile(experimentId, runId);
             writeHeaderIfNew(file, "events", runId);
 
-            String json = eventMapper.writeValueAsString(event);
+            String json = eventMapper().writeValueAsString(event);
             try (BufferedWriter writer = Files.newBufferedWriter(file,
                     StandardOpenOption.CREATE,
                     StandardOpenOption.APPEND)) {
@@ -389,16 +414,17 @@ public class JsonFileStorage implements JournalStorage {
             return List.of();
         }
         try {
+            ObjectMapper mapper = eventMapper();
             List<JournalEvent> events = new ArrayList<>();
             for (String line : Files.readAllLines(file)) {
                 if (line.isBlank()) {
                     continue;
                 }
-                JsonNode node = eventMapper.readTree(line);
+                JsonNode node = mapper.readTree(line);
                 if (isHeader(node)) {
                     continue; // A5 schema-version header line — not an execution event
                 }
-                events.add(eventMapper.treeToValue(node, JournalEvent.class));
+                events.add(mapper.treeToValue(node, JournalEvent.class));
             }
             return events;
         } catch (IOException e) {
@@ -421,7 +447,7 @@ public class JsonFileStorage implements JournalStorage {
             Path file = feedbackFile(experimentId, runId);
             Files.createDirectories(file.getParent());
 
-            String json = eventMapper.writeValueAsString(feedback);
+            String json = eventMapper().writeValueAsString(feedback);
             try (BufferedWriter writer = Files.newBufferedWriter(file,
                     StandardOpenOption.CREATE,
                     StandardOpenOption.APPEND)) {
@@ -447,10 +473,11 @@ public class JsonFileStorage implements JournalStorage {
             return List.of();
         }
         try {
+            ObjectMapper mapper = eventMapper();
             List<FeedbackEvent> feedbackEvents = new ArrayList<>();
             for (String line : Files.readAllLines(file)) {
                 if (!line.isBlank()) {
-                    feedbackEvents.add(eventMapper.readValue(line, FeedbackEvent.class));
+                    feedbackEvents.add(mapper.readValue(line, FeedbackEvent.class));
                 }
             }
             return feedbackEvents;
@@ -465,17 +492,26 @@ public class JsonFileStorage implements JournalStorage {
      * {@inheritDoc}
      *
      * <p>Appends one line to {@code analysis.jsonl}, first writing the header line if the file
-     * is new.
+     * is new. Only the built-in derived events, {@link StepCostEvent} and
+     * {@link StepOutcomeEvent}, can be stored here: no other type could be read back, and one such
+     * line would make the run's whole {@code analysis.jsonl} unreadable.
      *
+     * @throws IllegalArgumentException if {@code event} is not a {@link StepCostEvent} or a
+     *         {@link StepOutcomeEvent}; nothing is written
      * @throws UncheckedIOException if the file cannot be written
      */
     @Override
     public void appendDerivedEvent(String experimentId, String runId, DerivedEvent event) {
+        if (!(event instanceof StepCostEvent) && !(event instanceof StepOutcomeEvent)) {
+            throw new IllegalArgumentException("JsonFileStorage stores only the built-in derived events "
+                    + "(step_cost, step_outcome), not " + event.getClass().getName()
+                    + ": it could not be read back. Use InMemoryStorage for other DerivedEvent types.");
+        }
         try {
             Path file = analysisFile(experimentId, runId);
             writeHeaderIfNew(file, "analysis", runId);
 
-            String json = eventMapper.writeValueAsString(event);
+            String json = eventMapper().writeValueAsString(event);
             try (BufferedWriter writer = Files.newBufferedWriter(file,
                     StandardOpenOption.CREATE,
                     StandardOpenOption.APPEND)) {
@@ -512,16 +548,17 @@ public class JsonFileStorage implements JournalStorage {
             return List.of();
         }
         try {
+            ObjectMapper mapper = eventMapper();
             List<DerivedEvent> derived = new ArrayList<>();
             for (String line : Files.readAllLines(file)) {
                 if (line.isBlank()) {
                     continue;
                 }
-                JsonNode node = eventMapper.readTree(line);
+                JsonNode node = mapper.readTree(line);
                 if (isHeader(node)) {
                     continue; // A5 schema-version header line — not a derived event
                 }
-                derived.add(eventMapper.treeToValue(node, DerivedEvent.class));
+                derived.add(mapper.treeToValue(node, DerivedEvent.class));
             }
             return derived;
         } catch (IOException e) {
@@ -595,12 +632,14 @@ public class JsonFileStorage implements JournalStorage {
     /**
      * {@inheritDoc}
      *
-     * <p>The registration applies to this storage object only. Register a type before loading
-     * any file that contains it.
+     * <p>The registration applies to every storage in this process, including ones already in
+     * use and ones created later, so it is kept when
+     * {@link io.github.markpollack.journal.Journal#configure} swaps the storage. It takes effect on
+     * the next load, even after files have been loaded. Writing does not need it.
      */
     @Override
     public void registerEventSubtype(String typeName, Class<? extends JournalEvent> cls) {
-        eventMapper.registerSubtypes(new NamedType(cls, typeName));
+        EventTypeRegistry.register(typeName, cls);
     }
 
     /**

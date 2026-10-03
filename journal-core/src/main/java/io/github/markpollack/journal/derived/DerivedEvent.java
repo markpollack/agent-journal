@@ -28,8 +28,9 @@ import java.util.Map;
  * {@link #toMap()}.
  *
  * <p>Implementations other than the two built-in records are not supported by file storage:
- * there is no way to register a new {@code @type} name, so such an event is written, but loading
- * that run's derived events then fails with {@link java.io.UncheckedIOException}. They work with
+ * there is no way to register a new {@code @type} name, so
+ * {@link io.github.markpollack.journal.storage.JsonFileStorage} rejects one at append with
+ * {@link IllegalArgumentException}, and writes nothing. They work with
  * {@link io.github.markpollack.journal.storage.InMemoryStorage}. An implementation's
  * {@link #timestamp()} must not be {@code null}.
  */

@@ -27,7 +27,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * <p>Derived events are kept, but {@link #persistsDerivedEvents()} returns {@code false} because
  * they do not outlive the JVM. Claude Code's {@code RunRecorder} therefore throws when a run it
  * recorded ends on this storage, unless it was made lenient. Event types defined outside
- * journal-core need no registration here, because events are kept as objects.
+ * journal-core need no registration here, because events are kept as objects; a registration
+ * made while this storage is configured is still kept for the file storages of this process.
  *
  * <p>All methods are safe to call from several threads.
  *
@@ -56,6 +57,18 @@ public class InMemoryStorage implements JournalStorage {
     @Override
     public void saveExperiment(Experiment experiment) {
         experiments.put(experiment.id(), experiment);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>This storage keeps events as objects and does not need the registration, but it keeps it
+     * for every {@link JsonFileStorage} in this process, so a type registered before
+     * {@link io.github.markpollack.journal.Journal#configure} chooses file storage is not lost.
+     */
+    @Override
+    public void registerEventSubtype(String typeName, Class<? extends JournalEvent> cls) {
+        EventTypeRegistry.register(typeName, cls);
     }
 
     @Override

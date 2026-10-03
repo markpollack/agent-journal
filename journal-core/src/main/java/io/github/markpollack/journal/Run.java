@@ -142,6 +142,8 @@ public interface Run extends AutoCloseable {
      *
      * @param event the derived event to log
      * @throws IllegalStateException if the run has ended
+     * @throws IllegalArgumentException if the run's storage is file storage and {@code event} is
+     *         not one of the built-in derived events, which are the only kinds it can read back
      */
     void logDerivedEvent(DerivedEvent event);
 
