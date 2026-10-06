@@ -50,8 +50,11 @@ import java.util.stream.Stream;
  * </pre>
  *
  * <p>{@code events.jsonl} and {@code analysis.jsonl} start with a header line that carries
- * {@link #SCHEMA_VERSION}; {@code feedback.jsonl} has no header. The load methods skip header
- * lines and read the whole file into memory. Event types defined outside journal-core must be
+ * {@link #SCHEMA_VERSION} and, since 1.11.0, the name and version of the library that wrote the
+ * file ({@code producer}, {@code producerVersion}); {@code feedback.jsonl} has no header. A file
+ * without a producer version was written by 1.10.1 or earlier. The load methods skip header
+ * lines, refuse a file whose schema version is newer than {@link #SCHEMA_VERSION}, and read the
+ * whole file into memory. Event types defined outside journal-core must be
  * registered with {@link #registerEventSubtype(String, Class)} before they can be loaded; a
  * registration applies to every storage in the process, including ones created later.
  *
@@ -79,9 +82,14 @@ public class JsonFileStorage implements JournalStorage {
 
     /**
      * The schema version written in the header line of {@code events.jsonl} and
-     * {@code analysis.jsonl}, so a reader can tell which format a file uses. It changes only when
-     * a field is renamed, removed or given a new meaning; new fields and new enum values do not
-     * change it. Trace files have their own, separate schema version.
+     * {@code analysis.jsonl}, so a reader can tell which format a file uses. It changes when a
+     * field is renamed, removed or given a new meaning, and when a stored enum gains a value: a
+     * reader that predates the value cannot read it, and ignoring unknown fields does not help. A
+     * tool kind is the exception, because an unknown one reads as {@code other}. A new field does
+     * not change the version; readers from 1.11.0 ignore fields they do not know, and earlier
+     * readers reject them. The load methods refuse a file with a newer schema version than this
+     * one, so a reader never half-understands a format that was changed. Version 1.11.0 adds no
+     * enum value, so the version is still 1. Trace files have their own, separate schema version.
      */
     public static final int SCHEMA_VERSION = 1;
 
@@ -211,7 +219,8 @@ public class JsonFileStorage implements JournalStorage {
 
     /**
      * Writes the schema-version header as the <em>first</em> line of a Path-A stream file the first
-     * time it is created (A5): {@code {"@type":"header","schemaVersion":N,"stream":"…","runId":"…"}}.
+     * time it is created (A5): {@code {"@type":"header","schemaVersion":N,"stream":"…","runId":"…",
+     * "producer":"agent-journal","producerVersion":"…"}}.
      * Readers ({@link #loadEvents}/{@link #loadDerivedEvents}) and the trace loader skip any
      * {@code @type:"header"} line, so this is additive and tolerant. Not synchronized: a run is
      * written by one recorder, and on the rare concurrent first-write the duplicate header is simply
@@ -229,6 +238,8 @@ public class JsonFileStorage implements JournalStorage {
         if (runId != null) {
             header.put("runId", runId);
         }
+        header.put("producer", ProducerVersion.PRODUCER);
+        header.put("producerVersion", ProducerVersion.value());
         try (BufferedWriter writer = Files.newBufferedWriter(file,
                 StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
             writer.write(eventMapper().writeValueAsString(header));
@@ -238,6 +249,21 @@ public class JsonFileStorage implements JournalStorage {
 
     private static boolean isHeader(JsonNode node) {
         return node != null && HEADER_TYPE.equals(node.path("@type").asText(null));
+    }
+
+    /**
+     * Refuses a file whose header carries a newer schema version than {@link #SCHEMA_VERSION}.
+     * Such a file may have renamed fields or new enum values, and reading it while ignoring
+     * unknown fields would return wrong values without an error.
+     */
+    private static void requireReadableSchema(JsonNode header, String fileName) throws IOException {
+        int version = header.path("schemaVersion").asInt(SCHEMA_VERSION);
+        if (version > SCHEMA_VERSION) {
+            throw new IOException(fileName + " has schema version " + version + ", written by "
+                    + header.path("producer").asText("an unknown producer") + " "
+                    + header.path("producerVersion").asText("of unknown version")
+                    + "; this version reads up to " + SCHEMA_VERSION);
+        }
     }
 
     // ========== Experiment Operations ==========
@@ -405,7 +431,8 @@ public class JsonFileStorage implements JournalStorage {
      *
      * <p>Reads {@code events.jsonl}, skipping the header line.
      *
-     * @throws UncheckedIOException if the file exists but cannot be read or parsed
+     * @throws UncheckedIOException if the file exists but cannot be read or parsed, or its header
+     *         carries a newer schema version than {@link #SCHEMA_VERSION}
      */
     @Override
     public List<JournalEvent> loadEvents(String experimentId, String runId) {
@@ -422,6 +449,7 @@ public class JsonFileStorage implements JournalStorage {
                 }
                 JsonNode node = mapper.readTree(line);
                 if (isHeader(node)) {
+                    requireReadableSchema(node, "events.jsonl");
                     continue; // A5 schema-version header line — not an execution event
                 }
                 events.add(mapper.treeToValue(node, JournalEvent.class));
@@ -539,7 +567,8 @@ public class JsonFileStorage implements JournalStorage {
      *
      * <p>Reads {@code analysis.jsonl}, skipping the header line.
      *
-     * @throws UncheckedIOException if the file exists but cannot be read or parsed
+     * @throws UncheckedIOException if the file exists but cannot be read or parsed, or its header
+     *         carries a newer schema version than {@link #SCHEMA_VERSION}
      */
     @Override
     public List<DerivedEvent> loadDerivedEvents(String experimentId, String runId) {
@@ -556,6 +585,7 @@ public class JsonFileStorage implements JournalStorage {
                 }
                 JsonNode node = mapper.readTree(line);
                 if (isHeader(node)) {
+                    requireReadableSchema(node, "analysis.jsonl");
                     continue; // A5 schema-version header line — not a derived event
                 }
                 derived.add(mapper.treeToValue(node, DerivedEvent.class));
