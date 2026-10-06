@@ -252,6 +252,29 @@ class SubagentRunRecordingTest {
     }
 
     @Test
+    @DisplayName("a sub-agent run's steps derive again from its own stored events")
+    void subagentStepsDeriveFromItsEvents(@TempDir Path dir) throws Exception {
+        record(dir);
+        JsonFileStorage storage = new JsonFileStorage(dir);
+
+        for (String spawn : List.of("toolu_spawn_a", "toolu_spawn_b", "toolu_spawn_c", "toolu_spawn_d")) {
+            RunData child = subagentRun(storage, spawn);
+            List<io.github.markpollack.journal.trace.JournalStep> derived =
+                    JournalSteps.fromEvents(storage.loadEvents("exp", child.id()), child.id());
+            List<StepCostEvent> stored = storage.loadDerivedEvents("exp", child.id()).stream()
+                    .map(StepCostEvent.class::cast).toList();
+            assertThat(derived).as(spawn).hasSameSizeAs(stored);
+            for (int i = 0; i < stored.size(); i++) {
+                assertThat(derived.get(i).stepId()).isEqualTo(stored.get(i).stepId());
+                assertThat(derived.get(i).attributionMethod()).isEqualTo(stored.get(i).attributionMethod());
+                assertThat(derived.get(i).attributedCostUsd()).isEqualTo(stored.get(i).attributedCostUsd());
+                assertThat(derived.get(i).inputTokens()).isEqualTo(stored.get(i).inputTokens());
+                assertThat(derived.get(i).cacheReadTokens()).isEqualTo(stored.get(i).cacheReadTokens());
+            }
+        }
+    }
+
+    @Test
     @DisplayName("over all runs, tokens add up to the reported totals and cost to the reported cost, once")
     void totalsOverAllRunsAreCountedOnce(@TempDir Path dir) throws Exception {
         record(dir);

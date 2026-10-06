@@ -103,6 +103,21 @@ class JsonFileStorageHeaderTest {
     }
 
     @Test
+    @DisplayName("a header whose schema version is not a whole number is refused, not read as the current one")
+    void nonNumericSchemaVersionIsRefused(@TempDir Path dir) throws Exception {
+        JsonFileStorage storage = new JsonFileStorage(dir);
+        storage.appendEvent("exp", "run", TestEvents.bashSuccess());
+        Path events = dir.resolve("experiments/exp/runs/run/events.jsonl");
+        List<String> lines = new java.util.ArrayList<>(Files.readAllLines(events));
+        lines.set(0, "{\"@type\":\"header\",\"schemaVersion\":\"2\",\"stream\":\"events\"}");
+        Files.write(events, lines);
+
+        assertThatThrownBy(() -> new JsonFileStorage(dir).loadEvents("exp", "run"))
+                .isInstanceOf(java.io.UncheckedIOException.class)
+                .hasRootCauseMessage("events.jsonl has a schema version that is not a whole number: \"2\"");
+    }
+
+    @Test
     @DisplayName("a file with a newer schema version is refused with a clear error, not half-read")
     void newerSchemaVersionIsRefused(@TempDir Path dir) throws Exception {
         JsonFileStorage storage = new JsonFileStorage(dir);

@@ -250,6 +250,11 @@ public final class JournalSteps {
     private static List<JournalStep> attributePhase(LLMCallEvent llm, List<ToolUseRecord> tools,
             Map<String, Boolean> toolErrors, Map<String, Long> toolDurations, String runId, String vendor) {
         Object rawTurns = (llm.metadata() != null) ? llm.metadata().get(META_TURNS) : null;
+        if (llm.metadata() != null && Boolean.FALSE.equals(llm.metadata().get("costAvailable"))) {
+            // No cost was reported for this call (a sub-agent's, whose cost is inside its parent's),
+            // so the recorder wrote one zero-cost step per tool call; derive the same here.
+            return withoutReportedCost(turnsFromMetadata(rawTurns), tools, toolErrors, toolDurations, runId, vendor);
+        }
         return attribute(turnsFromMetadata(rawTurns), tools, toolErrors, toolDurations, llm.totalCostUsd(), runId,
                 vendor);
     }
@@ -414,19 +419,31 @@ public final class JournalSteps {
             toolErrors.put(result.toolUseId(), result.isError());
             toolDurations.put(result.toolUseId(), result.durationMs());
         }
+        return withoutReportedCost(subagent.turns(), subagent.toolUses(), toolErrors, toolDurations, runId,
+                VENDOR_CLAUDE_CODE);
+    }
+
+    /**
+     * One zero-cost step per tool call, marked {@link AttributionMethod#EVEN_SPLIT}, each carrying the
+     * tokens of the turn that issued the call when that turn is known. Used both when recording a
+     * sub-agent and when deriving steps again from a run whose LLM call has {@code costAvailable=false},
+     * so the two give the same steps.
+     */
+    private static List<JournalStep> withoutReportedCost(List<TurnUsage> turns, List<ToolUseRecord> toolUses,
+            Map<String, Boolean> toolErrors, Map<String, Long> toolDurations, String runId, String vendor) {
         Map<String, TurnUsage> turnByToolUseId = new LinkedHashMap<>();
-        for (TurnUsage turn : subagent.turns()) {
+        for (TurnUsage turn : nullSafe(turns)) {
             for (String toolUseId : nullSafe(turn.toolUseIds())) {
                 turnByToolUseId.put(toolUseId, turn);
             }
         }
         List<JournalStep> steps = new ArrayList<>();
-        for (ToolUseRecord use : subagent.toolUses()) {
+        for (ToolUseRecord use : nullSafe(toolUses)) {
             TurnUsage turn = turnByToolUseId.get(use.id());
             steps.add(new JournalStep(runId, use.turnId(), use.id(), use.name(),
                     turn != null ? turn.inputTokens() : 0, turn != null ? turn.outputTokens() : 0, 0.0, 0.0,
                     AttributionMethod.EVEN_SPLIT, Boolean.TRUE.equals(toolErrors.get(use.id())), null,
-                    VENDOR_CLAUDE_CODE, isSubagentTool(use.name()),
+                    vendor, isSubagentTool(use.name()),
                     turn != null ? turn.thinkingTokens() : 0, turn != null ? turn.cacheCreationInputTokens() : 0,
                     turn != null ? turn.cacheReadInputTokens() : 0, use.turnIndex(),
                     durationOf(toolDurations, use.id())));

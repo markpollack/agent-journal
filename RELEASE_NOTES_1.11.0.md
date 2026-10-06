@@ -109,6 +109,11 @@ same check: 536 recorded against 672 reported).
   then has `subagentTracksAvailable=false`, no sub-agent run is written, and the sub-agent's
   activity is merged into the run as before.
 - A run without sub-agents has none of these keys.
+- `subagent.depth` is 1 for a sub-agent of the main loop and 2 for a sub-agent of a sub-agent. A
+  sub-agent whose spawning tool call was not seen is linked to the recording run with depth -1.
+- A sub-agent run's `step_cost` events derive again from its own stored events: a run whose
+  `llm_call` has `costAvailable=false` gets one zero-cost `EVEN_SPLIT` step per tool call, the same
+  way it was recorded.
 
 ### Supported, and not
 

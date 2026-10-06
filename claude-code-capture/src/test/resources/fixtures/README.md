@@ -35,3 +35,8 @@ The token counts are chosen so the arithmetic can be checked by hand, counting e
 The result line's `usage` is the main loop's row and its `modelUsage` is the last row, which is how
 Claude Code reports them. The output counts on the assistant lines are start-of-message figures
 and do not add up to the result's, also as Claude Code reports them.
+
+`spawn_depth` on `task_started` is 1 for a sub-agent of the main loop and 2 for a sub-agent of a sub-agent,
+as observed live on Claude Code 2.1.292 (runs A, line 4 and line 17 of the wire evidence). When the start
+message is missing, the parser counts the chain of spawning tool calls instead and gets the same numbers;
+a chain it cannot follow gives -1.

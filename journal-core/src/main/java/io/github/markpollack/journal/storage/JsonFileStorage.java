@@ -270,7 +270,11 @@ public class JsonFileStorage implements JournalStorage {
      * unknown fields would return wrong values without an error.
      */
     private static void requireReadableSchema(JsonNode header, String fileName) throws IOException {
-        int version = header.path("schemaVersion").asInt(SCHEMA_VERSION);
+        JsonNode declared = header.path("schemaVersion");
+        if (!declared.isMissingNode() && !declared.isNull() && !declared.isIntegralNumber()) {
+            throw new IOException(fileName + " has a schema version that is not a whole number: " + declared);
+        }
+        int version = declared.asInt(SCHEMA_VERSION);
         if (version > SCHEMA_VERSION) {
             throw new IOException(fileName + " has schema version " + version + ", written by "
                     + header.path("producer").asText("an unknown producer") + " "

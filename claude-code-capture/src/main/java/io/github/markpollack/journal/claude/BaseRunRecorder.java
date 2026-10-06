@@ -268,7 +268,9 @@ public abstract class BaseRunRecorder {
      */
     private List<Map<String, Object>> recordSubagents(PhaseCapture phase) {
         List<Map<String, Object>> written = new ArrayList<>();
-        if (!phase.hasSubagents()) {
+        // Without the wire lines the tracks are not trustworthy; the capture then reports no sub-agents
+        // and whatever a sub-agent did is in the main loop's components, as before.
+        if (!phase.hasSubagents() || !phase.subagentTracksAvailable()) {
             return written;
         }
         Map<String, String> runIdBySpawnToolUseId = new LinkedHashMap<>();
