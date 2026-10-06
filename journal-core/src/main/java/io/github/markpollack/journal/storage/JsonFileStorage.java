@@ -82,14 +82,27 @@ public class JsonFileStorage implements JournalStorage {
 
     /**
      * The schema version written in the header line of {@code events.jsonl} and
-     * {@code analysis.jsonl}, so a reader can tell which format a file uses. It changes when a
-     * field is renamed, removed or given a new meaning, and when a stored enum gains a value: a
-     * reader that predates the value cannot read it, and ignoring unknown fields does not help. A
-     * tool kind is the exception, because an unknown one reads as {@code other}. A new field does
-     * not change the version; readers from 1.11.0 ignore fields they do not know, and earlier
-     * readers reject them. The load methods refuse a file with a newer schema version than this
-     * one, so a reader never half-understands a format that was changed. Version 1.11.0 adds no
-     * enum value, so the version is still 1. Trace files have their own, separate schema version.
+     * {@code analysis.jsonl}, so a reader can tell which format a file uses. It describes what a
+     * reader must know to parse a file: the keys, their types and units, the enum vocabularies
+     * and the documented definition of each field. It changes when a file written by the new
+     * version could be misread by a reader that correctly implements the previous version's
+     * documented format: a key renamed, removed or moved; a value's type or unit changed; a key
+     * made to carry a quantity its definition did not cover; or a stored enum given a value (a
+     * reader that predates the value fails on it, and ignoring unknown fields does not help; a
+     * tool kind is the exception, because an unknown one reads as {@code other}).
+     *
+     * <p>It does not change when the producer writes better values under an unchanged
+     * definition: a value that was wrong is corrected, or a definition that allowed several
+     * readings is narrowed so that new values still satisfy the old one. Such changes are told
+     * apart by {@code producerVersion} on the same header line, and the release notes list them.
+     * Nor does a new field change it; readers from 1.11.0 ignore fields they do not know, and
+     * earlier readers reject them in a record. The load methods refuse a file with a newer
+     * schema version than this one, so a reader never half-understands a changed format.
+     *
+     * <p>Version 1.11.0 corrects values (run status on an early exit, Claude Code token counts,
+     * Codex input tokens, unmeasured tool durations) and adds keys, and changes no key, type,
+     * unit, definition or vocabulary, so the version is still 1. Trace files have their own,
+     * separate schema version.
      */
     public static final int SCHEMA_VERSION = 1;
 

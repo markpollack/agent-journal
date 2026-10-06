@@ -26,18 +26,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * A workflow engine can record a step with the journal's existing API and read it back from
- * disk: the step carries the workflow's own run ID and step identifiers, and a step that
- * returned and a step that threw stay distinguishable after reload.
+ * Serialization coverage for a workflow step record: a step event shaped like a workflow
+ * library's, carrying the workflow's own run ID and step identifiers, written with the journal's
+ * existing API and read back from disk, for a step that returned and a step that threw.
  *
- * <p>This is a compatibility demonstration, not a design. It uses only what a workflow library
- * already calls: {@link Journal#registerEventType}, {@link Run#logEvent}, {@link Run#logMetric}
- * and the built-in {@link CustomEvent}. {@link StepEvent} copies the shape of the step event such
- * a library registers today. Nothing here settles how a workflow's committed facts should be
- * projected into the journal: there is no event sequence, no scope, no delivery guarantee and no
- * de-duplication.
+ * <p>This test runs no workflow engine. {@link StepEvent} copies the shape of the step event a
+ * workflow library registers today, and {@link #runStep} stands in for the engine. It shows that
+ * the journal's existing API ({@link Journal#registerEventType}, {@link Run#logEvent},
+ * {@link Run#logMetric}, the built-in {@link CustomEvent}) carries such a record and keeps the two
+ * outcomes apart after reload; it does not show that any workflow library records this way.
+ * Nothing here settles how a workflow's committed facts should be projected into the journal:
+ * there is no event sequence, no scope, no delivery guarantee and no de-duplication.
  */
-@DisplayName("Workflow step: record and reload")
+@DisplayName("Workflow-shaped step record: serialization and reload")
 class WorkflowStepRecordReloadTest {
 
     /** The workflow's own run identifier. It is not the journal run's ID. */

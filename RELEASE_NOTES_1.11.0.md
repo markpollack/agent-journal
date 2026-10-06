@@ -24,6 +24,31 @@ now carries `producer` and `producerVersion`. A header without `producerVersion`
 | Codex `llm_call.tokenUsage.inputTokens` | Codex's input count, cached input included | cached input excluded, as for every other agent. An older value converts exactly: subtract `cacheReadTokens` |
 | Grok, Codex and Junie `tool_call.durationMs` | 0 | -1, "not measured" |
 
+### Why the schema version is still 1
+
+The schema version says what a reader must know to parse a file: keys, types, units, enum
+vocabularies and each field's documented definition. It changes when a file written by the new
+version could be misread by a reader that correctly implements the previous format. It does not
+change when the producer writes better values under an unchanged definition; those changes are
+told apart by `producerVersion`.
+
+| Change | Kind | Why |
+|---|---|---|
+| `CRASHED` for a recorder closed without `finish()` | producer correction | `CRASHED` already meant "ended abnormally"; the recorder now uses it where it used to write `FINISHED` wrongly |
+| Claude Code input and cache tokens once per message | producer correction | the value was counted several times; the definition ("the tokens of the call") is unchanged |
+| Claude Code output tokens from the result message | producer correction | the per-message figures were start-of-message counts; same definition |
+| One turn per message in `turns` and `turnIndex` | producer correction | a turn was always documented as an assistant message; lines were being counted |
+| `step_cost` events and shares | producer correction | derived from the corrected turns under the same attribution method |
+| Sub-agents as their own runs | producer correction plus **added keys** | a run's events were never defined to include another agent's; the new config, tag, summary and metadata keys are additive, and `parentRunId` existed |
+| Codex `inputTokens` without cached input | producer correction, **narrowed definition** | `TokenUsage` said whether input included cache reads "depends on what the agent reports"; it now says input excludes them. New values satisfy both readings; old Codex values convert exactly |
+| `-1` for an unmeasured tool duration | producer correction | `-1` was already documented as "not measured" |
+| `producer` and `producerVersion` in the header | added keys | every reader skips the header line |
+
+What **would** have required a new schema version, and did not happen here: a renamed or removed
+key; a changed type or unit; a key reused for a different quantity; a new value in a stored
+enum. The deferred additions (`FileChange.oldPath`, more components on `step_cost`, a "cost not
+reported" attribution value) fall under that rule.
+
 Three computed values also change, and are not stored: `TokenUsage.total()`,
 `LLMCallEvent.totalTokens()` and `PhaseCapture.totalTokens()` no longer add thinking tokens on top
 of output tokens, which already include them; `TokenUsage.cacheHitRatio()` is cache reads divided
