@@ -7,6 +7,7 @@ import io.github.markpollack.journal.trace.JournalStep;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The parsed record of one Claude Code call: what the agent wrote and did, the tokens it used,
@@ -66,6 +67,15 @@ import java.util.List;
  * @param stopReason why the phase stopped; never {@code null}, because a missing reason becomes
  *        {@link StopReason#UNKNOWN}
  * @param maxTurns the turn limit the phase ran against, or -1 if none was reported
+ * @param subagents the sub-agents whose messages arrived during the call, each with its own
+ *        activity; the other components describe the main loop only. Empty if there was none
+ * @param subagentTracksAvailable whether the messages said which agent each belongs to, so that
+ *        sub-agent activity could be kept apart. The parser sets it when every assistant and user
+ *        message came with its wire line. When it is {@code false}, a sub-agent's tool calls and
+ *        usage, if any, are among the main loop's, and {@code subagents} is empty
+ * @param reportedSubagentStats the sub-agent counts Claude Code reported on the result message
+ *        ({@code subagent_stats}), unchanged, such as {@code spawned}, {@code completed},
+ *        {@code failed} and {@code refused}; empty if it reported none
  */
 public record PhaseCapture(
         String phaseName,
@@ -89,21 +99,46 @@ public record PhaseCapture(
         List<TurnUsage> turns,
         List<ModelCost> modelCosts,
         StopReason stopReason,
-        int maxTurns
+        int maxTurns,
+        List<SubagentCapture> subagents,
+        boolean subagentTracksAvailable,
+        Map<String, Object> reportedSubagentStats
 ) {
 
     /**
      * Creates a capture from all of its parts. A {@code null} {@code stopReason} becomes
      * {@link StopReason#UNKNOWN}. Each list is copied into an unmodifiable list, so later changes
-     * to the lists passed in do not reach the capture; a {@code null} list stays {@code null}.
+     * to the lists passed in do not reach the capture; a {@code null} list stays {@code null},
+     * except {@code subagents}, where it becomes an empty list.
      */
     public PhaseCapture {
         stopReason = stopReason != null ? stopReason : StopReason.UNKNOWN;
+        subagents = subagents == null ? List.of() : Collections.unmodifiableList(new ArrayList<>(subagents));
+        reportedSubagentStats = reportedSubagentStats == null ? Map.of()
+                : Collections.unmodifiableMap(new java.util.LinkedHashMap<>(reportedSubagentStats));
         thinkingBlocks = copy(thinkingBlocks);
         toolUses = copy(toolUses);
         toolResults = copy(toolResults);
         turns = copy(turns);
         modelCosts = copy(modelCosts);
+    }
+
+    /**
+     * Creates a capture with no sub-agents and {@code subagentTracksAvailable} {@code false}, as
+     * every capture was before sub-agents were kept apart: whatever a sub-agent did is then among
+     * the main loop's components. The parameters are the record components up to
+     * {@code maxTurns}.
+     */
+    public PhaseCapture(String phaseName, String promptText, int inputTokens, int outputTokens,
+            int thinkingTokens, int cacheCreationInputTokens, int cacheReadInputTokens, long durationMs,
+            long apiDurationMs, double totalCostUsd, String sessionId, int numTurns, boolean isError,
+            String textOutput, List<String> thinkingBlocks, List<ToolUseRecord> toolUses, String rawResult,
+            List<ToolResultRecord> toolResults, List<TurnUsage> turns, List<ModelCost> modelCosts,
+            StopReason stopReason, int maxTurns) {
+        this(phaseName, promptText, inputTokens, outputTokens, thinkingTokens, cacheCreationInputTokens,
+                cacheReadInputTokens, durationMs, apiDurationMs, totalCostUsd, sessionId, numTurns, isError,
+                textOutput, thinkingBlocks, toolUses, rawResult, toolResults, turns, modelCosts, stopReason,
+                maxTurns, List.of(), false, Map.of());
     }
 
     // Unlike List.copyOf, keeps null elements and a null list as they are
@@ -212,6 +247,63 @@ public record PhaseCapture(
     }
 
     /**
+     * Returns the number of sub-agents Claude Code reported it started during the call.
+     *
+     * @return the {@code spawned} count of {@link #reportedSubagentStats()}, or -1 if not reported
+     */
+    public int reportedSubagentsSpawned() {
+        return reportedSubagentStats.get("spawned") instanceof Number spawned ? spawned.intValue() : -1;
+    }
+
+    /**
+     * Returns whether any sub-agent's messages were captured.
+     *
+     * @return {@code true} if {@link #subagents()} is not empty
+     */
+    public boolean hasSubagents() {
+        return !subagents.isEmpty();
+    }
+
+    /**
+     * Returns the IDs of the tool calls that start a sub-agent ({@code Agent} or {@code Task}),
+     * in the main loop or in a captured sub-agent, for which no sub-agent messages arrived. Such
+     * a sub-agent may have been refused, may have failed to start, or its messages may not have
+     * been sent; the capture cannot tell which, though {@link #reportedSubagentStats()} may.
+     *
+     * @return the IDs, in the order of the tool calls; empty if every spawn has a captured
+     *         sub-agent, if there was none, or if {@code subagentTracksAvailable} is {@code false},
+     *         since the sub-agents' activity is then not missing but merged into the main loop
+     */
+    public List<String> subagentsWithoutTrack() {
+        if (!subagentTracksAvailable) {
+            return List.of();
+        }
+        java.util.Set<String> captured = new java.util.HashSet<>();
+        for (SubagentCapture subagent : subagents) {
+            captured.add(subagent.spawnToolUseId());
+        }
+        List<String> missing = new ArrayList<>();
+        addSpawnsWithoutTrack(toolUses, captured, missing);
+        for (SubagentCapture subagent : subagents) {
+            addSpawnsWithoutTrack(subagent.toolUses(), captured, missing);
+        }
+        return missing;
+    }
+
+    private static void addSpawnsWithoutTrack(List<ToolUseRecord> uses, java.util.Set<String> captured,
+            List<String> missing) {
+        if (uses == null) {
+            return;
+        }
+        for (ToolUseRecord use : uses) {
+            if (use != null && JournalSteps.isSubagentTool(use.name()) && use.id() != null
+                    && !captured.contains(use.id())) {
+                missing.add(use.id());
+            }
+        }
+    }
+
+    /**
      * Returns all input tokens in the snapshot view: non-cached input plus cache writes and cache
      * reads.
      *
@@ -296,9 +388,16 @@ public record PhaseCapture(
     }
 
     /**
-     * Returns the token usage to price: each token type (input, output, cache writes, cache reads)
-     * added up over all {@link #turns()}. Every turn re-reads the cache and is billed for it, so
-     * this sum, not the snapshot, is the one that matches what was billed.
+     * Returns the token usage to price: the input, cache-write and cache-read tokens added up
+     * over all {@link #turns()}, and the output tokens of the final result message. Every turn
+     * re-reads the cache and is billed for it, so the sum over turns is the one that matches what
+     * was billed.
+     *
+     * <p>The output tokens are not summed over turns when the result message reports more. Claude
+     * Code sends each assistant message with the output count it had when the message started,
+     * so the per-turn counts are lower bounds, and their sum can be a small part of the output
+     * the result message reports for the call. Up to 1.10.1 this method returned that sum. The
+     * usage covers the main loop only; each of {@link #subagents()} has its own.
      *
      * <p>The result carries {@code thinkingTokens} as captured, but thinking is billed as part of
      * output, so do not add it to a billed total.
@@ -319,7 +418,7 @@ public record PhaseCapture(
         }
         TokenUsage summed = TokenUsage.sum(perTurn);
         // Carry the available run-level thinking (subset of output), recorded but not in the billed sum.
-        return new TokenUsage(summed.inputTokens(), summed.outputTokens(), thinkingTokens,
+        return new TokenUsage(summed.inputTokens(), Math.max(summed.outputTokens(), outputTokens), thinkingTokens,
                 summed.cacheCreationTokens(), summed.cacheReadTokens(), summed.toolUseTokens());
     }
 

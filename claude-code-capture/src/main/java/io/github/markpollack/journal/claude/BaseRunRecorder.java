@@ -1,6 +1,8 @@
 package io.github.markpollack.journal.claude;
 
+import io.github.markpollack.journal.Journal;
 import io.github.markpollack.journal.Run;
+import io.github.markpollack.journal.RunBuilder;
 import io.github.markpollack.journal.RunStatus;
 import io.github.markpollack.journal.derived.StepCostEvent;
 import io.github.markpollack.journal.event.CostBreakdown;
@@ -13,6 +15,7 @@ import io.github.markpollack.journal.event.ToolCallEvent;
 import io.github.markpollack.journal.trace.JournalStep;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,6 +84,18 @@ public abstract class BaseRunRecorder {
      * in {@link PhaseCapture#stepCosts()}, and adds their number to
      * {@link #derivedEventsEmitted}.
      *
+     * <p>If the phase has {@link PhaseCapture#subagents() sub-agents}, each is written as a run
+     * of its own in the same experiment, before the phase's LLM call event. Such a run has the
+     * run of the agent that started it as its {@code parentRunId}, the tag {@code track=subagent},
+     * the ID of the spawning tool call under the config key {@link #CONFIG_SPAWN_TOOL_USE_ID},
+     * and the same kinds of events as this run. Its LLM call has a cost of 0 marked
+     * {@code costAvailable=false}, because Claude Code reports one cost for the call, which is
+     * on this run and includes the sub-agents. It ends {@code FINISHED} if Claude Code reported
+     * the sub-agent completed, {@code FAILED} if it reported it failed or was killed, and
+     * {@code CRASHED} otherwise, with the reported status in its summary. The phase's LLM call
+     * event then lists the sub-agent runs under {@link #META_SUBAGENTS}. The runs are written
+     * through {@link Journal#storage()}. A phase without sub-agents is recorded as before.
+     *
      * @param phase the parsed Claude Code call; with a {@code null} phase name, the {@code phase}
      *        attribute of the prompt and thinking events is left out
      * @throws NullPointerException if no run has been set
@@ -98,6 +113,9 @@ public abstract class BaseRunRecorder {
             currentRun.logEvent(CustomEvent.of("prompt",
                     phaseAttributes(phase.phaseName(), "text", phase.promptText())));
         }
+
+        // Sub-agents first: each is written as its own run, and the LLM call below names them.
+        List<Map<String, Object>> subagentRuns = recordSubagents(phase);
 
         // LLM call with full token/cost/timing data. The per-turn breakdown rides as additive
         // metadata (JournalSteps.META_TURNS) — raw wire data, not derived — so the immutable log
@@ -120,6 +138,23 @@ public abstract class BaseRunRecorder {
         metadata.put(JournalSteps.META_MAX_TURNS, phase.maxTurns());
         if (phase.hasTurns()) {
             metadata.put(JournalSteps.META_TURNS, JournalSteps.turnsToMetadata(phase.turns()));
+        }
+        // Written only for a call with sub-agent evidence, so a call without any is recorded
+        // exactly as before.
+        List<String> subagentsWithoutTrack = phase.subagentsWithoutTrack();
+        boolean spawned = phase.toolUses() != null && phase.toolUses().stream()
+                .anyMatch(use -> use != null && JournalSteps.isSubagentTool(use.name()));
+        if (!subagentRuns.isEmpty() || spawned || phase.reportedSubagentsSpawned() > 0) {
+            metadata.put(META_SUBAGENT_TRACKS_AVAILABLE, phase.subagentTracksAvailable());
+            if (phase.subagentTracksAvailable()) {
+                metadata.put(META_SUBAGENTS, subagentRuns);
+                metadata.put(META_SUBAGENTS_WITHOUT_TRACK, subagentsWithoutTrack);
+            }
+            if (!phase.reportedSubagentStats().isEmpty()) {
+                metadata.put(META_SUBAGENT_STATS, phase.reportedSubagentStats());
+            }
+            // Claude Code reports one cost for the call, sub-agents included.
+            metadata.put(META_COST_INCLUDES_SUBAGENTS, true);
         }
 
         // Headline token vector = the cost-bearing per-type aggregate (Σ per-turn by type, incl.
@@ -185,6 +220,211 @@ public abstract class BaseRunRecorder {
             currentRun.logDerivedEvent(StepCostEvent.fromStep(step, analyzedAt));
         }
         derivedEventsEmitted += steps.size();
+    }
+
+    /**
+     * The key of the list, in the metadata of a phase's LLM call event, of the sub-agents that
+     * were written as runs of their own. Each entry is a map with {@code spawnToolUseId},
+     * {@code runId}, {@code depth} and {@code status}, and {@code agentId} when reported.
+     */
+    public static final String META_SUBAGENTS = "subagents";
+
+    /**
+     * The key of the list of spawning tool-call IDs for which no sub-agent messages arrived; see
+     * {@link PhaseCapture#subagentsWithoutTrack()}.
+     */
+    public static final String META_SUBAGENTS_WITHOUT_TRACK = "subagentsWithoutTrack";
+
+    /**
+     * The key of the sub-agent counts Claude Code reported for the call ({@code subagent_stats}),
+     * unchanged; written when it reported any.
+     */
+    public static final String META_SUBAGENT_STATS = "subagentStats";
+
+    /**
+     * The key that says whether sub-agent activity could be kept apart from the main loop's; see
+     * {@link PhaseCapture#subagentTracksAvailable()}. When it is {@code false}, the sub-agents'
+     * tool calls and usage are among this run's own, as in every record written up to 1.10.1.
+     */
+    public static final String META_SUBAGENT_TRACKS_AVAILABLE = "subagentTracksAvailable";
+
+    /** The key that marks the event's cost as including the cost of the call's sub-agents. */
+    public static final String META_COST_INCLUDES_SUBAGENTS = "costIncludesSubagents";
+
+    /** The config key, on a sub-agent's run, of the ID of the tool call that started it. */
+    public static final String CONFIG_SPAWN_TOOL_USE_ID = "subagent.spawnToolUseId";
+
+    /** The tag key that marks a run as a sub-agent's; its value is {@code "subagent"}. */
+    public static final String TAG_TRACK = "track";
+
+    /**
+     * Writes each sub-agent of the phase as a run of its own in the same experiment, linked by
+     * {@code parentRunId} to the run of the agent that started it: this recorder's run for a
+     * sub-agent of the main loop, the enclosing sub-agent's run for a nested one. Each run is
+     * started, written and ended here, before the phase's own LLM call event, so that the event
+     * can name the runs; they are written through {@link Journal#storage()}.
+     *
+     * @return one entry per sub-agent written, for the phase's LLM call metadata
+     */
+    private List<Map<String, Object>> recordSubagents(PhaseCapture phase) {
+        List<Map<String, Object>> written = new ArrayList<>();
+        if (!phase.hasSubagents()) {
+            return written;
+        }
+        Map<String, String> runIdBySpawnToolUseId = new LinkedHashMap<>();
+        List<SubagentCapture> pending = new ArrayList<>();
+        for (SubagentCapture subagent : phase.subagents()) {
+            if (subagent.spawnToolUseId() != null) {
+                pending.add(subagent);
+            }
+        }
+        // A nested sub-agent needs its parent's run ID, so parents go first. One whose parent
+        // never gets a run, because the chain is broken, is linked to this recorder's run.
+        while (!pending.isEmpty()) {
+            boolean progressed = false;
+            for (SubagentCapture subagent : new ArrayList<>(pending)) {
+                String parent = subagent.parentSpawnToolUseId();
+                if (parent == null || runIdBySpawnToolUseId.containsKey(parent)) {
+                    String parentRunId = parent == null ? currentRun.id() : runIdBySpawnToolUseId.get(parent);
+                    written.add(recordSubagent(phase, subagent, parentRunId, runIdBySpawnToolUseId));
+                    pending.remove(subagent);
+                    progressed = true;
+                }
+            }
+            if (!progressed) {
+                for (SubagentCapture subagent : pending) {
+                    written.add(recordSubagent(phase, subagent, currentRun.id(), runIdBySpawnToolUseId));
+                }
+                pending.clear();
+            }
+        }
+        return written;
+    }
+
+    private Map<String, Object> recordSubagent(PhaseCapture phase, SubagentCapture subagent, String parentRunId,
+            Map<String, String> runIdBySpawnToolUseId) {
+        String status = subagent.status() != null ? subagent.status() : "unknown";
+        RunBuilder builder = Journal.run(currentRun.experiment().id())
+                .parentRun(parentRunId)
+                .tag(TAG_TRACK, "subagent")
+                .config(CONFIG_SPAWN_TOOL_USE_ID, subagent.spawnToolUseId())
+                .config("subagent.depth", subagent.depth());
+        if (subagent.subagentType() != null) {
+            builder.config("subagent.type", subagent.subagentType());
+        }
+        if (subagent.description() != null) {
+            builder.config("subagent.description", subagent.description());
+        }
+        if (phase.sessionId() != null) {
+            builder.config("subagent.sessionId", phase.sessionId());
+        }
+        if (subagent.model() != null) {
+            builder.config("model", subagent.model());
+        }
+        if (subagent.backgrounded()) {
+            builder.config("subagent.backgrounded", true);
+        }
+        if (subagent.agentId() != null) {
+            builder.agent(subagent.agentId());
+        }
+        Run run = builder.start();
+        runIdBySpawnToolUseId.put(subagent.spawnToolUseId(), run.id());
+        try {
+            if (subagent.promptText() != null && !subagent.promptText().isEmpty()) {
+                run.logEvent(CustomEvent.of("prompt",
+                        phaseAttributes(phase.phaseName(), "text", subagent.promptText())));
+            }
+
+            Map<String, Object> metadata = new LinkedHashMap<>();
+            metadata.put("phaseName", phase.phaseName());
+            if (phase.sessionId() != null) {
+                metadata.put("sessionId", phase.sessionId());
+            }
+            metadata.put("numTurns", subagent.turns().size());
+            metadata.put("isError", subagent.reportedFailed());
+            // Claude Code reports no cost for a sub-agent; it is inside the spawning call's total.
+            metadata.put("costAvailable", false);
+            metadata.put("costSource", "included_in_parent");
+            if (!subagent.turns().isEmpty()) {
+                metadata.put(JournalSteps.META_TURNS, JournalSteps.turnsToMetadata(subagent.turns()));
+            }
+            String lastMessageId = null;
+            for (TurnUsage turn : subagent.turns()) {
+                if (turn.messageId() != null) {
+                    lastMessageId = turn.messageId();
+                }
+            }
+            run.logEvent(LLMCallEvent.builder()
+                    .model(subagent.model() != null ? subagent.model() : "unknown")
+                    .tokenUsage(subagent.aggregateUsage())
+                    .cost(CostBreakdown.of(0.0))
+                    .timing(TimingInfo.of(Math.max(0L, subagent.reportedDurationMs())))
+                    .responseId(lastMessageId)
+                    .metadata(metadata)
+                    .build());
+
+            Map<String, ToolResultRecord> resultsById = new LinkedHashMap<>();
+            for (ToolResultRecord result : subagent.toolResults()) {
+                resultsById.put(result.toolUseId(), result);
+            }
+            for (ToolUseRecord toolUse : subagent.toolUses()) {
+                ToolResultRecord result = resultsById.get(toolUse.id());
+                boolean isError = result != null && result.isError();
+                run.logEvent(ToolCallEvent.builder()
+                        .id(toolUse.id())
+                        .toolName(toolUse.name())
+                        .kind(toolUse.kind())
+                        .input(toolUse.input())
+                        .durationMs(result != null ? result.durationMs() : -1L)
+                        .turnIndex(toolUse.turnIndex())
+                        .turnId(toolUse.turnId())
+                        .success(!isError)
+                        .errorMessage(isError ? result.content() : null)
+                        .build());
+            }
+
+            for (String thinking : subagent.thinkingBlocks()) {
+                run.logEvent(CustomEvent.of("thinking_block",
+                        phaseAttributes(phase.phaseName(), "content", thinking)));
+            }
+
+            Instant analyzedAt = Instant.now();
+            List<JournalStep> steps = JournalSteps.forSubagent(subagent, run.id());
+            for (JournalStep step : steps) {
+                run.logDerivedEvent(StepCostEvent.fromStep(step, analyzedAt));
+            }
+            derivedEventsEmitted += steps.size();
+
+            run.setSummary("subagent.status", status);
+            run.setSummary("subagent.statusSource", subagent.statusSource());
+            if (subagent.reportedTotalTokens() >= 0) {
+                run.setSummary("subagent.reportedTotalTokens", subagent.reportedTotalTokens());
+            }
+            if (subagent.reportedToolUses() >= 0) {
+                run.setSummary("subagent.reportedToolUses", subagent.reportedToolUses());
+            }
+            if (subagent.reportedDurationMs() >= 0) {
+                run.setSummary("subagent.reportedDurationMs", subagent.reportedDurationMs());
+            }
+            // Only a reported "completed" is a finished sub-agent, and only a reported "failed"
+            // or "killed" a failed one. With no status, or one this version does not know, the
+            // stream did not show how the sub-agent ended; the status text is in the summary.
+            run.finish("completed".equals(status) ? RunStatus.FINISHED
+                    : subagent.reportedFailed() ? RunStatus.FAILED : RunStatus.CRASHED);
+        } catch (RuntimeException e) {
+            run.fail(e);
+            throw e;
+        }
+
+        Map<String, Object> entry = new LinkedHashMap<>();
+        entry.put("spawnToolUseId", subagent.spawnToolUseId());
+        entry.put("runId", run.id());
+        if (subagent.agentId() != null) {
+            entry.put("agentId", subagent.agentId());
+        }
+        entry.put("depth", subagent.depth());
+        entry.put("status", status);
+        return entry;
     }
 
     /**

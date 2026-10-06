@@ -238,7 +238,10 @@ public final class JournalSteps {
             int thinking = thinkingFromTurns > 0
                     ? (int) thinkingFromTurns
                     : (llm.tokenUsage() != null ? llm.tokenUsage().thinkingTokens() : 0);
-            total = total.plus(new TokenUsage(summed.inputTokens(), summed.outputTokens(), thinking,
+            // The per-turn output counts are start-of-message figures; the recorded headline holds
+            // the result message's count when that is larger (see PhaseCapture.aggregateUsage()).
+            int output = Math.max(summed.outputTokens(), llm.tokenUsage() != null ? llm.tokenUsage().outputTokens() : 0);
+            total = total.plus(new TokenUsage(summed.inputTokens(), output, thinking,
                     summed.cacheCreationTokens(), summed.cacheReadTokens(), summed.toolUseTokens()));
         }
         return total;
@@ -397,8 +400,42 @@ public final class JournalSteps {
         return turns;
     }
 
+    /**
+     * Returns one step per tool call of a sub-agent, with a cost of 0 marked
+     * {@link AttributionMethod#EVEN_SPLIT}. Claude Code reports no cost for a sub-agent; its cost
+     * is inside the total of the call that started it, so a share is not invented here. Each step
+     * carries the tokens of the turn that issued the tool call, when the turn's usage was
+     * captured.
+     */
+    static List<JournalStep> forSubagent(SubagentCapture subagent, String runId) {
+        Map<String, Boolean> toolErrors = new LinkedHashMap<>();
+        Map<String, Long> toolDurations = new LinkedHashMap<>();
+        for (ToolResultRecord result : subagent.toolResults()) {
+            toolErrors.put(result.toolUseId(), result.isError());
+            toolDurations.put(result.toolUseId(), result.durationMs());
+        }
+        Map<String, TurnUsage> turnByToolUseId = new LinkedHashMap<>();
+        for (TurnUsage turn : subagent.turns()) {
+            for (String toolUseId : nullSafe(turn.toolUseIds())) {
+                turnByToolUseId.put(toolUseId, turn);
+            }
+        }
+        List<JournalStep> steps = new ArrayList<>();
+        for (ToolUseRecord use : subagent.toolUses()) {
+            TurnUsage turn = turnByToolUseId.get(use.id());
+            steps.add(new JournalStep(runId, use.turnId(), use.id(), use.name(),
+                    turn != null ? turn.inputTokens() : 0, turn != null ? turn.outputTokens() : 0, 0.0, 0.0,
+                    AttributionMethod.EVEN_SPLIT, Boolean.TRUE.equals(toolErrors.get(use.id())), null,
+                    VENDOR_CLAUDE_CODE, isSubagentTool(use.name()),
+                    turn != null ? turn.thinkingTokens() : 0, turn != null ? turn.cacheCreationInputTokens() : 0,
+                    turn != null ? turn.cacheReadInputTokens() : 0, use.turnIndex(),
+                    durationOf(toolDurations, use.id())));
+        }
+        return steps;
+    }
+
     /** Whether a tool name spawns a sub-agent; a tool call with no name never does. */
-    private static boolean isSubagentTool(String name) {
+    static boolean isSubagentTool(String name) {
         return name != null && SUBAGENT_TOOLS.contains(name);
     }
 
