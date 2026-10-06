@@ -12,12 +12,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class PhaseCaptureTest {
 
     @Test
-    void totalTokensSumsAllTokenTypes() {
+    void totalTokensIsInputPlusOutputWithThinkingInsideOutput() {
         PhaseCapture capture = new PhaseCapture("explore", null,
                 100, 50, 25, 1000, 800, 0.01, "sess-1", 2, false,
                 "output", List.of(), List.of(), null);
 
-        assertThat(capture.totalTokens()).isEqualTo(175);
+        assertThat(capture.totalTokens()).isEqualTo(150); // 100 + 50; the 25 thinking tokens are part of the 50
     }
 
     @Test
@@ -112,7 +112,7 @@ class PhaseCaptureTest {
                 14, 50, 25, 5000, 80000, 1000, 800, 0.01, "sess-1", 2, false,
                 "output", List.of(), List.of(), null, null);
 
-        assertThat(capture.totalTokens()).isEqualTo(85089); // 14+5000+80000+50+25
+        assertThat(capture.totalTokens()).isEqualTo(85064); // 14+5000+80000+50; thinking is inside output
     }
 
     @Test

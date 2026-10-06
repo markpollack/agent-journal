@@ -91,8 +91,8 @@ public record LLMCallEvent(
     }
 
     /**
-     * Returns the input, output and thinking tokens added together, as
-     * {@link TokenUsage#total()} does; cache tokens are not counted.
+     * Returns the input and output tokens added together, as {@link TokenUsage#total()} does.
+     * Thinking tokens are part of the output tokens; cache tokens are not counted.
      *
      * @return the total tokens, or 0 if {@link #tokenUsage()} is {@code null}
      */

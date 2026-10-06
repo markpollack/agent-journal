@@ -76,13 +76,16 @@ public record CodexPhaseCapture(
 
     /**
      * Returns the token counts as a {@link TokenUsage}, with {@code reasoningOutputTokens} as the
-     * thinking tokens and {@code cachedInputTokens} as the cache reads. The counts are passed on as
-     * Codex reported them; see the class comment for what they include.
+     * thinking tokens and {@code cachedInputTokens} as the cache reads. Codex counts the cached
+     * input inside its input count, and a {@code TokenUsage} keeps the two apart, so the usage's
+     * input tokens are {@code inputTokens} minus {@code cachedInputTokens}, and never below 0.
+     * The other counts are passed on as Codex reported them. Up to 1.10.1 the input tokens were
+     * passed on with the cached input still included.
      *
      * @return the usage of this session; its tool-use token count is 0
      */
     public TokenUsage tokenUsage() {
-        return new TokenUsage(inputTokens, outputTokens, reasoningOutputTokens,
-                cacheWriteInputTokens, cachedInputTokens, 0);
+        return new TokenUsage(Math.max(0, inputTokens - cachedInputTokens), outputTokens,
+                reasoningOutputTokens, cacheWriteInputTokens, cachedInputTokens, 0);
     }
 }

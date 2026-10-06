@@ -101,6 +101,7 @@ public final class GrokRunRecorder {
                     .kind(tool.kind())
                     .input(tool.input())
                     .output(tool.output())
+                    .durationMs(-1) // not measured
                     .success(!tool.isError())
                     .errorMessage(tool.errorMessage())
                     .build();

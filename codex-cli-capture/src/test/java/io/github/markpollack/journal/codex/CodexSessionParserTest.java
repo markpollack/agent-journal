@@ -4,6 +4,7 @@ import io.github.markpollack.journal.Journal;
 import io.github.markpollack.journal.Run;
 import io.github.markpollack.journal.derived.StepCostEvent;
 import io.github.markpollack.journal.event.ToolCallEvent;
+import io.github.markpollack.journal.event.TokenUsage;
 import io.github.markpollack.journal.event.ToolKind;
 import io.github.markpollack.journal.storage.InMemoryStorage;
 import org.junit.jupiter.api.AfterEach;
@@ -49,6 +50,32 @@ class CodexSessionParserTest {
         assertThat(capture.cachedInputTokens()).isEqualTo(41_216);
         assertThat(capture.outputTokens()).isEqualTo(576);
         assertThat(capture.reasoningOutputTokens()).isEqualTo(146);
+    }
+
+    @Test
+    void tokenUsageExcludesCachedInputFromInputTokens() throws Exception {
+        CodexPhaseCapture capture = CodexSessionParser.parse(fixture(), "codex-fixture", "release work");
+
+        // The capture keeps Codex's own counts: 47,555 input, of which 41,216 were read from the cache.
+        assertThat(capture.inputTokens()).isEqualTo(47_555);
+
+        TokenUsage usage = capture.tokenUsage();
+        assertThat(usage.inputTokens()).isEqualTo(47_555 - 41_216);
+        assertThat(usage.cacheReadTokens()).isEqualTo(41_216);
+        assertThat(usage.outputTokens()).isEqualTo(576);
+        assertThat(usage.thinkingTokens()).isEqualTo(146);
+        // Codex's own total for this session is input (cache included) plus output.
+        assertThat(usage.total() + usage.cacheReadTokens()).isEqualTo(47_555 + 576);
+        assertThat(usage.cacheHitRatio()).isEqualTo(41_216.0 / 47_555.0);
+    }
+
+    @Test
+    void tokenUsageInputIsNeverNegative() {
+        CodexPhaseCapture capture = new CodexPhaseCapture("p", null, "gpt-5", "0.148.0", "s1", 10, 5, 0,
+                0, 25, 100L, false, "done", List.of());
+
+        assertThat(capture.tokenUsage().inputTokens()).isZero();
+        assertThat(capture.tokenUsage().cacheReadTokens()).isEqualTo(25);
     }
 
     @Test

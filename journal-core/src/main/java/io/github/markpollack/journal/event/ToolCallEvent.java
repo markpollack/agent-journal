@@ -24,10 +24,11 @@ import java.util.Map;
  *
  * <p>Some fields use a special value for "not known". {@link #turnIndex()} is -1 when the turn is
  * not known; only Claude Code's recorder sets it and {@link #turnId()}, and events written before
- * those fields existed load with -1. {@link #durationMs()} is -1 or 0 when the time was not
- * measured: Claude Code's recorder writes -1 for a call that got no result, and the builder's
- * default, which the Grok, Codex and Junie recorders keep, is 0. So a duration of 0 does not mean
- * that the call took no time.
+ * those fields existed load with -1. {@link #durationMs()} is -1 when the time was not
+ * measured: Claude Code's recorder writes -1 for a call that got no result, and the Grok, Codex
+ * and Junie recorders, which have no tool timing, write -1 for every call. Up to 1.10.1 those
+ * three recorders wrote the builder's default of 0, so in their older events a duration of 0
+ * does not mean that the call took no time.
  *
  * <p>The record does not copy {@code input}. File storage writes it with {@code @type}
  * {@code "tool_call"}, including the input and output, which can hold file contents.
@@ -38,7 +39,7 @@ import java.util.Map;
  * @param input the tool's input parameters
  * @param output the tool's output, or {@code null} if it failed or no output was recorded
  * @param durationMs the time from the tool call being issued to its result arriving, in
- *        milliseconds, or -1 or 0 if it was not measured
+ *        milliseconds, or -1 if it was not measured; see the class comment for older events
  * @param success whether the tool call succeeded
  * @param errorMessage the error text, or {@code null} if the call succeeded
  * @param id the vendor's ID for this tool call, such as {@code toolu_...}, or {@code null} if

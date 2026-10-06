@@ -223,13 +223,14 @@ public record PhaseCapture(
     }
 
     /**
-     * Returns {@link #totalInputTokens()} plus {@code outputTokens} and {@code thinkingTokens}.
-     * This is a snapshot figure; for cost, use {@link #aggregateUsage()}.
+     * Returns {@link #totalInputTokens()} plus {@code outputTokens}. Thinking tokens are part of
+     * the output tokens, so they are not added again; up to 1.10.1 this method added them a
+     * second time. This is a snapshot figure; for cost, use {@link #aggregateUsage()}.
      *
-     * @return the sum of the snapshot input, output and thinking tokens
+     * @return the sum of the snapshot input and output tokens
      */
     public int totalTokens() {
-        return totalInputTokens() + outputTokens + thinkingTokens;
+        return totalInputTokens() + outputTokens;
     }
 
     /**

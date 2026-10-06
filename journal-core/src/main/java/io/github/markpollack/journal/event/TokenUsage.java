@@ -7,13 +7,15 @@ import java.util.Map;
  * The tokens used by an LLM call, split by type: input, output, thinking, cache writes, cache
  * reads and tool definitions. It is part of an {@link LLMCallEvent}, and capture records such as
  * Claude Code's {@code PhaseCapture} build one per turn or per call. Add usages up by type with
- * {@link #plus(TokenUsage)} or {@link #sum(Iterable)}, and get input plus output plus thinking
- * tokens with {@link #total()}.
+ * {@link #plus(TokenUsage)} or {@link #sum(Iterable)}, and get input plus output tokens with
+ * {@link #total()}.
  *
- * <p>Whether {@code inputTokens} counts cache reads depends on what the agent reports. Claude
- * Code reports input without cache reads; the recorded Codex sessions show input that includes
- * them. Compare input tokens across vendors with care. No capture module sets
- * {@code toolUseTokens}.
+ * <p>Two conventions hold for every usage the capture modules build. {@code thinkingTokens} are
+ * part of {@code outputTokens}, not an addition to them. {@code inputTokens} do not include cache
+ * reads or cache writes, which have their own counts. Claude Code reports its usage this way.
+ * Codex reports input that includes cached input, and the Codex module subtracts it since 1.11.0;
+ * Codex events written by earlier versions carry the larger, cache-inclusive {@code inputTokens}
+ * and are not rewritten. No capture module sets {@code toolUseTokens}.
  *
  * <p>The counts are {@code int}s and are not checked: a sum above {@link Integer#MAX_VALUE} for
  * one type overflows without an error. The record is immutable.
@@ -57,15 +59,16 @@ public record TokenUsage(
     }
 
     /**
-     * Returns the input, output and thinking tokens added together. Cache writes, cache reads and
-     * tool-definition tokens are not counted; add those components yourself when you need them.
-     * This is the value of {@code total_tokens} in {@link #toMap()} and of
-     * {@link LLMCallEvent#totalTokens()}.
+     * Returns the input and output tokens added together. Thinking tokens are part of the output
+     * tokens, so they are not added again; up to 1.10.1 this method added them a second time.
+     * Cache writes, cache reads and tool-definition tokens are not counted; add those components
+     * yourself when you need them. This is the value of {@code total_tokens} in {@link #toMap()}
+     * and of {@link LLMCallEvent#totalTokens()}. It is computed on each call and is not stored.
      *
      * @return the total tokens
      */
     public int total() {
-        return inputTokens + outputTokens + thinkingTokens;
+        return inputTokens + outputTokens;
     }
 
     /**
@@ -105,27 +108,28 @@ public record TokenUsage(
     }
 
     /**
-     * Returns {@code inputTokens} minus {@code cacheReadTokens}. That is the input not read from
-     * the cache only when {@code inputTokens} includes cache reads. When it does not, as for
-     * Claude Code, the result is too small and can be negative: 100 input tokens and 1,000 cache
-     * reads give -900.
+     * Returns {@code inputTokens}, which already exclude cache reads. Up to 1.10.1 this method
+     * subtracted the cache reads from them, which gave a negative number for Claude Code.
      *
-     * @return the input tokens less the cache reads
+     * @return the input tokens
+     * @deprecated use {@link #inputTokens()}
      */
+    @Deprecated(since = "1.11.0")
     public int effectiveInputTokens() {
-        return inputTokens - cacheReadTokens;
+        return inputTokens;
     }
 
     /**
-     * Returns {@code cacheReadTokens} divided by {@code inputTokens}. That is the share of input
-     * read from the cache, between 0 and 1, only when {@code inputTokens} includes cache reads.
-     * When it does not, as for Claude Code, the ratio can be above 1.
+     * Returns the cache reads' share of the input tokens plus the cache reads, between 0 and 1.
+     * Cache writes are not counted on either side. For a Codex usage written before 1.11.0, whose
+     * {@code inputTokens} include the cache reads, the result is lower than the true share.
      *
-     * @return the ratio, or 0 if {@code inputTokens} is 0
+     * @return {@code cacheReadTokens / (inputTokens + cacheReadTokens)}, or 0 if both are 0
      */
     public double cacheHitRatio() {
-        if (inputTokens == 0) return 0.0;
-        return (double) cacheReadTokens / inputTokens;
+        long inputAndReads = (long) inputTokens + cacheReadTokens;
+        if (inputAndReads <= 0) return 0.0;
+        return (double) cacheReadTokens / inputAndReads;
     }
 
     /**

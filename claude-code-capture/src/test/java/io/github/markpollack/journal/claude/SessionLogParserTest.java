@@ -87,7 +87,7 @@ class SessionLogParserTest {
         PhaseCapture capture = SessionLogParser.parse(messages.iterator(), "explore", "test prompt");
 
         assertThat(capture.thinkingTokens()).isEqualTo(150);
-        assertThat(capture.totalTokens()).isEqualTo(850); // 500 + 200 + 150
+        assertThat(capture.totalTokens()).isEqualTo(700); // 500 + 200; the 150 thinking tokens are part of the 200
     }
 
     @Test

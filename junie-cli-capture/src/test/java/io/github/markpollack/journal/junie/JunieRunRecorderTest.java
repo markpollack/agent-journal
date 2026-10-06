@@ -5,12 +5,15 @@ import io.github.markpollack.journal.Run;
 import io.github.markpollack.journal.event.CustomEvent;
 import io.github.markpollack.journal.event.JournalEvent;
 import io.github.markpollack.journal.event.LLMCallEvent;
+import io.github.markpollack.journal.event.ToolCallEvent;
+import io.github.markpollack.journal.event.ToolKind;
 import io.github.markpollack.journal.storage.InMemoryStorage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 import io.github.markpollack.journal.event.StopReason;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -63,5 +66,21 @@ class JunieRunRecorderTest {
         assertThat(call.metadata()).containsEntry("costAvailable", true)
                 .containsEntry("costSource", "reported")
                 .containsEntry("costReconciles", false);
+    }
+
+    @Test
+    void toolCallDurationIsRecordedAsNotMeasured() {
+        Run run = Journal.run("exp").start();
+        JuniePhaseCapture phase = new JuniePhaseCapture("execute", null, "m", "t1", "task", 10, 5, 0, 0,
+                0.01, 100L, 1, false, "DONE", null, false, "done", null, List.of(), 0L, 0L,
+                StopReason.UNKNOWN, -1, List.of(),
+                List.of(new JunieToolUseRecord("call_1", ToolKind.EXECUTE, "bash", Map.of("command", "ls"), "out",
+                        "completed", 0, false, null)));
+
+        new JunieRunRecorder(run).recordPhase(phase);
+
+        assertThat(storage.loadEvents("exp", run.id())).filteredOn(ToolCallEvent.class::isInstance)
+                .singleElement()
+                .satisfies(e -> assertThat(((ToolCallEvent) e).durationMs()).isEqualTo(-1));
     }
 }

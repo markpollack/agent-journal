@@ -342,7 +342,7 @@ class TestInfrastructureTest extends BaseTrackingTest {
             assertThat(map).containsEntry("cache_creation_tokens", 50);
             assertThat(map).containsEntry("cache_read_tokens", 30);
             assertThat(map).containsEntry("tool_use_tokens", 20);
-            assertThat(map).containsEntry("total_tokens", 1750);
+            assertThat(map).containsEntry("total_tokens", 1650); // 1200 + 450; thinking is inside output
         }
 
         @Test
