@@ -155,7 +155,8 @@ public final class CodexSessionParser {
 
         Map<String, ParserState> childStates = new LinkedHashMap<>();
         Map<String, ParserState> statesByThread = new LinkedHashMap<>();
-        statesByThread.put(firstNonBlank(rootState.sessionId, root.threadId()), rootState);
+        // Children name the root by its thread id, which is session_meta.id, not session_id.
+        statesByThread.put(firstNonBlank(rootState.threadId, root.threadId()), rootState);
         for (CodexRollout child : rollouts.children()) {
             ParserState state = read(child, true);
             String threadId = firstNonBlank(state.threadId, child.threadId());
@@ -252,6 +253,9 @@ public final class CodexSessionParser {
                     return;
                 }
                 sessionId = firstNonBlank(text(payload, "session_id"), text(payload, "id"));
+                if (threadId == null) {
+                    threadId = text(payload, "id");
+                }
                 cliVersion = text(payload, "cli_version");
                 return;
             }
@@ -464,6 +468,9 @@ public final class CodexSessionParser {
         }
 
         private String spawnCallIdOf(String childThreadId) {
+            if (childThreadId == null) {
+                return null;
+            }
             for (Map.Entry<String, String> entry : spawnedThreadIds.entrySet()) {
                 if (childThreadId.equals(entry.getValue())) {
                     return entry.getKey();

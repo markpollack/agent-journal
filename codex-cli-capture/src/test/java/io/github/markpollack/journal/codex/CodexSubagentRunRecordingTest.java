@@ -160,4 +160,25 @@ class CodexSubagentRunRecordingTest {
                 .containsOnly(CodexSubagentCaptureTest.ROOT);
         assertThat(all.stream().filter(r -> first.id().equals(r.parentRunId()))).hasSize(4);
     }
+
+    @org.junit.jupiter.api.Test
+    void aCaptureWithoutSpawnsWritesNoSubagentKey(@org.junit.jupiter.api.io.TempDir java.nio.file.Path dir) {
+        io.github.markpollack.journal.Journal.configure(new io.github.markpollack.journal.storage.JsonFileStorage(dir));
+        CodexPhaseCapture plain = new CodexPhaseCapture("execute", "p", "gpt-5", "0.160.1", "s1", 10, 5, 0, 0, 0,
+                100L, false, "done", java.util.List.of());
+        io.github.markpollack.journal.Run run = io.github.markpollack.journal.Journal.run("exp").start();
+        new CodexRunRecorder(run).recordPhase(plain);
+        run.close();
+
+        io.github.markpollack.journal.storage.JsonFileStorage storage =
+                new io.github.markpollack.journal.storage.JsonFileStorage(dir);
+        org.assertj.core.api.Assertions.assertThat(storage.listRuns("exp")).hasSize(1);
+        io.github.markpollack.journal.event.LLMCallEvent call = storage.loadEvents("exp", run.id()).stream()
+                .filter(io.github.markpollack.journal.event.LLMCallEvent.class::isInstance)
+                .map(io.github.markpollack.journal.event.LLMCallEvent.class::cast).findFirst().orElseThrow();
+        org.assertj.core.api.Assertions.assertThat(call.metadata()).doesNotContainKeys(
+                CodexRunRecorder.META_SUBAGENTS, CodexRunRecorder.META_SUBAGENTS_WITHOUT_TRACK,
+                CodexRunRecorder.META_SUBAGENT_TRACKS_AVAILABLE);
+        io.github.markpollack.journal.Journal.reset();
+    }
 }
