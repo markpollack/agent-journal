@@ -60,10 +60,11 @@ deprecated and returns the input tokens.
 Claude Code sends a sub-agent's messages on the same stream as the main loop's, each marked with
 the ID of the tool call that started the sub-agent. Earlier versions did not read that mark.
 
-**What is captured.** For each sub-agent whose messages arrive: its prompt, tool calls, tool
-results and per-turn token usage, and its text and thinking when Claude Code forwards them. They
-are in `PhaseCapture.subagents()`, one `SubagentCapture` each, and the recorder writes each as a
-run:
+**What is captured.** For each sub-agent whose messages arrive: its prompt, its tool calls and
+tool results with the usage of the turns that made them, and, when Claude Code is started with
+`--forward-subagent-text`, its text and thinking together with its turns that called no tool.
+They are in `PhaseCapture.subagents()`, one `SubagentCapture` each, and the recorder writes each
+as a run:
 
 - `parentRunId` is the run of the agent that started it: the recorder's run, or the enclosing
   sub-agent's run for a nested one.
@@ -80,9 +81,14 @@ split over the main loop's steps. A sub-agent's `llm_call` has a cost of 0 with
 `costAvailable=false` and `costSource=included_in_parent`, and its step costs are 0 marked
 `EVEN_SPLIT`. Adding cost over a run and its sub-agent runs gives the reported total once.
 
-**Tokens.** Each run has its own. Over a run and its sub-agent runs, input and cache tokens add
-up to what Claude Code reports for the whole call. A sub-agent's output count is a lower bound:
-the stream reports no final output figure for a sub-agent.
+**Tokens.** Each run has its own. With `--forward-subagent-text`, input and cache tokens over a
+run and its sub-agent runs add up exactly to what Claude Code reports for the whole call
+(verified live through agent-client: 12 / 41,544 / 151,728 against the same `modelUsage`
+figures). Without the flag, a sub-agent's turns that called no tool are not on the stream, so its
+recorded usage is short by those turns (in the same live check, about 58,000 cache-read tokens
+across two sub-agents); the call's own total is complete either way. A sub-agent's output count
+is a lower bound in both cases: the stream reports no final output figure for a sub-agent (the
+same check: 536 recorded against 672 reported).
 
 **How a sub-agent's run ends.**
 
@@ -111,7 +117,9 @@ the stream reports no final output figure for a sub-agent.
 | Observed with Claude Code **2.1.292** | Sub-agent tool calls, results, prompt and usage, with and without `--forward-subagent-text`, in `--print` mode and with the options `claude-code-sdk` 1.7.0 passes. Sub-agent text with that flag. A sub-agent started by a sub-agent. Two sub-agents started by one message |
 | Covered by a hand-written test session only | Sub-agent thinking; a failed sub-agent; a refused start; a sub-agent whose end is not reported |
 | Not observed, and not claimed | Other Claude Code versions; background sub-agents; nesting deeper than two; a resumed session; a capture run end to end through `claude-code-sdk` |
-| Needs the caller | Sub-agent **text and thinking** arrive only when Claude Code is started with `--forward-subagent-text` (`CLIOptions.forwardSubagentText` in `claude-code-sdk` 1.6.0 and later). A caller that does not set it still gets the sub-agents' tool calls, results, prompts and usage |
+| Verified through the Java path | Claude CLI 2.1.292 → `claude-code-sdk` 1.7.0 → agent-client (a local branch adding a `forwardSubagentText` option) → `RunRecorder` → files → fresh reader, flag on and off: linkage, separation, status, and the exact input and cache reconciliation above |
+| Needs the caller | Complete sub-agent capture needs Claude Code started with `--forward-subagent-text` (`CLIOptions.forwardSubagentText` in `claude-code-sdk` 1.6.0 and later). Without it the sub-agents' prompts, tool calls, results and tool-turn usage are captured, but not their text, thinking, or text-only turns and that usage |
+| Where sub-agent text lives | In `SubagentCapture.textOutput` and in a trace file when one is written. No journal event or run file stores text, for the main loop or for a sub-agent; this is unchanged |
 | Not captured | Sub-agents of Codex, Antigravity, Grok and Junie. Sub-agents from Claude Code's transcript files |
 
 ### If you read the files yourself

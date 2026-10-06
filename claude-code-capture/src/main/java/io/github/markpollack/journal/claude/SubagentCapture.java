@@ -19,10 +19,17 @@ import java.util.List;
  * {@link ToolUseRecord}, in the main loop for a sub-agent of depth 1 and in the enclosing
  * sub-agent's capture for a nested one.
  *
- * <p>Claude Code always sends a sub-agent's tool calls, tool results, prompt and usage. It sends
- * the sub-agent's text and thinking only when started with {@code --forward-subagent-text}, so
- * an empty {@code textOutput} does not show that the sub-agent wrote nothing. It reports no cost
- * for a sub-agent; the cost is part of the call's total, {@link PhaseCapture#totalCostUsd()}.
+ * <p>Claude Code always sends a sub-agent's prompt, and its tool calls and tool results with the
+ * usage of the turns that made them. It sends the sub-agent's text and thinking, and with them
+ * the turns that have no tool call, only when started with {@code --forward-subagent-text}. So
+ * without that flag an empty {@code textOutput} does not show that the sub-agent wrote nothing,
+ * and {@link #turns()} and {@link #aggregateUsage()} cover only the turns that called a tool
+ * (observed on Claude Code 2.1.292: a sub-agent's closing text turn and its cache reads were
+ * absent without the flag). The call's own total, {@link PhaseCapture#totalCostUsd()} and the
+ * result message's {@code modelUsage}, is complete either way. Claude Code reports no cost for a
+ * sub-agent; the cost is part of the call's total. A sub-agent's text is kept in this record and
+ * in a trace file, when one is written; the recorder stores no text as an event, for the main
+ * loop or for a sub-agent.
  *
  * <p>The record copies its lists into unmodifiable ones.
  *

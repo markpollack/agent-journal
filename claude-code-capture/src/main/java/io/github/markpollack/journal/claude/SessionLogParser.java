@@ -47,8 +47,11 @@ import org.slf4j.LoggerFactory;
  * the wire line of each message, which claude-code-sdk supplies from 1.3.0; without it the
  * messages cannot be told apart and {@link PhaseCapture#subagentTracksAvailable()} is
  * {@code false}. Up to 1.10.1 a sub-agent's tool calls and usage were recorded as the main
- * loop's. Verified against Claude Code 2.1.292. A trace file is still a flat record of every
- * message, sub-agents' included.
+ * loop's. Verified against Claude Code 2.1.292, including through claude-code-sdk 1.7.0 and
+ * agent-client. Without {@code --forward-subagent-text}, Claude Code sends only a sub-agent's
+ * turns that call a tool, so its text and the usage of its text-only turns are then missing from
+ * its capture; see {@link SubagentCapture}. A trace file is still a flat record of every message,
+ * sub-agents' included.
  *
  * <p>Claude Code sends one assistant message as several lines, one per content block, each
  * repeating the message's ID and usage. The parser makes one turn of them and counts the usage
