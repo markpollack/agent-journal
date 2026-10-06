@@ -203,6 +203,91 @@ public class SessionLogParser {
     }
 
     /**
+     * Rebases a capture's cost onto the query it covers, when it is the second or later query of a
+     * Claude Code session.
+     *
+     * <p>Claude Code reports {@code total_cost_usd}, {@code modelUsage} and {@code duration_api_ms}
+     * on each result line as the <em>session's</em> running totals, also across {@code --resume}
+     * under the same session ID, while {@code usage}, {@code duration_ms} and {@code num_turns}
+     * cover the query alone (observed on Claude Code 2.1.292). A caller that sends several prompts
+     * into one session and parses each response with {@link #parse} therefore gets a capture whose
+     * {@code totalCostUsd} includes every earlier query, and adding such captures up over-counts.
+     *
+     * <p>This method returns a copy of {@code current} whose {@code totalCostUsd},
+     * {@code modelCosts} and {@code apiDurationMs} are {@code current}'s minus
+     * {@code previous}'s, with the running totals kept in {@link PhaseCapture#sessionCost()} and
+     * {@link PhaseCapture#costBasis()} reporting {@link SessionCost.CostBasis#SESSION_DELTA}. The
+     * per-query figures ({@code usage}-derived tokens, {@code durationMs}, {@code numTurns},
+     * turns, tool calls, text, sub-agents) are unchanged. The baseline is {@code previous}'s own
+     * running total (its {@code sessionCost} when it was itself rebased, else its
+     * {@code totalCostUsd}), so a chain of captures can each be rebased on the one before.
+     *
+     * <p>{@code current} is returned unchanged, basis {@link SessionCost.CostBasis#RESULT_LINE},
+     * when {@code previous} is {@code null}, when either capture has no session ID or the IDs
+     * differ (never subtract across sessions), or when {@code current}'s running total is below
+     * {@code previous}'s (the counters evidently restarted, so the result line already covers this
+     * query alone). Records written before this method existed carry the result line's figures and
+     * are not reinterpreted.
+     *
+     * @param current the capture of the latest query, as returned by {@link #parse}
+     * @param previous the capture of the query before it in the same session, or {@code null}
+     * @return the rebased capture, or {@code current} itself when no baseline applies
+     * @since 1.11.0
+     */
+    public static PhaseCapture withSessionBaseline(PhaseCapture current, PhaseCapture previous) {
+        if (current == null || previous == null) {
+            return current;
+        }
+        if (current.sessionId() == null || !current.sessionId().equals(previous.sessionId())) {
+            return current;
+        }
+        double baselineCost = previous.sessionCost() != null
+                ? previous.sessionCost().cumulativeCostUsd() : previous.totalCostUsd();
+        long baselineApiMs = previous.sessionCost() != null
+                ? previous.sessionCost().cumulativeApiDurationMs() : previous.apiDurationMs();
+        List<ModelCost> baselineModels = previous.sessionCost() != null
+                ? previous.sessionCost().cumulativeModelCosts() : previous.modelCosts();
+        if (current.totalCostUsd() < baselineCost) {
+            return current;
+        }
+        List<ModelCost> deltaModels = new ArrayList<>();
+        if (current.modelCosts() != null) {
+            for (ModelCost m : current.modelCosts()) {
+                ModelCost base = null;
+                if (baselineModels != null) {
+                    for (ModelCost b : baselineModels) {
+                        if (b.model() != null && b.model().equals(m.model())) {
+                            base = b;
+                            break;
+                        }
+                    }
+                }
+                ModelCost d = base == null ? m : new ModelCost(m.model(),
+                        m.inputTokens() - base.inputTokens(), m.outputTokens() - base.outputTokens(),
+                        m.cacheReadInputTokens() - base.cacheReadInputTokens(),
+                        m.cacheCreationInputTokens() - base.cacheCreationInputTokens(),
+                        m.costUsd() - base.costUsd());
+                // A model whose running total did not move was not used by this query.
+                if (base == null || d.costUsd() > 0 || d.outputTokens() > 0 || d.inputTokens() > 0) {
+                    deltaModels.add(d);
+                }
+            }
+        }
+        SessionCost sessionCost = new SessionCost(current.totalCostUsd(), current.apiDurationMs(),
+                current.modelCosts(), baselineCost);
+        return new PhaseCapture(current.phaseName(), current.promptText(), current.inputTokens(),
+                current.outputTokens(), current.thinkingTokens(), current.cacheCreationInputTokens(),
+                current.cacheReadInputTokens(), current.durationMs(),
+                Math.max(0L, current.apiDurationMs() - baselineApiMs),
+                current.totalCostUsd() - baselineCost, current.sessionId(), current.numTurns(),
+                current.isError(), current.textOutput(), current.thinkingBlocks(), current.toolUses(),
+                current.rawResult(), current.toolResults(), current.turns(),
+                current.modelCosts() == null ? null : deltaModels, current.stopReason(), current.maxTurns(),
+                current.subagents(), current.subagentTracksAvailable(), current.reportedSubagentStats(),
+                sessionCost);
+    }
+
+    /**
      * What one agent did during the call: the main loop, or one sub-agent. Claude Code marks each
      * message of a sub-agent with the ID of the tool call that started it, and the parser keeps
      * one of these per ID so that a sub-agent's activity never lands in the main loop's.

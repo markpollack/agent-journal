@@ -139,6 +139,13 @@ public abstract class BaseRunRecorder {
         if (phase.hasTurns()) {
             metadata.put(JournalSteps.META_TURNS, JournalSteps.turnsToMetadata(phase.turns()));
         }
+        // A capture rebased onto its own query by SessionLogParser.withSessionBaseline says so, and
+        // keeps the session's running total beside the per-query cost. A capture taken from the
+        // result line verbatim writes neither key, as before.
+        if (phase.sessionCost() != null) {
+            metadata.put(SessionCost.COST_BASIS_KEY, "session_delta");
+            metadata.put(SessionCost.SESSION_CUMULATIVE_COST_KEY, phase.sessionCost().cumulativeCostUsd());
+        }
         // Written only for a call with sub-agent evidence, so a call without any is recorded
         // exactly as before.
         List<String> subagentsWithoutTrack = phase.subagentsWithoutTrack();

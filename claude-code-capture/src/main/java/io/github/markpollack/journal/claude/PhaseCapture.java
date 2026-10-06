@@ -76,6 +76,11 @@ import java.util.Map;
  * @param reportedSubagentStats the sub-agent counts Claude Code reported on the result message
  *        ({@code subagent_stats}), unchanged, such as {@code spawned}, {@code completed},
  *        {@code failed} and {@code refused}; empty if it reported none
+ * @param sessionCost the session's running totals this capture's cost was rebased from, when
+ *        {@link SessionLogParser#withSessionBaseline} subtracted the previous capture of the same
+ *        session; {@code null} when {@code totalCostUsd}, {@code modelCosts} and
+ *        {@code apiDurationMs} are the result line's figures verbatim (the session's running total,
+ *        which equals this query's own figures only for the first query of a session)
  */
 public record PhaseCapture(
         String phaseName,
@@ -102,7 +107,8 @@ public record PhaseCapture(
         int maxTurns,
         List<SubagentCapture> subagents,
         boolean subagentTracksAvailable,
-        Map<String, Object> reportedSubagentStats
+        Map<String, Object> reportedSubagentStats,
+        SessionCost sessionCost
 ) {
 
     /**
@@ -121,6 +127,23 @@ public record PhaseCapture(
         toolResults = copy(toolResults);
         turns = copy(turns);
         modelCosts = copy(modelCosts);
+    }
+
+    /**
+     * Creates a capture whose cost figures are the result line's verbatim ({@code sessionCost}
+     * {@code null}). The parameters are the record components up to {@code reportedSubagentStats}.
+     */
+    public PhaseCapture(String phaseName, String promptText, int inputTokens, int outputTokens,
+            int thinkingTokens, int cacheCreationInputTokens, int cacheReadInputTokens, long durationMs,
+            long apiDurationMs, double totalCostUsd, String sessionId, int numTurns, boolean isError,
+            String textOutput, List<String> thinkingBlocks, List<ToolUseRecord> toolUses, String rawResult,
+            List<ToolResultRecord> toolResults, List<TurnUsage> turns, List<ModelCost> modelCosts,
+            StopReason stopReason, int maxTurns, List<SubagentCapture> subagents,
+            boolean subagentTracksAvailable, Map<String, Object> reportedSubagentStats) {
+        this(phaseName, promptText, inputTokens, outputTokens, thinkingTokens, cacheCreationInputTokens,
+                cacheReadInputTokens, durationMs, apiDurationMs, totalCostUsd, sessionId, numTurns, isError,
+                textOutput, thinkingBlocks, toolUses, rawResult, toolResults, turns, modelCosts, stopReason,
+                maxTurns, subagents, subagentTracksAvailable, reportedSubagentStats, null);
     }
 
     /**
@@ -432,6 +455,18 @@ public record PhaseCapture(
     public TokenUsage snapshotUsage() {
         return new TokenUsage(inputTokens, outputTokens, thinkingTokens,
                 cacheCreationInputTokens, cacheReadInputTokens, 0);
+    }
+
+    /**
+     * Returns how {@link #totalCostUsd()} relates to the result line it was read from:
+     * {@link SessionCost.CostBasis#SESSION_DELTA} when {@link #sessionCost()} is present, else
+     * {@link SessionCost.CostBasis#RESULT_LINE}.
+     *
+     * @return the cost basis, never {@code null}
+     * @since 1.11.0
+     */
+    public SessionCost.CostBasis costBasis() {
+        return sessionCost != null ? SessionCost.CostBasis.SESSION_DELTA : SessionCost.CostBasis.RESULT_LINE;
     }
 
     /**
