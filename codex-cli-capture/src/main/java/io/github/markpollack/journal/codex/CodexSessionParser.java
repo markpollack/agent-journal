@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -131,6 +132,68 @@ public final class CodexSessionParser {
         return state.capture(phaseName, promptText);
     }
 
+    /**
+     * Parses the root rollout of {@code rollouts} as {@link #parse(BufferedReader, String, String)}
+     * does and each child rollout as a sub-agent track.
+     *
+     * <p>A child's identity is the {@code id} of the first {@code session_meta} in its file; a forked
+     * child's replayed records (those with an {@code ordinal} below its
+     * {@code subagent_history_start_ordinal}) are skipped and counted. A child is joined to the
+     * {@code spawn_agent} call of its parent thread through the parent's {@code SubAgentActivity}
+     * {@code started} record that names the child's thread id. A child whose parent thread is not
+     * among the rollouts is still captured, without a spawn call id and with depth -1. Tokens, tool
+     * uses and text are read from each file only.
+     *
+     * @throws IllegalArgumentException if {@code rollouts} has no root or several
+     * @throws IOException if a line is not valid JSON
+     */
+    public static CodexPhaseCapture parse(CodexRollouts rollouts, String phaseName, String promptText)
+            throws IOException {
+        CodexRollout root = rollouts.root();
+        ParserState rootState = read(root, false);
+        CodexPhaseCapture core = rootState.capture(phaseName, promptText);
+
+        Map<String, ParserState> childStates = new LinkedHashMap<>();
+        Map<String, ParserState> statesByThread = new LinkedHashMap<>();
+        statesByThread.put(firstNonBlank(rootState.sessionId, root.threadId()), rootState);
+        for (CodexRollout child : rollouts.children()) {
+            ParserState state = read(child, true);
+            String threadId = firstNonBlank(state.threadId, child.threadId());
+            if (state.parentThreadId == null) {
+                state.parentThreadId = child.parentThreadId();
+            }
+            childStates.put(threadId, state);
+            statesByThread.put(threadId, state);
+        }
+
+        List<CodexSubagentCapture> subagents = new ArrayList<>(childStates.size());
+        for (Map.Entry<String, ParserState> entry : childStates.entrySet()) {
+            subagents.add(entry.getValue().subagent(entry.getKey(), statesByThread, rootState));
+        }
+        return new CodexPhaseCapture(core.phaseName(), core.promptText(), core.model(), core.cliVersion(),
+                core.sessionId(), core.inputTokens(), core.outputTokens(), core.reasoningOutputTokens(),
+                core.cacheWriteInputTokens(), core.cachedInputTokens(), core.durationMs(), core.isError(),
+                core.textOutput(), core.toolUses(), subagents, true, rootState.spawnedThreadIds);
+    }
+
+    private static ParserState read(CodexRollout rollout, boolean childTrack) throws IOException {
+        ParserState state = new ParserState(childTrack);
+        int lineNumber = 0;
+        for (String line : rollout.lines()) {
+            lineNumber++;
+            if (line == null || line.isBlank()) {
+                continue;
+            }
+            try {
+                state.accept(MAPPER.readTree(line));
+            } catch (JsonProcessingException ex) {
+                throw new IOException("Invalid Codex rollout JSONL at line " + lineNumber + " of thread "
+                        + rollout.threadId(), ex);
+            }
+        }
+        return state;
+    }
+
     private static final class ParserState {
         private final Map<String, MutableToolCall> tools = new LinkedHashMap<>();
 
@@ -146,14 +209,58 @@ public final class CodexSessionParser {
         private boolean isError;
         private boolean sawTaskComplete;
         private String textOutput = "";
+        // The child's last own turn-terminal record: task_complete -> completed, turn_aborted -> interrupted.
+        private String lastTurnTerminal;
+
+        // Sub-agent evidence of this thread: spawn call id -> child thread id / agent path from
+        // SubAgentActivity "started", and child thread id -> last later activity kind.
+        private final Map<String, String> spawnedThreadIds = new LinkedHashMap<>();
+        private final Map<String, String> spawnedAgentPaths = new LinkedHashMap<>();
+        private final Map<String, String> activityKindByThread = new LinkedHashMap<>();
+
+        // Child-track state. Only the first session_meta is read; records below the fork's history
+        // start are skipped and counted.
+        private final boolean childTrack;
+        private boolean sawSessionMeta;
+        private String threadId;
+        private String parentThreadId;
+        private String sourceAgentPath;
+        private boolean forked;
+        private long historyStartOrdinal = -1;
+        private int replayedRecordsSkipped;
+        private String firstUserMessage;
+
+        ParserState() {
+            this(false);
+        }
+
+        ParserState(boolean childTrack) {
+            this.childTrack = childTrack;
+        }
 
         void accept(JsonNode envelope) {
             String envelopeType = text(envelope, "type");
             JsonNode payload = envelope.path("payload");
+            if (childTrack && sawSessionMeta && historyStartOrdinal >= 0
+                    && envelope.path("ordinal").asLong(Long.MAX_VALUE) < historyStartOrdinal) {
+                replayedRecordsSkipped++;
+                return;
+            }
             if ("session_meta".equals(envelopeType)) {
+                if (childTrack) {
+                    acceptChildSessionMeta(payload);
+                    return;
+                }
                 sessionId = firstNonBlank(text(payload, "session_id"), text(payload, "id"));
                 cliVersion = text(payload, "cli_version");
                 return;
+            }
+            if ("event_msg".equals(envelopeType) && "item_completed".equals(text(payload, "type"))) {
+                acceptItemCompleted(payload.path("item"));
+                return;
+            }
+            if (childTrack && firstUserMessage == null) {
+                firstUserMessage = userMessageText(payload);
             }
             if ("turn_context".equals(envelopeType)) {
                 model = text(payload, "model");
@@ -171,6 +278,7 @@ public final class CodexSessionParser {
                 case "function_call_output" -> acceptFunctionCallOutput(payload);
                 case "token_count" -> acceptTokenCount(payload);
                 case "task_complete" -> acceptTaskComplete(payload);
+                case "turn_aborted" -> lastTurnTerminal = "interrupted";
                 default -> {
                     // Reasoning, messages, rate limits, and future records do not alter tool pairing.
                     if (text(payload, "call_id") != null) {
@@ -255,8 +363,46 @@ public final class CodexSessionParser {
             cachedInputTokens = usage.path("cached_input_tokens").asInt(0);
         }
 
+        private void acceptChildSessionMeta(JsonNode payload) {
+            if (sawSessionMeta) {
+                return; // a forked child replays its parent's session_meta
+            }
+            sawSessionMeta = true;
+            threadId = text(payload, "id");
+            sessionId = firstNonBlank(text(payload, "session_id"), threadId);
+            cliVersion = text(payload, "cli_version");
+            parentThreadId = text(payload, "parent_thread_id");
+            forked = text(payload, "forked_from_id") != null;
+            historyStartOrdinal = payload.path("subagent_history_start_ordinal").asLong(-1);
+            sourceAgentPath = text(payload.path("source"), "subagent");
+        }
+
+        private void acceptItemCompleted(JsonNode item) {
+            if (!"SubAgentActivity".equals(text(item, "type"))) {
+                return;
+            }
+            String kind = text(item, "kind");
+            String agentThreadId = text(item, "agent_thread_id");
+            if (agentThreadId == null || kind == null) {
+                return;
+            }
+            if ("started".equals(kind)) {
+                String callId = text(item, "id");
+                if (callId != null) {
+                    spawnedThreadIds.put(callId, agentThreadId);
+                    String agentPath = text(item, "agent_path");
+                    if (agentPath != null) {
+                        spawnedAgentPaths.put(callId, agentPath);
+                    }
+                }
+            } else if ("completed".equals(kind) || "interrupted".equals(kind)) {
+                activityKindByThread.put(agentThreadId, kind); // the last one in file order wins
+            }
+        }
+
         private void acceptTaskComplete(JsonNode payload) {
             sawTaskComplete = true;
+            lastTurnTerminal = "completed";
             durationMs = payload.path("duration_ms").asLong(0L);
             textOutput = payload.path("last_agent_message").asText("");
             if (payload.has("status") && !"completed".equalsIgnoreCase(payload.path("status").asText())) {
@@ -273,6 +419,99 @@ public final class CodexSessionParser {
                     inputTokens, outputTokens, reasoningOutputTokens, cacheWriteInputTokens,
                     cachedInputTokens, durationMs, isError || !sawTaskComplete, textOutput, toolUses);
         }
+
+        CodexSubagentCapture subagent(String ownThreadId, Map<String, ParserState> statesByThread,
+                ParserState rootState) {
+            ParserState parent = parentThreadId == null ? null : statesByThread.get(parentThreadId);
+            String spawnCallId = parent == null ? null : parent.spawnCallIdOf(ownThreadId);
+            String parentSpawnCallId = null;
+            int depth = -1;
+            if (parent == rootState) {
+                depth = 1;
+            } else if (parent != null) {
+                int parentDepth = parent.depthOf(parent.parentThreadId, statesByThread, rootState, new ArrayList<>());
+                depth = parentDepth < 0 ? -1 : parentDepth + 1;
+                parentSpawnCallId = parent.parentThreadId == null ? null
+                        : statesByThread.containsKey(parent.parentThreadId)
+                        ? statesByThread.get(parent.parentThreadId).spawnCallIdOf(parentThreadId) : null;
+            }
+            String agentPath = spawnCallId != null && parent.spawnedAgentPaths.containsKey(spawnCallId)
+                    ? parent.spawnedAgentPaths.get(spawnCallId) : sourceAgentPath;
+
+            // C5: Codex writes no thread-terminal status. The parent's last completed/interrupted
+            // activity for this thread outranks the child's own last turn-terminal record.
+            String status;
+            String statusSource;
+            if (parent != null && parent.activityKindByThread.containsKey(ownThreadId)) {
+                status = parent.activityKindByThread.get(ownThreadId);
+                statusSource = "parent_sub_agent_activity_last";
+            } else if (lastTurnTerminal != null) {
+                status = lastTurnTerminal;
+                statusSource = "child_last_turn";
+            } else {
+                status = "unknown";
+                statusSource = "none";
+            }
+
+            List<CodexToolUseRecord> toolUses = new ArrayList<>(tools.size());
+            for (MutableToolCall tool : tools.values()) {
+                toolUses.add(tool.freeze());
+            }
+            return new CodexSubagentCapture(ownThreadId, spawnCallId, parentSpawnCallId, depth, agentPath,
+                    status, statusSource, forked, replayedRecordsSkipped, cliVersion, model, firstUserMessage,
+                    textOutput, toolUses, inputTokens, outputTokens, reasoningOutputTokens,
+                    cacheWriteInputTokens, cachedInputTokens, sawTaskComplete ? durationMs : -1L);
+        }
+
+        private String spawnCallIdOf(String childThreadId) {
+            for (Map.Entry<String, String> entry : spawnedThreadIds.entrySet()) {
+                if (childThreadId.equals(entry.getValue())) {
+                    return entry.getKey();
+                }
+            }
+            return null;
+        }
+
+        // Depth of this state: 1 for a child of the root; -1 when the chain does not reach the root.
+        private int depthOf(String myParentThreadId, Map<String, ParserState> statesByThread,
+                ParserState rootState, List<ParserState> visited) {
+            if (visited.contains(this)) {
+                return -1;
+            }
+            visited.add(this);
+            ParserState parent = myParentThreadId == null ? null : statesByThread.get(myParentThreadId);
+            if (parent == null) {
+                return -1;
+            }
+            if (parent == rootState) {
+                return 1;
+            }
+            int parentDepth = parent.depthOf(parent.parentThreadId, statesByThread, rootState, visited);
+            return parentDepth < 0 ? -1 : parentDepth + 1;
+        }
+    }
+
+    // The text of a user message record: response_item/message with role user, or
+    // event_msg/user_message. Null for any other record.
+    private static String userMessageText(JsonNode payload) {
+        String type = text(payload, "type");
+        if ("user_message".equals(type)) {
+            return text(payload, "message");
+        }
+        if ("message".equals(type) && "user".equals(text(payload, "role"))) {
+            StringBuilder sb = new StringBuilder();
+            for (JsonNode part : payload.path("content")) {
+                String partText = text(part, "text");
+                if (partText != null) {
+                    if (sb.length() > 0) {
+                        sb.append('\n');
+                    }
+                    sb.append(partText);
+                }
+            }
+            return sb.length() == 0 ? null : sb.toString();
+        }
+        return null;
     }
 
     private static final class MutableToolCall {

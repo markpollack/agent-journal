@@ -1,0 +1,4 @@
+{"timestamp":"2026-01-01T00:00:08.100Z","ordinal":0,"type":"session_meta","payload":{"id":"thread-orphan-0004","session_id":"thread-root-0001","parent_thread_id":"thread-unknown-9999","cli_version":"0.160.1-synthetic","source":{"subagent":"workers/orphan"},"model_provider":"openai"}}
+{"timestamp":"2026-01-01T00:00:08.200Z","ordinal":1,"type":"response_item","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"Orphan task"}]}}
+{"timestamp":"2026-01-01T00:00:08.300Z","ordinal":2,"type":"event_msg","payload":{"type":"token_count","info":{"total_token_usage":{"input_tokens":100,"cached_input_tokens":0,"output_tokens":10,"reasoning_output_tokens":0,"total_tokens":110}}}}
+{"timestamp":"2026-01-01T00:00:08.400Z","ordinal":3,"type":"event_msg","payload":{"type":"turn_aborted","reason":"interrupted"}}

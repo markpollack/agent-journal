@@ -1,6 +1,9 @@
 package io.github.markpollack.journal.codex;
 
+import io.github.markpollack.journal.Journal;
 import io.github.markpollack.journal.Run;
+import io.github.markpollack.journal.RunBuilder;
+import io.github.markpollack.journal.RunStatus;
 import io.github.markpollack.journal.derived.StepCostEvent;
 import io.github.markpollack.journal.event.CostBreakdown;
 import io.github.markpollack.journal.event.CustomEvent;
@@ -10,7 +13,9 @@ import io.github.markpollack.journal.event.ToolCallEvent;
 import io.github.markpollack.journal.trace.JournalStep;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -76,6 +81,7 @@ public final class CodexRunRecorder {
             run.logEvent(CustomEvent.of("prompt",
                     phaseAttributes(phase.phaseName(), "text", phase.promptText())));
         }
+        List<Map<String, Object>> subagentRuns = recordSubagents(phase);
 
         Map<String, Object> metadata = new LinkedHashMap<>();
         metadata.put("phaseName", phase.phaseName());
@@ -89,6 +95,23 @@ public final class CodexRunRecorder {
             metadata.put("cliVersion", phase.cliVersion());
         }
 
+        // Written only with sub-agent evidence (a spawn_agent call, a started activity or a child
+        // rollout), so a phase without any is recorded exactly as before.
+        boolean spawned = phase.toolUses().stream().anyMatch(use -> CodexJournalSteps.isSubagentSpawn(use.name()));
+        if (spawned || phase.hasSubagents() || !phase.spawnedThreadIds().isEmpty()) {
+            metadata.put(META_SUBAGENT_TRACKS_AVAILABLE, phase.subagentTracksAvailable());
+            if (phase.subagentTracksAvailable()) {
+                List<Map<String, Object>> withoutTrack = new ArrayList<>();
+                for (CodexPhaseCapture.SpawnWithoutTrack spawn : phase.subagentsWithoutTrack()) {
+                    Map<String, Object> entry = new LinkedHashMap<>();
+                    entry.put("callId", spawn.callId());
+                    entry.put("reason", spawn.reason());
+                    withoutTrack.add(entry);
+                }
+                metadata.put(META_SUBAGENTS, subagentRuns);
+                metadata.put(META_SUBAGENTS_WITHOUT_TRACK, withoutTrack);
+            }
+        }
         run.logEvent(LLMCallEvent.builder()
                 .provider("openai")
                 .model(phase.model() != null ? phase.model() : "unknown")
@@ -99,22 +122,156 @@ public final class CodexRunRecorder {
                 .build());
 
         for (CodexToolUseRecord tool : phase.toolUses()) {
-            run.logEvent(ToolCallEvent.builder()
-                    .id(tool.id())
-                    .toolName(tool.name())
-                    .kind(tool.kind())
-                    .input(tool.input())
-                    .output(tool.output())
-                    .durationMs(-1) // not measured
-                    .success(!tool.isError())
-                    .errorMessage(tool.errorMessage())
-                    .build());
+            run.logEvent(toolCallEvent(tool));
         }
 
         Instant analyzedAt = Instant.now();
         for (JournalStep step : CodexJournalSteps.fromPhaseCapture(phase, run.id())) {
             run.logDerivedEvent(StepCostEvent.fromStep(step, analyzedAt));
         }
+    }
+
+    /** Parent {@code llm_call} metadata key: the child runs written for this phase. */
+    public static final String META_SUBAGENTS = "subagents";
+    /** Parent {@code llm_call} metadata key: spawns without a child run, each with a reason. */
+    public static final String META_SUBAGENTS_WITHOUT_TRACK = "subagentsWithoutTrack";
+    /** Parent {@code llm_call} metadata key: whether child tracks could have been captured. */
+    public static final String META_SUBAGENT_TRACKS_AVAILABLE = "subagentTracksAvailable";
+    /** Child run config key: the parent's {@code spawn_agent} call id. */
+    public static final String CONFIG_SPAWN_TOOL_USE_ID = "subagent.spawnToolUseId";
+    /** Child run tag key; its value is {@link #TRACK_SUBAGENT}. */
+    public static final String TAG_TRACK = "track";
+    /** Child run tag value marking a sub-agent run. */
+    public static final String TRACK_SUBAGENT = "subagent";
+    /** Child run summary value of {@code subagent.statusMeaning}: Codex reports no thread-terminal status. */
+    public static final String STATUS_MEANING_LAST_OBSERVED_TURN = "last_observed_turn";
+
+    /**
+     * Writes one run per captured sub-agent thread, before the parent's {@code llm_call}, and
+     * returns the metadata entries that name them. A child of the root gets this recorder's run as
+     * its {@code parentRunId}; a deeper child gets the run of the thread that spawned it, or this
+     * recorder's run when that thread was not captured. A child whose recording fails is marked
+     * failed and the exception is rethrown.
+     */
+    private List<Map<String, Object>> recordSubagents(CodexPhaseCapture phase) {
+        if (!phase.hasSubagents() || !phase.subagentTracksAvailable()) {
+            return List.of();
+        }
+        Map<String, String> runIdBySpawnCallId = new LinkedHashMap<>();
+        List<Map<String, Object>> written = new ArrayList<>();
+        List<CodexSubagentCapture> pending = new ArrayList<>(phase.subagents());
+        while (!pending.isEmpty()) {
+            boolean progressed = false;
+            for (CodexSubagentCapture subagent : new ArrayList<>(pending)) {
+                String parentSpawn = subagent.parentSpawnCallId();
+                if (parentSpawn == null || runIdBySpawnCallId.containsKey(parentSpawn)) {
+                    String parentRunId = parentSpawn == null ? run.id() : runIdBySpawnCallId.get(parentSpawn);
+                    written.add(recordSubagent(phase, subagent, parentRunId, runIdBySpawnCallId));
+                    pending.remove(subagent);
+                    progressed = true;
+                }
+            }
+            if (!progressed) {
+                for (CodexSubagentCapture subagent : pending) {
+                    written.add(recordSubagent(phase, subagent, run.id(), runIdBySpawnCallId));
+                }
+                pending.clear();
+            }
+        }
+        return written;
+    }
+
+    private Map<String, Object> recordSubagent(CodexPhaseCapture phase, CodexSubagentCapture subagent,
+            String parentRunId, Map<String, String> runIdBySpawnCallId) {
+        RunBuilder builder = Journal.run(run.experiment().id())
+                .parentRun(parentRunId)
+                .tag(TAG_TRACK, TRACK_SUBAGENT)
+                .config("subagent.threadId", subagent.threadId())
+                .config("subagent.depth", subagent.depth())
+                .config("subagent.forked", subagent.forked());
+        if (subagent.spawnCallId() != null) {
+            builder.config(CONFIG_SPAWN_TOOL_USE_ID, subagent.spawnCallId());
+        }
+        if (subagent.agentPath() != null) {
+            builder.config("subagent.agentPath", subagent.agentPath());
+            builder.agent(subagent.agentPath());
+        }
+        if (phase.sessionId() != null) {
+            builder.config("subagent.sessionId", phase.sessionId()); // the root thread id
+        }
+        if (subagent.model() != null) {
+            builder.config("model", subagent.model());
+        }
+        Run child = builder.start();
+        if (subagent.spawnCallId() != null) {
+            runIdBySpawnCallId.put(subagent.spawnCallId(), child.id());
+        }
+        try {
+            if (subagent.promptText() != null && !subagent.promptText().isEmpty()) {
+                child.logEvent(CustomEvent.of("prompt",
+                        phaseAttributes(phase.phaseName(), "text", subagent.promptText())));
+            }
+            Map<String, Object> metadata = new LinkedHashMap<>();
+            metadata.put("phaseName", phase.phaseName());
+            metadata.put("isError", !"completed".equals(subagent.status()));
+            metadata.put("costAvailable", false);
+            metadata.put("costSource", "unreported");
+            if (phase.sessionId() != null) {
+                metadata.put("sessionId", phase.sessionId());
+            }
+            if (subagent.cliVersion() != null) {
+                metadata.put("cliVersion", subagent.cliVersion());
+            }
+            child.logEvent(LLMCallEvent.builder()
+                    .provider("openai")
+                    .model(subagent.model() != null ? subagent.model() : "unknown")
+                    .tokenUsage(subagent.tokenUsage())
+                    .cost(CostBreakdown.of(0.0))
+                    .timing(TimingInfo.of(Math.max(0L, subagent.durationMs())))
+                    .metadata(metadata)
+                    .build());
+            for (CodexToolUseRecord tool : subagent.toolUses()) {
+                child.logEvent(toolCallEvent(tool));
+            }
+            Instant analyzedAt = Instant.now();
+            for (JournalStep step : CodexJournalSteps.forSubagent(subagent, child.id())) {
+                child.logDerivedEvent(StepCostEvent.fromStep(step, analyzedAt));
+            }
+            child.setSummary("subagent.status", subagent.status());
+            child.setSummary("subagent.statusSource", subagent.statusSource());
+            child.setSummary("subagent.statusMeaning", STATUS_MEANING_LAST_OBSERVED_TURN);
+            child.setSummary("subagent.replayedRecordsSkipped", subagent.replayedRecordsSkipped());
+            child.finish(switch (subagent.status()) {
+                case "completed" -> RunStatus.FINISHED;
+                case "interrupted" -> RunStatus.FAILED;
+                default -> RunStatus.CRASHED; // end not observed; the status text is in the summary
+            });
+        } catch (RuntimeException e) {
+            child.fail(e);
+            throw e;
+        }
+        Map<String, Object> entry = new LinkedHashMap<>();
+        entry.put("spawnToolUseId", subagent.spawnCallId());
+        entry.put("runId", child.id());
+        if (subagent.agentPath() != null) {
+            entry.put("agentId", subagent.agentPath());
+        }
+        entry.put("depth", subagent.depth());
+        entry.put("status", subagent.status());
+        return entry;
+    }
+
+    private static ToolCallEvent toolCallEvent(CodexToolUseRecord tool) {
+        return ToolCallEvent.builder()
+                .id(tool.id())
+                .toolName(tool.name())
+                .kind(tool.kind())
+                .input(tool.input())
+                .output(tool.output())
+                .durationMs(-1) // not measured
+                .success(!tool.isError())
+                .errorMessage(tool.errorMessage())
+                .build();
     }
 
     // Not Map.of, which throws NullPointerException for a capture with no phase name; such a

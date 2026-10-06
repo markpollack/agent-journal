@@ -2,7 +2,13 @@ package io.github.markpollack.journal.codex;
 
 import io.github.markpollack.journal.event.TokenUsage;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The parsed record of one Codex CLI session: the agent's final message, the tool calls it made,
@@ -39,6 +45,12 @@ import java.util.List;
  *        other than {@code completed}; a failed tool call does not set it
  * @param textOutput the agent's last message, from {@code task_complete}; empty if there was none
  * @param toolUses the tool calls, in the order they first appeared; never {@code null}
+ * @param subagents the sub-agent threads captured from their own rollouts; empty for a single-reader
+ *     parse
+ * @param subagentTracksAvailable whether the phase was parsed from {@link CodexRollouts}, so that
+ *     child tracks could have been captured
+ * @param spawnedThreadIds the {@code spawn_agent} call ids that a {@code SubAgentActivity}
+ *     {@code started} record followed, mapped to the child thread id it named
  */
 public record CodexPhaseCapture(
         String phaseName,
@@ -54,15 +66,86 @@ public record CodexPhaseCapture(
         long durationMs,
         boolean isError,
         String textOutput,
-        List<CodexToolUseRecord> toolUses
+        List<CodexToolUseRecord> toolUses,
+        List<CodexSubagentCapture> subagents,
+        boolean subagentTracksAvailable,
+        Map<String, String> spawnedThreadIds
 ) {
 
+    /** The tool name Codex uses to start a sub-agent thread. */
+    public static final String SPAWN_AGENT_TOOL = "spawn_agent";
+
     /**
-     * Creates a capture from all of its parts. A {@code null} {@code toolUses} becomes an empty
-     * list; any other list is copied.
+     * Creates a capture from all of its parts. A {@code null} list or map becomes empty; any other
+     * is copied.
      */
     public CodexPhaseCapture {
         toolUses = toolUses == null ? List.of() : List.copyOf(toolUses);
+        subagents = subagents == null ? List.of() : List.copyOf(subagents);
+        spawnedThreadIds = spawnedThreadIds == null
+                ? Map.of()
+                : Collections.unmodifiableMap(new LinkedHashMap<>(spawnedThreadIds));
+    }
+
+    /**
+     * Creates a capture without sub-agent tracks, as the single-reader
+     * {@link CodexSessionParser#parse(java.io.BufferedReader, String, String)} produces.
+     */
+    public CodexPhaseCapture(String phaseName, String promptText, String model, String cliVersion,
+            String sessionId, int inputTokens, int outputTokens, int reasoningOutputTokens,
+            int cacheWriteInputTokens, int cachedInputTokens, long durationMs, boolean isError,
+            String textOutput, List<CodexToolUseRecord> toolUses) {
+        this(phaseName, promptText, model, cliVersion, sessionId, inputTokens, outputTokens,
+                reasoningOutputTokens, cacheWriteInputTokens, cachedInputTokens, durationMs, isError,
+                textOutput, toolUses, List.of(), false, Map.of());
+    }
+
+    /** Creates a capture with sub-agent tracks and no record of which spawns were started. */
+    public CodexPhaseCapture(String phaseName, String promptText, String model, String cliVersion,
+            String sessionId, int inputTokens, int outputTokens, int reasoningOutputTokens,
+            int cacheWriteInputTokens, int cachedInputTokens, long durationMs, boolean isError,
+            String textOutput, List<CodexToolUseRecord> toolUses, List<CodexSubagentCapture> subagents,
+            boolean subagentTracksAvailable) {
+        this(phaseName, promptText, model, cliVersion, sessionId, inputTokens, outputTokens,
+                reasoningOutputTokens, cacheWriteInputTokens, cachedInputTokens, durationMs, isError,
+                textOutput, toolUses, subagents, subagentTracksAvailable, Map.of());
+    }
+
+    /** A spawn in this phase that has no sub-agent track, with the reason. */
+    public record SpawnWithoutTrack(String callId, String reason) {
+    }
+
+    /** Returns whether at least one sub-agent track was captured. */
+    public boolean hasSubagents() {
+        return !subagents.isEmpty();
+    }
+
+    /**
+     * Returns the {@code spawn_agent} calls of this phase that have no captured track. The reason is
+     * {@code spawn_failed} for a spawn whose output is a plain string and that no {@code started}
+     * activity followed, and {@code not_collected} for a spawn with a {@code started} activity whose
+     * child rollout was not supplied. Empty for a capture without sub-agent tracks, which cannot
+     * tell the two apart.
+     */
+    public List<SpawnWithoutTrack> subagentsWithoutTrack() {
+        if (!subagentTracksAvailable) {
+            return List.of();
+        }
+        Set<String> captured = new HashSet<>();
+        for (CodexSubagentCapture subagent : subagents) {
+            if (subagent.spawnCallId() != null) {
+                captured.add(subagent.spawnCallId());
+            }
+        }
+        List<SpawnWithoutTrack> missing = new ArrayList<>();
+        for (CodexToolUseRecord tool : toolUses) {
+            if (!SPAWN_AGENT_TOOL.equals(tool.name()) || captured.contains(tool.id())) {
+                continue;
+            }
+            boolean started = spawnedThreadIds.containsKey(tool.id());
+            missing.add(new SpawnWithoutTrack(tool.id(), started ? "not_collected" : "spawn_failed"));
+        }
+        return List.copyOf(missing);
     }
 
     /**

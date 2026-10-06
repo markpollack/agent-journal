@@ -1,0 +1,4 @@
+{"timestamp":"2026-01-01T00:00:09.850Z","ordinal":0,"type":"session_meta","payload":{"id":"thread-child-c-0005","session_id":"thread-root-0001","parent_thread_id":"thread-root-0001","cli_version":"0.160.1-synthetic","source":{"subagent":"workers/watcher"},"model_provider":"openai"}}
+{"timestamp":"2026-01-01T00:00:09.860Z","ordinal":1,"type":"turn_context","payload":{"model":"synthetic-model"}}
+{"timestamp":"2026-01-01T00:00:09.870Z","ordinal":2,"type":"response_item","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"Watch C"}]}}
+{"timestamp":"2026-01-01T00:00:09.880Z","ordinal":3,"type":"event_msg","payload":{"type":"token_count","info":{"total_token_usage":{"input_tokens":80,"cached_input_tokens":30,"output_tokens":5,"reasoning_output_tokens":1,"total_tokens":85}}}}
