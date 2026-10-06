@@ -46,12 +46,14 @@ def version_tuple(version: str) -> tuple[int, ...]:
 
 
 def accepted_floor(group_id: str, artifact_id: str) -> str:
+    # The floors are the oldest patch releases that clear the 2026-09-22/23 denial-of-service
+    # advisories (CVE-2026-89407, CVE-2026-89425, CVE-2026-91776, CVE-2026-91777).
     if group_id.startswith("tools.jackson"):
-        return "3.1.6"
+        return "3.1.7"
     if group_id == "com.fasterxml.jackson.core" and artifact_id == "jackson-annotations":
         # Jackson 2.21.x intentionally uses the independently versioned 2.21 annotations.
         return "2.21"
-    return "2.21.6"
+    return "2.21.7"
 
 
 def maven_command(repo: Path | None, *arguments: str) -> list[str]:
