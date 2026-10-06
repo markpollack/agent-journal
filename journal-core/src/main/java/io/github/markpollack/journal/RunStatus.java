@@ -34,8 +34,9 @@ public enum RunStatus {
     FAILED,
 
     /**
-     * Ended abnormally. The library never chooses this value; a caller that detects a crash, such
-     * as a lost agent process, passes it to {@link Run#finish(RunStatus)}.
+     * Ended abnormally. A caller that detects a crash, such as a lost agent process, passes it to
+     * {@link Run#finish(RunStatus)}. {@link Run#close()} never chooses this value; Claude Code's
+     * {@code RunRecorder} does, for a recorder closed before its {@code finish()} was called.
      */
     CRASHED;
 

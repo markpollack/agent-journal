@@ -160,6 +160,7 @@ class CaptureContractTest {
         Run run = Journal.run("exp").config("model", "claude-opus-4-8").start();
         try (RunRecorder recorder = new RunRecorder(run)) {
             recorder.recordPhase(capture);
+            recorder.finish();
         }
 
         LLMCallEvent llm = onlyLlmEvent(tempDir.resolve("journal"), run);
@@ -224,6 +225,7 @@ class CaptureContractTest {
         Run run = Journal.run("exp").config("model", "claude-opus-4-8").start();
         try (RunRecorder recorder = new RunRecorder(run)) {
             recorder.recordPhase(capture);
+            recorder.finish();
         }
 
         List<ToolCallEvent> tools = new ArrayList<>();
@@ -291,6 +293,7 @@ class CaptureContractTest {
         Run run = Journal.run("exp").config("model", "claude-opus-4-8").start();
         try (RunRecorder recorder = new RunRecorder(run)) {
             recorder.recordPhase(capture);
+            recorder.finish();
         }
 
         List<JournalStep> fromEvents = JournalSteps.fromEvents(loadEvents(tempDir.resolve("journal"), run),

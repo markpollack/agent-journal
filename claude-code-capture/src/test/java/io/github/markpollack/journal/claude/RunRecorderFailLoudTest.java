@@ -91,6 +91,7 @@ class RunRecorderFailLoudTest {
         Run run = Journal.run("exp").start();
         try (RunRecorder recorder = new RunRecorder(run)) {
             // recordPhase never called → derivedEventsEmitted == 0
+            recorder.finish();
         }
         assertThat(run.status()).isEqualTo(RunStatus.FINISHED);
     }
@@ -104,6 +105,7 @@ class RunRecorderFailLoudTest {
         try (RunRecorder recorder = new RunRecorder(Journal.run("exp").start())) {
             runId = recorder.run().id();
             recorder.recordPhase(capture());
+            recorder.finish();
         } // no throw
 
         // Derived events durably present, every one carrying the attribution method.

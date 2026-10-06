@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
  * Logs Claude Code {@link PhaseCapture}s as events on an open {@link Run}, then ends the run,
  * refusing to finish if the per-step costs it derived would be lost. Use it after
  * {@link SessionLogParser} has parsed a call: create one around the run, call
- * {@link #recordPhase(PhaseCapture)} once per phase, and end it with {@link #finish()} or
- * {@link #close()}. The run must write to storage that keeps derived events, normally
+ * {@link #recordPhase(PhaseCapture)} once per phase, and end it with {@link #finish()}. The run
+ * must write to storage that keeps derived events, normally
  * {@link io.github.markpollack.journal.storage.JsonFileStorage}.
  *
  * <p>For each phase, {@code recordPhase} logs a
@@ -26,17 +26,21 @@ import org.slf4j.LoggerFactory;
  * {@link io.github.markpollack.journal.derived.StepCostEvent} per step as a derived event, with
  * the cost split as in {@link PhaseCapture#stepCosts()}.
  *
- * <p>When the run ends, the recorder checks the storage. If it logged derived events and
- * {@link JournalStorage#persistsDerivedEvents()} is {@code false}, as for
- * {@link io.github.markpollack.journal.storage.InMemoryStorage}, it throws
- * {@link IllegalStateException} instead of finishing the run. Call {@link #lenient()} to get a
- * logged warning instead, when losing them is intended. The recorders for other agent CLIs, such
- * as {@code GrokRunRecorder}, make no such check.
+ * <p>Only {@link #finish()} records a completed run. {@link #close()} cannot tell a normal exit
+ * from an exception leaving the try-with-resources block, so a recorder closed without
+ * {@code finish()} ends its run {@code CRASHED} with {@code success=false}. This differs from
+ * {@link Run#close()}, which ends a plain run {@code FINISHED}. To record a failure with its
+ * cause, call {@link #failRun(Throwable)} inside the block. Up to 1.10.1 {@code close()} ended
+ * the run {@code FINISHED} with {@code success=true} in every case, so in records written by
+ * those versions {@code FINISHED} does not show that the recording completed.
  *
- * <p>Like {@link Run#close()}, {@link #close()} ends the run {@code FINISHED} even when an
- * exception leaves the try-with-resources block. To record a failure, call
- * {@link #failRun(Throwable)} inside the block; {@code close()} does not check the storage of a
- * run that has already failed.
+ * <p>When the recorder ends a run, it checks the storage. If it logged derived events and
+ * {@link JournalStorage#persistsDerivedEvents()} is {@code false}, as for
+ * {@link io.github.markpollack.journal.storage.InMemoryStorage}, it ends the run as not
+ * successful and then throws {@link IllegalStateException}. Call {@link #lenient()} to get a
+ * logged warning instead, when losing them is intended. A run that has already ended is not
+ * checked. The recorders for other agent CLIs, such as {@code GrokRunRecorder}, make no such
+ * check.
  *
  * <p>A recorder serves one run and is not safe for use from several threads.
  *
@@ -46,7 +50,8 @@ import org.slf4j.LoggerFactory;
  * try (RunRecorder recorder = new RunRecorder(
  *         Journal.run("my-exp").config("model", model).start())) {
  *     recorder.recordPhase(capture);
- * }
+ *     recorder.finish();
+ * } // without finish(), close() ends the run as CRASHED
  * }</pre>
  */
 public class RunRecorder extends BaseRunRecorder implements AutoCloseable {
@@ -102,39 +107,51 @@ public class RunRecorder extends BaseRunRecorder implements AutoCloseable {
     }
 
     /**
-     * Checks the storage as described in the class comment, then ends the run {@code FINISHED}.
-     * If the run has already ended, its status does not change.
+     * Ends the run {@code FINISHED}, after the storage check described in the class comment. If
+     * the run has already ended, nothing is checked and its status does not change.
      *
      * @throws IllegalStateException if derived events were logged, the storage does not keep
-     *         them, and {@link #lenient()} was not called; the run is then not ended
+     *         them, and {@link #lenient()} was not called; the run has then been ended
+     *         {@code FAILED} with this exception as its error
      */
     public void finish() {
-        verifyDerivedDurable();
-        currentRun.finish(RunStatus.FINISHED);
+        if (!currentRun.status().isTerminal()) {
+            try {
+                verifyDerivedDurable();
+            } catch (IllegalStateException e) {
+                // End the run before reporting: a run left RUNNING is never saved with an end time.
+                currentRun.fail(e);
+                finished = true;
+                throw e;
+            }
+            currentRun.finish(RunStatus.FINISHED);
+        }
         finished = true;
     }
 
     /**
-     * Ends the run {@code FINISHED} if it has not ended, after the same storage check as
-     * {@link #finish()}. If the run has already ended, for example through
-     * {@link #failRun(Throwable)}, the check is skipped and nothing changes, so a failed storage
-     * check never hides the earlier failure. A try-with-resources block calls this method at its
-     * end.
+     * Ends the run {@code CRASHED} with {@code success=false} if it has not ended, then makes the
+     * same storage check as {@link #finish()}. A {@code success} value the caller has already set
+     * is kept. If the run has already ended, through {@link #finish()} or
+     * {@link #failRun(Throwable)}, nothing is checked and nothing changes. A try-with-resources
+     * block calls this method at its end.
      *
-     * @throws IllegalStateException if the run has not ended, derived events were logged, the
-     *         storage does not keep them, and {@link #lenient()} was not called; the run is then
-     *         not ended
+     * @throws IllegalStateException if the run had not ended, derived events were logged, the
+     *         storage does not keep them, and {@link #lenient()} was not called; the run has then
+     *         been ended {@code CRASHED}
      */
     @Override
     public void close() {
         if (currentRun == null) {
             return;
         }
-        if (!finished && !currentRun.status().isTerminal()) {
-            verifyDerivedDurable();
+        if (finished || currentRun.status().isTerminal()) {
+            finished = true;
+            return;
         }
-        currentRun.close();
+        currentRun.finish(RunStatus.CRASHED);
         finished = true;
+        verifyDerivedDurable();
     }
 
     /**
