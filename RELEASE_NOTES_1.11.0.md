@@ -2,8 +2,8 @@
 
 > Release candidate. Not yet published to Maven Central.
 
-Captures Claude Code sub-agents as runs of their own, and fixes how runs end and how tokens are
-counted. Several stored values change meaning with this version. Records written by earlier
+Captures Claude Code and Codex sub-agents as runs of their own, corrects the cost of a later prompt
+in a multi-prompt Claude Code session, and fixes how runs end and how tokens are counted. Several stored values change meaning with this version. Records written by earlier
 versions are never rewritten, and from this version a file says which version wrote it, so old
 and new records can be told apart.
 
@@ -125,7 +125,7 @@ same check: 536 recorded against 672 reported).
 | Verified through the Java path | Claude CLI 2.1.292 → `claude-code-sdk` 1.7.0 → agent-client (a local branch adding a `forwardSubagentText` option) → `RunRecorder` → files → fresh reader, flag on and off: linkage, separation, status, and the exact input and cache reconciliation above |
 | Needs the caller | Complete sub-agent capture needs Claude Code started with `--forward-subagent-text` (`CLIOptions.forwardSubagentText` in `claude-code-sdk` 1.6.0 and later). Without it the sub-agents' prompts, tool calls, results and tool-turn usage are captured, but not their text, thinking, or text-only turns and that usage |
 | Where sub-agent text lives | In `SubagentCapture.textOutput` and in a trace file when one is written. No journal event or run file stores text, for the main loop or for a sub-agent; this is unchanged |
-| Not captured | Sub-agents of Codex, Antigravity, Grok and Junie. Sub-agents from Claude Code's transcript files |
+| Not captured | Sub-agents of Antigravity, Grok and Junie. Sub-agents from Claude Code's transcript files |
 
 ### If you read the files yourself
 
@@ -138,6 +138,59 @@ restores the item count, pass rate and total cost exactly; the `parentRunId` rul
 and its cost).
 
 The trace file is unchanged: it is still a flat record of every message, sub-agents' included.
+
+## Sub-agent capture (Codex)
+
+Codex writes one rollout file per thread, and a sub-agent is its own thread. The journal does not
+search the filesystem; the caller collects the root rollout and the child rollouts (agent-client's
+harvester follows each `SubAgentActivity{kind:"started"}.agent_thread_id` to the file named with that
+id) and hands them to `CodexSessionParser.parse(CodexRollouts, …)`. The existing single-file `parse`
+methods are unchanged.
+
+- **Identity and linkage.** A child is identified by the id in its first `session_meta` record and
+  joined to the `spawn_agent` call whose `call_id` is the id of the parent's `started` activity for
+  that thread. That `call_id` is the `id` of the parent's `tool_call` event (the accepted
+  `function_call` recording, with arguments kept verbatim, is unchanged) and the child run's
+  `subagent.spawnToolUseId`. The child run also records `subagent.threadId`, `subagent.agentPath`,
+  `subagent.forked` and `subagent.sessionId` (the root thread id).
+- **Forked children.** A forked child's file replays its parent's history; records below
+  `subagent_history_start_ordinal` are skipped and counted in `subagent.replayedRecordsSkipped`, so
+  the child's text, duration and error flag are its own.
+- **Status.** Codex writes no thread-terminal status. A child's status is the **last observed turn
+  outcome**: the parent's last `completed` or `interrupted` activity for the child, else the child's
+  last own `task_complete` or `turn_aborted`, else `unknown`; `subagent.statusSource` says which and
+  `subagent.statusMeaning=last_observed_turn`. `completed` → `FINISHED`, `interrupted` → `FAILED`,
+  otherwise `CRASHED` (no end observed). A `spawn_agent` call with no `started` activity is a failed
+  spawn; a started child whose file was not supplied is `not_collected`; both are listed under the
+  parent's `subagentsWithoutTrack`.
+- **Accounting.** Codex reports no cost for any thread: every `llm_call` keeps cost 0 with
+  `costAvailable=false`. Each run's tokens are its own file's last `token_count`; Codex's parent total
+  excludes its children, so nothing is counted twice and the parent's `llm_call` is unchanged by its
+  children. There is no `costIncludesSubagents` key for Codex.
+- **Supported.** Codex CLI **0.160.1**, headless `codex exec`, non-forked children at depth 1,
+  verified live; rollouts written by 0.147.0 and later parse. Forked children and depth 2 are parsed by
+  the same rules but covered by the synthetic fixture only. Not supported: `codex exec resume` for
+  sub-agent capture, `codex app-server`, importing historical sessions. A child's `durationMs` is its
+  last turn's duration, not the thread's.
+
+## Cost of a later prompt in a multi-prompt Claude Code session
+
+Claude Code reports `total_cost_usd`, `modelUsage` and `duration_api_ms` on every `result` line as
+the **session's running total**, also across `--resume`, while `usage`, `duration_ms` and `num_turns`
+cover the query alone (verified live on 2.1.292). A caller that sends several prompts into one
+session and records one phase per prompt — agent-client's `ClaudeAgentSession` does — therefore
+recorded each phase's cost as the total so far, and adding the phases over-counted.
+
+`SessionLogParser.parse` is unchanged and still records the result line verbatim. New
+`SessionLogParser.withSessionBaseline(current, previous)` returns a copy of a later capture whose
+cost, per-model costs and API time are the difference from the previous capture of the **same
+session id**; the running totals are kept in the new `PhaseCapture.sessionCost()` component and
+`costBasis()` says which figure a capture carries. It never subtracts across session ids and leaves a
+capture unchanged when the counters restarted. The recorder writes `costBasis=session_delta` and
+`sessionCumulativeCostUsd` in the LLM call's metadata for a rebased capture, and nothing new otherwise.
+**Comparison boundary:** records without `costBasis` carry the result line's figure, which is the
+query's own cost for a session's first or only prompt and the running total for a later prompt. The
+caller has to apply the rebase; agent-client's adoption is tracked separately.
 
 ## Run lifecycle
 
@@ -206,8 +259,9 @@ removed.
 - Replace `TokenUsage.effectiveInputTokens()` with `inputTokens()`.
 - Callers that build a `PhaseCapture` themselves need no change: every earlier constructor
   remains. A record pattern over `PhaseCapture` needs three more components.
-- If you serialise `PhaseCapture`, it has three more properties: `subagents`,
-  `subagentTracksAvailable` and `reportedSubagentStats`.
+- If you serialise `PhaseCapture`, it has four more properties: `subagents`,
+  `subagentTracksAvailable`, `reportedSubagentStats` and `sessionCost`; `CodexPhaseCapture` has
+  `subagents`, `subagentTracksAvailable` and `spawnedThreadIds`.
 - Do not compare Claude Code or Codex token counts across the 1.11.0 boundary without the table
   at the top.
 
