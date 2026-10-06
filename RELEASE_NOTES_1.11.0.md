@@ -116,7 +116,7 @@ same check: 536 recorded against 672 reported).
 |---|---|
 | Observed with Claude Code **2.1.292** | Sub-agent tool calls, results, prompt and usage, with and without `--forward-subagent-text`, in `--print` mode and with the options `claude-code-sdk` 1.7.0 passes. Sub-agent text with that flag. A sub-agent started by a sub-agent. Two sub-agents started by one message |
 | Covered by a hand-written test session only | Sub-agent thinking; a failed sub-agent; a refused start; a sub-agent whose end is not reported |
-| Not observed, and not claimed | Other Claude Code versions; background sub-agents; nesting deeper than two; a resumed session; a capture run end to end through `claude-code-sdk` |
+| Not observed, and not claimed | Other Claude Code versions; background sub-agents; nesting deeper than two; a resumed session |
 | Verified through the Java path | Claude CLI 2.1.292 → `claude-code-sdk` 1.7.0 → agent-client (a local branch adding a `forwardSubagentText` option) → `RunRecorder` → files → fresh reader, flag on and off: linkage, separation, status, and the exact input and cache reconciliation above |
 | Needs the caller | Complete sub-agent capture needs Claude Code started with `--forward-subagent-text` (`CLIOptions.forwardSubagentText` in `claude-code-sdk` 1.6.0 and later). Without it the sub-agents' prompts, tool calls, results and tool-turn usage are captured, but not their text, thinking, or text-only turns and that usage |
 | Where sub-agent text lives | In `SubagentCapture.textOutput` and in a trace file when one is written. No journal event or run file stores text, for the main loop or for a sub-agent; this is unchanged |
@@ -125,8 +125,12 @@ same check: 536 recorded against 672 reported).
 ### If you read the files yourself
 
 A sub-agent's run is a run directory like any other. A reader that treats every run directory as
-one item of an experiment will count each sub-agent as an item, at a cost of 0. Skip or group runs
-whose `run.json` has a `parentRunId` or the tag `track=subagent`.
+one item of an experiment will count each sub-agent as an item, at a cost of 0 and without the
+item's own configuration. **Exclude run directories whose `run.json` has `tags.track == "subagent"`,
+and only those.** Do not exclude on `parentRunId` alone: it is a general field, and an ordinary
+nested run that sets it is a legitimate item (measured on a synthetic experiment: the tag rule
+restores the item count, pass rate and total cost exactly; the `parentRunId` rule loses an item
+and its cost).
 
 The trace file is unchanged: it is still a flat record of every message, sub-agents' included.
 
