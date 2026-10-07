@@ -1,7 +1,7 @@
 # agent-journal
 
 An execution ledger for agent workflows. Agent Journal records what an agent run
-actually did — every LLM call, tool invocation, state transition and cost — as typed
+actually did, every LLM call, tool invocation, state transition and cost, as typed
 events in an append-only log, so runs become data you can compare, replay and judge.
 It is a ledger, not an observability agent: nothing is sampled, nothing is aggregated
 away, and the file on disk is the record.
@@ -13,11 +13,12 @@ away, and the file on disk is the record.
 An **Experiment** groups **Runs**. A Run is one attempt at a task; it opens, emits
 events, carries a Config in and a Summary out, and ends as `FINISHED`, `FAILED` or `CRASHED`.
 
-Events are written to two streams per run. `events.jsonl` is the **immutable execution
-log** — what happened. `analysis.jsonl` is the **derived analysis log** — what was
-computed about it afterwards (per-step cost attribution today), linked back by step id
-and regenerable from the execution log. Each file carries a schema-version header line
-so a reader can version-route where it already reads.
+Each run has two streams. `events.jsonl` is the immutable execution log: what happened.
+`analysis.jsonl` is the derived analysis log: what was computed about it afterwards (per-step
+cost attribution today), linked back by step id and regenerable from the execution log. Both
+start with a header line that carries the schema version and, since 1.11.0, the producer and
+its version; `feedback.jsonl` has no header. A portable trace file, when a capture writes one,
+has its own header and its own schema version (2).
 
 On top of that sits `EvalSubject`, a source-neutral unit of recorded behavior that
 [Agent Judge](https://lab.pollack.ai/projects/agent-judge) and other evaluators consume,
@@ -28,10 +29,10 @@ plus a human-feedback API for judge calibration and golden datasets.
 | Module | Description | Java | Key dependency |
 |---|---|---|---|
 | `journal-core` | Experiment/Run tracking, the extensible event model (an open `JournalEvent` interface with runtime subtype registration via `Journal.registerEventType`; only the `GitEvent` family is sealed), storage, cost and token aggregation, `EvalSubject` extraction, feedback, and the portable `TraceWriter` | 17 | Jackson only |
-| `claude-code-capture` | Claude Code SDK → journal bridge: phase capture, session parsing, per-turn usage, step cost attribution | 21 | `claude-code-sdk` |
+| `claude-code-capture` | Claude Code SDK → journal bridge: phase capture, session parsing, per-turn usage, step cost attribution, sub-agent runs | 21 | `claude-code-sdk` |
 | `gemini-cli-capture` | Gemini CLI → journal bridge: a parallel vendor extractor emitting the same portable trace and cost schema | 21 | `gemini-cli-sdk` |
 | `grok-cli-capture` | Grok CLI → journal bridge: parses Grok's `streaming-json` output into an ordered tool trajectory with the session's reported cost | 17 | `journal-core` |
-| `codex-cli-capture` | Codex CLI → journal bridge: parses the durable rollout file, classifying each tool call from its payload rather than the outer `exec` name | 17 | `journal-core` |
+| `codex-cli-capture` | Codex CLI → journal bridge: parses the durable rollout file, classifying each tool call from its payload rather than the outer `exec` name; sub-agent runs from child rollouts | 17 | `journal-core` |
 | `antigravity-cli-capture` | Antigravity CLI → journal bridge: parses Antigravity's streaming JSON into an ordered tool trajectory | 17 | `journal-core` |
 | `junie-cli-capture` | Junie CLI → journal bridge: parses Junie's durable session `events.jsonl` into an ordered tool trajectory with per-call cost that reconciles to the session total | 17 | `journal-core` |
 
@@ -48,60 +49,51 @@ one `llm_call` with the call's token usage and cost, one `tool_call` per tool us
 tool's own input map, and a `step_cost` per step in the analysis log. The differences are in
 what each CLI reports.
 
-| Provider | Source read | Tool trajectory | Cost | Sub-agents |
+| Provider | Source read | Tool trajectory | Monetary cost | Sub-agents |
 |---|---|---|---|---|
-| Claude Code | the CLI's `stream-json` output, through `claude-code-sdk` | yes, with per-turn usage and the stable `tool_use` id as step id | reported by the CLI, split per step | **captured as linked runs** (1.11.0) |
-| Codex | the durable rollout file(s) | yes; tool calls classified from their payload, `function_call` arguments kept verbatim | not reported by Codex (`costAvailable=false`) | **captured as linked runs** (1.11.0) |
+| Claude Code | the CLI's `stream-json` output, through `claude-code-sdk` | yes, with per-turn usage and the stable `tool_use` id as step id | reported by the CLI for the whole call, split per step | captured as linked runs (1.11.0) |
+| Codex | the durable rollout file(s) | yes; tool calls classified from their payload, `function_call` arguments kept verbatim | not reported (`costAvailable=false`); tokens per thread are recorded | captured as linked runs (1.11.0) |
 | Gemini CLI | the SDK's turn-level result | turn level only | reported | no |
-| Grok CLI | `streaming-json` output | yes | reported | no |
-| Antigravity | streaming JSON | yes | per step where reported | no (the stream carries pointers only) |
+| Grok CLI | `streaming-json` output | yes | reported as a session total, split evenly over steps | no |
+| Antigravity | streaming JSON | yes, with per-step duration and terminal token usage | not reported (`costAvailable=false`) | no (the stream carries pointers only) |
 | Junie | the session's `events.jsonl` | yes, with per-call cost reconciling to the session total | reported | no |
 
-Each file written by the library carries a schema-version header and, since 1.11.0, the
-producer version, so a reader can tell which release wrote a record.
+A cost of 0 with `costAvailable=false` in the `llm_call` metadata means the CLI reported no
+cost; it does not mean the call was free.
 
 ### Sub-agent capture (Claude Code and Codex)
 
-When the agent starts sub-agents, each sub-agent becomes a **run of its own** in the same
+When the agent starts sub-agents, each sub-agent becomes a run of its own in the same
 experiment: `parentRunId` points at the run of the agent that started it, the tag
 `track=subagent` marks it, and `config["subagent.spawnToolUseId"]` holds the id of the
-spawning tool call, which is also the `id` of that `tool_call` event in the parent run.
-The parent's files hold the parent's own activity only; the parent's `llm_call` metadata
-lists the sub-agent runs (`subagents`) and the spawns for which no sub-agent record arrived
-(`subagentsWithoutTrack`). No record type gains a field for this.
+spawning tool call, which is also the `id` of that `tool_call` event in the parent run. The
+parent's files hold the parent's own activity only.
 
-| | Claude Code | Codex |
-|---|---|---|
-| How the records arrive | on the CLI's own stream, marked with `parent_tool_use_id`; `SessionLogParser.parse` keeps them apart | one rollout file per thread; the caller collects the root and child files (agent-client's harvester does) and passes them as `CodexRollouts` to `CodexSessionParser.parse` |
-| Required configuration | start the CLI with `--forward-subagent-text` (`CLIOptions.forwardSubagentText`, `claude-code-sdk` ≥ 1.6.0) for complete capture. Without it a sub-agent's prompt, tool calls, results and tool-turn usage are captured, but not its text, thinking, or text-only turns and their usage | collect the child rollouts; the stream parser never searches the filesystem |
-| Accounting | the call's reported cost includes its sub-agents and stays on the parent (`costIncludesSubagents=true`); a sub-agent's run has cost 0 with `costAvailable=false`. With the flag, input and cache tokens over the parent and its sub-agent runs equal the call's `modelUsage`. A sub-agent's output count is a lower bound | no cost for any thread (`costAvailable=false`). Each run carries its own thread's input, cached-input, output and reasoning counts; Codex's parent total excludes its children, so each track is counted once |
-| Status | the status Claude Code reported (`completed`, `failed`, `killed`), else `CRASHED` ("no end observed") | the last observed turn outcome (Codex writes no thread-terminal status): `completed` → `FINISHED`, `interrupted` → `FAILED`, else `CRASHED`; `subagent.statusMeaning=last_observed_turn` |
-| Recording once | `RunRecorder.recordOnce(experimentId, capture, …)` | `CodexRunRecorder.recordOnce(experimentId, capture, …)` |
-| Verified | CLI 2.1.292, `claude-code-sdk` 1.7.0, depth 2 | CLI 0.160.1, headless `codex exec`, depth 1; rollouts from 0.147.0 parse |
-| Not supported | transcript-file import; resume (not claimed) | `codex exec resume`; `codex app-server`; historical-session import |
+- **Claude Code**: sub-agent messages arrive on the CLI's own stream. Start the CLI with
+  `--forward-subagent-text` for complete capture; without it a sub-agent's text, thinking and
+  text-only turns are missing. The call's cost stays on the parent (`costIncludesSubagents=true`).
+- **Codex**: each sub-agent is its own rollout file. The caller collects the root and child
+  files and passes them as `CodexRollouts` to `CodexSessionParser.parse`; Journal does not
+  search the filesystem. Codex reports no cost for any thread.
 
-`recordOnce` records an execution at most once per experiment and storage root: the parent
-run carries the execution's key (`capture.sourceKey`), the recorder checks the stored run
-records before writing, the same source processed again writes nothing, and an earlier
-recording that has not ended, or ended with an error, makes the call fail rather than
-duplicate. It is not a lock between concurrent writers. `recordPhase` on a run you create
-yourself is unchanged and unguarded.
+`RunRecorder.recordOnce` and `CodexRunRecorder.recordOnce` record an execution at most once
+per experiment and storage root. `SessionLogParser.withSessionBaseline` gives a later prompt of
+a multi-prompt Claude Code session its own cost instead of the session's running total; the
+caller applies it.
 
-### Multi-prompt Claude Code sessions
-
-Claude Code reports `total_cost_usd`, `modelUsage` and `duration_api_ms` on every result
-line as the session's running total, while `usage`, `duration_ms` and `num_turns` cover the
-query alone. A caller that records one phase per prompt in one session passes the previous
-capture to `SessionLogParser.withSessionBaseline(current, previous)`; the returned capture
-carries the query's own cost, keeps the running total in `sessionCost()`, and is recorded
-with `costBasis=session_delta`. `parse` itself is unchanged.
+The [sub-agent capture guide](https://lab.pollack.ai/docs/agent-journal/subagent-capture) has
+the walkthrough, the accounting rules and the limits. The
+[agent-client](https://lab.pollack.ai/projects/agent-client) release that applies these on its
+own paths is tracked there; as of agent-client 0.31.0 none of them is wired in.
 
 ### Reading the files from another language
 
 A run directory is `experiments/<experiment>/runs/<run>/{run.json, events.jsonl,
-analysis.jsonl}`. A reader that treats every run directory as one item of an experiment
-should exclude directories whose `run.json` has `tags.track == "subagent"`, and only
-those; `parentRunId` alone is not a sub-agent marker, since ordinary nested runs may set it.
+analysis.jsonl}`. A reader that counts root runs as experiment items excludes directories
+whose `run.json` has `tags.track == "subagent"`, and only those; a reader analysing a whole
+execution keeps them and joins through `parentRunId`. `parentRunId` alone is not a sub-agent
+marker, since ordinary nested runs may set it. See
+[Analyze runs](https://lab.pollack.ai/docs/agent-journal/analyzing-runs).
 
 ## Usage
 
@@ -178,8 +170,10 @@ Local vulnerability scanning is a documented local path, not a CI job:
 
 Stable and in production use across the AgentWorks suite; `agent-workflow`,
 `agent-experiment` and `agent-client` all consume it. The capture contract evolves
-additively — a consumer built against 1.5.0 keeps working on 1.11.0, and readers from
-1.11.0 ignore fields they do not know. The schema version of a stream changes when a file
+additively: every earlier constructor of a capture record is kept, files written by 1.11.0
+load in 1.10.1 readers, and readers from 1.11.0 ignore fields they do not know. A record
+pattern that destructures `PhaseCapture` or `CodexPhaseCapture` names every component and
+needs updating when components are added (four and three in 1.11.0). The schema version of a stream changes when a file
 could be misread by a reader of the previous format (a key renamed, removed or re-used, a
 type or unit changed, a stored enum given a value); a corrected value under an unchanged
 definition is told apart by the producer version in the header instead. Each release's
@@ -187,7 +181,7 @@ notes list which is which.
 
 ## License
 
-[Business Source License 1.1](LICENSE) — see the root `LICENSE` file for the Licensor,
+[Business Source License 1.1](LICENSE). See the root `LICENSE` file for the Licensor,
 Additional Use Grant, Change Date and Change License that apply to this project.
 
 Agent Journal has been distributed under BSL 1.1 for its entire published history: the

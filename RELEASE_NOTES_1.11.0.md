@@ -2,7 +2,7 @@
 
 Captures Claude Code and Codex sub-agents as runs of their own, corrects the cost of a later prompt
 in a multi-prompt Claude Code session, and fixes how runs end and how tokens are counted. Several stored values change meaning with this version. Records written by earlier
-versions are never rewritten, and from this version a file says which version wrote it, so old
+versions are never rewritten, and from this version the event and analysis streams say which version wrote them, so old
 and new records can be told apart.
 
 ## Read this first: values that change
@@ -192,7 +192,7 @@ supported for sub-agent capture.
 Claude Code reports `total_cost_usd`, `modelUsage` and `duration_api_ms` on every `result` line as
 the **session's running total**, also across `--resume`, while `usage`, `duration_ms` and `num_turns`
 cover the query alone (verified live on 2.1.292). A caller that sends several prompts into one
-session and records one phase per prompt — agent-client's `ClaudeAgentSession` does — therefore
+session and records one phase per prompt (agent-client's `ClaudeAgentSession` does) therefore
 recorded each phase's cost as the total so far, and adding the phases over-counted.
 
 `SessionLogParser.parse` is unchanged and still records the result line verbatim. New
@@ -273,7 +273,8 @@ removed.
 - Call `RunRecorder.finish()` where a run completes; `close()` alone now records `CRASHED`.
 - Replace `TokenUsage.effectiveInputTokens()` with `inputTokens()`.
 - Callers that build a `PhaseCapture` themselves need no change: every earlier constructor
-  remains. A record pattern over `PhaseCapture` needs three more components.
+  remains. A record pattern over `PhaseCapture` needs four more components (`subagents`,
+  `subagentTracksAvailable`, `reportedSubagentStats`, `sessionCost`), and one over `CodexPhaseCapture` three.
 - If you serialise `PhaseCapture`, it has four more properties: `subagents`,
   `subagentTracksAvailable`, `reportedSubagentStats` and `sessionCost`; `CodexPhaseCapture` has
   `subagents`, `subagentTracksAvailable` and `spawnedThreadIds`.
