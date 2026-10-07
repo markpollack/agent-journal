@@ -2,6 +2,8 @@ package io.github.markpollack.journal.claude;
 
 import io.github.markpollack.journal.Journal;
 import io.github.markpollack.journal.Run;
+import io.github.markpollack.journal.storage.SourceRecordings;
+import io.github.markpollack.journal.RunBuilder;
 import io.github.markpollack.journal.RunStatus;
 import io.github.markpollack.journal.storage.JournalStorage;
 
@@ -92,6 +94,80 @@ public class RunRecorder extends BaseRunRecorder implements AutoCloseable {
      *
      * @return this recorder
      */
+    /** The source kind a Claude Code execution is recorded under; see {@link SourceRecordings}. */
+    public static final String SOURCE_KIND = "claude-code";
+
+    /**
+     * Returns the key under which {@link #recordOnce} records a capture: the session ID and the
+     * ID of the final assistant message, joined by a colon. A later prompt in the same session
+     * has another final message, so it is another execution.
+     *
+     * @param phase the capture
+     * @return the key, or {@code null} if the capture has no session ID or no message ID
+     */
+    public static String sourceKeyOf(PhaseCapture phase) {
+        String last = null;
+        if (phase.hasTurns()) {
+            for (TurnUsage turn : phase.turns()) {
+                if (turn.messageId() != null) {
+                    last = turn.messageId();
+                }
+            }
+        }
+        return phase.sessionId() == null || last == null ? null : phase.sessionId() + ":" + last;
+    }
+
+    /**
+     * Records a Claude Code execution once: a new run for the capture, with its sub-agent runs,
+     * unless a run in the experiment already carries the capture's source key
+     * ({@link #sourceKeyOf}). The same stream processed again writes nothing and returns the
+     * earlier run; another execution records normally. If the earlier run has not ended, this
+     * method throws instead of recording. The check reads {@link Journal#storage()}, so it holds
+     * across restarts within one experiment and storage; see {@link SourceRecordings} for its
+     * limits. The run is ended with {@link #finish()}, or {@code FAILED} when the capture
+     * reports an error.
+     *
+     * @param experimentId the experiment to record into
+     * @param phase the capture; it needs a session ID and per-turn message IDs (a wire capture)
+     * @param configure extra configuration for the new run, such as the model, or {@code null}
+     * @return the run that records the execution, and whether it was written by this call
+     * @throws IllegalArgumentException if {@link #sourceKeyOf} is {@code null} for the capture
+     * @throws IllegalStateException if an earlier recording of this execution has not ended, or
+     *         the storage check of {@link #finish()} fails
+     */
+    public static SourceRecordings.Outcome recordOnce(String experimentId, PhaseCapture phase,
+            java.util.function.UnaryOperator<RunBuilder> configure) {
+        String key = sourceKeyOf(phase);
+        if (key == null) {
+            throw new IllegalArgumentException(
+                    "A capture without a session ID and a final message ID cannot be recorded once");
+        }
+        java.util.Optional<io.github.markpollack.journal.storage.RunData> earlier =
+                SourceRecordings.find(experimentId, SOURCE_KIND, key);
+        if (earlier.isPresent()) {
+            SourceRecordings.requireComplete(earlier.get());
+            return new SourceRecordings.Outcome(earlier.get().id(), false);
+        }
+        RunBuilder builder = SourceRecordings.newRecording(experimentId, SOURCE_KIND, key);
+        if (configure != null) {
+            builder = configure.apply(builder);
+        }
+        Run run = builder.start();
+        RunRecorder recorder = new RunRecorder(run);
+        try {
+            recorder.recordPhase(phase);
+            if (phase.isError()) {
+                recorder.failRun();
+            } else {
+                recorder.finish();
+            }
+        } catch (RuntimeException e) {
+            run.fail(e);
+            throw e;
+        }
+        return new SourceRecordings.Outcome(run.id(), true);
+    }
+
     public RunRecorder lenient() {
         this.lenient = true;
         return this;

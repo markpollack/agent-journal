@@ -2,6 +2,7 @@ package io.github.markpollack.journal.codex;
 
 import io.github.markpollack.journal.Journal;
 import io.github.markpollack.journal.Run;
+import io.github.markpollack.journal.storage.SourceRecordings;
 import io.github.markpollack.journal.RunBuilder;
 import io.github.markpollack.journal.RunStatus;
 import io.github.markpollack.journal.derived.StepCostEvent;
@@ -76,6 +77,52 @@ public final class CodexRunRecorder {
      * @throws UnsupportedOperationException if the phase has tool calls and the run's storage
      *         cannot keep derived events at all; the other events are logged by then
      */
+    /** The source kind a Codex execution is recorded under; see {@link SourceRecordings}. */
+    public static final String SOURCE_KIND = "codex";
+
+    /**
+     * Records a Codex execution once: a new run for the capture, with its sub-agent runs, unless a
+     * run in the experiment already carries the execution's source key. The key is the root
+     * thread ID ({@link CodexPhaseCapture#sessionId()}), so the same rollouts processed again
+     * write nothing and return the earlier run. A different execution, with another thread ID,
+     * records normally. If the earlier run has not ended, this method throws instead of
+     * recording, since that recording may be incomplete and is not resumed. The check reads
+     * {@link Journal#storage()}, so it holds across restarts within one experiment and storage;
+     * see {@link SourceRecordings} for its limits.
+     *
+     * @param experimentId the experiment to record into
+     * @param phase the parsed execution; it must have a session ID
+     * @param configure extra configuration for the new run, such as the model, or {@code null}
+     * @return the run that records the execution, and whether it was written by this call
+     * @throws IllegalArgumentException if the capture has no session ID
+     * @throws IllegalStateException if an earlier recording of this execution has not ended
+     */
+    public static SourceRecordings.Outcome recordOnce(String experimentId, CodexPhaseCapture phase,
+            java.util.function.UnaryOperator<RunBuilder> configure) {
+        if (phase.sessionId() == null || phase.sessionId().isBlank()) {
+            throw new IllegalArgumentException("A Codex capture without a session ID cannot be recorded once");
+        }
+        java.util.Optional<io.github.markpollack.journal.storage.RunData> earlier =
+                SourceRecordings.find(experimentId, SOURCE_KIND, phase.sessionId());
+        if (earlier.isPresent()) {
+            SourceRecordings.requireComplete(earlier.get());
+            return new SourceRecordings.Outcome(earlier.get().id(), false);
+        }
+        RunBuilder builder = SourceRecordings.newRecording(experimentId, SOURCE_KIND, phase.sessionId());
+        if (configure != null) {
+            builder = configure.apply(builder);
+        }
+        Run run = builder.start();
+        try {
+            new CodexRunRecorder(run).recordPhase(phase);
+            run.finish(phase.isError() ? RunStatus.FAILED : RunStatus.FINISHED);
+        } catch (RuntimeException e) {
+            run.fail(e);
+            throw e;
+        }
+        return new SourceRecordings.Outcome(run.id(), true);
+    }
+
     public void recordPhase(CodexPhaseCapture phase) {
         if (phase.promptText() != null && !phase.promptText().isEmpty()) {
             run.logEvent(CustomEvent.of("prompt",
