@@ -173,6 +173,22 @@ methods are unchanged.
   sub-agent capture, `codex app-server`, importing historical sessions. A child's `durationMs` is its
   last turn's duration, not the thread's.
 
+## Recording an execution once
+
+Recording the same capture twice wrote a second parent run with a second set of sub-agent runs.
+`RunRecorder.recordOnce(experimentId, capture, configure)` and
+`CodexRunRecorder.recordOnce(experimentId, capture, configure)` record an execution at most once
+per experiment and storage: the new run carries the execution's key in its config
+(`capture.sourceKind`, `capture.sourceKey`: for Claude Code the session id and the final assistant
+message id, for Codex the root thread id), and the recorder looks for that key in the stored run
+records before writing, so the check holds across a restart. The same source processed again
+writes nothing and returns the earlier run; a different execution, including a later prompt of the
+same Claude Code session, records normally. An earlier recording that has not ended is neither
+resumed nor duplicated: `recordOnce` fails with an error naming it. The check is not a lock between
+concurrent writers, and `recordPhase` on a run you created yourself is unchanged and unguarded.
+A resumed Codex thread keeps its id and therefore counts as already recorded; Codex resume is not
+supported for sub-agent capture.
+
 ## Cost of a later prompt in a multi-prompt Claude Code session
 
 Claude Code reports `total_cost_usd`, `modelUsage` and `duration_api_ms` on every `result` line as
