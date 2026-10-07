@@ -1,7 +1,5 @@
 # Agent Journal 1.11.0
 
-> Release candidate. Not yet published to Maven Central.
-
 Captures Claude Code and Codex sub-agents as runs of their own, corrects the cost of a later prompt
 in a multi-prompt Claude Code session, and fixes how runs end and how tokens are counted. Several stored values change meaning with this version. Records written by earlier
 versions are never rewritten, and from this version a file says which version wrote it, so old
@@ -261,8 +259,9 @@ removed.
 ## Known limits
 
 - **Cost per phase in a shared session.** Claude Code's `total_cost_usd` is the running total of
-  a session. A caller that records several prompts of one session as separate phases gets each
-  phase's cost as the total so far. Unchanged in this release.
+  a session. The rebase (`withSessionBaseline`, above) is applied by the caller: a caller that
+  records several prompts of one session as separate phases without it still gets each later
+  phase's cost as the total so far, and such records carry no `costBasis`.
 - **Per-turn output tokens** on the stream are start-of-message figures. The run total is now
   right; the per-turn figures, and so the weights that split cost over steps, are not.
 - **Codex reasoning text and approval decisions** are not in Codex's session files (only

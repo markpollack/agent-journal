@@ -109,7 +109,7 @@ those; `parentRunId` alone is not a sub-agent marker, since ordinary nested runs
 <dependency>
     <groupId>io.github.markpollack</groupId>
     <artifactId>journal-core</artifactId>
-    <version>1.10.1</version>
+    <version>1.11.0</version>
 </dependency>
 ```
 
