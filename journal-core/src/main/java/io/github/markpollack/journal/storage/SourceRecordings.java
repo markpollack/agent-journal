@@ -23,7 +23,9 @@ import java.util.Optional;
  * <p>What the key is depends on the capture module: Claude Code's recorder uses the session ID
  * and the ID of the final assistant message, Codex's the root thread ID. A key is the same only
  * for the same execution, so a different execution of the same session (a later prompt in a
- * Claude Code session, which has another final message) records normally. Codex sessions that
+ * Claude Code session, which has another final message) records normally. Every call reads every
+ * run record of the experiment, so a run record that cannot be read makes the call fail with that
+ * error rather than record. Codex sessions that
  * are resumed keep their thread ID, so a resumed Codex thread is found as already recorded; resume
  * is not supported for Codex sub-agent capture.
  */
@@ -44,7 +46,7 @@ public final class SourceRecordings {
      * @param experimentId the experiment
      * @param sourceKind the kind of source, as the recorder writes it
      * @param sourceKey the execution's key, as the recorder writes it
-     * @return the earliest run whose config carries that kind and key, if any
+     * @return a run whose config carries that kind and key, if any (with several, which one is not defined)
      */
     public static Optional<RunData> find(String experimentId, String sourceKind, String sourceKey) {
         Objects.requireNonNull(sourceKind, "sourceKind");
@@ -71,17 +73,25 @@ public final class SourceRecordings {
     }
 
     /**
-     * Throws if an earlier recording of the source exists but has not ended: it may be an
-     * interrupted recording, and recording again would duplicate its runs, so it is not resumed.
+     * Throws if an earlier recording of the source may be incomplete: it has not ended, or it
+     * ended {@code FAILED} with an error recorded, which is how a recorder ends a run whose
+     * recording threw. Such a recording is neither resumed nor repeated; the caller removes the
+     * run and records again. A run that ended {@code FAILED} without an error is a complete
+     * recording of an execution that the agent reported as failed, and counts as recorded.
      *
      * @param earlier the earlier run
-     * @throws IllegalStateException if the run is not terminal
+     * @throws IllegalStateException if the run has not ended, or ended with an error
      */
     public static void requireComplete(RunData earlier) {
         if (!earlier.status().isTerminal()) {
             throw new IllegalStateException("An earlier recording of this source, run " + earlier.id()
                     + ", has status " + earlier.status() + " and has not ended; recording it again would"
                     + " duplicate its runs. End or remove that run first.");
+        }
+        if (earlier.status() == io.github.markpollack.journal.RunStatus.FAILED && earlier.errorType() != null) {
+            throw new IllegalStateException("An earlier recording of this source, run " + earlier.id()
+                    + ", ended with " + earlier.errorType() + ": " + earlier.errorMessage()
+                    + "; it may be incomplete and is not resumed. Remove that run first.");
         }
     }
 

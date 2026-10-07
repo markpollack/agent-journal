@@ -58,25 +58,6 @@ public final class CodexRunRecorder {
         this.run = run;
     }
 
-    /**
-     * Logs one phase as events on the run, then logs its per-step records as derived events.
-     *
-     * <p>It logs, in order: a {@code prompt} custom event with the phase name and the prompt, if
-     * the prompt was captured; one {@link LLMCallEvent} with provider {@code "openai"}, the
-     * capture's model (or {@code "unknown"}), its token usage, a cost of 0 and its duration; and
-     * one {@link ToolCallEvent} per tool call, with its ID, name, kind, input, output and error.
-     * The metadata of the LLM call event holds the phase name, error flag, session ID and CLI
-     * version, and marks the cost as unreported ({@code costAvailable=false}). Then it logs one
-     * {@link StepCostEvent} per tool call, with a cost of 0, marked
-     * {@link io.github.markpollack.journal.trace.AttributionMethod#EVEN_SPLIT}. A phase with no
-     * tool calls has no derived events.
-     *
-     * @param phase the parsed Codex session; with a {@code null} phase name, the {@code phase}
-     *        attribute of the prompt event is left out
-     * @throws IllegalStateException if the run has ended
-     * @throws UnsupportedOperationException if the phase has tool calls and the run's storage
-     *         cannot keep derived events at all; the other events are logged by then
-     */
     /** The source kind a Codex execution is recorded under; see {@link SourceRecordings}. */
     public static final String SOURCE_KIND = "codex";
 
@@ -85,7 +66,9 @@ public final class CodexRunRecorder {
      * run in the experiment already carries the execution's source key. The key is the root
      * thread ID ({@link CodexPhaseCapture#sessionId()}), so the same rollouts processed again
      * write nothing and return the earlier run. A different execution, with another thread ID,
-     * records normally. If the earlier run has not ended, this method throws instead of
+     * records normally. A resumed Codex thread keeps its ID, so its later turns are not recorded
+     * and the earlier run is returned; resume is not supported for sub-agent capture. If the
+     * earlier run has not ended, or ended with an error recorded, this method throws instead of
      * recording, since that recording may be incomplete and is not resumed. The check reads
      * {@link Journal#storage()}, so it holds across restarts within one experiment and storage;
      * see {@link SourceRecordings} for its limits.
@@ -95,7 +78,8 @@ public final class CodexRunRecorder {
      * @param configure extra configuration for the new run, such as the model, or {@code null}
      * @return the run that records the execution, and whether it was written by this call
      * @throws IllegalArgumentException if the capture has no session ID
-     * @throws IllegalStateException if an earlier recording of this execution has not ended
+     * @throws IllegalStateException if an earlier recording of this execution has not ended or ended
+     *         with an error (remove that run first)
      */
     public static SourceRecordings.Outcome recordOnce(String experimentId, CodexPhaseCapture phase,
             java.util.function.UnaryOperator<RunBuilder> configure) {
@@ -123,6 +107,25 @@ public final class CodexRunRecorder {
         return new SourceRecordings.Outcome(run.id(), true);
     }
 
+    /**
+     * Logs one phase as events on the run, then logs its per-step records as derived events.
+     *
+     * <p>It logs, in order: a {@code prompt} custom event with the phase name and the prompt, if
+     * the prompt was captured; one {@link LLMCallEvent} with provider {@code "openai"}, the
+     * capture's model (or {@code "unknown"}), its token usage, a cost of 0 and its duration; and
+     * one {@link ToolCallEvent} per tool call, with its ID, name, kind, input, output and error.
+     * The metadata of the LLM call event holds the phase name, error flag, session ID and CLI
+     * version, and marks the cost as unreported ({@code costAvailable=false}). Then it logs one
+     * {@link StepCostEvent} per tool call, with a cost of 0, marked
+     * {@link io.github.markpollack.journal.trace.AttributionMethod#EVEN_SPLIT}. A phase with no
+     * tool calls has no derived events.
+     *
+     * @param phase the parsed Codex session; with a {@code null} phase name, the {@code phase}
+     *        attribute of the prompt event is left out
+     * @throws IllegalStateException if the run has ended
+     * @throws UnsupportedOperationException if the phase has tool calls and the run's storage
+     *         cannot keep derived events at all; the other events are logged by then
+     */
     public void recordPhase(CodexPhaseCapture phase) {
         if (phase.promptText() != null && !phase.promptText().isEmpty()) {
             run.logEvent(CustomEvent.of("prompt",

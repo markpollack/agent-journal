@@ -114,6 +114,27 @@ class RecordOnceTest {
     }
 
     @Test
+    @DisplayName("a recording the guard itself aborted is not taken as the record: the next attempt fails")
+    void abortedRecordingFails() throws Exception {
+        // In-memory storage keeps no derived events, so finish() throws after the phase was logged.
+        Journal.configure(new io.github.markpollack.journal.storage.InMemoryStorage());
+        PhaseCapture phase = SubagentCaptureTest.parseFixture();
+
+        assertThatThrownBy(() -> RunRecorder.recordOnce("exp", phase, null))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("does not persist them durably");
+        String aborted = SourceRecordings.find("exp", RunRecorder.SOURCE_KIND, RunRecorder.sourceKeyOf(phase))
+                .orElseThrow().id();
+
+        assertThatThrownBy(() -> RunRecorder.recordOnce("exp", phase, null))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining(aborted)
+                .hasMessageContaining("Remove that run first");
+        assertThat(Journal.storage().listRuns("exp").stream()
+                .filter(r -> r.config().values().containsKey(SourceRecordings.CONFIG_SOURCE_KEY))).hasSize(1);
+    }
+
+    @Test
     @DisplayName("a capture without wire message ids cannot be recorded once")
     void noKeyIsRejected(@TempDir Path dir) {
         Journal.configure(new JsonFileStorage(dir));

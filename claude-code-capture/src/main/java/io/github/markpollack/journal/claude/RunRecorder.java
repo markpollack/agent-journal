@@ -88,12 +88,6 @@ public class RunRecorder extends BaseRunRecorder implements AutoCloseable {
         this.storage = storage;
     }
 
-    /**
-     * Makes the storage check log a warning instead of throwing. Call it when the run is meant to
-     * use storage that does not keep derived events, such as in-memory storage in a test.
-     *
-     * @return this recorder
-     */
     /** The source kind a Claude Code execution is recorded under; see {@link SourceRecordings}. */
     public static final String SOURCE_KIND = "claude-code";
 
@@ -132,8 +126,8 @@ public class RunRecorder extends BaseRunRecorder implements AutoCloseable {
      * @param configure extra configuration for the new run, such as the model, or {@code null}
      * @return the run that records the execution, and whether it was written by this call
      * @throws IllegalArgumentException if {@link #sourceKeyOf} is {@code null} for the capture
-     * @throws IllegalStateException if an earlier recording of this execution has not ended, or
-     *         the storage check of {@link #finish()} fails
+     * @throws IllegalStateException if an earlier recording of this execution has not ended or ended
+     *         with an error (remove that run first), or the storage check of {@link #finish()} fails
      */
     public static SourceRecordings.Outcome recordOnce(String experimentId, PhaseCapture phase,
             java.util.function.UnaryOperator<RunBuilder> configure) {
@@ -168,6 +162,12 @@ public class RunRecorder extends BaseRunRecorder implements AutoCloseable {
         return new SourceRecordings.Outcome(run.id(), true);
     }
 
+    /**
+     * Makes the storage check log a warning instead of throwing. Call it when the run is meant to
+     * use storage that does not keep derived events, such as in-memory storage in a test.
+     *
+     * @return this recorder
+     */
     public RunRecorder lenient() {
         this.lenient = true;
         return this;

@@ -133,6 +133,40 @@ class CodexRecordOnceTest {
     }
 
     @Test
+    @DisplayName("an earlier recording that ended with an error is not taken as the record: it fails")
+    void earlierRecordingThatThrewFails(@TempDir Path dir) throws Exception {
+        Journal.configure(new JsonFileStorage(dir));
+        CodexPhaseCapture phase = CodexSessionParser.parse(CodexSubagentCaptureTest.allRollouts(), "phase", "p");
+        Run aborted = SourceRecordings.newRecording("exp", CodexRunRecorder.SOURCE_KIND, phase.sessionId()).start();
+        aborted.fail(new java.io.UncheckedIOException(new IOException("disk full")));
+
+        assertThatThrownBy(() -> CodexRunRecorder.recordOnce("exp", phase, null))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining(aborted.id())
+                .hasMessageContaining("disk full");
+        assertThat(new JsonFileStorage(dir).listRuns("exp")).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("a capture that reported an error is a complete recording, and counts as recorded")
+    void capturedErrorCountsAsRecorded(@TempDir Path dir) throws Exception {
+        Journal.configure(new JsonFileStorage(dir));
+        CodexPhaseCapture ok = CodexSessionParser.parse(CodexSubagentCaptureTest.allRollouts(), "phase", "p");
+        CodexPhaseCapture failed = new CodexPhaseCapture(ok.phaseName(), ok.promptText(), ok.model(), ok.cliVersion(),
+                ok.sessionId(), ok.inputTokens(), ok.outputTokens(), ok.reasoningOutputTokens(),
+                ok.cacheWriteInputTokens(), ok.cachedInputTokens(), ok.durationMs(), true, ok.textOutput(),
+                ok.toolUses());
+        SourceRecordings.Outcome first = CodexRunRecorder.recordOnce("exp", failed, null);
+        assertThat(new JsonFileStorage(dir).loadRun("exp", first.runId()).orElseThrow().status())
+                .isEqualTo(RunStatus.FAILED);
+
+        SourceRecordings.Outcome second = CodexRunRecorder.recordOnce("exp", failed, null);
+
+        assertThat(second.recordedNow()).isFalse();
+        assertThat(second.runId()).isEqualTo(first.runId());
+    }
+
+    @Test
     @DisplayName("a capture without a thread id cannot be recorded once")
     void noSessionIdIsRejected(@TempDir Path dir) {
         Journal.configure(new JsonFileStorage(dir));
