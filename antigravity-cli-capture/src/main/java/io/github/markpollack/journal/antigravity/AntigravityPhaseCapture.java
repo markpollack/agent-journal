@@ -57,7 +57,8 @@ public record AntigravityPhaseCapture(
         String status,
         String textOutput,
         String errorMessage,
-        List<AntigravityToolUseRecord> toolUses
+        List<AntigravityToolUseRecord> toolUses,
+        List<AntigravityCallUsage> calls
 ) {
 
     /**
@@ -66,6 +67,7 @@ public record AntigravityPhaseCapture(
      */
     public AntigravityPhaseCapture {
         toolUses = toolUses == null ? List.of() : List.copyOf(toolUses);
+        calls = calls == null ? List.of() : List.copyOf(calls);
     }
 
     /**

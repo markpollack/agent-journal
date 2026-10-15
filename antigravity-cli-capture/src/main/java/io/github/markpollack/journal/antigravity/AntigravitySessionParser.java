@@ -98,6 +98,7 @@ public final class AntigravitySessionParser {
 
     private static final class ParserState {
         private final Map<Integer, MutableToolCall> tools = new LinkedHashMap<>();
+        private final Map<Integer, AntigravityCallUsage> calls = new LinkedHashMap<>();
 
         private String model;
         private String conversationId;
@@ -126,6 +127,16 @@ public final class AntigravitySessionParser {
         }
 
         private void acceptStep(JsonNode step) {
+            JsonNode callUsage = step.path("usage");
+            int usageIndex = step.path("step_index").asInt(-1);
+            if (callUsage.isObject() && usageIndex >= 0) {
+                // the usage of one model call; a later update of the same step replaces an earlier one
+                calls.put(usageIndex, new AntigravityCallUsage(usageIndex, text(step, "step_type"),
+                        step.has("duration_seconds") ? Math.round(step.path("duration_seconds").asDouble(0.0) * 1000.0)
+                                : -1L,
+                        callUsage.path("input_tokens").asInt(0), callUsage.path("output_tokens").asInt(0),
+                        callUsage.path("thinking_tokens").asInt(0), callUsage.path("cache_read_tokens").asInt(0)));
+            }
             if (!"tool".equals(text(step, "step_type"))) {
                 return;
             }
@@ -180,11 +191,24 @@ public final class AntigravitySessionParser {
             for (MutableToolCall tool : tools.values()) {
                 toolUses.add(tool.freeze(conversationId));
             }
-            // A stream with no result event was cut off, for example because the CLI was killed
+            // A stream with no result event was cut off, for example because the CLI was killed. The
+            // per-call usage the stream already delivered is still a measurement: the totals are its sum.
+            int in = inputTokens;
+            int out = outputTokens;
+            int thinking = thinkingTokens;
+            int cacheRead = cacheReadTokens;
+            if (!sawResult) {
+                for (AntigravityCallUsage call : calls.values()) {
+                    in += call.inputTokens();
+                    out += call.outputTokens();
+                    thinking += call.thinkingTokens();
+                    cacheRead += call.cacheReadTokens();
+                }
+            }
             return new AntigravityPhaseCapture(phaseName, promptText, model, conversationId,
-                    inputTokens, outputTokens, thinkingTokens, cacheReadTokens, durationMs,
+                    in, out, thinking, cacheRead, durationMs,
                     numTurns, isError || !sawResult, sawResult ? status : "INCOMPLETE",
-                    textOutput, errorMessage, toolUses);
+                    textOutput, errorMessage, toolUses, new ArrayList<>(calls.values()));
         }
     }
 
