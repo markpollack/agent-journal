@@ -15,13 +15,5 @@
         a genuine future advisory against gemini-cli-sdk still fails the gate, and no other
         component inherits the exemption.
     -->
-    <suppress>
-        <notes><![CDATA[
-            gemini-cli-sdk is not the GitHub CLI. Suppresses only the mis-assigned
-            cpe:/a:github:cli identity for this exact artifact.
-        ]]></notes>
-        <packageUrl regex="true">^pkg:maven/io\.github\.markpollack/gemini-cli-sdk@.*$</packageUrl>
-        <cpe>cpe:/a:github:cli</cpe>
-    </suppress>
 
 </suppressions>

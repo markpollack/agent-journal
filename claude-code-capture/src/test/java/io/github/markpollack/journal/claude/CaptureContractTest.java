@@ -11,7 +11,6 @@ import io.github.markpollack.journal.event.StopReason;
 import io.github.markpollack.journal.event.ToolCallEvent;
 import io.github.markpollack.journal.storage.JsonFileStorage;
 import io.github.markpollack.journal.trace.JournalStep;
-import io.github.markpollack.journal.trace.TraceContentMode;
 import io.github.markpollack.journal.trace.TraceRawMode;
 
 import io.github.markpollack.claude.agent.sdk.parsing.ParsedMessage;
@@ -110,7 +109,7 @@ class CaptureContractTest {
                 .build()));
 
         return SessionLogParser.parse(messages.iterator(), "execute", "prompt", traceFile,
-                TraceContentMode.TRUNCATED, TraceRawMode.NONE, maxTurns);
+                TraceRawMode.NONE, maxTurns);
     }
 
     @Test
@@ -182,7 +181,7 @@ class CaptureContractTest {
                         .build()));
 
         PhaseCapture capture = SessionLogParser.parse(messages.iterator(), "execute", "p", null,
-                TraceContentMode.TRUNCATED, TraceRawMode.NONE, 40);
+                TraceRawMode.NONE, 40);
 
         // The final turn said "end_turn" — taking the turn's word for it would have recorded this
         // cut-off run as a natural finish. The harness-level subtype wins for exactly this reason.
