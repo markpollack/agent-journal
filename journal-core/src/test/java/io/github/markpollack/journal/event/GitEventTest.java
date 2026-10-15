@@ -363,7 +363,7 @@ class GitEventTest extends BaseTrackingTest {
         @DisplayName("returns correct type")
         void returnsCorrectType() {
             var event = TestEvents.gitPrCreated();
-            assertThat(event.type()).isEqualTo("git_pull_request");
+            assertThat(event.type()).isEqualTo("git_pr");
         }
 
         @Test

@@ -92,7 +92,8 @@ public class InMemoryMetricRegistry implements MetricRegistry {
     }
 
     private String metricKey(String name, Tags tags) {
-        return name + tags.toString();
+        // tags sorted by key, so the same tags given in a different order are one metric
+        return name + new java.util.TreeMap<>(tags.toMap());
     }
 
     // Snapshot records

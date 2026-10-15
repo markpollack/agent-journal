@@ -15,8 +15,7 @@ import java.util.Map;
  *
  * <p>Unlike {@link GitCommitEvent}, it records no SHA or files: it names the pull request, its
  * source and target branches, and the {@link PullRequestAction}. Its {@link #type()} is
- * {@code "git_pull_request"}, which differs from the {@code @type} that file storage writes; a
- * JSON line with {@code "@type":"git_pull_request"} cannot be read back. The record is immutable.
+ * {@code "git_pr"}, the same as the {@code @type} that file storage writes. The record is immutable.
  *
  * @param timestamp when the action happened
  * @param prNumber the pull request's number, as text, such as {@code "123"}
@@ -49,14 +48,13 @@ public record GitPullRequestEvent(
     }
 
     /**
-     * Returns {@code "git_pull_request"}. Unlike the other built-in events, this is not the
-     * {@code @type} that file storage writes, which is {@code "git_pr"}.
+     * Returns {@code "git_pr"}, the {@code @type} that file storage writes.
      *
-     * @return {@code "git_pull_request"}
+     * @return {@code "git_pr"}
      */
     @Override
     public String type() {
-        return "git_pull_request";
+        return "git_pr";
     }
 
     /**

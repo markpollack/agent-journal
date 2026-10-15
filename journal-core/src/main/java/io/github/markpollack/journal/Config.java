@@ -145,7 +145,8 @@ public record Config(@JsonValue Map<String, Object> values) {
      * @param key the name; must not be {@code null}
      * @param type the expected type of the value
      * @return the value, or {@code null} if the config has no entry for the name
-     * @throws ClassCastException if the value is not an instance of {@code type}
+     * @throws ClassCastException if the value is not an instance of {@code type} and is not a number that
+     *         converts to it without losing information (a stored {@code Integer} reads as a {@code Long})
      */
     @SuppressWarnings("unchecked")
     public <T> T get(String key, Class<T> type) {
@@ -153,10 +154,11 @@ public record Config(@JsonValue Map<String, Object> values) {
         if (value == null) {
             return null;
         }
-        if (!type.isInstance(value)) {
+        T converted = StoredNumbers.convert(value, type);
+        if (converted == null) {
             throw new ClassCastException("Config value '" + key + "' is not of type " + type.getName());
         }
-        return (T) value;
+        return converted;
     }
 
     /**

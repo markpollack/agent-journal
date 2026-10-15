@@ -138,8 +138,8 @@ public record FeedbackEvent(
 	}
 
 	/**
-	 * Creates feedback that attaches labels to a dataset item, with the current time and no
-	 * comment.
+	 * Creates feedback that attaches labels to a dataset item, with the current time, no comment and no
+	 * score. A labelled item carries no verdict, so it is not counted in a pass rate.
 	 *
 	 * @param itemId the item's ID
 	 * @param reviewer the reviewer's ID
@@ -150,7 +150,7 @@ public record FeedbackEvent(
 	public static FeedbackEvent labeled(String itemId, String reviewer,
 			Map<String, Object> labels) {
 		return new FeedbackEvent(Instant.now(), FeedbackTarget.item(itemId),
-				FeedbackScore.binary(true), null, reviewer, labels);
+				null, null, reviewer, labels);
 	}
 
 }
