@@ -34,7 +34,7 @@ class AntigravityRunRecorderTest {
     void phaseWithoutANameButWithAPromptIsRecorded() {
         Run run = Journal.run("exp").start();
         AntigravityPhaseCapture phase = new AntigravityPhaseCapture(null, "the prompt", "m", "c1", 10, 5, 0, 0,
-                100L, 1, false, "SUCCESS", "done", null, List.of());
+                100L, 1, false, "SUCCESS", "done", null, List.of(), List.of());
 
         new AntigravityRunRecorder(run).recordPhase(phase);
 
