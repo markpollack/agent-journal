@@ -87,18 +87,46 @@ class RealStreamTokenConformanceTest {
     @ParameterizedTest(name = "{0}")
     @ValueSource(strings = {"single-result-parallel-calls", "foreground-subagent-one-result",
             "background-subagent-two-results-a", "background-subagent-two-results-b"})
-    @DisplayName("2: main thread plus sub-agents equals the all-agents total")
-    void allAgentsEqualsModelUsage(String fixture) throws Exception {
+    @DisplayName("2: the all-agents total is the last modelUsage, and the transcripts reconcile with it")
+    void allAgentsTotalIsTheLastModelUsage(String fixture) throws Exception {
+        PhaseCapture capture = parse(fixture);
+        Oracle oracle = oracle(fixture);
+
+        Usage recorded = Usage.ZERO;
+        for (ModelCost m : capture.modelCosts()) {
+            recorded = recorded.plus(new Usage(m.inputTokens(), m.outputTokens(), m.cacheReadInputTokens(),
+                    m.cacheCreationInputTokens()));
+        }
+        assertThat(recorded).as("sum of the per-model usage on the phase").isEqualTo(oracle.allAgents());
+        assertThat(oracle.mainThread().plus(oracle.subagents())).as("oracle self-check: transcripts reconcile with modelUsage")
+                .isEqualTo(oracle.allAgents());
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @ValueSource(strings = {"background-subagent-two-results-a", "background-subagent-two-results-b"})
+    @DisplayName("2b: where the sub-agent's interior arrived whole, main thread plus sub-agents equals all agents for input and cache")
+    void subagentInputAndCacheReconcile(String fixture) throws Exception {
         PhaseCapture capture = parse(fixture);
         Oracle oracle = oracle(fixture);
 
         Usage recorded = Usage.of(capture.aggregateUsage());
         for (SubagentCapture sub : capture.subagents()) {
+            assertThat(sub.outputReported()).as("a sub-agent's output is not on the stream").isFalse();
             recorded = recorded.plus(Usage.of(sub.aggregateUsage()));
         }
-        assertThat(recorded).as("main thread + sub-agents").isEqualTo(oracle.allAgents());
-        assertThat(oracle.mainThread().plus(oracle.subagents())).as("oracle self-check: transcripts reconcile with modelUsage")
-                .isEqualTo(oracle.allAgents());
+        assertThat(new Usage(recorded.input(), 0, recorded.cacheRead(), recorded.cacheWrite()))
+                .isEqualTo(new Usage(oracle.allAgents().input(), 0, oracle.allAgents().cacheRead(),
+                        oracle.allAgents().cacheWrite()));
+    }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.Disabled("Step 12.6: the default stream of this foreground sub-agent run omits one of its "
+            + "messages (input 38 recorded, 46 true). Journal must detect the shortfall against the vendor's own "
+            + "counts and mark the run incomplete; the check does not exist yet")
+    @DisplayName("2c: an incomplete sub-agent interior is detectable")
+    void incompleteSubagentInteriorIsMarked() throws Exception {
+        PhaseCapture capture = parse("foreground-subagent-one-result");
+        assertThat(capture.subagentsWithoutTrack()).as("shortfall must be reported").isNotEmpty();
     }
 
     @ParameterizedTest(name = "{0}")

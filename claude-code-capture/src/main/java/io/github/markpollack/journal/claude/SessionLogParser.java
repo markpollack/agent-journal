@@ -343,6 +343,7 @@ public class SessionLogParser {
         Map<String, Map<String, Object>> toolUseInputs = new java.util.HashMap<>();
         Map<String, Long> toolUseStartMs = new java.util.HashMap<>();
         boolean sawResult = false;
+        ResultMessage lastResult = null;
         String resultSubtype = null;
         int wireMaxTurns = UNKNOWN_MAX_TURNS;
         Map<String, Object> reportedSubagentStats = Map.of();
@@ -406,45 +407,32 @@ public class SessionLogParser {
 
             if (message instanceof ResultMessage resultMsg) {
                 sawResult = true;
+                lastResult = resultMsg;
                 resultSubtype = resultMsg.subtype();
+                // A stream can carry several result lines (a backgrounded sub-agent's completion starts a
+                // follow-up turn that ends in its own result). total_cost_usd, modelUsage and
+                // duration_api_ms are session running totals, so the last line holds the answer; usage,
+                // duration_ms and num_turns cover that line's query only, so they add up.
                 totalCostUsd = resultMsg.totalCostUsd() != null ? resultMsg.totalCostUsd() : 0.0;
-                durationMs = resultMsg.durationMs();
+                durationMs += resultMsg.durationMs();
                 apiDurationMs = resultMsg.durationApiMs();
-                numTurns = resultMsg.numTurns();
+                numTurns += resultMsg.numTurns();
                 sessionId = resultMsg.sessionId();
                 isError = resultMsg.isError();
                 rawResult = resultMsg.result();
 
-                // Extract token counts from usage map
                 Map<String, Object> usage = resultMsg.usage();
                 if (usage != null) {
-                    inputTokens = getInt(usage, "input_tokens");
-                    outputTokens = getInt(usage, "output_tokens");
-                    thinkingTokens = getInt(usage, "thinking_tokens");
-                    cacheCreationInputTokens = getInt(usage, "cache_creation_input_tokens");
-                    cacheReadInputTokens = getInt(usage, "cache_read_input_tokens");
+                    inputTokens += getInt(usage, "input_tokens");
+                    outputTokens += getInt(usage, "output_tokens");
+                    thinkingTokens += getInt(usage, "thinking_tokens");
+                    cacheCreationInputTokens += getInt(usage, "cache_creation_input_tokens");
+                    cacheReadInputTokens += getInt(usage, "cache_read_input_tokens");
                 }
-                logger.info("[{}] Complete: {} turns, {} in + {} out tokens, ${}", phaseName, numTurns, inputTokens,
-                        outputTokens, String.format("%.4f", totalCostUsd));
-                final int fIn = inputTokens;
-                final int fOut = outputTokens;
-                final double fCost = totalCostUsd;
-                final int fTurns = numTurns;
-                final long fDur = durationMs;
-                // J3: the stop reason and the ceiling it ran against go onto the result line
-                // together — either alone leaves numTurns uninterpretable.
-                final StopReason fStop = ClaudeStopReasons.resolveRunStopReason(resultMsg.subtype(), isError,
-                        true, main.lastTurnStopReason);
-                final int fMax = callerMaxTurns != UNKNOWN_MAX_TURNS ? callerMaxTurns : wireMaxTurns;
-                final TraceWriter.ResultMeta fMeta = new TraceWriter.ResultMeta(sessionId, isError,
-                        resultMsg.subtype(), apiDurationMs, thinkingTokens, cacheCreationInputTokens,
-                        cacheReadInputTokens, resultMsg.structuredOutput(), fStop, fMax);
-                writeTrace(trace, phaseName, w -> w.writeResult(fIn, fOut, fCost, fTurns, fDur, fMeta));
-                if (fStop == StopReason.MAX_TURNS) {
-                    logger.warn("[{}] Run hit its turn ceiling (maxTurns={}, numTurns={}) — this trajectory is "
-                            + "right-censored: its step count is a lower bound, not a measurement.",
-                            phaseName, fMax, numTurns);
-                }
+                logger.info("[{}] Complete: {} turns, {} in + {} out tokens (this result {} in + {} out), ${}",
+                        phaseName, numTurns, inputTokens, outputTokens,
+                        usage != null ? getInt(usage, "input_tokens") : 0,
+                        usage != null ? getInt(usage, "output_tokens") : 0, String.format("%.4f", totalCostUsd));
                 // R2.2: the exact per-model cost decomposition (sums to totalCostUsd) lives in
                 // the result wire's modelUsage sibling — not on the typed ResultMessage. Last
                 // result wins.
@@ -575,6 +563,31 @@ public class SessionLogParser {
                         }
                     }
                 }
+            }
+        }
+
+        // One result line in the trace for the whole stream: usage, duration and turns summed over every
+        // result, cost and API time from the last (they are running totals). The verbatim lines are
+        // the level-0 record.
+        if (sawResult && lastResult != null) {
+            final int fIn = inputTokens;
+            final int fOut = outputTokens;
+            final double fCost = totalCostUsd;
+            final int fTurns = numTurns;
+            final long fDur = durationMs;
+            // J3: the stop reason and the ceiling it ran against go onto the result line
+            // together — either alone leaves numTurns uninterpretable.
+            final StopReason fStop = ClaudeStopReasons.resolveRunStopReason(lastResult.subtype(), isError, true,
+                    main.lastTurnStopReason);
+            final int fMax = callerMaxTurns != UNKNOWN_MAX_TURNS ? callerMaxTurns : wireMaxTurns;
+            final TraceWriter.ResultMeta fMeta = new TraceWriter.ResultMeta(sessionId, isError,
+                    lastResult.subtype(), apiDurationMs, thinkingTokens, cacheCreationInputTokens,
+                    cacheReadInputTokens, lastResult.structuredOutput(), fStop, fMax);
+            writeTrace(trace, phaseName, w -> w.writeResult(fIn, fOut, fCost, fTurns, fDur, fMeta));
+            if (fStop == StopReason.MAX_TURNS) {
+                logger.warn("[{}] Run hit its turn ceiling (maxTurns={}, numTurns={}) — this trajectory is "
+                        + "right-censored: its step count is a lower bound, not a measurement.",
+                        phaseName, fMax, numTurns);
             }
         }
 
@@ -979,7 +992,10 @@ public class SessionLogParser {
                 textOrNull(msg, "id"),
                 textOrNull(msg, "model"),
                 usage.path("input_tokens").asLong(0),
-                usage.path("output_tokens").asLong(0),
+                // The stream's per-message output count is a start-of-message placeholder that is
+                // never corrected (1 to 12 against hundreds on CLI 2.1.299; 0 of 67 historical runs
+                // summed to the result's). It is not a measurement, so it is not recorded as one.
+                TurnUsage.NOT_REPORTED,
                 usage.path("cache_creation_input_tokens").asLong(0),
                 usage.path("cache_read_input_tokens").asLong(0),
                 List.copyOf(toolUseIds),

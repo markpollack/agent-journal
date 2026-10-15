@@ -84,13 +84,15 @@ class CostMeteringConformanceTest {
 
         // Exact, in tokens — the adapter-boundary identity.
         assertThat(production.inputTokens()).isEqualTo((int) oracle.inputTokens()).isEqualTo(10);
-        assertThat(production.outputTokens()).isEqualTo((int) oracle.outputTokens()).isEqualTo(1000);
+        // Per-message output on the stream is a placeholder (see RealStreamTokenConformanceTest), so the
+        // run's output is the result line's count, not the per-turn sum these fabricated lines would give.
+        assertThat(production.outputTokens()).isEqualTo(250);
         assertThat(production.cacheCreationTokens()).isEqualTo((int) oracle.cacheCreationTokens()).isEqualTo(33_000);
         assertThat(production.cacheReadTokens()).isEqualTo((int) oracle.cacheReadTokens()).isEqualTo(118_000);
 
         // Guard: the snapshot under-counts the cost-driving types (the bug).
         TokenUsage snapshot = phase.snapshotUsage();
-        assertThat(snapshot.outputTokens()).isLessThan(production.outputTokens());
+        assertThat(snapshot.outputTokens()).isEqualTo(production.outputTokens());
         assertThat(snapshot.cacheReadTokens()).isLessThan(production.cacheReadTokens());
     }
 

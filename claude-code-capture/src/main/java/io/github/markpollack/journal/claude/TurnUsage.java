@@ -48,6 +48,13 @@ public record TurnUsage(
         String stopReason,
         int turnIndex
 ) {
+    /**
+     * The value of {@code outputTokens} when the figure was not reported. Claude Code's stream prints a
+     * start-of-message count (1 to 12 against hundreds) that is never corrected, so a per-turn output
+     * figure taken from the stream is recorded as not reported rather than as a number.
+     */
+    public static final long NOT_REPORTED = -1;
+
 
     /**
      * Creates a turn without tool calls, thinking tokens, stop reason or turn number: the list of

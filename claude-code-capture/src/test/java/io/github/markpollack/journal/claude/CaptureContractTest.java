@@ -131,7 +131,8 @@ class CaptureContractTest {
         // carried input and output only, so a per-state cost could not be priced.
         JournalStep first = steps.get(0);
         assertThat(first.inputTokens()).isEqualTo(120L);
-        assertThat(first.outputTokens()).isEqualTo(300L);
+        // The stream's per-message output figure is a placeholder, so it is recorded as not reported.
+        assertThat(first.outputTokens()).isEqualTo(TurnUsage.NOT_REPORTED);
         assertThat(first.thinkingTokens()).isEqualTo(175L);
         assertThat(first.cacheCreationTokens()).isEqualTo(18646L);
         assertThat(first.cacheReadTokens()).isEqualTo(0L);
