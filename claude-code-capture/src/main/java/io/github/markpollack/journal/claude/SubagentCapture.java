@@ -110,12 +110,24 @@ public record SubagentCapture(
         long cacheRead = 0;
         for (TurnUsage turn : turns) {
             input += turn.inputTokens();
-            output += turn.outputTokens();
+            output += Math.max(0, turn.outputTokens());   // not reported (-1) adds nothing; see outputReported()
             thinking += turn.thinkingTokens();
             cacheCreation += turn.cacheCreationInputTokens();
             cacheRead += turn.cacheReadInputTokens();
         }
         return new TokenUsage((int) input, (int) output, (int) thinking, (int) cacheCreation, (int) cacheRead, 0);
+    }
+
+    /**
+     * Whether every turn's output tokens were reported. On Claude Code's stream they are not (the figure
+     * printed with a message is a start-of-message placeholder), so {@link #aggregateUsage()} then carries
+     * {@code 0} for output, meaning "not reported", never "none". The all-agents output total is on the
+     * parent phase's per-model usage.
+     *
+     * @return true only if no turn has an unreported output figure
+     */
+    public boolean outputReported() {
+        return turns.stream().noneMatch(t -> t.outputTokens() < 0);
     }
 
     /**

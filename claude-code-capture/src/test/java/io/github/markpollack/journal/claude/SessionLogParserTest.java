@@ -624,10 +624,11 @@ class SessionLogParserTest {
         TurnUsage t1 = capture.turns().get(0);
         assertThat(t1.messageId()).isEqualTo("msg_1");
         assertThat(t1.model()).isEqualTo("claude-opus-4-8");
-        assertThat(t1.outputTokens()).isEqualTo(196);
+        assertThat(t1.outputTokens()).as("stream placeholder is not recorded as a measurement")
+                .isEqualTo(TurnUsage.NOT_REPORTED);
         assertThat(t1.cacheCreationInputTokens()).isEqualTo(18646);
         assertThat(t1.totalInputTokens()).isEqualTo(3528 + 18646 + 0);
-        assertThat(capture.turns().get(1).outputTokens()).isEqualTo(135);
+        assertThat(capture.turns().get(1).outputTokens()).isEqualTo(TurnUsage.NOT_REPORTED);
     }
 
     @Test
@@ -703,14 +704,15 @@ class SessionLogParserTest {
         assertThat(stepCosts).hasSize(2);
         assertThat(stepCosts).extracting(n -> n.get("stepId").asText()).containsExactly("toolu_1", "toolu_2");
         assertThat(stepCosts).allSatisfy(n -> {
-            assertThat(n.get("attributionMethod").asText()).isEqualTo("OUTPUT_TOKEN_PROPORTIONAL");
+            // per-turn output is not reported on the stream, so the split is a labelled even split
+            assertThat(n.get("attributionMethod").asText()).isEqualTo("EVEN_SPLIT");
             assertThat(n.get("actualRunCostUsd").asDouble()).isEqualTo(0.04);
         });
         double sum = stepCosts.stream().mapToDouble(n -> n.get("attributedCostUsd").asDouble()).sum();
         assertThat(sum).isCloseTo(0.04, within(1e-9));
-        // non-uniform — the high-output step costs more
+        // equal shares: nothing measured says one step cost more than another
         assertThat(stepCosts.get(1).get("attributedCostUsd").asDouble())
-                .isGreaterThan(stepCosts.get(0).get("attributedCostUsd").asDouble());
+                .isCloseTo(stepCosts.get(0).get("attributedCostUsd").asDouble(), within(1e-9));
     }
 
     @Test

@@ -69,7 +69,7 @@ class JournalCaptureClosureTest {
             assertThat(steps.stream().mapToDouble(JournalStep::attributedCostUsd).sum()).isEqualTo(0.10);
             assertThat(steps).allSatisfy(s -> {
                 assertThat(s.actualRunCostUsd()).isEqualTo(0.10);
-                assertThat(s.attributionMethod()).isEqualTo(AttributionMethod.OUTPUT_TOKEN_PROPORTIONAL);
+                assertThat(s.attributionMethod()).isEqualTo(AttributionMethod.EVEN_SPLIT);
                 assertThat(s.runId()).isNull(); // eager — no Run yet
             });
         }
@@ -217,8 +217,8 @@ class JournalCaptureClosureTest {
         }
 
         @Test
-        @DisplayName("a normal capture stamps OUTPUT_TOKEN_PROPORTIONAL (incl. the tool-less turn step)")
-        void proportionalForNormalCapture(@TempDir Path dir) {
+        @DisplayName("a stream capture, whose per-turn output is not reported, stamps EVEN_SPLIT (incl. the tool-less turn step)")
+        void evenSplitWhenStreamOutputIsNotReported(@TempDir Path dir) {
             Journal.configure(new JsonFileStorage(dir));
 
             String runId;
@@ -230,7 +230,7 @@ class JournalCaptureClosureTest {
             List<DerivedEvent> derived = new JsonFileStorage(dir).loadDerivedEvents("exp", runId);
             assertThat(derived).isNotEmpty();
             assertThat(derived).allSatisfy(d -> assertThat(((StepCostEvent) d).attributionMethod())
-                    .isEqualTo(AttributionMethod.OUTPUT_TOKEN_PROPORTIONAL));
+                    .isEqualTo(AttributionMethod.EVEN_SPLIT));
         }
     }
 

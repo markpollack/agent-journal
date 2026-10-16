@@ -435,7 +435,9 @@ public record PhaseCapture(
         }
         List<TokenUsage> perTurn = new ArrayList<>(turns.size());
         for (TurnUsage t : turns) {
-            perTurn.add(new TokenUsage((int) t.inputTokens(), (int) t.outputTokens(), 0,
+            // a per-turn output that was not reported (-1) contributes nothing; the run's output
+            // is then the sum of the result lines' output, which is exact for the main thread
+            perTurn.add(new TokenUsage((int) t.inputTokens(), (int) Math.max(0, t.outputTokens()), 0,
                     (int) t.cacheCreationInputTokens(), (int) t.cacheReadInputTokens(), 0));
         }
         TokenUsage summed = TokenUsage.sum(perTurn);

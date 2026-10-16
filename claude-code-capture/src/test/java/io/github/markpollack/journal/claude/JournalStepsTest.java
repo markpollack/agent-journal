@@ -33,9 +33,9 @@ class JournalStepsTest {
     private static final String RUN = "run-1";
 
     @Test
-    void attributesRunCostByOutputTokensAndSumsToTotal() {
-        // Turn 1: one tool, 100 output tokens. Turn 2: one tool, 300 output tokens. Total $0.04.
-        // Output-proportional → toolu_1 = 0.25*0.04 = 0.01, toolu_2 = 0.75*0.04 = 0.03.
+    void streamOutputIsNotReportedSoTheSplitIsALabelledEvenSplit() {
+        // The stream's per-message output (100 and 300 here) is a start-of-message placeholder, so it is not a
+        // weight. Nothing measured says one step cost more: the split is even, and says so.
         List<ParsedMessage> messages = List.of(
                 assistantTurn("msg_1", "toolu_1", "Read", 10, 100),
                 assistantTurn("msg_2", "toolu_2", "Bash", 12, 300),
@@ -48,15 +48,51 @@ class JournalStepsTest {
         assertThat(steps).extracting(JournalStep::stepId).containsExactly("toolu_1", "toolu_2");
         assertThat(steps).allSatisfy(s -> {
             assertThat(s.actualRunCostUsd()).isEqualTo(0.04);
-            assertThat(s.attributionMethod()).isEqualTo(AttributionMethod.OUTPUT_TOKEN_PROPORTIONAL);
+            assertThat(s.attributionMethod()).isEqualTo(AttributionMethod.EVEN_SPLIT);
+            assertThat(s.outputTokens()).isEqualTo(TurnUsage.NOT_REPORTED);
             assertThat(s.vendor()).isEqualTo("claude-code");
         });
-        // Ground truth preserved: shares sum to the real total.
         assertThat(steps.stream().mapToDouble(JournalStep::attributedCostUsd).sum()).isCloseTo(0.04, within(1e-12));
-        // Non-uniform: the high-output turn costs more.
+        assertThat(steps.get(0).attributedCostUsd()).isCloseTo(0.02, within(1e-9));
+        assertThat(steps.get(1).attributedCostUsd()).isCloseTo(0.02, within(1e-9));
+    }
+
+    @Test
+    void attributesRunCostByOutputTokensWhenPerTurnOutputIsKnown() {
+        // The proportional method still applies when per-call output is a measured value (a source other than
+        // the stream). Turn 1: 100 output tokens, turn 2: 300. Total $0.04 -> 0.01 and 0.03.
+        PhaseCapture phase = phaseWithKnownOutput(0.04, new long[] {100, 300}, new int[] {1, 1});
+
+        List<JournalStep> steps = JournalSteps.fromPhaseCapture(phase, RUN);
+
+        assertThat(steps).hasSize(2);
+        assertThat(steps).allSatisfy(s -> assertThat(s.attributionMethod())
+                .isEqualTo(AttributionMethod.OUTPUT_TOKEN_PROPORTIONAL));
+        assertThat(steps.stream().mapToDouble(JournalStep::attributedCostUsd).sum()).isCloseTo(0.04, within(1e-12));
         assertThat(steps.get(0).attributedCostUsd()).isCloseTo(0.01, within(1e-9));
         assertThat(steps.get(1).attributedCostUsd()).isCloseTo(0.03, within(1e-9));
-        assertThat(steps.get(1).attributedCostUsd()).isGreaterThan(steps.get(0).attributedCostUsd());
+    }
+
+    /** A capture whose per-turn output figures are known values; {@code toolsPerTurn[i]} tool calls in turn i. */
+    private static PhaseCapture phaseWithKnownOutput(double cost, long[] outputs, int[] toolsPerTurn) {
+        List<TurnUsage> turns = new java.util.ArrayList<>();
+        List<ToolUseRecord> tools = new java.util.ArrayList<>();
+        long totalOutput = 0;
+        int tool = 0;
+        for (int i = 0; i < outputs.length; i++) {
+            String msg = "msg_" + (i + 1);
+            List<String> ids = new java.util.ArrayList<>();
+            for (int k = 0; k < toolsPerTurn[i]; k++) {
+                String id = "toolu_" + (++tool);
+                ids.add(id);
+                tools.add(new ToolUseRecord(id, ToolKind.READ, "Read", Map.of(), msg, i));
+            }
+            turns.add(new TurnUsage(msg, "claude-opus-4-8", 10, outputs[i], 0, 0, ids, 0, "tool_use", i));
+            totalOutput += outputs[i];
+        }
+        return new PhaseCapture("run", "p", 10 * outputs.length, (int) totalOutput, 0, 0, 0, 1000L, 900L, cost,
+                "sess", outputs.length, false, "", List.of(), tools, null, List.of(), turns, List.of(),
+                io.github.markpollack.journal.event.StopReason.NATURAL_DONE, -1, List.of(), true, Map.of());
     }
 
     @Test
@@ -138,18 +174,10 @@ class JournalStepsTest {
 
     @Test
     void withinTurnParallelToolSplitStaysProportional() {
-        // Per-turn tokens ARE present; the even split among a turn's parallel tools is part of the
-        // proportional method, NOT the coarse fallback (A1).
-        ToolUseBlock a = ToolUseBlock.builder().id("toolu_a").name("Read").input(Map.of("file_path", "/x")).build();
-        ToolUseBlock b = ToolUseBlock.builder().id("toolu_b").name("Read").input(Map.of("file_path", "/y")).build();
-        String wire = "{\"type\":\"assistant\",\"message\":{\"id\":\"msg_1\",\"model\":\"claude-opus-4-8\","
-                + "\"usage\":{\"input_tokens\":10,\"output_tokens\":200,\"cache_creation_input_tokens\":0,"
-                + "\"cache_read_input_tokens\":0}}}";
-        List<ParsedMessage> messages = List.of(
-                wrapRaw(new AssistantMessage(List.of(a, b)), wire),
-                wrap(result(0.02)));
+        // Per-turn output IS known; the even split among a turn's parallel tools is part of the proportional
+        // method, NOT the coarse fallback (A1).
+        PhaseCapture phase = phaseWithKnownOutput(0.02, new long[] {200}, new int[] {2});
 
-        PhaseCapture phase = SessionLogParser.parse(messages.iterator(), RUN, "p");
         List<JournalStep> steps = JournalSteps.fromPhaseCapture(phase, RUN);
 
         assertThat(steps).extracting(JournalStep::attributionMethod)

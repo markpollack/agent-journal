@@ -228,7 +228,7 @@ public final class JournalSteps {
             }
             List<TokenUsage> perTurn = new ArrayList<>(turns.size());
             for (TurnUsage t : turns) {
-                perTurn.add(new TokenUsage((int) t.inputTokens(), (int) t.outputTokens(), 0,
+                perTurn.add(new TokenUsage((int) t.inputTokens(), (int) Math.max(0, t.outputTokens()), 0,
                         (int) t.cacheCreationInputTokens(), (int) t.cacheReadInputTokens(), 0));
             }
             TokenUsage summed = TokenUsage.sum(perTurn);
@@ -277,11 +277,22 @@ public final class JournalSteps {
         if (turns != null && !turns.isEmpty()) {
             // Precise: split the run total across turns by output tokens; the within-turn even split
             // among parallel tools is part of this proportional method (A1) → OUTPUT_TOKEN_PROPORTIONAL.
-            final AttributionMethod method = AttributionMethod.OUTPUT_TOKEN_PROPORTIONAL;
+            // That only holds when every turn's output is a measured value. When any is not reported
+            // (-1: the stream's figure is a placeholder), weighting by it would be noise, so the split
+            // is a flat even split across steps and is labelled EVEN_SPLIT.
+            final boolean outputKnown = turns.stream().allMatch(t -> t.outputTokens() >= 0);
+            final AttributionMethod method = outputKnown ? AttributionMethod.OUTPUT_TOKEN_PROPORTIONAL
+                    : AttributionMethod.EVEN_SPLIT;
             warnUnlistedTools(turns, toolUses);
-            long totalOutput = turns.stream().mapToLong(TurnUsage::outputTokens).sum();
+            long totalOutput = outputKnown ? turns.stream().mapToLong(TurnUsage::outputTokens).sum() : 0;
+            int totalSlots = 0;
             for (TurnUsage turn : turns) {
-                double weight = totalOutput > 0 ? (double) turn.outputTokens() / totalOutput : 1.0 / turns.size();
+                totalSlots += Math.max(1, turn.toolUseIds() == null ? 0 : turn.toolUseIds().size());
+            }
+            for (TurnUsage turn : turns) {
+                int slots = Math.max(1, turn.toolUseIds() == null ? 0 : turn.toolUseIds().size());
+                double weight = !outputKnown ? (double) slots / totalSlots
+                        : totalOutput > 0 ? (double) turn.outputTokens() / totalOutput : 1.0 / turns.size();
                 double turnCost = actualCost * weight;
                 List<String> tools = turn.toolUseIds();
                 if (tools == null || tools.isEmpty()) {
