@@ -190,16 +190,15 @@ class JunieSessionParserTest {
     }
 
     @Test
-    void neverCapturesEnvironmentVariables() throws Exception {
-        // Junie's EnvironmentVariablesUpdatedEvent carries the agent's whole environment with
-        // values unredacted. A capture flows into events.jsonl and from there into a repository,
-        // so nothing from that event may reach the capture. The fixture keeps the event shape
-        // with a planted fake key so this assertion is meaningful.
-        String rawFixture = Files.readString(fixture("junie-acp-events.jsonl"));
-        assertThat(rawFixture).contains("FIXTURE_FAKE_API_KEY");
+    void environmentVariablesAreCapturedLikeEveryOtherLine() throws Exception {
+        // Owner, 2026-10-14: nothing the vendor wrote is dropped at level 1; security and redaction are
+        // a publication-time matter. The fixture carries a planted fake key in its environment update.
+        assertThat(Files.readString(fixture("junie-acp-events.jsonl"))).contains("FIXTURE_FAKE_API_KEY");
 
         JuniePhaseCapture capture = parse("junie-acp-events.jsonl");
-        assertThat(capture.toString()).doesNotContain("FIXTURE_FAKE_API_KEY", "not-a-real-secret");
+
+        assertThat(capture.vendorEvents()).filteredOn(e -> e.kind().equals("EnvironmentVariablesUpdatedEvent"))
+                .anySatisfy(e -> assertThat(e.payload().toString()).contains("FIXTURE_FAKE_API_KEY", "not-a-real-secret"));
     }
 
     @Test
@@ -276,6 +275,54 @@ class JunieSessionParserTest {
                         "FileChangesBlockUpdatedEvent", "ToolBlockUpdatedEvent");
         assertThat(JunieToolClassifier.classify("SomeFutureBlockUpdatedEvent")).isEqualTo(ToolKind.OTHER);
         assertThat(JunieToolClassifier.classify(null)).isEqualTo(ToolKind.OTHER);
+    }
+
+    /**
+     * Independent oracle: counts of the lines the parser does not turn into capture fields, taken from the
+     * two real fixtures with a separate script (lines of kinds TaskStartedEvent, UserPromptEvent, TaskState and
+     * the ten agent-event kinds the parser reads are excluded; everything else is a vendor event).
+     */
+    @Test
+    void everyLineTheParserDoesNotConsumeIsKeptWholeInFileOrder() throws Exception {
+        java.util.Map<String, java.util.Map<String, Long>> expected = java.util.Map.of(
+                "junie-acp-events.jsonl", java.util.Map.of("AgentCurrentStatusUpdatedEvent", 101L,
+                        "CurrentDirectoryUpdatedEvent", 17L, "EnvironmentVariablesUpdatedEvent", 17L,
+                        "TipSuggestionCreatedEvent", 1L, "UserMessagesCommittedToHistory", 15L,
+                        "AgentPlanUpdatedEvent", 2L),
+                "junie-cli-events.jsonl", java.util.Map.of("AgentCurrentStatusUpdatedEvent", 139L,
+                        "CurrentDirectoryUpdatedEvent", 23L, "EnvironmentVariablesUpdatedEvent", 23L,
+                        "TipSuggestionCreatedEvent", 1L, "AgentPlanUpdatedEvent", 2L));
+        for (var entry : expected.entrySet()) {
+            JuniePhaseCapture capture = parse(entry.getKey());
+
+            java.util.Map<String, Long> actual = capture.vendorEvents().stream()
+                    .collect(java.util.stream.Collectors.groupingBy(JunieVendorEvent::kind, java.util.stream.Collectors.counting()));
+            assertThat(actual).as(entry.getKey()).isEqualTo(entry.getValue());
+            // file order: timestamps never go backwards within the kept lines
+            long previous = -1;
+            for (JunieVendorEvent event : capture.vendorEvents()) {
+                assertThat(event.timestampMs()).isGreaterThanOrEqualTo(previous);
+                previous = event.timestampMs();
+            }
+        }
+    }
+
+    @Test
+    void theEnvironmentVariableUpdateIsKeptWithItsKeysAndValues() throws Exception {
+        JuniePhaseCapture capture = parse("junie-cli-events.jsonl");
+
+        JunieVendorEvent env = capture.vendorEvents().stream()
+                .filter(e -> e.kind().equals("EnvironmentVariablesUpdatedEvent")).findFirst().orElseThrow();
+        @SuppressWarnings("unchecked")
+        java.util.Map<String, Object> agentEvent = (java.util.Map<String, Object>)
+                ((java.util.Map<String, Object>) env.payload().get("event")).get("agentEvent");
+        assertThat((java.util.List<?>) agentEvent.get("env")).isNotEmpty().allSatisfy(item -> {
+            @SuppressWarnings("unchecked")
+            java.util.Map<String, Object> pair = (java.util.Map<String, Object>) item;
+            assertThat(pair).containsKeys("key", "value");
+        });
+        // the agent identity that the parser does not model is in the kept line
+        assertThat(agentEvent).containsKey("agent");
     }
 
     private static JuniePhaseCapture parse(String name) throws Exception {

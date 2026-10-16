@@ -49,9 +49,12 @@ import java.util.Map;
  * step, and the prose is kept in the tool's input map under {@code description}. A step is an
  * error if its last status is {@code FAILED} or its exit code is above 0.
  *
- * <p>A Junie session file also records the agent's environment variables, unredacted, which can
- * include API keys. The parser never copies them into the capture, so they do not reach the
- * journal, but treat the session file itself as secret.
+ * <p>Every line the parser does not turn into a field is kept whole in
+ * {@link JuniePhaseCapture#vendorEvents()}: status narration, current-directory and
+ * environment-variable updates, plan updates, failure messages, tips, history commits and any kind
+ * a later Junie version adds. The environment-variable updates are unredacted and can include API
+ * keys; they are recorded like every other line (nothing the vendor wrote is dropped), so treat
+ * the capture, the journal that records it and the session file as sensitive.
  *
  * <p>All methods are static and keep no state between calls. Calls from several threads are safe
  * if each has its own input.
@@ -114,6 +117,7 @@ public final class JunieSessionParser {
         private final Map<String, MutableStep> steps = new LinkedHashMap<>();
         private final List<JunieModelCost> modelCosts = new ArrayList<>();
         private final List<String> thinkingBlocks = new ArrayList<>();
+        private final List<JunieVendorEvent> vendorEvents = new ArrayList<>();
 
         private String tracePrompt;
         private String launchModel;
@@ -173,14 +177,28 @@ public final class JunieSessionParser {
 
             JsonNode agentEvent = line.path("event").path("agentEvent");
             if (agentEvent.isObject()) {
-                acceptAgentEvent(agentEvent);
+                if (!acceptAgentEvent(agentEvent)) {
+                    keepWhole(line, text(agentEvent, "kind"));
+                }
+            }
+            else {
+                keepWhole(line, topLevelKind);
             }
         }
 
-        private void acceptAgentEvent(JsonNode agentEvent) {
+        /** Keeps a line the parser does not consume, whole, in file order. */
+        private void keepWhole(JsonNode line, String kind) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> payload = MAPPER.convertValue(line, Map.class);
+            vendorEvents.add(new JunieVendorEvent(kind == null || kind.isBlank() ? "unknown" : kind,
+                    longOr(line, "timestampMs", -1L), text(line, "taskId"), payload));
+        }
+
+        /** Returns whether the parser consumed the event; an event it did not consume is kept whole. */
+        private boolean acceptAgentEvent(JsonNode agentEvent) {
             String kind = text(agentEvent, "kind");
             if (kind == null) {
-                return;
+                return false;
             }
             switch (kind) {
                 case "LlmResponseMetadataEvent" -> acceptModelUsage(agentEvent.path("modelUsage"));
@@ -197,10 +215,12 @@ public final class JunieSessionParser {
                      JunieToolClassifier.FILE_CHANGES_BLOCK,
                      JunieToolClassifier.TOOL_BLOCK -> acceptStep(kind, agentEvent);
                 default -> {
-                    // Status narration, cwd, environment (deliberately dropped — see class note),
-                    // plans, tips, history commits, and any future kind.
+                    // Status narration, cwd, environment, plans, failures, tips, history commits and
+                    // any future kind: kept whole as a vendor event by the caller.
+                    return false;
                 }
             }
+            return true;
         }
 
         private void acceptModelUsage(JsonNode modelUsage) {
@@ -352,7 +372,8 @@ public final class JunieSessionParser {
                     stopReason,
                     -1,
                     modelCosts,
-                    toolUses);
+                    toolUses,
+                    List.copyOf(vendorEvents));
         }
 
         /**

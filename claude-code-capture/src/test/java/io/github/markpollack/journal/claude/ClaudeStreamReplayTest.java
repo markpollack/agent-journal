@@ -58,7 +58,7 @@ class ClaudeStreamReplayTest {
         // ToolResultRecord.durationMs is the parser's own clock between seeing a tool call and its result
         // (arrival latency on a live run, noise when parsing stored data), not a vendor measurement, so
         // it cannot be reproduced from the stream; every other field must be identical. Roadmap Step 12.2.
-        assertThat(rebuilt).usingRecursiveComparison().ignoringFieldsMatchingRegexes("toolResults.*durationMs")
+        assertThat(rebuilt).usingRecursiveComparison().ignoringFieldsMatchingRegexes(".*toolResults.*durationMs")
                 .isEqualTo(liveCapture);
     }
 

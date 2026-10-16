@@ -60,6 +60,8 @@ import java.util.List;
  *        reported
  * @param contextWindowSize the size of the model's context window, in tokens, or -1 if none was
  *        reported
+ * @param vendorEvents the lines of the session file that are not turned into fields above, whole and in
+ *        file order; see {@link JunieVendorEvent}
  * @param stopReason why the session stopped; never {@code null}, because a missing reason becomes
  *        {@link StopReason#UNKNOWN}
  * @param maxTurns the turn limit the session ran against; always -1 from the parser
@@ -92,7 +94,8 @@ public record JuniePhaseCapture(
         StopReason stopReason,
         int maxTurns,
         List<JunieModelCost> modelCosts,
-        List<JunieToolUseRecord> toolUses
+        List<JunieToolUseRecord> toolUses,
+        List<JunieVendorEvent> vendorEvents
 ) {
 
     /**

@@ -22,7 +22,8 @@ import java.util.Map;
  * <p>Unlike Claude Code's {@code RunRecorder}, it logs no phase
  * {@link io.github.markpollack.journal.event.StateChangeEvent}, it never ends the run, and it
  * does not check that the storage keeps derived events. Like it, it logs one
- * {@code thinking_block} event per thinking block, and it logs the cost Junie reported together
+ * {@code thinking_block} event per thinking block, one {@code vendor_event} per line of the session
+ * file that is not a field of the capture, and it logs the cost Junie reported together
  * with the stop reason and the turn limit, which for Junie is always -1. It has no method that
  * returns the run, so keep your own reference. On
  * {@link io.github.markpollack.journal.storage.InMemoryStorage} the per-step costs are kept only
@@ -148,6 +149,20 @@ public final class JunieRunRecorder {
         for (String thinking : phase.thinkingBlocks()) {
             run.logEvent(CustomEvent.of("thinking_block",
                     phaseAttributes(phase.phaseName(), "content", thinking)));
+        }
+
+        for (JunieVendorEvent vendorEvent : phase.vendorEvents()) {
+            Map<String, Object> attributes = phaseAttributes(phase.phaseName(), "vendor", "junie");
+            attributes.put("kind", vendorEvent.kind());
+            if (vendorEvent.taskId() != null) {
+                attributes.put("taskId", vendorEvent.taskId());
+            }
+            if (vendorEvent.timestampMs() >= 0) {
+                attributes.put("vendorTimestampMs", vendorEvent.timestampMs());
+            }
+            attributes.put("payload", vendorEvent.payload());
+            Instant when = vendorEvent.timestampMs() >= 0 ? Instant.ofEpochMilli(vendorEvent.timestampMs()) : Instant.now();
+            run.logEvent(new CustomEvent(when, "vendor_event", attributes));
         }
 
         Instant analyzedAt = Instant.now();

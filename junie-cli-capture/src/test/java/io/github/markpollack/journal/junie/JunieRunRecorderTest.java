@@ -40,7 +40,7 @@ class JunieRunRecorderTest {
         Run run = Journal.run("exp").start();
         JuniePhaseCapture phase = new JuniePhaseCapture(null, "the prompt", "m", "t1", "task", 10, 5, 0, 0,
                 0.01, 100L, 1, false, "DONE", null, false, "done", null, List.of("a thought"), 0L, 0L,
-                StopReason.UNKNOWN, -1, List.of(), List.of());
+                StopReason.UNKNOWN, -1, List.of(), List.of(), List.of());
 
         new JunieRunRecorder(run).recordPhase(phase);
 
@@ -56,7 +56,7 @@ class JunieRunRecorderTest {
         Run run = Journal.run("exp").start();
         JuniePhaseCapture phase = new JuniePhaseCapture("execute", null, "m", "t1", "task", 10, 5, 0, 0,
                 0.0755, 100L, 1, false, "DONE", null, false, "done", null, List.of(), 0L, 0L,
-                StopReason.UNKNOWN, -1, List.of(), List.of());
+                StopReason.UNKNOWN, -1, List.of(), List.of(), List.of());
 
         new JunieRunRecorder(run).recordPhase(phase);
 
@@ -75,7 +75,7 @@ class JunieRunRecorderTest {
                 0.01, 100L, 1, false, "DONE", null, false, "done", null, List.of(), 0L, 0L,
                 StopReason.UNKNOWN, -1, List.of(),
                 List.of(new JunieToolUseRecord("call_1", ToolKind.EXECUTE, "bash", Map.of("command", "ls"), "out",
-                        "completed", 0, false, null)));
+                        "completed", 0, false, null)), List.of());
 
         new JunieRunRecorder(run).recordPhase(phase);
 
@@ -83,4 +83,22 @@ class JunieRunRecorderTest {
                 .singleElement()
                 .satisfies(e -> assertThat(((ToolCallEvent) e).durationMs()).isEqualTo(-1));
     }
+
+    @Test
+    void everyVendorEventOfARealSessionBecomesACustomEventWithItsWholeLine() throws Exception {
+        Run run = Journal.run("exp").start();
+        JuniePhaseCapture phase = JunieSessionParser.parse(java.nio.file.Path.of(
+                JunieRunRecorderTest.class.getResource("/fixtures/junie-cli-events.jsonl").toURI()), "p", "prompt");
+
+        new JunieRunRecorder(run).recordPhase(phase);
+
+        List<JournalEvent> events = storage.loadEvents("exp", run.id());
+        assertThat(events).filteredOn(e -> e instanceof CustomEvent c && c.type().equals("vendor_event"))
+                .hasSize(188)
+                .allSatisfy(e -> {
+                    var attributes = ((CustomEvent) e).attributes();
+                    assertThat(attributes).containsEntry("vendor", "junie").containsKeys("kind", "payload");
+                });
+    }
+
 }
