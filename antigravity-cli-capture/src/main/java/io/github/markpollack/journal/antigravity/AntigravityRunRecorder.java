@@ -79,6 +79,14 @@ public final class AntigravityRunRecorder {
                     phaseAttributes(phase.phaseName(), "text", phase.promptText())));
         }
 
+        for (AntigravityVendorEvent vendorEvent : phase.vendorEvents()) {
+            Map<String, Object> attributes = phaseAttributes(phase.phaseName(), "vendor", "antigravity");
+            attributes.put("kind", vendorEvent.kind());
+            attributes.put("line", vendorEvent.line());
+            attributes.put("payload", vendorEvent.payload());
+            run.logEvent(CustomEvent.of("vendor_event", attributes));
+        }
+
         Map<String, Object> metadata = new LinkedHashMap<>();
         metadata.put("phaseName", phase.phaseName());
         metadata.put("numTurns", phase.numTurns());

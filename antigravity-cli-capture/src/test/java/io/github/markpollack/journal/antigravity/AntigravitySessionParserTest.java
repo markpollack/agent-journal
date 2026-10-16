@@ -146,6 +146,46 @@ class AntigravitySessionParserTest {
                 .containsExactly("{\"event\":\"init\",\"init\":{\"model\":\"m\"}}", "", "this is not json");
     }
 
+    /**
+     * Independent oracle: for each real stream, the number of lines of each kind that are not tool step
+     * updates, counted by a separate script. Those are the lines the capture's fields do not fully hold.
+     */
+    @Test
+    void everyLineThatIsNotAToolStepUpdateIsKeptWholeAndInOrder() throws Exception {
+        java.util.Map<String, java.util.Map<String, Long>> expected = java.util.Map.of(
+                "antigravity-clean-stream-json.jsonl", java.util.Map.of("init", 1L, "step_update/user_input", 1L,
+                        "step_update/checkpoint", 1L, "step_update/agent_response", 3L, "result", 1L),
+                "antigravity-stream-json.jsonl", java.util.Map.of("init", 1L, "step_update/user_input", 1L,
+                        "step_update/unknown", 4L, "step_update/agent_response", 2L, "step_update/checkpoint", 1L,
+                        "result", 1L),
+                "real-streams/read-three-files-a.jsonl", java.util.Map.of("init", 1L, "step_update/user_input", 1L,
+                        "step_update/agent_response", 26L, "result", 1L),
+                "real-streams/read-three-files-b.jsonl", java.util.Map.of("init", 1L, "step_update/user_input", 1L,
+                        "step_update/agent_response", 25L, "result", 1L));
+        for (var entry : expected.entrySet()) {
+            AntigravityPhaseCapture capture = AntigravitySessionParser.parse(fixture(entry.getKey()), "p", "prompt");
+
+            java.util.Map<String, Long> actual = capture.vendorEvents().stream().collect(
+                    java.util.stream.Collectors.groupingBy(AntigravityVendorEvent::kind, java.util.stream.Collectors.counting()));
+            assertThat(actual).as(entry.getKey()).isEqualTo(entry.getValue());
+            assertThat(capture.vendorEvents()).extracting(AntigravityVendorEvent::line).as(entry.getKey()).isSorted();
+        }
+    }
+
+    @Test
+    void theStreamedTextTheInitFieldsAndTheCallTotalsAreInTheKeptLines() throws Exception {
+        AntigravityPhaseCapture capture = AntigravitySessionParser.parse(
+                fixture("real-streams/read-three-files-a.jsonl"), "p", "prompt");
+
+        AntigravityVendorEvent init = capture.vendorEvents().stream().filter(e -> e.kind().equals("init")).findFirst().orElseThrow();
+        assertThat(init.payload().toString()).contains("permission_mode", "tools");
+        long withText = capture.vendorEvents().stream().filter(e -> e.kind().equals("step_update/agent_response"))
+                .filter(e -> e.payload().toString().contains("text_delta")).count();
+        assertThat(withText).isGreaterThan(0);
+        assertThat(capture.vendorEvents().stream().filter(e -> e.kind().equals("result")).findFirst().orElseThrow()
+                .payload().toString()).contains("total_tokens");
+    }
+
     private static Path fixture(String name) throws URISyntaxException {
         return Path.of(AntigravitySessionParserTest.class.getResource("/fixtures/" + name).toURI());
     }

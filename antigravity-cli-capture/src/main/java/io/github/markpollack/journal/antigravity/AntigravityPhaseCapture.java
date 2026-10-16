@@ -41,6 +41,9 @@ import java.util.List;
  * @param errorMessage the error text of the {@code result} event, or {@code null} if there was
  *        none
  * @param toolUses the tool steps, in the order they first appeared; never {@code null}
+ * @param calls the usage of each model call, in step order
+ * @param vendorEvents the stream lines kept whole at level 1, in stream order; see
+ *        {@link AntigravityVendorEvent}
  */
 public record AntigravityPhaseCapture(
         String phaseName,
@@ -58,7 +61,8 @@ public record AntigravityPhaseCapture(
         String textOutput,
         String errorMessage,
         List<AntigravityToolUseRecord> toolUses,
-        List<AntigravityCallUsage> calls
+        List<AntigravityCallUsage> calls,
+        List<AntigravityVendorEvent> vendorEvents
 ) {
 
     /**
@@ -68,6 +72,7 @@ public record AntigravityPhaseCapture(
     public AntigravityPhaseCapture {
         toolUses = toolUses == null ? List.of() : List.copyOf(toolUses);
         calls = calls == null ? List.of() : List.copyOf(calls);
+        vendorEvents = vendorEvents == null ? List.of() : List.copyOf(vendorEvents);
     }
 
     /**

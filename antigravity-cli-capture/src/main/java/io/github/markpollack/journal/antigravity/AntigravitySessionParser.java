@@ -132,7 +132,7 @@ public final class AntigravitySessionParser {
                     continue;
                 }
                 try {
-                    state.accept(MAPPER.readTree(line));
+                    state.accept(MAPPER.readTree(line), lineNumber);
                 } catch (JsonProcessingException ex) {
                     throw new IOException("Invalid Antigravity stream-json at line " + lineNumber, ex);
                 }
@@ -143,6 +143,7 @@ public final class AntigravitySessionParser {
 
     private static final class ParserState {
         private final Map<Integer, MutableToolCall> tools = new LinkedHashMap<>();
+        private final List<AntigravityVendorEvent> vendorEvents = new ArrayList<>();
         private final Map<Integer, AntigravityCallUsage> calls = new LinkedHashMap<>();
 
         private String model;
@@ -159,8 +160,16 @@ public final class AntigravitySessionParser {
         private String errorMessage;
         private boolean sawResult;
 
-        void accept(JsonNode event) {
+        void accept(JsonNode event, int lineNumber) {
             String eventType = text(event, "event");
+            String stepType = "step_update".equals(eventType) ? text(event.path("step_update"), "step_type") : null;
+            // A tool step update is fully held by the tool record; every other line is kept whole.
+            if (!"tool".equals(stepType)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> payload = MAPPER.convertValue(event, Map.class);
+                String kind = eventType == null ? "unknown" : (stepType == null ? eventType : eventType + "/" + stepType);
+                vendorEvents.add(new AntigravityVendorEvent(kind, lineNumber, payload));
+            }
             if ("init".equals(eventType)) {
                 conversationId = text(event, "conversation_id");
                 model = text(event.path("init"), "model");
@@ -253,7 +262,7 @@ public final class AntigravitySessionParser {
             return new AntigravityPhaseCapture(phaseName, promptText, model, conversationId,
                     in, out, thinking, cacheRead, durationMs,
                     numTurns, isError || !sawResult, sawResult ? status : "INCOMPLETE",
-                    textOutput, errorMessage, toolUses, new ArrayList<>(calls.values()));
+                    textOutput, errorMessage, toolUses, new ArrayList<>(calls.values()), List.copyOf(vendorEvents));
         }
     }
 
