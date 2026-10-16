@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * then appends one line and flushes it, so the file can be followed while the agent runs. Every
  * line has {@code ts} (when it was written), {@code seq} (0 for the header, then counting up) and
  * {@code type}. The line types are {@code header}, {@code tool_use}, {@code tool_result},
- * {@code text}, {@code thinking}, {@code result}, {@code raw} and {@code step_cost}; each
+ * {@code text}, {@code thinking}, {@code result} and {@code step_cost}; each
  * method's comment lists the fields it writes. The format is schema version
  * {@value #SCHEMA_VERSION}. Fields are added to it over time but not renamed, so a reader should
  * ignore fields and line types it does not know.
@@ -42,7 +42,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * the {@code runId} of such a trace is not a journal run ID.
  *
  * <p>Text, thinking and tool-result content is always written whole: nothing is shortened or left
- * out. {@link TraceRawMode} sets whether {@code raw} lines are written. Traces can hold prompts,
+ * out. The trace holds the normalized record only: the vendor's messages as received are kept in
+ * a separate stream file (see {@link io.github.markpollack.journal.raw.RawArtifacts}), and a line
+ * built from one of those messages names it in {@code source} (see {@link #sourceRef}). Traces can hold prompts,
  * file contents, command output and secrets, so treat them as sensitive files. The writer does not
  * check the path it is given.
  *
@@ -63,29 +65,14 @@ public class TraceWriter implements Closeable {
 
     private final AtomicInteger seq = new AtomicInteger(0);
 
-    private final TraceRawMode rawMode;
+    private Map<String, Object> sourceRef;
 
     private final String runId;
 
     /**
-     * Creates the trace file, which will have no {@code raw} lines, and writes its header line.
-     * Same as {@link #TraceWriter(Path, String, String, TraceRawMode)} with {@link TraceRawMode#NONE}.
-     *
-     * @param traceFile the file to write; its path must include a parent directory
-     * @param runId the run ID to record, or {@code null}
-     * @param phase the phase name to record, or {@code null}
-     * @throws IOException if the directories or the file cannot be created, or the header cannot
-     *         be written
-     */
-    public TraceWriter(Path traceFile, String runId, String phase) throws IOException {
-        this(traceFile, runId, phase, TraceRawMode.NONE);
-    }
-
-    /**
      * Creates the trace file and writes its header line. Missing parent directories are created,
      * and an existing file at {@code traceFile} is replaced. The header line has
-     * {@code schemaVersion}, {@code runId} and {@code phase} when they are not {@code null}, and
-     * the name of the raw mode.
+     * {@code schemaVersion}, {@code runId} and {@code phase} when they are not {@code null}.
      *
      * <p>The path must include a parent directory, such as {@code traces/plan.jsonl} or an
      * absolute path; a bare file name such as {@code plan.jsonl} is not accepted. If the header
@@ -95,14 +82,10 @@ public class TraceWriter implements Closeable {
      * @param runId the run ID to write on the {@code header}, {@code result} and
      *        {@code step_cost} lines, or {@code null} to leave it out
      * @param phase the phase name to write on the header line, or {@code null} to leave it out
-     * @param rawMode whether {@link #writeRaw(String)} writes lines; {@code null} means
-     *        {@link TraceRawMode#NONE}
      * @throws IOException if the directories or the file cannot be created, or the header cannot
      *         be written
      */
-    public TraceWriter(Path traceFile, String runId, String phase, TraceRawMode rawMode)
-            throws IOException {
-        this.rawMode = rawMode != null ? rawMode : TraceRawMode.NONE;
+    public TraceWriter(Path traceFile, String runId, String phase) throws IOException {
         this.runId = runId;
         Files.createDirectories(traceFile.getParent());
         this.writer = Files.newBufferedWriter(traceFile);
@@ -115,7 +98,6 @@ public class TraceWriter implements Closeable {
             if (phase != null) {
                 line.put("phase", phase);
             }
-            line.put("rawMode", this.rawMode.name());
             writeLine(line);
         } catch (IOException | RuntimeException ex) {
             // Do not leak the open file when the constructor fails
@@ -126,6 +108,29 @@ public class TraceWriter implements Closeable {
             }
             throw ex;
         }
+    }
+
+    /**
+     * Sets the vendor message that the lines written next were built from. Until it is changed or
+     * cleared, every line written by a {@code write} method (except {@code step_cost}) carries
+     * {@code source}: {@code {"stream": <stream file name>, "seq": <line number in that file>}}.
+     * The stream file is the one {@link io.github.markpollack.journal.raw.RawStream} wrote, and
+     * {@code seq} is the number its {@code append} returned. A message that produced several
+     * lines is named by each of them.
+     *
+     * @param stream the stream file's name, such as {@code "invoke.stream.jsonl"}
+     * @param streamSeq the message's line number in that file, starting at 1
+     */
+    public void sourceRef(String stream, long streamSeq) {
+        Map<String, Object> ref = new LinkedHashMap<>();
+        ref.put("stream", stream);
+        ref.put("seq", streamSeq);
+        this.sourceRef = ref;
+    }
+
+    /** Stops naming a source message on the lines written next. */
+    public void clearSourceRef() {
+        this.sourceRef = null;
     }
 
     /**
@@ -291,35 +296,6 @@ public class TraceWriter implements Closeable {
     }
 
     /**
-     * Writes a {@code raw} line holding one vendor message exactly as it arrived, if the raw mode
-     * is {@link TraceRawMode#FULL} and {@code rawJson} is not {@code null}; otherwise does
-     * nothing. Raw lines keep fields that the other lines leave out. The message is written under
-     * {@code raw}: as JSON when it parses, and otherwise as the original string, with a
-     * {@code rawParseError} field giving the parse error. It is never shortened or redacted.
-     *
-     * @param rawJson the message's original JSON text, or {@code null} when the vendor SDK did not
-     *        keep it
-     * @throws IOException if the line cannot be written; text that is not valid JSON is not an
-     *         error
-     */
-    public void writeRaw(String rawJson) throws IOException {
-        if (rawMode != TraceRawMode.FULL || rawJson == null) {
-            return;
-        }
-        Map<String, Object> line = baseLine("raw");
-        try {
-            JsonNode node = MAPPER.readTree(rawJson);
-            line.put("raw", node);
-        } catch (IOException ex) {
-            // Wire JSON is expected to be valid; if it ever isn't, keep it verbatim
-            // as a string rather than dropping it.
-            line.put("raw", rawJson);
-            line.put("rawParseError", ex.getMessage());
-        }
-        writeLine(line);
-    }
-
-    /**
      * Writes a {@code step_cost} line with one step's share of the cost. A step's share can be
      * worked out only once the total is known, so the parsers write these lines after the
      * {@code result} line. The line has {@code stepId}; {@code turnId} and {@code toolName} when
@@ -381,6 +357,9 @@ public class TraceWriter implements Closeable {
         line.put("ts", Instant.now().toString());
         line.put("seq", seq.getAndIncrement());
         line.put("type", type);
+        if (sourceRef != null && !"step_cost".equals(type)) {
+            line.put("source", sourceRef);
+        }
         return line;
     }
 

@@ -4,6 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.github.markpollack.journal.raw.RawArtifacts;
+import io.github.markpollack.journal.raw.RawStream;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -61,8 +64,25 @@ public final class AntigravitySessionParser {
      */
     public static AntigravityPhaseCapture parse(Path streamFile, String phaseName, String promptText)
             throws IOException {
+        return parse(streamFile, phaseName, promptText, null);
+    }
+
+    /**
+     * Parses a saved output file, read as UTF-8, and keeps its lines exactly as they are in the
+     * phase's stream file of {@code raw}. See
+     * {@link #parse(BufferedReader, String, String, RawArtifacts)}.
+     *
+     * @param streamFile the file holding the CLI's {@code stream-json} output
+     * @param phaseName the caller's name for this call
+     * @param promptText the prompt that was sent, or {@code null} if not captured
+     * @param raw where to keep the lines as received, or {@code null} to keep none
+     * @return the capture, never {@code null}
+     * @throws IOException if the file cannot be read or a line is not valid JSON
+     */
+    public static AntigravityPhaseCapture parse(Path streamFile, String phaseName, String promptText,
+            RawArtifacts raw) throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(streamFile)) {
-            return parse(reader, phaseName, promptText);
+            return parse(reader, phaseName, promptText, raw);
         }
     }
 
@@ -79,18 +99,43 @@ public final class AntigravitySessionParser {
      */
     public static AntigravityPhaseCapture parse(BufferedReader reader, String phaseName, String promptText)
             throws IOException {
+        return parse(reader, phaseName, promptText, null);
+    }
+
+    /**
+     * Parses the CLI's output from a reader, reading it to the end, and keeps every line exactly
+     * as read in the phase's stream file ({@code <phaseName>.stream.jsonl}) of {@code raw}. Each
+     * line is written before it is parsed, blank and malformed lines included, so a line that
+     * makes the parse fail is still in the stream file. Line terminators are written as a single
+     * line feed. The reader is not closed.
+     *
+     * @param reader the CLI's {@code stream-json} output
+     * @param phaseName the caller's name for this call, such as {@code "plan"}
+     * @param promptText the prompt that was sent, or {@code null} if not captured
+     * @param raw where to keep the lines as received, or {@code null} to keep none
+     * @return the capture, never {@code null}
+     * @throws IOException if reading fails, if the stream file cannot be written, or if a line is
+     *         not valid JSON; the message gives the line number
+     */
+    public static AntigravityPhaseCapture parse(BufferedReader reader, String phaseName, String promptText,
+            RawArtifacts raw) throws IOException {
         ParserState state = new ParserState();
-        String line;
-        int lineNumber = 0;
-        while ((line = reader.readLine()) != null) {
-            lineNumber++;
-            if (line.isBlank()) {
-                continue;
-            }
-            try {
-                state.accept(MAPPER.readTree(line));
-            } catch (JsonProcessingException ex) {
-                throw new IOException("Invalid Antigravity stream-json at line " + lineNumber, ex);
+        try (RawStream stream = raw != null ? raw.openStream(phaseName) : null) {
+            String line;
+            int lineNumber = 0;
+            while ((line = reader.readLine()) != null) {
+                lineNumber++;
+                if (stream != null) {
+                    stream.append(line);
+                }
+                if (line.isBlank()) {
+                    continue;
+                }
+                try {
+                    state.accept(MAPPER.readTree(line));
+                } catch (JsonProcessingException ex) {
+                    throw new IOException("Invalid Antigravity stream-json at line " + lineNumber, ex);
+                }
             }
         }
         return state.capture(phaseName, promptText);

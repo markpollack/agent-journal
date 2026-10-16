@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import io.github.markpollack.journal.trace.TraceRawMode;
+import io.github.markpollack.journal.raw.RawArtifacts;
 import io.github.markpollack.journal.event.ToolKind;
 import io.github.markpollack.claude.agent.sdk.parsing.ParsedMessage;
 import io.github.markpollack.claude.agent.sdk.types.AssistantMessage;
@@ -541,7 +541,7 @@ class SessionLogParserTest {
     }
 
     @Test
-    void rawModeFullPersistsVerbatimWireWithUnmodeledFields(@TempDir Path tempDir) throws IOException {
+    void rawStreamKeepsVerbatimWireAndTraceLinesNameTheirSource(@TempDir Path tempDir) throws IOException {
         // The wire envelope the typed Message drops (sub-agent linkage + permission_denials).
         String assistantWire = "{\"type\":\"assistant\",\"isSidechain\":true,\"parentUuid\":\"u-1\","
                 + "\"parent_tool_use_id\":\"toolu_parent\","
@@ -553,25 +553,42 @@ class SessionLogParserTest {
                 wrapRaw(resultMessage(0.01, 1000, 800, 100, 50), resultWire));
 
         Path traceFile = tempDir.resolve("trace-raw.jsonl");
-        SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile, TraceRawMode.FULL);
+        Path rawDir = tempDir.resolve("raw");
+        try (RawArtifacts raw = RawArtifacts.open(rawDir, "claude-code", "2.1.299")) {
+            SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile, raw);
+        }
 
+        // Level 0: the two wire messages exactly as sent, in order, in their own file.
+        assertThat(Files.readAllLines(rawDir.resolve("test.stream.jsonl"))).containsExactly(assistantWire, resultWire);
+
+        // Level 1: the trace is normalized only (no raw lines) and each line names the message it came from.
         List<String> lines = Files.readAllLines(traceFile);
-        assertThat(lines.get(0)).contains("\"rawMode\":\"FULL\"");
-
-        // Both raw lines present; the dropped envelope + permission_denials are recoverable.
-        long rawLines = lines.stream().filter(l -> l.contains("\"type\":\"raw\"")).count();
-        assertThat(rawLines).isEqualTo(2);
-        assertThat(lines).anySatisfy(l -> assertThat(l).contains("\"isSidechain\":true")
-                .contains("\"parent_tool_use_id\":\"toolu_parent\""));
-        assertThat(lines).anySatisfy(l -> assertThat(l).contains("\"permission_denials\""));
-
-        // The modeled lines (text, result) are still written alongside the raw lines.
-        assertThat(lines).anySatisfy(l -> assertThat(l).contains("\"type\":\"text\"").contains("\"content\":\"Hello\""));
-        assertThat(lines).anySatisfy(l -> assertThat(l).contains("\"type\":\"result\""));
+        assertThat(lines.get(0)).doesNotContain("rawMode");
+        assertThat(lines).noneMatch(l -> l.contains("\"type\":\"raw\""));
+        assertThat(lines).anySatisfy(l -> assertThat(l).contains("\"type\":\"text\"").contains("\"content\":\"Hello\"")
+                .contains("\"source\":{\"stream\":\"test.stream.jsonl\",\"seq\":1}"));
+        assertThat(lines).anySatisfy(l -> assertThat(l).contains("\"type\":\"result\"")
+                .contains("\"source\":{\"stream\":\"test.stream.jsonl\",\"seq\":2}"));
     }
 
     @Test
-    void defaultParseEmitsNoRawLines(@TempDir Path tempDir) throws IOException {
+    void messagesWithoutTheirOriginalTextAreCountedAsUnavailable(@TempDir Path tempDir) throws IOException {
+        List<ParsedMessage> messages = List.of(
+                wrap(new AssistantMessage(List.of(new TextBlock("Hello")))),
+                wrapRaw(resultMessage(0.01, 1000, 800, 100, 50), "{\"type\":\"result\"}"));
+
+        Path rawDir = tempDir.resolve("raw");
+        try (RawArtifacts raw = RawArtifacts.open(rawDir, "claude-code", null)) {
+            SessionLogParser.parse(messages.iterator(), "test", "prompt", null, raw);
+        }
+
+        assertThat(Files.readAllLines(rawDir.resolve("test.stream.jsonl"))).containsExactly("{\"type\":\"result\"}");
+        assertThat(Files.readString(rawDir.resolve("manifest.json")))
+                .contains("\"message-without-original-text\" : 1");
+    }
+
+    @Test
+    void defaultParseWritesNoRawFilesAndNoSourceReferences(@TempDir Path tempDir) throws IOException {
         List<ParsedMessage> messages = List.of(
                 wrapRaw(new AssistantMessage(List.of(new TextBlock("Hello"))), "{\"type\":\"assistant\"}"),
                 wrap(resultMessage(0.01, 1000, 800, 100, 50)));
@@ -580,8 +597,8 @@ class SessionLogParserTest {
         SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile);
 
         List<String> lines = Files.readAllLines(traceFile);
-        assertThat(lines.get(0)).contains("\"rawMode\":\"NONE\"");
-        assertThat(lines).noneMatch(l -> l.contains("\"type\":\"raw\""));
+        assertThat(lines).noneMatch(l -> l.contains("\"type\":\"raw\"") || l.contains("\"source\""));
+        assertThat(Files.exists(tempDir.resolve("raw"))).isFalse();
     }
 
     @Test
