@@ -74,6 +74,26 @@ public final class RawStream implements AutoCloseable {
     }
 
     /**
+     * Writes every remaining line of a reader to this stream, in order, and returns when the
+     * reader ends. Use it to keep a CLI's live output while the process runs: read the process's
+     * standard output with it (on its own thread if something else must run meanwhile). The reader
+     * is not closed. Line terminators are written as a single line feed.
+     *
+     * @param reader the vendor's live output
+     * @return the number of lines written
+     * @throws IOException if reading or writing fails; the lines before the failure are kept
+     */
+    public long copyFrom(java.io.BufferedReader reader) throws IOException {
+        long n = 0;
+        String line;
+        while ((line = reader.readLine()) != null) {
+            append(line);
+            n++;
+        }
+        return n;
+    }
+
+    /**
      * Counts a message that the adapter received but could not keep verbatim, by message type.
      * The count appears in the manifest as {@code unavailable}.
      *
