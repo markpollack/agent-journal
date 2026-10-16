@@ -22,9 +22,9 @@ class JunieSessionFilesTest {
         try (RawArtifacts artifacts = RawArtifacts.open(raw, "junie", "26.10.12")) {
             assertThat(JunieSessionFiles.archive(artifacts, session)).isTrue();
         }
-        assertThat(Files.readString(raw.resolve("session/session-261014-111111-abcd/events.jsonl")))
-                .isEqualTo("{\"kind\":\"TaskStartedEvent\"}\n");
-        assertThat(Files.exists(raw.resolve("session/session-261014-111111-abcd/task-1/x.json"))).isTrue();
+        Path zip = raw.resolve("session/session-261014-111111-abcd.zip");
+        assertThat(zipText(zip, "session-261014-111111-abcd/events.jsonl")).isEqualTo("{\"kind\":\"TaskStartedEvent\"}\n");
+        assertThat(zipText(zip, "session-261014-111111-abcd/task-1/x.json")).isEqualTo("{}");
     }
 
     @Test
@@ -33,7 +33,15 @@ class JunieSessionFilesTest {
         try (RawArtifacts artifacts = RawArtifacts.open(raw, "junie", null)) {
             assertThat(JunieSessionFiles.archive(artifacts, dir.resolve("session-none"))).isFalse();
         }
-        assertThat(Files.readString(raw.resolve("manifest.json"))).contains("source directory not found");
+        assertThat(Files.readString(raw.resolve("manifest.json"))).contains("not found");
+    }
+
+    private static String zipText(Path zip, String entry) throws Exception {
+        try (java.util.zip.ZipFile z = new java.util.zip.ZipFile(zip.toFile())) {
+            var e = z.getEntry(entry);
+            assertThat(e).as("entry " + entry).isNotNull();
+            return new String(z.getInputStream(e).readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+        }
     }
 
 }

@@ -26,10 +26,19 @@ class CodexSessionFilesTest {
         try (RawArtifacts artifacts = RawArtifacts.open(raw, "codex", "0.147.0")) {
             assertThat(CodexSessionFiles.archive(artifacts, rollouts)).isFalse();
         }
-        assertThat(Files.readString(raw.resolve("session/" + root.getFileName()))).isEqualTo("{\"type\":\"session_meta\"}\n");
-        assertThat(Files.readString(raw.resolve("session/" + child.getFileName()))).contains("child");
+        Path zip = raw.resolve("session/codex-rollouts.zip");
+        assertThat(zipText(zip, root.getFileName().toString())).isEqualTo("{\"type\":\"session_meta\"}\n");
+        assertThat(zipText(zip, child.getFileName().toString())).contains("child");
         String manifest = Files.readString(raw.resolve("manifest.json"));
         assertThat(manifest).contains("\"parentThreadId\" : \"aaa\"").contains("thread ccc is not known");
+    }
+
+    private static String zipText(Path zip, String entry) throws Exception {
+        try (java.util.zip.ZipFile z = new java.util.zip.ZipFile(zip.toFile())) {
+            var e = z.getEntry(entry);
+            assertThat(e).as("entry " + entry).isNotNull();
+            return new String(z.getInputStream(e).readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+        }
     }
 
 }

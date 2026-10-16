@@ -26,10 +26,13 @@ class AntigravitySessionFilesTest {
         try (RawArtifacts artifacts = RawArtifacts.open(raw, "antigravity", "1.2.6")) {
             assertThat(AntigravitySessionFiles.archive(artifacts, id, data)).isTrue();
         }
-        assertThat(Files.readAllBytes(raw.resolve("session/" + id + ".db"))).containsExactly('S', 'Q', 'L', 0, 1, 2);
-        assertThat(Files.readAllBytes(raw.resolve("session/" + id + ".db-wal"))).containsExactly(9, 8, 7);
-        assertThat(Files.readString(raw.resolve("session/brain-" + id + "/task.md"))).isEqualTo("notes");
-        assertThat(Files.readString(raw.resolve("session/" + id + ".pbtxt"))).isEqualTo("a: 1");
+        Path zip = raw.resolve("session/" + id + ".zip");
+        try (java.util.zip.ZipFile z = new java.util.zip.ZipFile(zip.toFile())) {
+            assertThat(z.getInputStream(z.getEntry("conversations/" + id + ".db")).readAllBytes()).containsExactly('S', 'Q', 'L', 0, 1, 2);
+            assertThat(z.getInputStream(z.getEntry("conversations/" + id + ".db-wal")).readAllBytes()).containsExactly(9, 8, 7);
+        }
+        assertThat(zipText(zip, "brain/" + id + "/task.md")).isEqualTo("notes");
+        assertThat(zipText(zip, "annotations/" + id + ".pbtxt")).isEqualTo("a: 1");
     }
 
     @Test
@@ -40,6 +43,14 @@ class AntigravitySessionFilesTest {
             assertThat(AntigravitySessionFiles.archive(artifacts, null, dir.resolve("data"))).isFalse();
         }
         assertThat(Files.readString(raw.resolve("manifest.json"))).contains("no database at").contains("no usable conversation id");
+    }
+
+    private static String zipText(Path zip, String entry) throws Exception {
+        try (java.util.zip.ZipFile z = new java.util.zip.ZipFile(zip.toFile())) {
+            var e = z.getEntry(entry);
+            assertThat(e).as("entry " + entry).isNotNull();
+            return new String(z.getInputStream(e).readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+        }
     }
 
 }

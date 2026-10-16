@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -11,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
@@ -20,6 +22,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * The level-0 files of one run: what the vendor's agent sent and wrote, kept exactly as it was,
@@ -29,8 +33,8 @@ import java.util.regex.Pattern;
  * <ul>
  * <li>a <em>stream file</em> per phase ({@code <phase>.stream.jsonl}): the vendor's live
  * messages, one per line, byte for byte as received, written through {@link #openStream};</li>
- * <li>a <em>copy of the vendor's own session file</em> ({@code session/<name>}), taken with
- * {@link #copySessionFile} before the vendor's retention can remove it.</li>
+ * <li>an <em>archive of the vendor's own session files</em> ({@code session/<name>.zip}), taken with
+ * {@link #zipSessionFiles} before the vendor's retention can remove them.</li>
  * </ul>
  *
  * <p>A {@code manifest.json} in the same directory lists every artifact with its relative path,
@@ -54,7 +58,7 @@ public final class RawArtifacts implements AutoCloseable {
     /** The suffix of a stream file; the phase name comes before it. */
     public static final String STREAM_SUFFIX = ".stream.jsonl";
 
-    /** The subdirectory, under the raw directory, that holds session-file copies. */
+    /** The subdirectory, under the raw directory, that holds session archives. */
     public static final String SESSION_DIR = "session";
 
     /** The manifest's own schema version. */
@@ -146,131 +150,180 @@ public final class RawArtifacts implements AutoCloseable {
     }
 
     /**
-     * Copies one vendor session file into {@code session/}, byte for byte, and records its
-     * SHA-256, size, original path and modification time. A failure to copy is recorded in the
-     * manifest with its reason and does not throw: a run that produced results is not lost
-     * because a session file could not be archived.
+     * One thing to put in a session archive: a file, or a directory with everything under it.
      *
-     * @param source the vendor's file
-     * @param storedName the file name to store it under, unique within this run
-     * @param role what the file is, such as {@code "transcript"}, {@code "subagent-transcript"} or
-     *        {@code "rollout"}, or {@code null}
-     * @param vendorRefs vendor identifiers that tie the file to the run, such as
-     *        {@code sessionId} or {@code threadId}, or {@code null}
-     * @return {@code true} if the copy succeeded
+     * @param path the file or directory on disk
+     * @param entryName the name it gets in the archive; a directory's files are stored under it,
+     *        keeping their relative layout, so naming the sources as the vendor lays them out makes
+     *        the archive mirror the vendor's own directory
+     * @param refs vendor identifiers that tie this source to the run, such as a thread id, or
+     *        {@code null}
      */
-    public synchronized boolean copySessionFile(Path source, String storedName, String role,
-            Map<String, String> vendorRefs) {
-        requireOpen();
-        requireName(storedName);
-        boolean ok = copyOne(source, SESSION_DIR + "/" + storedName, role, vendorRefs);
-        writeManifestQuietly();
-        return ok;
+    public record ZipSource(Path path, String entryName, Map<String, String> refs) {
+
+        /** A source with no vendor identifiers. */
+        public ZipSource(Path path, String entryName) {
+            this(path, entryName, null);
+        }
     }
 
     /**
-     * Copies a vendor's session directory, every regular file in it at any depth, into
-     * {@code session/<storedDir>/}, keeping the relative layout, byte for byte. Each file gets its
-     * own manifest entry with SHA-256, size and modification time. Symbolic links are not followed:
-     * each is recorded as not captured. A file that cannot be copied is recorded as failed and the
-     * others are still copied; nothing is thrown.
+     * Archives a vendor's own session files into one zip, {@code session/<zipName>}: the third
+     * level-0 artifact, kept separate from the trace and from the stream files. File contents are
+     * stored exactly (compressed, byte for byte on extraction). The manifest records the zip's size
+     * and SHA-256 and lists every entry with its uncompressed size, SHA-256 and modification time,
+     * so the contents can be checked without unpacking. Symbolic links are not followed, and
+     * anything that cannot be read or does not exist is listed under {@code skipped} with the
+     * reason; the rest is still archived. Nothing is thrown: a run that produced results is not
+     * lost because its session files could not be archived.
      *
-     * <p>Some vendors keep material beside the main session file that the file refers to: Claude
-     * Code stores sub-agent transcripts and large tool results as separate files in a directory
-     * named by the session id.
+     * <p>Take the archive when the run ends, before the vendor's retention removes the files, and
+     * when the vendor is no longer writing them (a file that grows while it is read is archived as
+     * far as it had grown).
      *
-     * @param sourceDir the vendor's directory
-     * @param storedDir the directory name to store it under, unique within this run
-     * @param role what the files are, or {@code null}
-     * @param vendorRefs vendor identifiers that tie the files to the run, or {@code null}
-     * @return {@code true} if the directory existed and every file in it was copied
+     * @param zipName the file name, ending in {@code .zip}, unique within this run
+     * @param role what the archive holds, such as {@code "claude-session"}, or {@code null}
+     * @param vendorRefs vendor identifiers for the whole archive, such as {@code sessionId}, or
+     *        {@code null}
+     * @param sources the files and directories to archive
+     * @return {@code true} if every source was archived in full
      */
-    public synchronized boolean copySessionTree(Path sourceDir, String storedDir, String role,
-            Map<String, String> vendorRefs) {
+    public synchronized boolean zipSessionFiles(String zipName, String role, Map<String, String> vendorRefs,
+            List<ZipSource> sources) {
         requireOpen();
-        requireName(storedDir);
-        if (!Files.isDirectory(sourceDir, LinkOption.NOFOLLOW_LINKS)) {
-            Map<String, Object> entry = newEntry("session-file", SESSION_DIR + "/" + storedDir);
-            entry.put("sourcePath", sourceDir.toAbsolutePath().toString());
-            if (role != null) {
-                entry.put("role", role);
-            }
-            fail(entry, "source directory not found");
-            return false;
+        requireName(zipName);
+        if (!zipName.endsWith(".zip")) {
+            throw new IllegalArgumentException("not a zip file name: " + zipName);
         }
-        boolean[] all = {true};
-        try {
-            Files.walkFileTree(sourceDir, new SimpleFileVisitor<>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                    String relative = SESSION_DIR + "/" + storedDir + "/"
-                            + sourceDir.relativize(file).toString().replace('\\', '/');
-                    if (attrs.isSymbolicLink() || !attrs.isRegularFile()) {
-                        Map<String, Object> entry = newEntry("session-file", relative);
-                        entry.put("sourcePath", file.toAbsolutePath().toString());
-                        entry.put("status", STATUS_FAILED);
-                        entry.put("reason", attrs.isSymbolicLink() ? "symbolic link not followed" : "not a regular file");
-                        entry.put("finishedAt", Instant.now().toString());
-                        all[0] = false;
-                    }
-                    else if (!copyOne(file, relative, role, vendorRefs)) {
-                        all[0] = false;
-                    }
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult visitFileFailed(Path file, IOException ex) {
-                    Map<String, Object> entry = newEntry("session-file",
-                            SESSION_DIR + "/" + storedDir + "/" + sourceDir.relativize(file).toString().replace('\\', '/'));
-                    entry.put("sourcePath", file.toAbsolutePath().toString());
-                    entry.put("status", STATUS_FAILED);
-                    entry.put("reason", ex.getClass().getSimpleName() + ": " + ex.getMessage());
-                    entry.put("finishedAt", Instant.now().toString());
-                    all[0] = false;
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        }
-        catch (IOException | RuntimeException ex) {
-            Map<String, Object> entry = newEntry("session-file", SESSION_DIR + "/" + storedDir);
-            fail(entry, ex.getClass().getSimpleName() + ": " + ex.getMessage());
-            all[0] = false;
-        }
-        writeManifestQuietly();
-        return all[0];
-    }
-
-    /** Copies one file to {@code relative} under the raw directory and records the entry; no manifest write. */
-    private boolean copyOne(Path source, String relative, String role, Map<String, String> vendorRefs) {
-        Map<String, Object> entry = newEntry("session-file", relative);
+        String relative = SESSION_DIR + "/" + zipName;
+        Map<String, Object> entry = newEntry("session-archive", relative);
         if (role != null) {
             entry.put("role", role);
         }
         if (vendorRefs != null && !vendorRefs.isEmpty()) {
             entry.put("vendorRefs", new LinkedHashMap<>(vendorRefs));
         }
-        entry.put("sourcePath", source.toAbsolutePath().toString());
+        List<Map<String, Object>> listed = new ArrayList<>();
+        List<Map<String, Object>> skipped = new ArrayList<>();
+        entry.put("entries", listed);
+        entry.put("skipped", skipped);
+        Path target = rawDir.resolve(relative);
         try {
-            if (!Files.isRegularFile(source)) {
-                return failEntry(entry, "source file not found");
-            }
-            Path target = rawDir.resolve(relative);
             if (Files.exists(target)) {
-                return failEntry(entry, "a file is already stored under this name");
+                failEntry(entry, "a file is already stored under this name");
+                writeManifestQuietly();
+                return false;
             }
             Files.createDirectories(target.getParent());
-            entry.put("sourceModified", Files.getLastModifiedTime(source).toInstant().toString());
-            Files.copy(source, target);
+            try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(target))) {
+                for (ZipSource source : sources) {
+                    addSource(zip, source, listed, skipped);
+                }
+            }
             entry.put("bytes", Files.size(target));
             entry.put("sha256", sha256(target));
-            entry.put("status", STATUS_COMPLETE);
-            entry.put("finishedAt", Instant.now().toString());
-            return true;
+            if (listed.isEmpty()) {
+                failEntry(entry, "nothing to archive");
+            }
+            else {
+                entry.put("status", STATUS_COMPLETE);
+                entry.put("finishedAt", Instant.now().toString());
+            }
         }
         catch (IOException | RuntimeException ex) {
-            return failEntry(entry, ex.getClass().getSimpleName() + ": " + ex.getMessage());
+            failEntry(entry, ex.getClass().getSimpleName() + ": " + ex.getMessage());
         }
+        writeManifestQuietly();
+        return STATUS_COMPLETE.equals(entry.get("status")) && skipped.isEmpty();
+    }
+
+    private void addSource(ZipOutputStream zip, ZipSource source, List<Map<String, Object>> listed,
+            List<Map<String, Object>> skipped) throws IOException {
+        Path path = source.path();
+        if (Files.isSymbolicLink(path)) {
+            skip(skipped, source.entryName(), path, "symbolic link not followed");
+        }
+        else if (Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS)) {
+            addFile(zip, path, source.entryName(), source.refs(), listed, skipped);
+        }
+        else if (Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS)) {
+            Files.walkFileTree(path, new SimpleFileVisitor<>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    String name = source.entryName() + "/" + path.relativize(file).toString().replace('\\', '/');
+                    if (attrs.isSymbolicLink()) {
+                        skip(skipped, name, file, "symbolic link not followed");
+                    }
+                    else if (!attrs.isRegularFile()) {
+                        skip(skipped, name, file, "not a regular file");
+                    }
+                    else {
+                        addFile(zip, file, name, source.refs(), listed, skipped);
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFileFailed(Path file, IOException ex) {
+                    skip(skipped, source.entryName() + "/" + path.relativize(file).toString().replace('\\', '/'), file,
+                            ex.getClass().getSimpleName() + ": " + ex.getMessage());
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        }
+        else {
+            skip(skipped, source.entryName(), path, "not found");
+        }
+    }
+
+    private void addFile(ZipOutputStream zip, Path file, String entryName, Map<String, String> refs,
+            List<Map<String, Object>> listed, List<Map<String, Object>> skipped) throws IOException {
+        ZipEntry zipEntry = new ZipEntry(entryName);
+        FileTime modified;
+        try {
+            modified = Files.getLastModifiedTime(file);
+        }
+        catch (IOException ex) {
+            skip(skipped, entryName, file, ex.getClass().getSimpleName() + ": " + ex.getMessage());
+            return;
+        }
+        zipEntry.setLastModifiedTime(modified);
+        MessageDigest digest = sha256Digest();
+        long bytes = 0;
+        // open before writing the entry header, so an unreadable file leaves no half entry
+        try (InputStream in = Files.newInputStream(file)) {
+            zip.putNextEntry(zipEntry);
+            byte[] buffer = new byte[65536];
+            int n;
+            while ((n = in.read(buffer)) > 0) {
+                zip.write(buffer, 0, n);
+                digest.update(buffer, 0, n);
+                bytes += n;
+            }
+            zip.closeEntry();
+        }
+        catch (java.nio.file.NoSuchFileException | java.nio.file.AccessDeniedException ex) {
+            skip(skipped, entryName, file, ex.getClass().getSimpleName() + ": " + ex.getMessage());
+            return;
+        }
+        Map<String, Object> item = new LinkedHashMap<>();
+        item.put("name", entryName);
+        item.put("bytes", bytes);
+        item.put("sha256", hex(digest));
+        item.put("modified", modified.toInstant().toString());
+        item.put("sourcePath", file.toAbsolutePath().toString());
+        if (refs != null && !refs.isEmpty()) {
+            item.put("refs", new LinkedHashMap<>(refs));
+        }
+        listed.add(item);
+    }
+
+    private static void skip(List<Map<String, Object>> skipped, String name, Path path, String reason) {
+        Map<String, Object> item = new LinkedHashMap<>();
+        item.put("name", name);
+        item.put("sourcePath", path.toAbsolutePath().toString());
+        item.put("reason", reason);
+        skipped.add(item);
     }
 
     /**
@@ -282,7 +335,7 @@ public final class RawArtifacts implements AutoCloseable {
      */
     public synchronized void recordSessionFileNotCaptured(String role, String reason) {
         requireOpen();
-        Map<String, Object> entry = newEntry("session-file", null);
+        Map<String, Object> entry = newEntry("session-archive", null);
         entry.put("role", role);
         fail(entry, reason);
     }

@@ -11,19 +11,19 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 /**
- * Copies Claude Code's own session files for a run into the run's raw directory, as the third
+ * Archives Claude Code's own session files for a run into the run's raw directory, as the third
  * level-0 artifact (see {@link RawArtifacts}).
  *
  * <p>Claude Code keeps a session under {@code <projects root>/<encoded working directory>/}: the
  * transcript {@code <sessionId>.jsonl}, and a directory named by the session id that holds the
  * sub-agents' transcripts ({@code subagents/}), large tool results kept out of line
  * ({@code tool-results/}) and other per-session files. The transcript alone is not the whole
- * session, so both are copied, keeping the layout: {@code session/<sessionId>.jsonl} and
- * {@code session/<sessionId>/...}. Take the copy when the run ends: Claude Code removes sessions
- * after its retention period.
+ * session, so both go into one archive, {@code session/<sessionId>.zip}, whose entries mirror that
+ * layout ({@code <sessionId>.jsonl}, {@code <sessionId>/subagents/...}). Take the archive when the
+ * run ends: Claude Code removes sessions after its retention period.
  *
  * <p>The session id is the file name, so finding the transcript is a lookup. If no file, or more
- * than one, matches, nothing is copied and the manifest says why: a wrong file copied confidently
+ * than one, matches, nothing is archived and the manifest says why: a wrong file archived confidently
  * is worse than a missing one.
  */
 public final class ClaudeSessionFiles {
@@ -41,13 +41,13 @@ public final class ClaudeSessionFiles {
     }
 
     /**
-     * Copies the transcript and the session directory of one session.
+     * Archives the transcript and the session directory of one session.
      *
      * @param raw the run's raw artifacts
      * @param sessionId the Claude Code session id, or {@code null} if the run reported none
      * @param projectsRoot the directory that holds Claude Code's per-project directories, such as
      *        {@link #defaultProjectsRoot()}
-     * @return {@code true} if the transcript was found and everything was copied; otherwise the
+     * @return {@code true} if the transcript was found and everything was archived; otherwise the
      *         manifest records what was not
      */
     public static boolean archive(RawArtifacts raw, String sessionId, Path projectsRoot) {
@@ -82,12 +82,13 @@ public final class ClaudeSessionFiles {
         }
         Path transcript = found.get(0);
         Map<String, String> refs = Map.of("sessionId", sessionId);
-        boolean ok = raw.copySessionFile(transcript, sessionId + ".jsonl", "transcript", refs);
+        List<RawArtifacts.ZipSource> sources = new ArrayList<>();
+        sources.add(new RawArtifacts.ZipSource(transcript, sessionId + ".jsonl"));
         Path sessionDir = transcript.resolveSibling(sessionId);
         if (Files.isDirectory(sessionDir)) {
-            ok &= raw.copySessionTree(sessionDir, sessionId, "session-directory", refs);
+            sources.add(new RawArtifacts.ZipSource(sessionDir, sessionId));
         }
-        return ok;
+        return raw.zipSessionFiles(sessionId + ".zip", "claude-session", refs, sources);
     }
 
 }

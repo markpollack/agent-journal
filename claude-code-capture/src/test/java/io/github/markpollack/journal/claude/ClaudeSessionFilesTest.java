@@ -23,7 +23,7 @@ class ClaudeSessionFilesTest {
     }
 
     @Test
-    void copiesTheTranscriptAndTheSessionDirectoryKeepingTheLayout(@TempDir Path dir) throws Exception {
+    void archivesTheTranscriptAndTheSessionDirectoryKeepingTheLayout(@TempDir Path dir) throws Exception {
         Path root = dir.resolve("projects");
         session(root, "-home-me-proj", "abc-123");
         session(root, "-home-me-other", "zzz-999");
@@ -31,10 +31,11 @@ class ClaudeSessionFilesTest {
         try (RawArtifacts artifacts = RawArtifacts.open(raw, "claude-code", "2.1.299")) {
             assertThat(ClaudeSessionFiles.archive(artifacts, "abc-123", root)).isTrue();
         }
-        assertThat(Files.readString(raw.resolve("session/abc-123.jsonl"))).isEqualTo("{\"type\":\"user\"}\n{\"type\":\"assistant\"}\n");
-        assertThat(Files.readString(raw.resolve("session/abc-123/subagents/agent-1.jsonl"))).isEqualTo("{\"sub\":1}\n");
-        assertThat(Files.readString(raw.resolve("session/abc-123/tool-results/toolu_9.txt"))).isEqualTo("big result");
-        assertThat(Files.exists(raw.resolve("session/zzz-999.jsonl"))).isFalse();
+        Path zip = raw.resolve("session/abc-123.zip");
+        assertThat(zipText(zip, "abc-123.jsonl")).isEqualTo("{\"type\":\"user\"}\n{\"type\":\"assistant\"}\n");
+        assertThat(zipText(zip, "abc-123/subagents/agent-1.jsonl")).isEqualTo("{\"sub\":1}\n");
+        assertThat(zipText(zip, "abc-123/tool-results/toolu_9.txt")).isEqualTo("big result");
+        assertThat(Files.exists(raw.resolve("session/zzz-999.zip"))).isFalse();
     }
 
     @Test
@@ -53,6 +54,14 @@ class ClaudeSessionFilesTest {
         assertThat(manifest).contains("ambiguous: 2 transcripts").contains("no transcript named gone.jsonl")
                 .contains("reported no session id").contains("not usable as a file name");
         assertThat(Files.exists(raw.resolve("session"))).isFalse();
+    }
+
+    private static String zipText(Path zip, String entry) throws Exception {
+        try (java.util.zip.ZipFile z = new java.util.zip.ZipFile(zip.toFile())) {
+            var e = z.getEntry(entry);
+            assertThat(e).as("entry " + entry).isNotNull();
+            return new String(z.getInputStream(e).readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+        }
     }
 
 }
