@@ -357,7 +357,8 @@ public class SessionLogParser {
         // ResultMessage fields (populated from the last ResultMessage seen)
         int inputTokens = 0;
         int outputTokens = 0;
-        int thinkingTokens = 0;
+        // -1: no result line reported thinking tokens (not zero: nothing was reported)
+        int thinkingTokens = -1;
         int cacheCreationInputTokens = 0;
         int cacheReadInputTokens = 0;
         long durationMs = 0;
@@ -459,7 +460,12 @@ public class SessionLogParser {
                 if (usage != null) {
                     inputTokens += getInt(usage, "input_tokens");
                     outputTokens += getInt(usage, "output_tokens");
-                    thinkingTokens += getInt(usage, "thinking_tokens");
+                    // the CLI reports a result's thinking tokens under usage.output_tokens_details; they are
+                    // part of output_tokens and, like the other usage figures, cover that result only
+                    if (usage.get("output_tokens_details") instanceof Map<?, ?> details
+                            && details.get("thinking_tokens") instanceof Number reported) {
+                        thinkingTokens = Math.max(thinkingTokens, 0) + reported.intValue();
+                    }
                     cacheCreationInputTokens += getInt(usage, "cache_creation_input_tokens");
                     cacheReadInputTokens += getInt(usage, "cache_read_input_tokens");
                 }
@@ -630,20 +636,17 @@ public class SessionLogParser {
             }
         }
 
-        // Thinking tokens, best source first:
-        //   1. the result's own usage.thinking_tokens, when the CLI reports one;
-        //   2. Σ per-turn usage.output_tokens_details.thinking_tokens — EXACT, and on the wire all
-        //      along. Before 1.9.0 this was skipped straight to the estimate below;
-        //   3. only then the ~4 chars/token estimate over captured thinking blocks.
-        if (thinkingTokens == 0 && !main.turns.isEmpty()) {
+        // Thinking tokens: what the result lines reported (usage.output_tokens_details.thinking_tokens,
+        // summed over the stream's results like the other usage figures; exact, and equal to the main
+        // thread's transcript on every real stream checked). Without a result line (a cut-off stream)
+        // the per-turn counts are all there is, and they are lower bounds. If neither reported
+        // anything the figure stays -1, "not reported"; it is never estimated from the length of the
+        // thinking text.
+        if (thinkingTokens < 0 && !main.turns.isEmpty()) {
             long fromTurns = main.turns.stream().mapToLong(TurnUsage::thinkingTokens).sum();
             if (fromTurns > 0) {
                 thinkingTokens = (int) fromTurns;
             }
-        }
-        if (thinkingTokens == 0 && !main.thinkingBlocks.isEmpty()) {
-            int totalChars = main.thinkingBlocks.stream().mapToInt(String::length).sum();
-            thinkingTokens = totalChars / 4;
         }
 
         // J3: resolve the stop reason even when no terminal ResultMessage arrived (an aborted or

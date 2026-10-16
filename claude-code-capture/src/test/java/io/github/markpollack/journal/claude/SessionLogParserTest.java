@@ -71,14 +71,15 @@ class SessionLogParserTest {
     }
 
     @Test
-    void extractsThinkingTokensFromUsageMap() {
+    void extractsThinkingTokensFromTheResultsOutputTokenDetails() {
         ResultMessage result = ResultMessage.builder()
                 .durationMs(3000)
                 .durationApiMs(2500)
                 .numTurns(2)
                 .sessionId("sess-123")
                 .totalCostUsd(0.03)
-                .usage(Map.of("input_tokens", 500, "output_tokens", 200, "thinking_tokens", 150))
+                .usage(Map.of("input_tokens", 500, "output_tokens", 200,
+                        "output_tokens_details", Map.of("thinking_tokens", 150)))
                 .build();
 
         List<ParsedMessage> messages = List.of(wrap(result));
@@ -86,6 +87,7 @@ class SessionLogParserTest {
         PhaseCapture capture = SessionLogParser.parse(messages.iterator(), "explore", "test prompt");
 
         assertThat(capture.thinkingTokens()).isEqualTo(150);
+        assertThat(capture.thinkingTokensReported()).isTrue();
         assertThat(capture.totalTokens()).isEqualTo(700); // 500 + 200; the 150 thinking tokens are part of the 200
     }
 
@@ -226,7 +228,8 @@ class SessionLogParserTest {
 
         assertThat(capture.inputTokens()).isZero();
         assertThat(capture.outputTokens()).isZero();
-        assertThat(capture.thinkingTokens()).isZero();
+        assertThat(capture.thinkingTokens()).isEqualTo(-1);
+        assertThat(capture.thinkingTokensReported()).isFalse();
     }
 
     @Test
@@ -260,8 +263,9 @@ class SessionLogParserTest {
     }
 
     @Test
-    void estimatesThinkingTokensWhenNotInUsageMap() {
-        // 40 chars of thinking → ~10 tokens at 4 chars/token
+    void thinkingTokensAreNeverEstimatedFromTheThinkingText() {
+        // 40 characters of thinking and a result that reports no thinking tokens: the figure stays "not
+        // reported" (-1); it used to be stored as 40 / 4 = 10 as if the CLI had measured it
         List<ParsedMessage> messages = List.of(
                 wrap(new AssistantMessage(List.of(
                         ThinkingBlock.of("This is a forty character thinking text."),
@@ -272,7 +276,10 @@ class SessionLogParserTest {
 
         PhaseCapture capture = SessionLogParser.parse(messages.iterator(), "explore", "test prompt");
 
-        assertThat(capture.thinkingTokens()).isEqualTo(10); // 40 chars / 4
+        assertThat(capture.thinkingBlocks()).hasSize(1);
+        assertThat(capture.thinkingTokens()).isEqualTo(-1);
+        assertThat(capture.thinkingTokensReported()).isFalse();
+        assertThat(capture.snapshotUsage().thinkingTokens()).isZero();
     }
 
     @Test

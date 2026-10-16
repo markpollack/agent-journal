@@ -47,7 +47,9 @@ public final class PhaseCaptureSources {
 			metadata.put("sessionId", phase.sessionId());
 			metadata.put("inputTokens", phase.inputTokens());
 			metadata.put("outputTokens", phase.outputTokens());
-			metadata.put("thinkingTokens", phase.thinkingTokens());
+			if (phase.thinkingTokensReported()) {
+				metadata.put("thinkingTokens", phase.thinkingTokens());
+			}
 			metadata.put("totalTokens", phase.totalTokens());
 			metadata.put("costUsd", phase.totalCostUsd());
 			metadata.put("durationMs", phase.durationMs());

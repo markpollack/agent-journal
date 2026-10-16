@@ -41,9 +41,10 @@ import java.util.Map;
  * @param promptText the prompt sent for this phase, or {@code null} if it was not captured
  * @param inputTokens the non-cached input tokens on the final result message
  * @param outputTokens the output tokens on the final result message
- * @param thinkingTokens the extended-thinking tokens, which are part of {@code outputTokens}; the
- *        parser uses the result's own count, else the sum over turns, else an estimate of one
- *        token per four characters of {@code thinkingBlocks}
+ * @param thinkingTokens the extended-thinking tokens, which are part of {@code outputTokens}: the
+ *        sum of what the result lines report under {@code usage.output_tokens_details}, else (a
+ *        stream cut off before any result) the sum over turns; -1 if nothing reported them. Never
+ *        estimated from the length of the thinking text; see {@link #thinkingTokensReported()}
  * @param cacheCreationInputTokens the tokens written to the prompt cache, on the final result
  *        message
  * @param cacheReadInputTokens the tokens read from the prompt cache, on the final result message
@@ -430,7 +431,7 @@ public record PhaseCapture(
      */
     public TokenUsage aggregateUsage() {
         if (turns == null || turns.isEmpty()) {
-            return new TokenUsage(inputTokens, outputTokens, thinkingTokens,
+            return new TokenUsage(inputTokens, outputTokens, Math.max(0, thinkingTokens),
                     cacheCreationInputTokens, cacheReadInputTokens, 0);
         }
         List<TokenUsage> perTurn = new ArrayList<>(turns.size());
@@ -442,7 +443,7 @@ public record PhaseCapture(
         }
         TokenUsage summed = TokenUsage.sum(perTurn);
         // Carry the available run-level thinking (subset of output), recorded but not in the billed sum.
-        return new TokenUsage(summed.inputTokens(), Math.max(summed.outputTokens(), outputTokens), thinkingTokens,
+        return new TokenUsage(summed.inputTokens(), Math.max(summed.outputTokens(), outputTokens), Math.max(0, thinkingTokens),
                 summed.cacheCreationTokens(), summed.cacheReadTokens(), summed.toolUseTokens());
     }
 
@@ -454,8 +455,19 @@ public record PhaseCapture(
      * @return the usage on the final result message
      */
     public TokenUsage snapshotUsage() {
-        return new TokenUsage(inputTokens, outputTokens, thinkingTokens,
+        return new TokenUsage(inputTokens, outputTokens, Math.max(0, thinkingTokens),
                 cacheCreationInputTokens, cacheReadInputTokens, 0);
+    }
+
+    /**
+     * Returns whether the stream reported thinking tokens. When it did not, {@link #thinkingTokens()}
+     * is -1 and the token usage built from this capture shows 0 thinking tokens, which then means
+     * "not reported", not "none".
+     *
+     * @return {@code true} if {@link #thinkingTokens()} is a reported figure
+     */
+    public boolean thinkingTokensReported() {
+        return thinkingTokens >= 0;
     }
 
     /**

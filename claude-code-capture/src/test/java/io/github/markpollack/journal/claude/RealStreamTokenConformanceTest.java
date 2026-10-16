@@ -76,6 +76,29 @@ class RealStreamTokenConformanceTest {
     @ParameterizedTest(name = "{0}")
     @ValueSource(strings = {"single-result-parallel-calls", "foreground-subagent-one-result",
             "background-subagent-two-results-a", "background-subagent-two-results-b"})
+    void thinkingTokensAreWhatTheResultLinesReportAndEqualTheMainTranscript(String fixture) throws Exception {
+        PhaseCapture capture = parse(fixture);
+
+        // oracle: the main thread's transcript, one final figure per distinct assistant message
+        Path main = Path.of(RealStreamTokenConformanceTest.class.getResource(ROOT + fixture + "/oracle/main.jsonl").toURI());
+        Map<String, Long> perMessage = new HashMap<>();
+        for (String line : lines(main)) {
+            JsonNode d = MAPPER.readTree(line);
+            if ("assistant".equals(d.path("type").asText())) {
+                JsonNode m = d.path("message");
+                perMessage.merge(m.path("id").asText(),
+                        m.path("usage").path("output_tokens_details").path("thinking_tokens").asLong(0), Math::max);
+            }
+        }
+        long oracle = perMessage.values().stream().mapToLong(Long::longValue).sum();
+
+        assertThat(capture.thinkingTokensReported()).isTrue();
+        assertThat((long) capture.thinkingTokens()).isEqualTo(oracle).isGreaterThan(0);
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @ValueSource(strings = {"single-result-parallel-calls", "foreground-subagent-one-result",
+            "background-subagent-two-results-a", "background-subagent-two-results-b"})
     @DisplayName("1: the main thread's recorded usage is the transcript's per-call final usage")
     void mainThreadUsageEqualsTranscript(String fixture) throws Exception {
         PhaseCapture capture = parse(fixture);
