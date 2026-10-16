@@ -267,7 +267,7 @@ public class SessionLogParser {
                         m.inputTokens() - base.inputTokens(), m.outputTokens() - base.outputTokens(),
                         m.cacheReadInputTokens() - base.cacheReadInputTokens(),
                         m.cacheCreationInputTokens() - base.cacheCreationInputTokens(),
-                        m.costUsd() - base.costUsd());
+                        m.costUsd() - base.costUsd(), m.reported());
                 // A model whose running total did not move was not used by this query.
                 if (base == null || d.costUsd() > 0 || d.outputTokens() > 0 || d.inputTokens() > 0) {
                     deltaModels.add(d);
@@ -285,7 +285,7 @@ public class SessionLogParser {
                 current.rawResult(), current.toolResults(), current.turns(),
                 current.modelCosts() == null ? null : deltaModels, current.stopReason(), current.maxTurns(),
                 current.subagents(), current.subagentTracksAvailable(), current.reportedSubagentStats(),
-                sessionCost);
+                sessionCost, current.cacheWriteTiers());
     }
 
     /**
@@ -360,6 +360,10 @@ public class SessionLogParser {
         // -1: no result line reported thinking tokens (not zero: nothing was reported)
         int thinkingTokens = -1;
         int cacheCreationInputTokens = 0;
+        // the 5-minute / 1-hour split of the cache writes, summed over the results that report it
+        long cacheWrite5m = 0;
+        long cacheWrite1h = 0;
+        boolean cacheTiersReported = false;
         int cacheReadInputTokens = 0;
         long durationMs = 0;
         long apiDurationMs = 0;
@@ -468,6 +472,13 @@ public class SessionLogParser {
                     }
                     cacheCreationInputTokens += getInt(usage, "cache_creation_input_tokens");
                     cacheReadInputTokens += getInt(usage, "cache_read_input_tokens");
+                    if (usage.get("cache_creation") instanceof Map<?, ?> tiers
+                            && (tiers.get("ephemeral_5m_input_tokens") instanceof Number
+                                    || tiers.get("ephemeral_1h_input_tokens") instanceof Number)) {
+                        cacheTiersReported = true;
+                        cacheWrite5m += tiers.get("ephemeral_5m_input_tokens") instanceof Number n ? n.longValue() : 0L;
+                        cacheWrite1h += tiers.get("ephemeral_1h_input_tokens") instanceof Number n ? n.longValue() : 0L;
+                    }
                 }
                 logger.info("[{}] Complete: {} turns, {} in + {} out tokens (this result {} in + {} out), ${}",
                         phaseName, numTurns, inputTokens, outputTokens,
@@ -680,7 +691,9 @@ public class SessionLogParser {
                 effectiveMaxTurns,
                 toSubagentCaptures(main, subagentTracks),
                 tracksAvailable,
-                reportedSubagentStats
+                reportedSubagentStats,
+                null,
+                cacheTiersReported ? new CacheWriteTiers(cacheWrite5m, cacheWrite1h) : null
         );
     }
 
@@ -1082,7 +1095,8 @@ public class SessionLogParser {
                     m.path("outputTokens").asLong(0),
                     m.path("cacheReadInputTokens").asLong(0),
                     m.path("cacheCreationInputTokens").asLong(0),
-                    m.path("costUSD").asDouble(0.0)));
+                    m.path("costUSD").asDouble(0.0),
+                    MAPPER.convertValue(m, new com.fasterxml.jackson.core.type.TypeReference<java.util.LinkedHashMap<String, Object>>() { })));
         });
         return costs;
     }

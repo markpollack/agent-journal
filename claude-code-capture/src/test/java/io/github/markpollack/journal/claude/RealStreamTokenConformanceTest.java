@@ -76,6 +76,65 @@ class RealStreamTokenConformanceTest {
     @ParameterizedTest(name = "{0}")
     @ValueSource(strings = {"single-result-parallel-calls", "foreground-subagent-one-result",
             "background-subagent-two-results-a", "background-subagent-two-results-b"})
+    void cacheWriteTiersEqualTheMainTranscript(String fixture) throws Exception {
+        PhaseCapture capture = parse(fixture);
+
+        // oracle: the main thread's transcript, one final figure per distinct assistant message
+        Path main = Path.of(RealStreamTokenConformanceTest.class.getResource(ROOT + fixture + "/oracle/main.jsonl").toURI());
+        Map<String, long[]> perMessage = new HashMap<>();
+        for (String line : lines(main)) {
+            JsonNode d = MAPPER.readTree(line);
+            if ("assistant".equals(d.path("type").asText())) {
+                JsonNode m = d.path("message");
+                JsonNode cc = m.path("usage").path("cache_creation");
+                perMessage.merge(m.path("id").asText(), new long[] {cc.path("ephemeral_5m_input_tokens").asLong(0),
+                        cc.path("ephemeral_1h_input_tokens").asLong(0)},
+                        (a, b) -> new long[] {Math.max(a[0], b[0]), Math.max(a[1], b[1])});
+            }
+        }
+        long oracle5m = perMessage.values().stream().mapToLong(v -> v[0]).sum();
+        long oracle1h = perMessage.values().stream().mapToLong(v -> v[1]).sum();
+
+        assertThat(capture.cacheWriteTiers()).isNotNull();
+        assertThat(capture.cacheWriteTiers().fiveMinuteTokens()).isEqualTo(oracle5m);
+        assertThat(capture.cacheWriteTiers().oneHourTokens()).isEqualTo(oracle1h);
+        // and the two tiers add up to the combined figure the capture already holds
+        assertThat(capture.cacheWriteTiers().fiveMinuteTokens() + capture.cacheWriteTiers().oneHourTokens())
+                .isEqualTo(capture.cacheCreationInputTokens());
+    }
+
+    @org.junit.jupiter.api.Test
+    void theRecordedCallNamesTheExactModelAndKeepsEachModelsReportedUsage() throws Exception {
+        PhaseCapture capture = parse("single-result-parallel-calls");
+        io.github.markpollack.journal.storage.InMemoryStorage storage = new io.github.markpollack.journal.storage.InMemoryStorage();
+        io.github.markpollack.journal.Journal.configure(storage);
+        try {
+            io.github.markpollack.journal.Run run = io.github.markpollack.journal.Journal.run("exp").start();
+            new RunRecorder(run).recordPhase(capture);
+
+            var llm = storage.loadEvents("exp", run.id()).stream()
+                    .filter(e -> e instanceof io.github.markpollack.journal.event.LLMCallEvent)
+                    .map(e -> (io.github.markpollack.journal.event.LLMCallEvent) e).findFirst().orElseThrow();
+            assertThat(llm.model()).isEqualTo("claude-haiku-4-5-20251001");
+            @SuppressWarnings("unchecked")
+            java.util.List<java.util.Map<String, Object>> usage =
+                    (java.util.List<java.util.Map<String, Object>>) llm.metadata().get(BaseRunRecorder.META_MODEL_USAGE);
+            assertThat(usage).singleElement().satisfies(entry -> assertThat(entry)
+                    .containsEntry("model", "claude-haiku-4-5-20251001").containsEntry("canonicalModel", "claude-haiku-4-5")
+                    .containsEntry("provider", "firstParty").containsEntry("costBasis", "list")
+                    .containsEntry("contextWindow", 200000).containsEntry("thinkingTokens", 164));
+            @SuppressWarnings("unchecked")
+            java.util.Map<String, Object> tiers = (java.util.Map<String, Object>) llm.metadata().get(BaseRunRecorder.META_CACHE_WRITE_TIERS);
+            assertThat(tiers).containsEntry("fiveMinuteTokens", 0L).containsEntry("oneHourTokens", 9759L);
+        }
+        finally {
+            io.github.markpollack.journal.Journal.reset();
+        }
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @ValueSource(strings = {"single-result-parallel-calls", "foreground-subagent-one-result",
+            "background-subagent-two-results-a", "background-subagent-two-results-b"})
     void thinkingTokensAreWhatTheResultLinesReportAndEqualTheMainTranscript(String fixture) throws Exception {
         PhaseCapture capture = parse(fixture);
 

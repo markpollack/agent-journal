@@ -76,6 +76,8 @@ import java.util.Map;
  * @param reportedSubagentStats the sub-agent counts Claude Code reported on the result message
  *        ({@code subagent_stats}), unchanged, such as {@code spawned}, {@code completed},
  *        {@code failed} and {@code refused}; empty if it reported none
+ * @param cacheWriteTiers how the cache writes split between the 5-minute and 1-hour caches, or {@code null} if no
+ *        result line reported the split; see {@link CacheWriteTiers}
  * @param sessionCost the session's running totals this capture's cost was rebased from, when
  *        {@link SessionLogParser#withSessionBaseline} subtracted the previous capture of the same
  *        session; {@code null} when {@code totalCostUsd}, {@code modelCosts} and
@@ -108,7 +110,8 @@ public record PhaseCapture(
         List<SubagentCapture> subagents,
         boolean subagentTracksAvailable,
         Map<String, Object> reportedSubagentStats,
-        SessionCost sessionCost
+        SessionCost sessionCost,
+        CacheWriteTiers cacheWriteTiers
 ) {
 
     /**
@@ -143,7 +146,7 @@ public record PhaseCapture(
         this(phaseName, promptText, inputTokens, outputTokens, thinkingTokens, cacheCreationInputTokens,
                 cacheReadInputTokens, durationMs, apiDurationMs, totalCostUsd, sessionId, numTurns, isError,
                 textOutput, thinkingBlocks, toolUses, rawResult, toolResults, turns, modelCosts, stopReason,
-                maxTurns, subagents, subagentTracksAvailable, reportedSubagentStats, null);
+                maxTurns, subagents, subagentTracksAvailable, reportedSubagentStats, null, null);
     }
 
     /**

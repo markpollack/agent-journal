@@ -164,12 +164,33 @@ public abstract class BaseRunRecorder {
             metadata.put(META_COST_INCLUDES_SUBAGENTS, true);
         }
 
+        // The cache-write split between the 5-minute and 1-hour caches (priced differently), when the
+        // result lines reported it, and every model's modelUsage entry exactly as reported (running
+        // totals for the session, sub-agents included): canonical name, provider, cost basis, context
+        // window, per-model thinking tokens. Not-reported facts are left out, not written as 0.
+        if (phase.cacheWriteTiers() != null) {
+            Map<String, Object> tiers = new LinkedHashMap<>();
+            tiers.put("fiveMinuteTokens", phase.cacheWriteTiers().fiveMinuteTokens());
+            tiers.put("oneHourTokens", phase.cacheWriteTiers().oneHourTokens());
+            metadata.put(META_CACHE_WRITE_TIERS, tiers);
+        }
+        if (phase.modelCosts() != null && !phase.modelCosts().isEmpty()) {
+            List<Map<String, Object>> modelUsage = new ArrayList<>();
+            for (ModelCost modelCost : phase.modelCosts()) {
+                Map<String, Object> entry = new LinkedHashMap<>();
+                entry.put("model", modelCost.model());
+                entry.putAll(modelCost.reported());
+                modelUsage.add(entry);
+            }
+            metadata.put(META_MODEL_USAGE, modelUsage);
+        }
+
         // Headline token vector = the cost-bearing per-type aggregate (Σ per-turn by type, incl.
         // cache), NOT the final-snapshot scalars (CM). The snapshot under-counts on long runs and
         // dropped cache entirely; aggregateUsage() reconciles to totalCostUsd. Same field, corrected
         // value — additive on §4. (No-turns captures fall back to the snapshot vector, now with cache.)
         currentRun.logEvent(LLMCallEvent.builder()
-                .model(Objects.toString(currentRun.config().values().get("model"), "unknown"))
+                .model(eventModel(phase))
                 .tokenUsage(phase.aggregateUsage())
                 .cost(CostBreakdown.of(phase.totalCostUsd()))
                 .timing(TimingInfo.of(phase.durationMs(), phase.apiDurationMs()))
@@ -484,6 +505,20 @@ public abstract class BaseRunRecorder {
         return id;
     }
 
+    /**
+     * The model of the phase's LLM call: the exact model the result line reports when it reports
+     * exactly one, otherwise the model the caller configured, otherwise {@code "unknown"}. A call
+     * that used several models (a sub-agent on a smaller one) has them all in the
+     * {@link #META_MODEL_USAGE} metadata.
+     */
+    private String eventModel(PhaseCapture phase) {
+        List<ModelCost> reported = phase.modelCosts();
+        if (reported != null && reported.size() == 1 && reported.get(0).model() != null) {
+            return reported.get(0).model();
+        }
+        return Objects.toString(currentRun.config().values().get("model"), "unknown");
+    }
+
     // Not Map.of, which throws NullPointerException for a capture with no phase name; such a
     // capture is recorded without the phase, since attributes must not hold null values.
     private static Map<String, Object> phaseAttributes(String phaseName, String key, Object value) {
@@ -494,4 +529,10 @@ public abstract class BaseRunRecorder {
         attributes.put(key, value);
         return attributes;
     }
+    /** Metadata key on the LLM call event: {@code {fiveMinuteTokens, oneHourTokens}} cache writes, when reported. */
+    public static final String META_CACHE_WRITE_TIERS = "cacheWriteTiers";
+
+    /** Metadata key on the LLM call event: one map per model, as the result line's {@code modelUsage} reports it. */
+    public static final String META_MODEL_USAGE = "modelUsage";
+
 }
