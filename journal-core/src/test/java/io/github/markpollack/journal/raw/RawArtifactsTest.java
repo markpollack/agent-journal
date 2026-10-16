@@ -170,4 +170,45 @@ class RawArtifactsTest {
         assertThat(artifact(manifest(raw), "p.stream.jsonl").get("linesWithEmbeddedLineBreaks").asLong()).isEqualTo(1);
     }
 
+    @Test
+    @DisplayName("a session directory is copied with its layout, file by file, and a symbolic link is recorded rather than followed")
+    void sessionTreeCopy(@TempDir Path dir) throws Exception {
+        Path src = dir.resolve("vendor").resolve("sess-1");
+        Files.createDirectories(src.resolve("subagents"));
+        Files.createDirectories(src.resolve("tool-results"));
+        Files.writeString(src.resolve("subagents/agent-a.jsonl"), "{\"x\":1}\n");
+        Files.writeString(src.resolve("tool-results/toolu_1.txt"), "a very long result\n".repeat(1000));
+        Files.writeString(src.resolve("custom-title.json"), "{\"t\":\"title with space\"}");
+        Path outside = dir.resolve("outside.txt");
+        Files.writeString(outside, "secret");
+        Files.createSymbolicLink(src.resolve("link.txt"), outside);
+
+        Path raw = dir.resolve("raw");
+        try (RawArtifacts artifacts = RawArtifacts.open(raw, "claude-code", "2.1.299")) {
+            assertThat(artifacts.copySessionTree(src, "sess-1", "session-directory", Map.of("sessionId", "sess-1"))).isFalse();
+        }
+
+        assertThat(Files.readString(raw.resolve("session/sess-1/subagents/agent-a.jsonl"))).isEqualTo("{\"x\":1}\n");
+        assertThat(Files.readString(raw.resolve("session/sess-1/tool-results/toolu_1.txt")))
+                .isEqualTo("a very long result\n".repeat(1000));
+        JsonNode m = manifest(raw);
+        assertThat(artifact(m, "session/sess-1/tool-results/toolu_1.txt").get("status").asText()).isEqualTo("complete");
+        assertThat(artifact(m, "session/sess-1/tool-results/toolu_1.txt").get("sha256").asText())
+                .isEqualTo(sha("a very long result\n".repeat(1000).getBytes(StandardCharsets.UTF_8)));
+        JsonNode link = artifact(m, "session/sess-1/link.txt");
+        assertThat(link.get("status").asText()).isEqualTo("failed");
+        assertThat(link.get("reason").asText()).contains("symbolic link");
+        assertThat(Files.exists(raw.resolve("session/sess-1/link.txt"))).isFalse();
+    }
+
+    @Test
+    @DisplayName("a missing session directory is recorded as not captured")
+    void missingSessionTree(@TempDir Path dir) throws Exception {
+        Path raw = dir.resolve("raw");
+        try (RawArtifacts artifacts = RawArtifacts.open(raw, "junie", null)) {
+            assertThat(artifacts.copySessionTree(dir.resolve("nope"), "nope", null, null)).isFalse();
+        }
+        assertThat(artifact(manifest(raw), "session/nope").get("reason").asText()).contains("not found");
+    }
+
 }

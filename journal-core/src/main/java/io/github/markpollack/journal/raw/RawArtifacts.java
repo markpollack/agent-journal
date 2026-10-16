@@ -4,9 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
@@ -159,7 +163,86 @@ public final class RawArtifacts implements AutoCloseable {
             Map<String, String> vendorRefs) {
         requireOpen();
         requireName(storedName);
-        String relative = SESSION_DIR + "/" + storedName;
+        boolean ok = copyOne(source, SESSION_DIR + "/" + storedName, role, vendorRefs);
+        writeManifestQuietly();
+        return ok;
+    }
+
+    /**
+     * Copies a vendor's session directory, every regular file in it at any depth, into
+     * {@code session/<storedDir>/}, keeping the relative layout, byte for byte. Each file gets its
+     * own manifest entry with SHA-256, size and modification time. Symbolic links are not followed:
+     * each is recorded as not captured. A file that cannot be copied is recorded as failed and the
+     * others are still copied; nothing is thrown.
+     *
+     * <p>Some vendors keep material beside the main session file that the file refers to: Claude
+     * Code stores sub-agent transcripts and large tool results as separate files in a directory
+     * named by the session id.
+     *
+     * @param sourceDir the vendor's directory
+     * @param storedDir the directory name to store it under, unique within this run
+     * @param role what the files are, or {@code null}
+     * @param vendorRefs vendor identifiers that tie the files to the run, or {@code null}
+     * @return {@code true} if the directory existed and every file in it was copied
+     */
+    public synchronized boolean copySessionTree(Path sourceDir, String storedDir, String role,
+            Map<String, String> vendorRefs) {
+        requireOpen();
+        requireName(storedDir);
+        if (!Files.isDirectory(sourceDir, LinkOption.NOFOLLOW_LINKS)) {
+            Map<String, Object> entry = newEntry("session-file", SESSION_DIR + "/" + storedDir);
+            entry.put("sourcePath", sourceDir.toAbsolutePath().toString());
+            if (role != null) {
+                entry.put("role", role);
+            }
+            fail(entry, "source directory not found");
+            return false;
+        }
+        boolean[] all = {true};
+        try {
+            Files.walkFileTree(sourceDir, new SimpleFileVisitor<>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                    String relative = SESSION_DIR + "/" + storedDir + "/"
+                            + sourceDir.relativize(file).toString().replace('\\', '/');
+                    if (attrs.isSymbolicLink() || !attrs.isRegularFile()) {
+                        Map<String, Object> entry = newEntry("session-file", relative);
+                        entry.put("sourcePath", file.toAbsolutePath().toString());
+                        entry.put("status", STATUS_FAILED);
+                        entry.put("reason", attrs.isSymbolicLink() ? "symbolic link not followed" : "not a regular file");
+                        entry.put("finishedAt", Instant.now().toString());
+                        all[0] = false;
+                    }
+                    else if (!copyOne(file, relative, role, vendorRefs)) {
+                        all[0] = false;
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFileFailed(Path file, IOException ex) {
+                    Map<String, Object> entry = newEntry("session-file",
+                            SESSION_DIR + "/" + storedDir + "/" + sourceDir.relativize(file).toString().replace('\\', '/'));
+                    entry.put("sourcePath", file.toAbsolutePath().toString());
+                    entry.put("status", STATUS_FAILED);
+                    entry.put("reason", ex.getClass().getSimpleName() + ": " + ex.getMessage());
+                    entry.put("finishedAt", Instant.now().toString());
+                    all[0] = false;
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        }
+        catch (IOException | RuntimeException ex) {
+            Map<String, Object> entry = newEntry("session-file", SESSION_DIR + "/" + storedDir);
+            fail(entry, ex.getClass().getSimpleName() + ": " + ex.getMessage());
+            all[0] = false;
+        }
+        writeManifestQuietly();
+        return all[0];
+    }
+
+    /** Copies one file to {@code relative} under the raw directory and records the entry; no manifest write. */
+    private boolean copyOne(Path source, String relative, String role, Map<String, String> vendorRefs) {
         Map<String, Object> entry = newEntry("session-file", relative);
         if (role != null) {
             entry.put("role", role);
@@ -170,11 +253,11 @@ public final class RawArtifacts implements AutoCloseable {
         entry.put("sourcePath", source.toAbsolutePath().toString());
         try {
             if (!Files.isRegularFile(source)) {
-                return fail(entry, "source file not found");
+                return failEntry(entry, "source file not found");
             }
             Path target = rawDir.resolve(relative);
             if (Files.exists(target)) {
-                return fail(entry, "a file is already stored under this name");
+                return failEntry(entry, "a file is already stored under this name");
             }
             Files.createDirectories(target.getParent());
             entry.put("sourceModified", Files.getLastModifiedTime(source).toInstant().toString());
@@ -183,11 +266,10 @@ public final class RawArtifacts implements AutoCloseable {
             entry.put("sha256", sha256(target));
             entry.put("status", STATUS_COMPLETE);
             entry.put("finishedAt", Instant.now().toString());
-            writeManifest();
             return true;
         }
         catch (IOException | RuntimeException ex) {
-            return fail(entry, ex.getClass().getSimpleName() + ": " + ex.getMessage());
+            return failEntry(entry, ex.getClass().getSimpleName() + ": " + ex.getMessage());
         }
     }
 
@@ -247,16 +329,25 @@ public final class RawArtifacts implements AutoCloseable {
     }
 
     private boolean fail(Map<String, Object> entry, String reason) {
+        failEntry(entry, reason);
+        writeManifestQuietly();
+        return false;
+    }
+
+    private static boolean failEntry(Map<String, Object> entry, String reason) {
         entry.put("status", STATUS_FAILED);
         entry.put("reason", reason);
         entry.put("finishedAt", Instant.now().toString());
+        return false;
+    }
+
+    private void writeManifestQuietly() {
         try {
             writeManifest();
         }
         catch (IOException ex) {
-            // the failure is already in memory; the next successful manifest write carries it
+            // the entries are in memory; the next successful manifest write carries them
         }
-        return false;
     }
 
     private Map<String, Object> newEntry(String kind, String relativePath) {

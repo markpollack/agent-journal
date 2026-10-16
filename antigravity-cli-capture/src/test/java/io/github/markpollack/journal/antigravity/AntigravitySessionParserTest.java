@@ -7,9 +7,11 @@ import io.github.markpollack.journal.Run;
 import io.github.markpollack.journal.derived.StepCostEvent;
 import io.github.markpollack.journal.event.ToolCallEvent;
 import io.github.markpollack.journal.event.ToolKind;
+import io.github.markpollack.journal.raw.RawArtifacts;
 import io.github.markpollack.journal.storage.InMemoryStorage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
@@ -116,6 +118,33 @@ class AntigravitySessionParserTest {
         assertThat(capture.toolUses()).isNotEmpty();
     }
 
+
+    @Test
+    void rawStreamHoldsEveryLineOfARealRunExactly(@TempDir Path dir) throws Exception {
+        Path fixture = fixture("antigravity-clean-stream-json.jsonl");
+        Path rawDir = dir.resolve("raw");
+        AntigravityPhaseCapture capture;
+        try (RawArtifacts raw = RawArtifacts.open(rawDir, "antigravity", null)) {
+            capture = AntigravitySessionParser.parse(fixture, "run", "list then read", raw);
+        }
+
+        assertThat(Files.readAllLines(rawDir.resolve("run.stream.jsonl"))).isEqualTo(Files.readAllLines(fixture));
+        assertThat(capture.toolUses()).isNotEmpty();
+    }
+
+    @Test
+    void aLineThatFailsToParseIsStillInTheRawStreamWithTheLinesAroundIt(@TempDir Path dir) throws Exception {
+        String input = "{\"event\":\"init\",\"init\":{\"model\":\"m\"}}\n\nthis is not json\n{\"event\":\"result\"}\n";
+        Path rawDir = dir.resolve("raw");
+        try (RawArtifacts raw = RawArtifacts.open(rawDir, "antigravity", null)) {
+            org.assertj.core.api.Assertions.assertThatThrownBy(() -> AntigravitySessionParser.parse(
+                    new BufferedReader(new StringReader(input)), "run", "p", raw))
+                    .isInstanceOf(java.io.IOException.class).hasMessageContaining("line 3");
+        }
+
+        assertThat(Files.readAllLines(rawDir.resolve("run.stream.jsonl")))
+                .containsExactly("{\"event\":\"init\",\"init\":{\"model\":\"m\"}}", "", "this is not json");
+    }
 
     private static Path fixture(String name) throws URISyntaxException {
         return Path.of(AntigravitySessionParserTest.class.getResource("/fixtures/" + name).toURI());
