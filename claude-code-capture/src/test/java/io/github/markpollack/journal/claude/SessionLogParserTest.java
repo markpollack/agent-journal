@@ -566,9 +566,9 @@ class SessionLogParserTest {
         assertThat(lines.get(0)).doesNotContain("rawMode");
         assertThat(lines).noneMatch(l -> l.contains("\"type\":\"raw\""));
         assertThat(lines).anySatisfy(l -> assertThat(l).contains("\"type\":\"text\"").contains("\"content\":\"Hello\"")
-                .contains("\"source\":{\"stream\":\"test.stream.jsonl\",\"seq\":1}"));
+                .contains("\"source\":{\"stream\":\"test.stream.jsonl\",\"seqs\":[1]}"));
         assertThat(lines).anySatisfy(l -> assertThat(l).contains("\"type\":\"result\"")
-                .contains("\"source\":{\"stream\":\"test.stream.jsonl\",\"seq\":2}"));
+                .contains("\"source\":{\"stream\":\"test.stream.jsonl\",\"seqs\":[2]}"));
     }
 
     @Test

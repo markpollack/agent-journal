@@ -345,6 +345,8 @@ public class SessionLogParser {
         Map<String, Long> toolUseStartMs = new java.util.HashMap<>();
         boolean sawResult = false;
         ResultMessage lastResult = null;
+        // the stream-file lines of every result message: the one result line in the trace is built from all of them
+        List<Long> resultSeqs = new ArrayList<>();
         String resultSubtype = null;
         int wireMaxTurns = UNKNOWN_MAX_TURNS;
         Map<String, Object> reportedSubagentStats = Map.of();
@@ -384,10 +386,12 @@ public class SessionLogParser {
             // unmodeled field survive. The original text is null for programmatically-constructed
             // messages and for SDK < 1.3.0; those are counted as unavailable.
             final String rawJson = parsed instanceof ParsedMessage.RegularMessage regular ? regular.rawJson() : null;
+            long currentSeq = -1;
             if (rawStream != null) {
                 if (rawJson != null) {
                     try {
                         long streamSeq = rawStream.append(rawJson);
+                        currentSeq = streamSeq;
                         if (trace != null) {
                             trace.sourceRef(rawStreamName(phaseName), streamSeq);
                         }
@@ -435,6 +439,9 @@ public class SessionLogParser {
             if (message instanceof ResultMessage resultMsg) {
                 sawResult = true;
                 lastResult = resultMsg;
+                if (currentSeq > 0) {
+                    resultSeqs.add(currentSeq);
+                }
                 resultSubtype = resultMsg.subtype();
                 // A stream can carry several result lines (a backgrounded sub-agent's completion starts a
                 // follow-up turn that ends in its own result). total_cost_usd, modelUsage and
@@ -608,6 +615,13 @@ public class SessionLogParser {
             final TraceWriter.ResultMeta fMeta = new TraceWriter.ResultMeta(sessionId, isError,
                     lastResult.subtype(), apiDurationMs, thinkingTokens, cacheCreationInputTokens,
                     cacheReadInputTokens, lastResult.structuredOutput(), fStop, fMax);
+            if (trace != null) {
+                if (resultSeqs.isEmpty()) {
+                    trace.clearSourceRef();
+                } else {
+                    trace.sourceRef(rawStreamName(phaseName), resultSeqs.stream().mapToLong(Long::longValue).toArray());
+                }
+            }
             writeTrace(trace, phaseName, w -> w.writeResult(fIn, fOut, fCost, fTurns, fDur, fMeta));
             if (fStop == StopReason.MAX_TURNS) {
                 logger.warn("[{}] Run hit its turn ceiling (maxTurns={}, numTurns={}) — this trajectory is "

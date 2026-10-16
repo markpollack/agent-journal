@@ -111,20 +111,21 @@ public class TraceWriter implements Closeable {
     }
 
     /**
-     * Sets the vendor message that the lines written next were built from. Until it is changed or
+     * Sets the vendor messages that the lines written next were built from. Until it is changed or
      * cleared, every line written by a {@code write} method (except {@code step_cost}) carries
-     * {@code source}: {@code {"stream": <stream file name>, "seq": <line number in that file>}}.
-     * The stream file is the one {@link io.github.markpollack.journal.raw.RawStream} wrote, and
-     * {@code seq} is the number its {@code append} returned. A message that produced several
-     * lines is named by each of them.
+     * {@code source}: {@code {"stream": <stream file name>, "seqs": [<line numbers in that file>]}}.
+     * The stream file is the one {@link io.github.markpollack.journal.raw.RawStream} wrote, and a
+     * sequence number is one {@code append} returned. A message that produced several lines is
+     * named by each of them, and a line built from several messages (the run's single
+     * {@code result} line, when a stream has several result messages) names all of them.
      *
      * @param stream the stream file's name, such as {@code "invoke.stream.jsonl"}
-     * @param streamSeq the message's line number in that file, starting at 1
+     * @param streamSeqs the messages' line numbers in that file, each starting at 1
      */
-    public void sourceRef(String stream, long streamSeq) {
+    public void sourceRef(String stream, long... streamSeqs) {
         Map<String, Object> ref = new LinkedHashMap<>();
         ref.put("stream", stream);
-        ref.put("seq", streamSeq);
+        ref.put("seqs", java.util.Arrays.stream(streamSeqs).boxed().toList());
         this.sourceRef = ref;
     }
 
