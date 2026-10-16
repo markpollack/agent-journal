@@ -1,6 +1,6 @@
 package io.github.markpollack.journal.claude;
 
-import io.github.markpollack.claude.agent.sdk.parsing.MessageParser;
+import io.github.markpollack.claude.agent.sdk.parsing.ControlMessageParser;
 import io.github.markpollack.claude.agent.sdk.parsing.ParsedMessage;
 
 import java.io.IOException;
@@ -14,7 +14,7 @@ import java.util.List;
  * again from level 0 alone: after a parser fix, or after a run was killed and only the stream file
  * survived. Pass {@link Replay#messages()} to {@link SessionLogParser#parse}.
  *
- * <p>Each line is parsed as the live run parsed it. A line that cannot be turned into a message (a
+ * <p>Each line is parsed with the SDK's {@code ControlMessageParser}, the parser the live transport uses. A line that cannot be turned into a message (a
  * message type the SDK does not know, malformed JSON, or the partial last line of a run that was
  * cut off) is not dropped silently: it is returned in {@link Replay#skipped()} with its line
  * number and exact text. The replayed capture has no {@code source} references to stream lines,
@@ -54,7 +54,7 @@ public final class ClaudeStreamReplay {
      * @throws IOException if the file cannot be read
      */
     public static Replay read(Path streamFile) throws IOException {
-        MessageParser parser = new MessageParser();
+        ControlMessageParser parser = new ControlMessageParser();
         List<ParsedMessage> messages = new ArrayList<>();
         List<Skipped> skipped = new ArrayList<>();
         long seq = 0;
@@ -65,7 +65,14 @@ public final class ClaudeStreamReplay {
                 continue;
             }
             try {
-                messages.add(ParsedMessage.RegularMessage.of(parser.parseMessage(line), line));
+                // the parser the live transport uses, so a line becomes the same message it became then
+                ParsedMessage parsed = parser.parse(line);
+                if (parsed == null) {
+                    skipped.add(new Skipped(seq, "a message type the SDK does not know", line));
+                }
+                else {
+                    messages.add(parsed);
+                }
             }
             catch (RuntimeException ex) {
                 skipped.add(new Skipped(seq, ex.getClass().getSimpleName() + ": " + ex.getMessage(), line));
