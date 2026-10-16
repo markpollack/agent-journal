@@ -70,8 +70,8 @@ class RawDirectoryContractTest {
     }
 
     @Test
-    @DisplayName("the copier is explicitly not in this release")
-    void journalDoesNotArchiveRawItself(@TempDir Path tempDir) {
+    @DisplayName("the storage itself archives nothing: raw files are written by RawArtifacts, called by a capture")
+    void storageLifecycleDoesNotArchiveRaw(@TempDir Path tempDir) {
         Journal.configure(new JsonFileStorage(tempDir));
         try {
             Run run = Journal.run("exp").start();
@@ -79,9 +79,9 @@ class RawDirectoryContractTest {
 
             Path raw = Journal.storage().rawDirectory(run.experiment().id(), run.id()).orElseThrow();
 
-            // A full run lifecycle archives nothing. This assertion is the guard on the scope
-            // boundary: if the journal ever starts writing here, that is a deliberate decision
-            // that has to come with agent-experiment's copier being retired, not a silent drift.
+            // A bare run lifecycle archives nothing: the raw files are written by RawArtifacts,
+            // which a capture module calls. If the storage ever starts writing here by itself,
+            // that is a deliberate decision, not a silent drift.
             assertThat(Files.exists(raw)).isFalse();
         }
         finally {

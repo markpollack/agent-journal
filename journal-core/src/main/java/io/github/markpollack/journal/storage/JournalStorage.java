@@ -249,17 +249,18 @@ public interface JournalStorage {
      */
     List<String> listArtifacts(String experimentId, String runId);
 
-    // ========== Raw Provider Artifacts (contract only — see rawDirectory) ==========
+    // ========== Raw Provider Artifacts (level 0) ==========
 
     /**
-     * Returns the directory where copies of the agent's own session files for a run belong, if this
-     * storage has one. Keeping those files lets later analysis recover data that the parsers
-     * dropped.
+     * Returns the directory where a run's level-0 files belong, if this storage has one: the
+     * vendor's live messages exactly as received (one stream file per phase), copies of the
+     * vendor's own session files, and the {@code manifest.json} that lists them. Keeping them lets
+     * later analysis recover data that the parsers dropped. Write them with
+     * {@link io.github.markpollack.journal.raw.RawArtifacts}.
      *
-     * <p>This method only names the directory: it does not create it, and journal-core never
-     * writes to it or reads from it. A caller that archives session files, such as
-     * agent-experiment, writes them there, so they can be found from the run. The default returns
-     * empty, for storage without a file system.
+     * <p>This method only names the directory: it does not create it, and the storage itself
+     * neither writes to it nor reads from it. If it is missing, nothing was archived for the run.
+     * The default returns empty, for storage without a file system.
      *
      * @param experimentId the experiment ID
      * @param runId the run ID

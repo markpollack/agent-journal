@@ -5,7 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.markpollack.journal.event.StopReason;
 import io.github.markpollack.journal.trace.JournalStep;
-import io.github.markpollack.journal.trace.TraceRawMode;
+import io.github.markpollack.journal.raw.RawArtifacts;
+import io.github.markpollack.journal.raw.RawStream;
 import io.github.markpollack.journal.trace.TraceWriter;
 
 import io.github.markpollack.claude.agent.sdk.parsing.ParsedMessage;
@@ -93,7 +94,8 @@ public class SessionLogParser {
 
     /**
      * Parses the messages of one call into a capture and, if {@code traceFile} is not
-     * {@code null}, writes a trace with no raw messages.
+     * {@code null}, writes a trace. The vendor's messages are not kept; pass a {@link RawArtifacts}
+     * to keep them.
      *
      * @param response the SDK's messages for one call, read to the end
      * @param phaseName the caller's name for this call, such as {@code "plan"} or
@@ -104,28 +106,32 @@ public class SessionLogParser {
      */
     public static PhaseCapture parse(Iterator<ParsedMessage> response, String phaseName, String promptText,
             Path traceFile) {
-        return parse(response, phaseName, promptText, traceFile, TraceRawMode.NONE);
+        return parse(response, phaseName, promptText, traceFile, null);
     }
 
     /**
      * Parses the messages of one call into a capture and, if {@code traceFile} is not
-     * {@code null}, writes a trace with the given raw mode.
+     * {@code null}, writes a trace.
      *
-     * <p>With {@link TraceRawMode#FULL}, the trace also keeps each message exactly as Claude Code
-     * sent it, as a {@code raw} line. Fields that the SDK's typed messages drop, such as
-     * {@code permission_denials} and {@code modelUsage}, can then be recovered. Raw lines need
-     * claude-code-sdk 1.3.0 or later.
+     * <p>If {@code raw} is not {@code null}, each message is also written, exactly as Claude Code
+     * sent it, to the phase's stream file in the raw directory ({@code <phaseName>.stream.jsonl}),
+     * and each trace line built from a message names its line in that file in {@code source}.
+     * Fields that the SDK's typed messages drop, such as {@code permission_denials} and
+     * {@code modelUsage}, can then be recovered. The SDK keeps the original text of ordinary
+     * messages only (and only from claude-code-sdk 1.3.0), so rate-limit and control messages, and
+     * any message without its original text, cannot be written; they are counted by type under
+     * {@code unavailable} in the manifest so the stream's completeness is stated.
      *
      * @param response the SDK's messages for one call, read to the end
      * @param phaseName the caller's name for this call
      * @param promptText the prompt that was sent, or {@code null} if not captured
      * @param traceFile the trace file to write, or {@code null} for no trace
-     * @param rawMode whether the trace also keeps the messages as sent
+     * @param raw where to keep the messages as sent, or {@code null} to keep none
      * @return the capture, never {@code null}
      */
     public static PhaseCapture parse(Iterator<ParsedMessage> response, String phaseName, String promptText,
-            Path traceFile, TraceRawMode rawMode) {
-        return parse(response, phaseName, promptText, traceFile, rawMode, UNKNOWN_MAX_TURNS);
+            Path traceFile, RawArtifacts raw) {
+        return parse(response, phaseName, promptText, traceFile, raw, UNKNOWN_MAX_TURNS);
     }
 
     /**
@@ -145,23 +151,31 @@ public class SessionLogParser {
      * @param phaseName the caller's name for this call
      * @param promptText the prompt that was sent, or {@code null} if not captured
      * @param traceFile the trace file to write, or {@code null} for no trace
-     * @param rawMode whether the trace also keeps the messages as sent
+     * @param raw where to keep the messages as sent, or {@code null} to keep none
      * @param maxTurns the turn limit set for this call, or {@link #UNKNOWN_MAX_TURNS}
      * @return the capture, never {@code null}
      */
     public static PhaseCapture parse(Iterator<ParsedMessage> response, String phaseName, String promptText,
-            Path traceFile, TraceRawMode rawMode, int maxTurns) {
+            Path traceFile, RawArtifacts raw, int maxTurns) {
         TraceWriter trace = null;
         if (traceFile != null) {
             try {
-                trace = new TraceWriter(traceFile, phaseName, phaseName, rawMode);
+                trace = new TraceWriter(traceFile, phaseName, phaseName);
             } catch (IOException | RuntimeException ex) {
                 logger.warn("[{}] Failed to open trace file {}: {}", phaseName, traceFile, ex.getMessage());
             }
         }
+        RawStream rawStream = null;
+        if (raw != null) {
+            try {
+                rawStream = raw.openStream(phaseName);
+            } catch (IOException | RuntimeException ex) {
+                logger.warn("[{}] Failed to open the raw stream file: {}", phaseName, ex.getMessage());
+            }
+        }
 
         try {
-            PhaseCapture capture = doParse(response, phaseName, promptText, trace, maxTurns);
+            PhaseCapture capture = doParse(response, phaseName, promptText, trace, rawStream, maxTurns);
             if (trace != null) {
                 // R2.4: emit derived per-step cost as trailing step_cost lines. Cost is only
                 // knowable post-run (the total arrives on the last result line), so attribution
@@ -172,6 +186,13 @@ public class SessionLogParser {
             }
             return capture;
         } finally {
+            if (rawStream != null) {
+                try {
+                    rawStream.close();
+                } catch (IOException ex) {
+                    logger.warn("[{}] Failed to close the raw stream file: {}", phaseName, ex.getMessage());
+                }
+            }
             if (trace != null) {
                 try {
                     trace.close();
@@ -311,7 +332,7 @@ public class SessionLogParser {
     }
 
     private static PhaseCapture doParse(Iterator<ParsedMessage> response, String phaseName, String promptText,
-            TraceWriter trace, int callerMaxTurns) {
+            TraceWriter trace, RawStream rawStream, int callerMaxTurns) {
         Track main = new Track(null);
         // Sub-agent tracks by the ID of the tool call that started each, in the order first seen.
         Map<String, Track> subagentTracks = new java.util.LinkedHashMap<>();
@@ -347,15 +368,41 @@ public class SessionLogParser {
         while (response.hasNext()) {
             ParsedMessage parsed = response.next();
             if (!parsed.isRegularMessage()) {
+                if (rawStream != null) {
+                    // the SDK keeps no original text for these, so the stream file cannot hold them
+                    String type = parsed.getClass().getSimpleName();
+                    if (!(parsed instanceof ParsedMessage.EndOfStream)) {
+                        rawStream.noteUnavailable(type);
+                    }
+                }
                 continue;
             }
 
-            // R2.1: persist the verbatim wire message before its typed decomposition, so
-            // the sub-agent envelope (isSidechain/parentUuid/parent_tool_use_id) and other
-            // unmodeled fields survive. No-op unless rawMode=FULL; rawJson is null for
-            // programmatically-constructed messages and SDK < 1.3.0.
+            // Level 0: write the vendor's message exactly as sent before its typed decomposition,
+            // so the sub-agent envelope (isSidechain/parentUuid/parent_tool_use_id) and every
+            // unmodeled field survive. The original text is null for programmatically-constructed
+            // messages and for SDK < 1.3.0; those are counted as unavailable.
             final String rawJson = parsed instanceof ParsedMessage.RegularMessage regular ? regular.rawJson() : null;
-            writeTrace(trace, phaseName, w -> w.writeRaw(rawJson));
+            if (rawStream != null) {
+                if (rawJson != null) {
+                    try {
+                        long streamSeq = rawStream.append(rawJson);
+                        if (trace != null) {
+                            trace.sourceRef(rawStreamName(phaseName), streamSeq);
+                        }
+                    } catch (IOException | RuntimeException ex) {
+                        logger.warn("[{}] Raw stream write failed: {}", phaseName, ex.getMessage());
+                        if (trace != null) {
+                            trace.clearSourceRef();
+                        }
+                    }
+                } else {
+                    rawStream.noteUnavailable("message-without-original-text");
+                    if (trace != null) {
+                        trace.clearSourceRef();
+                    }
+                }
+            }
             JsonNode rawRoot = parseRaw(rawJson);
 
             var message = parsed.asMessage();
@@ -804,6 +851,10 @@ public class SessionLogParser {
 
     private static long asLong(Object value, long fallback) {
         return value instanceof Number number ? number.longValue() : fallback;
+    }
+
+    private static String rawStreamName(String phaseName) {
+        return phaseName + RawArtifacts.STREAM_SUFFIX;
     }
 
     @FunctionalInterface
