@@ -21,8 +21,8 @@ package io.github.markpollack.journal.event;
  * indistinguishable from one that was.
  *
  * <p>
- * Unrelated to {@code TraceWriter}'s {@code truncated} flag, which is about trace <em>content</em>
- * size, not about why execution ended.
+ * This is about why execution ended, not about the size of any trace content (content is always
+ * written whole).
  */
 public enum StopReason {
 

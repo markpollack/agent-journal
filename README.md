@@ -30,14 +30,13 @@ plus a human-feedback API for judge calibration and golden datasets.
 |---|---|---|---|
 | `journal-core` | Experiment/Run tracking, the extensible event model (an open `JournalEvent` interface with runtime subtype registration via `Journal.registerEventType`; only the `GitEvent` family is sealed), storage, cost and token aggregation, `EvalSubject` extraction, feedback, and the portable `TraceWriter` | 17 | Jackson only |
 | `claude-code-capture` | Claude Code SDK → journal bridge: phase capture, session parsing, per-turn usage, step cost attribution, sub-agent runs | 21 | `claude-code-sdk` |
-| `gemini-cli-capture` | Gemini CLI → journal bridge: a parallel vendor extractor emitting the same portable trace and cost schema | 21 | `gemini-cli-sdk` |
 | `grok-cli-capture` | Grok CLI → journal bridge: parses Grok's `streaming-json` output into an ordered tool trajectory with the session's reported cost | 17 | `journal-core` |
 | `codex-cli-capture` | Codex CLI → journal bridge: parses the durable rollout file, classifying each tool call from its payload rather than the outer `exec` name; sub-agent runs from child rollouts | 17 | `journal-core` |
 | `antigravity-cli-capture` | Antigravity CLI → journal bridge: parses Antigravity's streaming JSON into an ordered tool trajectory | 17 | `journal-core` |
 | `junie-cli-capture` | Junie CLI → journal bridge: parses Junie's durable session `events.jsonl` into an ordered tool trajectory with per-call cost that reconciles to the session total | 17 | `journal-core` |
 
 `journal-core` targets Java 17 and depends on nothing but Jackson. The Claude Code and
-Gemini capture modules bind vendor SDKs published as Java 21 bytecode and therefore
+capture modules bind vendor SDKs published as Java 21 bytecode and therefore
 require a Java 21 runtime. The Grok, Codex, Antigravity and Junie capture modules parse
 their CLI's own output directly, carry no vendor SDK, and target Java 17 like
 `journal-core`.
@@ -53,7 +52,6 @@ what each CLI reports.
 |---|---|---|---|---|
 | Claude Code | the CLI's `stream-json` output, through `claude-code-sdk` | yes, with per-turn usage and the stable `tool_use` id as step id | reported by the CLI for the whole call, split per step | captured as linked runs (1.11.0) |
 | Codex | the durable rollout file(s) | yes; tool calls classified from their payload, `function_call` arguments kept verbatim | not reported (`costAvailable=false`); tokens per thread are recorded | captured as linked runs (1.11.0) |
-| Gemini CLI | the SDK's turn-level result | turn level only | reported | no |
 | Grok CLI | `streaming-json` output | yes | reported as a session total, split evenly over steps | no |
 | Antigravity | streaming JSON | yes, with per-step duration and terminal token usage | not reported (`costAvailable=false`) | no (the stream carries pointers only) |
 | Junie | the session's `events.jsonl` | yes, with per-call cost reconciling to the session total | reported | no |
@@ -151,7 +149,7 @@ Java 17 target.
 ./mvnw clean verify
 ```
 
-Verify that `journal-core` and the two SDK-bound capture modules (Claude Code, Gemini)
+Verify that `journal-core` and the SDK-bound capture module (Claude Code)
 resolve safe Jackson versions for standalone consumers without importing `agentworks-bom`:
 
 ```bash

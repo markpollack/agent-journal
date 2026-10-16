@@ -32,7 +32,6 @@ import java.util.Map;
  * alone does not say whether the agent finished or was cut off at its limit. Claude Code does not
  * report the limit, so it comes from the caller through
  * {@link SessionLogParser#parse(java.util.Iterator, String, String, java.nio.file.Path,
- * io.github.markpollack.journal.trace.TraceContentMode,
  * io.github.markpollack.journal.trace.TraceRawMode, int)}.
  *
  * <p>The capture keeps unmodifiable copies of the lists it is given: later changes to those lists

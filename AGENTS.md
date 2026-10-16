@@ -13,10 +13,10 @@ Each `<cli>-capture` module maps that CLI's own output into `PhaseCapture`. Adap
 frozen contracts; they do not change them.
 
 **An adapter is done when its events carry a state sequence** that `agent-control-theory` can build
-a transition matrix from — not when a trace parses. `gemini-cli-capture` is the cautionary case: it
-ships, it parses, and it emits no tool events at all, so the Markov model has nothing to model.
-Gemini is therefore excluded from the trajectory claim. A run yielding one state and a self-loop is
-a failure, not a pass — and it looks like a finding, which is what makes it dangerous.
+a transition matrix from — not when a trace parses. The retired Gemini adapter was the cautionary case:
+it parsed and emitted no tool events at all, so the Markov model had nothing to model. A run yielding
+one state and a self-loop is a failure, not a pass — and it looks like a finding, which is what makes
+it dangerous.
 
 Classify from the payload, not the label. Codex names every tool call `exec` and nests the real
 action inside `input`; classifying on the name alone collapses every Codex run to a single state.

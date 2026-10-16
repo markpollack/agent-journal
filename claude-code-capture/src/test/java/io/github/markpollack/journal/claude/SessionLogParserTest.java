@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import io.github.markpollack.journal.trace.TraceContentMode;
 import io.github.markpollack.journal.trace.TraceRawMode;
 import io.github.markpollack.journal.event.ToolKind;
 import io.github.markpollack.claude.agent.sdk.parsing.ParsedMessage;
@@ -513,51 +512,32 @@ class SessionLogParserTest {
     }
 
     @Test
-    void lengthsModePinsLengthOnlyBehavior(@TempDir Path tempDir) throws IOException {
+    void contentOfAnyLengthIsWrittenWhole(@TempDir Path tempDir) throws IOException {
+        String big = "x".repeat(120_000);
+        ToolUseBlock readTool = ToolUseBlock.builder().id("tool-1").name("Read")
+                .input(Map.of("file_path", "/work/big.dat")).build();
+        ToolResultBlock result = ToolResultBlock.builder().toolUseId("tool-1").content(big).isError(false).build();
         List<ParsedMessage> messages = List.of(
-                wrap(new AssistantMessage(List.of(new TextBlock("secret content")))),
-                wrap(resultMessage(0.01, 1000, 800, 100, 50))
-        );
+                wrap(new AssistantMessage(List.of(new TextBlock(big), readTool))),
+                wrap(new UserMessage(List.of(result))),
+                wrap(resultMessage(0.01, 1000, 800, 100, 50)));
 
-        Path traceFile = tempDir.resolve("trace-lengths.jsonl");
-        SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile, TraceContentMode.LENGTHS);
-
-        List<String> lines = Files.readAllLines(traceFile);
-        assertThat(lines.get(0)).contains("\"contentMode\":\"LENGTHS\"");
-        assertThat(lines.get(1)).contains("\"type\":\"text\"").contains("\"length\":14")
-                .doesNotContain("secret content");
-    }
-
-    @Test
-    void truncatedToolResultGetsSourcePointerFromMatchingToolUse(@TempDir Path tempDir) throws IOException {
-        ToolUseBlock readTool = ToolUseBlock.builder()
-                .id("tool-1")
-                .name("Read")
-                .input(Map.of("file_path", "/work/big.dat"))
-                .build();
-        String bigContent = "x".repeat(60_001);
-        ToolResultBlock result = ToolResultBlock.builder()
-                .toolUseId("tool-1")
-                .content(bigContent)
-                .isError(false)
-                .build();
-
-        List<ParsedMessage> messages = List.of(
-                wrap(new AssistantMessage(List.of(readTool))),
-                wrap(UserMessage.of(List.of(result))),
-                wrap(resultMessage(0.02, 2000, 1500, 300, 100))
-        );
-
-        Path traceFile = tempDir.resolve("trace-truncated.jsonl");
+        Path traceFile = tempDir.resolve("trace-whole.jsonl");
         SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile);
 
-        List<String> lines = Files.readAllLines(traceFile);
-        String toolResultLine = lines.get(2);
-        assertThat(toolResultLine).contains("\"type\":\"tool_result\"")
-                .contains("\"contentLength\":60001")
-                .contains("\"truncated\":true")
-                .contains("\"kind\":\"file_path\"")
-                .contains("\"value\":\"/work/big.dat\"");
+        List<JsonNode> lines = new ArrayList<>();
+        for (String line : Files.readAllLines(traceFile)) {
+            lines.add(MAPPER.readTree(line));
+        }
+        assertThat(lines.get(0).has("contentMode")).isFalse();
+        JsonNode text = lines.stream().filter(l -> "text".equals(l.path("type").asText())).findFirst().orElseThrow();
+        assertThat(text.get("content").asText()).hasSize(120_000);
+        assertThat(text.has("truncated")).isFalse();
+        JsonNode toolResult = lines.stream().filter(l -> "tool_result".equals(l.path("type").asText()))
+                .findFirst().orElseThrow();
+        assertThat(toolResult.get("content").asText()).hasSize(120_000);
+        assertThat(toolResult.has("truncated")).isFalse();
+        assertThat(toolResult.has("source")).isFalse();
     }
 
     @Test
@@ -573,8 +553,7 @@ class SessionLogParserTest {
                 wrapRaw(resultMessage(0.01, 1000, 800, 100, 50), resultWire));
 
         Path traceFile = tempDir.resolve("trace-raw.jsonl");
-        SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile, TraceContentMode.TRUNCATED,
-                TraceRawMode.FULL);
+        SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile, TraceRawMode.FULL);
 
         List<String> lines = Files.readAllLines(traceFile);
         assertThat(lines.get(0)).contains("\"rawMode\":\"FULL\"");

@@ -41,7 +41,7 @@ import java.util.Map;
  * @param actualRunCostUsd the phase's total cost as reported, in US dollars
  * @param attributionMethod how the run's cost was split into shares
  * @param vendor the capture module that made the step, such as {@code "claude-code"} or
- *        {@code "gemini-cli"}
+ *        {@code "junie"}
  * @param thinkingTokens the thinking tokens of the step's turn, included in {@code outputTokens}
  * @param cacheCreationTokens the tokens the step's turn wrote to the prompt cache
  * @param cacheReadTokens the tokens the step's turn read from the prompt cache

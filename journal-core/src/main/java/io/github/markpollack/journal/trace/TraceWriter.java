@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Writes a capture trace: a JSON Lines file with one line for each thing that happened in one
  * agent call, such as a tool call, a tool result, some text or the final result. Two capture
  * modules write traces with it when you give their session parser a trace file: Claude Code's
- * {@code SessionLogParser} and {@code GeminiSessionParser}. Use it directly only to write the same
+ * {@code SessionLogParser}. Use it directly only to write the same
  * format from your own capture code. A trace is separate from the journal's files: it is not an
  * event stream, and {@link io.github.markpollack.journal.storage.JournalStorage} does not read it.
  *
@@ -41,22 +41,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  * any {@link io.github.markpollack.journal.Run} exists, so they pass the phase name as the run ID;
  * the {@code runId} of such a trace is not a journal run ID.
  *
- * <p>{@link TraceContentMode} sets how much text, thinking and tool-result content is kept, and
- * {@link TraceRawMode} whether {@code raw} lines are written. Content lengths are always the
- * original lengths, even when the content is shortened or left out. Traces can hold prompts, file
- * contents, command output and secrets, so treat them as sensitive files. The writer does not
+ * <p>Text, thinking and tool-result content is always written whole: nothing is shortened or left
+ * out. {@link TraceRawMode} sets whether {@code raw} lines are written. Traces can hold prompts,
+ * file contents, command output and secrets, so treat them as sensitive files. The writer does not
  * check the path it is given.
  *
  * <p>Close the writer when you are done, for example with try-with-resources; writing after
  * {@link #close()} throws {@link IOException}. A writer is not safe for use from several threads.
  */
 public class TraceWriter implements Closeable {
-
-    /**
-     * The most characters of one content item that {@link TraceContentMode#TRUNCATED} keeps:
-     * 60,000. The limit applies to what is written; the whole content is still held in memory.
-     */
-    public static final int MAX_TRACE_CONTENT_CHARS = 60_000;
 
     /**
      * The schema version written on the header line of every trace: 2. The journal's event files
@@ -70,42 +63,35 @@ public class TraceWriter implements Closeable {
 
     private final AtomicInteger seq = new AtomicInteger(0);
 
-    private final TraceContentMode contentMode;
-
     private final TraceRawMode rawMode;
 
     private final String runId;
 
     /**
      * Creates the trace file, which will have no {@code raw} lines, and writes its header line.
-     * Same as {@link #TraceWriter(Path, TraceContentMode, String, String, TraceRawMode)} with
-     * {@link TraceRawMode#NONE}.
+     * Same as {@link #TraceWriter(Path, String, String, TraceRawMode)} with {@link TraceRawMode#NONE}.
      *
      * @param traceFile the file to write; its path must include a parent directory
-     * @param contentMode how much content to keep; {@code null} means
-     *        {@link TraceContentMode#TRUNCATED}
      * @param runId the run ID to record, or {@code null}
      * @param phase the phase name to record, or {@code null}
      * @throws IOException if the directories or the file cannot be created, or the header cannot
      *         be written
      */
-    public TraceWriter(Path traceFile, TraceContentMode contentMode, String runId, String phase) throws IOException {
-        this(traceFile, contentMode, runId, phase, TraceRawMode.NONE);
+    public TraceWriter(Path traceFile, String runId, String phase) throws IOException {
+        this(traceFile, runId, phase, TraceRawMode.NONE);
     }
 
     /**
      * Creates the trace file and writes its header line. Missing parent directories are created,
      * and an existing file at {@code traceFile} is replaced. The header line has
      * {@code schemaVersion}, {@code runId} and {@code phase} when they are not {@code null}, and
-     * the names of the content mode and raw mode.
+     * the name of the raw mode.
      *
      * <p>The path must include a parent directory, such as {@code traces/plan.jsonl} or an
      * absolute path; a bare file name such as {@code plan.jsonl} is not accepted. If the header
      * cannot be written, the file is closed before the exception is thrown.
      *
      * @param traceFile the file to write; its path must include a parent directory
-     * @param contentMode how much text, thinking and tool-result content to keep; {@code null}
-     *        means {@link TraceContentMode#TRUNCATED}
      * @param runId the run ID to write on the {@code header}, {@code result} and
      *        {@code step_cost} lines, or {@code null} to leave it out
      * @param phase the phase name to write on the header line, or {@code null} to leave it out
@@ -114,9 +100,8 @@ public class TraceWriter implements Closeable {
      * @throws IOException if the directories or the file cannot be created, or the header cannot
      *         be written
      */
-    public TraceWriter(Path traceFile, TraceContentMode contentMode, String runId, String phase, TraceRawMode rawMode)
+    public TraceWriter(Path traceFile, String runId, String phase, TraceRawMode rawMode)
             throws IOException {
-        this.contentMode = contentMode != null ? contentMode : TraceContentMode.TRUNCATED;
         this.rawMode = rawMode != null ? rawMode : TraceRawMode.NONE;
         this.runId = runId;
         Files.createDirectories(traceFile.getParent());
@@ -130,7 +115,6 @@ public class TraceWriter implements Closeable {
             if (phase != null) {
                 line.put("phase", phase);
             }
-            line.put("contentMode", this.contentMode.name());
             line.put("rawMode", this.rawMode.name());
             writeLine(line);
         } catch (IOException | RuntimeException ex) {
@@ -162,7 +146,7 @@ public class TraceWriter implements Closeable {
      * Writes a {@code tool_use} line for a tool call the agent made. The line has {@code name},
      * {@code id}, {@code input} (an empty object when {@code input} is {@code null}),
      * {@code turnIndex}, and {@code turnId} when it is not {@code null}. The input is written
-     * whole in every {@link TraceContentMode}.
+     * whole.
      *
      * @param name the vendor's name for the tool, such as {@code "Bash"}
      * @param id the vendor's ID for the tool call, which the matching {@code tool_result} line
@@ -187,53 +171,42 @@ public class TraceWriter implements Closeable {
 
     /**
      * Writes a {@code tool_result} line without a duration. Same as
-     * {@link #writeToolResult(String, boolean, String, Map, long)} with a duration of -1.
+     * {@link #writeToolResult(String, boolean, String, long)} with a duration of -1.
      *
      * @param id the ID of the tool call this result belongs to
      * @param isError whether the tool reported an error
      * @param content the result text, or {@code null}
-     * @param source where the full content can be found, or {@code null}
      * @throws IOException if the line cannot be written
      */
-    public void writeToolResult(String id, boolean isError, String content, Map<String, Object> source)
-            throws IOException {
-        writeToolResult(id, isError, content, source, -1L);
+    public void writeToolResult(String id, boolean isError, String content) throws IOException {
+        writeToolResult(id, isError, content, -1L);
     }
 
     /**
      * Writes a {@code tool_result} line for the result of a tool call. The line has {@code id},
-     * {@code isError}, {@code durationMs} and {@code contentLength} (the original length; 0 for
-     * {@code null}). Unless the content mode is {@link TraceContentMode#LENGTHS}, it also has
-     * {@code content} and {@code truncated}, and, when the content was shortened, {@code source}.
+     * {@code isError}, {@code durationMs}, {@code contentLength} (the length; 0 for {@code null})
+     * and the whole {@code content}.
      *
      * @param id the ID of the tool call this result belongs to
      * @param isError whether the tool reported an error
      * @param content the result text, or {@code null}, which is written as empty content
-     * @param source where the full content can be found, such as a {@code file_path} or
-     *        {@code command} entry; written only when the content was shortened; may be
-     *        {@code null}
      * @param durationMs the time from the tool call to this result, in milliseconds, or -1 if not
      *        measured
      * @throws IOException if the line cannot be written
      */
-    public void writeToolResult(String id, boolean isError, String content, Map<String, Object> source,
-            long durationMs) throws IOException {
+    public void writeToolResult(String id, boolean isError, String content, long durationMs) throws IOException {
         Map<String, Object> line = baseLine("tool_result");
         line.put("id", id);
         line.put("isError", isError);
         line.put("durationMs", durationMs);
         line.put("contentLength", content != null ? content.length() : 0);
-        boolean truncated = putContent(line, content);
-        if (truncated && source != null) {
-            line.put("source", source);
-        }
+        putContent(line, content);
         writeLine(line);
     }
 
     /**
      * Writes a {@code text} line for text the agent wrote. The line has {@code length} (0 for
-     * {@code null}) and, unless the content mode is {@link TraceContentMode#LENGTHS},
-     * {@code content} and {@code truncated}.
+     * {@code null}) and the whole {@code content}.
      *
      * @param text the text, or {@code null}
      * @throws IOException if the line cannot be written
@@ -398,19 +371,9 @@ public class TraceWriter implements Closeable {
         writeLine(line);
     }
 
-    /**
-     * Adds {@code content}/{@code truncated} to the line per the content mode.
-     * @return whether the content was truncated
-     */
-    private boolean putContent(Map<String, Object> line, String content) {
-        if (contentMode == TraceContentMode.LENGTHS) {
-            return false;
-        }
-        String body = content != null ? content : "";
-        boolean truncate = contentMode == TraceContentMode.TRUNCATED && body.length() > MAX_TRACE_CONTENT_CHARS;
-        line.put("content", truncate ? body.substring(0, MAX_TRACE_CONTENT_CHARS) : body);
-        line.put("truncated", truncate);
-        return truncate;
+    /** Adds the whole content to the line. Nothing is shortened or left out. */
+    private void putContent(Map<String, Object> line, String content) {
+        line.put("content", content != null ? content : "");
     }
 
     private Map<String, Object> baseLine(String type) {

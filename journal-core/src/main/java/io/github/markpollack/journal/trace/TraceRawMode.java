@@ -3,8 +3,7 @@ package io.github.markpollack.journal.trace;
 /**
  * Whether a capture trace also keeps each vendor message exactly as it arrived, next to the lines
  * the parser builds from it. Only Claude Code's {@code SessionLogParser} takes this setting; the
- * other parsers never write raw lines. It is independent of {@link TraceContentMode}, which
- * applies only to the parsed lines. {@link TraceWriter} applies it.
+ * other parsers never write raw lines. {@link TraceWriter} applies it.
  *
  * <p>Raw lines keep fields that the parsed lines and the SDK's typed messages drop, such as
  * {@code permission_denials} and {@code modelUsage}, so they can be recovered later. Each one is a

@@ -6,7 +6,6 @@ import io.github.markpollack.claude.agent.sdk.types.AssistantMessage;
 import io.github.markpollack.claude.agent.sdk.types.TextBlock;
 import io.github.markpollack.claude.agent.sdk.types.ToolUseBlock;
 import io.github.markpollack.journal.event.TokenUsage;
-import io.github.markpollack.journal.trace.TraceContentMode;
 import io.github.markpollack.journal.trace.TraceRawMode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -229,7 +228,7 @@ class SubagentCaptureTest {
         Path trace = dir.resolve("trace.jsonl");
 
         SessionLogParser.parse(fixtureMessages().iterator(), "execute", "the prompt", trace,
-                TraceContentMode.FULL, TraceRawMode.NONE);
+                TraceRawMode.NONE);
 
         List<String> lines = Files.readAllLines(trace);
         assertThat(lines).anySatisfy(l -> assertThat(l).contains("\"type\":\"tool_use\"").contains("toolu_a_bash"));

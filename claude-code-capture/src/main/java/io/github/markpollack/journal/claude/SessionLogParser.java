@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.markpollack.journal.event.StopReason;
 import io.github.markpollack.journal.trace.JournalStep;
-import io.github.markpollack.journal.trace.TraceContentMode;
 import io.github.markpollack.journal.trace.TraceRawMode;
 import io.github.markpollack.journal.trace.TraceWriter;
 
@@ -61,8 +60,8 @@ import org.slf4j.LoggerFactory;
  * caller. A trace file that cannot be opened, for any reason, including a bare file name with no
  * parent directory, is logged as a warning and does not stop parsing, and neither does an
  * error while writing a line, such as an I/O error or a cost that is not a finite number; the
- * capture is the same with or without a trace. A {@code null}
- * content mode means {@link TraceContentMode#TRUNCATED}.
+ * capture is the same with or without a trace. A trace keeps every
+ * content item whole.
  *
  * <p>All methods are static and keep no state between calls. Calls from several threads are safe
  * if each has its own iterator and trace file.
@@ -94,7 +93,7 @@ public class SessionLogParser {
 
     /**
      * Parses the messages of one call into a capture and, if {@code traceFile} is not
-     * {@code null}, writes a trace using {@link TraceContentMode#TRUNCATED}.
+     * {@code null}, writes a trace with no raw messages.
      *
      * @param response the SDK's messages for one call, read to the end
      * @param phaseName the caller's name for this call, such as {@code "plan"} or
@@ -105,29 +104,12 @@ public class SessionLogParser {
      */
     public static PhaseCapture parse(Iterator<ParsedMessage> response, String phaseName, String promptText,
             Path traceFile) {
-        return parse(response, phaseName, promptText, traceFile, TraceContentMode.TRUNCATED);
+        return parse(response, phaseName, promptText, traceFile, TraceRawMode.NONE);
     }
 
     /**
      * Parses the messages of one call into a capture and, if {@code traceFile} is not
-     * {@code null}, writes a trace with the given content mode and no raw messages.
-     *
-     * @param response the SDK's messages for one call, read to the end
-     * @param phaseName the caller's name for this call, such as {@code "plan"} or
-     *        {@code "execute"}
-     * @param promptText the prompt that was sent, or {@code null} if not captured
-     * @param traceFile the trace file to write, or {@code null} for no trace
-     * @param contentMode how much message content the trace keeps
-     * @return the capture, never {@code null}
-     */
-    public static PhaseCapture parse(Iterator<ParsedMessage> response, String phaseName, String promptText,
-            Path traceFile, TraceContentMode contentMode) {
-        return parse(response, phaseName, promptText, traceFile, contentMode, TraceRawMode.NONE);
-    }
-
-    /**
-     * Parses the messages of one call into a capture and, if {@code traceFile} is not
-     * {@code null}, writes a trace with the given content and raw modes.
+     * {@code null}, writes a trace with the given raw mode.
      *
      * <p>With {@link TraceRawMode#FULL}, the trace also keeps each message exactly as Claude Code
      * sent it, as a {@code raw} line. Fields that the SDK's typed messages drop, such as
@@ -138,13 +120,12 @@ public class SessionLogParser {
      * @param phaseName the caller's name for this call
      * @param promptText the prompt that was sent, or {@code null} if not captured
      * @param traceFile the trace file to write, or {@code null} for no trace
-     * @param contentMode how much message content the trace keeps
      * @param rawMode whether the trace also keeps the messages as sent
      * @return the capture, never {@code null}
      */
     public static PhaseCapture parse(Iterator<ParsedMessage> response, String phaseName, String promptText,
-            Path traceFile, TraceContentMode contentMode, TraceRawMode rawMode) {
-        return parse(response, phaseName, promptText, traceFile, contentMode, rawMode, UNKNOWN_MAX_TURNS);
+            Path traceFile, TraceRawMode rawMode) {
+        return parse(response, phaseName, promptText, traceFile, rawMode, UNKNOWN_MAX_TURNS);
     }
 
     /**
@@ -164,17 +145,16 @@ public class SessionLogParser {
      * @param phaseName the caller's name for this call
      * @param promptText the prompt that was sent, or {@code null} if not captured
      * @param traceFile the trace file to write, or {@code null} for no trace
-     * @param contentMode how much message content the trace keeps
      * @param rawMode whether the trace also keeps the messages as sent
      * @param maxTurns the turn limit set for this call, or {@link #UNKNOWN_MAX_TURNS}
      * @return the capture, never {@code null}
      */
     public static PhaseCapture parse(Iterator<ParsedMessage> response, String phaseName, String promptText,
-            Path traceFile, TraceContentMode contentMode, TraceRawMode rawMode, int maxTurns) {
+            Path traceFile, TraceRawMode rawMode, int maxTurns) {
         TraceWriter trace = null;
         if (traceFile != null) {
             try {
-                trace = new TraceWriter(traceFile, contentMode, phaseName, phaseName, rawMode);
+                trace = new TraceWriter(traceFile, phaseName, phaseName, rawMode);
             } catch (IOException | RuntimeException ex) {
                 logger.warn("[{}] Failed to open trace file {}: {}", phaseName, traceFile, ex.getMessage());
             }
@@ -568,10 +548,8 @@ public class SessionLogParser {
                                 logger.info("[{}] Tool result: {} isError={} len={}", phaseName,
                                         resultToolName, err, len);
                             }
-                            final Map<String, Object> source = sourceRef(resultToolName,
-                                    toolUseInputs.get(resultBlock.toolUseId()));
                             writeTrace(trace, phaseName,
-                                    w -> w.writeToolResult(resultBlock.toolUseId(), err, fContent, source, fElapsed));
+                                    w -> w.writeToolResult(resultBlock.toolUseId(), err, fContent, fElapsed));
                         }
                     }
                 }
@@ -842,38 +820,6 @@ public class SessionLogParser {
         } catch (IOException | RuntimeException ex) {
             logger.warn("[{}] Trace write failed: {}", phaseName, ex.getMessage());
         }
-    }
-
-    /**
-     * Derives a pointer to where truncated tool_result content can be re-read: the
-     * file for path-bearing tools (Read/Write/Edit/Glob), the command for Bash.
-     * Written to the trace only when the content is actually truncated — a truncated
-     * item is then self-describing: head(60KB) + canonical length + source. Note the
-     * source file may have been edited by analysis time; the transcript archive is
-     * the reliable backstop.
-     */
-    private static Map<String, Object> sourceRef(String toolName, Map<String, Object> input) {
-        Map<String, Object> source = new java.util.LinkedHashMap<>();
-        if (input != null) {
-            Object path = input.get("file_path");
-            if (path == null) {
-                path = input.get("path");
-            }
-            if (path instanceof String s && !s.isBlank()) {
-                source.put("kind", "file_path");
-                source.put("value", s);
-                return source;
-            }
-            Object cmd = input.get("command");
-            if (cmd instanceof String s && !s.isBlank()) {
-                source.put("kind", "command");
-                source.put("value", s);
-                return source;
-            }
-        }
-        source.put("kind", "unknown");
-        source.put("value", toolName != null ? toolName : "");
-        return source;
     }
 
     /**
