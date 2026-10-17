@@ -281,6 +281,31 @@ class RealStreamTokenConformanceTest {
         assertThat(wrong).as("steps attributed by OUTPUT_TOKEN_PROPORTIONAL on non-final weights").isEmpty();
     }
 
+    /**
+     * Independent oracle: the stream file's own lines. Every line that is not an assistant or user message
+     * must be in the capture's vendor events, whole and in order. {@code rate_limit_event} lines are the
+     * exception until the SDK release that keeps their text: the released SDK's message parser drops them
+     * before Journal sees them.
+     */
+    @ParameterizedTest(name = "{0}")
+    @ValueSource(strings = {"single-result-parallel-calls", "foreground-subagent-one-result",
+            "background-subagent-two-results-a", "background-subagent-two-results-b"})
+    void everyStreamLineThatIsNotAnAssistantOrUserMessageIsKeptWhole(String fixture) throws Exception {
+        PhaseCapture capture = parse(fixture);
+
+        List<String> expected = new ArrayList<>();
+        for (String line : lines(Path.of(RealStreamTokenConformanceTest.class
+                .getResource(ROOT + fixture + "/stream.jsonl").toURI()))) {
+            String type = MAPPER.readTree(line).path("type").asText();
+            if (!type.equals("assistant") && !type.equals("user") && !type.equals("rate_limit_event")) {
+                expected.add(line);
+            }
+        }
+
+        assertThat(capture.vendorEvents()).extracting(ClaudeVendorEvent::rawJson).containsExactlyElementsOf(expected);
+        assertThat(expected).as("the fixture has a result line").anyMatch(l -> l.contains("\"type\":\"result\""));
+    }
+
     // --- plumbing: parse with Journal, compute the oracle without it -----------------------------------------
 
     private static PhaseCapture parse(String fixture) throws Exception {

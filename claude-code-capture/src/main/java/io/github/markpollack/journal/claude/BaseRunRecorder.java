@@ -78,6 +78,8 @@ public abstract class BaseRunRecorder {
      *   <li>one {@link ToolCallEvent} per tool call, with the tool call's ID, name, kind and input,
      *       its turn, and the duration and error of its result
      *   <li>one {@code thinking_block} custom event per thinking block
+     *   <li>one {@code vendor_event} custom event per message that is not an ordinary assistant or
+     *       user message, whole (see {@link ClaudeVendorEvent})
      * </ul>
      *
      * <p>Then it logs one {@link StepCostEvent} per step as a derived event, with the cost split as
@@ -236,6 +238,23 @@ public abstract class BaseRunRecorder {
                 currentRun.logEvent(CustomEvent.of("thinking_block",
                         phaseAttributes(phase.phaseName(), "content", thinking)));
             }
+        }
+
+        // Messages that are not ordinary assistant or user messages, whole (system, result, ...)
+        for (ClaudeVendorEvent vendorEvent : phase.vendorEvents()) {
+            Map<String, Object> attributes = phaseAttributes(phase.phaseName(), "vendor", "claude");
+            attributes.put("type", vendorEvent.type());
+            attributes.put("messageNumber", vendorEvent.messageNumber());
+            if (vendorEvent.subtype() != null) {
+                attributes.put("subtype", vendorEvent.subtype());
+            }
+            if (vendorEvent.rawJson() != null) {
+                attributes.put("rawJson", vendorEvent.rawJson());
+            }
+            if (vendorEvent.reason() != null) {
+                attributes.put("reason", vendorEvent.reason());
+            }
+            currentRun.logEvent(CustomEvent.of("vendor_event", attributes));
         }
 
         // Derived per-step cost → analysis.jsonl (R2.10 emission). The run reports only a

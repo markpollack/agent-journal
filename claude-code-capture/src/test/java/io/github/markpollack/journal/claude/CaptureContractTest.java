@@ -108,7 +108,7 @@ class CaptureContractTest {
                 .build()));
 
         return SessionLogParser.parse(messages.iterator(), "execute", "prompt", traceFile,
-                null, maxTurns);
+                maxTurns);
     }
 
     @Test
@@ -181,7 +181,7 @@ class CaptureContractTest {
                         .build()));
 
         PhaseCapture capture = SessionLogParser.parse(messages.iterator(), "execute", "p", null,
-                null, 40);
+                40);
 
         // The final turn said "end_turn" — taking the turn's word for it would have recorded this
         // cut-off run as a natural finish. The harness-level subtype wins for exactly this reason.

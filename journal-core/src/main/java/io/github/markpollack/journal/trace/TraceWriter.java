@@ -42,9 +42,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * the {@code runId} of such a trace is not a journal run ID.
  *
  * <p>Text, thinking and tool-result content is always written whole: nothing is shortened or left
- * out. The trace holds the normalized record only: the vendor's messages as received are kept in
- * a separate stream file (see {@link io.github.markpollack.journal.raw.RawArtifacts}), and a line
- * built from one of those messages names it in {@code source} (see {@link #sourceRef}). Traces can hold prompts,
+ * out. The trace holds the normalized record only: the vendor's own session files are kept
+ * apart (see {@link io.github.markpollack.journal.raw.RawArtifacts}). Traces can hold prompts,
  * file contents, command output and secrets, so treat them as sensitive files. The writer does not
  * check the path it is given.
  *
@@ -65,7 +64,6 @@ public class TraceWriter implements Closeable {
 
     private final AtomicInteger seq = new AtomicInteger(0);
 
-    private Map<String, Object> sourceRef;
 
     private final String runId;
 
@@ -108,30 +106,6 @@ public class TraceWriter implements Closeable {
             }
             throw ex;
         }
-    }
-
-    /**
-     * Sets the vendor messages that the lines written next were built from. Until it is changed or
-     * cleared, every line written by a {@code write} method (except {@code step_cost}) carries
-     * {@code source}: {@code {"stream": <stream file name>, "seqs": [<line numbers in that file>]}}.
-     * The stream file is the one {@link io.github.markpollack.journal.raw.RawStream} wrote, and a
-     * sequence number is one {@code append} returned. A message that produced several lines is
-     * named by each of them, and a line built from several messages (the run's single
-     * {@code result} line, when a stream has several result messages) names all of them.
-     *
-     * @param stream the stream file's name, such as {@code "invoke.stream.jsonl"}
-     * @param streamSeqs the messages' line numbers in that file, each starting at 1
-     */
-    public void sourceRef(String stream, long... streamSeqs) {
-        Map<String, Object> ref = new LinkedHashMap<>();
-        ref.put("stream", stream);
-        ref.put("seqs", java.util.Arrays.stream(streamSeqs).boxed().toList());
-        this.sourceRef = ref;
-    }
-
-    /** Stops naming a source message on the lines written next. */
-    public void clearSourceRef() {
-        this.sourceRef = null;
     }
 
     /**
@@ -358,9 +332,6 @@ public class TraceWriter implements Closeable {
         line.put("ts", Instant.now().toString());
         line.put("seq", seq.getAndIncrement());
         line.put("type", type);
-        if (sourceRef != null && !"step_cost".equals(type)) {
-            line.put("source", sourceRef);
-        }
         return line;
     }
 

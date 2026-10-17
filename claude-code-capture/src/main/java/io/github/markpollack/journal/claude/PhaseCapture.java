@@ -31,8 +31,7 @@ import java.util.Map;
  * <p>The turn limit ({@code maxTurns}) means something only next to the stop reason: 55 turns
  * alone does not say whether the agent finished or was cut off at its limit. Claude Code does not
  * report the limit, so it comes from the caller through
- * {@link SessionLogParser#parse(java.util.Iterator, String, String, java.nio.file.Path,
- * io.github.markpollack.journal.raw.RawArtifacts, int)}.
+ * {@link SessionLogParser#parse(java.util.Iterator, String, String, java.nio.file.Path, int)}.
  *
  * <p>The capture keeps unmodifiable copies of the lists it is given: later changes to those lists
  * do not reach it, and its own lists cannot be changed. A capture can be shared between threads.
@@ -78,6 +77,8 @@ import java.util.Map;
  *        {@code failed} and {@code refused}; empty if it reported none
  * @param cacheWriteTiers how the cache writes split between the 5-minute and 1-hour caches, or {@code null} if no
  *        result line reported the split; see {@link CacheWriteTiers}
+ * @param vendorEvents the messages that are not ordinary assistant or user messages, whole and in stream order; see
+ *        {@link ClaudeVendorEvent}. Empty if there were none
  * @param sessionCost the session's running totals this capture's cost was rebased from, when
  *        {@link SessionLogParser#withSessionBaseline} subtracted the previous capture of the same
  *        session; {@code null} when {@code totalCostUsd}, {@code modelCosts} and
@@ -111,7 +112,8 @@ public record PhaseCapture(
         boolean subagentTracksAvailable,
         Map<String, Object> reportedSubagentStats,
         SessionCost sessionCost,
-        CacheWriteTiers cacheWriteTiers
+        CacheWriteTiers cacheWriteTiers,
+        List<ClaudeVendorEvent> vendorEvents
 ) {
 
     /**
@@ -130,6 +132,7 @@ public record PhaseCapture(
         toolResults = copy(toolResults);
         turns = copy(turns);
         modelCosts = copy(modelCosts);
+        vendorEvents = vendorEvents == null ? List.of() : Collections.unmodifiableList(new ArrayList<>(vendorEvents));
     }
 
     /**
@@ -146,7 +149,7 @@ public record PhaseCapture(
         this(phaseName, promptText, inputTokens, outputTokens, thinkingTokens, cacheCreationInputTokens,
                 cacheReadInputTokens, durationMs, apiDurationMs, totalCostUsd, sessionId, numTurns, isError,
                 textOutput, thinkingBlocks, toolUses, rawResult, toolResults, turns, modelCosts, stopReason,
-                maxTurns, subagents, subagentTracksAvailable, reportedSubagentStats, null, null);
+                maxTurns, subagents, subagentTracksAvailable, reportedSubagentStats, null, null, List.of());
     }
 
     /**

@@ -26,37 +26,29 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * The level-0 files of one run: what the vendor's agent sent and wrote, kept exactly as it was,
- * in a directory beside the normalized trace. Two kinds of file go here, each separate from the
- * trace and from each other:
- *
- * <ul>
- * <li>a <em>stream file</em> per phase ({@code <phase>.stream.jsonl}): the vendor's live
- * messages, one per line, byte for byte as received, written through {@link #openStream};</li>
- * <li>an <em>archive of the vendor's own session files</em> ({@code session/<name>.zip}), taken with
- * {@link #zipSessionFiles} before the vendor's retention can remove them.</li>
- * </ul>
+ * The level-0 files of one run: what the vendor's agent wrote, kept exactly as it was, in a
+ * directory beside the normalized record. The level-0 artifact is an <em>archive of the vendor's
+ * own session files</em> ({@code session/<name>.zip}), taken with {@link #zipSessionFiles} before
+ * the vendor's retention can remove it. The live stream a CLI prints is not stored as a file; what
+ * it carries beyond the session files is kept in the normalized record itself, as
+ * {@code vendor_event} custom events.
  *
  * <p>A {@code manifest.json} in the same directory lists every artifact with its relative path,
- * phase, status, size, line count and SHA-256, and says when an attempt failed and why, so a
- * missing artifact is always explained. The manifest is rewritten (atomically) each time an
- * artifact starts or finishes, so a run that dies mid-write still has a manifest naming every
- * artifact it began; a stream file that was never closed has status {@code open}, and its content
- * up to the last whole line is intact because each line is flushed as it is written.
+ * status, size and SHA-256, and says when an attempt failed and why, so a missing artifact is
+ * always explained. The manifest is rewritten (atomically) each time an artifact starts or
+ * finishes, so a run that dies mid-write still has a manifest naming every artifact it began.
  *
  * <p>Nothing here parses, shortens, redacts or reorders what it is given. These files hold
- * prompts, file contents, tool results and whatever else the vendor sent; treat them as sensitive.
+ * prompts, file contents, tool results and whatever else the vendor wrote; treat them as
+ * sensitive.
  *
- * <p>An instance is safe to use from several threads. Close it when the run ends; closing closes
- * any stream still open and writes the final manifest.
+ * <p>An instance is safe to use from several threads. Close it when the run ends; closing writes
+ * the final manifest.
  */
 public final class RawArtifacts implements AutoCloseable {
 
     /** The manifest's file name, in the raw directory. */
     public static final String MANIFEST_FILE = "manifest.json";
-
-    /** The suffix of a stream file; the phase name comes before it. */
-    public static final String STREAM_SUFFIX = ".stream.jsonl";
 
     /** The subdirectory, under the raw directory, that holds session archives. */
     public static final String SESSION_DIR = "session";
@@ -86,8 +78,6 @@ public final class RawArtifacts implements AutoCloseable {
     private final Instant createdAt = Instant.now();
 
     private final List<Map<String, Object>> entries = new ArrayList<>();
-
-    private final List<RawStream> streams = new ArrayList<>();
 
     private boolean closed;
 
@@ -123,33 +113,6 @@ public final class RawArtifacts implements AutoCloseable {
     }
 
     /**
-     * Starts the stream file of a phase.
-     *
-     * @param phase the phase name; letters, digits, dot, underscore and hyphen only, so it is a
-     *        safe file name
-     * @return the writer for the phase's stream
-     * @throws IOException if the file cannot be created
-     * @throws IllegalArgumentException if the name is not a safe file name
-     * @throws IllegalStateException if the phase already has a stream, or this is closed
-     */
-    public synchronized RawStream openStream(String phase) throws IOException {
-        requireOpen();
-        requireName(phase);
-        String relative = phase + STREAM_SUFFIX;
-        for (Map<String, Object> entry : entries) {
-            if (relative.equals(entry.get("path"))) {
-                throw new IllegalStateException("phase already has a stream: " + phase);
-            }
-        }
-        Map<String, Object> entry = newEntry("stream", relative);
-        entry.put("phase", phase);
-        RawStream stream = new RawStream(this, rawDir.resolve(relative), entry);
-        streams.add(stream);
-        writeManifest();
-        return stream;
-    }
-
-    /**
      * One thing to put in a session archive: a file, or a directory with everything under it.
      *
      * @param path the file or directory on disk
@@ -169,7 +132,7 @@ public final class RawArtifacts implements AutoCloseable {
 
     /**
      * Archives a vendor's own session files into one zip, {@code session/<zipName>}: the third
-     * level-0 artifact, kept separate from the trace and from the stream files. File contents are
+     * level-0 artifact, kept separate from the trace. File contents are
      * stored exactly (compressed, byte for byte on extraction). The manifest records the zip's size
      * and SHA-256 and lists every entry with its uncompressed size, SHA-256 and modification time,
      * so the contents can be checked without unpacking. Symbolic links are not followed, and
@@ -346,16 +309,6 @@ public final class RawArtifacts implements AutoCloseable {
             return;
         }
         IOException first = null;
-        for (RawStream stream : streams) {
-            try {
-                stream.close();
-            }
-            catch (IOException ex) {
-                if (first == null) {
-                    first = ex;
-                }
-            }
-        }
         closed = true;
         try {
             writeManifest();
@@ -368,17 +321,6 @@ public final class RawArtifacts implements AutoCloseable {
         if (first != null) {
             throw first;
         }
-    }
-
-    synchronized void streamFinished(Map<String, Object> entry, Map<String, Object> finished, boolean ok)
-            throws IOException {
-        entry.putAll(finished);
-        entry.put("status", ok ? STATUS_COMPLETE : STATUS_FAILED);
-        if (!ok) {
-            entry.put("reason", "the stream file could not be closed cleanly");
-        }
-        entry.put("finishedAt", Instant.now().toString());
-        writeManifest();
     }
 
     private boolean fail(Map<String, Object> entry, String reason) {

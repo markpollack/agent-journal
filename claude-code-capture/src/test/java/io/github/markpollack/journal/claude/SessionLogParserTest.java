@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import io.github.markpollack.journal.raw.RawArtifacts;
 import io.github.markpollack.journal.event.ToolKind;
 import io.github.markpollack.claude.agent.sdk.parsing.ParsedMessage;
 import io.github.markpollack.claude.agent.sdk.types.AssistantMessage;
@@ -548,7 +547,7 @@ class SessionLogParserTest {
     }
 
     @Test
-    void rawStreamKeepsVerbatimWireAndTraceLinesNameTheirSource(@TempDir Path tempDir) throws IOException {
+    void messagesThatAreNotAssistantOrUserAreKeptWholeAsVendorEvents() {
         // The wire envelope the typed Message drops (sub-agent linkage + permission_denials).
         String assistantWire = "{\"type\":\"assistant\",\"isSidechain\":true,\"parentUuid\":\"u-1\","
                 + "\"parent_tool_use_id\":\"toolu_parent\","
@@ -559,39 +558,25 @@ class SessionLogParserTest {
                 wrapRaw(new AssistantMessage(List.of(new TextBlock("Hello"))), assistantWire),
                 wrapRaw(resultMessage(0.01, 1000, 800, 100, 50), resultWire));
 
-        Path traceFile = tempDir.resolve("trace-raw.jsonl");
-        Path rawDir = tempDir.resolve("raw");
-        try (RawArtifacts raw = RawArtifacts.open(rawDir, "claude-code", "2.1.299")) {
-            SessionLogParser.parse(messages.iterator(), "test", "prompt", traceFile, raw);
-        }
+        PhaseCapture capture = SessionLogParser.parse(messages.iterator(), "test", "prompt");
 
-        // Level 0: the two wire messages exactly as sent, in order, in their own file.
-        assertThat(Files.readAllLines(rawDir.resolve("test.stream.jsonl"))).containsExactly(assistantWire, resultWire);
-
-        // Level 1: the trace is normalized only (no raw lines) and each line names the message it came from.
-        List<String> lines = Files.readAllLines(traceFile);
-        assertThat(lines.get(0)).doesNotContain("rawMode");
-        assertThat(lines).noneMatch(l -> l.contains("\"type\":\"raw\""));
-        assertThat(lines).anySatisfy(l -> assertThat(l).contains("\"type\":\"text\"").contains("\"content\":\"Hello\"")
-                .contains("\"source\":{\"stream\":\"test.stream.jsonl\",\"seqs\":[1]}"));
-        assertThat(lines).anySatisfy(l -> assertThat(l).contains("\"type\":\"result\"")
-                .contains("\"source\":{\"stream\":\"test.stream.jsonl\",\"seqs\":[2]}"));
+        assertThat(capture.vendorEvents()).containsExactly(
+                new ClaudeVendorEvent(2, "result", null, resultWire, null));
     }
 
     @Test
-    void messagesWithoutTheirOriginalTextAreCountedAsUnavailable(@TempDir Path tempDir) throws IOException {
+    void aMessageWithoutItsOriginalTextIsListedWithTheReason() {
         List<ParsedMessage> messages = List.of(
                 wrap(new AssistantMessage(List.of(new TextBlock("Hello")))),
-                wrapRaw(resultMessage(0.01, 1000, 800, 100, 50), "{\"type\":\"result\"}"));
+                wrap(resultMessage(0.01, 1000, 800, 100, 50)));
 
-        Path rawDir = tempDir.resolve("raw");
-        try (RawArtifacts raw = RawArtifacts.open(rawDir, "claude-code", null)) {
-            SessionLogParser.parse(messages.iterator(), "test", "prompt", null, raw);
-        }
+        PhaseCapture capture = SessionLogParser.parse(messages.iterator(), "test", "prompt");
 
-        assertThat(Files.readAllLines(rawDir.resolve("test.stream.jsonl"))).containsExactly("{\"type\":\"result\"}");
-        assertThat(Files.readString(rawDir.resolve("manifest.json")))
-                .contains("\"message-without-original-text\" : 1");
+        assertThat(capture.vendorEvents()).hasSize(1);
+        ClaudeVendorEvent event = capture.vendorEvents().get(0);
+        assertThat(event.messageNumber()).isEqualTo(2);
+        assertThat(event.rawJson()).isNull();
+        assertThat(event.reason()).contains("original text");
     }
 
     @Test
@@ -790,7 +775,7 @@ class SessionLogParserTest {
                 wrap(new AssistantMessage(List.of(new TextBlock("Hello world")))),
                 wrap(resultMessage(0.01, 1000, 500, 100, 50)));
 
-        PhaseCapture capture = SessionLogParser.parse(messages.iterator(), "explore", "p", traceFile, null);
+        PhaseCapture capture = SessionLogParser.parse(messages.iterator(), "explore", "p", traceFile);
 
         assertThat(capture.textOutput()).isEqualTo("Hello world");
         assertThat(traceFile).exists();

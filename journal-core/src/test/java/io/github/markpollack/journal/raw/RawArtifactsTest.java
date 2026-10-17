@@ -41,86 +41,12 @@ class RawArtifactsTest {
     }
 
     @Test
-    @DisplayName("a stream keeps every line byte for byte, including malformed JSON and non-ASCII, and numbers them from 1")
-    void streamIsVerbatim(@TempDir Path dir) throws Exception {
-        List<String> lines = List.of("{\"type\":\"system\",\"subtype\":\"init\"}", "{\"type\":\"assistant\",\"message\":{\"text\":\"héllo 😀\"}",
-                "not json at all", "", "{\"a\":1}   ");
-        Path raw = dir.resolve("raw");
-        try (RawArtifacts artifacts = RawArtifacts.open(raw, "claude-code", "2.1.299")) {
-            RawStream stream = artifacts.openStream("invoke");
-            for (int i = 0; i < lines.size(); i++) {
-                assertThat(stream.append(lines.get(i))).isEqualTo(i + 1L);
-            }
-        }
-        byte[] written = Files.readAllBytes(raw.resolve("invoke.stream.jsonl"));
-        String expected = String.join("\n", lines) + "\n";
-        assertThat(written).isEqualTo(expected.getBytes(StandardCharsets.UTF_8));
-
-        JsonNode entry = artifact(manifest(raw), "invoke.stream.jsonl");
-        assertThat(entry.get("status").asText()).isEqualTo("complete");
-        assertThat(entry.get("lines").asLong()).isEqualTo(5);
-        assertThat(entry.get("bytes").asLong()).isEqualTo(written.length);
-        assertThat(entry.get("sha256").asText()).isEqualTo(sha(written));
-    }
-
-    @Test
-    @DisplayName("a run killed mid-stream leaves every appended line and a manifest that says the stream was open")
-    void crashLeavesReplayablePrefix(@TempDir Path dir) throws Exception {
-        Path raw = dir.resolve("raw");
-        RawArtifacts artifacts = RawArtifacts.open(raw, "codex", null);
-        RawStream stream = artifacts.openStream("phase-1");
-        stream.append("{\"n\":1}");
-        stream.append("{\"n\":2}");
-        // no close(): the process "dies" here
-
-        assertThat(Files.readAllLines(raw.resolve("phase-1.stream.jsonl"))).containsExactly("{\"n\":1}", "{\"n\":2}");
-        JsonNode m = manifest(raw);
-        assertThat(m.get("closed").asBoolean()).isFalse();
-        assertThat(artifact(m, "phase-1.stream.jsonl").get("status").asText()).isEqualTo("open");
-        assertThat(m.get("vendorVersion").isNull()).isTrue();
-        artifacts.close();
-    }
-
-    @Test
-    @DisplayName("messages the adapter could not keep verbatim are counted by type in the manifest")
-    void unavailableMessagesAreCounted(@TempDir Path dir) throws Exception {
-        Path raw = dir.resolve("raw");
-        try (RawArtifacts artifacts = RawArtifacts.open(raw, "claude-code", "2.1.299")) {
-            RawStream stream = artifacts.openStream("invoke");
-            stream.append("{}");
-            stream.noteUnavailable("rate_limit_event");
-            stream.noteUnavailable("rate_limit_event");
-            stream.noteUnavailable("control_request");
-        }
-        JsonNode unavailable = artifact(manifest(raw), "invoke.stream.jsonl").get("unavailable");
-        assertThat(unavailable.get("rate_limit_event").asLong()).isEqualTo(2);
-        assertThat(unavailable.get("control_request").asLong()).isEqualTo(1);
-    }
-
-    @Test
-    @DisplayName("names that could escape the raw directory are refused")
+    @DisplayName("a zip name that could escape the raw directory is refused")
     void unsafeNamesRefused(@TempDir Path dir) throws Exception {
         try (RawArtifacts artifacts = RawArtifacts.open(dir.resolve("raw"), "claude-code", null)) {
-            assertThatThrownBy(() -> artifacts.openStream("../evil")).isInstanceOf(IllegalArgumentException.class);
-            assertThatThrownBy(() -> artifacts.openStream("a/b")).isInstanceOf(IllegalArgumentException.class);
-            assertThatThrownBy(() -> artifacts.openStream("..")).isInstanceOf(IllegalArgumentException.class);
             assertThatThrownBy(() -> artifacts.zipSessionFiles("../x.zip", null, null, List.of()))
                     .isInstanceOf(IllegalArgumentException.class);
-            artifacts.openStream("ok");
-            assertThatThrownBy(() -> artifacts.openStream("ok")).isInstanceOf(IllegalStateException.class);
         }
-    }
-
-    @Test
-    @DisplayName("a line with an embedded line break is kept whole and counted in the manifest")
-    void embeddedLineBreaksAreCounted(@TempDir Path dir) throws Exception {
-        Path raw = dir.resolve("raw");
-        try (RawArtifacts artifacts = RawArtifacts.open(raw, "junie", null)) {
-            RawStream s = artifacts.openStream("p");
-            s.append("{\"a\":\n1}");
-        }
-        assertThat(Files.readString(raw.resolve("p.stream.jsonl"))).isEqualTo("{\"a\":\n1}\n");
-        assertThat(artifact(manifest(raw), "p.stream.jsonl").get("linesWithEmbeddedLineBreaks").asLong()).isEqualTo(1);
     }
 
     private static String zipText(Path zip, String entry) throws IOException {

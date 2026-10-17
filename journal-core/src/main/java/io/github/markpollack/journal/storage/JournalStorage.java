@@ -253,8 +253,7 @@ public interface JournalStorage {
 
     /**
      * Returns the directory where a run's level-0 files belong, if this storage has one: the
-     * vendor's live messages exactly as received (one stream file per phase), copies of the
-     * vendor's own session files, and the {@code manifest.json} that lists them. Keeping them lets
+     * vendor's own session files (archived as a zip) and the {@code manifest.json} that lists them. Keeping them lets
      * later analysis recover data that the parsers dropped. Write them with
      * {@link io.github.markpollack.journal.raw.RawArtifacts}.
      *
