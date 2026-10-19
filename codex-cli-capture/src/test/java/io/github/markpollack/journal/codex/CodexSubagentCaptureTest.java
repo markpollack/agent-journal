@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -146,7 +147,8 @@ class CodexSubagentCaptureTest {
         assertThat(new CodexPhaseCapture(multi.phaseName(), multi.promptText(), multi.model(),
                 multi.cliVersion(), multi.sessionId(), multi.inputTokens(), multi.outputTokens(),
                 multi.reasoningOutputTokens(), multi.cacheWriteInputTokens(), multi.cachedInputTokens(),
-                multi.durationMs(), multi.isError(), multi.textOutput(), multi.toolUses())).isEqualTo(single);
+                multi.durationMs(), multi.isError(), multi.textOutput(), multi.toolUses(), List.of(), false, Map.of(),
+                multi.vendorEvents())).isEqualTo(single);
     }
 
     @Test

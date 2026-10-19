@@ -21,7 +21,9 @@ import java.util.List;
  * record, {@code task_complete} or {@code turn_aborted} ({@code statusSource=child_last_turn}), else
  * {@code statusSource=none}. Tokens and tool uses come from the child's file only. A forked child
  * replays its parent's history; those records are skipped and counted in
- * {@code replayedRecordsSkipped}. {@code durationMs} is -1 when the child's end was not observed.
+ * {@code replayedRecordsSkipped}. {@code durationMs} is -1 when the child's end was not observed. {@code vendorEvents} are the records of
+ * the child's rollout that are not turned into fields above, whole and in file order (see
+ * {@link CodexVendorEvent}).
  */
 public record CodexSubagentCapture(
         String threadId,
@@ -43,11 +45,13 @@ public record CodexSubagentCapture(
         int reasoningOutputTokens,
         int cacheWriteInputTokens,
         int cachedInputTokens,
-        long durationMs
+        long durationMs,
+        List<CodexVendorEvent> vendorEvents
 ) {
 
     public CodexSubagentCapture {
         toolUses = toolUses == null ? List.of() : List.copyOf(toolUses);
+        vendorEvents = vendorEvents == null ? List.of() : List.copyOf(vendorEvents);
         status = status == null ? "unknown" : status;
         statusSource = statusSource == null ? "none" : statusSource;
     }

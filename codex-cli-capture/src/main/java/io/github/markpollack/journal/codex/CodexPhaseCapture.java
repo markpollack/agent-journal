@@ -49,6 +49,9 @@ import java.util.Set;
  *     parse
  * @param subagentTracksAvailable whether the phase was parsed from {@link CodexRollouts}, so that
  *     child tracks could have been captured
+ * @param vendorEvents the records of the root rollout that are not turned into fields above, whole and in
+ *        file order; see {@link CodexVendorEvent}. A sub-agent's are in its own
+ *        {@link CodexSubagentCapture#vendorEvents()}
  * @param spawnedThreadIds the {@code spawn_agent} call ids that a {@code SubAgentActivity}
  *     {@code started} record followed, mapped to the child thread id it named
  */
@@ -69,7 +72,8 @@ public record CodexPhaseCapture(
         List<CodexToolUseRecord> toolUses,
         List<CodexSubagentCapture> subagents,
         boolean subagentTracksAvailable,
-        Map<String, String> spawnedThreadIds
+        Map<String, String> spawnedThreadIds,
+        List<CodexVendorEvent> vendorEvents
 ) {
 
     /** The tool name Codex uses to start a sub-agent thread. */
@@ -85,6 +89,7 @@ public record CodexPhaseCapture(
         spawnedThreadIds = spawnedThreadIds == null
                 ? Map.of()
                 : Collections.unmodifiableMap(new LinkedHashMap<>(spawnedThreadIds));
+        vendorEvents = vendorEvents == null ? List.of() : List.copyOf(vendorEvents);
     }
 
     /**
@@ -97,7 +102,7 @@ public record CodexPhaseCapture(
             String textOutput, List<CodexToolUseRecord> toolUses) {
         this(phaseName, promptText, model, cliVersion, sessionId, inputTokens, outputTokens,
                 reasoningOutputTokens, cacheWriteInputTokens, cachedInputTokens, durationMs, isError,
-                textOutput, toolUses, List.of(), false, Map.of());
+                textOutput, toolUses, List.of(), false, Map.of(), List.of());
     }
 
     /** Creates a capture with sub-agent tracks and no record of which spawns were started. */
@@ -108,7 +113,7 @@ public record CodexPhaseCapture(
             boolean subagentTracksAvailable) {
         this(phaseName, promptText, model, cliVersion, sessionId, inputTokens, outputTokens,
                 reasoningOutputTokens, cacheWriteInputTokens, cachedInputTokens, durationMs, isError,
-                textOutput, toolUses, subagents, subagentTracksAvailable, Map.of());
+                textOutput, toolUses, subagents, subagentTracksAvailable, Map.of(), List.of());
     }
 
     /** A spawn in this phase that has no sub-agent track, with the reason. */

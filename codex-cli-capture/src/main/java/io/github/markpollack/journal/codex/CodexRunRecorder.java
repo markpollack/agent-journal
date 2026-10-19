@@ -174,6 +174,7 @@ public final class CodexRunRecorder {
         for (CodexToolUseRecord tool : phase.toolUses()) {
             run.logEvent(toolCallEvent(tool));
         }
+        logVendorEvents(run, phase.phaseName(), phase.vendorEvents());
 
         Instant analyzedAt = Instant.now();
         for (JournalStep step : CodexJournalSteps.fromPhaseCapture(phase, run.id())) {
@@ -283,6 +284,7 @@ public final class CodexRunRecorder {
             for (CodexToolUseRecord tool : subagent.toolUses()) {
                 child.logEvent(toolCallEvent(tool));
             }
+            logVendorEvents(child, phase.phaseName(), subagent.vendorEvents());
             Instant analyzedAt = Instant.now();
             for (JournalStep step : CodexJournalSteps.forSubagent(subagent, child.id())) {
                 child.logDerivedEvent(StepCostEvent.fromStep(step, analyzedAt));
@@ -322,6 +324,35 @@ public final class CodexRunRecorder {
                 .success(!tool.isError())
                 .errorMessage(tool.errorMessage())
                 .build();
+    }
+
+    /**
+     * Logs each rollout record the parser did not consume as a {@code vendor_event} custom event
+     * with the attributes {@code vendor}, {@code kind}, {@code envelopeType}, {@code ordinal} (if
+     * Codex gave one), {@code vendorTimestamp} (as Codex wrote it) and {@code payload} (the whole
+     * record). The event's own time is Codex's timestamp when it parses, else now.
+     */
+    private static void logVendorEvents(Run target, String phaseName, List<CodexVendorEvent> vendorEvents) {
+        for (CodexVendorEvent vendorEvent : vendorEvents) {
+            Map<String, Object> attributes = phaseAttributes(phaseName, "vendor", "codex");
+            attributes.put("kind", vendorEvent.kind());
+            attributes.put("envelopeType", vendorEvent.envelopeType());
+            if (vendorEvent.ordinal() >= 0) {
+                attributes.put("ordinal", vendorEvent.ordinal());
+            }
+            Instant when = Instant.now();
+            if (vendorEvent.timestamp() != null) {
+                attributes.put("vendorTimestamp", vendorEvent.timestamp());
+                try {
+                    when = Instant.parse(vendorEvent.timestamp());
+                }
+                catch (java.time.format.DateTimeParseException ignored) {
+                    // keep now; the text is in the attributes
+                }
+            }
+            attributes.put("payload", vendorEvent.payload());
+            target.logEvent(new CustomEvent(when, "vendor_event", attributes));
+        }
     }
 
     // Not Map.of, which throws NullPointerException for a capture with no phase name; such a

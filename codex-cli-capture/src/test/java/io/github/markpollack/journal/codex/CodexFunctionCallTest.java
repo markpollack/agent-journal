@@ -144,27 +144,16 @@ class CodexFunctionCallTest {
     }
 
     @Test
-    void unknownRecordTypeWithACallIdIsLoggedAtDebug() throws Exception {
-        Logger logger = (Logger) LoggerFactory.getLogger(CodexSessionParser.class);
-        ListAppender<ILoggingEvent> appender = new ListAppender<>();
-        appender.start();
-        Level previous = logger.getLevel();
-        logger.setLevel(Level.DEBUG);
-        logger.addAppender(appender);
-        try {
-            CodexPhaseCapture capture = parse("""
-                    {"type":"response_item","payload":{"type":"local_shell_call","call_id":"c9"}}
-                    """);
+    void unknownRecordTypeWithACallIdIsKeptWholeAsAVendorEvent() throws Exception {
+        CodexPhaseCapture capture = parse("""
+                {"type":"response_item","payload":{"type":"local_shell_call","call_id":"c9"}}
+                """);
 
-            assertThat(capture.toolUses()).isEmpty();
-            assertThat(appender.list).singleElement().satisfies(event -> {
-                assertThat(event.getLevel()).isEqualTo(Level.DEBUG);
-                assertThat(event.getFormattedMessage()).contains("local_shell_call").contains("c9");
-            });
-        } finally {
-            logger.detachAppender(appender);
-            logger.setLevel(previous);
-        }
+        assertThat(capture.toolUses()).isEmpty();
+        assertThat(capture.vendorEvents()).singleElement().satisfies(event -> {
+            assertThat(event.kind()).isEqualTo("local_shell_call");
+            assertThat(event.payload().toString()).contains("c9");
+        });
     }
 
     private static String call(String name, String arguments) throws Exception {

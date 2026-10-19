@@ -174,7 +174,7 @@ public final class CodexSessionParser {
         return new CodexPhaseCapture(core.phaseName(), core.promptText(), core.model(), core.cliVersion(),
                 core.sessionId(), core.inputTokens(), core.outputTokens(), core.reasoningOutputTokens(),
                 core.cacheWriteInputTokens(), core.cachedInputTokens(), core.durationMs(), core.isError(),
-                core.textOutput(), core.toolUses(), subagents, true, rootState.spawnedThreadIds);
+                core.textOutput(), core.toolUses(), subagents, true, rootState.spawnedThreadIds, core.vendorEvents());
     }
 
     private static ParserState read(CodexRollout rollout, boolean childTrack) throws IOException {
@@ -230,6 +230,7 @@ public final class CodexSessionParser {
         private long historyStartOrdinal = -1;
         private int replayedRecordsSkipped;
         private String firstUserMessage;
+        private final List<CodexVendorEvent> vendorEvents = new ArrayList<>();
 
         ParserState() {
             this(false);
@@ -260,7 +261,9 @@ public final class CodexSessionParser {
                 return;
             }
             if ("event_msg".equals(envelopeType) && "item_completed".equals(text(payload, "type"))) {
-                acceptItemCompleted(payload.path("item"));
+                if (!acceptItemCompleted(payload.path("item"))) {
+                    keepWhole(envelope, envelopeType, "item_completed");
+                }
                 return;
             }
             if (childTrack && firstUserMessage == null) {
@@ -273,24 +276,51 @@ public final class CodexSessionParser {
 
             String payloadType = text(payload, "type");
             if (payloadType == null) {
+                keepWhole(envelope, envelopeType, null);
                 return;
             }
+            // A tool record without a call_id cannot be paired and is not consumed.
+            boolean hasCallId = text(payload, "call_id") != null;
             switch (payloadType) {
-                case "custom_tool_call" -> acceptToolCall(payload);
-                case "custom_tool_call_output" -> acceptToolOutput(payload);
-                case "function_call" -> acceptFunctionCall(payload);
-                case "function_call_output" -> acceptFunctionCallOutput(payload);
+                case "custom_tool_call" -> {
+                    acceptToolCall(payload);
+                    if (!hasCallId) {
+                        keepWhole(envelope, envelopeType, payloadType);
+                    }
+                }
+                case "custom_tool_call_output" -> {
+                    acceptToolOutput(payload);
+                    if (!hasCallId) {
+                        keepWhole(envelope, envelopeType, payloadType);
+                    }
+                }
+                case "function_call" -> {
+                    acceptFunctionCall(payload);
+                    if (!hasCallId) {
+                        keepWhole(envelope, envelopeType, payloadType);
+                    }
+                }
+                case "function_call_output" -> {
+                    acceptFunctionCallOutput(payload);
+                    if (!hasCallId) {
+                        keepWhole(envelope, envelopeType, payloadType);
+                    }
+                }
                 case "token_count" -> acceptTokenCount(payload);
                 case "task_complete" -> acceptTaskComplete(payload);
                 case "turn_aborted" -> lastTurnTerminal = "interrupted";
-                default -> {
-                    // Reasoning, messages, rate limits, and future records do not alter tool pairing.
-                    if (text(payload, "call_id") != null) {
-                        log.debug("Skipping Codex record of type {} with call_id {}", payloadType,
-                                text(payload, "call_id"));
-                    }
-                }
+                // Reasoning, messages, rate limits, task starts and future records do not feed a field
+                // of the capture; they are kept whole.
+                default -> keepWhole(envelope, envelopeType, payloadType);
             }
+        }
+
+        /** Keeps a record the parser does not consume, whole, in file order. */
+        private void keepWhole(JsonNode envelope, String envelopeType, String kind) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> payload = MAPPER.convertValue(envelope, Map.class);
+            vendorEvents.add(new CodexVendorEvent(envelopeType, kind, envelope.path("ordinal").asLong(-1L),
+                    text(envelope, "timestamp"), payload));
         }
 
         private void acceptToolCall(JsonNode payload) {
@@ -381,14 +411,15 @@ public final class CodexSessionParser {
             sourceAgentPath = text(payload.path("source"), "subagent");
         }
 
-        private void acceptItemCompleted(JsonNode item) {
+        /** Returns whether the item fed a field of the capture; an item that did not is kept whole. */
+        private boolean acceptItemCompleted(JsonNode item) {
             if (!"SubAgentActivity".equals(text(item, "type"))) {
-                return;
+                return false;
             }
             String kind = text(item, "kind");
             String agentThreadId = text(item, "agent_thread_id");
             if (agentThreadId == null || kind == null) {
-                return;
+                return false;
             }
             if ("started".equals(kind)) {
                 String callId = text(item, "id");
@@ -401,7 +432,10 @@ public final class CodexSessionParser {
                 }
             } else if ("completed".equals(kind) || "interrupted".equals(kind)) {
                 activityKindByThread.put(agentThreadId, kind); // the last one in file order wins
+            } else {
+                return false;
             }
+            return true;
         }
 
         private void acceptTaskComplete(JsonNode payload) {
@@ -421,7 +455,8 @@ public final class CodexSessionParser {
             }
             return new CodexPhaseCapture(phaseName, promptText, model, cliVersion, sessionId,
                     inputTokens, outputTokens, reasoningOutputTokens, cacheWriteInputTokens,
-                    cachedInputTokens, durationMs, isError || !sawTaskComplete, textOutput, toolUses);
+                    cachedInputTokens, durationMs, isError || !sawTaskComplete, textOutput, toolUses, List.of(), false,
+                    Map.of(), vendorEvents);
         }
 
         CodexSubagentCapture subagent(String ownThreadId, Map<String, ParserState> statesByThread,
@@ -464,7 +499,7 @@ public final class CodexSessionParser {
             return new CodexSubagentCapture(ownThreadId, spawnCallId, parentSpawnCallId, depth, agentPath,
                     status, statusSource, forked, replayedRecordsSkipped, cliVersion, model, firstUserMessage,
                     textOutput, toolUses, inputTokens, outputTokens, reasoningOutputTokens,
-                    cacheWriteInputTokens, cachedInputTokens, sawTaskComplete ? durationMs : -1L);
+                    cacheWriteInputTokens, cachedInputTokens, sawTaskComplete ? durationMs : -1L, vendorEvents);
         }
 
         private String spawnCallIdOf(String childThreadId) {
