@@ -156,6 +156,56 @@ class GrokSessionParserTest {
         assertThat(tool.errorMessage()).isNull();
     }
 
+    @Test
+    void endLineWithoutCostOrSomeTokensLeavesThemNotReportedInsteadOfZero() throws Exception {
+        String stream = String.join("\n",
+                "{\"type\":\"text\",\"data\":\"hi\"}",
+                "{\"type\":\"end\",\"stopReason\":\"end_turn\",\"usage\":{\"input_tokens\":7,"
+                        + "\"output_tokens\":3}}") + "\n";
+
+        GrokPhaseCapture capture = GrokSessionParser.parse(new BufferedReader(new StringReader(stream)), "p", "q");
+
+        assertThat(capture.costReported()).isFalse();
+        assertThat(capture.inputTokens()).isEqualTo(7);
+        assertThat(capture.outputTokens()).isEqualTo(3);
+        assertThat(capture.thinkingTokens()).isEqualTo(GrokPhaseCapture.NOT_REPORTED);
+        assertThat(capture.cacheReadInputTokens()).isEqualTo(GrokPhaseCapture.NOT_REPORTED);
+        assertThat(capture.tokensNotReported()).containsExactly("thinking", "cacheCreation", "cacheRead");
+    }
+
+    @Test
+    void realEndLineCostAndEveryTokenCountAreReported() throws Exception {
+        GrokPhaseCapture capture = GrokSessionParser.parse(fixture("grok-streaming-json.jsonl"), "p", "q");
+
+        assertThat(capture.costReported()).isTrue();
+        assertThat(capture.tokensNotReported()).isEmpty();
+    }
+
+    @Test
+    void reportedZeroCostIsNotMistakenForNotReported() throws Exception {
+        String stream = "{\"type\":\"end\",\"stopReason\":\"end_turn\",\"total_cost_usd\":0.0,"
+                + "\"usage\":{\"input_tokens\":0,\"output_tokens\":0,\"reasoning_tokens\":0,"
+                + "\"cache_read_input_tokens\":0,\"cache_creation_input_tokens\":0}}\n";
+
+        GrokPhaseCapture capture = GrokSessionParser.parse(new BufferedReader(new StringReader(stream)), "p", "q");
+
+        assertThat(capture.costReported()).isTrue();
+        assertThat(capture.totalCostUsd()).isZero();
+        assertThat(capture.tokensNotReported()).isEmpty();
+    }
+
+    @Test
+    void cutOffStreamDoesNotClaimACost() throws Exception {
+        List<String> lines = Files.readAllLines(fixture("grok-streaming-json.jsonl"));
+        String truncated = String.join("\n", lines.subList(0, lines.size() - 1)) + "\n";
+
+        GrokPhaseCapture capture = GrokSessionParser.parse(new BufferedReader(new StringReader(truncated)),
+                "p", "q");
+
+        assertThat(capture.costReported()).isFalse();
+        assertThat(capture.totalCostUsd()).isZero();
+    }
+
     private static Path fixture(String name) throws URISyntaxException {
         return Path.of(GrokSessionParserTest.class.getResource("/fixtures/" + name).toURI());
     }

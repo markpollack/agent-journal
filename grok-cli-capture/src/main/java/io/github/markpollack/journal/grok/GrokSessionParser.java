@@ -102,12 +102,13 @@ public final class GrokSessionParser {
         private final StringBuilder thinking = new StringBuilder();
         private final Map<String, MutableToolCall> tools = new LinkedHashMap<>();
 
-        private int inputTokens;
-        private int outputTokens;
-        private int thinkingTokens;
-        private int cacheCreationInputTokens;
-        private int cacheReadInputTokens;
+        private int inputTokens = GrokPhaseCapture.NOT_REPORTED;
+        private int outputTokens = GrokPhaseCapture.NOT_REPORTED;
+        private int thinkingTokens = GrokPhaseCapture.NOT_REPORTED;
+        private int cacheCreationInputTokens = GrokPhaseCapture.NOT_REPORTED;
+        private int cacheReadInputTokens = GrokPhaseCapture.NOT_REPORTED;
         private double totalCostUsd;
+        private boolean costReported;
         private String sessionId;
         private int numTurns;
         private String stopReason;
@@ -171,7 +172,9 @@ public final class GrokSessionParser {
             sessionId = text(event, "sessionId");
             numTurns = event.path("num_turns").asInt(0);
             stopReason = text(event, "stopReason");
-            totalCostUsd = event.path("total_cost_usd").asDouble(0.0);
+            JsonNode cost = event.path("total_cost_usd");
+            costReported = cost.isNumber();
+            totalCostUsd = costReported ? cost.asDouble() : 0.0;
             acceptUsage(event.path("usage"), true);
 
             // When several models served the call, name the one that used the most tokens; the
@@ -194,28 +197,29 @@ public final class GrokSessionParser {
             }
         }
 
+        /**
+         * Takes the token counts a usage object names. A count it does not name is left as it was,
+         * so one that no usage object ever named stays not reported rather than becoming 0. Usage
+         * lines add to the running count; the {@code end} line replaces the count it names.
+         */
         private void acceptUsage(JsonNode usage, boolean replace) {
             if (!usage.isObject()) {
                 return;
             }
-            int input = usage.path("input_tokens").asInt(0);
-            int output = usage.path("output_tokens").asInt(0);
-            int reasoning = usage.path("reasoning_tokens").asInt(0);
-            int cacheCreation = usage.path("cache_creation_input_tokens").asInt(0);
-            int cacheRead = usage.path("cache_read_input_tokens").asInt(0);
-            if (replace) {
-                inputTokens = input;
-                outputTokens = output;
-                thinkingTokens = reasoning;
-                cacheCreationInputTokens = cacheCreation;
-                cacheReadInputTokens = cacheRead;
-            } else {
-                inputTokens += input;
-                outputTokens += output;
-                thinkingTokens += reasoning;
-                cacheCreationInputTokens += cacheCreation;
-                cacheReadInputTokens += cacheRead;
+            inputTokens = merge(inputTokens, usage.path("input_tokens"), replace);
+            outputTokens = merge(outputTokens, usage.path("output_tokens"), replace);
+            thinkingTokens = merge(thinkingTokens, usage.path("reasoning_tokens"), replace);
+            cacheCreationInputTokens = merge(cacheCreationInputTokens, usage.path("cache_creation_input_tokens"),
+                    replace);
+            cacheReadInputTokens = merge(cacheReadInputTokens, usage.path("cache_read_input_tokens"), replace);
+        }
+
+        private static int merge(int current, JsonNode reported, boolean replace) {
+            if (!reported.isNumber()) {
+                return current;
             }
+            int value = reported.asInt();
+            return replace || current < 0 ? value : current + value;
         }
 
         GrokPhaseCapture capture(String phaseName, String promptText) {
@@ -230,7 +234,7 @@ public final class GrokSessionParser {
                     || "cancelled".equalsIgnoreCase(stopReason);
             return new GrokPhaseCapture(phaseName, promptText, model, inputTokens, outputTokens,
                     thinkingTokens, cacheCreationInputTokens, cacheReadInputTokens, totalCostUsd,
-                    sessionId, numTurns, isError, stopReason, text.toString(), thinking.toString(), toolUses);
+                    costReported, sessionId, numTurns, isError, stopReason, text.toString(), thinking.toString(), toolUses);
         }
     }
 

@@ -57,7 +57,8 @@ public final class GrokRunRecorder {
      * model (or {@code "unknown"}), its token usage and total cost, and Grok's stop reason as the
      * finish reason; and one {@link ToolCallEvent} per tool call, with its ID, name, kind, input,
      * output and error. The metadata of the LLM call event holds the phase name, turn count, error
-     * flag and session ID, and marks the cost as reported by Grok ({@code costAvailable=true}).
+     * flag and session ID, and marks whether Grok reported the cost ({@code costAvailable}); a count
+     * of tokens that Grok did not report is listed in {@code tokensNotReported}.
      * Then it logs one {@link StepCostEvent} per tool call, each with an equal share of the total
      * cost, marked {@link io.github.markpollack.journal.trace.AttributionMethod#EVEN_SPLIT}. Any
      * rounding remainder goes to the last step, so the shares add up to the total. A phase with no
@@ -79,8 +80,13 @@ public final class GrokRunRecorder {
         metadata.put("phaseName", phase.phaseName());
         metadata.put("numTurns", phase.numTurns());
         metadata.put("isError", phase.isError());
-        metadata.put("costAvailable", true);
-        metadata.put("costSource", "end.total_cost_usd");
+        metadata.put("costAvailable", phase.costReported());
+        if (phase.costReported()) {
+            metadata.put("costSource", "end.total_cost_usd");
+        }
+        if (!phase.tokensNotReported().isEmpty()) {
+            metadata.put("tokensNotReported", phase.tokensNotReported());
+        }
         if (phase.sessionId() != null) {
             metadata.put("sessionId", phase.sessionId());
         }
