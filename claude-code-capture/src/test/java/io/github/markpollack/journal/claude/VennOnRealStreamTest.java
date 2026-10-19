@@ -97,7 +97,11 @@ class VennOnRealStreamTest {
     void knownGapTheAssistantTextIsNotInTheEvents(@TempDir Path dir) throws Exception {
         VennReport r = report(dir);
 
-        assertThat(r.path("assistant", "message.content[].text").orElseThrow().neither()).isPositive();
+        PathResult text = r.path("assistant", "message.content[].text").orElseThrow();
+        // No typed field holds it. The same text does appear inside the kept-whole result line (its `result` field
+        // repeats the final answer), which is the review's "quotation elsewhere" case, not a landing.
+        assertThat(text.landed()).isZero();
+        assertThat(text.keptWhole() + text.neither()).isEqualTo(text.total());
     }
 
     /**

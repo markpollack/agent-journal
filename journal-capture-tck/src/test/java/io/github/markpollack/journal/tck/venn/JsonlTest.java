@@ -42,4 +42,29 @@ class JsonlTest {
 
         assertThat(Jsonl.read(file, "type", null)).singleElement().satisfies(l -> assertThat(l.kind()).isEqualTo("record"));
     }
+
+    @Test
+    void aCustomEventNamedVendorEventIsKeptWholeAndItsRawJsonIsReadAsADocument(@TempDir Path dir) throws IOException {
+        Path file = dir.resolve("events.jsonl");
+        Files.writeString(file, "{\"@type\":\"custom\",\"name\":\"vendor_event\",\"attributes\":{\"vendor\":\"claude\","
+                + "\"rawJson\":\"{\\\"type\\\":\\\"result\\\",\\\"total_cost_usd\\\":0.0463937,\\\"usage\\\":{\\\"input_tokens\\\":12}}\"}}\n"
+                + "{\"@type\":\"custom\",\"name\":\"thinking_block\",\"attributes\":{\"content\":\"some thinking text\"}}\n");
+
+        List<Leaf> leaves = Jsonl.read(file, "@type", null);
+
+        assertThat(leaves).filteredOn(Leaf::keptWhole).extracting(Leaf::path)
+                .contains("attributes.rawJson.type", "attributes.rawJson.total_cost_usd", "attributes.rawJson.usage.input_tokens")
+                .doesNotContain("attributes.rawJson");
+        assertThat(leaves).filteredOn(Leaf::keptWhole).allSatisfy(l -> assertThat(l.kind()).isEqualTo("vendor_event"));
+        assertThat(leaves).filteredOn(l -> !l.keptWhole()).extracting(Leaf::kind).containsOnly("custom");
+    }
+
+    @Test
+    void aRawJsonThatIsNotJsonStaysAString(@TempDir Path dir) throws IOException {
+        Path file = dir.resolve("events.jsonl");
+        Files.writeString(file, "{\"@type\":\"custom\",\"name\":\"vendor_event\",\"attributes\":{\"rawJson\":\"not json at all\"}}\n");
+
+        assertThat(Jsonl.read(file, "@type", null)).filteredOn(l -> l.path().equals("attributes.rawJson")).singleElement()
+                .satisfies(l -> assertThat(l.value()).isEqualTo("not json at all"));
+    }
 }
