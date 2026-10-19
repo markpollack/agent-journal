@@ -48,6 +48,8 @@ import java.util.List;
  * @param thinkingOutput the agent's thinking text, joined in order with nothing added between
  *        pieces, so the thinking of different turns runs together
  * @param toolUses the tool calls, in the order they first appeared; never {@code null}
+ * @param vendorEvents the lines of the output that are not turned into fields above, whole and in order; see
+ *        {@link GrokVendorEvent}; never {@code null}
  */
 public record GrokPhaseCapture(
         String phaseName,
@@ -66,7 +68,8 @@ public record GrokPhaseCapture(
         String stopReason,
         String textOutput,
         String thinkingOutput,
-        List<GrokToolUseRecord> toolUses
+        List<GrokToolUseRecord> toolUses,
+        List<GrokVendorEvent> vendorEvents
 ) {
 
     /**
@@ -75,6 +78,7 @@ public record GrokPhaseCapture(
      */
     public GrokPhaseCapture {
         toolUses = toolUses == null ? List.of() : List.copyOf(toolUses);
+        vendorEvents = vendorEvents == null ? List.of() : List.copyOf(vendorEvents);
     }
 
     /**

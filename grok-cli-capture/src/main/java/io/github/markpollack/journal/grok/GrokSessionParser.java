@@ -57,7 +57,7 @@ public final class GrokSessionParser {
      *        {@code "execute"}
      * @param promptText the prompt that was sent, or {@code null} if not captured
      * @return the capture, never {@code null}
-     * @throws IOException if the file cannot be read or a line is not valid JSON
+     * @throws IOException if the file cannot be read; a line that is not valid JSON is kept as a vendor event
      */
     public static GrokPhaseCapture parse(Path streamFile, String phaseName, String promptText) throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(streamFile)) {
@@ -90,9 +90,11 @@ public final class GrokSessionParser {
             try {
                 event = MAPPER.readTree(line);
             } catch (JsonProcessingException ex) {
-                throw new IOException("Invalid Grok streaming-json at line " + lineNumber, ex);
+                // The CLI prints plain text too (for example when it is not signed in). Keep the line, whole.
+                state.keepNonJson(line, lineNumber);
+                continue;
             }
-            state.accept(event);
+            state.accept(event, lineNumber);
         }
         return state.capture(phaseName, promptText);
     }
@@ -101,6 +103,7 @@ public final class GrokSessionParser {
         private final StringBuilder text = new StringBuilder();
         private final StringBuilder thinking = new StringBuilder();
         private final Map<String, MutableToolCall> tools = new LinkedHashMap<>();
+        private final List<GrokVendorEvent> vendorEvents = new ArrayList<>();
 
         private int inputTokens = GrokPhaseCapture.NOT_REPORTED;
         private int outputTokens = GrokPhaseCapture.NOT_REPORTED;
@@ -115,22 +118,48 @@ public final class GrokSessionParser {
         private boolean sawEnd;
         private String model;
 
-        void accept(JsonNode event) {
+        void accept(JsonNode event, int lineNumber) {
             String type = text(event, "type");
             if (type == null) {
+                keepWhole(event, null, lineNumber);
                 return;
             }
             switch (type) {
                 case "text" -> text.append(event.path("data").asText(""));
                 case "thought" -> thinking.append(event.path("data").asText(""));
-                case "tool_call" -> acceptToolCall(event);
-                case "tool_call_update" -> acceptToolUpdate(event);
+                case "tool_call" -> {
+                    if (text(event, "toolCallId") == null) {
+                        keepWhole(event, type, lineNumber);
+                    } else {
+                        acceptToolCall(event);
+                    }
+                }
+                case "tool_call_update" -> {
+                    if (text(event, "toolCallId") == null) {
+                        keepWhole(event, type, lineNumber);
+                    } else {
+                        acceptToolUpdate(event);
+                    }
+                }
                 case "usage" -> acceptUsage(event.path("usage"), false);
                 case "end" -> acceptEnd(event);
-                default -> {
-                    // Defensive parsing: new ACP/vendor update types are intentionally ignored.
-                }
+                // New ACP/vendor update types: kept whole, never dropped.
+                default -> keepWhole(event, type, lineNumber);
             }
+        }
+
+        /** Keeps a line the parser does not consume, whole, in output order. */
+        private void keepWhole(JsonNode event, String kind, int lineNumber) {
+            Map<String, Object> payload = event.isObject()
+                    ? MAPPER.convertValue(event, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {
+                    })
+                    : Map.of("value", event.asText());
+            vendorEvents.add(new GrokVendorEvent(kind, lineNumber, payload));
+        }
+
+        /** Keeps a line that is not JSON, whole. */
+        void keepNonJson(String line, int lineNumber) {
+            vendorEvents.add(new GrokVendorEvent(GrokVendorEvent.NON_JSON_LINE, lineNumber, Map.of("text", line)));
         }
 
         private void acceptToolCall(JsonNode event) {
@@ -234,7 +263,8 @@ public final class GrokSessionParser {
                     || "cancelled".equalsIgnoreCase(stopReason);
             return new GrokPhaseCapture(phaseName, promptText, model, inputTokens, outputTokens,
                     thinkingTokens, cacheCreationInputTokens, cacheReadInputTokens, totalCostUsd,
-                    costReported, sessionId, numTurns, isError, stopReason, text.toString(), thinking.toString(), toolUses);
+                    costReported, sessionId, numTurns, isError, stopReason, text.toString(), thinking.toString(), toolUses,
+                    vendorEvents);
         }
     }
 

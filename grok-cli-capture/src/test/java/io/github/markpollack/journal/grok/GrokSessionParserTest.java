@@ -206,6 +206,73 @@ class GrokSessionParserTest {
         assertThat(capture.totalCostUsd()).isZero();
     }
 
+    @Test
+    void aPlainTextLineIsKeptWholeAndTheRestOfTheStreamIsStillCaptured() throws Exception {
+        List<String> lines = Files.readAllLines(fixture("grok-streaming-json.jsonl"));
+        lines.add(1, "Not signed in. Run `grok login`.");
+
+        GrokPhaseCapture capture = GrokSessionParser.parse(
+                new BufferedReader(new StringReader(String.join("\n", lines) + "\n")), "p", "q");
+
+        assertThat(capture.vendorEvents()).anySatisfy(e -> {
+            assertThat(e.kind()).isEqualTo(GrokVendorEvent.NON_JSON_LINE);
+            assertThat(e.line()).isEqualTo(2);
+            assertThat(e.payload()).containsEntry("text", "Not signed in. Run `grok login`.");
+        });
+        assertThat(capture.toolUses()).hasSize(2);
+        assertThat(capture.costReported()).isTrue();
+        assertThat(capture.isError()).isFalse();
+    }
+
+    @Test
+    void aStreamThatIsOnlyPlainTextIsAnIncompleteCaptureNotAnException() throws Exception {
+        GrokPhaseCapture capture = GrokSessionParser.parse(
+                new BufferedReader(new StringReader("Not signed in\nPlease log in\n")), "p", "q");
+
+        assertThat(capture.isError()).isTrue();
+        assertThat(capture.stopReason()).isEqualTo("incomplete");
+        assertThat(capture.vendorEvents()).extracting(GrokVendorEvent::kind)
+                .containsExactly(GrokVendorEvent.NON_JSON_LINE, GrokVendorEvent.NON_JSON_LINE);
+        assertThat(capture.costReported()).isFalse();
+    }
+
+    @Test
+    void everyLineThatFeedsNoFieldIsKeptWholeInOrder() throws Exception {
+        Path file = fixture("grok-multistate-streaming-json.jsonl");
+        java.util.Set<String> consumed = java.util.Set.of("text", "thought", "tool_call", "tool_call_update", "usage", "end");
+        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        List<Object> expected = new java.util.ArrayList<>();
+        for (String line : Files.readAllLines(file)) {
+            com.fasterxml.jackson.databind.JsonNode node = mapper.readTree(line);
+            String type = node.path("type").asText(null);
+            boolean needsId = "tool_call".equals(type) || "tool_call_update".equals(type);
+            boolean fed = type != null && consumed.contains(type) && (!needsId || node.hasNonNull("toolCallId"));
+            if (!fed) {
+                expected.add(mapper.convertValue(node, java.util.Map.class));
+            }
+        }
+
+        GrokPhaseCapture capture = GrokSessionParser.parse(file, "p", "q");
+
+        assertThat(capture.vendorEvents()).extracting(GrokVendorEvent::payload).containsExactlyElementsOf(
+                expected.stream().map(o -> (java.util.Map<String, Object>) o).toList());
+    }
+
+    @Test
+    void anUnknownUpdateTypeAndAToolUpdateWithoutACallIdAreKeptWholeNotDropped() throws Exception {
+        String stream = String.join("\n",
+                "{\"type\":\"brand_new_update\",\"n\":1}",
+                "{\"type\":\"tool_call_update\",\"status\":\"completed\"}",
+                "{\"n\":2}",
+                "{\"type\":\"end\",\"stopReason\":\"end_turn\"}") + "\n";
+
+        GrokPhaseCapture capture = GrokSessionParser.parse(new BufferedReader(new StringReader(stream)), "p", "q");
+
+        assertThat(capture.vendorEvents()).extracting(GrokVendorEvent::kind)
+                .containsExactly("brand_new_update", "tool_call_update", "unknown");
+        assertThat(capture.vendorEvents()).extracting(GrokVendorEvent::line).containsExactly(1L, 2L, 3L);
+    }
+
     private static Path fixture(String name) throws URISyntaxException {
         return Path.of(GrokSessionParserTest.class.getResource("/fixtures/" + name).toURI());
     }

@@ -114,6 +114,14 @@ public final class GrokRunRecorder {
             run.logEvent(event);
         }
 
+        for (GrokVendorEvent vendorEvent : phase.vendorEvents()) {
+            Map<String, Object> attributes = phaseAttributes(phase.phaseName(), "vendor", "grok");
+            attributes.put("kind", vendorEvent.kind());
+            attributes.put("line", vendorEvent.line());
+            attributes.put("payload", vendorEvent.payload());
+            run.logEvent(CustomEvent.of("vendor_event", attributes));
+        }
+
         Instant analyzedAt = Instant.now();
         for (JournalStep step : GrokJournalSteps.fromPhaseCapture(phase, run.id())) {
             run.logDerivedEvent(StepCostEvent.fromStep(step, analyzedAt));
