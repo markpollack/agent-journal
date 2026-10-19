@@ -43,3 +43,10 @@ the parent. Durations: root 5000 ms, child A 1500 ms, child B 900 ms (its own `t
 5000 ms), child C and orphan unknown (recorded as 0). Statuses: A `completed` and B `interrupted` from the parent's
 last `SubAgentActivity` for each thread (`parent_sub_agent_activity_last`), orphan `interrupted` from
 `child_last_turn`. No record in the fixture is a thread-terminal status; the status means the last observed turn.
+
+# Codex error turn (`codex-error-task-complete.jsonl`)
+
+Five records of a real rollout from Codex CLI 0.160.1 (2026-10-19) in which the provider rejected the request (HTTP 400, model not
+available to the account). Scrubbed by the agent-client steward: ids, working directory, instructions, workspace roots, account fields,
+the error text and `last_agent_message` are replaced; structure and numbers are untouched. The only failure signal is an `error` object on
+the `task_complete` record (`message`, `codex_error_info`); there is no tool call and no `turn_aborted` record.

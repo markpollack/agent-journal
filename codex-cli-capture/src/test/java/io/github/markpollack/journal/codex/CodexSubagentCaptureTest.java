@@ -148,7 +148,7 @@ class CodexSubagentCaptureTest {
                 multi.cliVersion(), multi.sessionId(), multi.inputTokens(), multi.outputTokens(),
                 multi.reasoningOutputTokens(), multi.cacheWriteInputTokens(), multi.cachedInputTokens(),
                 multi.durationMs(), multi.isError(), multi.textOutput(), multi.toolUses(), List.of(), false, Map.of(),
-                multi.vendorEvents())).isEqualTo(single);
+                multi.vendorEvents(), multi.errorMessage())).isEqualTo(single);
     }
 
     @Test

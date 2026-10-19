@@ -174,7 +174,8 @@ public final class CodexSessionParser {
         return new CodexPhaseCapture(core.phaseName(), core.promptText(), core.model(), core.cliVersion(),
                 core.sessionId(), core.inputTokens(), core.outputTokens(), core.reasoningOutputTokens(),
                 core.cacheWriteInputTokens(), core.cachedInputTokens(), core.durationMs(), core.isError(),
-                core.textOutput(), core.toolUses(), subagents, true, rootState.spawnedThreadIds, core.vendorEvents());
+                core.textOutput(), core.toolUses(), subagents, true, rootState.spawnedThreadIds, core.vendorEvents(),
+                core.errorMessage());
     }
 
     private static ParserState read(CodexRollout rollout, boolean childTrack) throws IOException {
@@ -212,6 +213,7 @@ public final class CodexSessionParser {
         private String textOutput = "";
         // The child's last own turn-terminal record: task_complete -> completed, turn_aborted -> interrupted.
         private String lastTurnTerminal;
+        private String errorMessage;
 
         // Sub-agent evidence of this thread: spawn call id -> child thread id / agent path from
         // SubAgentActivity "started", and child thread id -> last later activity kind.
@@ -446,6 +448,14 @@ public final class CodexSessionParser {
             if (payload.has("status") && !"completed".equalsIgnoreCase(payload.path("status").asText())) {
                 isError = true;
             }
+            // A turn can end with an error and nothing else: Codex writes the error on the task_complete
+            // record itself, with no tool call and no turn_aborted record.
+            JsonNode error = payload.path("error");
+            if (error.isObject() && !error.isEmpty()) {
+                isError = true;
+                lastTurnTerminal = "failed";
+                errorMessage = error.hasNonNull("message") ? error.get("message").asText() : error.toString();
+            }
         }
 
         CodexPhaseCapture capture(String phaseName, String promptText) {
@@ -456,7 +466,7 @@ public final class CodexSessionParser {
             return new CodexPhaseCapture(phaseName, promptText, model, cliVersion, sessionId,
                     inputTokens, outputTokens, reasoningOutputTokens, cacheWriteInputTokens,
                     cachedInputTokens, durationMs, isError || !sawTaskComplete, textOutput, toolUses, List.of(), false,
-                    Map.of(), vendorEvents);
+                    Map.of(), vendorEvents, errorMessage);
         }
 
         CodexSubagentCapture subagent(String ownThreadId, Map<String, ParserState> statesByThread,

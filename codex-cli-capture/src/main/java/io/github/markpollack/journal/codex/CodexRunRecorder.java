@@ -136,6 +136,9 @@ public final class CodexRunRecorder {
         Map<String, Object> metadata = new LinkedHashMap<>();
         metadata.put("phaseName", phase.phaseName());
         metadata.put("isError", phase.isError());
+        if (phase.errorMessage() != null) {
+            metadata.put("errorMessage", phase.errorMessage());
+        }
         metadata.put("costAvailable", false);
         metadata.put("costSource", "unreported");
         if (phase.sessionId() != null) {
