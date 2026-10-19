@@ -18,12 +18,18 @@ MAVEN = REPOSITORY_ROOT / "mvnw"
 MODULES = (
     "journal-core",
     "claude-code-capture",
-    "gemini-cli-capture",
+    "grok-cli-capture",
+    "codex-cli-capture",
+    "antigravity-cli-capture",
+    "junie-cli-capture",
 )
 EXPECTED_LINES = {
     "journal-core": {"com.fasterxml.jackson"},
     "claude-code-capture": {"com.fasterxml.jackson", "tools.jackson"},
-    "gemini-cli-capture": {"com.fasterxml.jackson"},
+    "grok-cli-capture": {"com.fasterxml.jackson"},
+    "codex-cli-capture": {"com.fasterxml.jackson"},
+    "antigravity-cli-capture": {"com.fasterxml.jackson"},
+    "junie-cli-capture": {"com.fasterxml.jackson"},
 }
 DEPENDENCY_PATTERN = re.compile(
     r"^\s+([^:\s]+):([^:\s]+):([^:\s]+):([^:\s]+):([^\s]+)(?:\s|$)"
