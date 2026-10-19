@@ -219,6 +219,9 @@ public abstract class BaseRunRecorder {
                         .toolName(toolUse.name())
                         .kind(toolUse.kind())
                         .input(toolUse.input())
+                        // The tool's result, whole. Without it the normalized record holds no
+                        // successful tool output, only the error text of a failed call.
+                        .output(result != null ? result.content() : null)
                         // J4: the dwell-time pair. The duration was previously computed at parse
                         // time, written to a log line, and dropped; the turn ordinal was never
                         // captured at all after v1. Without both, a semi-Markov model has no
