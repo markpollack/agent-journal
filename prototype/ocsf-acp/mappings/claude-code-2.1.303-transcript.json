@@ -1,0 +1,16 @@
+{
+  "contract_uid": "claude-code/session-transcript/2.1.303/0.1.0-prototype",
+  "applies_to": {"product": "Claude Code", "version": "2.1.303", "source_kind": "Saved session file (~/.claude/projects/<cwd>/<session>.jsonl)"},
+  "record_discriminator": "type",
+  "admission": "BOUNDED for this prototype: records whose message.id equals the admitted response_uid, the first user prompt record, and the user tool_result records for tool_use ids of the admitted response. Every other record family is inventoried (count, bytes) and EXCLUDED WITH REASON 'not admitted in prototype'; exclusion is visible in run.json and is not preservation.",
+  "time_policy": {"reported": "timestamp on every admitted record"},
+  "tool_kind_table": {"rule": "claude.tool_name_to_kind.v1", "map": {"Read": 1, "NotebookRead": 1, "Edit": 2, "MultiEdit": 2, "Write": 2, "NotebookEdit": 2, "Glob": 5, "Grep": 5, "Bash": 6, "WebFetch": 8, "WebSearch": 8, "Task": 99}, "default": 99},
+  "block_kind_table": {"rule": "claude.block_type_to_kind.v1", "map": {"text": 1, "thinking": 2, "tool_use": 3, "tool_result": 4, "image": 5}, "default": 99},
+  "rules": [
+    {"id": "claude.transcript.assistant->model_response", "selector": {"type": "assistant"}, "target": "agentic_cli/model_response", "activity": "2 Completed when message.stop_reason is non-null (rule claude.transcript.activity.v1)", "owner": "response_uid = message.id", "usage": "message.usage -> scope 2 Model response, status 2 Final when stop_reason non-null (rule claude.transcript.usage_status.v1)", "residual": "whole record in data"},
+    {"id": "claude.transcript.assistant.tool_use->tool_call.requested", "selector": {"type": "assistant", "block": "tool_use"}, "target": "agentic_cli/tool_call", "owner": "tool_call_uid = block.id"},
+    {"id": "claude.transcript.user.prompt->prompt_turn.submitted", "selector": {"type": "user", "message.content": "string"}, "target": "agentic_cli/prompt_turn", "activity": "1 Prompt submitted", "owner": "turn_uid = promptId", "residual": "whole record in data"},
+    {"id": "claude.transcript.user.tool_result->tool_call.result", "selector": {"type": "user", "block": "tool_result"}, "target": "agentic_cli/tool_call", "owner": "tool_call_uid = block.tool_use_id", "permission": "permissionDecision (record level; the record carries exactly one tool_result) -> scope 1 Tool call, attribution 1 Unique", "residual": "toolUseResult in structured_result; whole record in data"}
+  ],
+  "excluded_families_reason": "not admitted in prototype; bytes inventoried in run.json (D7 remains open)"
+}

@@ -1,0 +1,15 @@
+{
+  "caption": "Cost Observation",
+  "description": "A reported cost total with its scope, currency, basis and source. Present only when a source reported a cost.",
+  "extends": "object",
+  "name": "cost_observation",
+  "attributes": {
+    "total_cost": {"requirement": "required"},
+    "currency": {"requirement": "required"},
+    "scope_id": {"requirement": "required"},
+    "scope": {"requirement": "optional"},
+    "cost_basis": {"requirement": "optional"},
+    "source_ref": {"requirement": "required"},
+    "data": {"description": "The native cost-bearing value or object exactly as reported.", "requirement": "required"}
+  }
+}

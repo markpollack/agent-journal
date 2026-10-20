@@ -1,0 +1,31 @@
+{
+  "uid": 1,
+  "caption": "Prompt Turn",
+  "category": "agent_execution",
+  "description": "An ACP prompt turn observed from a native source: the user's prompt submission, or the turn's completion with run-scope reported usage, cost, stop reason and run-scope permission decisions.",
+  "name": "prompt_turn",
+  "extends": "base_event",
+  "attributes": {
+    "activity_id": {
+      "enum": {
+        "1": {"caption": "Prompt submitted", "description": "A user prompt record was observed."},
+        "2": {"caption": "Turn completed", "description": "A record reporting the turn's completion was observed."}
+      }
+    },
+    "cli_agent": {"group": "primary", "requirement": "required"},
+    "journal": {"group": "context", "requirement": "required"},
+    "source_ref": {"group": "context", "requirement": "required"},
+    "session_uid": {"group": "primary", "requirement": "required"},
+    "turn_uid": {"group": "primary", "requirement": "recommended"},
+    "content_blocks": {"group": "primary", "requirement": "optional"},
+    "stop_reason": {"group": "primary", "requirement": "optional"},
+    "model_ref": {"group": "primary", "requirement": "optional"},
+    "usage_observations": {"group": "primary", "requirement": "optional"},
+    "cost_observation": {"group": "primary", "requirement": "optional"},
+    "permission_decisions": {"group": "primary", "requirement": "optional"},
+    "status_basis_id": {"group": "primary", "requirement": "recommended"},
+    "status_basis": {"group": "primary", "requirement": "optional"},
+    "derivation": {"group": "primary", "requirement": "optional"},
+    "data": {"description": "The native record exactly as reported, when retained on the event.", "group": "context", "requirement": "optional"}
+  }
+}

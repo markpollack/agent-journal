@@ -1,0 +1,22 @@
+{
+  "caption": "Usage Observation",
+  "description": "One reported token-usage observation. Components are present only when reported; absence is not zero.",
+  "extends": "object",
+  "name": "usage_observation",
+  "attributes": {
+    "scope_id": {"requirement": "required"},
+    "scope": {"requirement": "optional"},
+    "usage_status_id": {"requirement": "required"},
+    "usage_status": {"requirement": "optional"},
+    "basis": {"description": "The declared rule that established usage_status_id.", "requirement": "required"},
+    "source_ref": {"requirement": "required"},
+    "model_ref": {"requirement": "optional"},
+    "input_tokens": {"requirement": "optional"},
+    "output_tokens": {"requirement": "optional"},
+    "cache_read_tokens": {"requirement": "optional"},
+    "cache_write_tokens": {"requirement": "optional"},
+    "reasoning_tokens": {"requirement": "optional"},
+    "reported_total_tokens": {"requirement": "optional"},
+    "data": {"description": "The native usage object exactly as reported.", "requirement": "required"}
+  }
+}

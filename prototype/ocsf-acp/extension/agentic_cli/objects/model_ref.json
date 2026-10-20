@@ -1,0 +1,25 @@
+{
+  "caption": "Model Reference",
+  "description": "Minimal reference to the reported model. Core ai_model requires a provider organization, which the admitted sources do not report per response; this object records provider information only with its basis.",
+  "extends": "object",
+  "name": "model_ref",
+  "attributes": {
+    "name": {
+      "description": "The model identifier exactly as reported.",
+      "requirement": "required"
+    },
+    "version": {
+      "description": "The model version string, only when the source reports one separately from the model name.",
+      "requirement": "optional"
+    },
+    "provider_kind": {
+      "requirement": "optional"
+    },
+    "provider_basis_id": {
+      "requirement": "required"
+    },
+    "provider_basis": {
+      "requirement": "optional"
+    }
+  }
+}

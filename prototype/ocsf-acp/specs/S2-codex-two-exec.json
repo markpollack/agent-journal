@@ -1,0 +1,50 @@
+{
+ "run_uid": "proto-S2-codex-two-exec",
+ "invocation_index": 0,
+ "session_uid": "01a156b5-3638-7973-9b39-430002405d17",
+ "capture_start": "2026-10-20T00:27:58Z",
+ "cli": {
+  "name": "Codex CLI",
+  "version": "0.160.1",
+  "vendor_name": "OpenAI",
+  "type_id": 1,
+  "type": "Native"
+ },
+ "launch_settings": {
+  "command": "codex exec --json",
+  "approval_policy": "never (rollout turn_context, record 8)",
+  "sandbox_policy": "workspace-write, network_access false (record 8)",
+  "model": "gpt-6.1-sol (record 8)",
+  "cwd": "/tmp/aj-codex-pair-B-multitool-failure"
+ },
+ "pins": {
+  "ocsf_schema_commit": "856d462bd20dc46cc1ffed2dfffe3b91ef0fbeba",
+  "compiler_commit": "865887a9ee88580c471062f93da115e7599fa31d",
+  "toolkit": {
+   "release": "v0.9.0",
+   "commit": "a99619fcd148791a6a9fe5f82c1e0d839f658591",
+   "linux_amd64_sha256": "641fec9f8c457896c06ead9136fe8f4e50753cd95f8a68c24b25c2bcc9cfd5a5"
+  }
+ },
+ "sources": [
+  {
+   "artifact": "rollout-1.jsonl",
+   "kind": 2,
+   "profile": "codex_rollout",
+   "path": "/tmp/claude-1000/-home-mark-projects-agent-journal-steward/31a7d4e7-4639-409f-bdf9-d27324c178de/scratchpad/neg/fixtures/S2-codex-two-exec/rollout-1.jsonl"
+  },
+  {
+   "artifact": "stream.jsonl",
+   "kind": 1,
+   "profile": "codex_stream",
+   "path": "evidence/2026-10-19-stage-13/codex-pairs/B-multitool-failure/stream.jsonl"
+  }
+ ],
+ "synthetic": {
+  "label": "SYNTHETIC NEGATIVE VARIANT; not live evidence",
+  "derived_from": "codex-pair-B",
+  "modifications": [
+   "second custom_tool_call with identical input inserted after line 13"
+  ]
+ }
+}

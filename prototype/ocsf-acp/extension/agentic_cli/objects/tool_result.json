@@ -1,0 +1,12 @@
+{
+  "caption": "Tool Result",
+  "description": "The result returned for a tool call as the source reported it.",
+  "extends": "object",
+  "name": "tool_result",
+  "attributes": {
+    "data": {"description": "The model-visible result content exactly as reported (string, array or object).", "requirement": "required"},
+    "error_reported": {"requirement": "optional"},
+    "structured_result": {"requirement": "optional"},
+    "reported_state": {"requirement": "optional"}
+  }
+}

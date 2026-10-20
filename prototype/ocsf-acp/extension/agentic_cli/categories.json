@@ -1,0 +1,12 @@
+{
+  "caption": "Categories",
+  "description": "Categories added by the Agentic CLI extension.",
+  "name": "category",
+  "attributes": {
+    "agent_execution": {
+      "uid": 11,
+      "caption": "Agent Execution",
+      "description": "Observed execution of an agentic CLI: prompt turns, model responses, tool calls and their operations, and retained native source records."
+    }
+  }
+}

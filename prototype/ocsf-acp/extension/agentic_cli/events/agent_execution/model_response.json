@@ -1,0 +1,76 @@
+{
+  "uid": 2,
+  "caption": "Model Response",
+  "category": "agent_execution",
+  "description": "One source record reporting content of a model response. A response with several records yields several events sharing response_uid; assembly is a query, not a stored claim.",
+  "name": "model_response",
+  "extends": "base_event",
+  "attributes": {
+    "activity_id": {
+      "enum": {
+        "1": {
+          "caption": "Partial",
+          "description": "The record reports a non-final view of the response (no terminal stop reason or state)."
+        },
+        "2": {
+          "caption": "Completed",
+          "description": "The record reports a terminal state for the response."
+        }
+      }
+    },
+    "cli_agent": {
+      "group": "primary",
+      "requirement": "required"
+    },
+    "journal": {
+      "group": "context",
+      "requirement": "required"
+    },
+    "source_ref": {
+      "group": "context",
+      "requirement": "required"
+    },
+    "session_uid": {
+      "group": "primary",
+      "requirement": "required"
+    },
+    "turn_uid": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "response_uid": {
+      "group": "primary",
+      "requirement": "required"
+    },
+    "model_ref": {
+      "group": "primary",
+      "requirement": "recommended"
+    },
+    "content_blocks": {
+      "group": "primary",
+      "requirement": "recommended"
+    },
+    "stop_reason": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "reported_state": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "usage_observations": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "basis": {
+      "description": "Rules applied by the mapping: the activity_id rule and, when the source reports no response identifier, the declared generation rule for response_uid.",
+      "group": "primary",
+      "requirement": "recommended"
+    },
+    "data": {
+      "description": "Native record fields not represented elsewhere on the event (residual).",
+      "group": "context",
+      "requirement": "optional"
+    }
+  }
+}

@@ -1,0 +1,228 @@
+{
+  "fixture": "Antigravity 1.4.2 pair A (evidence/2026-10-19-stage-13/antigravity-pairs/A-multitool)",
+  "stream_sha256": "2e4866b359decd80f79bcd972209664b04e06fb3201d88b5761037caf197280e",
+  "labelled_by": "hand, from the native lines cited, 2026-10-20",
+  "case_count": 16,
+  "rationale": {
+    "Q1": "stream lines 4/5 read_file a.txt ACTIVE then DONE with tool_info.output '1 lines, 17 bytes'; lines 7/8 read_file b.txt; lines 10/11 run_command 'cat src/a.txt' ACTIVE then DONE with duration 0.02264935 and NO output and no error. The stream reports no tool-call ids, so ids are declared Journal-generated conversation#stepN. DONE is a lifecycle state; the step's outcome is not derivable from it.",
+    "Q2": "agent_response steps 1, 3, 5 (lines 3, 6, 9) report usage and DONE but no text: content unavailable at source.",
+    "Q3": "line 12 result reports run usage input 11328 output 263 thinking 129; per-step usage (lines 3, 6, 9) is reported once with DONE and the vendor does not say whether it is final; no cost field exists.",
+    "Q4": "line 12 denied_actions [{action command, display_name RunCommand}] with no step reference; the only run_command step is step 6 -> run-scope denial, unattributed, one candidate. stderr (stream.err) explains the CLI auto-denied the command permission in headless mode.",
+    "Q5": "line 1 init permission_mode request-review and tools[0] ask_custom_permission; line 12 denied_actions display_name; line 11 duration_seconds; stream.err text retained opaque."
+  },
+  "expected": {
+    "Q1_tools": {
+      "985b314e-b3d0-41de-809a-ad7d0d419678#step2": {
+        "requests": [
+          {
+            "name": "read_file",
+            "kind": "read",
+            "arguments": {
+              "Path": "/tmp/aj-agy-pair-A-multitool/src/a.txt"
+            },
+            "source": "stream.jsonl:4"
+          }
+        ],
+        "results": [
+          {
+            "content": "1 lines, 17 bytes",
+            "error_reported": "unavailable at source",
+            "status": "Unknown",
+            "status_basis": "Not derivable",
+            "reported_state": "DONE",
+            "source": "stream.jsonl:5"
+          }
+        ]
+      },
+      "985b314e-b3d0-41de-809a-ad7d0d419678#step4": {
+        "requests": [
+          {
+            "name": "read_file",
+            "kind": "read",
+            "arguments": {
+              "Path": "/tmp/aj-agy-pair-A-multitool/src/b.txt"
+            },
+            "source": "stream.jsonl:7"
+          }
+        ],
+        "results": [
+          {
+            "content": "1 lines, 17 bytes",
+            "status": "Unknown",
+            "reported_state": "DONE",
+            "source": "stream.jsonl:8"
+          }
+        ]
+      },
+      "985b314e-b3d0-41de-809a-ad7d0d419678#step6": {
+        "requests": [
+          {
+            "name": "run_command",
+            "kind": "execute",
+            "arguments": {
+              "CommandLine": "cat src/a.txt"
+            },
+            "source": "stream.jsonl:10"
+          }
+        ],
+        "results": [
+          {
+            "content": "unavailable at source",
+            "error_reported": "unavailable at source",
+            "status": "Unknown",
+            "status_basis": "Not derivable",
+            "reported_state": "DONE",
+            "source": "stream.jsonl:11"
+          }
+        ]
+      }
+    },
+    "Q2_content": {
+      "985b314e-b3d0-41de-809a-ad7d0d419678#step1": {
+        "occurrences": [
+          {
+            "source": "stream.jsonl:3",
+            "activity": "Completed",
+            "block_types": "unavailable at source",
+            "exact_native_structure_retained": true,
+            "stop_reason": "unavailable at source"
+          }
+        ]
+      },
+      "985b314e-b3d0-41de-809a-ad7d0d419678#step3": {
+        "occurrences": [
+          {
+            "source": "stream.jsonl:6",
+            "block_types": "unavailable at source"
+          }
+        ]
+      },
+      "985b314e-b3d0-41de-809a-ad7d0d419678#step5": {
+        "occurrences": [
+          {
+            "source": "stream.jsonl:9",
+            "block_types": "unavailable at source"
+          }
+        ]
+      }
+    },
+    "Q3_usage": {
+      "final": [
+        {
+          "scope": "Run",
+          "status": "Final",
+          "input_tokens": 11328,
+          "output_tokens": 263,
+          "reasoning_tokens": 129,
+          "source": "stream.jsonl:12"
+        }
+      ],
+      "non_final": [
+        {
+          "scope": "Model response",
+          "status": "Unknown",
+          "owner": "985b314e-b3d0-41de-809a-ad7d0d419678#step1",
+          "input_tokens": 6893,
+          "output_tokens": 144,
+          "reasoning_tokens": 103,
+          "source": "stream.jsonl:3"
+        },
+        {
+          "status": "Unknown",
+          "input_tokens": 2267,
+          "output_tokens": 52,
+          "reasoning_tokens": 11,
+          "source": "stream.jsonl:6"
+        },
+        {
+          "status": "Unknown",
+          "input_tokens": 2168,
+          "output_tokens": 67,
+          "reasoning_tokens": 15,
+          "source": "stream.jsonl:9"
+        }
+      ],
+      "final_scopes_present": [
+        "Run"
+      ],
+      "final_unavailable_scopes": [
+        "Model response",
+        "Prompt turn"
+      ],
+      "cost": "unavailable at source"
+    },
+    "Q4_permission": [
+      {
+        "decision": "denied (derived label: denied_actions entry)",
+        "scope": "Run",
+        "attribution": "Unattributed",
+        "candidates": [
+          "985b314e-b3d0-41de-809a-ad7d0d419678#step6"
+        ],
+        "decision_source": "cli",
+        "owner_event": "Prompt Turn",
+        "source": "stream.jsonl:12",
+        "normalized": "Denied"
+      }
+    ],
+    "Q5_vendor_without_level0": [
+      {
+        "artifact": "stream.jsonl",
+        "record_index": 1,
+        "path": "init.permission_mode",
+        "value": "request-review"
+      },
+      {
+        "artifact": "stream.jsonl",
+        "record_index": 1,
+        "path": "init.tools[0]",
+        "value": "ask_custom_permission"
+      },
+      {
+        "artifact": "stream.jsonl",
+        "record_index": 12,
+        "path": "result.denied_actions[0].display_name",
+        "value": "RunCommand"
+      },
+      {
+        "artifact": "stream.jsonl",
+        "record_index": 11,
+        "path": "step_update.duration_seconds",
+        "value": 0.02264935
+      },
+      {
+        "artifact": "stream.err",
+        "record_index": 1,
+        "path": "",
+        "value": "jetski: no output produced — a tool required the \"command\" permission that headless mode cannot prompt for, so it was auto-denied. Add an allow-rule under permissions.allow in settings.json (e.g. command(<target>)). Alternatively, re-run with --dangerously-skip-permissions to auto-approve all tools."
+      }
+    ]
+  },
+  "Q5_probes": [
+    {
+      "artifact": "stream.jsonl",
+      "record_index": 1,
+      "path": "init.permission_mode"
+    },
+    {
+      "artifact": "stream.jsonl",
+      "record_index": 1,
+      "path": "init.tools[0]"
+    },
+    {
+      "artifact": "stream.jsonl",
+      "record_index": 12,
+      "path": "result.denied_actions[0].display_name"
+    },
+    {
+      "artifact": "stream.jsonl",
+      "record_index": 11,
+      "path": "step_update.duration_seconds"
+    },
+    {
+      "artifact": "stream.err",
+      "record_index": 1,
+      "path": ""
+    }
+  ]
+}

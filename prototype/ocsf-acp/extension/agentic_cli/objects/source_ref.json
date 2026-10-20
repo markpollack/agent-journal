@@ -1,0 +1,38 @@
+{
+  "caption": "Source Reference",
+  "description": "Identifies the native artifact and record occurrence that supplied a fact.",
+  "extends": "object",
+  "name": "source_ref",
+  "attributes": {
+    "source_kind_id": {
+      "requirement": "required"
+    },
+    "source_kind": {
+      "requirement": "optional"
+    },
+    "artifact": {
+      "requirement": "required"
+    },
+    "artifact_sha256": {
+      "requirement": "recommended"
+    },
+    "record_index": {
+      "requirement": "required"
+    },
+    "native_uid": {
+      "requirement": "optional"
+    },
+    "native_time": {
+      "requirement": "optional"
+    },
+    "record_bytes": {
+      "requirement": "optional"
+    },
+    "line_ending": {
+      "requirement": "optional"
+    },
+    "is_whole_record": {
+      "requirement": "recommended"
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "caption": "Permission Decision",
+  "description": "A permission decision at its reported scope. A decision reported without a reference to a tool call is retained at run or turn scope with an unattributed or ambiguous attribution; it is never attached to a tool call by guess.",
+  "extends": "object",
+  "name": "permission_decision",
+  "attributes": {
+    "decision_id": {
+      "requirement": "required"
+    },
+    "decision": {
+      "requirement": "recommended"
+    },
+    "reported_decision": {
+      "requirement": "recommended"
+    },
+    "decision_source": {
+      "requirement": "optional"
+    },
+    "reason_type": {
+      "requirement": "optional"
+    },
+    "scope_id": {
+      "requirement": "required"
+    },
+    "scope": {
+      "requirement": "optional"
+    },
+    "attribution": {
+      "requirement": "required"
+    },
+    "source_ref": {
+      "requirement": "recommended"
+    },
+    "data": {
+      "description": "The native decision record exactly as reported.",
+      "requirement": "required"
+    }
+  }
+}

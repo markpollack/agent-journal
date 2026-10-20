@@ -1,0 +1,16 @@
+{
+  "caption": "CLI Agent",
+  "description": "An agentic CLI observed by Agent Journal, extending the core ai_agent. product identifies the CLI product and version; name is the product name; version is the CLI version; instance_uid is the native session id; uid is set only when a source reports a stable logical agent identity. Launch settings and source references belong to the run manifest and source_ref, not to this object.",
+  "extends": "ai_agent",
+  "name": "cli_agent",
+  "attributes": {
+    "product": {
+      "description": "The CLI product and version that produced the observed records.",
+      "requirement": "required"
+    },
+    "instance_uid": {
+      "description": "The native session identifier of this invocation.",
+      "requirement": "recommended"
+    }
+  }
+}

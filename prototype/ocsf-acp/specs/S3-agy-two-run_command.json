@@ -1,0 +1,48 @@
+{
+ "run_uid": "proto-S3-agy-two-run_command",
+ "invocation_index": 0,
+ "session_uid": "985b314e-b3d0-41de-809a-ad7d0d419678",
+ "capture_start": "2026-10-20T00:31:21Z",
+ "cli": {
+  "name": "Antigravity",
+  "version": "1.4.2",
+  "vendor_name": "Google",
+  "type_id": 1,
+  "type": "Native"
+ },
+ "launch_settings": {
+  "command": "agy headless stream-json",
+  "permission_mode": "request-review (stream record 1)",
+  "cwd": "/tmp/aj-agy-pair-A-multitool"
+ },
+ "pins": {
+  "ocsf_schema_commit": "856d462bd20dc46cc1ffed2dfffe3b91ef0fbeba",
+  "compiler_commit": "865887a9ee88580c471062f93da115e7599fa31d",
+  "toolkit": {
+   "release": "v0.9.0",
+   "commit": "a99619fcd148791a6a9fe5f82c1e0d839f658591",
+   "linux_amd64_sha256": "641fec9f8c457896c06ead9136fe8f4e50753cd95f8a68c24b25c2bcc9cfd5a5"
+  }
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "kind": 1,
+   "profile": "agy_stream",
+   "path": "/tmp/claude-1000/-home-mark-projects-agent-journal-steward/31a7d4e7-4639-409f-bdf9-d27324c178de/scratchpad/neg/fixtures/S3-agy-two-run_command/stream.jsonl"
+  }
+ ],
+ "excluded": [
+  {
+   "what": "native/conversations/<id>.db, brain transcript files, annotations .pbtxt",
+   "reason": "not admitted: database stores step payloads as blobs (no reader); brain transcript not admitted in prototype; both are Level 0 only"
+  }
+ ],
+ "synthetic": {
+  "label": "SYNTHETIC NEGATIVE VARIANT; not live evidence",
+  "derived_from": "antigravity-pair-A",
+  "modifications": [
+   "second run_command step (index 7) inserted before the result line"
+  ]
+ }
+}

@@ -1,0 +1,108 @@
+{
+  "uid": 3,
+  "caption": "Tool Call",
+  "category": "agent_execution",
+  "description": "An ACP tool call lifecycle observation: the request, an observed result, or a separately reported operation within the call. Request state, permission decision, execution state and result stay distinct attributes.",
+  "name": "tool_call",
+  "extends": "base_event",
+  "attributes": {
+    "activity_id": {
+      "enum": {
+        "1": {
+          "caption": "Requested",
+          "description": "A tool request was observed."
+        },
+        "2": {
+          "caption": "Result observed",
+          "description": "A result for a tool request was observed."
+        },
+        "3": {
+          "caption": "Operation observed",
+          "description": "A separately reported operation of a tool call was observed."
+        }
+      }
+    },
+    "cli_agent": {
+      "group": "primary",
+      "requirement": "required"
+    },
+    "journal": {
+      "group": "context",
+      "requirement": "required"
+    },
+    "source_ref": {
+      "group": "context",
+      "requirement": "required"
+    },
+    "session_uid": {
+      "group": "primary",
+      "requirement": "required"
+    },
+    "turn_uid": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "response_uid": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "tool_call_uid": {
+      "group": "primary",
+      "requirement": "recommended"
+    },
+    "tool_name": {
+      "group": "primary",
+      "requirement": "recommended"
+    },
+    "tool_kind_id": {
+      "group": "primary",
+      "requirement": "recommended"
+    },
+    "tool_kind": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "tool_kind_basis": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "arguments": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "tool_result": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "tool_operation": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "reported_state": {
+      "description": "The request/result lifecycle state string exactly as the source reported it (for example ACTIVE, DONE, completed).",
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "permission_decision": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "status_basis_id": {
+      "group": "primary",
+      "requirement": "recommended"
+    },
+    "status_basis": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "derivation": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "data": {
+      "description": "Native record fields not represented elsewhere on the event (residual).",
+      "group": "context",
+      "requirement": "optional"
+    }
+  }
+}

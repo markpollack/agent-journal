@@ -1,0 +1,16 @@
+{
+  "caption": "Content Block",
+  "description": "One ordered content block of a message. data holds the exact native block.",
+  "extends": "object",
+  "name": "content_block",
+  "attributes": {
+    "block_index": {"requirement": "required"},
+    "block_type": {"requirement": "required"},
+    "block_kind_id": {"requirement": "recommended"},
+    "block_kind": {"requirement": "optional"},
+    "basis": {"description": "Rule that assigned block_kind_id.", "requirement": "optional"},
+    "text": {"requirement": "optional"},
+    "tool_call_uid": {"requirement": "optional"},
+    "data": {"description": "The native block exactly as reported.", "requirement": "required"}
+  }
+}

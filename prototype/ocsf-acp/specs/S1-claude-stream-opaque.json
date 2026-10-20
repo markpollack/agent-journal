@@ -1,0 +1,52 @@
+{
+ "run_uid": "proto-S1-claude-stream-opaque",
+ "invocation_index": 0,
+ "session_uid": "91e8e5ef-c9fb-4fe4-b73b-407ebed3d288",
+ "capture_start": "2026-10-19T22:37:44Z",
+ "cli": {
+  "name": "Claude Code",
+  "version": "2.1.303",
+  "vendor_name": "Anthropic",
+  "type_id": 1,
+  "type": "Native"
+ },
+ "launch_settings": {
+  "command": "claude -p --output-format stream-json (via claude-code-sdk 1.7.0 pair driver)",
+  "model": "claude-haiku-4-5",
+  "permissionMode": "default (from stream record 1)",
+  "cwd": "/tmp/aj-pair-A-multitool"
+ },
+ "pins": {
+  "ocsf_schema_commit": "856d462bd20dc46cc1ffed2dfffe3b91ef0fbeba",
+  "compiler_commit": "865887a9ee88580c471062f93da115e7599fa31d",
+  "toolkit": {
+   "release": "v0.9.0",
+   "commit": "a99619fcd148791a6a9fe5f82c1e0d839f658591",
+   "linux_amd64_sha256": "641fec9f8c457896c06ead9136fe8f4e50753cd95f8a68c24b25c2bcc9cfd5a5"
+  }
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "kind": 1,
+   "profile": "claude_stream",
+   "path": "/tmp/claude-1000/-home-mark-projects-agent-journal-steward/31a7d4e7-4639-409f-bdf9-d27324c178de/scratchpad/neg/fixtures/S1-claude-stream-opaque/stream.jsonl"
+  }
+ ],
+ "excluded": [
+  {
+   "what": "transcript record families other than the admitted response, prompt and its tool results",
+   "reason": "bounded prototype admission; inventoried per family in sources[1].family_inventory; D7 remains open"
+  }
+ ],
+ "synthetic": {
+  "label": "SYNTHETIC NEGATIVE VARIANT; not live evidence",
+  "derived_from": "claude-pair-A",
+  "modifications": [
+   "duplicate-key line inserted at 3",
+   "non-UTF-8 line at 4",
+   "blank line at 5",
+   "CRLF on line 7"
+  ]
+ }
+}

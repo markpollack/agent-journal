@@ -1,0 +1,18 @@
+{
+  "contract_uid": "antigravity/stream-json/1.4.2/0.1.0-prototype",
+  "applies_to": {"product": "Antigravity", "version": "1.4.2", "launch": "agy headless stream-json, permission_mode request-review", "source_kind": "Live output"},
+  "record_discriminator": "event, then step_update.step_type and step_update.state",
+  "time_policy": {"reported": "none: no record carries a timestamp", "fallback": "capture start for every record"},
+  "identity_generation": {"rule": "antigravity.step_identity.v1", "response_uid": "<conversation_id>#step<step_index> for agent_response steps", "tool_call_uid": "<conversation_id>#step<step_index> for tool steps", "note": "The stream reports no response or tool-call ids; these Journal-generated ids are declared on the event basis and are not vendor ids."},
+  "tool_kind_table": {"rule": "antigravity.tool_name_to_kind.v1", "map": {"read_file": 1, "view_file": 1, "read_resource": 1, "write_to_file": 2, "replace_file_content": 2, "multi_replace_file_content": 2, "sed_file": 2, "notebook_edit": 2, "grep_search": 5, "find_by_name": 5, "list_dir": 5, "run_command": 6, "send_command_input": 6, "read_url_content": 8, "search_web": 8}, "default": 99},
+  "rules": [
+    {"id": "agy.stream.user_input->prompt_turn.submitted", "selector": {"event": "step_update", "step_type": "user_input"}, "target": "agentic_cli/prompt_turn", "activity": "1 Prompt submitted", "note": "content unavailable at source: the stream step carries no prompt text"},
+    {"id": "agy.stream.agent_response->model_response", "selector": {"event": "step_update", "step_type": "agent_response"}, "target": "agentic_cli/model_response", "activity": "2 Completed when state == DONE", "usage": "usage -> scope 2 Model response, status 0 Unknown (rule agy.stream.usage_status.v1: the vendor reports usage once with DONE and does not distinguish provisional from final)", "content": "unavailable at source: the stream carries no response text"},
+    {"id": "agy.stream.tool.ACTIVE->tool_call.requested", "selector": {"event": "step_update", "step_type": "tool", "state": "ACTIVE"}, "target": "agentic_cli/tool_call", "arguments": "tool_info.parameters"},
+    {"id": "agy.stream.tool.DONE->tool_call.result", "selector": {"event": "step_update", "step_type": "tool", "state": "DONE"}, "target": "agentic_cli/tool_call", "result": "tool_info.output when present -> tool_result.data; when absent, tool_result is ABSENT and reported_state DONE is recorded", "status": "0 Unknown, status_basis 3 Not derivable: DONE is a lifecycle state, not an outcome; no output and no error object"},
+    {"id": "agy.stream.result->prompt_turn.completed", "selector": {"event": "result"}, "target": "agentic_cli/prompt_turn", "activity": "2 Turn completed", "status": "status_id 1 when result.status == SUCCESS (Reported run status; it does not assert every tool succeeded)", "usage": "result.usage -> scope 4 Run status 2 Final (rule agy.stream.result_usage.v1)", "permission": "result.denied_actions[] -> permission_decisions at scope 4 Run, decision_id 2 Denied, attribution 3 Unattributed with candidates = tool steps whose tool_name maps from action (command -> run_command) (rule agy.denial_candidates.v1); never attached to a tool_call"},
+    {"id": "agy.stream.fallback->source_record", "selector": "init", "target": "agentic_cli/source_record"},
+    {"id": "common.opaque->source_record", "selector": "stderr text, blank, non-UTF-8 or non-JSON lines", "target": "agentic_cli/source_record", "activity": "2 Opaque"}
+  ],
+  "unavailable_at_source": ["prompt text", "response text", "timestamps", "response and tool-call identifiers", "per-tool permission decision", "cost"]
+}

@@ -1,0 +1,73 @@
+{
+  "fixture": "Codex CLI 0.160.1 pair B (evidence/2026-10-19-stage-13/codex-pairs/B-multitool-failure)",
+  "rollout_sha256": "bd2c011b2a77231d46991ad62d1e7ff836a27509b7ab778b2ba92ebe9af88236",
+  "stream_sha256": "aa41246baefc755b43f6c60ef371e060c0bc66f8f73c72c714d6f5b20540c0e4",
+  "labelled_by": "hand, from the native lines cited, 2026-10-20",
+  "case_count": 19,
+  "rationale": {
+    "Q1": "rollout line 13 is ONE custom_tool_call 'exec' (call_b3770a88...) whose input script runs five commands; lines 15-19 are five CommandExecution items (exec-8b62.., exec-35f2.., exec-d375.. exit 1 failed, exec-2968.., exec-ea78..) carrying turn_id but NO call_id; with one exec call in the turn whose input contains each command text they attribute uniquely. Line 20 is the call output (six input_text chunks, one per command plus a header) with no call-level status. The exec stream reports the same commands as item_1..item_5 with no call id; those ids do not occur in the rollout (R13-08) so they stay unattributed.",
+    "Q2": "assistant text is reported twice per response: event_msg item_completed AgentMessage (lines 11, 22) and response_item message (lines 12, 23) with the same msg_ id; the stream reports item_0 and item_6.",
+    "Q3": "token_count at line 21 (after the tool output) and line 25 (before task_complete) are cumulative; the last one is the turn's final figure: input 31151, output 143, reasoning 0, total 31294; turn.completed on the stream reports the same totals. No cost field exists anywhere in either source.",
+    "Q4": "no permission request or decision record exists; approval_policy never is a launch setting (line 8), not a decision.",
+    "Q5": "line 8 turn_context approval_policy never and sandbox workspace-write; line 1 session_meta cli_version 0.160.1 and model_provider openai; line 21 rate_limits.plan_type pro; line 14 token_usage_record response_id."
+  },
+  "expected": {
+    "Q1_tools": {
+      "call_b3770a884ca9408e8f5af9211a2a8fed": {
+        "requests": [{"name": "exec", "kind": "execute", "arguments": "text(await tools.exec_command({cmd:\"cat src/a.txt\",max_output_tokens:2000}));\ntext(await tools.exec_command({cmd:\"cat src/b.txt\",max_output_tokens:2000}));\ntext(await tools.exec_command({cmd:\"cat src/missing.txt\",max_output_tokens:2000}));\ntext(await tools.exec_command({cmd:\"wc -l src/c.txt\",max_output_tokens:2000}));\ntext(await tools.exec_command({cmd:\"cp src/a.txt src/out.txt\",max_output_tokens:2000}));\n", "source": "rollout-1.jsonl:13"}],
+        "results": [{"content": [
+          {"type": "input_text", "text": "Script completed\nWall time 0.4 seconds\nOutput:\n"},
+          {"type": "input_text", "text": "{\"chunk_id\":\"00524a\",\"wall_time_seconds\":0.000007936,\"exit_code\":0,\"original_token_count\":5,\"output\":\"alpha beta gamma\\n\"}"},
+          {"type": "input_text", "text": "{\"chunk_id\":\"31c18e\",\"wall_time_seconds\":0.000007235,\"exit_code\":0,\"original_token_count\":5,\"output\":\"alpha beta gamma\\n\"}"},
+          {"type": "input_text", "text": "{\"chunk_id\":\"ee7fb6\",\"wall_time_seconds\":0.000005371,\"exit_code\":1,\"original_token_count\":12,\"output\":\"cat: src/missing.txt: No such file or directory\\n\"}"},
+          {"type": "input_text", "text": "{\"chunk_id\":\"e087e8\",\"wall_time_seconds\":0.000007144,\"exit_code\":0,\"original_token_count\":3,\"output\":\"4 src/c.txt\\n\"}"},
+          {"type": "input_text", "text": "{\"chunk_id\":\"957535\",\"wall_time_seconds\":0.000005711,\"exit_code\":0,\"original_token_count\":0,\"output\":\"\"}"}],
+          "status": "Unknown", "status_basis": "Not derivable", "source": "rollout-1.jsonl:20"}],
+        "operations": [
+          {"uid": "exec-8b628484-0d0b-4ad9-b1fe-4aad9eb03c80", "argv": ["/bin/bash", "-lc", "cat src/a.txt"], "exit_code": 0, "reported_state": "completed", "attribution": "Unique", "candidates": ["call_b3770a884ca9408e8f5af9211a2a8fed"], "source": "rollout-1.jsonl:15"},
+          {"uid": "exec-35f28f5f-7687-4f85-b038-d068b64c851e", "argv": ["/bin/bash", "-lc", "cat src/b.txt"], "exit_code": 0, "reported_state": "completed", "attribution": "Unique", "source": "rollout-1.jsonl:16"},
+          {"uid": "exec-d375b0dc-5add-4108-9ddb-18c7dfa87c1a", "argv": ["/bin/bash", "-lc", "cat src/missing.txt"], "exit_code": 1, "reported_state": "failed", "attribution": "Unique", "source": "rollout-1.jsonl:17"},
+          {"uid": "exec-296814a7-98ae-409a-9735-5ae20d5a5c9a", "argv": ["/bin/bash", "-lc", "wc -l src/c.txt"], "exit_code": 0, "reported_state": "completed", "source": "rollout-1.jsonl:18"},
+          {"uid": "exec-ea787204-52b1-4348-924d-c7f04a1ad40c", "argv": ["/bin/bash", "-lc", "cp src/a.txt src/out.txt"], "exit_code": 0, "reported_state": "completed", "source": "rollout-1.jsonl:19"}
+        ]
+      },
+      "(no owner) op:item_3": {"operations": [{"uid": "item_3", "reported_state": "in_progress", "attribution": "Unattributed", "candidates": [], "source": "stream.jsonl:8"}, {"uid": "item_3", "exit_code": 1, "reported_state": "failed", "attribution": "Unattributed", "source": "stream.jsonl:9"}]},
+      "(no owner) op:item_1": {"operations": [{"uid": "item_1", "reported_state": "in_progress", "source": "stream.jsonl:4"}, {"uid": "item_1", "exit_code": 0, "reported_state": "completed", "source": "stream.jsonl:5"}]}
+    },
+    "Q2_content": {
+      "msg_0df406ecf0dd14f7016ad6b5922f8881928eeea7ae05f743cf": {"occurrences": [
+        {"source": "rollout-1.jsonl:11", "activity": "Completed", "block_types": ["Text"], "exact_native_structure_retained": true, "stop_reason": "unavailable at source"},
+        {"source": "rollout-1.jsonl:12", "activity": "Completed", "block_types": ["output_text"], "exact_native_structure_retained": true}]},
+      "msg_0df406ecf0dd14f7016ad6b5954308819284081c23db3c70f8": {"occurrences": [{"source": "rollout-1.jsonl:22", "block_types": ["Text"]}, {"source": "rollout-1.jsonl:23", "block_types": ["output_text"]}]},
+      "item_0": {"occurrences": [{"source": "stream.jsonl:3", "activity": "Completed", "block_types": ["agent_message.text"]}]},
+      "item_6": {"occurrences": [{"source": "stream.jsonl:14", "block_types": ["agent_message.text"]}]}
+    },
+    "Q3_usage": {
+      "final": [
+        {"scope": "Prompt turn", "status": "Final", "owner": "01a156b5-3683-78e0-bb4f-985aa780f47d", "input_tokens": 31151, "output_tokens": 143, "reasoning_tokens": 0, "source": "rollout-1.jsonl:25"},
+        {"scope": "Prompt turn", "status": "Final", "input_tokens": 31151, "output_tokens": 143, "reasoning_tokens": 0, "source": "stream.jsonl:15"}
+      ],
+      "non_final": [{"scope": "Prompt turn", "status": "Provisional", "input_tokens": 15401, "output_tokens": 137, "source": "rollout-1.jsonl:21"}],
+      "final_scopes_present": ["Prompt turn"],
+      "final_unavailable_scopes": ["Model response", "Run"],
+      "cost": "unavailable at source"
+    },
+    "Q4_permission": "unavailable at source",
+    "Q5_vendor_without_level0": [
+      {"artifact": "rollout-1.jsonl", "record_index": 8, "path": "payload.approval_policy", "value": "never"},
+      {"artifact": "rollout-1.jsonl", "record_index": 8, "path": "payload.sandbox_policy.type", "value": "workspace-write"},
+      {"artifact": "rollout-1.jsonl", "record_index": 1, "path": "payload.cli_version", "value": "0.160.1"},
+      {"artifact": "rollout-1.jsonl", "record_index": 1, "path": "payload.model_provider", "value": "openai"},
+      {"artifact": "rollout-1.jsonl", "record_index": 21, "path": "payload.rate_limits.plan_type", "value": "pro"},
+      {"artifact": "rollout-1.jsonl", "record_index": 14, "path": "payload.response_id", "value": "resp_0df406ecf0dd14f7016ad6b5914c808192b7d8ad7e79a10535"}
+    ]
+  },
+  "Q5_probes": [
+    {"artifact": "rollout-1.jsonl", "record_index": 8, "path": "payload.approval_policy"},
+    {"artifact": "rollout-1.jsonl", "record_index": 8, "path": "payload.sandbox_policy.type"},
+    {"artifact": "rollout-1.jsonl", "record_index": 1, "path": "payload.cli_version"},
+    {"artifact": "rollout-1.jsonl", "record_index": 1, "path": "payload.model_provider"},
+    {"artifact": "rollout-1.jsonl", "record_index": 21, "path": "payload.rate_limits.plan_type"},
+    {"artifact": "rollout-1.jsonl", "record_index": 14, "path": "payload.response_id"}
+  ]
+}

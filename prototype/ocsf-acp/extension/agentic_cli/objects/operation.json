@@ -1,0 +1,16 @@
+{
+  "caption": "Operation",
+  "description": "A separately reported operation inside a tool call, with its own identity, observed outcome and attribution to a wrapping call.",
+  "extends": "object",
+  "name": "operation",
+  "attributes": {
+    "uid": {"description": "The operation's native identifier.", "requirement": "required"},
+    "argv": {"requirement": "optional"},
+    "exit_code": {"requirement": "optional"},
+    "reported_state": {"requirement": "optional"},
+    "stdout": {"requirement": "optional"},
+    "stderr": {"requirement": "optional"},
+    "attribution": {"requirement": "required"},
+    "data": {"description": "The native operation record exactly as reported.", "requirement": "required"}
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "caption": "Attribution",
+  "description": "The declared outcome of associating a fact with an owner.",
+  "extends": "object",
+  "name": "attribution",
+  "attributes": {
+    "outcome_id": {"requirement": "required"},
+    "outcome": {"requirement": "optional"},
+    "candidates": {"requirement": "recommended"},
+    "basis": {"requirement": "required"},
+    "scope_uid": {"requirement": "optional"}
+  }
+}

@@ -1,0 +1,518 @@
+{
+  "fixture": "Claude Code 2.1.303 pair A (evidence/2026-10-19-competitor-refresh/journal-side/claude-2.1.303-pairs/A-multitool)",
+  "stream_sha256": "76235b12e3dfcb5c6460ecbb272b48da929d4eff31918b02e5ae34735a24b432",
+  "transcript_sha256": "5498e6395f77711052edcba4cba8645ab2b124c9f19594beaed04276d393bf10",
+  "labelled_by": "hand, from the native lines cited, 2026-10-20; not generated from the contract or adapter",
+  "case_count": 23,
+  "rationale": {
+    "Q1": "stream line 6 is the Read tool_use toolu_01AL (file_path a.txt); line 7 returns '1\\talpha beta gamma\\n2\\t' for that id with no is_error field, so status is not derivable. Line 8/10 are the second Read (b.txt) returning IDENTICAL text; ownership is by tool_use_id only. Lines 14/15 Bash cat with is_error false -> Success reported. Lines 16/17 Bash wc. Lines 33/34 Write with no is_error field. Transcript lines 26/27 and 28/29 repeat the two Reads.",
+    "Q2": "message msg_011CgCPypwJSoRRgCLrta6Ft appears on stream lines 4,5,6,8 with stop_reason null (Partial) and on transcript lines 24,25,26,28 with stop_reason tool_use (Completed).",
+    "Q3": "stream line 39 (result) reports run usage input 34, output 2492, thinking 2057 and modelUsage for claude-haiku-4-5 with provider firstParty and costUSD 0.046393699999999996 (costBasis list); stream assistant lines carry provisional usage (output 6/2/3/3) with stop_reason null; transcript lines 24-28 report final output 326, thinking 184 for the first message.",
+    "Q4": "every tool_result record (stream 7,10,15,17,34; transcript 27,29) carries permission decision accept/config/rule naming the tool_use id -> Unique at tool-call scope; result line permission_denials is empty.",
+    "Q5": "stream line 1 init: permissionMode default, model claude-haiku-4-5, tools[0] Task; line 9 rate_limit_event; line 39 modelUsage provider firstParty; line 7 tool_use_result.file.numLines 2."
+  },
+  "expected": {
+    "Q1_tools": {
+      "toolu_01AL5H2zJ9TcWgZ3oxXHAEcE": {
+        "requests": [
+          {
+            "name": "Read",
+            "kind": "read",
+            "arguments": {
+              "file_path": "/tmp/aj-pair-A-multitool/src/a.txt"
+            },
+            "source": "stream.jsonl:6"
+          },
+          {
+            "name": "Read",
+            "kind": "read",
+            "source": "transcript.jsonl:26"
+          }
+        ],
+        "results": [
+          {
+            "content": "1\talpha beta gamma\n2\t",
+            "error_reported": "unavailable at source",
+            "status": "Unknown",
+            "status_basis": "Not derivable",
+            "source": "stream.jsonl:7"
+          },
+          {
+            "content": "1\talpha beta gamma\n2\t",
+            "status": "Unknown",
+            "source": "transcript.jsonl:27"
+          }
+        ]
+      },
+      "toolu_01GbaDHPwMzG7cdNHUJGHx3d": {
+        "requests": [
+          {
+            "name": "Read",
+            "kind": "read",
+            "arguments": {
+              "file_path": "/tmp/aj-pair-A-multitool/src/b.txt"
+            },
+            "source": "stream.jsonl:8"
+          },
+          {
+            "name": "Read",
+            "source": "transcript.jsonl:28"
+          }
+        ],
+        "results": [
+          {
+            "content": "1\talpha beta gamma\n2\t",
+            "error_reported": "unavailable at source",
+            "status": "Unknown",
+            "source": "stream.jsonl:10"
+          },
+          {
+            "content": "1\talpha beta gamma\n2\t",
+            "source": "transcript.jsonl:29"
+          }
+        ]
+      },
+      "toolu_01AirKgMKnXN65Ji2fF9DoDe": {
+        "requests": [
+          {
+            "name": "Bash",
+            "kind": "execute",
+            "arguments": {
+              "command": "cat /tmp/aj-pair-A-multitool/src/a.txt",
+              "description": "Display contents of src/a.txt"
+            },
+            "source": "stream.jsonl:14"
+          }
+        ],
+        "results": [
+          {
+            "content": "alpha beta gamma",
+            "error_reported": false,
+            "status": "Success",
+            "status_basis": "Reported",
+            "source": "stream.jsonl:15"
+          }
+        ]
+      },
+      "toolu_01HeEv53ZkpvaEYiWp6uwwvn": {
+        "requests": [
+          {
+            "name": "Bash",
+            "kind": "execute",
+            "source": "stream.jsonl:16"
+          }
+        ],
+        "results": [
+          {
+            "content": "4 /tmp/aj-pair-A-multitool/src/c.txt",
+            "error_reported": false,
+            "status": "Success",
+            "status_basis": "Reported",
+            "source": "stream.jsonl:17"
+          }
+        ]
+      },
+      "toolu_01FsL6vjXYj8zweAdNcj6W5G": {
+        "requests": [
+          {
+            "name": "Write",
+            "kind": "edit",
+            "source": "stream.jsonl:33"
+          }
+        ],
+        "results": [
+          {
+            "content": "File created successfully at: /tmp/aj-pair-A-multitool/src/out.txt (file state is current in your context — no need to Read it back)",
+            "error_reported": "unavailable at source",
+            "status": "Unknown",
+            "status_basis": "Not derivable",
+            "source": "stream.jsonl:34"
+          }
+        ]
+      }
+    },
+    "Q2_content": {
+      "msg_011CgCPypwJSoRRgCLrta6Ft": {
+        "occurrences": [
+          {
+            "source": "stream.jsonl:4",
+            "activity": "Partial",
+            "block_types": [
+              "thinking"
+            ],
+            "exact_native_structure_retained": true,
+            "stop_reason": "unavailable at source"
+          },
+          {
+            "source": "stream.jsonl:5",
+            "activity": "Partial",
+            "block_types": [
+              "text"
+            ],
+            "stop_reason": "unavailable at source"
+          },
+          {
+            "source": "stream.jsonl:6",
+            "activity": "Partial",
+            "block_types": [
+              "tool_use"
+            ]
+          },
+          {
+            "source": "stream.jsonl:8",
+            "activity": "Partial",
+            "block_types": [
+              "tool_use"
+            ]
+          },
+          {
+            "source": "transcript.jsonl:24",
+            "activity": "Completed",
+            "block_types": [
+              "thinking"
+            ],
+            "exact_native_structure_retained": true,
+            "stop_reason": "tool_use"
+          },
+          {
+            "source": "transcript.jsonl:25",
+            "activity": "Completed",
+            "block_types": [
+              "text"
+            ],
+            "stop_reason": "tool_use"
+          },
+          {
+            "source": "transcript.jsonl:26",
+            "activity": "Completed",
+            "block_types": [
+              "tool_use"
+            ],
+            "stop_reason": "tool_use"
+          },
+          {
+            "source": "transcript.jsonl:28",
+            "activity": "Completed",
+            "block_types": [
+              "tool_use"
+            ],
+            "stop_reason": "tool_use"
+          }
+        ]
+      },
+      "msg_011CgCPz21ZH8UkWKmLYjWpA": {
+        "occurrences": [
+          {
+            "source": "stream.jsonl:13",
+            "block_types": [
+              "thinking"
+            ]
+          },
+          {
+            "source": "stream.jsonl:14",
+            "block_types": [
+              "tool_use"
+            ]
+          },
+          {
+            "source": "stream.jsonl:16",
+            "block_types": [
+              "tool_use"
+            ]
+          }
+        ]
+      },
+      "msg_011CgCPzBckesTQZv6soBRoB": {
+        "occurrences": [
+          {
+            "source": "stream.jsonl:31",
+            "block_types": [
+              "thinking"
+            ]
+          },
+          {
+            "source": "stream.jsonl:32",
+            "block_types": [
+              "text"
+            ]
+          },
+          {
+            "source": "stream.jsonl:33",
+            "block_types": [
+              "tool_use"
+            ]
+          }
+        ]
+      },
+      "msg_011CgCQ1R1wMQG2Uh1rEnKvQ": {
+        "occurrences": [
+          {
+            "source": "stream.jsonl:37",
+            "block_types": [
+              "thinking"
+            ]
+          },
+          {
+            "source": "stream.jsonl:38",
+            "block_types": [
+              "text"
+            ]
+          }
+        ]
+      }
+    },
+    "Q3_usage": {
+      "final": [
+        {
+          "scope": "Run",
+          "status": "Final",
+          "input_tokens": 34,
+          "output_tokens": 2492,
+          "reasoning_tokens": 2057,
+          "source": "stream.jsonl:39"
+        },
+        {
+          "scope": "Model",
+          "status": "Final",
+          "input_tokens": 34,
+          "output_tokens": 2492,
+          "reasoning_tokens": 2057,
+          "source": "stream.jsonl:39"
+        },
+        {
+          "scope": "Model response",
+          "status": "Final",
+          "owner": "msg_011CgCPypwJSoRRgCLrta6Ft",
+          "input_tokens": 10,
+          "output_tokens": 326,
+          "reasoning_tokens": 184,
+          "source": "transcript.jsonl:24"
+        },
+        {
+          "scope": "Model response",
+          "status": "Final",
+          "owner": "msg_011CgCPypwJSoRRgCLrta6Ft",
+          "output_tokens": 326,
+          "source": "transcript.jsonl:25"
+        },
+        {
+          "scope": "Model response",
+          "status": "Final",
+          "owner": "msg_011CgCPypwJSoRRgCLrta6Ft",
+          "output_tokens": 326,
+          "source": "transcript.jsonl:26"
+        },
+        {
+          "scope": "Model response",
+          "status": "Final",
+          "owner": "msg_011CgCPypwJSoRRgCLrta6Ft",
+          "output_tokens": 326,
+          "source": "transcript.jsonl:28"
+        }
+      ],
+      "non_final": [
+        {
+          "scope": "Model response",
+          "status": "Provisional",
+          "owner": "msg_011CgCPypwJSoRRgCLrta6Ft",
+          "output_tokens": 6,
+          "reasoning_tokens": "not reported",
+          "source": "stream.jsonl:4"
+        },
+        {
+          "output_tokens": 6,
+          "source": "stream.jsonl:5"
+        },
+        {
+          "output_tokens": 6,
+          "source": "stream.jsonl:6"
+        },
+        {
+          "output_tokens": 6,
+          "source": "stream.jsonl:8"
+        },
+        {
+          "owner": "msg_011CgCPz21ZH8UkWKmLYjWpA",
+          "output_tokens": 2,
+          "source": "stream.jsonl:13"
+        },
+        {
+          "output_tokens": 2,
+          "source": "stream.jsonl:14"
+        },
+        {
+          "output_tokens": 2,
+          "source": "stream.jsonl:16"
+        },
+        {
+          "owner": "msg_011CgCPzBckesTQZv6soBRoB",
+          "output_tokens": 3,
+          "source": "stream.jsonl:31"
+        },
+        {
+          "output_tokens": 3,
+          "source": "stream.jsonl:32"
+        },
+        {
+          "output_tokens": 3,
+          "source": "stream.jsonl:33"
+        },
+        {
+          "owner": "msg_011CgCQ1R1wMQG2Uh1rEnKvQ",
+          "output_tokens": 3,
+          "source": "stream.jsonl:37"
+        },
+        {
+          "output_tokens": 3,
+          "source": "stream.jsonl:38"
+        }
+      ],
+      "final_scopes_present": [
+        "Model",
+        "Model response",
+        "Run"
+      ],
+      "final_unavailable_scopes": [
+        "Prompt turn"
+      ],
+      "cost": [
+        {
+          "total": 0.046393699999999996,
+          "currency": "USD",
+          "scope": "Run",
+          "basis": "list",
+          "source": "stream.jsonl:39"
+        }
+      ]
+    },
+    "Q4_permission": [
+      {
+        "decision": "accept",
+        "scope": "Tool call",
+        "attribution": "Unique",
+        "candidates": [
+          "toolu_01AL5H2zJ9TcWgZ3oxXHAEcE"
+        ],
+        "decision_source": "config",
+        "source": "stream.jsonl:7",
+        "normalized": "Allowed"
+      },
+      {
+        "decision": "accept",
+        "scope": "Tool call",
+        "attribution": "Unique",
+        "candidates": [
+          "toolu_01GbaDHPwMzG7cdNHUJGHx3d"
+        ],
+        "source": "stream.jsonl:10"
+      },
+      {
+        "decision": "accept",
+        "candidates": [
+          "toolu_01AirKgMKnXN65Ji2fF9DoDe"
+        ],
+        "source": "stream.jsonl:15"
+      },
+      {
+        "decision": "accept",
+        "candidates": [
+          "toolu_01HeEv53ZkpvaEYiWp6uwwvn"
+        ],
+        "source": "stream.jsonl:17"
+      },
+      {
+        "decision": "accept",
+        "candidates": [
+          "toolu_01FsL6vjXYj8zweAdNcj6W5G"
+        ],
+        "source": "stream.jsonl:34"
+      },
+      {
+        "decision": "accept",
+        "scope": "Tool call",
+        "attribution": "Unique",
+        "candidates": [
+          "toolu_01AL5H2zJ9TcWgZ3oxXHAEcE"
+        ],
+        "source": "transcript.jsonl:27"
+      },
+      {
+        "decision": "accept",
+        "candidates": [
+          "toolu_01GbaDHPwMzG7cdNHUJGHx3d"
+        ],
+        "source": "transcript.jsonl:29"
+      }
+    ],
+    "Q5_vendor_without_level0": [
+      {
+        "artifact": "stream.jsonl",
+        "record_index": 1,
+        "path": "permissionMode",
+        "value": "default"
+      },
+      {
+        "artifact": "stream.jsonl",
+        "record_index": 1,
+        "path": "model",
+        "value": "claude-haiku-4-5"
+      },
+      {
+        "artifact": "stream.jsonl",
+        "record_index": 1,
+        "path": "tools[0]",
+        "value": "Task"
+      },
+      {
+        "artifact": "stream.jsonl",
+        "record_index": 9,
+        "path": "type",
+        "value": "rate_limit_event"
+      },
+      {
+        "artifact": "stream.jsonl",
+        "record_index": 39,
+        "path": "modelUsage.claude-haiku-4-5.provider",
+        "value": "firstParty"
+      },
+      {
+        "artifact": "stream.jsonl",
+        "record_index": 7,
+        "path": "tool_use_result.file.numLines",
+        "value": 2
+      }
+    ]
+  },
+  "Q5_probes": [
+    {
+      "artifact": "stream.jsonl",
+      "record_index": 1,
+      "path": "permissionMode"
+    },
+    {
+      "artifact": "stream.jsonl",
+      "record_index": 1,
+      "path": "model"
+    },
+    {
+      "artifact": "stream.jsonl",
+      "record_index": 1,
+      "path": "tools[0]"
+    },
+    {
+      "artifact": "stream.jsonl",
+      "record_index": 9,
+      "path": "type"
+    },
+    {
+      "artifact": "stream.jsonl",
+      "record_index": 39,
+      "path": "modelUsage.claude-haiku-4-5.provider"
+    },
+    {
+      "artifact": "stream.jsonl",
+      "record_index": 7,
+      "path": "tool_use_result.file.numLines"
+    }
+  ]
+}
