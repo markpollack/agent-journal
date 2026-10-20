@@ -235,13 +235,7 @@ public abstract class BaseRunRecorder {
             }
         }
 
-        // Thinking block events
-        if (phase.hasThinking()) {
-            for (String thinking : phase.thinkingBlocks()) {
-                currentRun.logEvent(CustomEvent.of("thinking_block",
-                        phaseAttributes(phase.phaseName(), "content", thinking)));
-            }
-        }
+        recordSourceLayer(currentRun, phase, null, phase.toolResults());
 
         // Messages that are not ordinary assistant or user messages, whole (system, result, ...)
         for (ClaudeVendorEvent vendorEvent : phase.vendorEvents()) {
@@ -435,7 +429,8 @@ public abstract class BaseRunRecorder {
                         .build());
             }
 
-            for (String thinking : subagent.thinkingBlocks()) {
+            recordSourceLayer(run, phase, subagent.spawnToolUseId(), null);
+            for (String thinking : phase.contentBlocks().stream().anyMatch(b -> Objects.equals(b.parentToolUseId(), subagent.spawnToolUseId())) ? List.<String>of() : subagent.thinkingBlocks()) {
                 run.logEvent(CustomEvent.of("thinking_block",
                         phaseAttributes(phase.phaseName(), "content", thinking)));
             }
@@ -539,6 +534,149 @@ public abstract class BaseRunRecorder {
             return reported.get(0).model();
         }
         return Objects.toString(currentRun.config().values().get("model"), "unknown");
+    }
+
+    /**
+     * Writes the level-1 source layer of one track (option C, Stage 13 package 1) onto {@code target}: ordered
+     * content blocks, the permission decisions, the vendor-timestamp tool timing, and every assistant and user
+     * line of that track whole at its occurrence. {@code owner} is {@code null} for the main loop or the spawning
+     * tool-use id of a sub-agent; each record carries its owner, so a sub-agent's lines land on its own run.
+     */
+    private void recordSourceLayer(Run target, PhaseCapture phase, String owner, List<ToolResultRecord> toolResults) {
+        // Ordered assistant content (option C, package 1): one event per text and thinking block with its
+        // position, and one message_blocks event per assistant line listing every block's kind in order, so
+        // the sequence of text, thinking and tool use is recoverable from level 1. Thinking carries its
+        // signature verbatim. Captures built without content blocks (older convenience constructors) fall
+        // back to the plain thinking_block events.
+        if (!phase.contentBlocks().isEmpty()) {
+            Map<Integer, List<Map<String, Object>>> blocksByLine = new java.util.TreeMap<>();
+            Map<Integer, ClaudeContentBlock> firstByLine = new LinkedHashMap<>();
+            for (ClaudeContentBlock block : phase.contentBlocks()) {
+                if (!Objects.equals(block.parentToolUseId(), owner)) {
+                    continue;
+                }
+                Map<String, Object> entry = new LinkedHashMap<>();
+                entry.put("index", block.blockIndex());
+                entry.put("kind", block.kind());
+                if (block.toolUseId() != null) {
+                    entry.put("toolUseId", block.toolUseId());
+                }
+                blocksByLine.computeIfAbsent(block.messageNumber(), k -> new ArrayList<>()).add(entry);
+                firstByLine.putIfAbsent(block.messageNumber(), block);
+                if ("text".equals(block.kind())) {
+                    Map<String, Object> attributes = blockAttributes(phase.phaseName(), block);
+                    attributes.put("text", block.text() != null ? block.text() : "");
+                    target.logEvent(CustomEvent.of("assistant_text", attributes));
+                }
+                else if ("thinking".equals(block.kind())) {
+                    Map<String, Object> attributes = blockAttributes(phase.phaseName(), block);
+                    attributes.put("content", block.text() != null ? block.text() : "");
+                    if (block.signature() != null) {
+                        attributes.put("signature", block.signature());
+                    }
+                    target.logEvent(CustomEvent.of("thinking_block", attributes));
+                }
+            }
+            for (Map.Entry<Integer, List<Map<String, Object>>> line : blocksByLine.entrySet()) {
+                ClaudeContentBlock first = firstByLine.get(line.getKey());
+                Map<String, Object> attributes = phaseAttributes(phase.phaseName(), "messageNumber", line.getKey());
+                if (first.turnId() != null) {
+                    attributes.put("turnId", first.turnId());
+                }
+                attributes.put("turnIndex", first.turnIndex());
+                if (first.parentToolUseId() != null) {
+                    attributes.put("parentToolUseId", first.parentToolUseId());
+                }
+                attributes.put("blocks", line.getValue());
+                target.logEvent(CustomEvent.of("message_blocks", attributes));
+            }
+        }
+        else if (owner == null && phase.hasThinking()) {
+            for (String thinking : phase.thinkingBlocks()) {
+                target.logEvent(CustomEvent.of("thinking_block",
+                        phaseAttributes(phase.phaseName(), "content", thinking)));
+            }
+        }
+
+        // Permission decisions the vendor reported per tool result, as observations
+        for (ClaudePermissionDecision decision : phase.permissionDecisions()) {
+            if (!Objects.equals(decision.parentToolUseId(), owner)) {
+                continue;
+            }
+            Map<String, Object> attributes = phaseAttributes(phase.phaseName(), "vendor", "claude");
+            attributes.put("messageNumber", decision.messageNumber());
+            if (decision.toolUseId() != null) {
+                attributes.put("toolUseId", decision.toolUseId());
+            }
+            if (decision.decision() != null) {
+                attributes.put("decision", decision.decision());
+            }
+            if (decision.source() != null) {
+                attributes.put("source", decision.source());
+            }
+            if (decision.reasonType() != null) {
+                attributes.put("reasonType", decision.reasonType());
+            }
+            if (decision.parentToolUseId() != null) {
+                attributes.put("parentToolUseId", decision.parentToolUseId());
+            }
+            target.logEvent(CustomEvent.of("permission_decision", attributes));
+        }
+
+        // Tool timing from the vendor's own line timestamps, with its meaning stated
+        if (toolResults != null) {
+            for (ToolResultRecord result : toolResults) {
+                if (result.issuedAt() == null && result.resultAt() == null) {
+                    continue;
+                }
+                Map<String, Object> attributes = phaseAttributes(phase.phaseName(), "toolUseId", result.toolUseId());
+                if (result.issuedAt() != null) {
+                    attributes.put("issuedAt", result.issuedAt());
+                }
+                if (result.resultAt() != null) {
+                    attributes.put("resultAt", result.resultAt());
+                }
+                attributes.put("durationMs", result.durationMs());
+                attributes.put("durationSource", result.durationSource());
+                target.logEvent(CustomEvent.of("tool_timing", attributes));
+            }
+        }
+
+        // Every assistant and user line of the stream, whole, at its occurrence (option C, conservative
+        // retention): the residual of the records the typed layer consumed
+        for (ClaudeSourceRecord record : phase.sourceRecords()) {
+            if (!Objects.equals(record.parentToolUseId(), owner)) {
+                continue;
+            }
+            Map<String, Object> attributes = phaseAttributes(phase.phaseName(), "vendor", "claude");
+            attributes.put("channel", "stream");
+            attributes.put("messageNumber", record.messageNumber());
+            attributes.put("type", record.type());
+            if (record.parentToolUseId() != null) {
+                attributes.put("parentToolUseId", record.parentToolUseId());
+            }
+            if (record.rawJson() != null) {
+                attributes.put("rawJson", record.rawJson());
+            }
+            if (record.reason() != null) {
+                attributes.put("reason", record.reason());
+            }
+            target.logEvent(CustomEvent.of("source_record", attributes));
+        }
+
+    }
+
+    private static Map<String, Object> blockAttributes(String phaseName, ClaudeContentBlock block) {
+        Map<String, Object> attributes = phaseAttributes(phaseName, "messageNumber", block.messageNumber());
+        if (block.turnId() != null) {
+            attributes.put("turnId", block.turnId());
+        }
+        attributes.put("turnIndex", block.turnIndex());
+        attributes.put("blockIndex", block.blockIndex());
+        if (block.parentToolUseId() != null) {
+            attributes.put("parentToolUseId", block.parentToolUseId());
+        }
+        return attributes;
     }
 
     // Not Map.of, which throws NullPointerException for a capture with no phase name; such a

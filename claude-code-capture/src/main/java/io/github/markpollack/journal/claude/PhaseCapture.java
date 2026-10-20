@@ -77,6 +77,9 @@ import java.util.Map;
  *        {@code failed} and {@code refused}; empty if it reported none
  * @param cacheWriteTiers how the cache writes split between the 5-minute and 1-hour caches, or {@code null} if no
  *        result line reported the split; see {@link CacheWriteTiers}
+ * @param sourceRecords every assistant and user line of the stream, whole, at its occurrence (since 1.12.0; option C)
+ * @param contentBlocks the assistant content blocks in stream order, with thinking signatures (since 1.12.0)
+ * @param permissionDecisions the permission decisions the vendor reported per tool result (since 1.12.0)
  * @param vendorEvents the messages that are not ordinary assistant or user messages, whole and in stream order; see
  *        {@link ClaudeVendorEvent}. Empty if there were none
  * @param sessionCost the session's running totals this capture's cost was rebased from, when
@@ -113,7 +116,10 @@ public record PhaseCapture(
         Map<String, Object> reportedSubagentStats,
         SessionCost sessionCost,
         CacheWriteTiers cacheWriteTiers,
-        List<ClaudeVendorEvent> vendorEvents
+        List<ClaudeVendorEvent> vendorEvents,
+        List<ClaudeSourceRecord> sourceRecords,
+        List<ClaudeContentBlock> contentBlocks,
+        List<ClaudePermissionDecision> permissionDecisions
 ) {
 
     /**
@@ -133,6 +139,10 @@ public record PhaseCapture(
         turns = copy(turns);
         modelCosts = copy(modelCosts);
         vendorEvents = vendorEvents == null ? List.of() : Collections.unmodifiableList(new ArrayList<>(vendorEvents));
+        sourceRecords = sourceRecords == null ? List.of() : Collections.unmodifiableList(new ArrayList<>(sourceRecords));
+        contentBlocks = contentBlocks == null ? List.of() : Collections.unmodifiableList(new ArrayList<>(contentBlocks));
+        permissionDecisions = permissionDecisions == null ? List.of()
+                : Collections.unmodifiableList(new ArrayList<>(permissionDecisions));
     }
 
     /**
@@ -149,7 +159,8 @@ public record PhaseCapture(
         this(phaseName, promptText, inputTokens, outputTokens, thinkingTokens, cacheCreationInputTokens,
                 cacheReadInputTokens, durationMs, apiDurationMs, totalCostUsd, sessionId, numTurns, isError,
                 textOutput, thinkingBlocks, toolUses, rawResult, toolResults, turns, modelCosts, stopReason,
-                maxTurns, subagents, subagentTracksAvailable, reportedSubagentStats, null, null, List.of());
+                maxTurns, subagents, subagentTracksAvailable, reportedSubagentStats, null, null, List.of(), List.of(),
+                List.of(), List.of());
     }
 
     /**

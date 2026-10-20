@@ -67,4 +67,16 @@ class JsonlTest {
         assertThat(Jsonl.read(file, "@type", null)).filteredOn(l -> l.path().equals("attributes.rawJson")).singleElement()
                 .satisfies(l -> assertThat(l.value()).isEqualTo("not json at all"));
     }
+
+    @Test
+    void aSourceRecordIsKeptWholeLikeAVendorEvent(@TempDir Path dir) throws IOException {
+        Path file = dir.resolve("events.jsonl");
+        Files.writeString(file, "{\"@type\":\"custom\",\"name\":\"source_record\",\"attributes\":{\"channel\":\"stream\","
+                + "\"rawJson\":\"{\\\"type\\\":\\\"assistant\\\",\\\"uuid\\\":\\\"00000000-0000-4000-8000-000000000001\\\"}\"}}\n");
+
+        List<Leaf> leaves = Jsonl.read(file, "@type", null);
+
+        assertThat(leaves).filteredOn(Leaf::keptWhole).extracting(Leaf::path).contains("attributes.rawJson.uuid");
+        assertThat(leaves).filteredOn(Leaf::keptWhole).allSatisfy(l -> assertThat(l.kind()).isEqualTo("source_record"));
+    }
 }

@@ -68,7 +68,7 @@ class CaptureContractTest {
     // thinks less and ends the conversation. Shapes taken from a real session log: thinking tokens
     // live one level deeper than the rest of the vector, under output_tokens_details.
     private static final String TURN_1 = """
-            {"type":"assistant","message":{"id":"msg_1","model":"claude-opus-4-8",
+            {"type":"assistant","timestamp":"2026-01-01T00:00:00.000Z","message":{"id":"msg_1","model":"claude-opus-4-8",
              "stop_reason":"tool_use",
              "usage":{"input_tokens":120,"output_tokens":300,
                       "cache_creation_input_tokens":18646,"cache_read_input_tokens":0,
@@ -90,10 +90,16 @@ class CaptureContractTest {
         List<ParsedMessage> messages = new ArrayList<>();
         messages.add(ParsedMessage.RegularMessage.of(
                 new AssistantMessage(List.of(new TextBlock("looking"), read, bash)), TURN_1));
+        // The vendor stamps each line; a tool's duration is the time between its tool_use line and its
+        // tool_result line (since 1.12.0), never the parser's clock.
         messages.add(ParsedMessage.RegularMessage.of(
-                new UserMessage(List.of(new ToolResultBlock("toolu_1", "file body", false)))));
+                new UserMessage(List.of(new ToolResultBlock("toolu_1", "file body", false))),
+                "{\"type\":\"user\",\"timestamp\":\"2026-01-01T00:00:00.040Z\",\"message\":{\"role\":\"user\","
+                        + "\"content\":[{\"type\":\"tool_result\",\"tool_use_id\":\"toolu_1\",\"content\":\"file body\"}]}}"));
         messages.add(ParsedMessage.RegularMessage.of(
-                new UserMessage(List.of(new ToolResultBlock("toolu_2", "boom", true)))));
+                new UserMessage(List.of(new ToolResultBlock("toolu_2", "boom", true))),
+                "{\"type\":\"user\",\"timestamp\":\"2026-01-01T00:00:00.050Z\",\"message\":{\"role\":\"user\","
+                        + "\"content\":[{\"type\":\"tool_result\",\"tool_use_id\":\"toolu_2\",\"content\":\"boom\",\"is_error\":true}]}}"));
         messages.add(ParsedMessage.RegularMessage.of(
                 new AssistantMessage(List.of(new TextBlock("done"))), TURN_2));
         messages.add(ParsedMessage.RegularMessage.of(ResultMessage.builder()

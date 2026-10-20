@@ -246,7 +246,8 @@ public class SessionLogParser {
                 current.rawResult(), current.toolResults(), current.turns(),
                 current.modelCosts() == null ? null : deltaModels, current.stopReason(), current.maxTurns(),
                 current.subagents(), current.subagentTracksAvailable(), current.reportedSubagentStats(),
-                sessionCost, current.cacheWriteTiers(), current.vendorEvents());
+                sessionCost, current.cacheWriteTiers(), current.vendorEvents(), current.sourceRecords(), current.contentBlocks(),
+                current.permissionDecisions());
     }
 
     /**
@@ -303,11 +304,16 @@ public class SessionLogParser {
         List<ModelCost> modelCosts = new ArrayList<>();
         Map<String, String> toolUseNames = new java.util.HashMap<>();
         Map<String, Map<String, Object>> toolUseInputs = new java.util.HashMap<>();
-        Map<String, Long> toolUseStartMs = new java.util.HashMap<>();
         boolean sawResult = false;
         ResultMessage lastResult = null;
         // messages kept whole: everything that is not an ordinary assistant or user message
         List<ClaudeVendorEvent> vendorEvents = new ArrayList<>();
+        // option C, conservative retention: every assistant and user line whole, at its occurrence
+        List<ClaudeSourceRecord> sourceRecords = new ArrayList<>();
+        List<ClaudeContentBlock> contentBlocks = new ArrayList<>();
+        List<ClaudePermissionDecision> permissionDecisions = new ArrayList<>();
+        // the vendor's own timestamp on the line that issued each tool call, for the tool's duration
+        Map<String, String> toolUseIssuedAt = new java.util.HashMap<>();
         int messageNumber = 0;
         String resultSubtype = null;
         int wireMaxTurns = UNKNOWN_MAX_TURNS;
@@ -360,6 +366,16 @@ public class SessionLogParser {
                         ? new ClaudeVendorEvent(messageNumber, wireType == null ? "unknown" : wireType,
                                 textOrNull(rawRoot, "subtype"), rawJson, null)
                         : new ClaudeVendorEvent(messageNumber, message.getClass().getSimpleName(), null, null,
+                                "the message came without its original text"));
+            }
+
+            if (message instanceof AssistantMessage || message instanceof UserMessage) {
+                String wireType = rawRoot == null ? null : textOrNull(rawRoot, "type");
+                String lineType = wireType != null ? wireType : (message instanceof AssistantMessage ? "assistant" : "user");
+                String owner = rawRoot == null ? null : textOrNull(rawRoot, "parent_tool_use_id");
+                sourceRecords.add(rawJson != null
+                        ? new ClaudeSourceRecord(messageNumber, lineType, owner, rawJson, null)
+                        : new ClaudeSourceRecord(messageNumber, lineType, null, null,
                                 "the message came without its original text"));
             }
 
@@ -458,8 +474,13 @@ public class SessionLogParser {
                 if (currentTurnId != null && knownTurnIndex == null) {
                     track.turnIndexByMessageId.put(currentTurnId, currentTurnIndex);
                 }
+                final String lineTimestamp = rawRoot == null ? null : textOrNull(rawRoot, "timestamp");
+                int blockIndex = -1;
                 for (ContentBlock block : assistantMsg.content()) {
+                    blockIndex++;
                     if (block instanceof TextBlock textBlock) {
+                        contentBlocks.add(new ClaudeContentBlock(messageNumber, currentTurnId, currentTurnIndex,
+                                blockIndex, "text", textBlock.text(), null, null, track.spawnToolUseId));
                         track.text.append(textBlock.text());
                         logger.debug("[{}] Text: {} chars", phaseName, textBlock.text().length());
                         writeTrace(trace, phaseName, w -> w.writeText(textBlock.text()));
@@ -472,6 +493,8 @@ public class SessionLogParser {
                         // not that capture dropped it.
                         final boolean hasSignature = thinkingBlock.signature() != null
                                 && !thinkingBlock.signature().isEmpty();
+                        contentBlocks.add(new ClaudeContentBlock(messageNumber, currentTurnId, currentTurnIndex,
+                                blockIndex, "thinking", thinking, thinkingBlock.signature(), null, track.spawnToolUseId));
                         writeTrace(trace, phaseName, w -> w.writeThinking(thinking, hasSignature));
                     } else if (block instanceof ToolUseBlock toolUseBlock) {
                         track.toolUses.add(new ToolUseRecord(
@@ -484,13 +507,23 @@ public class SessionLogParser {
                         turnToolIds.add(toolUseBlock.id());
                         toolUseNames.put(toolUseBlock.id(), toolUseBlock.name());
                         toolUseInputs.put(toolUseBlock.id(), toolUseBlock.input());
-                        toolUseStartMs.put(toolUseBlock.id(), System.currentTimeMillis());
+                        if (lineTimestamp != null) {
+                            toolUseIssuedAt.put(toolUseBlock.id(), lineTimestamp);
+                        }
+                        contentBlocks.add(new ClaudeContentBlock(messageNumber, currentTurnId, currentTurnIndex,
+                                blockIndex, "tool_use", null, null, toolUseBlock.id(), track.spawnToolUseId));
                         String target = toolTarget(toolUseBlock.name(), toolUseBlock.input());
                         logger.info("[{}] Tool use: {} {} (id: {})", phaseName, toolUseBlock.name(), target, toolUseBlock.id());
                         // The trace is a flat record of every line, sub-agents' included, as it
                         // always was; it has no field for the agent a line belongs to.
                         writeTrace(trace, phaseName, w -> w.writeToolUse(toolUseBlock.name(), toolUseBlock.id(),
                                 toolUseBlock.input(), currentTurnIndex, currentTurnId));
+                    } else {
+                        // a block kind the typed layer does not model: its position is kept here and its
+                        // content in the source record
+                        contentBlocks.add(new ClaudeContentBlock(messageNumber, currentTurnId, currentTurnIndex,
+                                blockIndex, block.getClass().getSimpleName().replace("Block", "").toLowerCase(java.util.Locale.ROOT), null, null, null,
+                                track.spawnToolUseId));
                     }
                 }
                 // R2.2/R2.3: per-turn usage (wire-only) carrying this turn's tool_use ids, and
@@ -514,6 +547,17 @@ public class SessionLogParser {
             }
 
             if (message instanceof UserMessage userMsg) {
+                if (rawRoot != null && rawRoot.path("tool_result_meta").isArray()) {
+                    for (JsonNode meta : rawRoot.path("tool_result_meta")) {
+                        JsonNode decision = meta.path("permission_decision");
+                        if (decision.isObject()) {
+                            permissionDecisions.add(new ClaudePermissionDecision(messageNumber, textOrNull(meta, "id"),
+                                    textOrNull(decision, "decision"), textOrNull(decision, "source"),
+                                    textOrNull(decision, "reason_type"), track.spawnToolUseId));
+                        }
+                    }
+                }
+                final String resultTimestamp = rawRoot == null ? null : textOrNull(rawRoot, "timestamp");
                 if (!track.isMainLoop() && track.promptText == null) {
                     // The first text a sub-agent receives is the prompt it was started with.
                     track.promptText = userText(userMsg);
@@ -527,15 +571,18 @@ public class SessionLogParser {
                                 content = resultBlock.content().toString();
                             }
                             String resultToolName = toolUseNames.getOrDefault(resultBlock.toolUseId(), "?");
-                            Long startMs = toolUseStartMs.get(resultBlock.toolUseId());
-                            // J4: this was already being computed and thrown away after the log
-                            // line. It is the dwell time — persist it.
-                            long elapsedMs = startMs != null ? System.currentTimeMillis() - startMs : -1;
+                            // The tool's duration is the vendor's own figure: the time between the line that
+                            // issued the call and the line that carried its result, both stamped by Claude
+                            // Code. Without both stamps it is not reported (-1), never the parser's clock.
+                            String issuedAt = toolUseIssuedAt.get(resultBlock.toolUseId());
+                            long elapsedMs = vendorDurationMs(issuedAt, resultTimestamp);
                             track.toolResults.add(new ToolResultRecord(
                                     resultBlock.toolUseId(),
                                     content,
                                     Boolean.TRUE.equals(resultBlock.isError()),
-                                    elapsedMs));
+                                    elapsedMs,
+                                    issuedAt,
+                                    resultTimestamp));
                             // The result of a spawning tool call can carry the sub-agent's final
                             // status and totals; lifecycle messages, when present, take precedence.
                             readSpawnResult(rawRoot, subagentTracks.get(resultBlock.toolUseId()));
@@ -630,8 +677,28 @@ public class SessionLogParser {
                 reportedSubagentStats,
                 null,
                 cacheTiersReported ? new CacheWriteTiers(cacheWrite5m, cacheWrite1h) : null,
-                vendorEvents
+                vendorEvents,
+                sourceRecords,
+                contentBlocks,
+                permissionDecisions
         );
+    }
+
+    /**
+     * The milliseconds between two of the vendor's ISO-8601 line timestamps, or -1 when either is missing or does
+     * not parse (not reported).
+     */
+    static long vendorDurationMs(String issuedAt, String resultAt) {
+        if (issuedAt == null || resultAt == null) {
+            return -1L;
+        }
+        try {
+            return java.time.Duration.between(java.time.Instant.parse(issuedAt), java.time.Instant.parse(resultAt))
+                    .toMillis();
+        }
+        catch (java.time.format.DateTimeParseException ex) {
+            return -1L;
+        }
     }
 
     /**

@@ -86,33 +86,29 @@ class VennOnRealStreamTest {
 
         VennReport r = Venn.compare(nativeLeaves, withoutOutput);
 
-        assertThat(r.path("user", "message.content[].content").orElseThrow().neither()).isPositive();
+        // no typed field holds the content any more; the kept-whole source line still does (preservation, not
+        // normalization), so the typed landing is what must drop to zero
+        assertThat(r.path("user", "message.content[].content").orElseThrow().landed()).isZero();
     }
 
-    /**
-     * KNOWN GAP, Step 12.12b: the assistant's text is in no event. When it lands this test must be flipped to
-     * assert that nothing is missing; until then it fails if the gap silently closes or widens unnoticed.
-     */
+    /** Closed 2026-10-19 (Stage 13, package 1): the assistant's text is an {@code assistant_text} event. */
     @Test
-    void knownGapTheAssistantTextIsNotInTheEvents(@TempDir Path dir) throws Exception {
-        VennReport r = report(dir);
+    void theAssistantTextIsInTheEventsAsATypedField(@TempDir Path dir) throws Exception {
+        report(dir);
 
-        PathResult text = r.path("assistant", "message.content[].text").orElseThrow();
-        // No typed field holds it. The same text does appear inside the kept-whole result line (its `result` field
-        // repeats the final answer), which is the review's "quotation elsewhere" case, not a landing.
-        assertThat(text.landed()).isZero();
-        assertThat(text.keptWhole() + text.neither()).isEqualTo(text.total());
+        assertThat(canonicalLeaves).anySatisfy(l -> {
+            assertThat(l.kind()).isEqualTo("custom");
+            assertThat(l.path()).isEqualTo("attributes.text");
+        });
     }
 
-    /**
-     * KNOWN GAP, found by this tool on 2026-10-19: the stream's thinking blocks carry an empty text and an opaque
-     * signature of some 800 characters; the events keep neither. Journal's flat trace kept only whether a signature
-     * existed.
-     */
+    /** Closed 2026-10-19 (Stage 13, package 1): the thinking signature is on the {@code thinking_block} event. */
     @Test
-    void knownGapTheThinkingSignatureIsNotInTheEvents(@TempDir Path dir) throws Exception {
+    void theThinkingSignatureIsInTheEventsAsATypedField(@TempDir Path dir) throws Exception {
         VennReport r = report(dir);
 
-        assertThat(r.path("assistant", "message.content[].signature").orElseThrow().neither()).isPositive();
+        PathResult signature = r.path("assistant", "message.content[].signature").orElseThrow();
+        assertThat(signature.landed()).isEqualTo(signature.total());
+        assertThat(signature.landedAt()).containsKey("custom attributes.signature");
     }
 }

@@ -26,8 +26,29 @@ public record ToolResultRecord(
 		String toolUseId,
 		String content,
 		boolean isError,
-		long durationMs
+		long durationMs,
+		String issuedAt,
+		String resultAt
 ) {
+
+	/** The duration was computed from the vendor's own line timestamps (since 1.12.0). */
+	public static final String DURATION_FROM_VENDOR_TIMESTAMPS = "vendor-timestamps";
+	/** No vendor timestamps were available; {@code durationMs} is -1, not reported. */
+	public static final String DURATION_NOT_REPORTED = "not-reported";
+
+	/** Creates a record without vendor timestamps; {@code durationMs} should then be -1. */
+	public ToolResultRecord(String toolUseId, String content, boolean isError, long durationMs) {
+		this(toolUseId, content, isError, durationMs, null, null);
+	}
+
+	/**
+	 * Returns where {@link #durationMs()} came from: {@link #DURATION_FROM_VENDOR_TIMESTAMPS} when both the
+	 * tool-use line and the result line carried a timestamp, else {@link #DURATION_NOT_REPORTED}.
+	 */
+	public String durationSource() {
+		return issuedAt != null && resultAt != null && durationMs >= 0 ? DURATION_FROM_VENDOR_TIMESTAMPS
+				: DURATION_NOT_REPORTED;
+	}
 
 	/** Back-compat constructor for captures written before step duration was persisted (1.9.0). */
 	public ToolResultRecord(String toolUseId, String content, boolean isError) {

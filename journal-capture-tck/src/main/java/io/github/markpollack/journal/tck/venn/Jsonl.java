@@ -13,8 +13,8 @@ import java.util.List;
 /**
  * Reads a JSON Lines file into leaves. A line that is not valid JSON is an error, never skipped.
  *
- * <p>A journal {@code custom} event named {@code vendor_event} is a vendor record kept whole, so its leaves are marked
- * kept whole, and a string attribute that itself holds a JSON document (Claude's {@code rawJson}, the line as the SDK
+ * <p>A journal {@code custom} event named {@code vendor_event} or {@code source_record} is a vendor record kept whole,
+ * so its leaves are marked kept whole, and a string attribute that itself holds a JSON document (Claude's {@code rawJson}, the line as the SDK
  * gave it) is read as that document, under the same path, so its values can be matched one by one rather than as one
  * long string.
  */
@@ -22,6 +22,8 @@ public final class Jsonl {
 
     /** The journal event name of a vendor record kept whole. */
     public static final String VENDOR_EVENT = "vendor_event";
+    /** The journal event name of a consumed source line kept whole at its occurrence (option C). */
+    public static final String SOURCE_RECORD = "source_record";
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -70,9 +72,10 @@ public final class Jsonl {
                 throw new IOException("Invalid JSON at " + file + ":" + number, e);
             }
             String kind = record.path(kindField).asText("record");
-            boolean vendorEvent = "custom".equals(kind) && VENDOR_EVENT.equals(record.path("name").asText(null));
+            String name = record.path("name").asText(null);
+            boolean vendorEvent = "custom".equals(kind) && (VENDOR_EVENT.equals(name) || SOURCE_RECORD.equals(name));
             if (vendorEvent) {
-                kind = VENDOR_EVENT;
+                kind = name;
                 record = expandRawJson(record);
             }
             boolean keptWhole = vendorEvent || (keptWholeKind != null && keptWholeKind.equals(kind));
