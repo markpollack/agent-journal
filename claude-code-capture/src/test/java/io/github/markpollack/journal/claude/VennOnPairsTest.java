@@ -115,10 +115,35 @@ class VennOnPairsTest {
         }
         PhaseCapture capture = SessionLogParser.parse(messages.iterator(), "run", "prompt");
         Files.createDirectories(dir);
+        // a projects root built from the pair's own transcript copy, so the default-on archive reads the pair,
+        // not the machine's live ~/.claude/projects
+        Path pair = stream.getParent();
+        Path projectsRoot = dir.resolve("projects");
+        if (capture.sessionId() != null && Files.isRegularFile(pair.resolve("transcript.jsonl"))) {
+            Path project = Files.createDirectories(projectsRoot.resolve("-pair"));
+            Files.copy(pair.resolve("transcript.jsonl"), project.resolve(capture.sessionId() + ".jsonl"),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            Path subagents = pair.resolve("subagents");
+            if (Files.isDirectory(subagents)) {
+                try (Stream<Path> s = Files.walk(subagents)) {
+                    for (Path f : s.filter(Files::isRegularFile).toList()) {
+                        Path target = project.resolve(capture.sessionId()).resolve(subagents.relativize(f));
+                        Files.createDirectories(target.getParent());
+                        Files.copy(f, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                    }
+                }
+            }
+        }
         Journal.configure(new JsonFileStorage(dir));
         Run run = Journal.run("exp").start();
-        new RunRecorder(run).recordPhase(capture);
-        run.finish(capture.isError() ? RunStatus.FAILED : RunStatus.FINISHED);
+        RunRecorder recorder = new RunRecorder(run).sessionFilesRoot(projectsRoot);
+        recorder.recordPhase(capture);
+        if (capture.isError()) {
+            recorder.failRun(new IllegalStateException("the capture reported an error"));
+        }
+        else {
+            recorder.finish();
+        }
         try (Stream<Path> walk = Files.walk(dir)) {
             return walk.filter(p -> p.getFileName().toString().equals("events.jsonl"))
                     .filter(p -> p.getParent().getFileName().toString().equals(run.id()))
