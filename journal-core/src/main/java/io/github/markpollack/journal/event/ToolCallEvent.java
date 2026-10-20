@@ -19,8 +19,9 @@ import java.util.Map;
  * <p>{@link #toolName()} keeps the vendor's own name for the tool, such as {@code Bash},
  * {@code view_file} or {@code exec}, and {@link #kind()} gives its vendor-neutral category, so
  * tool calls from different agents can be compared. A {@code null} kind becomes
- * {@link ToolKind#OTHER}. Claude Code's recorder records no output; on a failed call it puts the
- * tool's result text in {@link #errorMessage()}.
+ * {@link ToolKind#OTHER}. Claude Code's recorder records the tool's result as the output, on the
+ * main run and on a sub-agent's run alike; on a failed call it also puts the result text in
+ * {@link #errorMessage()}.
  *
  * <p>Some fields use a special value for "not known". {@link #turnIndex()} is -1 when the turn is
  * not known; only Claude Code's recorder sets it and {@link #turnId()}, and events written before

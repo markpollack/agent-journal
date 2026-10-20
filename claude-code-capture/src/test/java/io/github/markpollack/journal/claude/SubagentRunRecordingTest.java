@@ -219,6 +219,10 @@ class SubagentRunRecordingTest {
             assertThat(tool.turnId()).isEqualTo("msg_a_1");
             assertThat(tool.turnIndex()).isZero();
             assertThat(tool.success()).isTrue();
+            // the child's successful result is normalized on the child (Stage 13 review R13-03), not only
+            // retained in its source record
+            assertThat(tool.output()).isEqualTo("CHANGELOG.md");
+            assertThat(tool.errorMessage()).isNull();
         });
 
         List<DerivedEvent> derived = storage.loadDerivedEvents("exp", a.id());
@@ -238,6 +242,7 @@ class SubagentRunRecordingTest {
         assertThat(toolCalls(storage.loadEvents("exp", c.id()))).singleElement().satisfies(tool -> {
             assertThat(tool.success()).isFalse();
             assertThat(tool.errorMessage()).isEqualTo("Tests run: 3, Failures: 1");
+            assertThat(tool.output()).isEqualTo("Tests run: 3, Failures: 1");
         });
         assertThat(llmCall(storage.loadEvents("exp", c.id())).metadata()).containsEntry("isError", true);
 

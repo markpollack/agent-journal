@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -164,10 +165,36 @@ public class RunRecorder extends BaseRunRecorder implements AutoCloseable {
                 recorder.finish();
             }
         } catch (RuntimeException e) {
-            run.fail(e);
+            // Through the recorder, so the sources captured before the exception are secured with the failure
+            // (Stage 13 review R13-01); the original exception is what the run records and what is thrown.
+            recorder.failRun(e);
             throw e;
         }
         return new SourceRecordings.Outcome(run.id(), true);
+    }
+
+    /**
+     * Secures the captured sources, then ends the run {@code FAILED} with the error, as
+     * {@link BaseRunRecorder#failRun(Throwable)} does. A run that has already ended is left as it is; securing
+     * never throws, so the error recorded is always this one.
+     */
+    @Override
+    public void failRun(Throwable error) {
+        if (currentRun != null && !currentRun.status().isTerminal()) {
+            secureCapture(FINALIZATION_FAILED);
+        }
+        super.failRun(error);
+        finished = true;
+    }
+
+    /** Secures the captured sources, then ends the run {@code FAILED}, as {@link BaseRunRecorder#failRun()} does. */
+    @Override
+    public void failRun() {
+        if (currentRun != null && !currentRun.status().isTerminal()) {
+            secureCapture(FINALIZATION_FAILED);
+        }
+        super.failRun();
+        finished = true;
     }
 
     /**
@@ -212,7 +239,7 @@ public class RunRecorder extends BaseRunRecorder implements AutoCloseable {
 
     public void finish() {
         if (!currentRun.status().isTerminal()) {
-            secureCapture(lastStreamComplete ? "complete" : "incomplete");
+            secureCapture(FINALIZATION_FINISHED);
             try {
                 verifyDerivedDurable();
             } catch (IllegalStateException e) {
@@ -246,39 +273,84 @@ public class RunRecorder extends BaseRunRecorder implements AutoCloseable {
             finished = true;
             return;
         }
-        // The run ends without a finish: keep what was captured and say the capture was interrupted.
-        secureCapture("interrupted");
+        // The run ends without a finish: keep what was captured and say the recording was interrupted.
+        secureCapture(FINALIZATION_INTERRUPTED);
         currentRun.finish(RunStatus.CRASHED);
         finished = true;
         verifyDerivedDurable();
     }
 
+    /** {@code summary.capture.finalization}: the recorder's {@link #finish()} ended the run. */
+    public static final String FINALIZATION_FINISHED = "finished";
+    /** {@code summary.capture.finalization}: a {@code failRun} ended the run (a reported error or an exception). */
+    public static final String FINALIZATION_FAILED = "failed";
+    /** {@code summary.capture.finalization}: {@link #close()} ended the run without a finish. */
+    public static final String FINALIZATION_INTERRUPTED = "interrupted";
+
+    /** The level-1 omissions every Claude Code recording has today, stated on the capture summary (R13-06). */
+    static final List<String> LEVEL1_OMISSIONS = List.of(
+            "rate_limit_event lines are dropped by the released claude-code-sdk before Journal sees them",
+            "the session transcript's own records (api-request, attachment, cost-state, ...) are archived at level 0"
+                    + " only; they are not represented in level 1");
+
+    private boolean secured = false;
+
     /**
-     * Secures the run's sources before it ends (Stage 13 package 1): archives the vendor's session files into the
-     * run's raw directory, keeps each sub-agent's {@code .meta.json} whole as a {@code subagent_meta} event, and
-     * writes a {@code capture} summary into {@code run.json} naming the CLI, its version, what the parser read,
-     * the capture status and every source with its location, status and checksum. Nothing here throws: a source
-     * that could not be secured is recorded with the reason.
+     * Secures the run's sources before it ends (Stage 13 package 1), once: archives the vendor's session files of
+     * every recorded invocation into the run's raw directory, keeps each sub-agent's {@code .meta.json} whole as a
+     * {@code subagent_meta} event (whether or not the archive is on), and writes a {@code capture} summary into
+     * {@code run.json} that keeps three things apart (review R13-06): how the recording ended
+     * ({@code finalization}), whether every invocation's stream was acquired to its result line
+     * ({@code acquisition}), and what level 1 is known not to hold ({@code preservation} with
+     * {@code level1Omissions}). A finished recording can still be an incomplete acquisition. Nothing here throws:
+     * a source that could not be secured is recorded with the reason, and a second call does nothing.
      */
-    private void secureCapture(String captureStatus) {
+    private void secureCapture(String finalization) {
+        if (secured) {
+            return;
+        }
+        secured = true;
         Map<String, Object> capture = new LinkedHashMap<>();
         capture.put("cli", "claude-code");
-        capture.put("cliVersion", lastCliVersion); // null when the stream had no init line: not reported
+        capture.put("cliVersion", lastReported(Invocation::cliVersion)); // null when no stream had an init line
         capture.put("parserInput", "sdk-stream");
-        capture.put("status", captureStatus);
+        capture.put("finalization", finalization);
+        boolean allComplete = !invocations.isEmpty() && invocations.stream().allMatch(Invocation::streamComplete);
+        capture.put("acquisition", allComplete ? "complete" : "incomplete");
+        // Never "complete": the omissions below hold for every recording until the SDK release and the
+        // package-3 transcript slice close them.
+        capture.put("preservation", "partial");
+        capture.put("level1Omissions", LEVEL1_OMISSIONS);
+        List<Map<String, Object>> inventory = new ArrayList<>();
+        for (Invocation invocation : invocations) {
+            Map<String, Object> entry = new LinkedHashMap<>();
+            entry.put("index", invocation.index());
+            entry.put("phase", invocation.phaseName());
+            entry.put("sessionId", invocation.sessionId());
+            entry.put("cliVersion", invocation.cliVersion());
+            entry.put("streamComplete", invocation.streamComplete());
+            entry.put("sourceRecords", invocation.sourceRecords());
+            entry.put("vendorEvents", invocation.vendorEvents());
+            inventory.add(entry);
+        }
+        capture.put("invocations", inventory);
+
         List<Map<String, Object>> sources = new ArrayList<>();
         Map<String, Object> stream = new LinkedHashMap<>();
         stream.put("kind", "live-stream");
-        stream.put("location", "events.jsonl (source_record, vendor_event)");
-        stream.put("status", lastStreamComplete ? "preserved" : "incomplete");
-        stream.put("sourceRecords", lastSourceRecords);
-        stream.put("vendorEvents", lastVendorEvents);
+        stream.put("location", "events.jsonl (source_record, vendor_event; scoped by invocation and messageNumber)");
+        stream.put("acquisition", allComplete ? "complete" : "incomplete");
+        stream.put("preservation", "partial");
+        stream.put("sourceRecords", invocations.stream().mapToInt(Invocation::sourceRecords).sum());
+        stream.put("vendorEvents", invocations.stream().mapToInt(Invocation::vendorEvents).sum());
         // What this channel cannot carry today, stated so a reader never takes the stream for complete
-        stream.put("knownGaps", List.of(
-                "rate_limit_event lines are dropped by the released claude-code-sdk before Journal sees them"));
+        stream.put("knownGaps", List.of(LEVEL1_OMISSIONS.get(0)));
         sources.add(stream);
+
         Map<String, Object> session = new LinkedHashMap<>();
         session.put("kind", "session-files");
+        session.put("level1", "not-represented");
+        List<String> sessionIds = invocations.stream().map(Invocation::sessionId).filter(Objects::nonNull).distinct().toList();
         try {
             java.util.Optional<java.nio.file.Path> rawDir = storage == null ? java.util.Optional.empty()
                     : storage.rawDirectory(currentRun.experiment().id(), currentRun.id());
@@ -290,27 +362,40 @@ public class RunRecorder extends BaseRunRecorder implements AutoCloseable {
                 session.put("status", "unavailable");
                 session.put("reason", "the storage has no raw directory");
             }
-            else if (lastSessionId == null) {
+            else if (sessionIds.isEmpty()) {
                 session.put("status", "unavailable");
-                session.put("reason", "the run reported no session id");
+                session.put("reason", "no recorded phase reported a session id");
             }
             else {
+                List<Map<String, Object>> sessions = new ArrayList<>();
+                int captured = 0;
                 try (io.github.markpollack.journal.raw.RawArtifacts raw = io.github.markpollack.journal.raw.RawArtifacts
-                        .open(rawDir.get(), "claude-code", lastCliVersion)) {
-                    boolean ok = ClaudeSessionFiles.archive(raw, lastSessionId, sessionFilesRoot);
-                    session.put("status", ok ? "captured" : "failed");
-                    session.put("manifest", "raw/" + io.github.markpollack.journal.raw.RawArtifacts.MANIFEST_FILE);
-                    List<Map<String, Object>> entries = raw.entries();
-                    session.put("entries", entries);
-                    if (!ok) {
-                        for (Map<String, Object> entry : entries) {
-                            if (entry.get("reason") != null) {
-                                session.put("reason", entry.get("reason"));
+                        .open(rawDir.get(), "claude-code", lastReported(Invocation::cliVersion))) {
+                    for (String sessionId : sessionIds) {
+                        int before = raw.entries().size();
+                        boolean ok = ClaudeSessionFiles.archive(raw, sessionId, sessionFilesRoot);
+                        Map<String, Object> one = new LinkedHashMap<>();
+                        one.put("sessionId", sessionId);
+                        one.put("status", ok ? "captured" : "failed");
+                        if (!ok) {
+                            for (Map<String, Object> entry : raw.entries().subList(before, raw.entries().size())) {
+                                if (entry.get("reason") != null) {
+                                    one.put("reason", entry.get("reason"));
+                                }
                             }
                         }
+                        sessions.add(one);
+                        captured += ok ? 1 : 0;
+                    }
+                    session.put("status", captured == sessionIds.size() ? "captured" : captured == 0 ? "failed" : "partial");
+                    session.put("sessions", sessions);
+                    session.put("manifest", "raw/" + io.github.markpollack.journal.raw.RawArtifacts.MANIFEST_FILE);
+                    session.put("entries", raw.entries());
+                    if (captured < sessionIds.size()) {
+                        session.put("reason", sessions.stream().filter(s -> s.get("reason") != null)
+                                .map(s -> s.get("sessionId") + ": " + s.get("reason")).collect(java.util.stream.Collectors.joining("; ")));
                     }
                 }
-                recordSubagentMeta();
             }
         }
         catch (RuntimeException | java.io.IOException ex) {
@@ -320,19 +405,32 @@ public class RunRecorder extends BaseRunRecorder implements AutoCloseable {
         }
         sources.add(session);
         capture.put("sources", sources);
+        try {
+            // Level-1 metadata, collected whether or not level 0 was archived (R13-01 coupling)
+            recordSubagentMeta();
+        }
+        catch (RuntimeException ex) {
+            log.warn("Sub-agent metadata for run {} not collected: {}", currentRun.id(), ex.toString());
+        }
         currentRun.setSummary("capture", capture);
     }
 
-    /** Keeps each recorded sub-agent's sidechain {@code .meta.json} whole on this run, with its owner. */
+    private String lastReported(java.util.function.Function<Invocation, String> field) {
+        String value = null;
+        for (Invocation invocation : invocations) {
+            if (field.apply(invocation) != null) {
+                value = field.apply(invocation);
+            }
+        }
+        return value;
+    }
+
+    /**
+     * Keeps each recorded sub-agent's sidechain {@code .meta.json} whole on this run, with its owner. The file is
+     * read from the vendor's own session directory of the phase that recorded the sub-agent; this does not depend
+     * on the level-0 archive. A sub-agent whose file cannot be found is recorded with the reason.
+     */
     private void recordSubagentMeta() {
-        if (recordedSubagents.isEmpty() || lastSessionId == null) {
-            return;
-        }
-        java.util.Optional<java.nio.file.Path> transcript = ClaudeSessionFiles.locateTranscript(lastSessionId, sessionFilesRoot);
-        if (transcript.isEmpty()) {
-            return;
-        }
-        java.nio.file.Path subagents = transcript.get().resolveSibling(lastSessionId).resolve("subagents");
         for (String[] child : recordedSubagents) {
             Map<String, Object> attributes = new LinkedHashMap<>();
             attributes.put("vendor", "claude");
@@ -341,7 +439,11 @@ public class RunRecorder extends BaseRunRecorder implements AutoCloseable {
                 attributes.put("agentId", child[1]);
             }
             attributes.put("childRunId", child[2]);
-            java.nio.file.Path meta = child[1] == null ? null : subagents.resolve("agent-" + child[1] + ".meta.json");
+            String sessionId = child[3];
+            java.util.Optional<java.nio.file.Path> transcript = sessionId == null ? java.util.Optional.empty()
+                    : ClaudeSessionFiles.locateTranscript(sessionId, sessionFilesRoot);
+            java.nio.file.Path meta = child[1] == null || transcript.isEmpty() ? null
+                    : transcript.get().resolveSibling(sessionId).resolve("subagents").resolve("agent-" + child[1] + ".meta.json");
             if (meta != null && java.nio.file.Files.isRegularFile(meta)) {
                 try {
                     attributes.put("path", "subagents/" + meta.getFileName());
@@ -354,7 +456,10 @@ public class RunRecorder extends BaseRunRecorder implements AutoCloseable {
                 }
             }
             else {
-                attributes.put("reason", child[1] == null ? "the stream named no agent id" : "no meta file at " + meta);
+                attributes.put("reason", child[1] == null ? "the stream named no agent id"
+                        : sessionId == null ? "the phase reported no session id"
+                        : transcript.isEmpty() ? "no transcript named " + sessionId + ".jsonl under " + sessionFilesRoot
+                        : "no meta file at " + meta);
             }
             currentRun.logEvent(io.github.markpollack.journal.event.CustomEvent.of("subagent_meta", attributes));
         }

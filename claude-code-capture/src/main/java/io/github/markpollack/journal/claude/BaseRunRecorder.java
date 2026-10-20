@@ -118,11 +118,13 @@ public abstract class BaseRunRecorder {
 
         // Sub-agents first: each is written as its own run, and the LLM call below names them.
         List<Map<String, Object>> subagentRuns = recordSubagents(phase);
-        lastSessionId = phase.sessionId();
-        lastCliVersion = cliVersionOf(phase);
-        lastStreamComplete = phase.vendorEvents().stream().anyMatch(v -> "result".equals(v.type()));
-        lastSourceRecords = phase.sourceRecords().size();
-        lastVendorEvents = phase.vendorEvents().size();
+        // The inventory of every source invocation this run represents (Stage 13 review R13-07): one entry per
+        // recorded phase, never overwritten by the next, so a run of several phases, or of two invocations under
+        // one phase name, names every session it drew on.
+        currentInvocation = invocations.size();
+        invocations.add(new Invocation(currentInvocation, phase.phaseName(), phase.sessionId(), cliVersionOf(phase),
+                phase.vendorEvents().stream().anyMatch(v -> "result".equals(v.type())),
+                phase.sourceRecords().size(), phase.vendorEvents().size()));
 
         // LLM call with full token/cost/timing data. The per-turn breakdown rides as additive
         // metadata (JournalSteps.META_TURNS) — raw wire data, not derived — so the immutable log
@@ -150,8 +152,11 @@ public abstract class BaseRunRecorder {
         // for the whole call, sub-agents included; no breakdown by input, output or thinking is reported, so
         // CostBreakdown's components are not a breakdown here (the total sits in inputCostUsd until the
         // package/event schema version policy of Stage 13 package 3 reshapes it; ACT reads that field today).
-        metadata.put("costAvailable", true);
-        metadata.put("costSource", "result.total_cost_usd");
+        // costAvailable is true only when a result line reported the figure (review R13-02): a stream without
+        // one, or whose result line carried no total_cost_usd, has an unknown cost, and the 0.0 written in the
+        // cost record is then a placeholder a reader must not take for a measurement.
+        metadata.put("costAvailable", phase.costReported());
+        metadata.put("costSource", phase.costSource());
         metadata.put("costScope", phase.hasSubagents() || !phase.reportedSubagentStats().isEmpty()
                 ? "call-including-subagents" : "call");
         metadata.put("costBreakdownReported", false);
@@ -255,6 +260,7 @@ public abstract class BaseRunRecorder {
         for (ClaudeVendorEvent vendorEvent : phase.vendorEvents()) {
             Map<String, Object> attributes = phaseAttributes(phase.phaseName(), "vendor", "claude");
             attributes.put("type", vendorEvent.type());
+            attributes.put("invocation", currentInvocation);
             attributes.put("messageNumber", vendorEvent.messageNumber());
             if (vendorEvent.subtype() != null) {
                 attributes.put("subtype", vendorEvent.subtype());
@@ -309,13 +315,25 @@ public abstract class BaseRunRecorder {
     /** The key that marks the event's cost as including the cost of the call's sub-agents. */
     public static final String META_COST_INCLUDES_SUBAGENTS = "costIncludesSubagents";
 
-    /** What the last recorded phase said about its sources; read by the finish to secure the capture. */
-    protected String lastSessionId;
-    protected String lastCliVersion;
-    protected boolean lastStreamComplete;
-    protected int lastSourceRecords;
-    protected int lastVendorEvents;
-    /** The sub-agent runs recorded for the last phase: spawn tool-use id, agent id (may be null), child run id. */
+    /**
+     * One source invocation the run represents: a recorded phase, with what its stream said about itself. The
+     * index is the phase's position among the run's recorded phases and scopes the {@code messageNumber}
+     * occurrence counters, which restart with every parse (Stage 13 review R13-07).
+     */
+    protected record Invocation(int index, String phaseName, String sessionId, String cliVersion,
+            boolean streamComplete, int sourceRecords, int vendorEvents) {
+    }
+
+    /** Every recorded phase, in order; read by the finish to secure and inventory the capture. */
+    protected final List<Invocation> invocations = new ArrayList<>();
+
+    /** The index of the phase being recorded, stamped on its occurrence-bearing events. */
+    protected int currentInvocation = -1;
+
+    /**
+     * The sub-agent runs recorded so far: spawn tool-use id, agent id (may be null), child run id, and the
+     * session id of the phase that recorded it (may be null).
+     */
     protected final List<String[]> recordedSubagents = new ArrayList<>();
 
 
@@ -399,7 +417,7 @@ public abstract class BaseRunRecorder {
         }
         Run run = builder.start();
         runIdBySpawnToolUseId.put(subagent.spawnToolUseId(), run.id());
-        recordedSubagents.add(new String[] { subagent.spawnToolUseId(), subagent.agentId(), run.id() });
+        recordedSubagents.add(new String[] { subagent.spawnToolUseId(), subagent.agentId(), run.id(), phase.sessionId() });
         try {
             if (subagent.promptText() != null && !subagent.promptText().isEmpty()) {
                 run.logEvent(CustomEvent.of("prompt",
@@ -446,6 +464,9 @@ public abstract class BaseRunRecorder {
                         .toolName(toolUse.name())
                         .kind(toolUse.kind())
                         .input(toolUse.input())
+                        // The child's tool result, whole, as on the main run (Stage 13 review R13-03: a child's
+                        // successful output was null although its source record kept it).
+                        .output(result != null ? result.content() : null)
                         .durationMs(result != null ? result.durationMs() : -1L)
                         .turnIndex(toolUse.turnIndex())
                         .turnId(toolUse.turnId())
@@ -502,7 +523,8 @@ public abstract class BaseRunRecorder {
     /**
      * Ends the run {@code FAILED} and records the error, as {@link Run#fail(Throwable)} does: the
      * summary gets {@code success=false}, the error message and the error's class name. Does
-     * nothing if the run has already ended or no run has been set.
+     * nothing if the run has already ended or no run has been set. {@link RunRecorder} secures the
+     * run's captured sources first, so a failed run keeps its level-0 archive and capture summary.
      *
      * @param error the cause of the failure
      */
@@ -516,7 +538,8 @@ public abstract class BaseRunRecorder {
      * Ends the run {@code FAILED} without an error, through {@link Run#finish(RunStatus)}. The
      * summary gets {@code success=false} unless it already has a {@code success} value; unlike
      * {@link #failRun(Throwable)}, no error message or class is recorded. Does nothing if the run
-     * has already ended or no run has been set.
+     * has already ended or no run has been set. {@link RunRecorder} secures the run's captured
+     * sources first.
      */
     public void failRun() {
         if (currentRun != null) {
@@ -675,6 +698,7 @@ public abstract class BaseRunRecorder {
             }
             Map<String, Object> attributes = phaseAttributes(phase.phaseName(), "vendor", "claude");
             attributes.put("channel", "stream");
+            attributes.put("invocation", currentInvocation);
             attributes.put("messageNumber", record.messageNumber());
             attributes.put("type", record.type());
             if (record.parentToolUseId() != null) {

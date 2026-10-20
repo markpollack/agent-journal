@@ -119,17 +119,40 @@ public record PhaseCapture(
         List<ClaudeVendorEvent> vendorEvents,
         List<ClaudeSourceRecord> sourceRecords,
         List<ClaudeContentBlock> contentBlocks,
-        List<ClaudePermissionDecision> permissionDecisions
+        List<ClaudePermissionDecision> permissionDecisions,
+        String costSource
 ) {
+
+    /**
+     * {@link #costSource()} when the result line reported {@code total_cost_usd}: {@link #totalCostUsd()} is
+     * that figure (possibly 0, when the vendor reported zero).
+     */
+    public static final String COST_SOURCE_RESULT_LINE = "result.total_cost_usd";
+
+    /** {@link #costSource()} when no result line arrived (a cut-off or failed stream): the cost is unknown. */
+    public static final String COST_SOURCE_NOT_REPORTED_NO_RESULT = "not-reported: no result line";
+
+    /** {@link #costSource()} when the result line arrived without {@code total_cost_usd}: the cost is unknown. */
+    public static final String COST_SOURCE_NOT_REPORTED_NO_FIELD = "not-reported: result line without total_cost_usd";
+
+    /**
+     * {@link #costSource()} for a capture built directly through a convenience constructor rather than parsed
+     * from a stream: the caller supplied {@link #totalCostUsd()} and is its source.
+     */
+    public static final String COST_SOURCE_CAPTURE_BUILDER = "capture-builder";
+
+    private static final String COST_NOT_REPORTED_PREFIX = "not-reported";
 
     /**
      * Creates a capture from all of its parts. A {@code null} {@code stopReason} becomes
      * {@link StopReason#UNKNOWN}. Each list is copied into an unmodifiable list, so later changes
      * to the lists passed in do not reach the capture; a {@code null} list stays {@code null},
-     * except {@code subagents}, where it becomes an empty list.
+     * except {@code subagents}, where it becomes an empty list. A {@code null} {@code costSource}
+     * becomes {@link #COST_SOURCE_CAPTURE_BUILDER}.
      */
     public PhaseCapture {
         stopReason = stopReason != null ? stopReason : StopReason.UNKNOWN;
+        costSource = costSource != null ? costSource : COST_SOURCE_CAPTURE_BUILDER;
         subagents = subagents == null ? List.of() : Collections.unmodifiableList(new ArrayList<>(subagents));
         reportedSubagentStats = reportedSubagentStats == null ? Map.of()
                 : Collections.unmodifiableMap(new java.util.LinkedHashMap<>(reportedSubagentStats));
@@ -160,7 +183,18 @@ public record PhaseCapture(
                 cacheReadInputTokens, durationMs, apiDurationMs, totalCostUsd, sessionId, numTurns, isError,
                 textOutput, thinkingBlocks, toolUses, rawResult, toolResults, turns, modelCosts, stopReason,
                 maxTurns, subagents, subagentTracksAvailable, reportedSubagentStats, null, null, List.of(), List.of(),
-                List.of(), List.of());
+                List.of(), List.of(), COST_SOURCE_CAPTURE_BUILDER);
+    }
+
+    /**
+     * Returns whether {@link #totalCostUsd()} is a reported figure. It is {@code false} when the stream had no
+     * result line or the result line carried no {@code total_cost_usd}; the 0.0 held then is a placeholder, not a
+     * measurement, and a recorder marks the cost unavailable (Stage 13 review R13-02).
+     *
+     * @return {@code true} unless {@link #costSource()} says not reported
+     */
+    public boolean costReported() {
+        return !costSource.startsWith(COST_NOT_REPORTED_PREFIX);
     }
 
     /**

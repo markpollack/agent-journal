@@ -82,15 +82,25 @@ class DefaultOnArchiveTest {
         JsonNode capture = runJson(journal, run.id()).path("summary").path("capture");
         assertThat(capture.path("cli").asText()).isEqualTo("claude-code");
         assertThat(capture.path("parserInput").asText()).isEqualTo("sdk-stream");
-        assertThat(capture.path("status").asText()).isEqualTo("complete");
+        // Three statuses, kept apart (R13-06): how the recording ended, whether the stream was acquired to its
+        // result line, and that level 1 is known to omit things even then.
+        assertThat(capture.path("finalization").asText()).isEqualTo("finished");
+        assertThat(capture.path("acquisition").asText()).isEqualTo("complete");
+        assertThat(capture.path("preservation").asText()).isEqualTo("partial");
+        assertThat(capture.path("level1Omissions")).hasSize(2);
+        assertThat(capture.path("invocations")).hasSize(1);
+        assertThat(capture.path("invocations").get(0).path("sessionId").asText()).isEqualTo(SESSION);
         JsonNode sources = capture.path("sources");
         assertThat(sources).hasSize(2);
         assertThat(sources.get(0).path("kind").asText()).isEqualTo("live-stream");
-        assertThat(sources.get(0).path("status").asText()).isEqualTo("preserved");
+        assertThat(sources.get(0).path("acquisition").asText()).isEqualTo("complete");
+        assertThat(sources.get(0).path("preservation").asText()).isEqualTo("partial");
         assertThat(sources.get(0).path("sourceRecords").asInt()).isPositive();
         JsonNode session = sources.get(1);
         assertThat(session.path("kind").asText()).isEqualTo("session-files");
+        assertThat(session.path("level1").asText()).isEqualTo("not-represented");
         assertThat(session.path("status").asText()).isEqualTo("captured");
+        assertThat(session.path("sessions")).hasSize(1);
         assertThat(session.path("manifest").asText()).isEqualTo("raw/manifest.json");
         String sha = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(zip)));
         assertThat(session.path("entries").get(0).path("sha256").asText()).isEqualTo(sha);
@@ -134,7 +144,9 @@ class DefaultOnArchiveTest {
 
         assertThat(journal.resolve("experiments/exp/runs/" + run.id() + "/raw/session/" + SESSION + ".zip")).exists();
         JsonNode capture = runJson(journal, run.id()).path("summary").path("capture");
-        assertThat(capture.path("status").asText()).isEqualTo("interrupted");
+        assertThat(capture.path("finalization").asText()).isEqualTo("interrupted");
+        // the stream itself had reached its result line: acquisition is a separate fact from how the run ended
+        assertThat(capture.path("acquisition").asText()).isEqualTo("complete");
         assertThat(runJson(journal, run.id()).path("status").asText()).isEqualTo("CRASHED");
     }
 

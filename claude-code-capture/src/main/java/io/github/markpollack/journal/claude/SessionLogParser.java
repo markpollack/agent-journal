@@ -247,7 +247,7 @@ public class SessionLogParser {
                 current.modelCosts() == null ? null : deltaModels, current.stopReason(), current.maxTurns(),
                 current.subagents(), current.subagentTracksAvailable(), current.reportedSubagentStats(),
                 sessionCost, current.cacheWriteTiers(), current.vendorEvents(), current.sourceRecords(), current.contentBlocks(),
-                current.permissionDecisions());
+                current.permissionDecisions(), current.costSource());
     }
 
     /**
@@ -336,6 +336,9 @@ public class SessionLogParser {
         long durationMs = 0;
         long apiDurationMs = 0;
         double totalCostUsd = 0.0;
+        // Where totalCostUsd came from (Stage 13 review R13-02): 0.0 is a placeholder, never a reported
+        // zero, until a result line carries total_cost_usd.
+        String costSource = PhaseCapture.COST_SOURCE_NOT_REPORTED_NO_RESULT;
         String sessionId = null;
         int numTurns = 0;
         boolean isError = false;
@@ -411,7 +414,14 @@ public class SessionLogParser {
                 // follow-up turn that ends in its own result). total_cost_usd, modelUsage and
                 // duration_api_ms are session running totals, so the last line holds the answer; usage,
                 // duration_ms and num_turns cover that line's query only, so they add up.
-                totalCostUsd = resultMsg.totalCostUsd() != null ? resultMsg.totalCostUsd() : 0.0;
+                if (resultMsg.totalCostUsd() != null) {
+                    totalCostUsd = resultMsg.totalCostUsd();
+                    costSource = PhaseCapture.COST_SOURCE_RESULT_LINE;
+                } else {
+                    // The line reported no cost: the figure stays unknown (an earlier line's running total,
+                    // if any, is still in totalCostUsd, but the capture no longer vouches for it).
+                    costSource = PhaseCapture.COST_SOURCE_NOT_REPORTED_NO_FIELD;
+                }
                 durationMs += resultMsg.durationMs();
                 apiDurationMs = resultMsg.durationApiMs();
                 numTurns += resultMsg.numTurns();
@@ -680,7 +690,8 @@ public class SessionLogParser {
                 vendorEvents,
                 sourceRecords,
                 contentBlocks,
-                permissionDecisions
+                permissionDecisions,
+                costSource
         );
     }
 
