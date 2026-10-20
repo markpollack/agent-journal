@@ -59,6 +59,15 @@ public final class ClaudeStreamVerifier {
     }
 
     private VerificationReport run() {
+        // Support guard (FB-2): checks and report keys are scoped by owner and occurrence, not by invocation, so a
+        // package of several invocations is refused outright rather than judged as one stream with overwritten
+        // denominators.
+        Json declaredInvocations = candidate.root().runJson.path("summary", "capture", "invocations");
+        int declared = declaredInvocations == null ? 1 : declaredInvocations.elements().size();
+        if (streams.size() != 1 || declared != 1) {
+            throw new IllegalStateException("repeated invocations are not supported by this verifier version: "
+                    + streams.size() + " stream(s) given, package declares " + declared + " invocation(s)");
+        }
         describe();
         schemaVersion();
         Run root = candidate.root();
@@ -106,6 +115,7 @@ public final class ClaudeStreamVerifier {
         }
         report.oracle("streams", oracles);
         Run root = candidate.root();
+        report.candidate("invocationScope", "single invocation; a package declaring several invocations is refused by this verifier version");
         report.candidate("rootRunDir", root.dir.toString());
         report.candidate("runId", root.id());
         report.candidate("header", root.header == null ? null : plain(root.header));
@@ -375,15 +385,60 @@ public final class ClaudeStreamVerifier {
         else if (entries.size() == streams.size() && !acquisition.equals(allComplete ? "complete" : "incomplete")) {
             status.add("acquisition " + acquisition + " but every stream complete: " + allComplete);
         }
+        // preservation: judged against the source coverage the verifier establishes itself, never against the
+        // declaration's internal consistency alone (FB-2): lines the SDK dropped from the stream, a declared source
+        // not represented in level 1, and the pinned fact that a schema-version-1 package does not represent the
+        // transcript channel all contradict "complete"; "partial" must name what is missing
         Json omissions = capture.path("level1Omissions");
+        List<String> omissionTexts = new ArrayList<>();
+        for (Json o : omissions == null ? List.<Json>of() : omissions.elements()) {
+            if (o.text() != null) {
+                omissionTexts.add(o.text());
+            }
+        }
+        Map<String, Integer> droppedObserved = new TreeMap<>();
+        for (ClaudeStreamOracle s : streams) {
+            s.droppedByType().forEach((t, n) -> droppedObserved.merge(t, n, Integer::sum));
+        }
+        List<String> unrepresentedSources = new ArrayList<>();
+        Json declaredSources = capture.path("sources");
+        for (Json source : declaredSources == null ? List.<Json>of() : declaredSources.elements()) {
+            if ("not-represented".equals(ClaudeStreamOracle.textOf(source, "level1"))) {
+                unrepresentedSources.add(ClaudeStreamOracle.textOf(source, "kind"));
+            }
+        }
         if (preservation == null || !ClaudeStreamContract.PRESERVATION_VALUES.contains(preservation)) {
             status.add("preservation " + preservation);
         }
-        else if ("partial".equals(preservation) && (omissions == null || omissions.elements().isEmpty())) {
-            status.add("preservation partial without level1Omissions");
+        else if ("complete".equals(preservation)) {
+            for (Map.Entry<String, Integer> e : droppedObserved.entrySet()) {
+                status.add("preservation complete although " + e.getValue() + " " + e.getKey() + " line(s) of the stream are not in level 1");
+            }
+            for (String kind : unrepresentedSources) {
+                status.add("preservation complete although the " + kind + " source declares level1 not-represented");
+            }
+            if (!ClaudeStreamContract.SCHEMA_V1_TRANSCRIPT_REPRESENTED) {
+                status.add("preservation complete, but a schema-version-" + ClaudeStreamContract.SUPPORTED_SCHEMA_VERSION
+                        + " package does not represent the transcript channel in level 1 (pinned)");
+            }
+            if (!omissionTexts.isEmpty()) {
+                status.add("preservation complete with level1Omissions");
+            }
         }
-        else if ("complete".equals(preservation) && omissions != null && !omissions.elements().isEmpty()) {
-            status.add("preservation complete with level1Omissions");
+        else {
+            if (omissionTexts.isEmpty()) {
+                status.add("preservation partial without level1Omissions");
+            }
+            for (String type : droppedObserved.keySet()) {
+                if (omissionTexts.stream().noneMatch(t -> t.contains(type))) {
+                    status.add("level1Omissions do not name the dropped " + type + " line(s)");
+                }
+            }
+            for (String kind : unrepresentedSources) {
+                if (omissionTexts.stream().noneMatch(t -> ClaudeStreamContract.SESSION_FILES_OMISSION_WORDS.stream().anyMatch(t::contains))) {
+                    status.add("level1Omissions do not name the unrepresented " + kind + " source");
+                }
+            }
         }
         report.add(Category.COMPLETENESS, "capture.statuses", "main",
                 status.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
@@ -746,11 +801,43 @@ public final class ClaudeStreamVerifier {
             resultById.putIfAbsent(r.toolUseId(), r);
             resultCount.merge(r.toolUseId(), 1, Integer::sum);
         }
+        // the required populations, from the oracle alone; what the loop below examines is counted against them
+        int expectedWithResult = 0;
+        int expectedString = 0;
+        int expectedStructured = 0;
+        int expectedAbsent = 0;
+        int expectedNumeric = 0;
+        for (ToolUse use : uses) {
+            int rc = resultCount.getOrDefault(use.id(), 0);
+            if (rc == 1) {
+                expectedWithResult++;
+                Json content = resultById.get(use.id()).content();
+                if (content == null || content.isNull() || content instanceof Json.JString) {
+                    expectedString++;
+                }
+                else {
+                    expectedStructured++;
+                }
+            }
+            else if (rc == 0) {
+                expectedAbsent++;
+            }
+            if (use.input() != null && use.input().containsNumber()) {
+                expectedNumeric++;
+            }
+        }
+        int examinedWithResult = 0;
+        int examinedString = 0;
+        int examinedStructured = 0;
+        int examinedAbsent = 0;
+        int examinedNumeric = 0;
+        int examinedAll = 0;
         for (ToolUse use : uses) {
             Event call = callById.get(use.id());
             if (call == null) {
-                continue; // counted by multiplicity
+                continue; // counted by multiplicity, and by the populations below as not examined
             }
+            examinedAll++;
             if (!Objects.equals(use.name(), ClaudeStreamOracle.textOf(call.json(), "toolName"))) {
                 names.add(use.id());
             }
@@ -762,6 +849,7 @@ public final class ClaudeStreamVerifier {
             }
             if (use.input() != null && use.input().containsNumber()) {
                 anyNumberInput = true;
+                examinedNumeric++;
             }
             for (Difference d : differences) {
                 if (d.kind() == Difference.Kind.REPRESENTATION) {
@@ -781,12 +869,14 @@ public final class ClaudeStreamVerifier {
             Json error = call.json().path("errorMessage");
             if (result == null) {
                 absentCount++;
+                examinedAbsent++;
                 if (!(output == null || output.isNull()) || !(error == null || error.isNull())) {
                     absent.add(use.id());
                 }
                 continue;
             }
             withResult++;
+            examinedWithResult++;
             Json successFlag = call.json().path("success");
             if (!(successFlag instanceof Json.JBool b) || b.value() == result.isError()) {
                 success.add(use.id());
@@ -794,6 +884,7 @@ public final class ClaudeStreamVerifier {
             Json content = result.content();
             if (content == null || content.isNull() || content instanceof Json.JString) {
                 stringResultCount++;
+                examinedString++;
                 String expectedText = content == null || content.isNull() ? null : content.text();
                 String outputText = output == null || output.isNull() ? null : output.text();
                 String errorText = error == null || error.isNull() ? null : error.text();
@@ -805,6 +896,7 @@ public final class ClaudeStreamVerifier {
             }
             else {
                 structuredCount++;
+                examinedStructured++;
                 if (output == null || output.isNull()) {
                     structured.add(use.id() + ": output absent");
                 }
@@ -820,43 +912,79 @@ public final class ClaudeStreamVerifier {
                 }
             }
         }
-        int matched = callById.size();
-        report.add(Category.NORMALIZATION, "tool_calls.name", label,
-                names.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
-                names.isEmpty() ? matched + " name(s) equal" : "differ: " + names);
-        report.add(Category.NORMALIZATION, "tool_calls.input_value", label,
-                inputValues.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
-                inputValues.isEmpty() ? matched + " input(s) equal in exact value, kind and structure" : String.join("; ", inputValues));
-        report.add(Category.NORMALIZATION, "tool_calls.input_representation", label,
-                !anyNumberInput ? Outcome.NOT_APPLICABLE : inputSpelling.isEmpty() ? Outcome.VERIFIED : Outcome.REPRESENTATION_DIFFERS,
-                !anyNumberInput ? "no number in any input" : inputSpelling.isEmpty() ? "every number spelled as in the source"
-                        : inputSpelling.size() + " number(s) equal in value, spelled differently (R13-09): " + String.join("; ", inputSpelling));
-        report.add(Category.NORMALIZATION, "tool_calls.result_text", label,
-                stringResultCount == 0 ? Outcome.NOT_APPLICABLE : stringResults.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
-                stringResultCount == 0 ? "no string result" : stringResults.isEmpty()
-                        ? stringResultCount + " string result(s) equal, with errorMessage per is_error" : "differ: " + stringResults);
-        report.add(Category.NORMALIZATION, "tool_calls.result_structured", label,
-                structuredCount == 0 ? Outcome.NOT_APPLICABLE : structured.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
-                structuredCount == 0 ? "no structured result" : structured.isEmpty()
-                        ? structuredCount + " structured result(s) equal in value and structure" : String.join("; ", structured));
-        report.add(Category.NORMALIZATION, "tool_calls.success_flag", label,
-                withResult == 0 ? Outcome.NOT_APPLICABLE : success.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
-                withResult == 0 ? "no result" : success.isEmpty() ? withResult + " success flag(s) agree with is_error" : "differ: " + success);
-        report.add(Category.NORMALIZATION, "tool_calls.result_absent", label,
-                absentCount == 0 ? Outcome.NOT_APPLICABLE : absent.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
-                absentCount == 0 ? "every tool use has a result" : absent.isEmpty()
-                        ? absentCount + " tool use(s) without a result have no output and no error" : "output present without a result: " + absent);
+        int matched = examinedAll; // oracle tool uses with exactly one candidate row; an extra row is not an examined instance
+        population(Category.NORMALIZATION, "tool_calls.name", label, uses.size(), matched, names, "names equal");
+        population(Category.NORMALIZATION, "tool_calls.input_value", label, uses.size(), matched, inputValues,
+                "inputs equal in exact value, kind and structure");
+        if (expectedNumeric == 0) {
+            report.add(Category.NORMALIZATION, "tool_calls.input_representation", label, Outcome.NOT_APPLICABLE, "no number in any input");
+        }
+        else {
+            String coverage = examinedNumeric + " of " + expectedNumeric + " expected instance(s) examined"
+                    + (examinedNumeric < expectedNumeric ? ", " + (expectedNumeric - examinedNumeric) + " not examined (no matching row)" : "");
+            report.add(Category.NORMALIZATION, "tool_calls.input_representation", label,
+                    !inputSpelling.isEmpty() ? Outcome.REPRESENTATION_DIFFERS : examinedNumeric < expectedNumeric ? Outcome.UNRESOLVED : Outcome.VERIFIED,
+                    !inputSpelling.isEmpty() ? coverage + "; " + inputSpelling.size() + " number(s) equal in value, spelled differently (R13-09): "
+                            + String.join("; ", inputSpelling) : coverage + (examinedNumeric < expectedNumeric ? "" : "; every number spelled as in the source"));
+        }
+        if (expectedString == 0) {
+            report.add(Category.NORMALIZATION, "tool_calls.result_text", label, Outcome.NOT_APPLICABLE, "no string result");
+        }
+        else {
+            population(Category.NORMALIZATION, "tool_calls.result_text", label, expectedString, examinedString, stringResults,
+                    "string results equal, with errorMessage per is_error");
+        }
+        if (expectedStructured == 0) {
+            report.add(Category.NORMALIZATION, "tool_calls.result_structured", label, Outcome.NOT_APPLICABLE, "no structured result");
+        }
+        else {
+            population(Category.NORMALIZATION, "tool_calls.result_structured", label, expectedStructured, examinedStructured, structured,
+                    "structured results equal in value and structure");
+        }
+        if (expectedWithResult == 0) {
+            report.add(Category.NORMALIZATION, "tool_calls.success_flag", label, Outcome.NOT_APPLICABLE, "no result");
+        }
+        else {
+            population(Category.NORMALIZATION, "tool_calls.success_flag", label, expectedWithResult, examinedWithResult, success,
+                    "success flags agree with is_error");
+        }
+        if (expectedAbsent == 0) {
+            report.add(Category.NORMALIZATION, "tool_calls.result_absent", label, Outcome.NOT_APPLICABLE, "every tool use has a result");
+        }
+        else {
+            population(Category.NORMALIZATION, "tool_calls.result_absent", label, expectedAbsent, examinedAbsent, absent,
+                    "tool uses without a result have no output and no error");
+        }
         if (!unresolvedResults.isEmpty()) {
             report.add(Category.NORMALIZATION, "tool_calls.result_identity", label, Outcome.UNRESOLVED, String.join("; ", unresolvedResults));
         }
-        report.add(Category.EXPLANATION, "tool_calls.turn_reference", label,
-                turns.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
-                turns.isEmpty() ? matched + " turnId(s) are the id of the message that carried the tool use" : "differ: " + turns);
-        toolTiming(owner, run, label, callById, resultById, resultCount);
+        population(Category.EXPLANATION, "tool_calls.turn_reference", label, uses.size(), matched, turns,
+                "turnIds are the id of the message that carried the tool use");
+        toolTiming(owner, run, label, callById, resultById, resultCount, expectedWithResult);
+    }
+
+    /**
+     * The outcome of a per-instance property over a required population (FB-2): an observed mismatch is DEFECTIVE;
+     * required instances the verifier could not examine (no matching row) leave it UNRESOLVED; only a fully examined
+     * population without a mismatch is VERIFIED. The detail always states the population.
+     */
+    private void population(Category category, String property, String label, int expected, int examined,
+            List<String> mismatches, String verifiedWhat) {
+        String coverage = examined + " of " + expected + " expected instance(s) examined"
+                + (examined < expected ? ", " + (expected - examined) + " not examined (no matching row)" : "");
+        if (!mismatches.isEmpty()) {
+            report.add(category, property, label, Outcome.DEFECTIVE, coverage + "; differ: " + String.join("; ", mismatches));
+        }
+        else if (examined < expected) {
+            report.add(category, property, label, Outcome.UNRESOLVED, coverage);
+        }
+        else {
+            report.add(category, property, label, Outcome.VERIFIED, coverage + "; " + verifiedWhat);
+        }
     }
 
     private void toolTiming(Owner owner, Run run, String label, Map<String, Event> callById,
-            Map<String, ToolResult> resultById, Map<String, Integer> resultCount) {
+            Map<String, ToolResult> resultById, Map<String, Integer> resultCount, int expectedWithResult) {
         Map<String, ToolUse> useById = new LinkedHashMap<>();
         for (ToolUse use : owner.toolUses) {
             useById.putIfAbsent(use.id(), use);
@@ -928,20 +1056,19 @@ public final class ClaudeStreamVerifier {
                 problems.add(id + ": unknown durationSource " + source);
             }
         }
-        if (declared + undeclared == 0) {
+        if (expectedWithResult == 0) {
             report.add(Category.EXPLANATION, "tool_calls.duration_value", label, Outcome.NOT_APPLICABLE, "no tool call with a result");
             report.add(Category.EXPLANATION, "tool_timing.declared", label, Outcome.NOT_APPLICABLE, "no tool call with a result");
             return;
         }
-        report.add(Category.EXPLANATION, "tool_calls.duration_value", label,
-                valueProblems.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
-                valueProblems.isEmpty() ? (declared + undeclared) + " duration(s) equal the stream's timestamp difference, or -1 without timestamps"
-                        : String.join("; ", valueProblems));
-        Outcome declaredOutcome = !problems.isEmpty() || undeclared > 0 ? Outcome.DEFECTIVE : Outcome.VERIFIED;
-        report.add(Category.EXPLANATION, "tool_timing.declared", label, declaredOutcome,
-                (problems.isEmpty() ? declared + " duration(s) declared with their source and the stream's own timestamps"
-                        : String.join("; ", problems))
-                        + (undeclared > 0 ? "; " + undeclared + " tool call(s) with a result have no tool_timing declaration (durationSource unstated)" : ""));
+        int examined = declared + undeclared;
+        population(Category.EXPLANATION, "tool_calls.duration_value", label, expectedWithResult, examined, valueProblems,
+                "durations equal the stream's timestamp difference, or -1 without timestamps");
+        if (undeclared > 0) {
+            problems.add(undeclared + " tool call(s) with a result have no tool_timing declaration (durationSource unstated)");
+        }
+        population(Category.EXPLANATION, "tool_timing.declared", label, expectedWithResult, examined, problems,
+                "durations declared with their source and the stream's own timestamps");
     }
 
     // ---------------------------------------------------------------- normalization: assistant blocks

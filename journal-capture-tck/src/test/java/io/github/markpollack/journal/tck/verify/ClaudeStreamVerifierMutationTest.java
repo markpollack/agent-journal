@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 import static io.github.markpollack.journal.tck.verify.VerifyFixtures.all;
@@ -502,6 +503,132 @@ class ClaudeStreamVerifierMutationTest {
             Path other = copy(PARALLEL, work.resolve("changed"));
             editEvents(rootRun(other), events -> attributes(first(events, e -> isCustom(e, "permission_decision"))).members().put("decision", str("deny")));
             assertThat(verify(other).outcome("permission_decisions.multiset", "main")).isEqualTo(Outcome.DEFECTIVE);
+        }
+    }
+
+    /**
+     * FB-2: two reporting boundaries. A required population the verifier did not examine is never VERIFIED; a
+     * declared preservation status is judged against the source coverage the verifier establishes itself.
+     */
+    @Nested
+    class ReportingBoundaries {
+
+        private static final List<String> PER_ID_CHECKS = List.of("tool_calls.name", "tool_calls.input_value",
+                "tool_calls.result_text", "tool_calls.success_flag", "tool_calls.turn_reference",
+                "tool_calls.duration_value", "tool_timing.declared");
+
+        @Test
+        void missingToolCallRowLeavesEveryDownstreamCheckUnresolvedNotVerified(@TempDir Path work) {
+            Path fixture = copy(PARALLEL, work);
+            for (String property : PER_ID_CHECKS) {
+                assertThat(verify(fixture).outcome(property, "main")).as(property + " control").isEqualTo(Outcome.VERIFIED);
+                assertThat(verify(fixture).check(property, "main").detail()).as(property + " control population").contains("3 of 3");
+            }
+            editEvents(rootRun(fixture), events -> events.remove(toolCall(events, PARALLEL_READ_A)));
+            VerificationReport report = verify(fixture);
+            assertThat(report.outcome("tool_calls.multiplicity", "main")).isEqualTo(Outcome.DEFECTIVE);
+            for (String property : PER_ID_CHECKS) {
+                assertThat(report.outcome(property, "main")).as(property + " after a missing row").isEqualTo(Outcome.UNRESOLVED);
+                assertThat(report.check(property, "main").detail()).as(property + " population").contains("2 of 3").contains("1 not examined");
+            }
+            // with every row removed, nothing was examined at all
+            editEvents(rootRun(fixture), events -> events.removeIf(e -> isEvent(e, "tool_call")));
+            VerificationReport empty = verify(fixture);
+            for (String property : PER_ID_CHECKS) {
+                assertThat(empty.outcome(property, "main")).as(property + " with no rows").isEqualTo(Outcome.UNRESOLVED);
+                assertThat(empty.check(property, "main").detail()).contains("0 of 3");
+            }
+        }
+
+        @Test
+        void anObservedMismatchStaysDefectiveWhenCoverageIsPartial(@TempDir Path work) {
+            Path fixture = copy(PARALLEL, work);
+            editEvents(rootRun(fixture), events -> {
+                events.remove(toolCall(events, PARALLEL_READ_A));
+                obj(first(events, e -> isEvent(e, "tool_call"))).members().put("toolName", str("Other"));
+            });
+            VerificationReport report = verify(fixture);
+            assertThat(report.outcome("tool_calls.name", "main")).isEqualTo(Outcome.DEFECTIVE);
+            assertThat(report.check("tool_calls.name", "main").detail()).contains("2 of 3");
+            assertThat(report.outcome("tool_calls.input_value", "main")).isEqualTo(Outcome.UNRESOLVED);
+        }
+
+        @Test
+        void anExtraRowDoesNotReduceCoverageOfTheRequiredPopulation(@TempDir Path work) {
+            Path fixture = copy(PARALLEL, work);
+            editEvents(rootRun(fixture), events -> {
+                Json extra = VerifyFixtures.copy(toolCall(events, PARALLEL_READ_A));
+                obj(extra).members().put("id", str("toolu_unknown"));
+                events.add(extra);
+            });
+            VerificationReport report = verify(fixture);
+            assertThat(report.outcome("tool_calls.multiplicity", "main")).isEqualTo(Outcome.DEFECTIVE);
+            assertThat(report.outcome("tool_calls.name", "main")).isEqualTo(Outcome.VERIFIED);
+            assertThat(report.check("tool_calls.name", "main").detail()).contains("3 of 3");
+        }
+
+        @Test
+        void preservationCompleteIsContradictedByDroppedStreamLines(@TempDir Path work) {
+            Path fixture = copy(PARALLEL, work);
+            assertThat(verify(fixture).outcome("capture.statuses", "main")).isEqualTo(Outcome.VERIFIED);
+            editRun(rootRun(fixture), run -> {
+                obj(run.path("summary", "capture")).members().put("preservation", str("complete"));
+                obj(run.path("summary", "capture")).members().put("level1Omissions", new Json.JArray(List.of()));
+            });
+            VerificationReport report = verify(fixture);
+            assertThat(report.outcome("capture.statuses", "main")).isEqualTo(Outcome.DEFECTIVE);
+            assertThat(report.check("capture.statuses", "main").detail()).contains("preservation complete").contains("rate_limit_event");
+        }
+
+        @Test
+        void preservationCompleteIsContradictedByTheDeclaredUnrepresentedTranscriptChannel(@TempDir Path work) {
+            Path fixture = copy(PARALLEL, work);
+            // no dropped line in this oracle any more
+            editStream(fixture, lines -> lines.removeIf(l -> "rate_limit_event".equals(ClaudeStreamOracle.textOf(l, "type"))));
+            editRun(rootRun(fixture), run -> {
+                Json.JObject capture = obj(run.path("summary", "capture"));
+                capture.members().put("preservation", str("complete"));
+                capture.members().put("level1Omissions", new Json.JArray(List.of()));
+                for (Json source : capture.get("sources").elements()) {
+                    obj(source).members().remove("knownGaps");
+                }
+            });
+            VerificationReport report = verify(fixture);
+            assertThat(report.outcome("capture.known_gaps", "main")).isEqualTo(Outcome.NOT_APPLICABLE);
+            assertThat(report.outcome("capture.statuses", "main")).isEqualTo(Outcome.DEFECTIVE);
+            assertThat(report.check("capture.statuses", "main").detail()).contains("session-files").contains("not-represented");
+        }
+
+        @Test
+        void preservationCompleteWithoutAnyDeclaredSessionFilesSourceIsStillNotCompleteUnderSchemaVersionOne(@TempDir Path work) {
+            Path fixture = copy(PARALLEL, work);
+            editStream(fixture, lines -> lines.removeIf(l -> "rate_limit_event".equals(ClaudeStreamOracle.textOf(l, "type"))));
+            editRun(rootRun(fixture), run -> {
+                Json.JObject capture = obj(run.path("summary", "capture"));
+                capture.members().put("preservation", str("complete"));
+                capture.members().put("level1Omissions", new Json.JArray(List.of()));
+                List<Json> kept = new ArrayList<>();
+                for (Json source : capture.get("sources").elements()) {
+                    obj(source).members().remove("knownGaps");
+                    if ("live-stream".equals(ClaudeStreamOracle.textOf(source, "kind"))) {
+                        kept.add(source);
+                    }
+                }
+                capture.members().put("sources", new Json.JArray(kept));
+            });
+            VerificationReport report = verify(fixture);
+            assertThat(report.outcome("capture.statuses", "main")).isEqualTo(Outcome.DEFECTIVE);
+            assertThat(report.check("capture.statuses", "main").detail()).contains("transcript");
+        }
+
+        @Test
+        void partialPreservationMustNameTheObservedDroppedLineType(@TempDir Path work) {
+            Path fixture = copy(PARALLEL, work);
+            editRun(rootRun(fixture), run -> obj(run.path("summary", "capture")).members()
+                    .put("level1Omissions", new Json.JArray(List.of(str("something unrelated")))));
+            VerificationReport report = verify(fixture);
+            assertThat(report.outcome("capture.statuses", "main")).isEqualTo(Outcome.DEFECTIVE);
+            assertThat(report.check("capture.statuses", "main").detail()).contains("rate_limit_event");
         }
     }
 

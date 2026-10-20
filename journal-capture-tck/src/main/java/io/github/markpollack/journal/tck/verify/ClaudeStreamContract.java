@@ -53,6 +53,16 @@ public final class ClaudeStreamContract {
     public static final Set<String> ACQUISITION_VALUES = Set.of("complete", "incomplete");
     public static final Set<String> PRESERVATION_VALUES = Set.of("complete", "partial");
 
+    /**
+     * Whether a schema-version-1 package represents the session transcript channel in level 1. It does not: the
+     * transcript's own records are archived at level 0 only (DESIGN, as implemented for Claude Code), so a declared
+     * {@code preservation: complete} contradicts this pinned fact whatever the declaration says about itself.
+     */
+    public static final boolean SCHEMA_V1_TRANSCRIPT_REPRESENTED = false;
+
+    /** Words a {@code level1Omissions} entry must contain to count as naming the unrepresented session-files source. */
+    public static final Set<String> SESSION_FILES_OMISSION_WORDS = Set.of("transcript", "session");
+
     /** {@code tool_timing.durationSource} values and their meaning. */
     public static final String DURATION_FROM_VENDOR_TIMESTAMPS = "vendor-timestamps";
     public static final String DURATION_NOT_REPORTED = "not-reported";
@@ -85,5 +95,7 @@ public final class ClaudeStreamContract {
             Map.of("family", "raw/ (level 0) and the session transcript channel",
                     "reason", "level 0 is never read; the transcript's own records are declared not represented in level 1"),
             Map.of("family", "rate_limit_event lines",
-                    "reason", "dropped by the released SDK before Journal sees them; reported as a declared gap, not verified"));
+                    "reason", "dropped by the released SDK before Journal sees them; reported as a declared gap, not verified"),
+            Map.of("family", "repeated invocations (a package declaring more than one invocation, or several streams)",
+                    "reason", "refused by this verifier version; checks and report keys are scoped by owner and occurrence, not by invocation"));
 }

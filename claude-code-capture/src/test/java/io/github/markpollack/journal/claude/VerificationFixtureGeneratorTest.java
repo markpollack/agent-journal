@@ -64,5 +64,36 @@ class VerificationFixtureGeneratorTest {
             recorder.finish();
             System.out.println("GENERATED " + fixture + " run " + run.id() + " under " + target);
         }
+        // repeated-invocation: one stream recorded twice under the same phase name into one run, so the package
+        // declares two invocations with the same session and spawn ids; the verifier must refuse it, not judge it
+        // as one stream
+        Journal.reset();
+        String fixture = "foreground-subagent-one-result";
+        Path stream = Path.of(VerificationFixtureGeneratorTest.class
+                .getResource("/fixtures/real-streams/" + fixture + "/stream.jsonl").toURI());
+        Path target = Path.of(out).resolve("repeated-invocation");
+        Files.createDirectories(target);
+        Files.copy(stream, target.resolve("stream.jsonl"), StandardCopyOption.REPLACE_EXISTING);
+        Journal.configure(new JsonFileStorage(target.resolve("journal")));
+        Run run = Journal.run("exp").start();
+        RunRecorder recorder = new RunRecorder(run).archiveSessionFiles(false);
+        for (int i = 0; i < 2; i++) {
+            MessageParser parser = new MessageParser();
+            List<ParsedMessage> messages = new ArrayList<>();
+            for (String line : Files.readAllLines(stream)) {
+                if (line.isBlank()) {
+                    continue;
+                }
+                try {
+                    messages.add(ParsedMessage.RegularMessage.of(parser.parseMessage(line), line));
+                }
+                catch (RuntimeException unknownType) {
+                    // skipped by the SDK, as in the stream reader
+                }
+            }
+            recorder.recordPhase(SessionLogParser.parse(messages.iterator(), "run", "prompt"));
+        }
+        recorder.finish();
+        System.out.println("GENERATED repeated-invocation run " + run.id() + " under " + target);
     }
 }
