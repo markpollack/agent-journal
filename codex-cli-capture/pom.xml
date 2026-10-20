@@ -46,5 +46,11 @@
             <artifactId>logback-classic</artifactId>
             <scope>test</scope>
         </dependency>
+            <dependency>
+            <groupId>io.github.markpollack</groupId>
+            <artifactId>journal-capture-tck</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
