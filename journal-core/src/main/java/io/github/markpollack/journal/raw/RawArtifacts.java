@@ -113,6 +113,19 @@ public final class RawArtifacts implements AutoCloseable {
     }
 
     /**
+     * Returns a copy of the manifest's entries as written so far: each with {@code kind}, {@code path}, {@code status}
+     * and, when known, {@code bytes}, {@code sha256}, {@code role}, {@code vendorRefs} and a failure {@code reason}.
+     * A run record can carry these so the level-0 files are discoverable from {@code run.json}.
+     */
+    public synchronized List<Map<String, Object>> entries() {
+        List<Map<String, Object>> copy = new ArrayList<>(entries.size());
+        for (Map<String, Object> entry : entries) {
+            copy.add(new LinkedHashMap<>(entry));
+        }
+        return copy;
+    }
+
+    /**
      * One thing to put in a session archive: a file, or a directory with everything under it.
      *
      * @param path the file or directory on disk

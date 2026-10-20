@@ -50,6 +50,31 @@ public final class ClaudeSessionFiles {
      * @return {@code true} if the transcript was found and everything was archived; otherwise the
      *         manifest records what was not
      */
+    /**
+     * Finds the one transcript named after the session under the projects root.
+     *
+     * @return the transcript, or empty if none or several were found or the id is not usable as a file name
+     */
+    public static java.util.Optional<Path> locateTranscript(String sessionId, Path projectsRoot) {
+        if (sessionId == null || sessionId.isBlank() || !sessionId.matches("[A-Za-z0-9._-]+")
+                || !Files.isDirectory(projectsRoot)) {
+            return java.util.Optional.empty();
+        }
+        List<Path> found = new ArrayList<>();
+        try (Stream<Path> projects = Files.list(projectsRoot)) {
+            for (Path project : (Iterable<Path>) projects::iterator) {
+                Path candidate = project.resolve(sessionId + ".jsonl");
+                if (Files.isRegularFile(candidate)) {
+                    found.add(candidate);
+                }
+            }
+        }
+        catch (IOException ex) {
+            return java.util.Optional.empty();
+        }
+        return found.size() == 1 ? java.util.Optional.of(found.get(0)) : java.util.Optional.empty();
+    }
+
     public static boolean archive(RawArtifacts raw, String sessionId, Path projectsRoot) {
         if (sessionId == null || sessionId.isBlank()) {
             raw.recordSessionFileNotCaptured("transcript", "the run reported no session id, so there is nothing to look up");

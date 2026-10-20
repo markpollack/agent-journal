@@ -118,6 +118,11 @@ public abstract class BaseRunRecorder {
 
         // Sub-agents first: each is written as its own run, and the LLM call below names them.
         List<Map<String, Object>> subagentRuns = recordSubagents(phase);
+        lastSessionId = phase.sessionId();
+        lastCliVersion = cliVersionOf(phase);
+        lastStreamComplete = phase.vendorEvents().stream().anyMatch(v -> "result".equals(v.type()));
+        lastSourceRecords = phase.sourceRecords().size();
+        lastVendorEvents = phase.vendorEvents().size();
 
         // LLM call with full token/cost/timing data. The per-turn breakdown rides as additive
         // metadata (JournalSteps.META_TURNS) — raw wire data, not derived — so the immutable log
@@ -141,6 +146,15 @@ public abstract class BaseRunRecorder {
         if (phase.hasTurns()) {
             metadata.put(JournalSteps.META_TURNS, JournalSteps.turnsToMetadata(phase.turns()));
         }
+        // The cost's validity and scope, stated on every call (Stage 13 package 1): Claude reports one total
+        // for the whole call, sub-agents included; no breakdown by input, output or thinking is reported, so
+        // CostBreakdown's components are not a breakdown here (the total sits in inputCostUsd until the
+        // package/event schema version policy of Stage 13 package 3 reshapes it; ACT reads that field today).
+        metadata.put("costAvailable", true);
+        metadata.put("costSource", "result.total_cost_usd");
+        metadata.put("costScope", phase.hasSubagents() || !phase.reportedSubagentStats().isEmpty()
+                ? "call-including-subagents" : "call");
+        metadata.put("costBreakdownReported", false);
         // A capture rebased onto its own query by SessionLogParser.withSessionBaseline says so, and
         // keeps the session's running total beside the per-query cost. A capture taken from the
         // result line verbatim writes neither key, as before.
@@ -295,6 +309,16 @@ public abstract class BaseRunRecorder {
     /** The key that marks the event's cost as including the cost of the call's sub-agents. */
     public static final String META_COST_INCLUDES_SUBAGENTS = "costIncludesSubagents";
 
+    /** What the last recorded phase said about its sources; read by the finish to secure the capture. */
+    protected String lastSessionId;
+    protected String lastCliVersion;
+    protected boolean lastStreamComplete;
+    protected int lastSourceRecords;
+    protected int lastVendorEvents;
+    /** The sub-agent runs recorded for the last phase: spawn tool-use id, agent id (may be null), child run id. */
+    protected final List<String[]> recordedSubagents = new ArrayList<>();
+
+
     /** The config key, on a sub-agent's run, of the ID of the tool call that started it. */
     public static final String CONFIG_SPAWN_TOOL_USE_ID = "subagent.spawnToolUseId";
 
@@ -375,6 +399,7 @@ public abstract class BaseRunRecorder {
         }
         Run run = builder.start();
         runIdBySpawnToolUseId.put(subagent.spawnToolUseId(), run.id());
+        recordedSubagents.add(new String[] { subagent.spawnToolUseId(), subagent.agentId(), run.id() });
         try {
             if (subagent.promptText() != null && !subagent.promptText().isEmpty()) {
                 run.logEvent(CustomEvent.of("prompt",
@@ -664,6 +689,25 @@ public abstract class BaseRunRecorder {
             target.logEvent(CustomEvent.of("source_record", attributes));
         }
 
+    }
+
+    /** The CLI version from the stream's init line ({@code claude_code_version}), or {@code null} if none. */
+    static String cliVersionOf(PhaseCapture phase) {
+        for (ClaudeVendorEvent event : phase.vendorEvents()) {
+            if ("system".equals(event.type()) && "init".equals(event.subtype()) && event.rawJson() != null) {
+                try {
+                    com.fasterxml.jackson.databind.JsonNode init = new com.fasterxml.jackson.databind.ObjectMapper()
+                            .readTree(event.rawJson());
+                    if (init.hasNonNull("claude_code_version")) {
+                        return init.get("claude_code_version").asText();
+                    }
+                }
+                catch (com.fasterxml.jackson.core.JsonProcessingException ignored) {
+                    return null;
+                }
+            }
+        }
+        return null;
     }
 
     private static Map<String, Object> blockAttributes(String phaseName, ClaudeContentBlock block) {
