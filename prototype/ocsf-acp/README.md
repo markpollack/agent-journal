@@ -4,6 +4,17 @@ This directory is an isolated prototype. It is not a Maven module, it is not wir
 and nothing in it is a production format, adapter or reader. It exists to make the Agentic CLI
 extension design concrete and testable before any production code changes.
 
+**2026-10-20 follow-up (Java oracle and self-describing package).** The extension is now at version
+`0.2.0-prototype` (uid 901 still provisional): invariant per-run facts (`cli_agent`, producer, capture time,
+contract and artifact hashes) are stored once in `run.json` and events keep compact references; `attribution`
+gained `method_id` (reported identifier versus derived by rule). The acceptance path moved to Java:
+`journal-capture-tck` package `io.github.markpollack.journal.tck.ocsf` holds the self-describing package reader,
+the independent byte-reading oracle, the analysis views (named semantic operations) and the CLI
+`OcsfReaderTool`; `...ocsf.prototype.PrototypeRepackager` re-lays out this adapter's `0.0.0-prototype` output into
+the `0.1.0-prototype` self-describing layout. The Python scripts below remain labelled research/prototype code
+(`adapt.py` still produces the candidate packages; `semantic_check.py` and `queries.py` are superseded as
+acceptance by the Java oracle and views and are kept as history).
+
 What it contains:
 
 - `extension/agentic_cli/` — an OCSF extension authored in OCSF's own definition format: one

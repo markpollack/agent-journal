@@ -1,19 +1,43 @@
 {
   "caption": "Journal Provenance",
-  "description": "Agent Journal's provenance for a transformed or generated event.",
+  "description": "Agent Journal's provenance for a transformed or generated event. Invariant per-run facts (producer, capture time, contract hash) are stored once in run.json under shared and are reached through run_uid and contract_uid; they appear on an event only in a self-contained export.",
   "extends": "object",
   "name": "journal_provenance",
   "attributes": {
-    "run_uid": {"requirement": "required"},
-    "invocation_index": {"requirement": "required"},
-    "sequence": {"description": "Journal's event sequence within the run; occurrence order, never clock order.", "requirement": "required"},
-    "producer": {"requirement": "required"},
-    "contract_uid": {"requirement": "required"},
-    "contract_sha256": {"requirement": "recommended"},
-    "capture_time": {"requirement": "required"},
-    "capture_time_text": {"requirement": "recommended"},
-    "time_basis_id": {"requirement": "required"},
-    "time_basis": {"requirement": "optional"},
-    "basis": {"description": "Detail for the time basis (for example which preceding record supplied the fallback time).", "requirement": "optional"}
+    "run_uid": {
+      "requirement": "required"
+    },
+    "invocation_index": {
+      "requirement": "required"
+    },
+    "sequence": {
+      "description": "Journal's event sequence within the run; occurrence order, never clock order.",
+      "requirement": "required"
+    },
+    "producer": {
+      "requirement": "optional"
+    },
+    "contract_uid": {
+      "requirement": "required"
+    },
+    "contract_sha256": {
+      "requirement": "optional"
+    },
+    "capture_time": {
+      "requirement": "optional"
+    },
+    "capture_time_text": {
+      "requirement": "optional"
+    },
+    "time_basis_id": {
+      "requirement": "required"
+    },
+    "time_basis": {
+      "requirement": "optional"
+    },
+    "basis": {
+      "description": "Detail for the time basis (for example which preceding record supplied the fallback time).",
+      "requirement": "optional"
+    }
   }
 }

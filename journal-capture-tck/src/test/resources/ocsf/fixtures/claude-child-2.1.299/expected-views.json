@@ -1,0 +1,65 @@
+{
+  "_authored": "By hand from the native stream.jsonl records (sanitized Claude Code 2.1.299 stream with a foreground sub-agent; record indexes cited), 2026-10-20; a subset pattern compared against AnalysisViews.all, not generated from the views, the adapter or the contract.",
+  "_rationale": {
+    "submissions": "The stream does not echo the SDK prompt: no prompt_turn Prompt-submitted record exists on the main thread. Record 18 is the sub-agent's prompt as a user text message with parent_tool_use_id; it is retained whole in the child core, not mapped as a submission by the 2.1.303 stream contract.",
+    "responses": "Main thread: msg_011Cg2aRQ1iZf8BxQVUnD2jR on records 4 (thinking) and 5 (tool_use ToolSearch); msg_011Cg2aRa7RdELQkMpTBpGr2 on 14 (thinking), 15 (text), 16 (tool_use Agent); msg_011Cg2aSX39xwYN5tqhMZAyi on 25 (thinking), 26 (text). Each record appends one block; stop_reason is null on every stream record, so no Completed occurrence exists. Child: msg_011Cg2aSBYeTae2cPghGn3eT on record 20 (tool_use Read).",
+    "usage": "Every assistant record reports provisional usage (stop_reason null): no applicable final at Model-response scope. The result line (27) reports run usage input 28, output 1040, cache read 64749, cache creation 7220, thinking 783, and modelUsage for claude-haiku-4-5-20251001 (input 46, output 1362, cache read 78077, cache creation 22130, thinking 964): one final each at Run and Model scope. The child's one observation (record 20, output 6) stays in the child core and is not added to the parent's groups.",
+    "associations": "tool_result_meta on records 6 (toolu_0183...) and 24 (toolu_01BnE...) and, in the child, 21 (toolu_018f...) name the tool id and report decision accept: unique, reported identifier, attached to the tool call.",
+    "tool_exchanges": "Main: ToolSearch toolu_0183ddwvMmvPzqAU5Jeu5hwZ (5/6), Agent toolu_01BnEuCUmZ2Vu1LpADzksmrJ (16/24). Child: Read toolu_018fX6Mygf8aSE8c8bt7pyu6 (20/21)."
+  },
+  "run_uid": "claude-child-2.1.299",
+  "label": "main",
+  "submissions": {"submission_count": 0, "rows": []},
+  "responses": {
+    "response_count": 3,
+    "rows": [
+      {"response_uid": "msg_011Cg2aRQ1iZf8BxQVUnD2jR", "identity_scope": "run", "occurrence_count": 2, "completed_stop_reasons": [],
+       "artifacts": {"stream.jsonl": {"update_semantics": "APPEND_BLOCKS", "assembled_blocks": [{"block_type": "thinking", "from_record": 4}, {"block_type": "tool_use", "from_record": 5}]}}},
+      {"response_uid": "msg_011Cg2aRa7RdELQkMpTBpGr2", "occurrence_count": 3,
+       "artifacts": {"stream.jsonl": {"assembled_blocks": [{"block_type": "thinking", "from_record": 14}, {"block_type": "text", "from_record": 15}, {"block_type": "tool_use", "from_record": 16}]}}},
+      {"response_uid": "msg_011Cg2aSX39xwYN5tqhMZAyi", "occurrence_count": 2,
+       "artifacts": {"stream.jsonl": {"assembled_blocks": [{"block_type": "thinking", "from_record": 25}, {"block_type": "text", "from_record": 26}]}}}
+    ]
+  },
+  "usage": {
+    "group_count": 5,
+    "groups": [
+      {"scope": "Model response", "owner": "msg_011Cg2aRQ1iZf8BxQVUnD2jR", "model": "claude-haiku-4-5-20251001", "source": "stream.jsonl", "final_observations": 0, "provisional_observations": 2, "applicable_final": null},
+      {"scope": "Model response", "owner": "msg_011Cg2aRa7RdELQkMpTBpGr2", "final_observations": 0, "provisional_observations": 3, "applicable_final": null},
+      {"scope": "Model response", "owner": "msg_011Cg2aSX39xwYN5tqhMZAyi", "final_observations": 0, "provisional_observations": 2, "applicable_final": null},
+      {"scope": "Run", "owner": "claude-child-2.1.299", "source": "stream.jsonl", "final_observations": 1, "repeated_final_observations": 0, "conflict": false,
+       "applicable_final": {"input_tokens": 28, "output_tokens": 1040, "cache_read_tokens": 64749, "cache_write_tokens": 7220, "reasoning_tokens": 783},
+       "observations": [{"record_index": 27, "status": "Final"}]},
+      {"scope": "Model", "owner": "claude-child-2.1.299", "model": "claude-haiku-4-5-20251001", "final_observations": 1,
+       "applicable_final": {"input_tokens": 46, "output_tokens": 1362, "cache_read_tokens": 78077, "cache_write_tokens": 22130, "reasoning_tokens": 964}}
+    ],
+    "aggregation": "none: groups are never summed across scopes, sources, models or child runs"
+  },
+  "associations": {
+    "rows": [
+      {"fact": "permission_decision", "decision": "Allowed", "reported_decision": "accept", "occurrence": "stream.jsonl:6", "scope": "Tool call", "outcome": "Unique", "method": "Reported identifier", "candidate_count": 1, "candidates": ["toolu_0183ddwvMmvPzqAU5Jeu5hwZ"], "attached_to_tool_call": "toolu_0183ddwvMmvPzqAU5Jeu5hwZ", "remains_at_scope": null},
+      {"fact": "permission_decision", "reported_decision": "accept", "occurrence": "stream.jsonl:24", "outcome": "Unique", "method": "Reported identifier", "attached_to_tool_call": "toolu_01BnEuCUmZ2Vu1LpADzksmrJ"}
+    ]
+  },
+  "tool_exchanges": {
+    "calls": [
+      {"tool_call_uid": "toolu_0183ddwvMmvPzqAU5Jeu5hwZ", "requests": [{"occurrence": "stream.jsonl:5", "name": "ToolSearch", "kind": "other"}], "results": [{"occurrence": "stream.jsonl:6", "error_reported": "unavailable at source", "status": "Unknown", "status_basis": "Not derivable"}]},
+      {"tool_call_uid": "toolu_01BnEuCUmZ2Vu1LpADzksmrJ", "requests": [{"occurrence": "stream.jsonl:16", "name": "Agent", "kind": "other"}], "results": [{"occurrence": "stream.jsonl:24"}]}
+    ],
+    "identical_result_content": []
+  },
+  "children": [
+    {
+      "run_uid": "claude-child-2.1.299/child/toolu_01BnEuCUmZ2Vu1LpADzksmrJ",
+      "label": "child:toolu_01BnEuCUmZ2Vu1LpADzksmrJ",
+      "submissions": {"submission_count": 0},
+      "responses": {"response_count": 1, "rows": [{"response_uid": "msg_011Cg2aSBYeTae2cPghGn3eT", "occurrence_count": 1,
+        "artifacts": {"stream.jsonl": {"update_semantics": "APPEND_BLOCKS", "assembled_blocks": [{"block_type": "tool_use", "from_record": 20}]}}}]},
+      "usage": {"group_count": 1, "groups": [{"scope": "Model response", "owner": "msg_011Cg2aSBYeTae2cPghGn3eT", "source": "stream.jsonl", "final_observations": 0, "provisional_observations": 1, "applicable_final": null,
+        "observations": [{"record_index": 20, "status": "Provisional", "components": {"output_tokens": 6}}]}]},
+      "associations": {"rows": [{"fact": "permission_decision", "reported_decision": "accept", "occurrence": "stream.jsonl:21", "outcome": "Unique", "method": "Reported identifier", "attached_to_tool_call": "toolu_018fX6Mygf8aSE8c8bt7pyu6"}]},
+      "tool_exchanges": {"calls": [{"tool_call_uid": "toolu_018fX6Mygf8aSE8c8bt7pyu6", "requests": [{"occurrence": "stream.jsonl:20", "name": "Read", "kind": "read"}], "results": [{"occurrence": "stream.jsonl:21", "status": "Unknown"}]}], "identical_result_content": []},
+      "children": []
+    }
+  ]
+}

@@ -1,0 +1,249 @@
+package io.github.markpollack.journal.tck.ocsf;
+
+import io.github.markpollack.journal.tck.verify.Json;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CHILD;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CODEX;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.copy;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.editEvents;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.editManifest;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.num;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.obj;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.open;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.pkg;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.str;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.tamperEvents;
+import static org.assertj.core.api.Assertions.assertThat;
+
+/**
+ * The reader's discovery and refusal behaviour: a package is found from its events file by convention, every pin and
+ * hash is verified, and each failure is an explicit diagnostic that never discards data.
+ */
+class PackageReaderTest {
+
+    @Test
+    void discoversTheManifestFromEventsJsonlAndFromTheDirectory(@TempDir Path work) {
+        Path fixture = copy(CODEX, work);
+        OcsfPackage fromEvents = PackageReader.open(pkg(fixture).resolve("events.jsonl"));
+        OcsfPackage fromDir = PackageReader.open(pkg(fixture));
+        assertThat(fromEvents.refused()).isFalse();
+        assertThat(fromEvents.manifest.runUid()).isEqualTo("syn-codex-counterexamples");
+        assertThat(fromEvents.events).hasSize(31);
+        assertThat(fromDir.events).hasSize(31);
+        assertThat(fromEvents.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
+        assertThat(fromEvents.manifest.packageVersion()).isEqualTo("0.1.0-prototype");
+        assertThat(fromEvents.manifest.extensionUid()).isEqualTo(901);
+        assertThat(fromEvents.manifest.extensionVersion()).isEqualTo("0.2.0-prototype");
+        assertThat(fromEvents.manifest.contracts()).containsKey("codex-cli/rollout/0.160.1/0.1.0-prototype");
+    }
+
+    @Test
+    void aDetachedEventsFileIsRefusedButItsLinesAreKept(@TempDir Path work) throws Exception {
+        Path fixture = copy(CODEX, work);
+        Path detached = work.resolve("detached");
+        Files.createDirectories(detached);
+        Files.copy(pkg(fixture).resolve("events.jsonl"), detached.resolve("events.jsonl"));
+        OcsfPackage p = PackageReader.open(detached.resolve("events.jsonl"));
+        assertThat(p.refused()).isTrue();
+        assertThat(p.diagnosticsWithCode("NO_MANIFEST")).hasSize(1);
+        assertThat(p.rawLines).hasSize(31);
+        assertThat(p.events).isEmpty();
+    }
+
+    @Test
+    void theSavedModelIsEnumeratedFromTheEmbeddedClosureAlone(@TempDir Path work) {
+        OcsfPackage p = open(copy(CODEX, work));
+        String model = p.catalog.enumerate();
+        assertThat(model).contains("class agentic_cli/tool_call uid 90111003").contains("object agentic_cli/usage_observation")
+                .contains("object agentic_cli/operation").contains("object metadata").contains("long_t");
+        assertThat(p.catalog.resolve("tool_call.tool_operation.attribution.candidates[]").isArray()).isTrue();
+        assertThat(p.catalog.resolve("*.usage_observations[].usage_status_id").enumCaptions()).containsEntry("2", "Final");
+        assertThat(p.manifest.json().path("definitions", "extension_source", "dictionary.json")).isNotNull();
+    }
+
+    @Test
+    void wrongClassPinIsRefusedWithoutRemapping(@TempDir Path work) {
+        Path fixture = copy(CODEX, work);
+        editManifest(pkg(fixture), run -> obj(run.path("extension", "classes", "tool_call")).members().put("class_uid", num("90211003")));
+        OcsfPackage p = open(fixture);
+        assertThat(p.refused()).isTrue();
+        assertThat(p.diagnosticsWithCode("PIN_MISMATCH").get(0).detail()).contains("tool_call uid 90211003 != definition uid 90111003");
+        // the events are still parsed and available; tool_call events are now outside the pin table
+        assertThat(p.rawLines).hasSize(31);
+        assertThat(p.diagnosticsWithCode("UNKNOWN_CLASS")).hasSize(1);
+    }
+
+    @Test
+    void unsupportedReaderContractMajorIsRefusedMinorIsAWarning(@TempDir Path work) {
+        Path fixture = copy(CODEX, work);
+        editManifest(pkg(fixture), run -> obj(run.path("package", "reader_compat")).members().put("reader_contract_version", str("2.0")));
+        OcsfPackage major = open(fixture);
+        assertThat(major.refused()).isTrue();
+        assertThat(major.diagnosticsWithCode("UNSUPPORTED_READER_CONTRACT_VERSION").get(0).detail()).contains("2.0").contains("0.1");
+        assertThat(major.rawLines).hasSize(31);
+        editManifest(pkg(fixture), run -> obj(run.path("package", "reader_compat")).members().put("reader_contract_version", str("0.2")));
+        OcsfPackage minor = open(fixture);
+        assertThat(minor.refused()).isFalse();
+        assertThat(minor.diagnosticsWithCode("READER_CONTRACT_MINOR_DIFFERS")).hasSize(1);
+    }
+
+    @Test
+    void unsupportedPackageVersionIsRefused(@TempDir Path work) {
+        Path fixture = copy(CODEX, work);
+        editManifest(pkg(fixture), run -> obj(run.get("package")).members().put("version", str("9.0.0")));
+        OcsfPackage p = open(fixture);
+        assertThat(p.refused()).isTrue();
+        assertThat(p.diagnosticsWithCode("UNSUPPORTED_PACKAGE_VERSION")).hasSize(1);
+    }
+
+    @Test
+    void tamperedEventsAreReportedAgainstTheirHashAndStillRead(@TempDir Path work) {
+        Path fixture = copy(CODEX, work);
+        tamperEvents(pkg(fixture), events -> obj(events.get(0)).members().put("severity_id", num("1")));
+        OcsfPackage p = open(fixture);
+        assertThat(p.refused()).isFalse();
+        assertThat(p.diagnosticsWithCode("EVENTS_HASH_MISMATCH")).hasSize(1);
+        assertThat(p.events).hasSize(31);
+    }
+
+    @Test
+    void alteredDefinitionsOrContractsAreReportedAgainstTheirHashes(@TempDir Path work) {
+        Path fixture = copy(CODEX, work);
+        editManifest(pkg(fixture), run -> {
+            obj(run.path("definitions", "closure", "types")).members().put("synthetic_t", str("Synthetic"));
+            obj(run.path("shared", "contracts", "codex-cli/rollout/0.160.1/0.1.0-prototype", "embedded")).members().put("tampered", str("yes"));
+            obj(run.path("semantic_contract", "declarations").elements().get(0)).members().put("tampered", str("yes"));
+        });
+        OcsfPackage p = open(fixture);
+        assertThat(p.diagnosticsWithCode("DEFINITIONS_HASH_MISMATCH")).hasSize(1);
+        assertThat(p.diagnosticsWithCode("CONTRACT_HASH_MISMATCH")).hasSize(1);
+        assertThat(p.diagnosticsWithCode("SEMANTIC_CONTRACT_HASH_MISMATCH")).hasSize(1);
+        assertThat(p.refused()).isFalse();
+    }
+
+    @Test
+    void missingDefinitionsRefuseInterpretationButKeepTheEvents(@TempDir Path work) {
+        Path fixture = copy(CODEX, work);
+        editManifest(pkg(fixture), run -> run.members().remove("definitions"));
+        OcsfPackage p = open(fixture);
+        assertThat(p.refused()).isTrue();
+        assertThat(p.diagnosticsWithCode("MISSING_DEFINITIONS")).hasSize(1);
+        assertThat(p.catalog).isNull();
+        assertThat(p.events).hasSize(31);
+    }
+
+    @Test
+    void missingDefinitionReferenceIsADefect(@TempDir Path work) {
+        Path fixture = copy(CODEX, work);
+        editManifest(pkg(fixture), run -> obj(run.path("definitions", "closure", "objects")).members().remove("agentic_cli/operation"));
+        OcsfPackage p = open(fixture);
+        assertThat(p.diagnosticsWithCode("MISSING_DEFINITION_REFERENCE").get(0).detail()).contains("tool_operation refers to object agentic_cli/operation");
+        assertThat(p.diagnosticsWithCode("SEMANTIC_TARGET_UNRESOLVED")).isNotEmpty();
+    }
+
+    @Test
+    void unknownClassAndUnknownAttributeAreRetainedAndReported(@TempDir Path work) {
+        Path fixture = copy(CODEX, work);
+        editEvents(pkg(fixture), events -> {
+            obj(events.get(0)).members().put("class_uid", num("90111099"));
+            obj(events.get(1)).members().put("future_attribute", str("kept"));
+        });
+        OcsfPackage p = open(fixture);
+        assertThat(p.refused()).isFalse();
+        assertThat(p.events).hasSize(31);
+        assertThat(p.events.get(0).className).isNull();
+        assertThat(p.diagnosticsWithCode("UNKNOWN_CLASS").get(0).detail()).contains("90111099=1");
+        assertThat(p.diagnosticsWithCode("UNKNOWN_ATTRIBUTE").get(0).detail()).contains("future_attribute");
+        assertThat(p.events.get(1).text("future_attribute")).isEqualTo("kept");
+    }
+
+    @Test
+    void typeMismatchAndMissingRequiredAreDefects(@TempDir Path work) {
+        Path fixture = copy(CODEX, work);
+        editEvents(pkg(fixture), events -> {
+            obj(events.get(0)).members().put("time", str("2026-10-20T12:00:00Z"));
+            obj(events.get(1)).members().remove("source_ref");
+            obj(events.get(2)).members().put("severity_id", num("42"));
+        });
+        OcsfPackage p = open(fixture);
+        assertThat(p.diagnosticsWithCode("TYPE_MISMATCH").get(0).detail()).contains("$.time");
+        assertThat(p.diagnosticsWithCode("MISSING_REQUIRED").get(0).detail()).contains("$.source_ref");
+        assertThat(p.diagnosticsWithCode("ENUM_VALUE_UNKNOWN").get(0).detail()).contains("$.severity_id");
+    }
+
+    @Test
+    void unresolvedSharedReferencesAreDefects(@TempDir Path work) {
+        Path fixture = copy(CODEX, work);
+        editEvents(pkg(fixture), events -> {
+            obj(events.get(0).member("journal")).members().put("contract_uid", str("codex-cli/rollout/9.9.9/none"));
+            obj(events.get(1).member("source_ref")).members().put("artifact", str("elsewhere.jsonl"));
+        });
+        OcsfPackage p = open(fixture);
+        assertThat(p.diagnosticsWithCode("CONTRACT_REF_UNRESOLVED").get(0).detail()).contains("codex-cli/rollout/9.9.9/none");
+        assertThat(p.diagnosticsWithCode("SOURCE_REF_UNRESOLVED").get(0).detail()).contains("elsewhere.jsonl");
+    }
+
+    @Test
+    void semanticDeclarationWithAWrongTargetOrOperationIsADefect(@TempDir Path work) {
+        Path fixture = copy(CODEX, work);
+        editManifest(pkg(fixture), run -> {
+            List<Json> decls = run.path("semantic_contract", "declarations").elements();
+            obj(decls.get(0).member("targets")).members().put("turn", str("prompt_turn.turn_identifier"));
+            obj(decls.get(1)).members().put("operation", str("MAGIC_INFERENCE"));
+            obj(run.get("semantic_contract")).members().remove("sha256");
+        });
+        OcsfPackage p = open(fixture);
+        List<Diagnostic> d = p.diagnosticsWithCode("SEMANTIC_TARGET_UNRESOLVED");
+        assertThat(d).extracting(Diagnostic::detail).anyMatch(s -> s.contains("unknown attribute turn_identifier"))
+                .anyMatch(s -> s.contains("MAGIC_INFERENCE is not implemented"));
+    }
+
+    @Test
+    void childCoresAreLinkedAndJudgedSeparately(@TempDir Path work) {
+        Path fixture = copy(CHILD, work);
+        OcsfPackage p = open(fixture);
+        assertThat(p.children).hasSize(1);
+        OcsfPackage child = p.children.get(0);
+        assertThat(child.label()).isEqualTo("child:" + OcsfFixtures.SPAWN);
+        assertThat(child.manifest.parent().member("run_uid").text()).isEqualTo("claude-child-2.1.299");
+        assertThat(child.events).hasSize(4);
+        assertThat(p.events).hasSize(26);
+        assertThat(child.manifest.sourceScope().member("owner_value").text()).isEqualTo(OcsfFixtures.SPAWN);
+        assertThat(p.manifest.sourceScope().member("owner_value").isNull()).isTrue();
+        // version-scoped contract: an explicit warning, not a support claim
+        assertThat(p.diagnosticsWithCode("CONTRACT_APPLICABILITY").get(0).detail()).contains("2.1.303").contains("2.1.299");
+        // each core carries its own complete closure
+        assertThat(child.catalog.classes()).containsKeys("agentic_cli/tool_call", "agentic_cli/model_response");
+    }
+
+    @Test
+    void missingOrMislinkedChildIsADefect(@TempDir Path work) throws Exception {
+        Path fixture = copy(CHILD, work);
+        editManifest(OcsfFixtures.child(fixture), run -> obj(run.path("run", "parent")).members().put("run_uid", str("someone-else")));
+        assertThat(open(fixture).children.get(0).diagnosticsWithCode("CHILD_PARENT_MISMATCH")).as("the child core reports its own mislink").hasSize(1);
+        Files.delete(OcsfFixtures.child(fixture).resolve("run.json"));
+        OcsfPackage p = open(fixture);
+        assertThat(p.diagnosticsWithCode("CHILD_MISSING")).hasSize(1);
+        assertThat(p.children).isEmpty();
+    }
+
+    @Test
+    void selfContainedExportJoinsTheSharedFactsBackOntoAnEvent(@TempDir Path work) {
+        OcsfPackage p = open(copy(CODEX, work));
+        Event e = p.events.get(0);
+        assertThat(e.get("cli_agent")).isNull();
+        assertThat(e.get("journal", "producer")).isNull();
+        Json full = PackageReader.selfContained(p, e);
+        assertThat(full.path("cli_agent", "name").text()).isEqualTo("Codex CLI");
+        assertThat(full.path("journal", "producer", "name").text()).isEqualTo("agent-journal");
+        assertThat(full.path("journal", "contract_sha256")).isNotNull();
+        assertThat(full.path("source_ref", "artifact_sha256").text()).hasSize(64);
+        assertThat(e.get("cli_agent")).as("the saved event is not modified").isNull();
+    }
+}

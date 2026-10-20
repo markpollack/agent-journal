@@ -640,6 +640,30 @@
       "caption": "Reported Decision",
       "description": "The source's own decision label exactly as reported (for example accept, denied). decision carries the normalized caption.",
       "type": "string_t"
+    },
+    "method_id": {
+      "caption": "Attribution Method ID",
+      "description": "How the candidate owners of an attribution were obtained: from an identifier the source record itself reports at the declared path, or by a declared derivation rule (for example text containment within a scope). A derived association is never a reported parent identifier.",
+      "type": "integer_t",
+      "sibling": "method",
+      "enum": {
+        "0": {
+          "caption": "Unknown"
+        },
+        "1": {
+          "caption": "Reported identifier",
+          "description": "The source record names the owner at the declared path."
+        },
+        "2": {
+          "caption": "Derived by rule",
+          "description": "Candidates were computed by the declared rule named in basis; the source reports no owner identifier."
+        }
+      }
+    },
+    "method": {
+      "caption": "Attribution Method",
+      "description": "Caption sibling of method_id.",
+      "type": "string_t"
     }
   }
 }

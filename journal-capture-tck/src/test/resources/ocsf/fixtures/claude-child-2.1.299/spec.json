@@ -1,0 +1,40 @@
+{
+ "run_uid": "claude-child-2.1.299",
+ "invocation_index": 0,
+ "session_uid": "00000000-0000-4000-8000-000000000000",
+ "capture_start": "2026-10-14T18:08:46Z",
+ "cli": {
+  "name": "Claude Code",
+  "version": "2.1.299",
+  "vendor_name": "Anthropic",
+  "type_id": 1,
+  "type": "Native"
+ },
+ "launch_settings": {
+  "command": "claude -p --output-format stream-json (sanitized real stream from claude-code-capture test fixtures)",
+  "model": "claude-haiku-4-5-20251001",
+  "permissionMode": "default (from stream record 1)",
+  "cwd": "/work"
+ },
+ "pins": {
+  "ocsf_schema_commit": "856d462bd20dc46cc1ffed2dfffe3b91ef0fbeba",
+  "compiler_commit": "865887a9ee88580c471062f93da115e7599fa31d",
+  "toolkit": {
+   "release": "v0.9.0",
+   "commit": "a99619fcd148791a6a9fe5f82c1e0d839f658591",
+   "linux_amd64_sha256": "641fec9f8c457896c06ead9136fe8f4e50753cd95f8a68c24b25c2bcc9cfd5a5"
+  }
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "kind": 1,
+   "profile": "claude_stream",
+   "path": "<fixture>/native/claude-child-2.1.299/stream.jsonl"
+  }
+ ],
+ "synthetic": {
+  "label": "SANITIZED REAL STREAM (Claude Code 2.1.299, foreground sub-agent) processed under the 2.1.303 stream contract; the parent/child split by parent_tool_use_id is a labelled demonstration of per-core portability and scoped ownership, not live child support",
+  "derived_from": "journal-capture-tck/src/test/resources/verify/foreground-subagent-one-result/stream.jsonl"
+ }
+}

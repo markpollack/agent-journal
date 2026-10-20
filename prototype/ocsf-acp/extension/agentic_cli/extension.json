@@ -2,6 +2,6 @@
   "uid": 901,
   "caption": "Agentic CLI",
   "name": "agentic_cli",
-  "version": "0.1.0-prototype",
-  "description": "Agent Journal's Agentic CLI extension prototype. Uses ACP's session, prompt turn, content block, tool call and permission vocabulary within OCSF. The uid 901 is a PROVISIONAL, UNREGISTERED prototype assignment: it is not reserved in the OCSF extensions registry and must not be used for a release package. Packages written against it pin this uid, this version and the compiled schema hash in run.json; readers resolve class names through that pin and refuse a mismatched assignment."
+  "version": "0.2.0-prototype",
+  "description": "Agent Journal's Agentic CLI extension prototype. Uses ACP's session, prompt turn, content block, tool call and permission vocabulary within OCSF. The uid 901 is a PROVISIONAL, UNREGISTERED prototype assignment: it is not reserved in the OCSF extensions registry and must not be used for a release package. Packages written against it pin this uid, this version and the compiled schema hash in run.json; readers resolve class names through that pin and refuse a mismatched assignment. Version 0.2.0-prototype moves invariant per-run facts (cli_agent, producer, capture time, contract and artifact hashes) to run.json: events reference them through journal.run_uid, journal.contract_uid and source_ref.artifact. attribution.method_id states whether candidates came from a source-reported identifier or a declared derivation rule."
 }

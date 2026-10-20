@@ -1,0 +1,50 @@
+{
+ "run_uid": "syn-codex-counterexamples",
+ "invocation_index": 0,
+ "session_uid": "11111111-2222-4333-8444-555555555555",
+ "capture_start": "2026-10-20T12:00:00Z",
+ "cli": {
+  "name": "Codex CLI",
+  "version": "0.160.1",
+  "vendor_name": "OpenAI",
+  "type_id": 1,
+  "type": "Native"
+ },
+ "launch_settings": {
+  "command": "codex exec --json (SYNTHETIC: no CLI was run)",
+  "approval_policy": "never",
+  "cwd": "/work"
+ },
+ "pins": {
+  "ocsf_schema_commit": "856d462bd20dc46cc1ffed2dfffe3b91ef0fbeba",
+  "compiler_commit": "865887a9ee88580c471062f93da115e7599fa31d",
+  "toolkit": {
+   "release": "v0.9.0",
+   "commit": "a99619fcd148791a6a9fe5f82c1e0d839f658591",
+   "linux_amd64_sha256": "641fec9f8c457896c06ead9136fe8f4e50753cd95f8a68c24b25c2bcc9cfd5a5"
+  }
+ },
+ "sources": [
+  {
+   "artifact": "rollout.jsonl",
+   "kind": 2,
+   "profile": "codex_rollout",
+   "path": "<fixture>/native/syn-codex-counterexamples/rollout.jsonl"
+  }
+ ],
+ "synthetic": {
+  "label": "LABELLED SYNTHETIC COUNTEREXAMPLE FIXTURE; hand-authored in the shape of a Codex 0.160.1 rollout; not live evidence",
+  "purpose": [
+   "environment-context user-role record is not a submission",
+   "one prompt represented twice (response_item message + item_completed UserMessage) counts once",
+   "identical prompt text in a second turn counts again",
+   "one response represented twice (AgentMessage item + response_item message) with one id",
+   "a second response with identical text and a different id stays separate",
+   "one exec wrapping two commands: operations derived uniquely by text containment",
+   "two exec calls with identical input: operation attribution ambiguous",
+   "identical result content under two owners stays separate",
+   "a result record quoting a foreign call id in its text (ownership is by payload.call_id)",
+   "provisional then final token_count in each turn"
+  ]
+ }
+}

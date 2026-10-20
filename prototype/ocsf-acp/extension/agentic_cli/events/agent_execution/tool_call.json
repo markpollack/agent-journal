@@ -24,7 +24,8 @@
     },
     "cli_agent": {
       "group": "primary",
-      "requirement": "required"
+      "requirement": "optional",
+      "description": "The CLI agent is stored once per run in run.json shared.cli_agent (0.2.0); it is present on an event only in a self-contained export."
     },
     "journal": {
       "group": "context",

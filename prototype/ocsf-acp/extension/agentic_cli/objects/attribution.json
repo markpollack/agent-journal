@@ -1,13 +1,29 @@
 {
   "caption": "Attribution",
-  "description": "The declared outcome of associating a fact with an owner.",
+  "description": "The declared outcome of associating a fact with an owner, and how the candidates were obtained (reported identifier or derived by rule).",
   "extends": "object",
   "name": "attribution",
   "attributes": {
-    "outcome_id": {"requirement": "required"},
-    "outcome": {"requirement": "optional"},
-    "candidates": {"requirement": "recommended"},
-    "basis": {"requirement": "required"},
-    "scope_uid": {"requirement": "optional"}
+    "outcome_id": {
+      "requirement": "required"
+    },
+    "outcome": {
+      "requirement": "optional"
+    },
+    "candidates": {
+      "requirement": "recommended"
+    },
+    "basis": {
+      "requirement": "required"
+    },
+    "scope_uid": {
+      "requirement": "optional"
+    },
+    "method_id": {
+      "requirement": "required"
+    },
+    "method": {
+      "requirement": "optional"
+    }
   }
 }

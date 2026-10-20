@@ -1,6 +1,6 @@
 {
   "caption": "Source Reference",
-  "description": "Identifies the native artifact and record occurrence that supplied a fact.",
+  "description": "Identifies the native artifact and record occurrence that supplied a fact. The artifact hash is stored once per run in run.json sources and reached through artifact; it appears here only in a self-contained export.",
   "extends": "object",
   "name": "source_ref",
   "attributes": {
@@ -14,7 +14,7 @@
       "requirement": "required"
     },
     "artifact_sha256": {
-      "requirement": "recommended"
+      "requirement": "optional"
     },
     "record_index": {
       "requirement": "required"

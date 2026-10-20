@@ -8,20 +8,63 @@
   "attributes": {
     "activity_id": {
       "enum": {
-        "1": {"caption": "Parsed", "description": "The record parsed as one JSON object and is retained in data."},
-        "2": {"caption": "Opaque", "description": "The record could not be parsed as one JSON object; it is retained as text or bytes."}
+        "1": {
+          "caption": "Parsed",
+          "description": "The record parsed as one JSON object and is retained in data."
+        },
+        "2": {
+          "caption": "Opaque",
+          "description": "The record could not be parsed as one JSON object; it is retained as text or bytes."
+        }
       }
     },
-    "cli_agent": {"group": "primary", "requirement": "required"},
-    "journal": {"group": "context", "requirement": "required"},
-    "source_ref": {"group": "context", "requirement": "required"},
-    "session_uid": {"group": "primary", "requirement": "optional"},
-    "record_type": {"group": "primary", "requirement": "recommended"},
-    "parse_status_id": {"group": "primary", "requirement": "required"},
-    "parse_status": {"group": "primary", "requirement": "optional"},
-    "basis": {"description": "Why the record was retained whole (no rule, or the parse failure reason).", "group": "primary", "requirement": "recommended"},
-    "data": {"description": "The parsed record exactly as reported.", "group": "context", "requirement": "optional"},
-    "raw_data": {"description": "The record text verbatim when it decodes as UTF-8 but is not one JSON object.", "group": "context", "requirement": "optional"},
-    "raw_bytes_b64": {"group": "context", "requirement": "optional"}
+    "cli_agent": {
+      "group": "primary",
+      "requirement": "optional",
+      "description": "The CLI agent is stored once per run in run.json shared.cli_agent (0.2.0); it is present on an event only in a self-contained export."
+    },
+    "journal": {
+      "group": "context",
+      "requirement": "required"
+    },
+    "source_ref": {
+      "group": "context",
+      "requirement": "required"
+    },
+    "session_uid": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "record_type": {
+      "group": "primary",
+      "requirement": "recommended"
+    },
+    "parse_status_id": {
+      "group": "primary",
+      "requirement": "required"
+    },
+    "parse_status": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "basis": {
+      "description": "Why the record was retained whole (no rule, or the parse failure reason).",
+      "group": "primary",
+      "requirement": "recommended"
+    },
+    "data": {
+      "description": "The parsed record exactly as reported.",
+      "group": "context",
+      "requirement": "optional"
+    },
+    "raw_data": {
+      "description": "The record text verbatim when it decodes as UTF-8 but is not one JSON object.",
+      "group": "context",
+      "requirement": "optional"
+    },
+    "raw_bytes_b64": {
+      "group": "context",
+      "requirement": "optional"
+    }
   }
 }
