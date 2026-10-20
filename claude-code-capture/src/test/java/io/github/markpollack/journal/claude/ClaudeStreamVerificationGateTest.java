@@ -37,19 +37,16 @@ class ClaudeStreamVerificationGateTest {
     /** Expected non-verified outcomes per fixture, as {@code property owner OUTCOME}. */
     private static final Map<String, List<String>> EXPECTED = Map.of(
             "single-result-parallel-calls", List.of(DROPPED),
+            // R13-10 (child invocation -1) and R13-11 (undeclared child durations) were expected here until the
+            // FB-1 producer correction; the historical producer's outcomes stay pinned on the TCK's committed fixtures
             "foreground-subagent-one-result", List.of(DROPPED,
                     "tool_calls.result_structured main DEFECTIVE", // R13-04
-                    "tool_calls.input_representation child:toolu_01BnEuCUmZ2Vu1LpADzksmrJ REPRESENTATION_DIFFERS", // R13-09
-                    "source_records.invocation_reference child:toolu_01BnEuCUmZ2Vu1LpADzksmrJ DEFECTIVE", // R13-10
-                    "tool_timing.declared child:toolu_01BnEuCUmZ2Vu1LpADzksmrJ DEFECTIVE"), // R13-11
+                    "tool_calls.input_representation child:toolu_01BnEuCUmZ2Vu1LpADzksmrJ REPRESENTATION_DIFFERS"), // R13-09
             "background-subagent-two-results-a", List.of(DROPPED,
                     "tool_calls.result_structured main DEFECTIVE",
-                    "tool_calls.input_representation child:toolu_01SDdexyBphVNPU4MuZVnQyF REPRESENTATION_DIFFERS",
-                    "source_records.invocation_reference child:toolu_01SDdexyBphVNPU4MuZVnQyF DEFECTIVE",
-                    "tool_timing.declared child:toolu_01SDdexyBphVNPU4MuZVnQyF DEFECTIVE"),
+                    "tool_calls.input_representation child:toolu_01SDdexyBphVNPU4MuZVnQyF REPRESENTATION_DIFFERS"),
             "background-subagent-two-results-b", List.of(DROPPED,
-                    "tool_calls.result_structured main DEFECTIVE",
-                    "source_records.invocation_reference child:toolu_01QJNEHQfLMfTMZDvFsFadt6 DEFECTIVE"));
+                    "tool_calls.result_structured main DEFECTIVE"));
 
     @AfterEach
     void resetJournal() {

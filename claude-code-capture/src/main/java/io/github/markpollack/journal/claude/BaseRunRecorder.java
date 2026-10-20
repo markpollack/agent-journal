@@ -116,15 +116,17 @@ public abstract class BaseRunRecorder {
                     phaseAttributes(phase.phaseName(), "text", phase.promptText())));
         }
 
-        // Sub-agents first: each is written as its own run, and the LLM call below names them.
-        List<Map<String, Object>> subagentRuns = recordSubagents(phase);
         // The inventory of every source invocation this run represents (Stage 13 review R13-07): one entry per
         // recorded phase, never overwritten by the next, so a run of several phases, or of two invocations under
-        // one phase name, names every session it drew on.
+        // one phase name, names every session it drew on. Assigned before anything of this invocation is written,
+        // so a sub-agent's records reference it too (R13-10: they carried -1 while this ran after the sub-agents).
         currentInvocation = invocations.size();
         invocations.add(new Invocation(currentInvocation, phase.phaseName(), phase.sessionId(), cliVersionOf(phase),
                 phase.vendorEvents().stream().anyMatch(v -> "result".equals(v.type())),
                 phase.sourceRecords().size(), phase.vendorEvents().size()));
+
+        // Sub-agents next: each is written as its own run, and the LLM call below names them.
+        List<Map<String, Object>> subagentRuns = recordSubagents(phase);
 
         // LLM call with full token/cost/timing data. The per-turn breakdown rides as additive
         // metadata (JournalSteps.META_TURNS) — raw wire data, not derived — so the immutable log
@@ -475,7 +477,9 @@ public abstract class BaseRunRecorder {
                         .build());
             }
 
-            recordSourceLayer(run, phase, subagent.spawnToolUseId(), null);
+            // The child's own tool results, so its durations carry the same tool_timing declaration as the main
+            // loop's (R13-11: child durations were recorded without their source stated).
+            recordSourceLayer(run, phase, subagent.spawnToolUseId(), subagent.toolResults());
             for (String thinking : phase.contentBlocks().stream().anyMatch(b -> Objects.equals(b.parentToolUseId(), subagent.spawnToolUseId())) ? List.<String>of() : subagent.thinkingBlocks()) {
                 run.logEvent(CustomEvent.of("thinking_block",
                         phaseAttributes(phase.phaseName(), "content", thinking)));
@@ -671,12 +675,11 @@ public abstract class BaseRunRecorder {
             target.logEvent(CustomEvent.of("permission_decision", attributes));
         }
 
-        // Tool timing from the vendor's own line timestamps, with its meaning stated
+        // Tool timing from the vendor's own line timestamps, with its meaning stated: one declaration per result,
+        // also when no line carried a timestamp (durationSource not-reported, -1), so an unstated source never
+        // has to be inferred from a missing event (FB-1, R13-11)
         if (toolResults != null) {
             for (ToolResultRecord result : toolResults) {
-                if (result.issuedAt() == null && result.resultAt() == null) {
-                    continue;
-                }
                 Map<String, Object> attributes = phaseAttributes(phase.phaseName(), "toolUseId", result.toolUseId());
                 if (result.issuedAt() != null) {
                     attributes.put("issuedAt", result.issuedAt());

@@ -20,6 +20,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * independently, judges every property per owner, and the only outcomes other than VERIFIED and NOT_APPLICABLE
  * are the known, named defects and the declared gap. Those expectations pin the defects; passing this test does not
  * turn any of them into a conformance pass (see {@code README.md} beside the fixtures).
+ *
+ * <p>The three single-invocation packages are historical output of producer {@code 9fb921c}; the child-run defects
+ * R13-10 and R13-11 pinned here were corrected in the producer afterwards (FB-1) and are no longer expected by the
+ * current-producer gate in {@code claude-code-capture} ({@code ClaudeStreamVerificationGateTest}). They stay pinned
+ * here, tied to their producer, so the defects remain reproducible.
  */
 class ClaudeStreamVerifierFixtureTest {
 
@@ -125,6 +130,23 @@ class ClaudeStreamVerifierFixtureTest {
         java.util.Map<String, Object> coverage = (java.util.Map<String, Object>) map.get("coverage");
         assertThat(coverage.get("unsupported")).asList().isNotEmpty();
         assertThat(map.get("denominator")).isNotNull();
+    }
+
+    @Test
+    void refusesARepeatedInvocationPackageInsteadOfJudgingItAsOneStream(@TempDir Path work) {
+        Path fixture = copy("repeated-invocation", work);
+        ClaudeStreamOracle stream = ClaudeStreamOracle.read(fixture.resolve("stream.jsonl"));
+        CandidatePackage candidate = CandidatePackage.read(rootRun(fixture));
+        // the package declares two invocations: one stream must not be judged against it
+        assertThatThrownBy(() -> ClaudeStreamVerifier.verify(stream, candidate))
+                .isInstanceOf(IllegalStateException.class).hasMessageContaining("repeated invocations").hasMessageContaining("2 invocation");
+        // nor two streams, until checking is scoped by invocation
+        assertThatThrownBy(() -> ClaudeStreamVerifier.verify(List.of(stream, stream), candidate))
+                .isInstanceOf(IllegalStateException.class).hasMessageContaining("repeated invocations");
+        // and a single-invocation package is not judged against two streams either
+        Path single = copy("single-result-parallel-calls", work.resolve("single"));
+        assertThatThrownBy(() -> ClaudeStreamVerifier.verify(List.of(stream, stream), CandidatePackage.read(rootRun(single))))
+                .isInstanceOf(IllegalStateException.class).hasMessageContaining("repeated invocations");
     }
 
     @Test
