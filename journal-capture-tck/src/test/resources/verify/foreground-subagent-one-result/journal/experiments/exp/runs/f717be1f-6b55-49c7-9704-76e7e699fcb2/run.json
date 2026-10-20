@@ -1,0 +1,32 @@
+{
+  "id" : "f717be1f-6b55-49c7-9704-76e7e699fcb2",
+  "experimentId" : "exp",
+  "name" : "run-f717be1f",
+  "status" : "FINISHED",
+  "config" : {
+    "subagent.spawnToolUseId" : "toolu_01BnEuCUmZ2Vu1LpADzksmrJ",
+    "subagent.depth" : 1,
+    "subagent.type" : "general-purpose",
+    "subagent.description" : "Read first line of c.txt",
+    "subagent.sessionId" : "00000000-0000-4000-8000-000000000000",
+    "model" : "claude-haiku-4-5-20251001"
+  },
+  "summary" : {
+    "subagent.status" : "completed",
+    "subagent.statusSource" : "task_notification",
+    "subagent.reportedTotalTokens" : 15062,
+    "subagent.reportedToolUses" : 1,
+    "subagent.reportedDurationMs" : 4636,
+    "success" : true
+  },
+  "tags" : {
+    "track" : "subagent"
+  },
+  "agentId" : "a912b9569b517f000",
+  "previousRunId" : null,
+  "parentRunId" : "606417d1-6be7-4b4c-b128-e0423096d2b8",
+  "startTime" : "2026-10-20T15:06:56.650378765Z",
+  "endTime" : "2026-10-20T15:06:56.660774132Z",
+  "errorMessage" : null,
+  "errorType" : null
+}
