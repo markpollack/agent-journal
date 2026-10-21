@@ -228,4 +228,44 @@ class OcsfOracleValueCheckTest {
         assertThat(report.check("whole_record.structure_value", ROLLOUT).detail()).contains("record 13: whole-record event has no data");
         assertThat(report.check("reconstruction.coverage", ROLLOUT).detail()).contains("no whole-record event for record(s) [13]");
     }
+
+    /** identity.values: a session_uid or metadata.original_event_uid that disagrees with its own record is a defect; the control is VERIFIED. */
+    @Test
+    void sessionOrNativeIdentityCopiedWronglyIsADefect(@TempDir Path work) {
+        Path control = copy(CHILD, work.resolve("control"));
+        OracleReport ok = verify(control);
+        assertThat(ok.outcome("identity.values", MAIN)).isEqualTo(Outcome.VERIFIED);
+        assertThat(ok.check("identity.values", MAIN).detail()).contains("session_uid and metadata.original_event_uid equal the record's own values");
+        Path fixture = copy(CHILD, work);
+        editEvents(pkg(fixture), events -> {
+            obj(at(events, "model_response", 1, 4)).members().put("session_uid", str("11111111-1111-4111-8111-111111111111"));
+            obj(at(events, "tool_call", 2, 6).member("metadata")).members().put("original_event_uid", str("not-the-record-uuid"));
+        });
+        OracleReport report = verify(fixture);
+        assertThat(report.outcome("identity.values", MAIN)).isEqualTo(Outcome.DEFECTIVE);
+        assertThat(report.check("identity.values", MAIN).detail())
+                .contains("record 4 (model_response) session_uid 11111111-1111-4111-8111-111111111111 != reported 00000000-0000-4000-8000-000000000000")
+                .contains("record 6 (tool_call) metadata.original_event_uid not-the-record-uuid != record uuid");
+    }
+
+    /** usage.values: the provider on a model-scope usage is the record's reported provider; one on a response-scope usage, which reports none, is an inference. */
+    @Test
+    void modelProviderIsReportedNotInferred(@TempDir Path work) {
+        Path fixture = copy(CHILD, work);
+        editEvents(pkg(fixture), events -> {
+            Json turn = at(events, "prompt_turn", 2, 27);
+            for (Json u : turn.member("usage_observations").elements()) {
+                if ("6".equals(u.member("scope_id").scalarText())) {
+                    obj(u.member("model_ref")).members().put("provider_kind", str("someone-else"));
+                }
+            }
+            Json response = at(events, "model_response", 1, 4);
+            obj(response.member("usage_observations").elements().get(0).member("model_ref")).members().put("provider_kind", str("anthropic"));
+        });
+        OracleReport report = verify(fixture);
+        assertThat(report.outcome("usage.values", MAIN)).isEqualTo(Outcome.DEFECTIVE);
+        assertThat(report.check("usage.values", MAIN).detail())
+                .contains("27:27:6:claude-haiku-4-5-20251001 model_ref.provider_kind someone-else != reported")
+                .contains("4:4:2:claude-haiku-4-5-20251001 model_ref.provider_kind anthropic present but the record reports no provider");
+    }
 }

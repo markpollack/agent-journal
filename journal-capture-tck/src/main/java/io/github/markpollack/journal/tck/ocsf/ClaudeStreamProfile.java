@@ -31,6 +31,12 @@ final class ClaudeStreamProfile implements SourceProfile {
                 continue;
             }
             f.owned.add(r.index());
+            if (SourceProfile.text(o, "session_id") != null) {
+                f.sessionOf.put(r.index(), SourceProfile.text(o, "session_id"));
+            }
+            if (SourceProfile.text(o, "uuid") != null) {
+                f.nativeUid.put(r.index(), SourceProfile.text(o, "uuid"));
+            }
             String ts = SourceProfile.text(o, "timestamp");
             if (ts != null) {
                 f.nativeTime.put(r.index(), ts);
@@ -103,11 +109,16 @@ final class ClaudeStreamProfile implements SourceProfile {
                     for (Map.Entry<String, Json> m : mu.members().entrySet()) {
                         f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 6, 2, SourceProfile.components(m.getValue(),
                                 "inputTokens", "input_tokens", "outputTokens", "output_tokens", "cacheReadInputTokens", "cache_read_tokens",
-                                "cacheCreationInputTokens", "cache_write_tokens", "thinkingTokens", "reasoning_tokens"), m.getKey()));
+                                "cacheCreationInputTokens", "cache_write_tokens", "thinkingTokens", "reasoning_tokens"), m.getKey(),
+                                SourceProfile.text(m.getValue(), "provider")));
                     }
                 }
                 if (o.member("total_cost_usd") instanceof Json.JNumber) {
-                    f.costs.add(new ExpectedFacts.Cost(r.index(), o.member("total_cost_usd"), "USD", 4));
+                    String basis = null;
+                    if (modelUsage instanceof Json.JObject mu && mu.members().size() == 1) {
+                        basis = SourceProfile.text(mu.members().values().iterator().next(), "costBasis");
+                    }
+                    f.costs.add(new ExpectedFacts.Cost(r.index(), o.member("total_cost_usd"), "USD", 4, basis));
                 }
                 for (Json d : o.member("permission_denials") == null ? List.<Json>of() : o.member("permission_denials").elements()) {
                     f.decisions.add(new ExpectedFacts.Decision(r.index(), "denied", 2, null, null, 4, 3, 2, new ArrayList<>(), null));

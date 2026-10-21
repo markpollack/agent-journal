@@ -1,0 +1,1410 @@
+{
+  "kind": "agent-journal/field-dispositions",
+  "version": "0.1",
+  "reviewed": "2026-10-21 (ACCEPT-1)",
+  "profile": "claude_stream",
+  "compatibility_entry": "claude-code/stream-json/2.1.299",
+  "specification": "schema/vendor/claude-code/stream-json/2.1.303.json",
+  "contract": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+  "contract_file": "claude-code-2.1.303-stream",
+  "evidence_fixtures": [
+    "claude-child-2.1.299"
+  ],
+  "rule_of_coverage": "every path the accepted specification or a committed fixture of this profile observes (vendor envelope; tool and user data subtrees are dispositioned as whole payloads) has exactly one disposition: normalized (a portable destination, the contract rule, and an oracle property that was VERIFIED with an occurrence on an evidence fixture in the same test run), retained (whole-record retention VERIFIED on the evidence fixture), omitted (a reviewed tested rule; none exists), or unresolved (retained, with the open question stated). FieldDispositionTest fails on a missing or duplicate disposition, a stale entry, an unresolvable destination, an undeclared rule, an unexercised normalized claim or a test reference that does not exist.",
+  "entries": [
+    {
+      "variant": "*",
+      "path": "type",
+      "disposition": "normalized",
+      "destination": [
+        "*.class_uid",
+        "*.unmapped",
+        "source_record.record_type"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "whole_record.class"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#normalizedRecordRetainedOnlyAsFallbackIsAMissingNormalization",
+        "OcsfOracleValueCheckTest#excludedRecordRetainedAnywayIsADefect"
+      ],
+      "note": "the record discriminator selects the mapping rule and class; the oracle checks every record landed in the class its family prescribes"
+    },
+    {
+      "variant": "*",
+      "path": "subtype",
+      "disposition": "normalized",
+      "destination": [
+        "*.class_uid",
+        "source_record.record_type",
+        "session_context.context_kind"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "whole_record.class"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#normalizedRecordRetainedOnlyAsFallbackIsAMissingNormalization"
+      ],
+      "note": "second-level discriminator (system/init, system/thinking_tokens, result/success)"
+    },
+    {
+      "variant": "*",
+      "path": "uuid",
+      "disposition": "normalized",
+      "destination": [
+        "*.metadata.original_event_uid",
+        "*.source_ref.native_uid"
+      ],
+      "rule": "claude.stream.assistant->model_response",
+      "evidence": {
+        "property": "identity.values"
+      },
+      "tests": [
+        "OcsfOracleValueCheckTest#sessionOrNativeIdentityCopiedWronglyIsADefect"
+      ],
+      "note": "the native record identifier, kept apart from Journal's own event sequence"
+    },
+    {
+      "variant": "*",
+      "path": "session_id",
+      "disposition": "normalized",
+      "destination": [
+        "*.session_uid",
+        "declaration:session.session_uid"
+      ],
+      "rule": "claude.stream.assistant->model_response",
+      "evidence": {
+        "property": "identity.values"
+      },
+      "tests": [
+        "OcsfOracleValueCheckTest#sessionOrNativeIdentityCopiedWronglyIsADefect"
+      ],
+      "note": "native conversation identity on every event and declared once per file"
+    },
+    {
+      "variant": "*",
+      "path": "timestamp",
+      "disposition": "normalized",
+      "destination": [
+        "*.time",
+        "*.metadata.original_time",
+        "*.journal.time_basis_id"
+      ],
+      "rule": "claude.stream.assistant->model_response",
+      "evidence": {
+        "property": "time.basis"
+      },
+      "tests": [
+        "OcsfOracleValueCheckTest#fallbackTimeBasisClaimedAsSourceTimeIsADefect",
+        "OcsfOracleMutationTest#changedOriginalTimeOrFramingIsADefect"
+      ],
+      "note": "source time verbatim in original_time with basis 1; records without one carry the fallback basis 2"
+    },
+    {
+      "variant": "*",
+      "path": "parent_tool_use_id",
+      "disposition": "normalized",
+      "destination": [
+        "declaration:child.spawn_tool_call_uid",
+        "declaration:run.source_scope"
+      ],
+      "rule": "owner_routing",
+      "evidence": {
+        "property": "package.children"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#aChildLinkedToTheWrongSpawnOrDroppedIsADefect",
+        "PackageReaderTest#childCoresAreLinkedAndJudgedSeparately"
+      ],
+      "note": "owner routing: a non-null value sends the record's events to the child file of that spawning tool call; the child declares its owner scope"
+    },
+    {
+      "variant": "*",
+      "path": "agent_id",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "sub-agent instance identity on records of a child scope (2.1.299 fixture); the child file's run identity is the spawning tool call, this id stays in data"
+    },
+    {
+      "variant": "*",
+      "path": "subagent_type",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "sub-agent kind label on child-scope records"
+    },
+    {
+      "variant": "*",
+      "path": "task_description",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "the Task tool's description repeated on child-scope records"
+    },
+    {
+      "variant": "assistant",
+      "path": "request_id",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "vendor API request id; not a common concept"
+    },
+    {
+      "variant": "assistant",
+      "path": "thinking_display",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "vendor display hint for reasoning"
+    },
+    {
+      "variant": "assistant",
+      "path": "thinking_duration_ms",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "vendor-reported reasoning duration; a reported duration, not normalized (crosswalk reported-durations)"
+    },
+    {
+      "variant": "assistant",
+      "path": "message",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "subtree default: members of the message not named below (role, type, container, context_management, diagnostics, input_transformations, stop_details, stop_sequence) stay in the whole record"
+    },
+    {
+      "variant": "assistant",
+      "path": "message.id",
+      "disposition": "normalized",
+      "destination": [
+        "model_response.response_uid",
+        "tool_call.response_uid"
+      ],
+      "rule": "claude.stream.assistant->model_response",
+      "evidence": {
+        "property": "response.values"
+      },
+      "tests": [
+        "OcsfOracleValueCheckTest#responseActivityStopReasonModelAndBlocksAreEachChecked",
+        "OcsfOracleValueCheckTest#requestNameResponseLinkAndReportedStateAreEachChecked"
+      ]
+    },
+    {
+      "variant": "assistant",
+      "path": "message.model",
+      "disposition": "normalized",
+      "destination": [
+        "model_response.model_ref.name",
+        "usage_observation.model_ref.name"
+      ],
+      "rule": "claude.stream.assistant->model_response",
+      "evidence": {
+        "property": "response.values"
+      },
+      "tests": [
+        "OcsfOracleValueCheckTest#responseActivityStopReasonModelAndBlocksAreEachChecked"
+      ]
+    },
+    {
+      "variant": "assistant",
+      "path": "message.stop_reason",
+      "disposition": "normalized",
+      "destination": [
+        "model_response.stop_reason",
+        "model_response.activity_id",
+        "usage_observation.usage_status_id"
+      ],
+      "rule": "claude.stream.assistant->model_response",
+      "evidence": {
+        "property": "response.values"
+      },
+      "tests": [
+        "OcsfOracleValueCheckTest#responseActivityStopReasonModelAndBlocksAreEachChecked",
+        "OcsfOracleMutationTest#provisionalUsageMarkedFinalIsADefect"
+      ],
+      "note": "null while the response is open: activity Partial and provisional usage; a non-null stop reason completes it"
+    },
+    {
+      "variant": "assistant",
+      "path": "message.content",
+      "subtree": true,
+      "disposition": "normalized",
+      "destination": [
+        "model_response.content_blocks[].block_index",
+        "model_response.content_blocks[].block_type",
+        "model_response.content_blocks[].text",
+        "model_response.content_blocks[].data"
+      ],
+      "rule": "claude.stream.assistant->model_response",
+      "evidence": {
+        "property": "response.values"
+      },
+      "tests": [
+        "OcsfOracleValueCheckTest#responseActivityStopReasonModelAndBlocksAreEachChecked",
+        "UnexercisedBlockKindsTest#labelledSyntheticUnknownBlockTypeIsKindOtherWithExactData"
+      ],
+      "note": "subtree default for content blocks: order, type, text/thinking text and the whole block; signature and caller stay inside the block's data"
+    },
+    {
+      "variant": "assistant",
+      "path": "message.content[].id",
+      "disposition": "normalized",
+      "destination": [
+        "tool_call.tool_call_uid",
+        "content_block.tool_call_uid"
+      ],
+      "rule": "claude.stream.assistant.tool_use->tool_call.requested",
+      "evidence": {
+        "property": "request.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#requestArgumentsAndToolKindAreExact",
+        "OcsfOracleMutationTest#missingDuplicatedAndReorderedRowsAreDefects"
+      ]
+    },
+    {
+      "variant": "assistant",
+      "path": "message.content[].name",
+      "disposition": "normalized",
+      "destination": [
+        "tool_call.tool_name",
+        "tool_call.tool_kind_id"
+      ],
+      "rule": "claude.stream.assistant.tool_use->tool_call.requested",
+      "evidence": {
+        "property": "request.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#requestArgumentsAndToolKindAreExact"
+      ],
+      "note": "the exact vendor tool name; the kind is a name-table classification with its basis"
+    },
+    {
+      "variant": "assistant",
+      "path": "message.content[].input",
+      "subtree": true,
+      "disposition": "normalized",
+      "destination": [
+        "tool_call.arguments"
+      ],
+      "rule": "claude.stream.assistant.tool_use->tool_call.requested",
+      "evidence": {
+        "property": "request.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#requestArgumentsAndToolKindAreExact"
+      ],
+      "note": "data-keyed: the whole structured argument object is preserved and compared as a value; its keys are tool data and need no per-key entry"
+    },
+    {
+      "variant": "assistant",
+      "path": "message.usage",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "subtree default for usage members that are not reported token components (cache_creation ephemeral buckets, service_tier, speed, inference_geo): kept whole in the record and in usage_observation.data"
+    },
+    {
+      "variant": "assistant",
+      "path": "message.usage.input_tokens",
+      "disposition": "normalized",
+      "destination": [
+        "model_response.usage_observations[].input_tokens"
+      ],
+      "rule": "claude.stream.assistant->model_response",
+      "evidence": {
+        "property": "usage.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero",
+        "AnalysisViewsTest#usageSelectsOneApplicableFinalPerGroupAndNeverSums"
+      ]
+    },
+    {
+      "variant": "assistant",
+      "path": "message.usage.output_tokens",
+      "disposition": "normalized",
+      "destination": [
+        "model_response.usage_observations[].output_tokens"
+      ],
+      "rule": "claude.stream.assistant->model_response",
+      "evidence": {
+        "property": "usage.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero"
+      ]
+    },
+    {
+      "variant": "assistant",
+      "path": "message.usage.cache_read_input_tokens",
+      "disposition": "normalized",
+      "destination": [
+        "model_response.usage_observations[].cache_read_tokens"
+      ],
+      "rule": "claude.stream.assistant->model_response",
+      "evidence": {
+        "property": "usage.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero"
+      ]
+    },
+    {
+      "variant": "assistant",
+      "path": "message.usage.cache_creation_input_tokens",
+      "disposition": "normalized",
+      "destination": [
+        "model_response.usage_observations[].cache_write_tokens"
+      ],
+      "rule": "claude.stream.assistant->model_response",
+      "evidence": {
+        "property": "usage.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero"
+      ]
+    },
+    {
+      "variant": "assistant",
+      "path": "wire_tool_inputs",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "data-keyed: the wire form of tool inputs; a repeat representation of content[].input kept whole, never used as the argument value"
+    },
+    {
+      "variant": "user",
+      "path": "message",
+      "subtree": true,
+      "disposition": "unresolved",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "a user record whose content carries text and no tool_result (observed once, in a child scope: the sub-agent's prompt as delivered). Retained whole as source_record. Open question: whether such a record is a caller-supplied prompt echo (prompt family, UC3-AC13) or vendor context; its provenance and finality are not stated by the source, so it is not normalized as a prompt. The main thread's own prompt is not echoed on the tested routes"
+    },
+    {
+      "variant": "user/tool_result",
+      "path": "message",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "subtree default (message.role, block type) kept in the whole record of the first result event"
+    },
+    {
+      "variant": "user/tool_result",
+      "path": "message.content[].tool_use_id",
+      "disposition": "normalized",
+      "destination": [
+        "tool_call.tool_call_uid"
+      ],
+      "rule": "claude.stream.user.tool_result->tool_call.result",
+      "evidence": {
+        "property": "result.owner"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#identicalResultsSwappedBetweenOwnersAreADefect",
+        "OcsfOracleMutationTest#resultOwnedByAnIdQuotedInsideItsOwnTextIsADefect"
+      ],
+      "note": "the result's owner is the id its own block names, never a value match"
+    },
+    {
+      "variant": "user/tool_result",
+      "path": "message.content[].content",
+      "subtree": true,
+      "disposition": "normalized",
+      "destination": [
+        "tool_call.tool_result.data"
+      ],
+      "rule": "claude.stream.user.tool_result->tool_call.result",
+      "evidence": {
+        "property": "result.values"
+      },
+      "tests": [
+        "OcsfOracleValueCheckTest#resultStructuredDetailAndMissingResultAreEachChecked",
+        "OcsfOracleMutationTest#identicalResultsSwappedBetweenOwnersAreADefect"
+      ],
+      "note": "the result content as a whole value (a string, or an array of typed blocks with text/tool_name): structure and value compared"
+    },
+    {
+      "variant": "user/tool_result",
+      "path": "message.content[].is_error",
+      "disposition": "normalized",
+      "destination": [
+        "tool_call.tool_result.error_reported",
+        "tool_call.status_id",
+        "tool_call.status_basis_id"
+      ],
+      "rule": "claude.stream.user.tool_result->tool_call.result",
+      "evidence": {
+        "property": "result.values"
+      },
+      "tests": [
+        "OcsfOracleValueCheckTest#resultStructuredDetailAndMissingResultAreEachChecked"
+      ],
+      "note": "absent is_error leaves status Unknown with its basis; it is never read as success"
+    },
+    {
+      "variant": "user/tool_result",
+      "path": "tool_use_result",
+      "subtree": true,
+      "disposition": "normalized",
+      "destination": [
+        "tool_call.tool_result.structured_result"
+      ],
+      "rule": "claude.stream.user.tool_result->tool_call.result",
+      "evidence": {
+        "property": "result.values"
+      },
+      "tests": [
+        "OcsfOracleValueCheckTest#resultStructuredDetailAndMissingResultAreEachChecked"
+      ],
+      "note": "data-keyed: the tool-defined structured result preserved whole as a value"
+    },
+    {
+      "variant": "user/tool_result",
+      "path": "tool_result_meta",
+      "subtree": true,
+      "disposition": "normalized",
+      "destination": [
+        "tool_call.permission_decision.decision_id",
+        "tool_call.permission_decision.reported_decision",
+        "tool_call.permission_decision.decision_source",
+        "tool_call.permission_decision.reason_type",
+        "tool_call.permission_decision.scope_id",
+        "tool_call.permission_decision.data"
+      ],
+      "rule": "claude.stream.user.tool_result->tool_call.result",
+      "evidence": {
+        "property": "decision.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#permissionDecisionValuesAndScopeAreExact",
+        "OcsfOracleValueCheckTest#decisionSourceReasonCandidatesAndMethodAreEachChecked"
+      ],
+      "note": "the entry whose id equals the result's tool_use_id supplies the tool-call-scope permission decision; the whole entry is kept in data"
+    },
+    {
+      "variant": "result",
+      "path": "stop_reason",
+      "disposition": "normalized",
+      "destination": [
+        "prompt_turn.stop_reason"
+      ],
+      "rule": "claude.stream.result->prompt_turn.completed",
+      "evidence": {
+        "property": "turn.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#turnStatusAndStopReasonAreExact"
+      ]
+    },
+    {
+      "variant": "result",
+      "path": "is_error",
+      "disposition": "normalized",
+      "destination": [
+        "prompt_turn.status_id",
+        "prompt_turn.status_basis_id"
+      ],
+      "rule": "claude.stream.result->prompt_turn.completed",
+      "evidence": {
+        "property": "turn.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#turnStatusAndStopReasonAreExact"
+      ],
+      "note": "with subtype: success and is_error false -> status Success, else Failure (reported basis)"
+    },
+    {
+      "variant": "result",
+      "path": "total_cost_usd",
+      "disposition": "normalized",
+      "destination": [
+        "prompt_turn.cost_observation.total_cost",
+        "cost_observation.currency",
+        "cost_observation.scope_id"
+      ],
+      "rule": "claude.stream.result->prompt_turn.completed",
+      "evidence": {
+        "property": "cost.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#jo02WrongNormalizedCostAmountWithUnchangedRetainedSourceIsDefective",
+        "OcsfOracleValueCheckTest#costScopeIsChecked"
+      ],
+      "note": "a total as a total, scope Run, currency USD; components only when reported as components (none are)"
+    },
+    {
+      "variant": "result",
+      "path": "usage",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "subtree default for run-usage members that are not reported components (iterations[], server_tool_use, cache_creation buckets, fallback_credit, service_tier, speed, inference_geo): whole record and usage_observation.data"
+    },
+    {
+      "variant": "result",
+      "path": "usage.input_tokens",
+      "disposition": "normalized",
+      "destination": [
+        "prompt_turn.usage_observations[].input_tokens"
+      ],
+      "rule": "claude.stream.result->prompt_turn.completed",
+      "evidence": {
+        "property": "usage.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero"
+      ]
+    },
+    {
+      "variant": "result",
+      "path": "usage.output_tokens",
+      "disposition": "normalized",
+      "destination": [
+        "prompt_turn.usage_observations[].output_tokens"
+      ],
+      "rule": "claude.stream.result->prompt_turn.completed",
+      "evidence": {
+        "property": "usage.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero"
+      ]
+    },
+    {
+      "variant": "result",
+      "path": "usage.cache_read_input_tokens",
+      "disposition": "normalized",
+      "destination": [
+        "prompt_turn.usage_observations[].cache_read_tokens"
+      ],
+      "rule": "claude.stream.result->prompt_turn.completed",
+      "evidence": {
+        "property": "usage.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero"
+      ]
+    },
+    {
+      "variant": "result",
+      "path": "usage.cache_creation_input_tokens",
+      "disposition": "normalized",
+      "destination": [
+        "prompt_turn.usage_observations[].cache_write_tokens"
+      ],
+      "rule": "claude.stream.result->prompt_turn.completed",
+      "evidence": {
+        "property": "usage.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero"
+      ]
+    },
+    {
+      "variant": "result",
+      "path": "usage.output_tokens_details.thinking_tokens",
+      "disposition": "normalized",
+      "destination": [
+        "prompt_turn.usage_observations[].reasoning_tokens"
+      ],
+      "rule": "claude.stream.result->prompt_turn.completed",
+      "evidence": {
+        "property": "usage.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero"
+      ],
+      "note": "the reported final thinking count; the running system/thinking_tokens estimates are retained-only"
+    },
+    {
+      "variant": "result",
+      "path": "modelUsage",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "map-keyed by model name; subtree default for per-model members that are not reported components (costUSD per model, contextWindow, maxOutputTokens, webSearchRequests, canonicalModel): whole record and usage_observation.data"
+    },
+    {
+      "variant": "result",
+      "path": "modelUsage.{*}.inputTokens",
+      "disposition": "normalized",
+      "destination": [
+        "prompt_turn.usage_observations[].input_tokens",
+        "usage_observation.model_ref.name"
+      ],
+      "rule": "claude.stream.result->prompt_turn.completed",
+      "evidence": {
+        "property": "usage.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero"
+      ],
+      "note": "model-scope final usage per model name"
+    },
+    {
+      "variant": "result",
+      "path": "modelUsage.{*}.outputTokens",
+      "disposition": "normalized",
+      "destination": [
+        "prompt_turn.usage_observations[].output_tokens"
+      ],
+      "rule": "claude.stream.result->prompt_turn.completed",
+      "evidence": {
+        "property": "usage.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero"
+      ]
+    },
+    {
+      "variant": "result",
+      "path": "modelUsage.{*}.cacheReadInputTokens",
+      "disposition": "normalized",
+      "destination": [
+        "prompt_turn.usage_observations[].cache_read_tokens"
+      ],
+      "rule": "claude.stream.result->prompt_turn.completed",
+      "evidence": {
+        "property": "usage.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero"
+      ]
+    },
+    {
+      "variant": "result",
+      "path": "modelUsage.{*}.cacheCreationInputTokens",
+      "disposition": "normalized",
+      "destination": [
+        "prompt_turn.usage_observations[].cache_write_tokens"
+      ],
+      "rule": "claude.stream.result->prompt_turn.completed",
+      "evidence": {
+        "property": "usage.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero"
+      ]
+    },
+    {
+      "variant": "result",
+      "path": "modelUsage.{*}.thinkingTokens",
+      "disposition": "normalized",
+      "destination": [
+        "prompt_turn.usage_observations[].reasoning_tokens"
+      ],
+      "rule": "claude.stream.result->prompt_turn.completed",
+      "evidence": {
+        "property": "usage.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero"
+      ]
+    },
+    {
+      "variant": "result",
+      "path": "modelUsage.{*}.provider",
+      "disposition": "normalized",
+      "destination": [
+        "usage_observation.model_ref.provider_kind",
+        "model_ref.provider_basis_id"
+      ],
+      "rule": "claude.stream.result->prompt_turn.completed",
+      "evidence": {
+        "property": "usage.values"
+      },
+      "tests": [
+        "OcsfOracleValueCheckTest#modelProviderIsReportedNotInferred"
+      ],
+      "note": "the only reported provider; never inferred from a model name elsewhere"
+    },
+    {
+      "variant": "result",
+      "path": "modelUsage.{*}.costBasis",
+      "disposition": "normalized",
+      "destination": [
+        "prompt_turn.cost_observation.cost_basis"
+      ],
+      "rule": "claude.stream.result->prompt_turn.completed",
+      "evidence": {
+        "property": "cost.values"
+      },
+      "tests": [
+        "OcsfOracleValueCheckTest#costScopeIsChecked"
+      ],
+      "note": "copied onto the run-scope cost only when exactly one model reported usage (otherwise the per-model basis stays in the record)"
+    },
+    {
+      "variant": "result",
+      "path": "permission_denials",
+      "subtree": true,
+      "disposition": "normalized",
+      "destination": [
+        "prompt_turn.permission_decisions[].scope_id",
+        "prompt_turn.permission_decisions[].attribution.candidates"
+      ],
+      "rule": "claude.stream.result->prompt_turn.completed",
+      "evidence": {
+        "property": "decision.values"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#permissionDecisionValuesAndScopeAreExact"
+      ],
+      "note": "run-scope denials, unattributed unless the entry names a tool call; an empty array yields none (an empty population is not a pass: the 2.1.299 fixture reports none and the live features fixture reports one)"
+    },
+    {
+      "variant": "result",
+      "path": "result",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "the final assistant text repeated on the result line; a repeat representation of the last response's text block, kept whole, not a second response"
+    },
+    {
+      "variant": "result",
+      "path": "subagent_stats",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "vendor sub-agent counters (requested, spawned, completed, refused, killed, max_depth); known meaning, not a per-child fact"
+    },
+    {
+      "variant": "result",
+      "path": "duration_ms",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "reported duration (crosswalk reported-durations: retained-only, known meaning)"
+    },
+    {
+      "variant": "result",
+      "path": "duration_api_ms",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "reported duration"
+    },
+    {
+      "variant": "result",
+      "path": "num_turns",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "vendor turn counter; Journal does not compute or copy counts"
+    },
+    {
+      "variant": "result",
+      "path": "api_error_status",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "null on every observed record; its non-null meaning is unobserved"
+    },
+    {
+      "variant": "result",
+      "path": "first_content_frame_ms",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "reported latency"
+    },
+    {
+      "variant": "result",
+      "path": "ttft_ms",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "reported latency"
+    },
+    {
+      "variant": "result",
+      "path": "ttft_stream_ms",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "reported latency"
+    },
+    {
+      "variant": "result",
+      "path": "time_to_request_ms",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "reported latency"
+    },
+    {
+      "variant": "result",
+      "path": "queued_turn_count",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "vendor queue counter"
+    },
+    {
+      "variant": "result",
+      "path": "result_index",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "vendor result ordinal"
+    },
+    {
+      "variant": "result",
+      "path": "safety_stops",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "vendor counter"
+    },
+    {
+      "variant": "result",
+      "path": "terminal_reason",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "vendor termination label beside stop_reason; kept whole, not a second stop reason"
+    },
+    {
+      "variant": "result",
+      "path": "fast_mode_state",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "vendor mode flag"
+    },
+    {
+      "variant": "result",
+      "path": "fast_mode_disabled_reason",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "vendor mode flag"
+    },
+    {
+      "variant": "system/init",
+      "path": "cwd",
+      "disposition": "normalized",
+      "destination": [
+        "session_context.settings.working_directory"
+      ],
+      "rule": "claude.stream.system.init->session_context.settings",
+      "evidence": {
+        "property": "context.values"
+      },
+      "tests": [
+        "OracleFullSourceTest#alteringAReportedSettingOrAddingAnUnreportedOneIsAContextValueDefect"
+      ]
+    },
+    {
+      "variant": "system/init",
+      "path": "model",
+      "disposition": "normalized",
+      "destination": [
+        "session_context.settings.model"
+      ],
+      "rule": "claude.stream.system.init->session_context.settings",
+      "evidence": {
+        "property": "context.values"
+      },
+      "tests": [
+        "OracleFullSourceTest#alteringAReportedSettingOrAddingAnUnreportedOneIsAContextValueDefect"
+      ]
+    },
+    {
+      "variant": "system/init",
+      "path": "permissionMode",
+      "disposition": "normalized",
+      "destination": [
+        "session_context.settings.permission_mode"
+      ],
+      "rule": "claude.stream.system.init->session_context.settings",
+      "evidence": {
+        "property": "context.values"
+      },
+      "tests": [
+        "OracleFullSourceTest#alteringAReportedSettingOrAddingAnUnreportedOneIsAContextValueDefect"
+      ]
+    },
+    {
+      "variant": "system/init",
+      "path": "claude_code_version",
+      "disposition": "normalized",
+      "destination": [
+        "session_context.settings.version",
+        "declaration:cli_version.version",
+        "declaration:compatibility.version"
+      ],
+      "rule": "claude.stream.system.init->session_context.settings",
+      "evidence": {
+        "property": "context.values"
+      },
+      "tests": [
+        "LiveCaptureSeamTest#aStreamPipedToTheCaptureSeamIsRecordedWithItsReportedVersionAndJudgedAgainstTheBytes",
+        "UntestedCompatibilityTest#aVersionNoEntryCoversIsRetainedFlaggedAndNotNormalized"
+      ],
+      "note": "the stream-reported CLI version: declared, and the input to the compatibility selection; no version command is run"
+    },
+    {
+      "variant": "system/init",
+      "path": "tools",
+      "subtree": true,
+      "disposition": "normalized",
+      "destination": [
+        "session_context.settings.tool_names"
+      ],
+      "rule": "claude.stream.system.init->session_context.settings",
+      "evidence": {
+        "property": "context.values"
+      },
+      "tests": [
+        "OracleFullSourceTest#alteringAReportedSettingOrAddingAnUnreportedOneIsAContextValueDefect"
+      ]
+    },
+    {
+      "variant": "system/init",
+      "path": "mcp_servers",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "configured connections (name, source, status); ACP session settings concept, retained whole pending a reviewed settings object"
+    },
+    {
+      "variant": "system/init",
+      "path": "agents",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "configured agent names (user environment detail)"
+    },
+    {
+      "variant": "system/init",
+      "path": "skills",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "configured skill names (user environment detail)"
+    },
+    {
+      "variant": "system/init",
+      "path": "plugins",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "configured plugins (name, path, source)"
+    },
+    {
+      "variant": "system/init",
+      "path": "slash_commands",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "available commands"
+    },
+    {
+      "variant": "system/init",
+      "path": "terminal_slash_commands",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ]
+    },
+    {
+      "variant": "system/init",
+      "path": "capabilities",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "protocol capability flags"
+    },
+    {
+      "variant": "system/init",
+      "path": "apiKeySource",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "authentication source label; no credential"
+    },
+    {
+      "variant": "system/init",
+      "path": "output_style",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ]
+    },
+    {
+      "variant": "system/init",
+      "path": "memory_paths",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "local paths of memory files (sanitized in public fixtures)"
+    },
+    {
+      "variant": "system/init",
+      "path": "messaging_socket_path",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "local socket path (sanitized in public fixtures)"
+    },
+    {
+      "variant": "system/init",
+      "path": "original_cwd",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "2.1.303+ : the launch directory before any -C; cwd is the normalized working directory"
+    },
+    {
+      "variant": "system/init",
+      "path": "additional_directories",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ]
+    },
+    {
+      "variant": "system/init",
+      "path": "fast_mode_state",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ]
+    },
+    {
+      "variant": "system/init",
+      "path": "fast_mode_disabled_reason",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ]
+    },
+    {
+      "variant": "system/init",
+      "path": "per_turn_effort_active",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ]
+    },
+    {
+      "variant": "system/init",
+      "path": "view_mode",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ]
+    },
+    {
+      "variant": "system/init",
+      "path": "analytics_disabled",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ]
+    },
+    {
+      "variant": "system/init",
+      "path": "product_feedback_disabled",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ]
+    },
+    {
+      "variant": "system/thinking_tokens",
+      "path": "estimated_tokens",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "running vendor estimate of thinking tokens; not a reported usage component (the final reported count is normalized from the result record); retained-only by review"
+    },
+    {
+      "variant": "system/thinking_tokens",
+      "path": "estimated_tokens_delta",
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "increment of the running estimate"
+    },
+    {
+      "variant": "rate_limit_event",
+      "path": "rate_limit_info",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "account rate-limit status snapshot (status, windows, utilization, resets); not an execution fact, usage or cost of the run; retained-only by review"
+    },
+    {
+      "variant": "system/task_started",
+      "path": "*",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "sub-agent task lifecycle notification (task_id, tool_use_id of the spawning call, subagent_type, description, prompt, spawn_depth, is_backgrounded, task_type): known meaning; the child run itself is represented by owner routing of the child's records, these notifications stay whole in the parent"
+    },
+    {
+      "variant": "system/task_progress",
+      "path": "*",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "sub-agent progress notification with vendor usage counters (duration_ms, tool_uses, total_tokens): vendor-computed totals are never copied into a usage observation"
+    },
+    {
+      "variant": "system/task_notification",
+      "path": "*",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "sub-agent completion notification (status, summary, output_file, vendor counters)"
+    },
+    {
+      "variant": "system/task_updated",
+      "path": "*",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "sub-agent task patch (status, end_time)"
+    }
+  ]
+}

@@ -18,6 +18,7 @@ import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.all;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.at;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.child;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.copy;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.editDeclarations;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.editEvents;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.editManifest;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.first;
@@ -429,6 +430,53 @@ class OcsfOracleMutationTest {
             editManifest(pkg(fixture), run -> obj(run.member("sources").elements().get(0)).members().put("sha256", str("00")));
             assertThat(verify(fixture).check("source.inventory", ROLLOUT).detail()).contains("sha256 00 declared");
             assertThat(all(OcsfFixtures.eventLines(pkg(fixture).resolve("events.jsonl")), e -> true)).hasSize(39);
+        }
+    }
+
+    /** Dropped child and wrong spawn link: both are package.children defects on the root; the control is VERIFIED. */
+    @Nested
+    class ChildrenControls {
+
+        @Test
+        void aChildLinkedToTheWrongSpawnOrDroppedIsADefect(@TempDir Path work) throws Exception {
+            Path control = copy(CHILD, work.resolve("control"));
+            assertThat(verify(control).outcome("package.children", "main")).isEqualTo(Outcome.VERIFIED);
+
+            // dropped: the child directory is removed and the parent's link with it (the candidate claims no child); the frozen manifest expects one
+            Path dropped = copy(CHILD, work.resolve("dropped"));
+            editDeclarations(pkg(dropped), decls -> decls.removeIf(d -> "child".equals(d.member("declaration").member("kind").text())));
+            editManifest(pkg(dropped), m -> obj(m.get("run")).members().put("children", new Json.JArray(List.of())));
+            try (var s = java.nio.file.Files.walk(child(dropped))) {
+                for (Path p : s.sorted(java.util.Comparator.reverseOrder()).toList()) {
+                    java.nio.file.Files.delete(p);
+                }
+            }
+            OracleReport gone = verify(dropped);
+            assertThat(gone.outcome("package.children", "main")).isEqualTo(Outcome.DEFECTIVE);
+            assertThat(gone.check("package.children", "main").detail()).contains("expected child " + SPAWN).contains("is not linked by the candidate");
+
+            // wrong spawn: the child's parent link and the parent's child link both name another tool call
+            Path wrong = copy(CHILD, work.resolve("wrong"));
+            String other = "toolu_0183ddwvMmvPzqAU5Jeu5hwZ";
+            editDeclarations(pkg(wrong), decls -> decls.forEach(d -> {
+                if ("child".equals(d.member("declaration").member("kind").text())) {
+                    obj(d.member("child")).members().put("spawn_tool_call_uid", str(other));
+                }
+            }));
+            editManifest(pkg(wrong), m -> obj(m.get("run").member("children").elements().get(0)).members().put("spawn_tool_call_uid", str(other)));
+            editDeclarations(child(wrong), decls -> decls.forEach(d -> {
+                if ("run".equals(d.member("declaration").member("kind").text())) {
+                    obj(d.member("run").member("parent")).members().put("spawn_tool_call_uid", str(other));
+                    obj(d.member("run").member("source_scope")).members().put("owner_value", str(other));
+                }
+            }));
+            editManifest(child(wrong), m -> {
+                obj(m.get("run").member("parent")).members().put("spawn_tool_call_uid", str(other));
+                obj(m.get("run").member("source_scope")).members().put("owner_value", str(other));
+            });
+            OracleReport mislinked = verify(wrong);
+            assertThat(mislinked.outcome("package.children", "main")).isEqualTo(Outcome.DEFECTIVE);
+            assertThat(mislinked.check("package.children", "main").detail()).contains("child " + other + " is not an expected split core").contains("expected child " + SPAWN);
         }
     }
 }

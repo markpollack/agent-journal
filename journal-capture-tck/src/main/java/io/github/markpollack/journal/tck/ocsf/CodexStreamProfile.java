@@ -14,6 +14,7 @@ final class CodexStreamProfile implements SourceProfile {
     @Override
     public ExpectedFacts expected(NativeArtifact artifact, Json source, Json scope) {
         ExpectedFacts f = new ExpectedFacts(SourceProfile.text(source, "artifact"));
+        String threadId = null;
         for (NativeArtifact.Record r : artifact.records()) {
             f.owned.add(r.index());
             if (!r.parsed()) {
@@ -21,6 +22,13 @@ final class CodexStreamProfile implements SourceProfile {
             }
             Json o = r.json();
             String type = SourceProfile.text(o, "type");
+            if ("thread.started".equals(type) && SourceProfile.text(o, "thread_id") != null) {
+                threadId = SourceProfile.text(o, "thread_id");
+            }
+            if (threadId != null) {
+                // the stream states its session identity once, in thread.started; every later record belongs to that thread
+                f.sessionOf.put(r.index(), threadId);
+            }
             Json item = o.member("item");
             String itemType = SourceProfile.text(item, "type");
             if ("item.completed".equals(type) && "agent_message".equals(itemType)) {

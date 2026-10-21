@@ -38,10 +38,18 @@ public final class ExpectedFacts {
      * @param recordIndex the record the observation cites
      * @param components normalized component name to exact native number
      */
-    public record Usage(int eventRecordIndex, int recordIndex, int scopeId, int statusId, Map<String, Json> components, String model) {
+    public record Usage(int eventRecordIndex, int recordIndex, int scopeId, int statusId, Map<String, Json> components, String model, String provider) {
+        /** A usage whose record reports no provider (the provider must then be absent on the observation, never inferred). */
+        public Usage(int eventRecordIndex, int recordIndex, int scopeId, int statusId, Map<String, Json> components, String model) {
+            this(eventRecordIndex, recordIndex, scopeId, statusId, components, model, null);
+        }
     }
 
-    public record Cost(int recordIndex, Json amount, String currency, int scopeId) {
+    /** @param basis the vendor's stated cost basis when the record reports one (single-model {@code costBasis}), else {@code null} */
+    public record Cost(int recordIndex, Json amount, String currency, int scopeId, String basis) {
+        public Cost(int recordIndex, Json amount, String currency, int scopeId) {
+            this(recordIndex, amount, currency, scopeId, null);
+        }
     }
 
     /** {@code ownerId} is the tool-call id the record itself names, when the decision is at tool-call scope. */
@@ -89,6 +97,10 @@ public final class ExpectedFacts {
     public final List<Context> contexts = new ArrayList<>();
     /** Records this core owns and must retain (owner-scoped for a split core; admission-scoped for a bounded source). */
     public final Set<Integer> owned = new LinkedHashSet<>();
+    /** The native session id each parsed record reports (or inherits, for a stream that states it once), by record index; empty when the profile cannot read one. */
+    public final Map<Integer, String> sessionOf = new LinkedHashMap<>();
+    /** The native record identifier each parsed record carries, by record index; empty when the source has none. */
+    public final Map<Integer, String> nativeUid = new LinkedHashMap<>();
     /** Owned records that a normalization rule covers; every other owned record is expected as a whole-record fallback. */
     public final Set<Integer> normalized = new LinkedHashSet<>();
     /** Records excluded by a declared admission, by record index, with the declared family name. */

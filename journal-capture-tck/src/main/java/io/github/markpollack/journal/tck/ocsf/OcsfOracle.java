@@ -41,7 +41,7 @@ public final class OcsfOracle {
             "population.results", "result.owner", "result.values", "population.responses", "response.values", "population.prompts",
             "prompt.values", "population.usage", "usage.values", "population.cost", "cost.values", "population.decisions", "decision.values",
             "population.operations", "operation.values", "population.turn_completed", "turn.values", "population.turn_started",
-            "turn_started.values", "population.contexts", "context.values", "time.basis", "reconstruction.coverage",
+            "turn_started.values", "population.contexts", "context.values", "time.basis", "identity.values", "reconstruction.coverage",
             "reconstruction.structure_value");
 
     private final OracleReport report = new OracleReport();
@@ -242,6 +242,8 @@ public final class OcsfOracle {
                 }
                 report.add(Category.EXPLANATION, "time.basis", owner, Outcome.UNSUPPORTED,
                         "compatibility no_match declared: the source's time fields are a mapping this candidate does not claim; retained records carry the fallback basis");
+                report.add(Category.NORMALIZATION, "identity.values", owner, Outcome.UNSUPPORTED,
+                        "compatibility no_match declared: session and native record identities are a mapping this candidate does not claim");
             }
             else {
                 requests(facts, events, owner, core);
@@ -256,6 +258,7 @@ public final class OcsfOracle {
                 started(facts, events, owner);
                 contexts(facts, events, owner);
                 time(art, facts, events, owner);
+                identity(facts, events, owner);
             }
             reconstruction(art, facts, events, owner);
         }
@@ -1228,6 +1231,13 @@ public final class OcsfOracle {
                 if (data == null) {
                     problems.add(key + " native usage object (data) not retained");
                 }
+                String provider = SchemaCatalog.text(o.member("model_ref"), "provider_kind");
+                if (u.provider() != null && !u.provider().equals(provider)) {
+                    problems.add(key + " model_ref.provider_kind " + provider + " != reported " + u.provider());
+                }
+                else if (u.provider() == null && provider != null) {
+                    problems.add(key + " model_ref.provider_kind " + provider + " present but the record reports no provider; a provider is never inferred from a model name");
+                }
             }
         }
         valueCheck("usage.values", owner, examined, problems, representation);
@@ -1264,8 +1274,43 @@ public final class OcsfOracle {
             if (!Objects.equals(Event.integer(o.member("scope_id")), c.scopeId())) {
                 problems.add("record " + c.recordIndex() + " scope_id " + (o.member("scope_id") == null ? null : o.member("scope_id").scalarText()) + " != " + c.scopeId());
             }
+            if (!Objects.equals(c.basis(), SchemaCatalog.text(o, "cost_basis"))) {
+                problems.add("record " + c.recordIndex() + " cost_basis " + SchemaCatalog.text(o, "cost_basis") + " != reported " + c.basis());
+            }
         }
         valueCheck("cost.values", owner, examined, problems, representation);
+    }
+
+    /**
+     * Session and native record identities on every normalized event: {@code session_uid} equals the session the
+     * record reports (or, for a stream that states it once, inherits), and {@code metadata.original_event_uid} equals
+     * the record's own identifier; a copy that disagrees with its record is a defect, and a session the profile
+     * cannot read leaves the check not applicable rather than passed.
+     */
+    private void identity(ExpectedFacts facts, List<Event> events, String owner) {
+        List<String> problems = new ArrayList<>();
+        int examined = 0;
+        for (Event e : events) {
+            Integer idx = e.recordIndex();
+            if (idx == null || !facts.owned.contains(idx) || "source_record".equals(e.className)) {
+                continue;
+            }
+            String session = facts.sessionOf.get(idx);
+            String uid = facts.nativeUid.get(idx);
+            if (session == null && uid == null) {
+                continue;
+            }
+            examined++;
+            if (session != null && !session.equals(e.text("session_uid"))) {
+                problems.add("record " + idx + " (" + e.className + ") session_uid " + e.text("session_uid") + " != reported " + session);
+            }
+            if (uid != null && !uid.equals(e.text("metadata", "original_event_uid"))) {
+                problems.add("record " + idx + " (" + e.className + ") metadata.original_event_uid " + e.text("metadata", "original_event_uid") + " != record uuid " + uid);
+            }
+        }
+        report.add(Category.NORMALIZATION, "identity.values", owner, examined == 0 ? Outcome.NOT_APPLICABLE : problems.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
+                problems.isEmpty() ? (examined == 0 ? "no normalized event of a record with a readable session or native identifier"
+                        : examined + " normalized event(s): session_uid and metadata.original_event_uid equal the record's own values") : String.join("; ", problems));
     }
 
     private void decisions(ExpectedFacts facts, List<Event> events, String owner) {

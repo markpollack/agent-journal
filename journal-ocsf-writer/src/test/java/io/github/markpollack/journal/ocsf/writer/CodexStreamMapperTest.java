@@ -149,4 +149,28 @@ class CodexStreamMapperTest {
         assertThat(((Jv.Num) source.member("opaque_records")).value().intValue()).isEqualTo(1);
         assertThat(((Jv.Num) source.member("records")).value().intValue()).isEqualTo(3);
     }
+
+    /** The thread id the stream states once in thread.started is the session identity of every later event, and is declared once in the file. */
+    @Test
+    void theThreadIdBecomesTheSessionOfEveryLaterEvent(@TempDir Path work) {
+        Path core = work.resolve("core");
+        RunDescriptor noSession = new RunDescriptor("codex-no-session-at-launch", 0, null, java.time.Instant.parse("2026-10-21T12:00:00Z"),
+                new RunDescriptor.Cli("Codex CLI", "0.160.1", "OpenAI", 1, "Native"), null, new Jv.Obj().put("label", "LABELLED SYNTHETIC: the session is not known at launch"));
+        try (OcsfRunWriter w = OcsfRunWriter.open(core, noSession, SchemaPin.bundled(), options())) {
+            Replay.feedRecords(w.source(codexStream()), nativeOf(CODEX_STREAM, "stream.jsonl"), options().clock());
+            w.complete();
+        }
+        List<Jv> events = new ArrayList<>();
+        for (String line : WriterTestSupport.eventLines(core.resolve("events.jsonl"))) {
+            events.add(Jv.parse(line));
+        }
+        assertThat(events).hasSize(12);
+        for (Jv e : events) {
+            assertThat(e.member("session_uid").text()).as(e.member("record_type") == null ? e.member("class_name").text() : e.member("record_type").text())
+                    .isEqualTo("00000000-0000-4000-8000-0000000c0de5");
+        }
+        io.github.markpollack.journal.tck.ocsf.OcsfPackage p = WriterTestSupport.open(core);
+        assertThat(p.manifest.sessionUid()).isEqualTo("00000000-0000-4000-8000-0000000c0de5");
+        assertThat(p.declarations.lineOf("session:00000000-0000-4000-8000-0000000c0de5")).isNotNull();
+    }
 }

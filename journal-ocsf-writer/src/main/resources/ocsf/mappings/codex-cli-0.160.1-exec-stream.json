@@ -72,7 +72,8 @@
     {
       "id": "codex.stream.fallback->source_record",
       "selector": "thread.started, turn.started, unknown types",
-      "target": "agentic_cli/source_record"
+      "target": "agentic_cli/source_record",
+      "session": "rule codex.stream.thread_started->session: thread.started.thread_id becomes session_uid on every later event of this source (the stream states its session identity once); the record stays retained whole"
     },
     {
       "id": "common.opaque->source_record",
