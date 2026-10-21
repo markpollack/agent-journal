@@ -60,6 +60,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
     private final String extensionSourceSha256;
     private final Jv semanticContract;
     private String sessionUid;
+    private String reportedCliVersion;
 
     private OcsfRunWriter(Path dir, RunDescriptor run, SchemaPin pin, WriterOptions options) throws IOException {
         this.dir = dir;
@@ -119,6 +120,24 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
     }
 
     @Override
+    public void cliVersionReported(String version) {
+        if (reportedCliVersion == null) {
+            reportedCliVersion = version;
+        }
+    }
+
+    /** The CLI version as known: declared at launch, else the first stream-reported one, else {@code null}. */
+    private String cliVersion() {
+        return run.cli().version() != null ? run.cli().version() : reportedCliVersion;
+    }
+
+    private String cliVersionBasis() {
+        return run.cli().version() != null ? "declared by the capture at launch" : reportedCliVersion != null
+                ? "reported by the selected source (cli_version declaration); not known at launch, no version command was run"
+                : "not known at launch and not (yet) reported by the selected stream; no version command was run";
+    }
+
+    @Override
     public Jv.Obj contractDeclaration(String contractUid) {
         return contracts.declaration(contractUid);
     }
@@ -141,7 +160,8 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
     private Jv.Obj runDeclaration(String coreRunUid, Jv parent, Jv sourceScope) {
         Jv.Obj r = new Jv.Obj().put("run_uid", coreRunUid).put("invocation_index", run.invocationIndex()).put("capture_start", run.captureStart().toString());
         r.put("cli", new Jv.Obj().put("name", run.cli().name()).put("version", run.cli().version()).put("vendor_name", run.cli().vendorName())
-                .put("type_id", run.cli().typeId()).put("type", run.cli().type()).put("product", run.cli().product()));
+                .put("type_id", run.cli().typeId()).put("type", run.cli().type()).put("product", run.cli().product())
+                .put("version_basis", run.cli().version() != null ? "declared by the capture at launch" : "not known at launch; a cli_version declaration follows if the selected stream reports it; no version command is run"));
         if (run.launchSettings() != null) {
             r.put("launch_settings", run.launchSettings());
         }
@@ -627,8 +647,8 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         Jv.Obj runObj = new Jv.Obj().put("run_uid", core.runUid).put("invocation_index", run.invocationIndex());
         runObj.put("session_uid", sessionUid == null ? Jv.NULL : new Jv.Str(sessionUid));
         runObj.put("capture_start", run.captureStart().toString());
-        runObj.put("cli", new Jv.Obj().put("name", run.cli().name()).put("version", run.cli().version()).put("vendor_name", run.cli().vendorName())
-                .put("type_id", run.cli().typeId()).put("type", run.cli().type()));
+        runObj.put("cli", new Jv.Obj().put("name", run.cli().name()).put("version", cliVersion()).put("vendor_name", run.cli().vendorName())
+                .put("type_id", run.cli().typeId()).put("type", run.cli().type()).put("version_basis", cliVersionBasis()));
         if (run.launchSettings() != null) {
             runObj.put("launch_settings", run.launchSettings());
         }
@@ -666,7 +686,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
                 .put("extension_source", new Jv.Obj(extensionSource)));
 
         Jv.Obj shared = new Jv.Obj();
-        Jv.Obj agent = new Jv.Obj().put("name", run.cli().name()).put("version", run.cli().version()).put("type_id", run.cli().typeId()).put("type", run.cli().type());
+        Jv.Obj agent = new Jv.Obj().put("name", run.cli().name()).put("version", cliVersion()).put("type_id", run.cli().typeId()).put("type", run.cli().type());
         if (sessionUid != null) {
             agent.put("instance_uid", sessionUid);
         }

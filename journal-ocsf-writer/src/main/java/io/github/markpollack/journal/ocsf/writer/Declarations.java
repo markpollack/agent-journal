@@ -28,6 +28,8 @@ import java.util.Set;
  * <li>{@code definition}: one compiled class, object or scalar-type definition, or an amendment adding attributes to
  * one declared earlier ({@code amends}); written before the first event that uses it.</li>
  * <li>{@code session}: the native session id once the source reports it.</li>
+ * <li>{@code cli_version}: the CLI version once the selected stream reports it (a capture launched without knowing
+ * the version retains the records that arrive before it; no version command is run).</li>
  * <li>{@code child}: a linked child event file (location and spawn identity), never its content.</li>
  * <li>{@code source_end}: how a source ended, with its final extent, hash and family inventory.</li>
  * <li>{@code recording}: the writer's finalization of this file (COMPLETED or INTERRUPTED) with the acquisition
@@ -77,6 +79,9 @@ final class Declarations {
                 .put("sha256", scalar("string_t", "required")).put("body", scalar("json_t", "required")));
         declare(objects, "session", new Jv.Obj()
                 .put("session_uid", scalar("string_t", "required")).put("basis", scalar("string_t", "optional")));
+        declare(objects, "cli_version", new Jv.Obj()
+                .put("version", scalar("string_t", "required")).put("basis", scalar("string_t", "required")).put("record_index", scalar("integer_t", "optional"))
+                .put("artifact", scalar("string_t", "optional")));
         declare(objects, "child", new Jv.Obj()
                 .put("run_uid", scalar("string_t", "required")).put("path", scalar("string_t", "required")).put("spawn_tool_call_uid", scalar("string_t", "required"))
                 .put("basis", scalar("string_t", "optional")).put("parent_scope", scalar("json_t", "optional")));

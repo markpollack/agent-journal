@@ -48,7 +48,7 @@ Tests: `FullOneReviewRegressionTest#omittingAnEntireSourceIsADefectOnEveryObliga
 ### RULE-7
 **MUST** retain the CLI version the stream reports and MUST NOT launch a separate version command when the stream reports one.
 **Reason:** A redundant subprocess costs time, can disagree with the running process, and adds nothing the stream did not already say.
-Tests: the Claude `system/init` record carries the version into session settings (`OracleFullSourceTest#alteringAReportedSettingOrAddingAnUnreportedOneIsAContextValueDefect`); no test yet observes that no version command is spawned.
+Tests: `LiveCaptureSeamTest` (launch without a version; `cli_version` declaration from the stream), `OracleFullSourceTest#alteringAReportedSettingOrAddingAnUnreportedOneIsAContextValueDefect`; the capture seam spawns no process.
 
 ### RULE-8
 **MUST** use one documented, adapter-specific discovery path when the selected source reports no version, without repeated probes.
@@ -57,7 +57,7 @@ Tests: the Claude `system/init` record carries the version into session settings
 ### RULE-9
 **MUST** retain input that arrives before the version is known, without blocking persistence on mapping selection.
 **Reason:** The first records of a stream are evidence; waiting for a version to choose a mapper would lose them or force a buffer the recorder cannot bound.
-Tests: `WriterLifecycleTest#persistedPrefixIsReadableAndQueryableBeforeEof` persists prefixes; no test yet varies when the version becomes known.
+Tests: `LiveCaptureSeamTest` (records before the version is known are persisted; the version is declared when reported), `WriterLifecycleTest#persistedPrefixIsReadableAndQueryableBeforeEof`.
 
 ### RULE-10
 **MUST** select the source description and Java mapper for a source through exactly one explicit compatibility entry naming the CLI, source format or profile, launch route or mode, inclusive minimum and maximum CLI versions, source-description revision, schema, mapper identity and tested evidence, and MUST record that selection with the version and whether the version is within the entry's tested range.

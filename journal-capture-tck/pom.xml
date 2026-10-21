@@ -92,6 +92,7 @@
                             <targetClasses>
                                 <param>io.github.markpollack.journal.tck.ocsf.OcsfOracle</param>
                                 <param>io.github.markpollack.journal.tck.ocsf.PackageReader</param>
+                                <param>io.github.markpollack.journal.tck.ocsf.DeclaredFile</param>
                                 <param>io.github.markpollack.journal.tck.ocsf.AnalysisViews</param>
                                 <param>io.github.markpollack.journal.tck.ocsf.SchemaCatalog</param>
                                 <param>io.github.markpollack.journal.tck.ocsf.NativeArtifact</param>

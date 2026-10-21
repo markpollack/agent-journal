@@ -11,7 +11,7 @@ import java.time.Instant;
  * @param invocationIndex zero-based CLI invocation within the run
  * @param sessionUid the native session id, or {@code null} when not yet known
  * @param captureStart when the capture started (the earliest-available time fallback)
- * @param cli the CLI product: name, version, vendor_name, type_id, type
+ * @param cli the CLI product: name, version ({@code null} when not known at launch: the stream may report it), vendor_name, type_id, type
  * @param launchSettings launch settings as the capture reports them (free JSON object), or {@code null}
  * @param synthetic a label for a synthetic/labelled construction, or {@code null} for a real capture
  */
@@ -30,7 +30,7 @@ public record RunDescriptor(String runUid, int invocationIndex, String sessionUi
                 spec.member("invocation_index") instanceof Jv.Num n ? (int) n.value().longValueExact() : 0,
                 spec.member("session_uid") == null ? null : spec.member("session_uid").text(),
                 Instant.parse(spec.member("capture_start").text()),
-                new Cli(cli.member("name").text(), cli.member("version").text(), cli.member("vendor_name").text(),
+                new Cli(cli.member("name").text(), cli.member("version") == null ? null : cli.member("version").text(), cli.member("vendor_name").text(),
                         cli.member("type_id") instanceof Jv.Num t ? (int) t.value().longValueExact() : 1,
                         cli.member("type") == null ? "Native" : cli.member("type").text()),
                 spec.member("launch_settings"), spec.member("synthetic"));

@@ -149,6 +149,13 @@ public final class PackageReader {
                             + (declared.recording() == null ? " (no recording declaration: an open prefix, or the writer failed)" : " (from the recording declaration)")));
         }
         stateWarnings(manifest.packageState(), diags);
+        Json launchCli = declared.run() == null ? null : declared.run().member("cli");
+        String launchVersion = SchemaCatalog.text(launchCli, "version");
+        String reportedVersion = declared.cliVersion() == null ? null : SchemaCatalog.text(declared.cliVersion(), "version");
+        if (launchVersion != null && reportedVersion != null && !launchVersion.equals(reportedVersion)) {
+            diags.add(new Diagnostic(Diagnostic.Severity.WARNING, "CLI_VERSION_DIFFERS",
+                    "the capture declared CLI version " + launchVersion + " at launch but the selected stream reported " + reportedVersion + "; both are kept, the launch value is the run's"));
+        }
         SchemaCatalog catalog = SchemaCatalog.fromClosure(declared.closure());
         if (eventCount > 0 && catalog.classes().isEmpty()) {
             diags.add(new Diagnostic(Diagnostic.Severity.REFUSED, "MISSING_DEFINITIONS",

@@ -54,6 +54,9 @@ final class CoreWriter {
         /** The source declaration payload for an artifact, or {@code null} when the run never declared it. */
         Jv.Obj sourceDeclaration(String artifact);
 
+        /** The selected stream reported the CLI version (first report wins; later reports are not re-declared). */
+        void cliVersionReported(String version);
+
         String startedText();
     }
 
@@ -200,6 +203,17 @@ final class CoreWriter {
         }
         if (event.get("session_uid") instanceof Jv.Str s) {
             declareSession(s.value());
+        }
+        if (event.path("settings", "version") instanceof Jv.Str v && !declared("cli_version:reported")) {
+            Jv.Obj cv = new Jv.Obj().put("version", v.value()).put("basis", "reported by the selected source in its session settings record; no version command was run");
+            if (sourceRef != null && sourceRef.member("record_index") instanceof Jv.Num n) {
+                cv.put("record_index", n);
+            }
+            if (artifact != null) {
+                cv.put("artifact", artifact);
+            }
+            declare("cli_version", "cli_version:reported", cv);
+            context.cliVersionReported(v.value());
         }
         Integer classUid = event.get("class_uid") instanceof Jv.Num n ? (int) n.value().longValueExact() : null;
         String className = null;

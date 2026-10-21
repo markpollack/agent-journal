@@ -8,7 +8,8 @@ import java.time.Clock;
 import java.util.List;
 
 /**
- * Command-line replay of recorded native artifacts through the incremental writer:
+ * Command-line replay of recorded native artifacts through the incremental writer, and the non-default live capture
+ * entry point ({@link LiveCapture}, {@code capture ...}, the stream on standard input):
  *
  * <pre>
  *   replay &lt;spec.json&gt; &lt;out-dir&gt; [--chunk N] [--flush-every N] [--base DIR] [--stop-after ARTIFACT:RECORDS]
@@ -26,8 +27,12 @@ public final class OcsfWriterTool {
     }
 
     public static void main(String[] args) throws IOException {
+        if (args.length >= 1 && "capture".equals(args[0])) {
+            System.exit(LiveCapture.run(args, System.in, System.out, System.err));
+        }
         if (args.length < 3 || !"replay".equals(args[0])) {
             System.err.println("usage: replay <spec.json> <out-dir> [--chunk N] [--flush-every N] [--base DIR] [--stop-after ARTIFACT:RECORDS]");
+            System.err.println("       capture <spec.json> <out-dir> [--artifact NAME] [--profile PROFILE] [--surface TEXT] [--flush-every N] [--interrupt-flag FILE]  (stdin: the live stream)");
             System.exit(64);
         }
         int chunk = 4096;

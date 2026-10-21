@@ -45,6 +45,7 @@ public final class DeclaredFile {
     private final Map<String, Json> sourceEnds = new LinkedHashMap<>();
     private final Map<String, Json> contracts = new LinkedHashMap<>();
     private final List<String> sessions = new ArrayList<>();
+    private Json cliVersion;
     private final Map<String, Integer> declaredLine = new LinkedHashMap<>();
     private final Map<String, Map<String, Integer>> attributeLine = new LinkedHashMap<>();
     private final Map<String, Json.JObject> classes = new LinkedHashMap<>();
@@ -165,6 +166,11 @@ public final class DeclaredFile {
             case "source_end" -> sourceEnds.put(SchemaCatalog.text(p, "artifact"), p);
             case "definition" -> definition(d);
             case "session" -> sessions.add(SchemaCatalog.text(p, "session_uid"));
+            case "cli_version" -> {
+                if (cliVersion == null) {
+                    cliVersion = p;
+                }
+            }
             case "child" -> children.add(p);
             case "recording" -> recording = p;
             default -> {
@@ -336,7 +342,7 @@ public final class DeclaredFile {
         runObj.put("invocation_index", run.member("invocation_index"));
         runObj.put("session_uid", sessions.isEmpty() ? Json.JNull.INSTANCE : str(sessions.get(0)));
         runObj.put("capture_start", run.member("capture_start"));
-        runObj.put("cli", run.member("cli"));
+        runObj.put("cli", cliWithReportedVersion());
         if (run.member("launch_settings") != null) {
             runObj.put("launch_settings", run.member("launch_settings"));
         }
@@ -416,6 +422,22 @@ public final class DeclaredFile {
         ev.put("declarations", num(declarations.size()));
         m.put("events", new Json.JObject(ev));
         return new Json.JObject(m);
+    }
+
+    /** The run's cli object, with the stream-reported version filled in when the launch did not know it. */
+    private Json cliWithReportedVersion() {
+        Json cli = run.member("cli");
+        if (!(cli instanceof Json.JObject c) || c.get("version") != null || cliVersion == null) {
+            return cli;
+        }
+        Map<String, Json> out = new LinkedHashMap<>(c.members());
+        out.put("version", cliVersion.member("version"));
+        out.put("version_basis", cliVersion.member("basis"));
+        return new Json.JObject(out);
+    }
+
+    public Json cliVersion() {
+        return cliVersion;
     }
 
     private static Json sourceEntry(Json source, Json end) {

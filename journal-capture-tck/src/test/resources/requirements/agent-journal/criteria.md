@@ -54,7 +54,7 @@ Rule: RULE-4. Tests: `OracleFullSourceTest#anOmittedNativeArtifactIsUnresolvedAn
 ### UC2-AC1: Keep the stream-reported version without a version command
 
 When the stream reports the CLI version, the capture shall record that version in the session settings and shall not run a separate version command.
-Rule: RULE-7. Tests: `OracleFullSourceTest#alteringAReportedSettingOrAddingAnUnreportedOneIsAContextValueDefect` (recorded value). Status: no test observes that no version subprocess is launched.
+Rule: RULE-7. Tests: `LiveCaptureSeamTest#aStreamPipedToTheCaptureSeamIsRecordedWithItsReportedVersionAndJudgedAgainstTheBytes` (a launch without a version; the `cli_version` declaration records the stream-reported one), `OracleFullSourceTest#alteringAReportedSettingOrAddingAnUnreportedOneIsAContextValueDefect`. Status: the capture seam launches no subprocess at all (the driver launches the CLI); demonstrated live on 2026-10-21 with Claude Code 2.1.304 (private evidence).
 
 ### UC2-AC2: Discover an unreported version once
 
@@ -64,7 +64,7 @@ Rule: RULE-8. Tests: none yet. Status: not implemented; Codex's exec stream is t
 ### UC2-AC3: Retain records that arrive before the version is known
 
 When records arrive before the CLI version is known, the capture shall retain them whole and in order.
-Rule: RULE-9. Tests: `WriterLifecycleTest#persistedPrefixIsReadableAndQueryableBeforeEof` (prefix retention). Status: version timing is not varied by any test.
+Rule: RULE-9. Tests: `LiveCaptureSeamTest` (the version is declared after the settings record that reports it; the records before it are already persisted), `WriterLifecycleTest#persistedPrefixIsReadableAndQueryableBeforeEof`.
 
 ### UC2-AC4: State the selected compatibility entry and its applicability
 
@@ -198,7 +198,7 @@ Rule: RULE-12. Tests: `OcsfOracleValueCheckTest#resultStructuredDetailAndMissing
 ### UC4-AC8: Record a live process incrementally and check it independently
 
 When a live CLI process is recorded, the persisted package shall be readable before the process exits and the final package shall be checked against an independently acquired copy of the selected stream.
-Rule: RULE-18, RULE-19. Tests: none yet. Status: not implemented; live integration of the existing writer is the next slice.
+Rule: RULE-18, RULE-19. Tests: `LiveCaptureSeamTest` (recorded stream through the `capture` seam: replay evidence about the seam, not live). Status: demonstrated live on 2026-10-21 (Claude Code 2.1.304, normal completion and driver interruption, package read before exit, judged against an independent tee copy; private steward evidence, not a Maven test). The seam is non-default; the production recorder is unchanged.
 
 ## UC5: Portable output and testing
 

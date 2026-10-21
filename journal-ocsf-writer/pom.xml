@@ -119,6 +119,8 @@
                                 <param>io.github.markpollack.journal.ocsf.writer.NativeRecord</param>
                                 <param>io.github.markpollack.journal.ocsf.writer.OcsfRunWriter</param>
                                 <param>io.github.markpollack.journal.ocsf.writer.CoreWriter</param>
+                                <param>io.github.markpollack.journal.ocsf.writer.Declarations</param>
+                                <param>io.github.markpollack.journal.ocsf.writer.LiveCapture</param>
                                 <param>io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper</param>
                                 <param>io.github.markpollack.journal.ocsf.writer.ClaudeTranscriptMapper</param>
                                 <param>io.github.markpollack.journal.ocsf.writer.CodexRolloutMapper</param>
