@@ -233,7 +233,7 @@ class OcsfOracleMutationTest {
             Path fixture = copy(CODEX, work);
             editEvents(pkg(fixture), events -> {
                 Json request = at(events, "tool_call", 1, 22);
-                Json fallback = OcsfFixtures.copy(at(events, "source_record", 1, 1));
+                Json fallback = OcsfFixtures.copy(at(events, "source_record", 1, 13));
                 obj(fallback.member("source_ref")).members().put("record_index", num("22"));
                 obj(fallback).members().put("data", request.member("data"));
                 obj(fallback.member("journal")).members().put("sequence", request.path("journal", "sequence"));

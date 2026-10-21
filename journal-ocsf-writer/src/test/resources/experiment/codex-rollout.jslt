@@ -1,0 +1,71 @@
+// MAP-1 experiment (non-production): JSLT program for the Codex rollout case c.
+// Input:  {"record": <native record>, "env": {"c": {...}, "time": {...}, "record_index", "record_bytes", "line_ending",
+//          "calls": [{"turn", "call_id", "name", "input"}...]}}   <- cross-record state supplied by the Java glue
+// Output: {"family": {...}, "events": [<tool_call Operation observed>]} for event_msg/item_completed/CommandExecution; else null.
+
+def cap(table, id)
+  get-key($table, string($id))
+
+def merge(a, b)
+  {for (array($a) + array($b)) .key : .value}
+
+def source_ref(env, uid, ts, whole)
+  {"source_kind_id": $env.c.source.source_kind_id, "source_kind": $env.c.source.source_kind, "artifact": $env.c.source.artifact,
+   "record_index": $env.record_index, "record_bytes": $env.record_bytes, "line_ending": $env.line_ending, "is_whole_record": $whole,
+   "native_uid": $uid, "native_time": $ts}
+
+def envelope(env, cls, act, uid, ts, whole, status, rule)
+  let c = $env.c
+  let cd = get-key($c.classes, $cls)
+  let an = cap($cd.activities, $act)
+  {"class_uid": $cd.class_uid, "class_name": $cd.caption, "category_uid": $cd.category_uid, "category_name": $cd.category_name,
+   "activity_id": $act, "activity_name": $an, "type_uid": $cd.class_uid * 100 + $act, "type_name": $cd.caption + ": " + $an,
+   "severity_id": 0, "severity": "Unknown", "time": $env.time.ms, "time_dt": $env.time.dt,
+   "metadata": {"version": $c.ocsf.version, "product": $c.run.product,
+                "extensions": [{"name": $c.ocsf.ext_name, "uid": $c.ocsf.ext_uid, "version": $c.ocsf.ext_version}],
+                "profiles": ["datetime"], "original_time": $ts, "original_event_uid": $uid},
+   "journal": {"run_uid": $c.run.run_uid, "invocation_index": $c.run.invocation_index, "sequence": 0, "contract_uid": $c.contract_uid,
+               "time_basis_id": $env.time.basis_id, "time_basis": $env.time.basis, "basis": $env.time.detail},
+   "source_ref": source_ref($env, $uid, $ts, $whole),
+   "status_id": $status.id, "status": if ($status) cap($c.captions.status, $status.id),
+   "status_basis_id": $status.basis_id, "status_basis": if ($status) cap($c.captions.status_basis, $status.basis_id),
+   "derivation": $status.derivation,
+   "unmapped": {"rule_id": $rule}}
+
+def integral(v)
+  if (is-number($v) and round($v) == $v) $v
+
+let o = .record
+let env = .env
+let c = .env.c
+let p = $o.payload
+let it = $p.item
+let turn = $p.turn_id
+let ts = $o.timestamp
+
+if ($o.type == "event_msg" and $p.type == "item_completed" and $it.type == "CommandExecution")
+  let cmd = $it.command
+  let last = if (is-array($cmd)) (if (size($cmd) > 0) (if (is-string($cmd[-1])) $cmd[-1]) else "") else ""
+  let cands = [for (if (is-array($env.calls)) $env.calls else []) .call_id
+               if ($turn != null and .turn == $turn and .name == "exec" and is-string(.input) and is-string($last) and contains($last, .input))]
+  let n = size($cands)
+  let outcome = if ($n == 1) 1 else if ($n > 1) 2 else 3
+  let state = $it.status
+  let sid = if ($state == "completed") 1 else if ($state == "failed") 2 else 0
+  let op = {"uid": if (is-string($it.id)) $it.id,
+            "argv": $cmd,
+            "exit_code": integral($it.exit_code),
+            "reported_state": if (is-string($state)) $state,
+            "stdout": if (is-string($it.stdout)) $it.stdout,
+            "stderr": if (is-string($it.stderr)) $it.stderr,
+            "attribution": {"outcome_id": $outcome, "outcome": cap($c.captions.outcome, $outcome), "candidates": $cands,
+                            "basis": "codex.operation_attribution.v1: same turn_id, custom_tool_call.name == exec, command text occurs in call input",
+                            "scope_uid": $turn, "method_id": 2, "method": "Derived by rule"},
+            "data": $it}
+  let ev = merge(envelope($env, "tool_call", 3, if (is-string($it.id)) $it.id, if (is-string($ts)) $ts, true, {"id": $sid, "basis_id": 1, "derivation": "reported: item.status"},
+                          "codex.rollout.CommandExecution->tool_call.operation"),
+                 {"session_uid": $c.run.session_uid, "turn_uid": if (is-string($turn)) $turn, "tool_operation": $op,
+                  "tool_call_uid": if ($outcome == 1) $cands[0], "data": $o})
+  {"family": {"name": "event_msg/item_completed/CommandExecution", "disposition": "normalized: tool_call Operation observed (derived attribution to the wrapping exec call)"},
+   "events": [$ev]}
+else null

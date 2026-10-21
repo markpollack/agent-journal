@@ -1,0 +1,87 @@
+{
+  "uid": 5,
+  "caption": "Session Context",
+  "category": "agent_execution",
+  "description": "A native record reporting the session's settings, context injected into the model's input (system reminders, attachments, developer messages), or session-scope accounting (cumulative usage/cost). These are supporting facts at session or turn scope; they are not submissions, responses or tool calls.",
+  "name": "session_context",
+  "extends": "base_event",
+  "attributes": {
+    "activity_id": {
+      "enum": {
+        "1": {
+          "caption": "Settings reported",
+          "description": "A record reporting launch or session settings was observed."
+        },
+        "2": {
+          "caption": "Context injected",
+          "description": "A record reporting context injected into the model input was observed."
+        },
+        "3": {
+          "caption": "Accounting reported",
+          "description": "A record reporting session- or response-scope usage or cost accounting was observed."
+        }
+      }
+    },
+    "cli_agent": {
+      "group": "primary",
+      "requirement": "optional",
+      "description": "The CLI agent is stored once per run in run.json shared.cli_agent; it is present on an event only in a self-contained export."
+    },
+    "journal": {
+      "group": "context",
+      "requirement": "required"
+    },
+    "source_ref": {
+      "group": "context",
+      "requirement": "required"
+    },
+    "session_uid": {
+      "group": "primary",
+      "requirement": "required"
+    },
+    "turn_uid": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "response_uid": {
+      "group": "primary",
+      "requirement": "optional",
+      "description": "The response an accounting record cites, when it names one."
+    },
+    "context_kind": {
+      "group": "primary",
+      "requirement": "recommended"
+    },
+    "rendered_role": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "settings": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "content_blocks": {
+      "group": "primary",
+      "requirement": "optional",
+      "description": "The injected content as rendered to the model, when the source reports it as blocks."
+    },
+    "usage_observations": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "cost_observation": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "basis": {
+      "group": "primary",
+      "requirement": "recommended",
+      "description": "The mapping rule that classified this record."
+    },
+    "data": {
+      "group": "context",
+      "requirement": "optional",
+      "description": "The native record exactly as reported."
+    }
+  }
+}

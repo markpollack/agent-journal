@@ -2,21 +2,22 @@
 
 Each directory is one labelled case for the Java OCSF reader, oracle and analysis views in
 `io.github.markpollack.journal.tck.ocsf`: the native artifacts (`native/`), the self-describing package layout
-`0.1.0-prototype` produced from them (`package/`: `run.json` + `events.jsonl`, children under `children/<spawn id>/`),
-the run spec the prototype adapter consumed (`spec.json`) and the hand-authored expected analysis answers
-(`expected-views.json`, written from the native records and compared as a subset pattern).
+`0.2.0-prototype` produced from them by the incremental Java writer (`package/`: `run.json` + `events.jsonl`, children
+under `children/<spawn id>/`), the run spec the writer consumed (`spec.json`) and, where present, hand-authored
+expected analysis answers (`expected-views.json`, written from the native records and compared as a subset pattern).
 
 | Fixture | Native | What it exercises |
 |---|---|---|
-| `syn-codex-counterexamples` | `rollout.jsonl`, **labelled synthetic**, hand-authored in the shape of a Codex CLI 0.160.1 rollout; no CLI was run | environment-context user-role record (not a submission); one prompt represented twice; identical prompt text in a new turn; one response represented twice with one id; identical response text under a second id; derived unique and ambiguous operation attribution; identical result content under two owners; a foreign call id quoted in a result's text; provisional then final `token_count` |
-| `claude-child-2.1.299` | `stream.jsonl`, the **sanitized real** Claude Code 2.1.299 stream of `verify/foreground-subagent-one-result` (synthetic prompt and files, identifiers replaced) | a parent core and one child core split by `parent_tool_use_id` (labelled demonstration of per-core portability and scoped ownership, not live child support); run and per-model final usage beside provisional response usage; reported permission decisions; a `rate_limit_event` and `system` lines retained whole. Processed under the 2.1.303 stream contract: the reader reports `CONTRACT_APPLICABILITY` as version-scoped evidence |
+| `syn-codex-counterexamples` | `rollout.jsonl`, **labelled synthetic**, hand-authored in the shape of a Codex CLI 0.160.1 rollout; no CLI was run | environment-context user-role record (not a submission); one prompt represented twice; identical prompt text in a new turn; one response represented twice with one id; identical response text under a second id; derived unique and ambiguous operation attribution; identical result content under two owners; a foreign call id quoted in a result's text; provisional then final `token_count`; settings from `session_meta`/`turn_context`; `task_started` turn starts |
+| `claude-child-2.1.299` | `stream.jsonl`, the **sanitized real** Claude Code 2.1.299 stream of `verify/foreground-subagent-one-result` (synthetic prompt and files, identifiers replaced) | a parent core and one child core routed by `parent_tool_use_id` as the records arrived (labelled demonstration of per-core portability and scoped ownership, not live child support); run and per-model final usage beside provisional response usage; reported permission decisions; `system/init` settings; `rate_limit_event` and other `system` lines retained whole. Processed under the 2.1.303 stream contract: the reader reports `CONTRACT_APPLICABILITY` as version-scoped evidence |
+| `syn-claude-pair-transcript` | `stream.jsonl` (the same sanitized real stream) plus `transcript.jsonl`, **labelled synthetic** (2026-10-21), hand-authored in the shape of a Claude Code 2.1.299 session file with every record family of the real 2.1.303 pair A transcript | a saved session file admitted after the live stream ended; final per-response usage only in the transcript; attachments as injected context, cost-state as session accounting, the other families retained whole with their meaning stated; complete admission (17 of 17 records); the transcript is not compact JSON, so byte-exact reconstruction of parsed records is observed as unsupported while structure/value equality holds |
 
-Packages were produced by `prototype/ocsf-acp/scripts/adapt.py` (the Python prototype adapter, research code) against
-OCSF 1.9.0 `856d462b…` with extension `agentic_cli` 0.2.0-prototype (uid 901, provisional, compiled schema sha256
-`4529e3b00781245dd9d933178db00dd0dc69765f5ef4469fd2c43fede7e8156c`), then re-laid out by
-`io.github.markpollack.journal.tck.ocsf.prototype.PrototypeRepackager` (shared facts once in `run.json`, embedded
-definition closure, extension source, mapping contracts and semantic contract, `attribution.method_id`). Every core
-validated with ocsf-toolkit v0.9.0 (0 errors). The oracle and the reader never call either producer.
+Packages were produced by `journal-ocsf-writer` (`PublicFixtureRegenerationTest` with `-Docsf.regenerate=true`: byte
+replay in 1 KiB chunks, fixed clock) against OCSF 1.9.0 `856d462b…` with extension `agentic_cli` 0.3.0-prototype (uid
+901, provisional, compiled schema sha256 `ec1b99bc2922651417949dbf6168664496a412a9b55951420a515519baeae78e`). Every
+core validated with ocsf-toolkit v0.9.0 (0 errors; `suspicious_other` enum-sibling warnings on `tool_kind` "other"
+for `ToolSearch`/`Agent`, a toolkit heuristic). The oracle and the reader never call the writer.
 
 Fixtures are not regenerated by the build. Regenerate them deliberately when the extension, the contracts or the
-layout change, and update this note.
+layout change (`./mvnw -pl journal-ocsf-writer test -Dtest=PublicFixtureRegenerationTest -Docsf.regenerate=true`),
+and update this note.

@@ -1,0 +1,127 @@
+// MAP-1 experiment (non-production): JSLT program for the Claude stream cases.
+// Input:  {"record": <native record>, "env": {"c": <static run/contract/schema facts>, "time": {...}, "record_index", "record_bytes", "line_ending"}}
+// Output: {"owner": <parent_tool_use_id or omitted>, "family": {"name", "disposition"}, "events": [<OCSF event>...]}
+// Case a: type == assistant -> model_response + one tool_call Requested per tool_use block.
+// Case b: type == user with tool_result blocks -> one tool_call Result observed per block.
+// Everything else returns null; the Java glue delegates such records to the baseline mapper.
+// Java glue decides time (fallback state), source identity, class table, contract tables, rule registration and routing.
+
+def cap(table, id)
+  get-key($table, string($id))
+
+def merge(a, b)
+  {for (array($a) + array($b)) .key : .value}
+
+def source_ref(env, uid, ts, whole)
+  {"source_kind_id": $env.c.source.source_kind_id, "source_kind": $env.c.source.source_kind, "artifact": $env.c.source.artifact,
+   "record_index": $env.record_index, "record_bytes": $env.record_bytes, "line_ending": $env.line_ending, "is_whole_record": $whole,
+   "native_uid": $uid, "native_time": $ts}
+
+def envelope(env, cls, act, uid, ts, whole, status, rule)
+  let c = $env.c
+  let cd = get-key($c.classes, $cls)
+  let an = cap($cd.activities, $act)
+  {"class_uid": $cd.class_uid, "class_name": $cd.caption, "category_uid": $cd.category_uid, "category_name": $cd.category_name,
+   "activity_id": $act, "activity_name": $an, "type_uid": $cd.class_uid * 100 + $act, "type_name": $cd.caption + ": " + $an,
+   "severity_id": 0, "severity": "Unknown", "time": $env.time.ms, "time_dt": $env.time.dt,
+   "metadata": {"version": $c.ocsf.version, "product": $c.run.product,
+                "extensions": [{"name": $c.ocsf.ext_name, "uid": $c.ocsf.ext_uid, "version": $c.ocsf.ext_version}],
+                "profiles": ["datetime"], "original_time": $ts, "original_event_uid": $uid},
+   "journal": {"run_uid": $c.run.run_uid, "invocation_index": $c.run.invocation_index, "sequence": 0, "contract_uid": $c.contract_uid,
+               "time_basis_id": $env.time.basis_id, "time_basis": $env.time.basis, "basis": $env.time.detail},
+   "source_ref": source_ref($env, $uid, $ts, $whole),
+   "status_id": $status.id, "status": if ($status) cap($c.captions.status, $status.id),
+   "status_basis_id": $status.basis_id, "status_basis": if ($status) cap($c.captions.status_basis, $status.basis_id),
+   "derivation": $status.derivation,
+   "unmapped": {"rule_id": $rule}}
+
+// the baseline copies a usage component only when it is a number whose value is integral (1.0 counts); JSLT keeps the node as parsed
+def integral(v)
+  if (is-number($v) and round($v) == $v) $v
+
+def blocks(env, content)
+  if (is-string($content))
+    [{"block_index": 0, "block_type": "string", "block_kind_id": 1, "block_kind": "Text", "basis": "message.content is a bare string", "text": $content, "data": $content}]
+  else
+    [for (zip-with-index(if (is-array($content)) $content else []))
+      let b = .value
+      let type = $b.type
+      let k = fallback(if (is-string($type)) get-key($env.c.block_kind.map, $type), $env.c.block_kind.default)
+      {"block_index": .index, "block_type": fallback($type, "(untyped)"), "block_kind_id": $k, "block_kind": cap($env.c.captions.block_kind, $k),
+       "basis": $env.c.block_kind.rule,
+       "text": if (is-string($b.thinking)) $b.thinking else if (is-string($b.text)) $b.text,
+       "tool_call_uid": if ($type == "tool_use") $b.id else if ($type == "tool_result") $b.tool_use_id,
+       "data": $b}]
+
+def decision_id(reported)
+  if ($reported == "accept" or $reported == "allow") 1
+  else if ($reported == "deny" or $reported == "denied") 2
+  else 99
+
+let o = .record
+let env = .env
+let c = .env.c
+let m = $o.message
+let ts = $o.timestamp
+let uid = $o.uuid
+let sess = $o.session_id
+let owner = $o.parent_tool_use_id
+
+if ($o.type == "assistant" and is-object($m))
+  let terminal = $m.stop_reason != null
+  let act = if ($terminal) 2 else 1
+  let u = $m.usage
+  let model_ref = {"name": $m.model, "provider_basis_id": 3, "provider_basis": "Unavailable"}
+  let usage = merge(
+    {"scope_id": 2, "scope": "Model response", "usage_status_id": if ($terminal) 2 else 1, "usage_status": if ($terminal) "Final" else "Provisional",
+     "basis": "claude.stream.usage_status.v1: stop_reason null -> provisional, non-null -> final",
+     "source_ref": source_ref($env, $uid, $ts, false), "model_ref": $model_ref,
+     "data": $u}, // UNSUPPORTED: the baseline writes an explicit null when usage is absent; JSLT cannot keep a null-valued key
+    {"input_tokens": integral($u.input_tokens), "output_tokens": integral($u.output_tokens),
+     "cache_read_tokens": integral($u.cache_read_input_tokens), "cache_write_tokens": integral($u.cache_creation_input_tokens),
+     "reasoning_tokens": integral($u.output_tokens_details.thinking_tokens)})
+  let response = merge(envelope($env, "model_response", $act, $uid, $ts, true, null, "claude.stream.assistant->model_response"),
+    {"session_uid": $sess, "response_uid": $m.id, "model_ref": $model_ref, "content_blocks": blocks($env, $m.content),
+     "usage_observations": [$usage], "basis": "claude.stream.activity.v1: stop_reason null -> Partial, non-null -> Completed",
+     "stop_reason": if ($terminal) $m.stop_reason, "data": $o})
+  let requests = [for (if (is-array($m.content)) $m.content else [])
+    let b = .
+    let k = fallback(if (is-string($b.name)) get-key($c.tool_kind.map, $b.name), $c.tool_kind.default)
+    merge(envelope($env, "tool_call", 1, $uid, $ts, false, null, "claude.stream.assistant.tool_use->tool_call.requested"),
+      {"session_uid": $sess, "response_uid": $m.id, "tool_call_uid": $b.id, "tool_name": $b.name, "tool_kind_id": $k,
+       "tool_kind": cap($c.captions.tool_kind, $k), "tool_kind_basis": $c.tool_kind.rule,
+       "arguments": $b.input, // UNSUPPORTED: explicit null when input is absent
+       "data": $b})
+    if (.type == "tool_use")]
+  {"owner": $owner, "family": {"name": "assistant", "disposition": "normalized: model_response (+ tool_call Requested per tool_use block)"},
+   "events": [$response] + $requests}
+
+else if ($o.type == "user" and is-object($m))
+  let results = [for (if (is-array($m.content)) $m.content else []) . if (.type == "tool_result")]
+  let events = [for (zip-with-index($results))
+    let b = .value
+    let first = .index == 0
+    let id = $b.tool_use_id
+    let is_error = $b.is_error
+    let status = if (is-boolean($is_error)) {"id": if ($is_error) 2 else 1, "basis_id": 1, "derivation": "reported: tool_result.is_error"}
+                 else {"id": 0, "basis_id": 3, "derivation": "is_error not reported on this tool_result block"}
+    let metas = [for (if (is-array($o.tool_result_meta)) $o.tool_result_meta else []) . if ($id != null and .id == $id and is-object(.permission_decision))]
+    let pd = if (size($metas) > 0) $metas[-1]
+    let reported = $pd.permission_decision.decision
+    let d = decision_id(if (is-string($reported)) $reported)
+    merge(envelope($env, "tool_call", 2, $uid, $ts, $first, $status, "claude.stream.user.tool_result->tool_call.result"),
+      {"session_uid": $sess, "tool_call_uid": $id,
+       "tool_result": {"data": $b.content, // UNSUPPORTED: explicit null when content is absent
+                       "error_reported": if (is-boolean($is_error)) $is_error, "structured_result": $o.tool_use_result},
+       "permission_decision": if ($pd != null)
+         {"decision_id": $d, "decision": cap($c.captions.decision, $d), "reported_decision": if (is-string($reported)) $reported,
+          "decision_source": $pd.permission_decision.source, "reason_type": $pd.permission_decision.reason_type, "scope_id": 1, "scope": "Tool call",
+          "attribution": {"outcome_id": 1, "outcome": "Unique", "candidates": [$id], "basis": "tool_result_meta[].id == tool_result.tool_use_id",
+                          "method_id": 1, "method": "Reported identifier"},
+          "source_ref": source_ref($env, $uid, $ts, false), "data": $pd},
+       "data": if ($first) $o else $b})]
+  if (size($results) == 0) null
+  else {"owner": $owner, "family": {"name": "user", "disposition": "normalized: tool_call Result observed per tool_result block (+ permission_decision from tool_result_meta)"},
+        "events": $events}
+
+else null

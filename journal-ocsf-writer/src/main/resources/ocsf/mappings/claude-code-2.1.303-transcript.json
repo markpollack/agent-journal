@@ -1,0 +1,140 @@
+{
+  "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+  "applies_to": {
+    "product": "Claude Code",
+    "version": "2.1.303",
+    "source_kind": "Saved session file (~/.claude/projects/<cwd>/<session>.jsonl)"
+  },
+  "executor": "journal-ocsf-writer ClaudeTranscriptMapper (direct Java); one record at a time; state: artifact time fallback only",
+  "record_discriminator": "type, then attachment.type / message.content shape",
+  "admission": "COMPLETE: every record of the file is mapped or retained whole; there is no response filter and no declared exclusion. Families without a normalization rule are retained whole with their disposition stated in sources[].family_inventory.",
+  "time_policy": {
+    "reported": "timestamp on user, assistant, attachment, queue-operation, api-request and api-request-shape records",
+    "fallback": "latest preceding reported time in this artifact (atis-latch, api-request-blob, last-prompt, cost-state carry none)"
+  },
+  "tool_kind_table": {
+    "rule": "claude.tool_name_to_kind.v1",
+    "map": {
+      "Read": 1,
+      "NotebookRead": 1,
+      "Edit": 2,
+      "MultiEdit": 2,
+      "Write": 2,
+      "NotebookEdit": 2,
+      "Glob": 5,
+      "Grep": 5,
+      "Bash": 6,
+      "WebFetch": 8,
+      "WebSearch": 8,
+      "Task": 99
+    },
+    "default": 99,
+    "note": "Name table only. The kind describes the request; no OS effect is asserted."
+  },
+  "block_kind_table": {
+    "rule": "claude.block_type_to_kind.v1",
+    "map": {
+      "text": 1,
+      "thinking": 2,
+      "tool_use": 3,
+      "tool_result": 4,
+      "image": 5
+    },
+    "default": 99
+  },
+  "rules": [
+    {
+      "id": "claude.transcript.assistant->model_response",
+      "selector": {
+        "type": "assistant"
+      },
+      "target": "agentic_cli/model_response",
+      "activity": "2 Completed when message.stop_reason is non-null, else 1 Partial (rule claude.transcript.activity.v1)",
+      "owner": "response_uid = message.id (every message id, not one admitted response)",
+      "usage": "message.usage -> scope 2 Model response, status 2 Final when stop_reason non-null (rule claude.transcript.usage_status.v1); the transcript repeats the message's usage on every block record, so one response yields several equal Final observations that the view counts once",
+      "residual": "whole record in data"
+    },
+    {
+      "id": "claude.transcript.assistant.tool_use->tool_call.requested",
+      "selector": {
+        "type": "assistant",
+        "block": "tool_use"
+      },
+      "target": "agentic_cli/tool_call",
+      "owner": "tool_call_uid = block.id"
+    },
+    {
+      "id": "claude.transcript.user.prompt->prompt_turn.submitted",
+      "selector": {
+        "type": "user",
+        "content": "no tool_result block (bare string or blocks)"
+      },
+      "target": "agentic_cli/prompt_turn",
+      "activity": "1 Prompt submitted",
+      "owner": "turn_uid = promptId",
+      "residual": "whole record in data"
+    },
+    {
+      "id": "claude.transcript.user.tool_result->tool_call.result",
+      "selector": {
+        "type": "user",
+        "block": "tool_result"
+      },
+      "target": "agentic_cli/tool_call",
+      "owner": "tool_call_uid = block.tool_use_id",
+      "status": "status_id 1/2 from block.is_error when boolean (Reported); 0 Unknown with basis 3 when absent or null",
+      "permission": "permissionDecision (record level; only when the record carries exactly one tool_result) -> scope 1 Tool call, attribution 1 Unique, method 1 Reported identifier",
+      "residual": "toolUseResult in structured_result; whole record in data of the first result event"
+    },
+    {
+      "id": "claude.transcript.attachment->session_context.context",
+      "selector": {
+        "type": "attachment"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "2 Context injected",
+      "fields": "context_kind = attachment/<attachment.type>; rendered_role = renderedRole; content_blocks = rendered[] as Text blocks when present",
+      "residual": "whole record in data (the attachment object itself: environment snapshot, model identity, tool/agent/skill listings, instructions files, session context, date, credential org, remote session change, prompt snapshot, deferred tools)"
+    },
+    {
+      "id": "claude.transcript.cost_state->session_context.accounting",
+      "selector": {
+        "type": "cost-state"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "3 Accounting reported",
+      "usage": "modelUsage[m] -> usage_observation scope 5 Session status 2 Final (rule claude.transcript.cost_state.v1: cumulative per-model session usage written after the turn)",
+      "cost": "totalCostUSD -> cost_observation total_cost, currency USD, scope 5 Session",
+      "residual": "whole record in data (durations, lines added/removed, hasUnknownModelCost)"
+    },
+    {
+      "id": "claude.transcript.fallback->source_record",
+      "selector": "queue-operation, atis-latch, api-request-shape, api-request-blob, api-request, last-prompt and any unknown type",
+      "target": "agentic_cli/source_record",
+      "activity": "1 Parsed",
+      "residual": "whole record in data; basis states the known meaning or that it is unresolved"
+    },
+    {
+      "id": "common.opaque->source_record",
+      "selector": "any line that is blank, not UTF-8, not one JSON object under strict duplicate-key parsing, or cut off by the end of the source",
+      "target": "agentic_cli/source_record",
+      "activity": "2 Opaque",
+      "residual": "raw_data (text) or raw_bytes_b64 (bytes); parse_status_id 5 Incomplete at source end when the source ended mid-record"
+    },
+    {
+      "id": "common.mapper_exception->source_record",
+      "selector": "a parsed record whose mapper threw",
+      "target": "agentic_cli/source_record",
+      "activity": "1 Parsed",
+      "residual": "whole record in data; basis names the exception. A defect of the writer is visible, never a lost record"
+    }
+  ],
+  "retained_only_families": {
+    "queue-operation": "prompt queue enqueue/dequeue; content is a repeat of the user prompt",
+    "atis-latch": "vendor internal latch; meaning unresolved",
+    "api-request-shape": "system prompt and tool definitions sent to the API (what the model saw, request side)",
+    "api-request-blob": "API request message arrays: repeat representations of records already normalized (prompt, attachments, assistant blocks, tool results); not counted as submissions or responses",
+    "api-request": "request bookkeeping: model, betas, cache control, digests, request chain (base/keep/tail)",
+    "last-prompt": "pointer to the last prompt (leafUuid)"
+  }
+}

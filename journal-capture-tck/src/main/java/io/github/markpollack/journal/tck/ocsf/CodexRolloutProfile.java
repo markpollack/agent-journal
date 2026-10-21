@@ -41,6 +41,38 @@ final class CodexRolloutProfile implements SourceProfile {
             String pt = SourceProfile.text(p, "type");
             if ("turn_context".equals(type)) {
                 currentTurn = SourceProfile.text(p, "turn_id");
+                f.normalized.add(r.index());
+                Map<String, Json> settings = ClaudeTranscriptProfile.settings(p, "cwd", "working_directory", "model", "model",
+                        "approval_policy", "approval_policy", "sandbox_policy", "sandbox_policy");
+                f.contexts.add(new ExpectedFacts.Context(r.index(), 1, "turn_context", currentTurn, settings, null, null));
+                continue;
+            }
+            if ("session_meta".equals(type)) {
+                f.normalized.add(r.index());
+                Map<String, Json> settings = ClaudeTranscriptProfile.settings(p, "cwd", "working_directory", "cli_version", "version",
+                        "model_provider", "provider", "git.branch", "git_branch");
+                f.contexts.add(new ExpectedFacts.Context(r.index(), 1, "session_meta", null, settings, null, null));
+                continue;
+            }
+            if ("world_state".equals(type)) {
+                f.normalized.add(r.index());
+                Map<String, Json> settings = ClaudeTranscriptProfile.settings(p, "state.collaboration_mode.model", "model");
+                f.contexts.add(new ExpectedFacts.Context(r.index(), 1, "world_state", null, settings, null, null));
+                continue;
+            }
+            if ("token_usage_record".equals(type)) {
+                f.normalized.add(r.index());
+                f.contexts.add(new ExpectedFacts.Context(r.index(), 3, "token_usage_record", SourceProfile.text(p, "turn_id"), Map.of(), null, null));
+                String[] pairs = {"input_tokens", "input_tokens", "output_tokens", "output_tokens", "cached_input_tokens", "cache_read_tokens",
+                        "cache_write_input_tokens", "cache_write_tokens", "reasoning_output_tokens", "reasoning_tokens", "total_tokens", "reported_total_tokens"};
+                f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 2, 2, SourceProfile.components(p.member("usage"), pairs), null));
+                f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 3, 1, SourceProfile.components(p.member("turn_token_usage"), pairs), null));
+                f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 5, 1, SourceProfile.components(p.member("thread_token_usage"), pairs), null));
+                continue;
+            }
+            if ("event_msg".equals(type) && "task_started".equals(pt)) {
+                f.normalized.add(r.index());
+                f.started.add(new ExpectedFacts.TurnStarted(r.index(), SourceProfile.text(p, "turn_id")));
                 continue;
             }
             if ("response_item".equals(type) && "message".equals(pt)) {
@@ -53,6 +85,10 @@ final class CodexRolloutProfile implements SourceProfile {
                 else if ("assistant".equals(role)) {
                     f.normalized.add(r.index());
                     f.responses.add(new ExpectedFacts.Response(r.index(), SourceProfile.text(p, "id"), blocks, null, true, null));
+                }
+                else if ("developer".equals(role)) {
+                    f.normalized.add(r.index());
+                    f.contexts.add(new ExpectedFacts.Context(r.index(), 2, "response_item/message/developer", currentTurn, Map.of(), "developer", blocks.size()));
                 }
                 continue;
             }

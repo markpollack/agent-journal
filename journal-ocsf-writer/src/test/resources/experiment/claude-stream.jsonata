@@ -1,0 +1,112 @@
+/* MAP-1 experiment (non-production): JSONata program for the Claude stream cases (Dashjoin jsonata-java).
+   Input:  {"record": <native record>, "env": {"c": <static facts>, "time": {...}, "record_index", "record_bytes", "line_ending"}}
+   Output: {"owner", "family": {"name", "disposition"}, "events": [...]}; undefined for records outside cases a/b.
+   Notes on JSONata semantics that matter here: a path step that yields a one-element array unwraps it, so native
+   values copied verbatim go through $lookup(obj, key); a missing key is "undefined" and is omitted from objects,
+   while a JSON null is kept; $none is an undefined value used to omit a key on purpose. */
+(
+  $o := record; $env := env; $c := env.c; $m := $o.message;
+  $none := $lookup({}, "none");
+  $str := function($v) { $type($v) = "string" ? $v : $none };
+  $ts := $str($o.timestamp); $uid := $str($o.uuid); $sess := $str($o.session_id);
+  $cap := function($table, $id) { $lookup($table, $string($id)) };
+  $integral := function($v) { $type($v) = "number" and $v = $floor($v) ? $v : $none };
+  $sourceRef := function($u, $t, $whole) {{
+    "source_kind_id": $c.source.source_kind_id, "source_kind": $c.source.source_kind, "artifact": $c.source.artifact,
+    "record_index": $env.record_index, "record_bytes": $env.record_bytes, "line_ending": $env.line_ending,
+    "is_whole_record": $whole, "native_uid": $u, "native_time": $t }};
+  $envelope := function($cls, $act, $u, $t, $whole, $status, $rule) {(
+    $cd := $lookup($c.classes, $cls); $an := $cap($cd.activities, $act);
+    $merge([
+      {"class_uid": $cd.class_uid, "class_name": $cd.caption, "category_uid": $cd.category_uid, "category_name": $cd.category_name,
+       "activity_id": $act, "activity_name": $an, "type_uid": $cd.class_uid * 100 + $act, "type_name": $cd.caption & ": " & $an,
+       "severity_id": 0, "severity": "Unknown", "time": $env.time.ms, "time_dt": $env.time.dt,
+       "metadata": {"version": $c.ocsf.version, "product": $c.run.product,
+                    "extensions": [{"name": $c.ocsf.ext_name, "uid": $c.ocsf.ext_uid, "version": $c.ocsf.ext_version}],
+                    "profiles": ["datetime"], "original_time": $t, "original_event_uid": $u},
+       "journal": {"run_uid": $c.run.run_uid, "invocation_index": $c.run.invocation_index, "sequence": 0, "contract_uid": $c.contract_uid,
+                   "time_basis_id": $env.time.basis_id, "time_basis": $env.time.basis, "basis": $env.time.detail},
+       "source_ref": $sourceRef($u, $t, $whole)},
+      $exists($status) ? {"status_id": $status.id, "status": $cap($c.captions.status, $status.id),
+                          "status_basis_id": $status.basis_id, "status_basis": $cap($c.captions.status_basis, $status.basis_id),
+                          "derivation": $status.derivation} : {},
+      {"unmapped": {"rule_id": $rule}}])
+  )};
+  $blocks := function($content) {
+    $type($content) = "string"
+      ? [{"block_index": 0, "block_type": "string", "block_kind_id": 1, "block_kind": "Text", "basis": "message.content is a bare string",
+          "text": $content, "data": $content}]
+      : [ $map($type($content) = "array" ? $content : [], function($b, $i) {(
+          $bt := $str($b.type);
+          $bk := $exists($bt) ? $lookup($c.block_kind.map, $bt) : $none;
+          $k := $exists($bk) ? $bk : $c.block_kind.default;
+          $merge([
+            {"block_index": $i, "block_type": $exists($bt) ? $bt : "(untyped)", "block_kind_id": $k, "block_kind": $cap($c.captions.block_kind, $k),
+             "basis": $c.block_kind.rule},
+            $type($b.thinking) = "string" ? {"text": $b.thinking} : $type($b.text) = "string" ? {"text": $b.text} : {},
+            $bt = "tool_use" ? {"tool_call_uid": $str($b.id)} : $bt = "tool_result" ? {"tool_call_uid": $str($b.tool_use_id)} : {},
+            {"data": $b}])
+        )}) ]
+  };
+  $decisionId := function($r) { $r in ["accept", "allow"] ? 1 : $r in ["deny", "denied"] ? 2 : 99 };
+
+  $o.type = "assistant" and $type($m) = "object" ? (
+    $terminal := $exists($m.stop_reason) and $m.stop_reason != null;
+    $act := $terminal ? 2 : 1;
+    $u := $lookup($m, "usage");
+    $modelRef := $merge([$exists($str($m.model)) ? {"name": $m.model} : {}, {"provider_basis_id": 3, "provider_basis": "Unavailable"}]);
+    $usage := $merge([
+      {"scope_id": 2, "scope": "Model response", "usage_status_id": $terminal ? 2 : 1, "usage_status": $terminal ? "Final" : "Provisional",
+       "basis": "claude.stream.usage_status.v1: stop_reason null -> provisional, non-null -> final",
+       "source_ref": $sourceRef($uid, $ts, false), "model_ref": $modelRef, "data": $exists($u) ? $u : null},
+      {"input_tokens": $integral($u.input_tokens), "output_tokens": $integral($u.output_tokens),
+       "cache_read_tokens": $integral($u.cache_read_input_tokens), "cache_write_tokens": $integral($u.cache_creation_input_tokens),
+       "reasoning_tokens": $integral($u.output_tokens_details.thinking_tokens)}]);
+    $response := $merge([
+      $envelope("model_response", $act, $uid, $ts, true, $none, "claude.stream.assistant->model_response"),
+      {"session_uid": $sess, "response_uid": $str($m.id), "model_ref": $modelRef, "content_blocks": $blocks($lookup($m, "content")),
+       "usage_observations": [$usage], "basis": "claude.stream.activity.v1: stop_reason null -> Partial, non-null -> Completed"},
+      $terminal ? {"stop_reason": $str($m.stop_reason)} : {},
+      {"data": $o}]);
+    $requests := $map([$lookup($m, "content")][type = "tool_use"], function($b) {(
+      $tk := $exists($str($b.name)) ? $lookup($c.tool_kind.map, $b.name) : $none;
+      $k := $exists($tk) ? $tk : $c.tool_kind.default;
+      $merge([
+        $envelope("tool_call", 1, $uid, $ts, false, $none, "claude.stream.assistant.tool_use->tool_call.requested"),
+        {"session_uid": $sess, "response_uid": $str($m.id), "tool_call_uid": $str($b.id), "tool_name": $str($b.name), "tool_kind_id": $k,
+         "tool_kind": $cap($c.captions.tool_kind, $k), "tool_kind_basis": $c.tool_kind.rule,
+         "arguments": $exists($lookup($b, "input")) ? $lookup($b, "input") : null, "data": $b}])
+    )});
+    {"owner": $str($o.parent_tool_use_id), "family": {"name": "assistant", "disposition": "normalized: model_response (+ tool_call Requested per tool_use block)"},
+     "events": [$response, $requests]}
+  ) : $o.type = "user" and $type($m) = "object" ? (
+    $results := [$lookup($m, "content")][type = "tool_result"];
+    $count($results) = 0 ? $none : {
+      "owner": $str($o.parent_tool_use_id),
+      "family": {"name": "user", "disposition": "normalized: tool_call Result observed per tool_result block (+ permission_decision from tool_result_meta)"},
+      "events": [ $map($results, function($b, $i) {(
+        $first := $i = 0; $id := $str($b.tool_use_id); $isErr := $b.is_error;
+        $status := $type($isErr) = "boolean"
+          ? {"id": $isErr ? 2 : 1, "basis_id": 1, "derivation": "reported: tool_result.is_error"}
+          : {"id": 0, "basis_id": 3, "derivation": "is_error not reported on this tool_result block"};
+        $metas := [$lookup($o, "tool_result_meta")][$exists($id) and id = $id and $type(permission_decision) = "object"];
+        $pd := $count($metas) > 0 ? $metas[-1] : $none;
+        $pdd := $pd.permission_decision; $rep := $str($pdd.decision);
+        $d := $exists($rep) ? $decisionId($rep) : 99;
+        $merge([
+          $envelope("tool_call", 2, $uid, $ts, $first, $status, "claude.stream.user.tool_result->tool_call.result"),
+          {"session_uid": $sess, "tool_call_uid": $id,
+           "tool_result": $merge([{"data": $exists($lookup($b, "content")) ? $lookup($b, "content") : null},
+                                  $type($isErr) = "boolean" ? {"error_reported": $isErr} : {},
+                                  $exists($lookup($o, "tool_use_result")) ? {"structured_result": $lookup($o, "tool_use_result")} : {}])},
+          $exists($pd) ? {"permission_decision": {
+              "decision_id": $d, "decision": $cap($c.captions.decision, $d), "reported_decision": $rep,
+              "decision_source": $str($pdd.source), "reason_type": $str($pdd.reason_type), "scope_id": 1, "scope": "Tool call",
+              "attribution": {"outcome_id": 1, "outcome": "Unique", "candidates": [$id], "basis": "tool_result_meta[].id == tool_result.tool_use_id",
+                              "method_id": 1, "method": "Reported identifier"},
+              "source_ref": $sourceRef($uid, $ts, false), "data": $pd}} : {},
+          {"data": $first ? $o : $b}])
+      )}) ]
+    }
+  ) : $none
+)

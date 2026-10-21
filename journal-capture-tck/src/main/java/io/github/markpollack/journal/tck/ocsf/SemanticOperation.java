@@ -15,10 +15,12 @@ public enum SemanticOperation {
     /** Candidate count and evidence method reported separately; derived uniqueness is never a reported parent. */
     ASSOCIATION_EVIDENCE,
     /** Tool exchanges grouped by the owner id of their own record; equal content never pairs results. */
-    RESULT_OWNERSHIP;
+    RESULT_OWNERSHIP,
+    /** Settings, injected context and accounting records listed at their reported scope; nothing merged. */
+    SETTINGS_AND_CONTEXT;
 
     /** The version of these operations' semantics, pinned by packages separately from schema and contracts. */
-    public static final String VERSION = "0.1";
+    public static final String VERSION = "0.2";
 
     public static boolean known(String name) {
         for (SemanticOperation op : values()) {

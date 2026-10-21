@@ -80,6 +80,12 @@ final class ClaudeStreamProfile implements SourceProfile {
                     }
                 }
             }
+            else if ("system".equals(type) && "init".equals(SourceProfile.text(o, "subtype"))) {
+                f.normalized.add(r.index());
+                Map<String, Json> settings = ClaudeTranscriptProfile.settings(o, "cwd", "working_directory", "model", "model",
+                        "permissionMode", "permission_mode", "claude_code_version", "version", "tools", "tool_names");
+                f.contexts.add(new ExpectedFacts.Context(r.index(), 1, "system/init", null, settings, null, null));
+            }
             else if ("result".equals(type)) {
                 f.normalized.add(r.index());
                 boolean success = "success".equals(SourceProfile.text(o, "subtype")) && o.member("is_error") instanceof Json.JBool b && !b.value();

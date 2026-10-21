@@ -1,0 +1,39 @@
+{
+  "caption": "Session Settings",
+  "description": "Launch/session settings as one native record reports them. Every attribute is optional: only reported values are present; nothing is defaulted or inferred.",
+  "extends": "object",
+  "name": "session_settings",
+  "attributes": {
+    "working_directory": {
+      "description": "The working directory the CLI reported.",
+      "requirement": "optional"
+    },
+    "model": {
+      "description": "The model identifier the CLI reported as configured.",
+      "requirement": "optional"
+    },
+    "provider": {
+      "description": "The model provider the CLI reported (a reported string, not an inferred organization).",
+      "requirement": "optional"
+    },
+    "version": {
+      "description": "The CLI version the record itself reports.",
+      "requirement": "optional"
+    },
+    "permission_mode": {
+      "requirement": "optional"
+    },
+    "approval_policy": {
+      "requirement": "optional"
+    },
+    "sandbox_policy": {
+      "requirement": "optional"
+    },
+    "tool_names": {
+      "requirement": "optional"
+    },
+    "git_branch": {
+      "requirement": "optional"
+    }
+  }
+}

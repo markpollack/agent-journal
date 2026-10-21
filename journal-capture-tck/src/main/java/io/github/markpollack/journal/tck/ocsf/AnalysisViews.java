@@ -39,6 +39,7 @@ public final class AnalysisViews {
         out.put("usage", usage(pkg));
         out.put("associations", associations(pkg));
         out.put("tool_exchanges", toolExchanges(pkg));
+        out.put("settings_context", settingsContext(pkg));
         List<Json> children = new ArrayList<>();
         for (OcsfPackage c : pkg.children) {
             children.add(all(c));
@@ -323,6 +324,7 @@ public final class AnalysisViews {
                 String owner = switch (scope == null ? "" : scope) {
                     case "2" -> e.text("response_uid");
                     case "3" -> e.text("turn_uid");
+                    case "5" -> e.text("session_uid");
                     default -> e.runUid();
                 };
                 final String fOwner = owner == null ? ("3".equals(scope) ? "turn" : "owner") + " unidentified in " + e.artifact() : owner;
@@ -523,6 +525,66 @@ public final class AnalysisViews {
         }
         out.put("calls", new Json.JArray(list));
         out.put("identical_result_content", new Json.JArray(identical));
+        out.put("rule", str(SchemaCatalog.text(decl, "id")));
+        return new Json.JObject(out);
+    }
+
+    // ------------------------------------------------------------------------------------------ settings and context
+
+    static final List<String> SETTINGS_FIELDS = List.of("working_directory", "model", "provider", "version", "permission_mode", "approval_policy",
+            "sandbox_policy", "tool_names", "git_branch");
+
+    /** Every session_context event as one row at its reported scope; settings fields exactly as reported, never merged. */
+    public static Json settingsContext(OcsfPackage pkg) {
+        Json decl = declaration(pkg, SemanticOperation.SETTINGS_AND_CONTEXT);
+        List<Json> rows = new ArrayList<>();
+        int settings = 0;
+        int context = 0;
+        int accounting = 0;
+        for (Event e : pkg.events("session_context")) {
+            Map<String, Json> row = new LinkedHashMap<>();
+            row.put("activity", str(e.text("activity_name")));
+            row.put("context_kind", e.get("context_kind") == null ? Json.JNull.INSTANCE : e.get("context_kind"));
+            Json turn = e.get("turn_uid");
+            row.put("scope", str(turn == null || turn.isNull() ? "session" : "turn"));
+            row.put("turn_uid", turn == null ? Json.JNull.INSTANCE : turn);
+            row.put("occurrence", occurrence(e));
+            Json st = e.get("settings");
+            if (st instanceof Json.JObject so) {
+                Map<String, Json> reported = new LinkedHashMap<>();
+                for (String f : SETTINGS_FIELDS) {
+                    if (so.get(f) != null) {
+                        reported.put(f, so.get(f));
+                    }
+                }
+                row.put("settings", new Json.JObject(reported));
+            }
+            if (e.get("rendered_role") != null) {
+                row.put("rendered_role", e.get("rendered_role"));
+            }
+            if (e.get("content_blocks") != null) {
+                String text = blockText(e.elements("content_blocks"));
+                row.put("context_blocks", num(e.elements("content_blocks").size()));
+                row.put("context_text_chars", num(text == null ? 0 : text.length() - e.elements("content_blocks").size()));
+            }
+            row.put("usage_observations", num(e.elements("usage_observations").size()));
+            row.put("cost_reported", new Json.JBool(e.get("cost_observation") != null));
+            if (e.activityId != null && e.activityId == 1) {
+                settings++;
+            }
+            else if (e.activityId != null && e.activityId == 2) {
+                context++;
+            }
+            else if (e.activityId != null && e.activityId == 3) {
+                accounting++;
+            }
+            rows.add(new Json.JObject(row));
+        }
+        Map<String, Json> out = new LinkedHashMap<>();
+        out.put("settings_rows", num(settings));
+        out.put("context_rows", num(context));
+        out.put("accounting_rows", num(accounting));
+        out.put("rows", new Json.JArray(rows));
         out.put("rule", str(SchemaCatalog.text(decl, "id")));
         return new Json.JObject(out);
     }

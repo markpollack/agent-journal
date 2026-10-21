@@ -75,6 +75,7 @@
     <modules>
         <module>journal-core</module>
         <module>journal-capture-tck</module>
+        <module>journal-ocsf-writer</module>
         <module>claude-code-capture</module>
         <module>grok-cli-capture</module>
         <module>codex-cli-capture</module>

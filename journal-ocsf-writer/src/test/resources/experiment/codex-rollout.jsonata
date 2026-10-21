@@ -1,0 +1,66 @@
+/* MAP-1 experiment (non-production): JSONata program for Codex rollout case c (Dashjoin jsonata-java).
+   Input:  {"record": <native record>, "env": {"c": {...}, "time": {...}, "record_index", "record_bytes", "line_ending",
+            "calls": [{"turn", "call_id", "name", "input"}...]}}   <- cross-record state supplied by the Java glue
+   Output: {"family": {...}, "events": [<tool_call Operation observed>]} for event_msg/item_completed/CommandExecution; else undefined. */
+(
+  $o := record; $env := env; $c := env.c; $p := $o.payload; $it := $p.item;
+  $none := $lookup({}, "none");
+  $str := function($v) { $type($v) = "string" ? $v : $none };
+  $turn := $str($p.turn_id); $ts := $str($o.timestamp);
+  $cap := function($table, $id) { $lookup($table, $string($id)) };
+  $integral := function($v) { $type($v) = "number" and $v = $floor($v) ? $v : $none };
+  $sourceRef := function($u, $t, $whole) {{
+    "source_kind_id": $c.source.source_kind_id, "source_kind": $c.source.source_kind, "artifact": $c.source.artifact,
+    "record_index": $env.record_index, "record_bytes": $env.record_bytes, "line_ending": $env.line_ending,
+    "is_whole_record": $whole, "native_uid": $u, "native_time": $t }};
+  $envelope := function($cls, $act, $u, $t, $whole, $status, $rule) {(
+    $cd := $lookup($c.classes, $cls); $an := $cap($cd.activities, $act);
+    $merge([
+      {"class_uid": $cd.class_uid, "class_name": $cd.caption, "category_uid": $cd.category_uid, "category_name": $cd.category_name,
+       "activity_id": $act, "activity_name": $an, "type_uid": $cd.class_uid * 100 + $act, "type_name": $cd.caption & ": " & $an,
+       "severity_id": 0, "severity": "Unknown", "time": $env.time.ms, "time_dt": $env.time.dt,
+       "metadata": {"version": $c.ocsf.version, "product": $c.run.product,
+                    "extensions": [{"name": $c.ocsf.ext_name, "uid": $c.ocsf.ext_uid, "version": $c.ocsf.ext_version}],
+                    "profiles": ["datetime"], "original_time": $t, "original_event_uid": $u},
+       "journal": {"run_uid": $c.run.run_uid, "invocation_index": $c.run.invocation_index, "sequence": 0, "contract_uid": $c.contract_uid,
+                   "time_basis_id": $env.time.basis_id, "time_basis": $env.time.basis, "basis": $env.time.detail},
+       "source_ref": $sourceRef($u, $t, $whole)},
+      $exists($status) ? {"status_id": $status.id, "status": $cap($c.captions.status, $status.id),
+                          "status_basis_id": $status.basis_id, "status_basis": $cap($c.captions.status_basis, $status.basis_id),
+                          "derivation": $status.derivation} : {},
+      {"unmapped": {"rule_id": $rule}}])
+  )};
+
+  $o.type = "event_msg" and $p.type = "item_completed" and $it.type = "CommandExecution" ? (
+    $cmd := $lookup($it, "command");
+    $last := $type($cmd) = "array" ? ($count($cmd) = 0 ? "" : $str($cmd[-1])) : "";
+    /* bound to a variable first: Dashjoin 0.9.8 throws ClassCastException on "[<array constructor>][predicate selecting one object].step" */
+    $calls := $lookup($env, "calls");
+    $cands := $exists($turn) and $exists($last)
+      ? $calls[turn = $turn and name = "exec" and $type(input) = "string" and $contains(input, $last)].call_id
+      : $none;
+    $n := $count($cands); $outcome := $n = 1 ? 1 : $n > 1 ? 2 : 3;
+    $state := $str($it.status); $sid := $state = "completed" ? 1 : $state = "failed" ? 2 : 0;
+    $op := $merge([
+      $exists($str($it.id)) ? {"uid": $it.id} : {},
+      $exists($cmd) ? {"argv": $cmd} : {},
+      $exists($integral($it.exit_code)) ? {"exit_code": $it.exit_code} : {},
+      $exists($state) ? {"reported_state": $state} : {},
+      $exists($str($it.stdout)) ? {"stdout": $it.stdout} : {},
+      $exists($str($it.stderr)) ? {"stderr": $it.stderr} : {},
+      {"attribution": $merge([
+         {"outcome_id": $outcome, "outcome": $cap($c.captions.outcome, $outcome), "candidates": [$cands],
+          "basis": "codex.operation_attribution.v1: same turn_id, custom_tool_call.name == exec, command text occurs in call input"},
+         $exists($turn) ? {"scope_uid": $turn} : {},
+         {"method_id": 2, "method": "Derived by rule"}]),
+       "data": $it}]);
+    $ev := $merge([
+      $envelope("tool_call", 3, $str($it.id), $ts, true, {"id": $sid, "basis_id": 1, "derivation": "reported: item.status"},
+                "codex.rollout.CommandExecution->tool_call.operation"),
+      {"session_uid": $c.run.session_uid, "turn_uid": $turn, "tool_operation": $op},
+      $outcome = 1 ? {"tool_call_uid": $cands} : {},
+      {"data": $o}]);
+    {"family": {"name": "event_msg/item_completed/CommandExecution", "disposition": "normalized: tool_call Operation observed (derived attribution to the wrapping exec call)"},
+     "events": [$ev]}
+  ) : $none
+)

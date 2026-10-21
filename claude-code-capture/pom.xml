@@ -88,5 +88,13 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- NON-PRODUCTION: the incremental OCSF writer is exercised at the SDK iterator seam in tests only;
+             no production path of this module uses it. -->
+        <dependency>
+            <groupId>io.github.markpollack</groupId>
+            <artifactId>journal-ocsf-writer</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

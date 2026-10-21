@@ -37,10 +37,11 @@ class PackageReaderTest {
         assertThat(fromEvents.events).hasSize(31);
         assertThat(fromDir.events).hasSize(31);
         assertThat(fromEvents.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
-        assertThat(fromEvents.manifest.packageVersion()).isEqualTo("0.1.0-prototype");
+        assertThat(fromEvents.manifest.packageVersion()).isEqualTo("0.2.0-prototype");
+        assertThat(fromEvents.manifest.packageState()).isEqualTo("COMPLETED");
         assertThat(fromEvents.manifest.extensionUid()).isEqualTo(901);
-        assertThat(fromEvents.manifest.extensionVersion()).isEqualTo("0.2.0-prototype");
-        assertThat(fromEvents.manifest.contracts()).containsKey("codex-cli/rollout/0.160.1/0.1.0-prototype");
+        assertThat(fromEvents.manifest.extensionVersion()).isEqualTo("0.3.0-prototype");
+        assertThat(fromEvents.manifest.contracts()).containsKey("codex-cli/rollout/0.160.1/0.2.0-prototype");
     }
 
     @Test
@@ -85,9 +86,9 @@ class PackageReaderTest {
         editManifest(pkg(fixture), run -> obj(run.path("package", "reader_compat")).members().put("reader_contract_version", str("2.0")));
         OcsfPackage major = open(fixture);
         assertThat(major.refused()).isTrue();
-        assertThat(major.diagnosticsWithCode("UNSUPPORTED_READER_CONTRACT_VERSION").get(0).detail()).contains("2.0").contains("0.1");
+        assertThat(major.diagnosticsWithCode("UNSUPPORTED_READER_CONTRACT_VERSION").get(0).detail()).contains("2.0").contains("0.2");
         assertThat(major.rawLines).hasSize(31);
-        editManifest(pkg(fixture), run -> obj(run.path("package", "reader_compat")).members().put("reader_contract_version", str("0.2")));
+        editManifest(pkg(fixture), run -> obj(run.path("package", "reader_compat")).members().put("reader_contract_version", str("0.3")));
         OcsfPackage minor = open(fixture);
         assertThat(minor.refused()).isFalse();
         assertThat(minor.diagnosticsWithCode("READER_CONTRACT_MINOR_DIFFERS")).hasSize(1);
@@ -117,7 +118,7 @@ class PackageReaderTest {
         Path fixture = copy(CODEX, work);
         editManifest(pkg(fixture), run -> {
             obj(run.path("definitions", "closure", "types")).members().put("synthetic_t", str("Synthetic"));
-            obj(run.path("shared", "contracts", "codex-cli/rollout/0.160.1/0.1.0-prototype", "embedded")).members().put("tampered", str("yes"));
+            obj(run.path("shared", "contracts", "codex-cli/rollout/0.160.1/0.2.0-prototype", "embedded")).members().put("tampered", str("yes"));
             obj(run.path("semantic_contract", "declarations").elements().get(0)).members().put("tampered", str("yes"));
         });
         OcsfPackage p = open(fixture);

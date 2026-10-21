@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.github.markpollack</groupId>
+        <artifactId>agent-journal-parent</artifactId>
+        <version>1.12.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>journal-ocsf-writer</artifactId>
+    <packaging>jar</packaging>
+
+    <name>Journal OCSF Writer (non-production prototype)</name>
+    <description>Incremental Java writer of the OCSF-based run package: receives native byte/record observations as
+        they arrive, appends OCSF-extension events and conservative fallback records, and keeps the persisted package
+        readable before the input ends. NON-PRODUCTION: no production default uses it. The independent oracle in
+        journal-capture-tck reads its output and never calls it.</description>
+
+    <dependencies>
+        <!-- Jackson streaming tokenizer only: the writer keeps its own lexically exact JSON tree -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- The independent reader/oracle judges this writer's output in tests; main code never depends on it -->
+        <dependency>
+            <groupId>io.github.markpollack</groupId>
+            <artifactId>journal-capture-tck</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- MAP-1 mapper-comparison experiment only (src/test/.../experiment): candidate transformation engines compared
+             against the direct-Java mappers. TEST SCOPE; nothing in main depends on them. JSLT pulls jackson-databind
+             (version governed by the parent's jackson-bom import); Dashjoin JSONata has no dependencies. -->
+        <dependency>
+            <groupId>com.schibsted.spt.data</groupId>
+            <artifactId>jslt</artifactId>
+            <version>0.1.14</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.dashjoin</groupId>
+            <artifactId>jsonata</artifactId>
+            <version>0.9.8</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <!-- The extension source is embedded by value in every run.json; it is read from the single authoritative
+                 copy under prototype/ocsf-acp/extension so the writer cannot drift from the compiled definitions. -->
+            <resource>
+                <directory>${project.basedir}/../prototype/ocsf-acp/extension</directory>
+                <targetPath>ocsf/extension</targetPath>
+            </resource>
+            <resource>
+                <directory>${maven.multiModuleProjectDirectory}</directory>
+                <includes>
+                    <include>LICENSE</include>
+                </includes>
+                <targetPath>META-INF</targetPath>
+            </resource>
+        </resources>
+    </build>
+
+    <profiles>
+        <!-- Mutation testing (PIT) over the writer's framing, lifecycle and mappers: a measurement, not a gate.
+             Run: ./mvnw -Ppit -pl journal-ocsf-writer test -->
+        <profile>
+            <id>pit</id>
+            <properties>
+                <pitest-maven.version>1.30.0</pitest-maven.version>
+                <pitest-junit5-plugin.version>1.2.3</pitest-junit5-plugin.version>
+                <pit.mutators>DEFAULTS</pit.mutators>
+                <pit.threads>4</pit.threads>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-maven</artifactId>
+                        <version>${pitest-maven.version}</version>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.pitest</groupId>
+                                <artifactId>pitest-junit5-plugin</artifactId>
+                                <version>${pitest-junit5-plugin.version}</version>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <id>pit</id>
+                                <phase>test</phase>
+                                <goals><goal>mutationCoverage</goal></goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <mutationThreshold>70</mutationThreshold>
+                            <targetClasses>
+                                <param>io.github.markpollack.journal.ocsf.writer.LineFramer</param>
+                                <param>io.github.markpollack.journal.ocsf.writer.NativeRecord</param>
+                                <param>io.github.markpollack.journal.ocsf.writer.OcsfRunWriter</param>
+                                <param>io.github.markpollack.journal.ocsf.writer.CoreWriter</param>
+                                <param>io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper</param>
+                                <param>io.github.markpollack.journal.ocsf.writer.ClaudeTranscriptMapper</param>
+                                <param>io.github.markpollack.journal.ocsf.writer.CodexRolloutMapper</param>
+                                <param>io.github.markpollack.journal.ocsf.writer.CodexStreamMapper</param>
+                                <param>io.github.markpollack.journal.ocsf.writer.MapperSupport</param>
+                            </targetClasses>
+                            <targetTests>
+                                <param>io.github.markpollack.journal.ocsf.writer.*Test</param>
+                            </targetTests>
+                            <excludedTestClasses>
+                                <param>io.github.markpollack.journal.ocsf.writer.EvidenceReplayTest</param>
+                                <param>io.github.markpollack.journal.ocsf.writer.PublicFixtureRegenerationTest</param>
+                            </excludedTestClasses>
+                            <mutators><mutator>${pit.mutators}</mutator></mutators>
+                            <threads>${pit.threads}</threads>
+                            <timeoutConstant>8000</timeoutConstant>
+                            <timeoutFactor>2.0</timeoutFactor>
+                            <timestampedReports>false</timestampedReports>
+                            <outputFormats><param>HTML</param><param>XML</param><param>CSV</param></outputFormats>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

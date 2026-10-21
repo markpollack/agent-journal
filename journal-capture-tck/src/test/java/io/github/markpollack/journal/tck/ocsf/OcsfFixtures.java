@@ -162,6 +162,7 @@ final class OcsfFixtures {
             case "90111002" -> "model_response";
             case "90111003" -> "tool_call";
             case "90111004" -> "source_record";
+            case "90111005" -> "session_context";
             default -> "";
         };
         return className.equals(name) && e.member("activity_id") != null && Integer.toString(activityId).equals(e.member("activity_id").scalarText());
@@ -190,9 +191,14 @@ final class OcsfFixtures {
         return out;
     }
 
-    /** The event of a class/activity at a native record index. */
+    /** The event of a class/activity at a native record index (first artifact wins; use the artifact form for a multi-source core). */
     static Json at(List<Json> events, String className, int activityId, int recordIndex) {
         return first(events, e -> isEvent(e, className, activityId) && recordIndex(e) == recordIndex);
+    }
+
+    /** The event of a class/activity at a native record index of one artifact. */
+    static Json at(List<Json> events, String artifact, String className, int activityId, int recordIndex) {
+        return first(events, e -> isEvent(e, className, activityId) && recordIndex(e) == recordIndex && artifact.equals(e.path("source_ref", "artifact").text()));
     }
 
     /** Every difference where the expected value is not matched by the actual one (expected is a subset pattern). */

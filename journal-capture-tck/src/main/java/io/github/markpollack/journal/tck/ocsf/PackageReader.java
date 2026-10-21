@@ -28,8 +28,8 @@ import java.util.TreeMap;
 public final class PackageReader {
 
     public static final String READER_CONTRACT = "agent-journal/ocsf-reader";
-    public static final String READER_CONTRACT_VERSION = "0.1";
-    public static final List<String> SUPPORTED_PACKAGE_VERSIONS = List.of("0.1.0-prototype");
+    public static final String READER_CONTRACT_VERSION = "0.2";
+    public static final List<String> SUPPORTED_PACKAGE_VERSIONS = List.of("0.1.0-prototype", "0.2.0-prototype");
 
     private PackageReader() {
     }
@@ -59,6 +59,19 @@ public final class PackageReader {
             return new OcsfPackage(dir, null, List.of(), rawLines, null, List.of(), diags);
         }
         compatibility(manifest, diags);
+        String state = manifest.packageState();
+        if ("RECORDING".equals(state)) {
+            diags.add(new Diagnostic(Diagnostic.Severity.WARNING, "PACKAGE_OPEN",
+                    "the writer has not finalized this package: events_count/events_bytes are those persisted at the last flush, there is no final hash, and nothing here is complete"));
+        }
+        else if ("FAILED".equals(state)) {
+            diags.add(new Diagnostic(Diagnostic.Severity.WARNING, "PACKAGE_FAILED",
+                    "the writer failed while recording: recording.failure names the operation and the confirmed persisted boundary; there is no final hash"));
+        }
+        else if ("INTERRUPTED".equals(state)) {
+            diags.add(new Diagnostic(Diagnostic.Severity.WARNING, "PACKAGE_INTERRUPTED",
+                    "the recording was interrupted before every source ended; the hash and counts are final for what was acquired"));
+        }
         if (manifest.eventsSha256() != null) {
             String actual = NativeArtifact.sha256(readBytes(eventsFile));
             if (!actual.equals(manifest.eventsSha256())) {
@@ -66,8 +79,17 @@ public final class PackageReader {
                         "events.jsonl sha256 " + actual + " differs from the manifest pin " + manifest.eventsSha256() + "; events are read anyway"));
             }
         }
-        else {
+        else if (manifest.finalized()) {
             diags.add(new Diagnostic(Diagnostic.Severity.WARNING, "EVENTS_HASH_ABSENT", "manifest carries no events_jsonl_sha256"));
+        }
+        Integer declaredCount = manifest.integer("package", "events_count");
+        if (declaredCount != null && !"RECORDING".equals(state) && !"FAILED".equals(state) && declaredCount != rawLines.size()) {
+            diags.add(new Diagnostic(Diagnostic.Severity.DEFECT, "EVENTS_COUNT_MISMATCH",
+                    "manifest declares " + declaredCount + " event(s) but events.jsonl holds " + rawLines.size() + " line(s)"));
+        }
+        if ("RECORDING".equals(state) && declaredCount != null && rawLines.size() < declaredCount) {
+            diags.add(new Diagnostic(Diagnostic.Severity.DEFECT, "EVENTS_COUNT_MISMATCH",
+                    "manifest declares " + declaredCount + " persisted event(s) but events.jsonl holds only " + rawLines.size() + " line(s)"));
         }
         SchemaCatalog catalog = definitions(manifest, diags);
         Map<String, Integer> pin = manifest.classTable();

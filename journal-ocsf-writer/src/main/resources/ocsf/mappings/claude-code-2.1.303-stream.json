@@ -1,0 +1,139 @@
+{
+  "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+  "applies_to": {
+    "product": "Claude Code",
+    "version": "2.1.303",
+    "launch": "-p --output-format stream-json (via claude-code-sdk 1.7.0 in the pair driver)",
+    "source_kind": "Live output"
+  },
+  "executor": "journal-ocsf-writer ClaudeStreamMapper (direct Java over the lexically exact Jv tree); one record at a time; state: artifact time fallback only",
+  "record_discriminator": "type, then subtype",
+  "owner_routing": "parent_tool_use_id non-null -> the event is routed to the child core of that tool call (labelled split)",
+  "time_policy": {
+    "reported": "timestamp (RFC 3339, ms) on assistant and user records",
+    "fallback": "latest preceding reported time in this artifact; capture start when none precedes"
+  },
+  "tool_kind_table": {
+    "rule": "claude.tool_name_to_kind.v1",
+    "map": {
+      "Read": 1,
+      "NotebookRead": 1,
+      "Edit": 2,
+      "MultiEdit": 2,
+      "Write": 2,
+      "NotebookEdit": 2,
+      "Glob": 5,
+      "Grep": 5,
+      "Bash": 6,
+      "WebFetch": 8,
+      "WebSearch": 8,
+      "Task": 99
+    },
+    "default": 99,
+    "note": "Name table only. The kind describes the request; no OS effect is asserted."
+  },
+  "block_kind_table": {
+    "rule": "claude.block_type_to_kind.v1",
+    "map": {
+      "text": 1,
+      "thinking": 2,
+      "tool_use": 3,
+      "tool_result": 4,
+      "image": 5
+    },
+    "default": 99
+  },
+  "rules": [
+    {
+      "id": "claude.stream.assistant->model_response",
+      "selector": {
+        "type": "assistant"
+      },
+      "target": "agentic_cli/model_response",
+      "cardinality": "one event per record",
+      "activity": "1 Partial when message.stop_reason is null, 2 Completed otherwise (rule claude.stream.activity.v1)",
+      "owner": "response_uid = message.id",
+      "usage": "message.usage -> usage_observation scope 2 Model response, status 1 Provisional while stop_reason is null (rule claude.stream.usage_status.v1)",
+      "residual": "whole record in data"
+    },
+    {
+      "id": "claude.stream.assistant.tool_use->tool_call.requested",
+      "selector": {
+        "type": "assistant",
+        "block": "tool_use"
+      },
+      "target": "agentic_cli/tool_call",
+      "cardinality": "one event per tool_use block",
+      "owner": "tool_call_uid = block.id; response_uid = message.id",
+      "residual": "block in data"
+    },
+    {
+      "id": "claude.stream.user.tool_result->tool_call.result",
+      "selector": {
+        "type": "user",
+        "block": "tool_result"
+      },
+      "target": "agentic_cli/tool_call",
+      "cardinality": "one event per tool_result block",
+      "owner": "tool_call_uid = block.tool_use_id",
+      "status": "status_id 1/2 from block.is_error when boolean (Reported); 0 Unknown with basis 3 when absent or null",
+      "permission": "tool_result_meta[i].permission_decision where tool_result_meta[i].id == block.tool_use_id -> permission_decision scope 1 Tool call, attribution 1 Unique, method 1 Reported identifier",
+      "residual": "tool_use_result in structured_result; whole record in data of the first result event"
+    },
+    {
+      "id": "claude.stream.result->prompt_turn.completed",
+      "selector": {
+        "type": "result"
+      },
+      "target": "agentic_cli/prompt_turn",
+      "activity": "2 Turn completed",
+      "usage": "usage -> scope 4 Run status 2 Final (rule claude.stream.result_usage.v1); modelUsage[m] -> scope 6 Model status 2 Final with model_ref{name=m, provider_kind=provider, provider_basis 1 Reported}",
+      "cost": "total_cost_usd -> cost_observation total_cost, currency USD, scope 4 Run, cost_basis = modelUsage[*].costBasis when single model",
+      "permission": "permission_denials[] -> permission_decisions at scope 4 Run, attribution 3 Unattributed method 2 (none when empty)",
+      "status": "status_id 1 when subtype == success and is_error == false, else 2 (Reported)",
+      "residual": "whole record in data"
+    },
+    {
+      "id": "claude.stream.system.init->session_context.settings",
+      "selector": {
+        "type": "system",
+        "subtype": "init"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "1 Settings reported",
+      "settings": "cwd -> working_directory; model -> model; permissionMode -> permission_mode; claude_code_version -> version; tools[] -> tool_names",
+      "residual": "whole record in data (mcp_servers, agents, skills, plugins, capabilities and the rest stay addressable there)"
+    },
+    {
+      "id": "claude.stream.fallback->source_record",
+      "selector": {
+        "type": [
+          "system (other subtypes)",
+          "rate_limit_event",
+          "user without tool_result"
+        ]
+      },
+      "target": "agentic_cli/source_record",
+      "activity": "1 Parsed",
+      "residual": "whole record in data"
+    },
+    {
+      "id": "common.opaque->source_record",
+      "selector": "any line that is blank, not UTF-8, not one JSON object under strict duplicate-key parsing, or cut off by the end of the source",
+      "target": "agentic_cli/source_record",
+      "activity": "2 Opaque",
+      "residual": "raw_data (text) or raw_bytes_b64 (bytes); parse_status_id 5 Incomplete at source end when the source ended mid-record"
+    },
+    {
+      "id": "common.mapper_exception->source_record",
+      "selector": "a parsed record whose mapper threw",
+      "target": "agentic_cli/source_record",
+      "activity": "1 Parsed",
+      "residual": "whole record in data; basis names the exception. A defect of the writer is visible, never a lost record"
+    }
+  ],
+  "unavailable_at_source": [
+    "user prompt content (the SDK input is not echoed as a stream record)",
+    "final per-response usage and stop_reason (the stream reports stop_reason null and provisional usage on these fixtures; see the transcript contract)"
+  ]
+}

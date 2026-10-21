@@ -59,6 +59,24 @@ public final class RunManifest {
         return text("package", "events_jsonl_sha256");
     }
 
+    /** {@code RECORDING}, {@code COMPLETED}, {@code INTERRUPTED} or {@code FAILED}; a 0.1.0 package without a state is final. */
+    public String packageState() {
+        String s = text("package", "state");
+        return s == null ? "COMPLETED" : s;
+    }
+
+    /** Whether the package's events are finalized (counts and hash final). */
+    public boolean finalized() {
+        String s = packageState();
+        return "COMPLETED".equals(s) || "INTERRUPTED".equals(s);
+    }
+
+    /** Whether a source's inventory is final (its bytes ended); a 0.1.0 source without the flag is final. */
+    public static boolean sourceFinal(Json source) {
+        Json f = source == null ? null : source.member("final");
+        return !(f instanceof Json.JBool b) || b.value();
+    }
+
     public String runUid() {
         return text("run", "run_uid");
     }

@@ -56,6 +56,7 @@ public final class OcsfOracle {
         report.candidate("rootDir", pkg.dir.toString());
         report.candidate("runUid", pkg.manifest == null ? null : pkg.manifest.runUid());
         report.candidate("packageVersion", pkg.manifest == null ? null : pkg.manifest.packageVersion());
+        report.candidate("packageState", pkg.manifest == null ? null : pkg.manifest.packageState());
         report.candidate("extension", pkg.manifest == null ? null : pkg.manifest.extensionName() + " uid " + pkg.manifest.extensionUid() + " " + pkg.manifest.extensionVersion());
         List<String> diags = new ArrayList<>();
         for (OcsfPackage core : pkg.all()) {
@@ -82,6 +83,13 @@ public final class OcsfOracle {
         report.add(Category.COMPLETENESS, "package.readable", label, core.diagnostics(Diagnostic.Severity.DEFECT).isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
                 core.diagnostics(Diagnostic.Severity.DEFECT).isEmpty() ? "pins, hashes, definitions and shared references resolve"
                         : core.diagnostics(Diagnostic.Severity.DEFECT).toString());
+        String state = core.manifest.packageState();
+        report.add(Category.COMPLETENESS, "package.state", label,
+                "COMPLETED".equals(state) ? Outcome.VERIFIED : "RECORDING".equals(state) || "FAILED".equals(state) ? Outcome.UNRESOLVED : Outcome.UNSUPPORTED,
+                "COMPLETED".equals(state) ? "finalized by the writer with every declared source ended"
+                        : "RECORDING".equals(state) ? "open package: the writer has not finalized it; judged as a prefix, never as complete"
+                        : "FAILED".equals(state) ? "the writer failed: " + (core.manifest.json().path("recording", "failure") == null ? "no failure detail" : NeutralJson.write(core.manifest.json().path("recording", "failure")))
+                        : state + ": the recording did not complete; the acquired evidence is judged, completeness is not claimed");
         order(core, label);
         for (Json source : core.manifest.sources()) {
             String artifact = SchemaCatalog.text(source, "artifact");
@@ -98,6 +106,15 @@ public final class OcsfOracle {
             o.put("records", art.records().size());
             o.put("opaque", art.opaqueCount());
             report.oracle(owner, o);
+            if (source.member("admit_response_uid") != null && !"0.1.0-prototype".equals(core.manifest.packageVersion())) {
+                // a candidate cannot shrink its own denominator: declared admission is honoured only on the historical 0.1.0 layout
+                report.add(Category.COMPLETENESS, "source.admission", owner, Outcome.DEFECTIVE,
+                        "the candidate declares admit_response_uid " + SchemaCatalog.text(source, "admit_response_uid")
+                                + " on a " + core.manifest.packageVersion() + " package; declared admission is ignored and every record is expected");
+                Map<String, Json> stripped = new LinkedHashMap<>(((Json.JObject) source).members());
+                stripped.remove("admit_response_uid");
+                source = new Json.JObject(stripped);
+            }
             SourceProfile profile = SourceProfile.forName(SchemaCatalog.text(source, "profile"));
             if (profile == null) {
                 report.add(Category.COMPLETENESS, "source.profile", owner, Outcome.UNSUPPORTED,
@@ -105,8 +122,21 @@ public final class OcsfOracle {
                 profile = new OpaqueTextProfile();
             }
             Json scope = core.manifest.sourceScope();
+            if (scope != null && core.manifest.parent() == null && !artifact.equals(SchemaCatalog.text(scope, "artifact"))) {
+                scope = null; // the root core owns every record of an artifact that is not split
+            }
             if (scope != null && !artifact.equals(SchemaCatalog.text(scope, "artifact"))) {
-                scope = null;
+                // a child core owns records of its owner artifact only; other declared artifacts belong to the root core
+                boolean stray = false;
+                for (Event e : core.events) {
+                    if (e.className != null && artifact.equals(e.artifact())) {
+                        stray = true;
+                    }
+                }
+                report.add(Category.COMPLETENESS, "source.scope", owner, stray ? Outcome.DEFECTIVE : Outcome.NOT_APPLICABLE,
+                        stray ? "this split core carries events of " + artifact + ", which is outside its owner scope (" + SchemaCatalog.text(scope, "artifact") + ")"
+                                : "artifact outside this split core's owner scope (" + SchemaCatalog.text(scope, "artifact") + "); judged on the root core");
+                continue;
             }
             ExpectedFacts facts = profile.expected(art, source, scope);
             report.denominator(owner, facts.counts());
@@ -127,6 +157,8 @@ public final class OcsfOracle {
             decisions(facts, events, owner);
             operations(facts, events, owner);
             turns(facts, events, owner);
+            started(facts, events, owner);
+            contexts(facts, events, owner);
             time(art, facts, events, owner);
             reconstruction(art, facts, events, owner);
         }
@@ -136,8 +168,14 @@ public final class OcsfOracle {
 
     private void sourceInventory(Json source, NativeArtifact art, String owner) {
         List<String> problems = new ArrayList<>();
+        boolean isFinal = RunManifest.sourceFinal(source);
         String sha = SchemaCatalog.text(source, "sha256");
-        if (!art.sha256().equals(sha)) {
+        if (!isFinal) {
+            if (sha != null) {
+                problems.add("an open source must not carry a sha256 (declared " + sha + ")");
+            }
+        }
+        else if (!art.sha256().equals(sha)) {
             problems.add("sha256 " + sha + " declared, artifact is " + art.sha256());
         }
         Integer records = Event.integer(source.member("records"));
@@ -157,7 +195,9 @@ public final class OcsfOracle {
             problems.add("bytes " + (bytes == null ? "absent" : bytes.scalarText()) + ", artifact has " + art.bytes().length);
         }
         report.add(Category.COMPLETENESS, "source.inventory", owner, problems.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
-                problems.isEmpty() ? "sha256, bytes, record count, opaque count and trailing newline match the artifact" : String.join("; ", problems));
+                problems.isEmpty() ? (isFinal ? "sha256, bytes, record count, opaque count and trailing newline match the artifact"
+                        : "open source (state " + SchemaCatalog.text(source, "state") + "): bytes, record count, opaque count and trailing newline so far match the supplied prefix; no hash yet")
+                        : String.join("; ", problems));
     }
 
     private void order(OcsfPackage core, String label) {
@@ -898,6 +938,96 @@ public final class OcsfOracle {
             }
         }
         valueCheck("turn.values", owner, examined, problems, null);
+    }
+
+    private void started(ExpectedFacts facts, List<Event> events, String owner) {
+        List<String> expected = new ArrayList<>();
+        for (ExpectedFacts.TurnStarted t : facts.started) {
+            expected.add(Integer.toString(t.recordIndex()));
+        }
+        List<String> actual = new ArrayList<>();
+        for (Event e : events) {
+            if (e.is("prompt_turn", 3)) {
+                actual.add(String.valueOf(e.recordIndex()));
+            }
+        }
+        populationCheck("population.turn_started", owner, expected, actual);
+        List<String> problems = new ArrayList<>();
+        int examined = 0;
+        for (ExpectedFacts.TurnStarted t : facts.started) {
+            for (Event e : events) {
+                if (e.is("prompt_turn", 3) && Objects.equals(e.recordIndex(), t.recordIndex())) {
+                    examined++;
+                    if (!Objects.equals(e.text("turn_uid"), t.turnUid())) {
+                        problems.add("record " + t.recordIndex() + " turn_uid " + e.text("turn_uid") + " != " + t.turnUid());
+                    }
+                }
+            }
+        }
+        valueCheck("turn_started.values", owner, examined, problems, null);
+    }
+
+    /** Settings / injected-context / accounting records: population by (record, activity, kind) and exact settings values. */
+    private void contexts(ExpectedFacts facts, List<Event> events, String owner) {
+        List<String> expected = new ArrayList<>();
+        for (ExpectedFacts.Context c : facts.contexts) {
+            expected.add(c.recordIndex() + ":" + c.activityId() + ":" + c.contextKind());
+        }
+        List<String> actual = new ArrayList<>();
+        for (Event e : events) {
+            if ("session_context".equals(e.className)) {
+                actual.add(e.recordIndex() + ":" + e.activityId + ":" + e.text("context_kind"));
+            }
+        }
+        populationCheck("population.contexts", owner, expected, actual);
+        List<String> problems = new ArrayList<>();
+        List<String> representation = new ArrayList<>();
+        int examined = 0;
+        for (ExpectedFacts.Context c : facts.contexts) {
+            Event e = null;
+            for (Event x : events) {
+                if ("session_context".equals(x.className) && Objects.equals(x.recordIndex(), c.recordIndex()) && Objects.equals(x.activityId, c.activityId())) {
+                    e = x;
+                }
+            }
+            if (e == null) {
+                continue;
+            }
+            examined++;
+            String what = c.recordIndex() + ":" + c.contextKind();
+            if (!Objects.equals(c.turnUid(), e.text("turn_uid"))) {
+                problems.add(what + " turn_uid " + e.text("turn_uid") + " != " + c.turnUid());
+            }
+            if (!Objects.equals(c.renderedRole(), e.text("rendered_role"))) {
+                problems.add(what + " rendered_role " + e.text("rendered_role") + " != " + c.renderedRole());
+            }
+            if (c.blocks() == null) {
+                if (e.get("content_blocks") != null) {
+                    problems.add(what + " content_blocks present but the source renders nothing");
+                }
+            }
+            else if (e.get("content_blocks") == null || e.elements("content_blocks").size() != c.blocks()) {
+                problems.add(what + " content_blocks " + (e.get("content_blocks") == null ? "absent" : e.elements("content_blocks").size()) + " != " + c.blocks());
+            }
+            Json settings = e.get("settings");
+            for (Map.Entry<String, Json> f : c.settings().entrySet()) {
+                compare(what + " settings." + f.getKey(), f.getValue(), settings == null ? null : settings.member(f.getKey()), problems, representation);
+            }
+            if (settings instanceof Json.JObject so) {
+                for (String k : so.members().keySet()) {
+                    if (!c.settings().containsKey(k)) {
+                        problems.add(what + " settings." + k + " present but the record reports no such setting");
+                    }
+                }
+            }
+            else if (!c.settings().isEmpty()) {
+                problems.add(what + " settings absent; the record reports " + c.settings().keySet());
+            }
+            if (e.get("data") == null) {
+                problems.add(what + " whole record (data) not retained");
+            }
+        }
+        valueCheck("context.values", owner, examined, problems, representation);
     }
 
     // ------------------------------------------------------------------------------------------ explanation

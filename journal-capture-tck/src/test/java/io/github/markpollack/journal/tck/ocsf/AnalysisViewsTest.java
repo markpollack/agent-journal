@@ -182,4 +182,58 @@ class AnalysisViewsTest {
         });
         assertThat(AnalysisViews.submissions(open(other)).member("submission_count").scalarText()).as("environment context now counts").isEqualTo("3");
     }
+
+    @Test
+    void settingsContextRowsListEachRecordAtItsScopeAndSessionUsageIsOwnedByTheSession(@TempDir Path work) {
+        Path fixture = copy(OracleFullSourceTest.PAIR, work);
+        Json views = AnalysisViews.all(open(fixture));
+        Json sc = views.member("settings_context");
+        assertThat(sc.member("settings_rows").scalarText()).isEqualTo("1");
+        assertThat(sc.member("context_rows").scalarText()).isEqualTo("4");
+        assertThat(sc.member("accounting_rows").scalarText()).isEqualTo("1");
+        assertThat(sc.member("rule").text()).isEqualTo("settings.context.v1");
+        List<Json> rows = sc.member("rows").elements();
+        assertThat(rows).hasSize(6);
+        Json init = rows.get(0);
+        assertThat(init.member("activity").text()).isEqualTo("Settings reported");
+        assertThat(init.member("context_kind").text()).isEqualTo("system/init");
+        assertThat(init.member("scope").text()).isEqualTo("session");
+        assertThat(init.path("settings", "working_directory").text()).isEqualTo("/work");
+        assertThat(init.path("settings", "permission_mode").text()).isEqualTo("default");
+        assertThat(init.path("settings", "tool_names").elements()).isNotEmpty();
+        assertThat(init.member("usage_observations").scalarText()).isEqualTo("0");
+        assertThat(((Json.JBool) init.member("cost_reported")).value()).isFalse();
+        Json environment = rows.get(1);
+        assertThat(environment.member("activity").text()).isEqualTo("Context injected");
+        assertThat(environment.member("context_kind").text()).isEqualTo("attachment/environment");
+        assertThat(environment.member("rendered_role").text()).isEqualTo("system");
+        assertThat(environment.member("context_blocks").scalarText()).isEqualTo("1");
+        assertThat(Integer.parseInt(environment.member("context_text_chars").scalarText())).isGreaterThan(20);
+        Json credential = rows.get(3);
+        assertThat(credential.member("context_kind").text()).isEqualTo("attachment/credential_org");
+        assertThat(credential.member("rendered_role")).isNull();
+        assertThat(credential.member("context_blocks")).isNull();
+        Json cost = rows.get(5);
+        assertThat(cost.member("activity").text()).isEqualTo("Accounting reported");
+        assertThat(cost.member("usage_observations").scalarText()).isEqualTo("1");
+        assertThat(((Json.JBool) cost.member("cost_reported")).value()).isTrue();
+        // the session-scope usage group is owned by the session id, from the transcript source only
+        Json session = null;
+        for (Json g : views.path("usage", "groups").elements()) {
+            if ("Session".equals(g.member("scope").text())) {
+                session = g;
+            }
+        }
+        assertThat(session).isNotNull();
+        assertThat(session.member("owner").text()).isEqualTo("00000000-0000-4000-8000-000000000000");
+        assertThat(session.member("source").text()).isEqualTo("transcript.jsonl");
+        assertThat(session.path("applicable_final", "output_tokens").scalarText()).isEqualTo("1362");
+        // turn-scoped settings keep their turn id (Codex)
+        Json codex = AnalysisViews.all(open(copy(CODEX, work.resolve("codex")))).member("settings_context");
+        Json turnContext = codex.member("rows").elements().get(1);
+        assertThat(turnContext.member("context_kind").text()).isEqualTo("turn_context");
+        assertThat(turnContext.member("scope").text()).isEqualTo("turn");
+        assertThat(turnContext.member("turn_uid").text()).isNotNull();
+        assertThat(turnContext.path("settings", "approval_policy").text()).isEqualTo("never");
+    }
 }

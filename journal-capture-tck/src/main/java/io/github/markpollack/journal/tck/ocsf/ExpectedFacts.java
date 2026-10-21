@@ -56,6 +56,17 @@ public final class ExpectedFacts {
     public record TurnCompleted(int recordIndex, int statusId, String stopReason) {
     }
 
+    public record TurnStarted(int recordIndex, String turnUid) {
+    }
+
+    /**
+     * A settings / injected-context / accounting record (session_context). {@code settings} holds the exact native
+     * values the record reports under their normalized names (absent when not reported); {@code blocks} is the number
+     * of rendered content blocks the record carries, or {@code null} when the source renders nothing.
+     */
+    public record Context(int recordIndex, int activityId, String contextKind, String turnUid, Map<String, Json> settings, String renderedRole, Integer blocks) {
+    }
+
     public final String artifact;
     public final List<Request> requests = new ArrayList<>();
     public final List<Result> results = new ArrayList<>();
@@ -66,6 +77,8 @@ public final class ExpectedFacts {
     public final List<Decision> decisions = new ArrayList<>();
     public final List<Operation> operations = new ArrayList<>();
     public final List<TurnCompleted> completed = new ArrayList<>();
+    public final List<TurnStarted> started = new ArrayList<>();
+    public final List<Context> contexts = new ArrayList<>();
     /** Records this core owns and must retain (owner-scoped for a split core; admission-scoped for a bounded source). */
     public final Set<Integer> owned = new LinkedHashSet<>();
     /** Owned records that a normalization rule covers; every other owned record is expected as a whole-record fallback. */
@@ -93,6 +106,8 @@ public final class ExpectedFacts {
         m.put("decisions", decisions.size());
         m.put("operations", operations.size());
         m.put("turn_completed", completed.size());
+        m.put("turn_started", started.size());
+        m.put("contexts", contexts.size());
         return m;
     }
 }

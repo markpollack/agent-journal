@@ -583,6 +583,10 @@
         "4": {
           "caption": "Blank",
           "description": "An empty line, retained to preserve framing."
+        },
+        "5": {
+          "caption": "Incomplete at source end",
+          "description": "The source ended (EOF or interruption) without a line terminator while the record was not yet one JSON object; the bytes received are retained verbatim."
         }
       }
     },
@@ -663,6 +667,47 @@
     "method": {
       "caption": "Attribution Method",
       "description": "Caption sibling of method_id.",
+      "type": "string_t"
+    },
+    "settings": {
+      "caption": "Session Settings",
+      "description": "Normalized launch/session settings reported by a native record, as a session_settings object. Only fields the record reports are present.",
+      "type": "session_settings"
+    },
+    "permission_mode": {
+      "caption": "Permission Mode",
+      "description": "The CLI's reported permission/approval mode string exactly as reported (for example default, acceptEdits).",
+      "type": "string_t"
+    },
+    "approval_policy": {
+      "caption": "Approval Policy",
+      "description": "The CLI's reported approval policy string exactly as reported (for example never, on-request).",
+      "type": "string_t"
+    },
+    "sandbox_policy": {
+      "caption": "Sandbox Policy",
+      "description": "The CLI's reported sandbox policy exactly as reported (string or object).",
+      "type": "json_t"
+    },
+    "tool_names": {
+      "caption": "Tool Names",
+      "description": "The tool names the CLI reported as available, in reported order.",
+      "type": "string_t",
+      "is_array": true
+    },
+    "git_branch": {
+      "caption": "Git Branch",
+      "description": "The git branch the CLI reported for the working directory.",
+      "type": "string_t"
+    },
+    "context_kind": {
+      "caption": "Context Kind",
+      "description": "The native kind of a settings, injected-context or accounting record exactly as the source names it (for example init, environment, skill_listing, session_meta, turn_context, cost-state, token_usage_record).",
+      "type": "string_t"
+    },
+    "rendered_role": {
+      "caption": "Rendered Role",
+      "description": "The message role under which injected context was rendered to the model, when the source reports it.",
       "type": "string_t"
     }
   }

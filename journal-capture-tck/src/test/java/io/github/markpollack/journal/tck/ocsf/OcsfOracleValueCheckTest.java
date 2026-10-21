@@ -175,7 +175,7 @@ class OcsfOracleValueCheckTest {
     void fallbackTimeBasisClaimedAsSourceTimeIsADefect(@TempDir Path work) {
         Path fixture = copy(CHILD, work);
         editEvents(pkg(fixture), events -> {
-            Json system = at(events, "source_record", 1, 1);                     // the init line reports no timestamp
+            Json system = at(events, "session_context", 1, 1);                   // the init line reports no timestamp
             obj(system.member("journal")).members().put("time_basis_id", num("1"));
             obj(system.member("metadata")).members().put("original_time", str("2026-10-14T18:08:46.000Z"));
         });
@@ -198,14 +198,14 @@ class OcsfOracleValueCheckTest {
     void parsedRecordRetainedAsOpaqueAndRecordBeyondTheArtifactAreDefects(@TempDir Path work) {
         Path fixture = copy(CODEX, work);
         editEvents(pkg(fixture), events -> {
-            Json sr1 = at(events, "source_record", 1, 1);
+            Json sr1 = at(events, "source_record", 1, 13);
             obj(sr1).members().put("activity_id", num("2"));                        // a parsed record claimed Opaque
-            Json sr2 = at(events, "source_record", 1, 2);
+            Json sr2 = at(events, "source_record", 1, 16);
             obj(sr2.member("source_ref")).members().put("record_index", num("99"));    // points past the 31 records
         });
         OracleReport report = verify(fixture);
-        assertThat(report.check("whole_record.class", ROLLOUT).detail()).contains("record 1 parsed but retained as Opaque");
-        assertThat(report.check("whole_record.coverage", ROLLOUT).detail()).contains("record 2: 0 whole-record events").contains("record 99 retained but the artifact has 31 records");
+        assertThat(report.check("whole_record.class", ROLLOUT).detail()).contains("record 13 parsed but retained as Opaque");
+        assertThat(report.check("whole_record.coverage", ROLLOUT).detail()).contains("record 16: 0 whole-record events").contains("record 99 retained but the artifact has 31 records");
     }
 
     @Test
@@ -221,11 +221,11 @@ class OcsfOracleValueCheckTest {
     void reconstructedLineThatIsNotJsonIsAStructureDefect(@TempDir Path work) {
         Path fixture = copy(CODEX, work);
         editEvents(pkg(fixture), events -> {
-            Json sr1 = at(events, "source_record", 1, 1);
+            Json sr1 = at(events, "source_record", 1, 13);
             obj(sr1).members().remove("data");
         });
         OracleReport report = verify(fixture);
-        assertThat(report.check("whole_record.structure_value", ROLLOUT).detail()).contains("record 1: whole-record event has no data");
-        assertThat(report.check("reconstruction.coverage", ROLLOUT).detail()).contains("no whole-record event for record(s) [1]");
+        assertThat(report.check("whole_record.structure_value", ROLLOUT).detail()).contains("record 13: whole-record event has no data");
+        assertThat(report.check("reconstruction.coverage", ROLLOUT).detail()).contains("no whole-record event for record(s) [13]");
     }
 }

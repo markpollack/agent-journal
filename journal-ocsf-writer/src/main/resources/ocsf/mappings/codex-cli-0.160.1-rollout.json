@@ -1,0 +1,227 @@
+{
+  "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+  "applies_to": {
+    "product": "Codex CLI",
+    "version": "0.160.1",
+    "launch": "codex exec --json (rollout file is the saved session; the exec stream is a separate live-output contract)",
+    "source_kind": "Saved session file"
+  },
+  "executor": "journal-ocsf-writer CodexRolloutMapper (direct Java); one record at a time; state: turn in force, custom_tool_calls seen, token_counts of the current turn, artifact time fallback",
+  "record_discriminator": "type, then payload.type, then payload.item.type / payload.role",
+  "time_policy": {
+    "reported": "timestamp on every record"
+  },
+  "tool_kind_table": {
+    "rule": "codex.tool_name_to_kind.v1",
+    "map": {
+      "exec": 6,
+      "shell": 6,
+      "apply_patch": 2,
+      "read_file": 1,
+      "view_image": 1,
+      "web_search": 8
+    },
+    "default": 99,
+    "note": "Name table only; the nested command text is never parsed for classification (owner decision 2026-10-14)."
+  },
+  "block_kind_table": {
+    "rule": "codex.block_type_to_kind.v1",
+    "map": {
+      "input_text": 1,
+      "output_text": 1,
+      "input_image": 5,
+      "text": 1,
+      "Text": 1
+    },
+    "default": 99
+  },
+  "rules": [
+    {
+      "id": "codex.rollout.session_meta->session_context.settings",
+      "selector": {
+        "type": "session_meta"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "1 Settings reported",
+      "settings": "cwd -> working_directory; cli_version -> version; model_provider -> provider; git.branch -> git_branch",
+      "residual": "whole record in data (base_instructions, originator, history_mode, context_window, creator ids)"
+    },
+    {
+      "id": "codex.rollout.turn_context->session_context.settings",
+      "selector": {
+        "type": "turn_context"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "1 Settings reported",
+      "owner": "turn_uid = turn_id (also sets the turn in force for user/assistant messages)",
+      "settings": "cwd -> working_directory; model -> model; approval_policy -> approval_policy; sandbox_policy -> sandbox_policy (object)",
+      "residual": "whole record in data (permission_profile, file_system_sandbox_policy, effort, timezone, ...)"
+    },
+    {
+      "id": "codex.rollout.world_state->session_context.settings",
+      "selector": {
+        "type": "world_state"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "1 Settings reported",
+      "settings": "state.collaboration_mode.model -> model",
+      "residual": "whole record in data (configuration snapshot)"
+    },
+    {
+      "id": "codex.rollout.user_message->prompt_turn.submitted",
+      "selector": {
+        "type": "response_item",
+        "payload.type": "message",
+        "payload.role": "user"
+      },
+      "target": "agentic_cli/prompt_turn",
+      "activity": "1 Prompt submitted",
+      "owner": "turn_uid = the turn_context.turn_id in force at this ordinal",
+      "note": "Codex writes the environment context as a user-role message before the prompt; both map here. The semantic contract's classifier distinguishes them."
+    },
+    {
+      "id": "codex.rollout.item_completed.UserMessage->prompt_turn.submitted",
+      "selector": {
+        "type": "event_msg",
+        "payload.type": "item_completed",
+        "payload.item.type": "UserMessage"
+      },
+      "target": "agentic_cli/prompt_turn",
+      "activity": "1 Prompt submitted",
+      "owner": "turn_uid = payload.turn_id"
+    },
+    {
+      "id": "codex.rollout.assistant_message->model_response",
+      "selector": {
+        "type": "response_item",
+        "payload.type": "message",
+        "payload.role": "assistant"
+      },
+      "target": "agentic_cli/model_response",
+      "activity": "2 Completed (rule codex.rollout.activity.v1: a response_item message is written once, after the response)",
+      "owner": "response_uid = payload.id"
+    },
+    {
+      "id": "codex.rollout.item_completed.AgentMessage->model_response",
+      "selector": {
+        "type": "event_msg",
+        "payload.type": "item_completed",
+        "payload.item.type": "AgentMessage"
+      },
+      "target": "agentic_cli/model_response",
+      "activity": "2 Completed",
+      "owner": "response_uid = payload.item.id (same id as the response_item message: two occurrences, one response)"
+    },
+    {
+      "id": "codex.rollout.developer_message->session_context.context",
+      "selector": {
+        "type": "response_item",
+        "payload.type": "message",
+        "payload.role": "developer"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "2 Context injected",
+      "fields": "context_kind = response_item/message/developer; rendered_role = developer; content_blocks from payload.content",
+      "residual": "whole record in data"
+    },
+    {
+      "id": "codex.rollout.custom_tool_call->tool_call.requested",
+      "selector": {
+        "type": "response_item",
+        "payload.type": "custom_tool_call"
+      },
+      "target": "agentic_cli/tool_call",
+      "owner": "tool_call_uid = payload.call_id; turn_uid = payload.internal_chat_message_metadata_passthrough.turn_id",
+      "arguments": "payload.input (a string)"
+    },
+    {
+      "id": "codex.rollout.custom_tool_call_output->tool_call.result",
+      "selector": {
+        "type": "response_item",
+        "payload.type": "custom_tool_call_output"
+      },
+      "target": "agentic_cli/tool_call",
+      "owner": "tool_call_uid = payload.call_id",
+      "status": "0 Unknown, status_basis 3 Not derivable: the call-level output reports no call-level status; per-command outcomes are operations"
+    },
+    {
+      "id": "codex.rollout.CommandExecution->tool_call.operation",
+      "selector": {
+        "type": "event_msg",
+        "payload.type": "item_completed",
+        "payload.item.type": "CommandExecution"
+      },
+      "target": "agentic_cli/tool_call",
+      "activity": "3 Operation observed",
+      "attribution": {
+        "rule": "codex.operation_attribution.v1",
+        "join_keys": [
+          "payload.turn_id == custom_tool_call turn_id",
+          "custom_tool_call.name == exec",
+          "item.command[-1] occurs verbatim in custom_tool_call.input"
+        ],
+        "outcome": "1 Unique when exactly one candidate (tool_call_uid set, method 2 Derived by rule); 2 Ambiguous when more than one (tool_call_uid ABSENT, candidates listed); 3 Unattributed when none"
+      },
+      "status": "status_id 1 when item.status == completed, 2 when failed (Reported)",
+      "residual": "item in tool_operation.data; whole record in data"
+    },
+    {
+      "id": "codex.rollout.task_started->prompt_turn.started",
+      "selector": {
+        "type": "event_msg",
+        "payload.type": "task_started"
+      },
+      "target": "agentic_cli/prompt_turn",
+      "activity": "3 Turn started",
+      "owner": "turn_uid = payload.turn_id"
+    },
+    {
+      "id": "codex.rollout.token_usage_record->session_context.accounting",
+      "selector": {
+        "type": "token_usage_record"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "3 Accounting reported",
+      "owner": "response_uid = payload.response_id; turn_uid = payload.turn_id",
+      "usage": "payload.usage -> scope 2 Model response status 2 Final (the cited response's own usage, reported once); payload.turn_token_usage -> scope 3 Prompt turn status 1 Provisional (cumulative so far); payload.thread_token_usage -> scope 5 Session status 1 Provisional (cumulative so far) (rule codex.rollout.token_usage_record.v1)",
+      "residual": "whole record in data"
+    },
+    {
+      "id": "codex.rollout.task_complete->prompt_turn.completed",
+      "selector": {
+        "type": "event_msg",
+        "payload.type": "task_complete"
+      },
+      "target": "agentic_cli/prompt_turn",
+      "activity": "2 Turn completed",
+      "usage": "every event_msg token_count in the same turn before task_complete -> usage_observation scope 3 Prompt turn from info.total_token_usage; the last one is status 2 Final (rule codex.rollout.token_count.v1), earlier ones 1 Provisional; each cites its own record",
+      "cost": "none: the rollout reports no monetary cost",
+      "status": "0 Unknown with basis 3: task_complete carries no status and no error field"
+    },
+    {
+      "id": "codex.rollout.fallback->source_record",
+      "selector": "token_count (retained whole; usage rides on the turn completion), other item types, other roles, unknown types",
+      "target": "agentic_cli/source_record",
+      "activity": "1 Parsed"
+    },
+    {
+      "id": "common.opaque->source_record",
+      "selector": "any line that is blank, not UTF-8, not one JSON object under strict duplicate-key parsing, or cut off by the end of the source",
+      "target": "agentic_cli/source_record",
+      "activity": "2 Opaque",
+      "residual": "raw_data (text) or raw_bytes_b64 (bytes); parse_status_id 5 Incomplete at source end when the source ended mid-record"
+    },
+    {
+      "id": "common.mapper_exception->source_record",
+      "selector": "a parsed record whose mapper threw",
+      "target": "agentic_cli/source_record",
+      "activity": "1 Parsed",
+      "residual": "whole record in data; basis names the exception. A defect of the writer is visible, never a lost record"
+    }
+  ],
+  "unavailable_at_source": [
+    "monetary cost",
+    "call-level status of a multi-command exec",
+    "provider organization (model_provider is a reported string)"
+  ]
+}
