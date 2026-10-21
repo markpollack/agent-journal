@@ -18,10 +18,27 @@
     <description>Test kit for the capture admission criteria: compares what a vendor's own session files
         contain with what Journal recorded, and checks the other criteria on real captures</description>
 
+    <properties>
+        <!--
+            Agent Judge is a test-only dependency: its RFC 2119 / EARS readers and native requirement types load the
+            requirement documents under src/test/resources/requirements/ (see the tck.requirements tests). It never
+            enters the writer or capture path. Published on Maven Central; its parent builds for Java 21, so the
+            tests of this module run on a 21+ JDK (as CI does) while the module itself still compiles at the
+            project's release level.
+        -->
+        <agent-judge.version>0.18.0</agent-judge.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.markpollack</groupId>
+            <artifactId>agent-judge-ai-core</artifactId>
+            <version>${agent-judge.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
