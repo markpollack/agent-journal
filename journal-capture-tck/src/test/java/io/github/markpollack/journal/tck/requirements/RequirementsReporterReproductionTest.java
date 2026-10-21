@@ -71,11 +71,11 @@ class RequirementsReporterReproductionTest {
         assertThat(evidence.properties()).contains("result.owner");
         Judgment control = judge("UC3-AC1", evidence, corpus);
         assertThat(control.status()).as(control.reasoning()).isEqualTo(JudgmentStatus.PASS);
-        assertThat(control.checks()).as("every property on every owner of both fixtures: 5 properties x (1 + 2) owners").hasSize(15);
+        assertThat(control.checks()).as("every property on every owner of the three fixtures: 5 properties x (1 + 2 + 1) owners").hasSize(20);
 
         Judgment missingProperty = judge("UC3-AC1", evidence, corpus.with(map(corpus.reports(), r -> r.filtered(c -> !c.property().equals("result.owner")))));
         assertThat(missingProperty.status()).as("REPAIRED: result.owner never appears").isEqualTo(JudgmentStatus.ERROR);
-        assertThat(missingProperty.reasoning()).contains("3 required check(s) missing").contains("result.owner [main/stream.jsonl]");
+        assertThat(missingProperty.reasoning()).contains("4 required check(s) missing").contains("result.owner [main/stream.jsonl]");
 
         assertThat(corpus.reports().get(CLAUDE_CHILD).checks()).anyMatch(c -> c.owner().equals(CHILD_OWNER));
         Judgment missingOwner = judge("UC3-AC1", evidence, corpus.with(map(corpus.reports(), r -> r.filtered(c -> !c.owner().equals(CHILD_OWNER)))));
@@ -84,17 +84,23 @@ class RequirementsReporterReproductionTest {
     }
 
     @Test
-    void rr03InterruptionCriterionIsNotAssessedOnCompleteRuns(@TempDir Path work) {
-        Corpus corpus = verifyFixtures(work);
+    void rr03InterruptionCriterionIsNotAssessedOnCompleteRunsAndScopedToTheInterruptedFixtureOtherwise(@TempDir Path work) {
+        Corpus all = verifyFixtures(work);
+        Corpus complete = RequirementsEvidenceTest.completeRunsOnly(all);
         for (String fixture : List.of(CODEX_STREAM, CLAUDE_CHILD)) {
-            ExpectedSources frozen = corpus.frozen().get(fixture);
-            assertThat(frozen.complete()).as(fixture + " is frozen as a complete run; nothing was interrupted or cut").isTrue();
+            assertThat(complete.frozen().get(fixture).complete()).as(fixture + " is frozen as a complete run; nothing was interrupted or cut").isTrue();
         }
-        Judgment j = judge("UC4-AC5", CRITERION_EVIDENCE.get("UC4-AC5"), corpus);
+        Judgment j = judge("UC4-AC5", CRITERION_EVIDENCE.get("UC4-AC5"), complete);
         assertThat(j.status()).as("REPAIRED: baseline state checks on completed runs do not establish an interruption criterion").isEqualTo(JudgmentStatus.ABSTAIN);
         assertThat(j.reasoning()).contains("not assessed").contains("no committed fixture exercises").contains("incomplete run");
         assertThat(j.checks()).as("no obligation was evaluated on a fixture that does not exercise the scenario").isEmpty();
-        assertThat(judge("UC4-AC3", CRITERION_EVIDENCE.get("UC4-AC3"), corpus).status()).isEqualTo(JudgmentStatus.ABSTAIN);
+        assertThat(judge("UC4-AC3", CRITERION_EVIDENCE.get("UC4-AC3"), complete).status()).isEqualTo(JudgmentStatus.ABSTAIN);
+
+        assertThat(all.frozen().get(RequirementsEvidenceTest.CLAUDE_INTERRUPTED).complete()).as("the replay-interrupted fixture is frozen as incomplete").isFalse();
+        Judgment scoped = judge("UC4-AC5", CRITERION_EVIDENCE.get("UC4-AC5"), all);
+        assertThat(scoped.status()).withFailMessage(scoped.reasoning()).isEqualTo(JudgmentStatus.PASS);
+        assertThat(scoped.reasoning()).contains("scoped to").contains(RequirementsEvidenceTest.CLAUDE_INTERRUPTED).contains("fixtures not exercising the scenario: [" + CODEX_STREAM + ", " + CLAUDE_CHILD + "]");
+        assertThat(scoped.checks()).as("only the interrupted fixture's obligations were evaluated").allMatch(c -> c.id().startsWith(RequirementsEvidenceTest.CLAUDE_INTERRUPTED));
     }
 
     @Test

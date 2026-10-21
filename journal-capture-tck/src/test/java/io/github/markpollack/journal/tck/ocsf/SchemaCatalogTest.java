@@ -52,7 +52,10 @@ class SchemaCatalogTest {
             OcsfPackage p = open(copy(name, work.resolve(name)));
             assertThat(SemanticContract.validate(SemanticContract.loadDefault(), p.catalog)).as(name).isEmpty();
             for (OcsfPackage child : p.children) {
-                assertThat(SemanticContract.validate(SemanticContract.loadDefault(), child.catalog)).as(name + " child").isEmpty();
+                // a child file declares only the classes its events use; targets under the other pinned classes are empty views, not defects
+                List<String> absent = child.manifest.classTable().keySet().stream().filter(c -> child.catalog.classNamed(c) == null).toList();
+                assertThat(absent).as("the child fixture uses fewer classes than the pin table").isNotEmpty();
+                assertThat(SemanticContract.validate(SemanticContract.loadDefault(), child.catalog, absent)).as(name + " child").isEmpty();
             }
         }
     }

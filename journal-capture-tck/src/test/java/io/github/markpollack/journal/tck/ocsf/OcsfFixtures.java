@@ -25,7 +25,10 @@ final class OcsfFixtures {
     static final String CODEX = "syn-codex-counterexamples";
     static final String CODEX_STREAM = "syn-codex-exec-stream";
     static final String CHILD = "claude-child-2.1.299";
+    static final String INTERRUPTED = "claude-child-2.1.299-interrupted";
     static final String SPAWN = "toolu_01BnEuCUmZ2Vu1LpADzksmrJ";
+    /** The historical two-file layout, kept unchanged under {@code fixtures-historical/0.2.0-prototype/<name>/package}. */
+    static final String HISTORICAL_0_2_0 = "0.2.0-prototype";
 
     private OcsfFixtures() {
     }
@@ -37,6 +40,44 @@ final class OcsfFixtures {
             try (Stream<Path> s = Files.walk(source)) {
                 for (Path p : s.toList()) {
                     Path t = target.resolve(source.relativize(p).toString());
+                    if (Files.isDirectory(p)) {
+                        Files.createDirectories(t);
+                    }
+                    else {
+                        Files.createDirectories(t.getParent());
+                        Files.copy(p, t);
+                    }
+                }
+            }
+            return target;
+        }
+        catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * A working copy of a fixture whose package is the historical two-file layout: the native artifacts of
+     * {@code fixtures/<name>/native/} beside the package kept under {@code fixtures-historical/<layout>/<name>/package}.
+     */
+    static Path copyHistorical(String layout, String name, Path work) {
+        Path target = copy(name, work);
+        try {
+            Path historical = Path.of(OcsfFixtures.class.getResource("/ocsf/fixtures-historical/" + layout + "/" + name + "/spec.json").toURI()).getParent().resolve("package");
+            Path current = pkg(target);
+            try (Stream<Path> s = Files.walk(current)) {
+                s.sorted(java.util.Comparator.reverseOrder()).forEach(p -> {
+                    try {
+                        Files.delete(p);
+                    }
+                    catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                });
+            }
+            try (Stream<Path> s = Files.walk(historical)) {
+                for (Path p : s.toList()) {
+                    Path t = current.resolve(historical.relativize(p).toString());
                     if (Files.isDirectory(p)) {
                         Files.createDirectories(t);
                     }
@@ -98,33 +139,131 @@ final class OcsfFixtures {
         }
     }
 
-    /** Edits {@code events.jsonl} of a core and re-pins {@code package.events_jsonl_sha256} in its manifest. */
+    /** The execution event lines of a file (every line without a top-level {@code declaration} member). */
+    static List<Json> eventLines(Path file) {
+        List<Json> out = new ArrayList<>();
+        for (Json line : lines(file)) {
+            if (!DeclaredFile.isDeclaration(line)) {
+                out.add(line);
+            }
+        }
+        return out;
+    }
+
+    /** The declaration lines of a file, in order. */
+    static List<Json> declarationLines(Path file) {
+        List<Json> out = new ArrayList<>();
+        for (Json line : lines(file)) {
+            if (DeclaredFile.isDeclaration(line)) {
+                out.add(line);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Edits the execution events of a core's {@code events.jsonl} and re-pins the manifest. The edit sees the events
+     * only; the file is rewritten with every declaration first (in its original order) and the edited events after,
+     * which keeps each declaration before every event that references it whatever the edit moved.
+     */
     static void editEvents(Path core, Consumer<List<Json>> edit) {
         Path file = core.resolve("events.jsonl");
-        List<Json> events = lines(file);
+        List<Json> declarations = declarationLines(file);
+        List<Json> events = eventLines(file);
         edit.accept(events);
-        writeLines(file, events);
+        List<Json> all = new ArrayList<>(declarations);
+        all.addAll(events);
+        writeLines(file, all);
         repin(core);
     }
 
     /** Edits {@code events.jsonl} without re-pinning the hash (tampering). */
     static void tamperEvents(Path core, Consumer<List<Json>> edit) {
         Path file = core.resolve("events.jsonl");
-        List<Json> events = lines(file);
+        List<Json> declarations = declarationLines(file);
+        List<Json> events = eventLines(file);
         edit.accept(events);
-        writeLines(file, events);
+        List<Json> all = new ArrayList<>(declarations);
+        all.addAll(events);
+        writeLines(file, all);
     }
 
-    /** Re-pins the events hash, count and bytes after an edit, so the edit is judged as a producer defect rather than tampering. */
+    /**
+     * Edits the declaration lines of a core's {@code events.jsonl} in place (the events are untouched) and re-pins the
+     * manifest. The edit sees the declaration objects of the file itself: altering one alters that line, removing one
+     * drops that line, and a declaration added to the list is written before the first event.
+     */
+    static void editDeclarations(Path core, Consumer<List<Json>> edit) {
+        Path file = core.resolve("events.jsonl");
+        List<Json> all = lines(file);
+        List<Json> declarations = new ArrayList<>();
+        for (Json line : all) {
+            if (DeclaredFile.isDeclaration(line)) {
+                declarations.add(line);
+            }
+        }
+        java.util.Set<Json> original = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        original.addAll(declarations);
+        edit.accept(declarations);
+        java.util.Set<Json> kept = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        kept.addAll(declarations);
+        List<Json> added = new ArrayList<>();
+        for (Json d : declarations) {
+            if (!original.contains(d)) {
+                added.add(d);
+            }
+        }
+        List<Json> out = new ArrayList<>();
+        boolean firstEventSeen = false;
+        for (Json line : all) {
+            if (DeclaredFile.isDeclaration(line)) {
+                if (kept.contains(line)) {
+                    out.add(line);
+                }
+                continue;
+            }
+            if (!firstEventSeen) {
+                out.addAll(added);
+                firstEventSeen = true;
+            }
+            out.add(line);
+        }
+        if (!firstEventSeen) {
+            out.addAll(added);
+        }
+        writeLines(file, out);
+        repin(core);
+    }
+
+    /** The declaration line with the given uid, or {@code null}. */
+    static Json declaration(List<Json> declarations, String uid) {
+        for (Json d : declarations) {
+            if (uid.equals(SchemaCatalog.text(d.member("declaration"), "uid"))) {
+                return d;
+            }
+        }
+        return null;
+    }
+
+    /** Re-pins the events hash, count, bytes and persisted prefix after an edit, so the edit is judged as a producer defect rather than tampering. */
     static void repin(Path core) {
         try {
             byte[] bytes = Files.readAllBytes(core.resolve("events.jsonl"));
             String sha = NativeArtifact.sha256(bytes);
-            int count = lines(core.resolve("events.jsonl")).size();
+            int count = eventLines(core.resolve("events.jsonl")).size();
+            int declarations = declarationLines(core.resolve("events.jsonl")).size();
             editManifest(core, run -> {
-                obj(run.get("package")).members().put("events_jsonl_sha256", str(sha));
-                obj(run.get("package")).members().put("events_count", num(Integer.toString(count)));
-                obj(run.get("package")).members().put("events_bytes", num(Integer.toString(bytes.length)));
+                Json.JObject pkg = obj(run.get("package"));
+                pkg.members().put("events_jsonl_sha256", str(sha));
+                pkg.members().put("events_count", num(Integer.toString(count)));
+                pkg.members().put("events_bytes", num(Integer.toString(bytes.length)));
+                if (pkg.get("declarations_count") != null) {
+                    pkg.members().put("declarations_count", num(Integer.toString(declarations)));
+                }
+                if (pkg.get("persisted_prefix") instanceof Json.JObject prefix) {
+                    prefix.members().put("bytes", num(Integer.toString(bytes.length)));
+                    prefix.members().put("sha256", str(sha));
+                }
             });
         }
         catch (IOException e) {
@@ -137,6 +276,57 @@ final class OcsfFixtures {
         Json.JObject run = (Json.JObject) NeutralJson.readDocument(file);
         edit.accept(run);
         write(file, NeutralJson.write(run) + "\n");
+        syncRecordingDeclaration(core, run);
+    }
+
+    /**
+     * Keeps a standalone file's finalization declaration consistent with the package state a manifest edit produced,
+     * as the writer would have left the file: an open or failed writer never wrote a {@code recording} declaration,
+     * an interrupted one wrote it with that state. The manifest's hash, byte and prefix pins follow the file.
+     */
+    private static void syncRecordingDeclaration(Path core, Json.JObject run) {
+        Path events = core.resolve("events.jsonl");
+        if (!Files.isRegularFile(events)) {
+            return;
+        }
+        List<Json> all = lines(events);
+        if (all.isEmpty() || !DeclaredFile.isDeclaration(all.get(0))) {
+            return; // historical two-file layout: the manifest alone carries the state
+        }
+        String state = SchemaCatalog.text(run.member("package"), "state");
+        Json rec = declaration(all, "recording:end");
+        boolean changed = false;
+        if (("RECORDING".equals(state) || "FAILED".equals(state)) && rec != null) {
+            all.remove(rec);
+            changed = true;
+        }
+        else if (("INTERRUPTED".equals(state) || "COMPLETED".equals(state)) && rec != null && !state.equals(SchemaCatalog.text(rec.member("recording"), "state"))) {
+            obj(rec.member("recording")).members().put("state", str(state));
+            changed = true;
+        }
+        if (!changed) {
+            return;
+        }
+        writeLines(events, all);
+        try {
+            byte[] bytes = Files.readAllBytes(events);
+            Json.JObject pkg = obj(run.get("package"));
+            if (pkg.get("events_jsonl_sha256") != null && !pkg.get("events_jsonl_sha256").isNull()) {
+                pkg.members().put("events_jsonl_sha256", str(NativeArtifact.sha256(bytes)));
+            }
+            pkg.members().put("events_bytes", num(Integer.toString(bytes.length)));
+            if (pkg.get("declarations_count") != null) {
+                pkg.members().put("declarations_count", num(Integer.toString(declarationLines(events).size())));
+            }
+            if (pkg.get("persisted_prefix") instanceof Json.JObject prefix) {
+                prefix.members().put("bytes", num(Integer.toString(bytes.length)));
+                prefix.members().put("sha256", str(NativeArtifact.sha256(bytes)));
+            }
+            write(core.resolve("run.json"), NeutralJson.write(run) + "\n");
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     /** Edits a native artifact in place (a labelled fixture of the test's own making) and re-freezes the expected-source manifest to it. */

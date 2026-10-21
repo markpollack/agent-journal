@@ -68,7 +68,8 @@ class RequirementsEvidenceTest {
 
     static final String CODEX_STREAM = "syn-codex-exec-stream";
     static final String CLAUDE_CHILD = "claude-child-2.1.299";
-    static final List<String> FIXTURES = List.of(CODEX_STREAM, CLAUDE_CHILD);
+    static final String CLAUDE_INTERRUPTED = "claude-child-2.1.299-interrupted";
+    static final List<String> FIXTURES = List.of(CODEX_STREAM, CLAUDE_CHILD, CLAUDE_INTERRUPTED);
 
     /** The scenario a criterion's fixtures must exercise, decided from each fixture's frozen manifest, not from the report. */
     enum Scenario {
@@ -163,9 +164,10 @@ class RequirementsEvidenceTest {
                 "UC3-AC11", "UC3-AC15", "UC4-AC6", "UC5-AC3", "UC5-AC4", UNASSESSED_REPORTING_CRITERION, PARTIAL_EVIDENCE_CRITERION)) {
             EXPECTED_STATUS.put(id, JudgmentStatus.PASS);
         }
-        // no committed fixture is an interrupted or cut run: the interruption criteria are not assessed, never passed on complete runs
-        EXPECTED_STATUS.put("UC4-AC3", JudgmentStatus.ABSTAIN);
-        EXPECTED_STATUS.put("UC4-AC5", JudgmentStatus.ABSTAIN);
+        // the replay-interrupted fixture (a sanitized real stream prefix, interrupted by the fixture driver; labelled, not live)
+        // exercises the interruption criteria; on the two complete runs alone they are not assessed (see the reporter controls)
+        EXPECTED_STATUS.put("UC4-AC3", JudgmentStatus.PASS);
+        EXPECTED_STATUS.put("UC4-AC5", JudgmentStatus.PASS);
         // no committed fixture carries a prompt occurrence (the -p stream does not echo the prompt; the labelled Codex stream has none):
         // the prompt criterion is not assessed. REQ-1's PASS of the former combined content criterion rested on responses only.
         EXPECTED_STATUS.put("UC3-AC13", JudgmentStatus.ABSTAIN);
@@ -444,7 +446,10 @@ class RequirementsEvidenceTest {
         Corpus noPrompts = corpus.with(map(corpus.reports(), r -> r.filtered(c -> !c.property().equals("prompt.values") && !c.property().equals("population.prompts"))));
         control(checks, "prompt evidence omitted: the response criterion UC3-AC2 still passes", judge("UC3-AC2", CRITERION_EVIDENCE.get("UC3-AC2"), noPrompts), JudgmentStatus.PASS);
         control(checks, "prompt evidence omitted: the prompt criterion UC3-AC13 is an error", judge("UC3-AC13", CRITERION_EVIDENCE.get("UC3-AC13"), noPrompts), JudgmentStatus.ERROR);
-        control(checks, "a scenario no committed fixture exercises (interrupted source) is not assessed", judge("UC4-AC5", CRITERION_EVIDENCE.get("UC4-AC5"), corpus), JudgmentStatus.ABSTAIN);
+        control(checks, "a scenario the fixtures in hand do not exercise (interrupted source, on the complete runs only) is not assessed",
+                judge("UC4-AC5", CRITERION_EVIDENCE.get("UC4-AC5"), completeRunsOnly(corpus)), JudgmentStatus.ABSTAIN);
+        control(checks, "the same scenario on the corpus with the replay-interrupted fixture is established, scoped to that fixture",
+                judge("UC4-AC5", CRITERION_EVIDENCE.get("UC4-AC5"), corpus), JudgmentStatus.PASS);
         boolean allHeld = checks.stream().allMatch(c -> c.judgment().status() == JudgmentStatus.PASS);
         String reasoning = id + ": established by " + checks.size() + " negative/positive control(s) computed on the committed fixtures' real oracle reports in this run,"
                 + " scoped to this reporter's reduction (evidence about the reporter, not about the product); " + (allHeld ? "every control held" : "a control did not hold");
@@ -454,6 +459,19 @@ class RequirementsEvidenceTest {
     private static void control(List<io.github.markpollack.judge.judgment.Check> checks, String name, Judgment observed, JudgmentStatus expected) {
         String detail = "expected " + expected + ", observed " + observed.status() + ": " + observed.reasoning();
         checks.add(observed.status() == expected ? io.github.markpollack.judge.judgment.Check.pass(name, detail) : io.github.markpollack.judge.judgment.Check.fail(name, detail));
+    }
+
+    /** The corpus restricted to fixtures whose frozen expected sources declare a complete run. */
+    static Corpus completeRunsOnly(Corpus corpus) {
+        Map<String, ExpectedSources> frozen = new LinkedHashMap<>();
+        Map<String, OracleReport> reports = new LinkedHashMap<>();
+        corpus.frozen().forEach((name, f) -> {
+            if (f.complete()) {
+                frozen.put(name, f);
+                reports.put(name, corpus.reports().get(name));
+            }
+        });
+        return new Corpus(frozen, reports);
     }
 
     /** The first split child's artifact owner across the corpus, from the frozen manifests, or {@code null}. */
@@ -547,7 +565,8 @@ class RequirementsEvidenceTest {
         out.put("revision", doc.revision());
         out.put("question", "does the independent oracle, run on the committed public fixtures, establish this requirement's observable behavior for those fixtures?");
         out.put("fixtures", FIXTURES);
-        out.put("evidence_class", "committed public fixtures: labelled synthetic Codex exec stream; sanitized real Claude stream with one child core. Not live capture.");
+        out.put("evidence_class", "committed public fixtures: labelled synthetic Codex exec stream; sanitized real Claude stream with one child core; "
+                + "the same stream's 10-record prefix replay-interrupted by the fixture driver (labelled). Recorded replay and labelled synthetic; not live capture.");
         out.put("reduction", "a criterion passes only when every named property is reported for every owner its fixtures' frozen expected sources imply and the named scenario was exercised; "
                 + "missing check: ERROR; DEFECTIVE: FAIL; unresolved/unsupported: ABSTAIN; no occurrence or no exercising fixture: ABSTAIN (not assessed)");
         out.put("rollup", rollup(judgments.values()).name());

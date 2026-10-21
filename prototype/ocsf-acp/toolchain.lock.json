@@ -55,9 +55,9 @@
   "java_reader": {
     "module": "journal-capture-tck",
     "package": "io.github.markpollack.journal.tck.ocsf",
-    "reader_contract": "agent-journal/ocsf-reader 0.2",
+    "reader_contract": "agent-journal/ocsf-reader 0.3 (reads 0.2 packages with a minor-version warning)",
     "semantic_operations": "0.2",
-    "package_layout": "0.1.0-prototype and 0.2.0-prototype"
+    "package_layout": "0.1.0-prototype and 0.2.0-prototype (two-file cores, definitions in run.json) and 0.3.0-prototype (standalone events.jsonl with declaration records; run.json ancillary)"
   },
   "not_adopted": [
     "ocsf-server (Elixir) and JSON Schema export",
@@ -74,7 +74,7 @@
     "module": "journal-ocsf-writer",
     "package": "io.github.markpollack.journal.ocsf.writer",
     "package_layout": "0.2.0-prototype",
-    "reader_contract": "agent-journal/ocsf-reader 0.2",
+    "reader_contract": "agent-journal/ocsf-reader 0.3 (reads 0.2 packages with a minor-version warning)",
     "semantic_operations": "0.2",
     "status": "NON-PRODUCTION incremental writer; no production default uses it"
   }

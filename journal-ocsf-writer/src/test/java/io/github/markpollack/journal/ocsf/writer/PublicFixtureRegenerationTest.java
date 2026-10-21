@@ -17,6 +17,7 @@ import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CHILD;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX_STREAM;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.FIXTURES;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.INTERRUPTED;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.PAIR;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStream;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeTranscript;
@@ -39,10 +40,34 @@ class PublicFixtureRegenerationTest {
         write(CODEX, List.of(codexRollout()), List.of("rollout.jsonl"));
         write(PAIR, List.of(claudeStream(), claudeTranscript()), List.of("stream.jsonl", "transcript.jsonl"));
         write(CODEX_STREAM, List.of(codexStream()), List.of("stream.jsonl"));
+        writeInterrupted(INTERRUPTED, CHILD, "stream.jsonl", 10);
     }
 
-    private static void write(String fixture, List<SourceDescriptor> sources, List<String> artifacts) throws IOException {
-        Path out = FIXTURES.resolve(fixture).resolve("package");
+    /**
+     * The replay-interrupted fixture: the first {@code records} whole records of another fixture's stream are its
+     * native artifact (written here, so the prefix is exactly what the writer was fed), its frozen expected sources
+     * declare the run incomplete, and the writer is interrupted by the driver after feeding them.
+     */
+    private static void writeInterrupted(String fixture, String from, String artifact, int records) throws IOException {
+        Path dir = FIXTURES.resolve(fixture);
+        Path nativeDir = dir.resolve("native");
+        Files.createDirectories(nativeDir);
+        byte[] prefix = Replay.prefixBytes(nativeOf(from, artifact), records);
+        Files.write(nativeDir.resolve(artifact), prefix);
+        WriterTestSupport.freeze(nativeDir, run(fixture).runUid(), false, artifact, "claude_stream");
+        Path out = dir.resolve("package");
+        delete(out);
+        Clock fixed = Clock.fixed(Instant.parse("2026-10-21T00:00:00Z"), ZoneOffset.UTC);
+        try (OcsfRunWriter w = OcsfRunWriter.open(out, run(fixture), SchemaPin.bundled(), WriterOptions.defaults().withClock(fixed))) {
+            SourceInput in = w.source(claudeStream());
+            Replay.feedBytes(in, prefix, 1024, fixed, prefix.length, false);
+            w.flush();
+            w.interrupt("fixture driver stopped the replay after " + records + " whole records (labelled replay interruption)");
+        }
+        System.out.println("regenerated " + out);
+    }
+
+    private static void delete(Path out) throws IOException {
         if (Files.exists(out)) {
             try (Stream<Path> s = Files.walk(out)) {
                 s.sorted(Comparator.reverseOrder()).forEach(p -> {
@@ -55,6 +80,11 @@ class PublicFixtureRegenerationTest {
                 });
             }
         }
+    }
+
+    private static void write(String fixture, List<SourceDescriptor> sources, List<String> artifacts) throws IOException {
+        Path out = FIXTURES.resolve(fixture).resolve("package");
+        delete(out);
         Clock fixed = Clock.fixed(Instant.parse("2026-10-21T00:00:00Z"), ZoneOffset.UTC);
         try (OcsfRunWriter w = OcsfRunWriter.open(out, run(fixture), SchemaPin.bundled(), WriterOptions.defaults().withClock(fixed))) {
             for (int i = 0; i < sources.size(); i++) {

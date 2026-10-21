@@ -1,0 +1,40 @@
+{
+ "run_uid": "claude-child-2.1.299-interrupted",
+ "invocation_index": 0,
+ "session_uid": "00000000-0000-4000-8000-000000000000",
+ "capture_start": "2026-10-14T18:08:46Z",
+ "cli": {
+  "name": "Claude Code",
+  "version": "2.1.299",
+  "vendor_name": "Anthropic",
+  "type_id": 1,
+  "type": "Native"
+ },
+ "launch_settings": {
+  "command": "claude -p --output-format stream-json (sanitized real stream from claude-code-capture test fixtures; replay interrupted by the fixture driver after 10 whole records)",
+  "model": "claude-haiku-4-5-20251001",
+  "permissionMode": "default (from stream record 1)",
+  "cwd": "/work"
+ },
+ "pins": {
+  "ocsf_schema_commit": "856d462bd20dc46cc1ffed2dfffe3b91ef0fbeba",
+  "compiler_commit": "865887a9ee88580c471062f93da115e7599fa31d",
+  "toolkit": {
+   "release": "v0.9.0",
+   "commit": "a99619fcd148791a6a9fe5f82c1e0d839f658591",
+   "linux_amd64_sha256": "641fec9f8c457896c06ead9136fe8f4e50753cd95f8a68c24b25c2bcc9cfd5a5"
+  }
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "kind": 1,
+   "profile": "claude_stream",
+   "path": "<fixture>/native/claude-child-2.1.299-interrupted/stream.jsonl"
+  }
+ ],
+ "synthetic": {
+  "label": "SANITIZED REAL STREAM PREFIX, REPLAY-INTERRUPTED (Claude Code 2.1.299): the first 10 whole records of the claude-child-2.1.299 stream fed through the writer and then interrupted by the fixture driver; the native artifact is that prefix and the frozen expected sources declare the run incomplete. Regression evidence for an interrupted recording, not a live interruption and not a new run",
+  "derived_from": "journal-capture-tck/src/test/resources/ocsf/fixtures/claude-child-2.1.299/native/stream.jsonl (records 1-10)"
+ }
+}

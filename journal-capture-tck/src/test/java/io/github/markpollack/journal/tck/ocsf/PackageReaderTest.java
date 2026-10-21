@@ -10,7 +10,11 @@ import java.util.List;
 
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CHILD;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CODEX;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.HISTORICAL_0_2_0;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.copy;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.copyHistorical;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.declaration;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.editDeclarations;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.editEvents;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.editManifest;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.num;
@@ -37,7 +41,8 @@ class PackageReaderTest {
         assertThat(fromEvents.events).hasSize(39);
         assertThat(fromDir.events).hasSize(39);
         assertThat(fromEvents.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
-        assertThat(fromEvents.manifest.packageVersion()).isEqualTo("0.2.0-prototype");
+        assertThat(fromEvents.manifest.packageVersion()).isEqualTo("0.3.0-prototype");
+        assertThat(fromEvents.standalone()).as("read from the file's declarations; run.json is ancillary").isTrue();
         assertThat(fromEvents.manifest.packageState()).isEqualTo("COMPLETED");
         assertThat(fromEvents.manifest.extensionUid()).isEqualTo(901);
         assertThat(fromEvents.manifest.extensionVersion()).isEqualTo("0.3.0-prototype");
@@ -45,16 +50,28 @@ class PackageReaderTest {
     }
 
     @Test
-    void aDetachedEventsFileIsRefusedButItsLinesAreKept(@TempDir Path work) throws Exception {
+    void anEventsFileAloneIsReadFromItsDeclarationsWhileAHistoricalDetachedFileIsRefused(@TempDir Path work) throws Exception {
         Path fixture = copy(CODEX, work);
+        Path alone = work.resolve("alone");
+        Files.createDirectories(alone);
+        Files.copy(pkg(fixture).resolve("events.jsonl"), alone.resolve("events.jsonl"));
+        OcsfPackage p = PackageReader.open(alone.resolve("events.jsonl"));
+        assertThat(p.refused()).as(p.diagnostics.toString()).isFalse();
+        assertThat(p.diagnosticsWithCode("ANCILLARY_ABSENT")).hasSize(1);
+        assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
+        assertThat(p.events).hasSize(39);
+        assertThat(p.manifest.runUid()).isEqualTo("syn-codex-counterexamples");
+        assertThat(p.manifest.packageState()).isEqualTo("COMPLETED");
+
+        Path historical = copyHistorical(HISTORICAL_0_2_0, CODEX, work.resolve("hist"));
         Path detached = work.resolve("detached");
         Files.createDirectories(detached);
-        Files.copy(pkg(fixture).resolve("events.jsonl"), detached.resolve("events.jsonl"));
-        OcsfPackage p = PackageReader.open(detached.resolve("events.jsonl"));
-        assertThat(p.refused()).isTrue();
-        assertThat(p.diagnosticsWithCode("NO_MANIFEST")).hasSize(1);
-        assertThat(p.rawLines).hasSize(39);
-        assertThat(p.events).isEmpty();
+        Files.copy(pkg(historical).resolve("events.jsonl"), detached.resolve("events.jsonl"));
+        OcsfPackage d = PackageReader.open(detached.resolve("events.jsonl"));
+        assertThat(d.refused()).isTrue();
+        assertThat(d.diagnosticsWithCode("NO_MANIFEST")).hasSize(1);
+        assertThat(d.rawLines).hasSize(39);
+        assertThat(d.events).isEmpty();
     }
 
     @Test
@@ -71,24 +88,25 @@ class PackageReaderTest {
     @Test
     void wrongClassPinIsRefusedWithoutRemapping(@TempDir Path work) {
         Path fixture = copy(CODEX, work);
-        editManifest(pkg(fixture), run -> obj(run.path("extension", "classes", "tool_call")).members().put("class_uid", num("90211003")));
+        editDeclarations(pkg(fixture), decls -> obj(declaration(decls, "schema").path("schema", "extension", "classes", "tool_call")).members().put("class_uid", num("90211003")));
         OcsfPackage p = open(fixture);
         assertThat(p.refused()).isTrue();
         assertThat(p.diagnosticsWithCode("PIN_MISMATCH").get(0).detail()).contains("tool_call uid 90211003 != definition uid 90111003");
+        assertThat(p.diagnosticsWithCode("MANIFEST_DISAGREES")).as("the ancillary run.json still carries the original table").hasSize(1);
         // the events are still parsed and available; tool_call events are now outside the pin table
-        assertThat(p.rawLines).hasSize(39);
+        assertThat(p.events).hasSize(39);
         assertThat(p.diagnosticsWithCode("UNKNOWN_CLASS")).hasSize(1);
     }
 
     @Test
     void unsupportedReaderContractMajorIsRefusedMinorIsAWarning(@TempDir Path work) {
         Path fixture = copy(CODEX, work);
-        editManifest(pkg(fixture), run -> obj(run.path("package", "reader_compat")).members().put("reader_contract_version", str("2.0")));
+        editDeclarations(pkg(fixture), decls -> obj(declaration(decls, "format").member("format")).members().put("reader_contract_version", str("2.0")));
         OcsfPackage major = open(fixture);
         assertThat(major.refused()).isTrue();
-        assertThat(major.diagnosticsWithCode("UNSUPPORTED_READER_CONTRACT_VERSION").get(0).detail()).contains("2.0").contains("0.2");
-        assertThat(major.rawLines).hasSize(39);
-        editManifest(pkg(fixture), run -> obj(run.path("package", "reader_compat")).members().put("reader_contract_version", str("0.3")));
+        assertThat(major.diagnosticsWithCode("UNSUPPORTED_READER_CONTRACT_VERSION").get(0).detail()).contains("2.0").contains("0.3");
+        assertThat(major.events).hasSize(39);
+        editDeclarations(pkg(fixture), decls -> obj(declaration(decls, "format").member("format")).members().put("reader_contract_version", str("0.2")));
         OcsfPackage minor = open(fixture);
         assertThat(minor.refused()).isFalse();
         assertThat(minor.diagnosticsWithCode("READER_CONTRACT_MINOR_DIFFERS")).hasSize(1);
@@ -97,7 +115,7 @@ class PackageReaderTest {
     @Test
     void unsupportedPackageVersionIsRefused(@TempDir Path work) {
         Path fixture = copy(CODEX, work);
-        editManifest(pkg(fixture), run -> obj(run.get("package")).members().put("version", str("9.0.0")));
+        editDeclarations(pkg(fixture), decls -> obj(declaration(decls, "format").member("format")).members().put("package_version", str("9.0.0")));
         OcsfPackage p = open(fixture);
         assertThat(p.refused()).isTrue();
         assertThat(p.diagnosticsWithCode("UNSUPPORTED_PACKAGE_VERSION")).hasSize(1);
@@ -116,11 +134,11 @@ class PackageReaderTest {
     @Test
     void alteredDefinitionsOrContractsAreReportedAgainstTheirHashes(@TempDir Path work) {
         Path fixture = copy(CODEX, work);
-        editManifest(pkg(fixture), run -> {
-            obj(run.path("definitions", "closure", "types")).members().put("synthetic_t", str("Synthetic"));
-            obj(run.path("shared", "contracts", "codex-cli/rollout/0.160.1/0.2.0-prototype", "embedded")).members().put("tampered", str("yes"));
-            obj(run.path("semantic_contract", "declarations").elements().get(0)).members().put("tampered", str("yes"));
+        editDeclarations(pkg(fixture), decls -> {
+            obj(declaration(decls, "definition:type/long_t").path("definition", "body")).members().put("caption", str("Synthetic"));
+            obj(declaration(decls, "contract:codex-cli/rollout/0.160.1/0.2.0-prototype").path("contract", "embedded")).members().put("tampered", str("yes"));
         });
+        editManifest(pkg(fixture), run -> obj(run.path("semantic_contract", "declarations").elements().get(0)).members().put("tampered", str("yes")));
         OcsfPackage p = open(fixture);
         assertThat(p.diagnosticsWithCode("DEFINITIONS_HASH_MISMATCH")).hasSize(1);
         assertThat(p.diagnosticsWithCode("CONTRACT_HASH_MISMATCH")).hasSize(1);
@@ -131,7 +149,7 @@ class PackageReaderTest {
     @Test
     void missingDefinitionsRefuseInterpretationButKeepTheEvents(@TempDir Path work) {
         Path fixture = copy(CODEX, work);
-        editManifest(pkg(fixture), run -> run.members().remove("definitions"));
+        editDeclarations(pkg(fixture), decls -> decls.removeIf(d -> "definition".equals(SchemaCatalog.text(d.member("declaration"), "kind"))));
         OcsfPackage p = open(fixture);
         assertThat(p.refused()).isTrue();
         assertThat(p.diagnosticsWithCode("MISSING_DEFINITIONS")).hasSize(1);
@@ -142,7 +160,7 @@ class PackageReaderTest {
     @Test
     void missingDefinitionReferenceIsADefect(@TempDir Path work) {
         Path fixture = copy(CODEX, work);
-        editManifest(pkg(fixture), run -> obj(run.path("definitions", "closure", "objects")).members().remove("agentic_cli/operation"));
+        editDeclarations(pkg(fixture), decls -> decls.remove(declaration(decls, "definition:agentic_cli/operation")));
         OcsfPackage p = open(fixture);
         assertThat(p.diagnosticsWithCode("MISSING_DEFINITION_REFERENCE").get(0).detail()).contains("tool_operation refers to object agentic_cli/operation");
         assertThat(p.diagnosticsWithCode("SEMANTIC_TARGET_UNRESOLVED")).isNotEmpty();
@@ -229,6 +247,8 @@ class PackageReaderTest {
         editManifest(OcsfFixtures.child(fixture), run -> obj(run.path("run", "parent")).members().put("run_uid", str("someone-else")));
         assertThat(open(fixture).children.get(0).diagnosticsWithCode("CHILD_PARENT_MISMATCH")).as("the child core reports its own mislink").hasSize(1);
         Files.delete(OcsfFixtures.child(fixture).resolve("run.json"));
+        assertThat(open(fixture).children).as("a child without its ancillary run.json is still read from its own file").hasSize(1);
+        Files.delete(OcsfFixtures.child(fixture).resolve("events.jsonl"));
         OcsfPackage p = open(fixture);
         assertThat(p.diagnosticsWithCode("CHILD_MISSING")).hasSize(1);
         assertThat(p.children).isEmpty();

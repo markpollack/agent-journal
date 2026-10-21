@@ -46,7 +46,9 @@ class WriterPersistenceTest {
                     Jv m = manifest(core);
                     long onDisk = WriterTestSupport.bytes(core.resolve("events.jsonl")).length;
                     assertThat(((Jv.Num) m.path("package", "events_bytes")).value().longValue()).as("events_bytes after flush " + flushes + " at record " + (k + 1) + "; events_count " + m.path("package", "events_count").text() + "; lines " + WriterTestSupport.lines(core.resolve("events.jsonl")).size()).isEqualTo(onDisk);
-                    assertThat(((Jv.Num) m.path("package", "events_count")).value().intValue()).isEqualTo(WriterTestSupport.lines(core.resolve("events.jsonl")).size());
+                    assertThat(((Jv.Num) m.path("package", "events_count")).value().intValue()).isEqualTo(WriterTestSupport.eventLines(core.resolve("events.jsonl")).size());
+                    assertThat(((Jv.Num) m.path("package", "declarations_count")).value().intValue()).isEqualTo(WriterTestSupport.declarations(core.resolve("events.jsonl")).size());
+                    assertThat(m.path("package", "persisted_prefix", "sha256").text()).isEqualTo(SchemaPin.sha256(WriterTestSupport.bytes(core.resolve("events.jsonl"))));
                     assertThat(((Jv.Num) m.path("recording", "flush_count")).value().intValue()).isEqualTo(flushes);
                     assertThat(m.path("package", "state").text()).isEqualTo("RECORDING");
                     assertThat(m.path("package", "provisional")).as("a provisional note while recording").isNotNull();
@@ -102,7 +104,7 @@ class WriterPersistenceTest {
         assertThat(source.path("ended", "how").text()).isEqualTo("INTERRUPTED");
         assertThat(((Jv.Num) source.member("bytes")).value().intValue()).isEqualTo(cut);
         assertThat(Jv.write(manifest(core).path("recording", "acquisition", "detail"))).contains("interrupted after 7 record(s)").contains("record 7 is incomplete at source end");
-        List<String> lines = WriterTestSupport.lines(core.resolve("events.jsonl"));
+        List<String> lines = WriterTestSupport.eventLines(core.resolve("events.jsonl"));
         Jv last = Jv.parse(lines.get(lines.size() - 1));
         assertThat(((Jv.Num) last.member("parse_status_id")).value().intValue()).isEqualTo(5);
         assertThat(last.member("raw_data").text()).isEqualTo(new String(all, cut - 40, 40, StandardCharsets.UTF_8));
@@ -174,7 +176,7 @@ class WriterPersistenceTest {
         assertThat(m.path("recording", "failure", "operation").text()).isEqualTo("finish");
         assertThat(m.path("package", "events_jsonl_sha256").isNull()).as("no final hash was ever written").isTrue();
         assertThat(((Jv.Num) m.path("recording", "failure", "events_not_confirmed")).value().intValue()).isEqualTo(0);
-        assertThat(((Jv.Num) m.path("recording", "failure", "events_confirmed_persisted")).value().intValue()).isEqualTo(WriterTestSupport.lines(core.resolve("events.jsonl")).size());
+        assertThat(((Jv.Num) m.path("recording", "failure", "events_confirmed_persisted")).value().intValue()).isEqualTo(WriterTestSupport.eventLines(core.resolve("events.jsonl")).size());
         w.close();
         assertThat(manifest(core).path("package", "state").text()).isEqualTo("FAILED");
     }

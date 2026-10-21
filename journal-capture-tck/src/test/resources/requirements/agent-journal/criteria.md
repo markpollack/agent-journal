@@ -173,7 +173,7 @@ Rule: RULE-20. Tests: `WriterLifecycleTest#completeRequiresEveryDeclaredSourceTo
 ### UC4-AC3: Finalize an interrupted run honestly
 
 When capture is interrupted, the writer shall end open sources as interrupted, retain any incomplete tail record, and finalize the acquired prefix as `INTERRUPTED`.
-Rule: RULE-20. Tests: `WriterLifecycleTest#interruptionEndsOpenSourcesAndFinalizesWhatWasAcquired`, `WriterLifecycleTest#eofInsideARecordRetainsTheIncompleteTailHonestly`.
+Rule: RULE-20. Tests: `WriterLifecycleTest#interruptionEndsOpenSourcesAndFinalizesWhatWasAcquired`, `WriterLifecycleTest#eofInsideARecordRetainsTheIncompleteTailHonestly`, `StandalonePrefixTest#anInterruptedFileReadAloneSaysSoAndACutFileKeepsEveryWholeLine`; `RequirementsEvidenceTest` assesses it on the replay-interrupted fixture `claude-child-2.1.299-interrupted` (labelled, not live).
 
 ### UC4-AC4: Report a write failure as failed
 
@@ -183,12 +183,12 @@ Rule: RULE-20. Tests: `WriterLifecycleTest#injectedWriteFailureLeavesAnHonestFai
 ### UC4-AC5: Keep storage finalization and acquisition completeness separate
 
 When a package is finalized but a source was interrupted or cut, the package shall declare acquisition incomplete separately from storage finalization, and acceptance shall not treat the package as a complete capture.
-Rule: RULE-20. Tests: `WriterAcquisitionRegressionTest#aSourceEndedAsInterruptedThenCompletedIsPreservedButNotAcceptedAsComplete`, `FullOneReviewRegressionTest#anHonestlyInterruptedSourceIsPreservedButNotAcceptedAsComplete`.
+Rule: RULE-20. Tests: `WriterAcquisitionRegressionTest#aSourceEndedAsInterruptedThenCompletedIsPreservedButNotAcceptedAsComplete`, `FullOneReviewRegressionTest#anHonestlyInterruptedSourceIsPreservedButNotAcceptedAsComplete`; `RequirementsEvidenceTest` assesses it on the replay-interrupted fixture (labelled, not live).
 
 ### UC4-AC6: Route child records to their own core
 
 When a record names a child owner such as a spawning tool call, the writer shall append it to that child's own event file, which carries its own declarations and its parent and spawn identities, while the parent file identifies the child's location without claiming to contain its content.
-Rule: RULE-21, RULE-24. Tests: `WriterLifecycleTest#childRecordsAreRoutedToTheirOwnCoreAsTheyArrive`, `PackageReaderTest#childCoresAreLinkedAndJudgedSeparately`. Status: amended 2026-10-21; a child's own declarations are not yet written.
+Rule: RULE-21, RULE-24. Tests: `WriterLifecycleTest#childRecordsAreRoutedToTheirOwnCoreAsTheyArrive`, `StandaloneEventFileTest#theChildEventFileAloneCarriesItsOwnDeclarationsAndIsJudgedOnItsOwn`, `StandalonePrefixTest#aChildFileWrittenDuringTheRunIsInterpretableAloneBeforeTheRunEnds`. Status: amended and implemented 2026-10-21 (layout 0.3.0-prototype).
 
 ### UC4-AC7: Show an open request as open
 
@@ -205,12 +205,12 @@ Rule: RULE-18, RULE-19. Tests: none yet. Status: not implemented; live integrati
 ### UC5-AC1: Bootstrap from a copied event file
 
 When `events.jsonl` alone is copied to a fresh directory without `run.json`, sibling files, network access or a schema cache, a compatible Java reader shall discover the declared schema, enumerate its fields, types and enumerations, resolve the essential references and read the recorded execution facts and vendor data.
-Rule: RULE-24, RULE-25. Tests: `IsolatedBootstrapTest#aCopiedCoreWithItsChildBootstrapsWithoutAnythingElse` (historical two-file core). Status: changed meaning 2026-10-21, from the copied two-file core to the event file alone; the standalone proof is not yet implemented.
+Rule: RULE-24, RULE-25. Tests: `StandaloneEventFileTest#theParentEventFileAloneIsInterpretedFromItsDeclarations`, `StandaloneEventFileTest#theWholeRunAloneIsAcceptedByTheOracleAndTheToolWithoutAnyManifest`, `StandalonePrefixTest` (flushed prefix, interruption, cut, failure, child); `IsolatedBootstrapTest` (two-file core). Status: changed meaning 2026-10-21, from the copied two-file core to the event file alone; implemented in layout 0.3.0-prototype.
 
 ### UC5-AC2: Fail explicitly on a missing or altered declaration
 
 If a mandatory declaration or reference target is missing from or altered in `events.jsonl`, then the reader shall fail interpretation of the affected records explicitly with a diagnostic rather than guess the schema or silently skip them.
-Rule: RULE-25. Tests: `PackageReaderTest#missingDefinitionsRefuseInterpretationButKeepTheEvents`, `PackageReaderTest#missingDefinitionReferenceIsADefect` (historical two-file core). Status: retired meaning 2026-10-21: this criterion required refusing an `events.jsonl` presented without `run.json`; a standalone event file is now the accepted form and refusal applies to missing declarations inside it.
+Rule: RULE-25. Tests: `StandaloneEventFileTest#removingOrAlteringAMandatoryDeclarationFailsInterpretationExplicitly`, `PackageReaderTest#missingDefinitionsRefuseInterpretationButKeepTheEvents`, `PackageReaderTest#missingDefinitionReferenceIsADefect`. Status: retired meaning 2026-10-21: this criterion required refusing an `events.jsonl` presented without `run.json`; a standalone event file is now the accepted form (a detached file of the historical two-file layout is still refused) and refusal applies to missing or altered declarations inside it.
 
 ### UC5-AC3: Check saved values against the embedded definitions
 

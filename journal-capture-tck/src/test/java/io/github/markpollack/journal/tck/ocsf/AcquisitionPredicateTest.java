@@ -131,7 +131,7 @@ class AcquisitionPredicateTest {
         editManifest(pkg(undeclared), run -> run.members().remove("recording"));
         OracleReport u = verify(undeclared);
         assertThat(u.outcome("acquisition.complete", "main")).isEqualTo(Outcome.UNSUPPORTED);
-        assertThat(u.check("acquisition.complete", "main").detail()).contains("no acquisition declaration (0.2.0-prototype layout)");
+        assertThat(u.check("acquisition.complete", "main").detail()).contains("no acquisition declaration (");
 
         Path statusless = copy(PAIR, work.resolve("statusless"));
         editManifest(pkg(statusless), run -> obj(run.path("recording", "acquisition")).members().remove("status"));

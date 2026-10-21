@@ -29,6 +29,7 @@ final class WriterTestSupport {
     static final String CODEX = "syn-codex-counterexamples";
     static final String PAIR = "syn-claude-pair-transcript";
     static final String CODEX_STREAM = "syn-codex-exec-stream";
+    static final String INTERRUPTED = "claude-child-2.1.299-interrupted";
     static final String SPAWN = "toolu_01BnEuCUmZ2Vu1LpADzksmrJ";
 
     private WriterTestSupport() {
@@ -188,5 +189,36 @@ final class WriterTestSupport {
         catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    /** The execution event lines of a standalone event file (every line without a top-level {@code declaration} member). */
+    static List<String> eventLines(Path p) {
+        List<String> out = new ArrayList<>();
+        for (String line : lines(p)) {
+            if (!line.isBlank() && !(Jv.parse(line).member("declaration") instanceof Jv.Obj)) {
+                out.add(line);
+            }
+        }
+        return out;
+    }
+
+    /** The declaration lines of a standalone event file, parsed. */
+    static List<Jv> declarations(Path p) {
+        List<Jv> out = new ArrayList<>();
+        for (String line : lines(p)) {
+            if (!line.isBlank() && Jv.parse(line).member("declaration") instanceof Jv.Obj) {
+                out.add(Jv.parse(line));
+            }
+        }
+        return out;
+    }
+
+    /** The declaration kinds of a file in order, for comparing two files whose declarations differ only in times. */
+    static List<String> declarationKinds(Path p) {
+        List<String> out = new ArrayList<>();
+        for (Jv d : declarations(p)) {
+            out.add(d.path("declaration", "kind").text() + " " + d.path("declaration", "uid").text());
+        }
+        return out;
     }
 }

@@ -53,7 +53,17 @@ public final class SemanticContract {
 
     /** Problems found; empty when every target resolves and every operation is implemented. */
     public static List<String> validate(Json contract, SchemaCatalog catalog) {
+        return validate(contract, catalog, java.util.Set.of());
+    }
+
+    /**
+     * @param absentClasses pinned class names the package declares no definition for because no event of that class
+     *        was written (a standalone file declares classes before first use); a target under such a class is not a
+     *        defect, the view is simply empty there
+     */
+    public static List<String> validate(Json contract, SchemaCatalog catalog, java.util.Collection<String> absentClasses) {
         List<String> problems = new ArrayList<>();
+        List<String> raw = new ArrayList<>();
         Json decls = contract.member("declarations");
         if (!(decls instanceof Json.JArray)) {
             problems.add("semantic_contract.declarations is not an array");
@@ -65,12 +75,30 @@ public final class SemanticContract {
             if (op == null || !SemanticOperation.known(op)) {
                 problems.add(id + ": operation " + op + " is not implemented by this reader (" + SemanticOperation.VERSION + ")");
             }
-            walk(d.member("targets"), id + ".targets", catalog, problems);
+            walk(d.member("targets"), id + ".targets", catalog, raw);
             for (Json c : d.member("classifiers") == null ? List.<Json>of() : d.member("classifiers").elements()) {
-                walk(c.member("target"), id + ".classifiers.target", catalog, problems);
+                walk(c.member("target"), id + ".classifiers.target", catalog, raw);
+            }
+        }
+        for (String problem : raw) {
+            if (!undeclaredTarget(problem, absentClasses)) {
+                problems.add(problem);
             }
         }
         return problems;
+    }
+
+    /**
+     * Whether a problem concerns a target under a pinned class the file declares no definition for, or a {@code *}
+     * path that no declared class carries while some pinned class is undeclared: the view is empty there, not wrong.
+     */
+    public static boolean undeclaredTarget(String problem, java.util.Collection<String> absentClasses) {
+        for (String cls : absentClasses) {
+            if (problem.contains("unknown class " + cls)) {
+                return true;
+            }
+        }
+        return !absentClasses.isEmpty() && problem.contains(" in *.");
     }
 
     private static void walk(Json v, String where, SchemaCatalog catalog, List<String> problems) {

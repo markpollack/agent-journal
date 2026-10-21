@@ -32,7 +32,7 @@ class CodexStreamMapperTest {
             assertThat(w.complete()).isEqualTo(OcsfRunWriter.State.COMPLETED);
         }
         List<Jv> events = new ArrayList<>();
-        for (String line : WriterTestSupport.lines(core.resolve("events.jsonl"))) {
+        for (String line : WriterTestSupport.eventLines(core.resolve("events.jsonl"))) {
             events.add(Jv.parse(line));
         }
         assertThat(events).hasSize(12);
@@ -133,7 +133,7 @@ class CodexStreamMapperTest {
             in.end(SourceInput.End.EOF, options().clock().instant());
             w.complete();
         }
-        List<String> lines = WriterTestSupport.lines(core.resolve("events.jsonl"));
+        List<String> lines = WriterTestSupport.eventLines(core.resolve("events.jsonl"));
         assertThat(lines).hasSize(3);
         Jv noText = Jv.parse(lines.get(0));
         assertThat(noText.member("response_uid").text()).isEqualTo("item_x");

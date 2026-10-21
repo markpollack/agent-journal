@@ -417,7 +417,7 @@ class OcsfOracleMutationTest {
         @Test
         void refusedPackageIsUnsupportedNotVerified(@TempDir Path work) {
             Path fixture = copy(CODEX, work);
-            editManifest(pkg(fixture), run -> obj(run.get("package")).members().put("version", str("9.0.0")));
+            OcsfFixtures.editDeclarations(pkg(fixture), decls -> obj(OcsfFixtures.declaration(decls, "format").member("format")).members().put("package_version", str("9.0.0")));
             OracleReport report = verify(fixture);
             assertThat(report.outcome("package.readable", "main")).isEqualTo(Outcome.UNSUPPORTED);
             assertThat(report.checks()).as("nothing else is judged on a refused package").hasSize(1);
@@ -428,7 +428,7 @@ class OcsfOracleMutationTest {
             Path fixture = copy(CODEX, work);
             editManifest(pkg(fixture), run -> obj(run.member("sources").elements().get(0)).members().put("sha256", str("00")));
             assertThat(verify(fixture).check("source.inventory", ROLLOUT).detail()).contains("sha256 00 declared");
-            assertThat(all(OcsfFixtures.lines(pkg(fixture).resolve("events.jsonl")), e -> true)).hasSize(39);
+            assertThat(all(OcsfFixtures.eventLines(pkg(fixture).resolve("events.jsonl")), e -> true)).hasSize(39);
         }
     }
 }

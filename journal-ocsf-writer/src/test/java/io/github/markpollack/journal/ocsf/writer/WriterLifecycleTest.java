@@ -113,7 +113,7 @@ class WriterLifecycleTest {
         assertThat(m.path("recording", "acquisition", "status").text()).isEqualTo("incomplete");
         assertThat(Jv.write(m.path("recording", "acquisition", "detail"))).contains("record 7 is incomplete at source end");
         // the cut bytes are retained verbatim as an Opaque source_record with parse status 5
-        List<String> lines = WriterTestSupport.lines(core.resolve("events.jsonl"));
+        List<String> lines = WriterTestSupport.eventLines(core.resolve("events.jsonl"));
         Jv last = Jv.parse(lines.get(lines.size() - 1));
         assertThat(last.member("class_name").text()).isEqualTo("Source Record");
         assertThat(((Jv.Num) last.member("activity_id")).value().intValue()).isEqualTo(2);
@@ -168,7 +168,8 @@ class WriterLifecycleTest {
         Path stream = nativeOf(PAIR, "stream.jsonl");
         AtomicInteger appends = new AtomicInteger();
         WriterOptions opts = options().withFaults((operation, detail) -> {
-            if ("append".equals(operation) && appends.incrementAndGet() == 2) {
+            // append 1 is the opening flush (format, schema, run and source declarations); append 2 the first events
+            if ("append".equals(operation) && appends.incrementAndGet() == 3) {
                 throw new IOException("injected: disk full during " + detail);
             }
         });
@@ -217,7 +218,8 @@ class WriterLifecycleTest {
         assertThatThrownBy(() -> w.source(claudeTranscript())).isInstanceOf(IllegalStateException.class);
         Jv m = manifest(core);
         assertThat(m.path("package", "events_jsonl_sha256").text()).isEqualTo(SchemaPin.sha256(events1));
-        assertThat(((Jv.Num) m.path("package", "events_count")).value().intValue()).isEqualTo(WriterTestSupport.lines(core.resolve("events.jsonl")).size());
+        assertThat(((Jv.Num) m.path("package", "events_count")).value().intValue()).isEqualTo(WriterTestSupport.eventLines(core.resolve("events.jsonl")).size());
+        assertThat(((Jv.Num) m.path("package", "declarations_count")).value().intValue()).isEqualTo(WriterTestSupport.declarations(core.resolve("events.jsonl")).size());
     }
 
     @Test
@@ -253,7 +255,9 @@ class WriterLifecycleTest {
         assertThat(childManifest.path("run", "source_scope", "owner_value").text()).isEqualTo(SPAWN);
         assertThat(childManifest.path("package", "state").text()).isEqualTo("COMPLETED");
         // the child owns 3 records (18 user text, 20 assistant tool_use, 21 user tool_result): 4 events (the tool_use yields response + request)
-        assertThat(WriterTestSupport.lines(child.resolve("events.jsonl"))).hasSize(4);
+        assertThat(WriterTestSupport.eventLines(child.resolve("events.jsonl"))).hasSize(4);
+        assertThat(WriterTestSupport.declarationKinds(child.resolve("events.jsonl"))).as("the child file declares its own format, schema, run, contract, source and definitions")
+                .startsWith("format format", "schema schema", "run run:" + run(CHILD).runUid() + "/child/" + SPAWN).contains("source source:stream.jsonl").anyMatch(k -> k.startsWith("definition definition:agentic_cli/tool_call"));
         OracleReport report = verify(core, nativeDir(work, CHILD, "stream.jsonl", -1));
         assertThat(report.defects()).as(notVerified(report).toString()).isEmpty();
         assertThat(report.outcome("whole_record.coverage", "child:" + SPAWN + "/stream.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
@@ -316,13 +320,17 @@ class WriterLifecycleTest {
             Replay.feedRecords(w.source(claudeStream()), nativeOf(CHILD, "stream.jsonl"), clockB);
             w.complete();
         }
-        assertThat(WriterTestSupport.bytes(b.resolve("events.jsonl"))).isEqualTo(WriterTestSupport.bytes(a.resolve("events.jsonl")));
-        assertThat(WriterTestSupport.bytes(b.resolve("children").resolve(SPAWN).resolve("events.jsonl")))
-                .isEqualTo(WriterTestSupport.bytes(a.resolve("children").resolve(SPAWN).resolve("events.jsonl")));
+        // the event lines are byte-identical; the declarations differ only in arrival/finalization times (a chunked replay reads the clock more often)
+        assertThat(WriterTestSupport.eventLines(b.resolve("events.jsonl"))).isEqualTo(WriterTestSupport.eventLines(a.resolve("events.jsonl")));
+        assertThat(WriterTestSupport.eventLines(b.resolve("children").resolve(SPAWN).resolve("events.jsonl")))
+                .isEqualTo(WriterTestSupport.eventLines(a.resolve("children").resolve(SPAWN).resolve("events.jsonl")));
+        assertThat(WriterTestSupport.declarationKinds(b.resolve("events.jsonl"))).isEqualTo(WriterTestSupport.declarationKinds(a.resolve("events.jsonl")));
         Jv ma = manifest(a);
         Jv mb = manifest(b);
         assertThat(mb.member("sources").elements().get(0).member("sha256").text()).isEqualTo(ma.member("sources").elements().get(0).member("sha256").text());
-        assertThat(mb.path("package", "events_jsonl_sha256").text()).isEqualTo(ma.path("package", "events_jsonl_sha256").text());
+        assertThat(mb.path("package", "events_jsonl_sha256").text()).hasSize(64);
+        assertThat(ma.path("package", "events_jsonl_sha256").text()).hasSize(64);
+        assertThat(((Jv.Num) mb.path("package", "events_count")).value().intValue()).isEqualTo(((Jv.Num) ma.path("package", "events_count")).value().intValue());
     }
 
     static Json group(Json usageView, String scope, String owner, String source) {

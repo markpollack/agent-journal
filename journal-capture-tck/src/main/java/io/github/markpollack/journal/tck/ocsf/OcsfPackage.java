@@ -20,9 +20,11 @@ public final class OcsfPackage {
     public final SchemaCatalog catalog;
     public final List<OcsfPackage> children;
     public final List<Diagnostic> diagnostics;
+    /** The declarations of a standalone event file; {@code null} for the historical two-file layouts. */
+    public final DeclaredFile declarations;
 
     OcsfPackage(Path dir, RunManifest manifest, List<Event> events, List<String> rawLines, SchemaCatalog catalog,
-            List<OcsfPackage> children, List<Diagnostic> diagnostics) {
+            List<OcsfPackage> children, List<Diagnostic> diagnostics, DeclaredFile declarations) {
         this.dir = dir;
         this.manifest = manifest;
         this.events = List.copyOf(events);
@@ -30,6 +32,12 @@ public final class OcsfPackage {
         this.catalog = catalog;
         this.children = List.copyOf(children);
         this.diagnostics = List.copyOf(diagnostics);
+        this.declarations = declarations;
+    }
+
+    /** Whether this package was read from a standalone event file (its declarations), not from a sibling manifest. */
+    public boolean standalone() {
+        return declarations != null;
     }
 
     /** Whether the reader refused to interpret this package (its events are then raw only). */

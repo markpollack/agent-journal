@@ -418,6 +418,10 @@ class FullOneReviewRegressionTest {
 
     static void omitTranscriptSource(Path fixture) {
         editEvents(pkg(fixture), events -> events.removeIf(e -> "transcript.jsonl".equals(SchemaCatalog.text(e.member("source_ref"), "artifact"))));
+        OcsfFixtures.editDeclarations(pkg(fixture), decls -> decls.removeIf(d -> {
+            String uid = SchemaCatalog.text(d.member("declaration"), "uid");
+            return "source:transcript.jsonl".equals(uid) || "source_end:transcript.jsonl".equals(uid) || uid.startsWith("contract:claude-code/session-transcript");
+        }));
         editManifest(pkg(fixture), run -> {
             List<Json> sources = run.member("sources").elements();
             sources.removeIf(s -> "transcript.jsonl".equals(SchemaCatalog.text(s, "artifact")));

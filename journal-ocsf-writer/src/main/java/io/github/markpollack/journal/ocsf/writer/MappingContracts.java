@@ -85,7 +85,10 @@ final class MappingContracts {
         return contract(name).path("block_kind_table", "rule").text();
     }
 
-    /** The {@code shared.contracts} section: each loaded contract embedded with its hashes and executed-rule counts. */
+    /**
+     * The {@code shared.contracts} section of the ancillary manifest: each loaded contract by uid with its hashes and
+     * executed-rule counts (the mapping audit). The contract document itself is declared in {@code events.jsonl}.
+     */
     Jv manifestSection() {
         Jv.Obj out = new Jv.Obj();
         for (Map.Entry<String, Jv> c : contracts.entrySet()) {
@@ -98,9 +101,23 @@ final class MappingContracts {
                 rules.put(r.getKey(), r.getValue());
             }
             entry.put("rules_executed", rules);
-            entry.put("embedded", c.getValue());
+            entry.put("declared_in", "events.jsonl contract:" + uid);
             out.put(uid, entry);
         }
         return out;
+    }
+
+    /** The {@code contract} declaration payload for a loaded contract uid, or {@code null} when none is loaded under it. */
+    Jv.Obj declaration(String contractUid) {
+        for (Map.Entry<String, Jv> c : contracts.entrySet()) {
+            if (contractUid.equals(c.getValue().member("contract_uid").text())) {
+                return new Jv.Obj().put("contract_uid", contractUid)
+                        .put("sha256", SchemaPin.sha256(Jv.write(c.getValue()).getBytes(StandardCharsets.UTF_8)))
+                        .put("source_file_sha256", fileSha.get(c.getKey()))
+                        .put("embedded", c.getValue())
+                        .put("note", "a JSON mapping description (rules, tables, applicability) identified by contract_uid; not a JSON Schema; the mapper it names is provenance, not something a reader executes");
+            }
+        }
+        return null;
     }
 }

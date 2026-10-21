@@ -95,7 +95,7 @@ public final class OcsfOracle {
         report.candidate("readerDiagnostics", diags);
         List<String> cores = new ArrayList<>();
         for (OcsfPackage core : pkg.all()) {
-            cores.add(core.label() + " " + core.manifest.runUid() + " (" + core.events.size() + " events)");
+            cores.add(core.label() + " " + (core.manifest == null ? "(refused)" : core.manifest.runUid()) + " (" + core.events.size() + " events)");
         }
         report.candidate("cores", cores);
         report.oracle("nativeDir", nativeDir.toString());

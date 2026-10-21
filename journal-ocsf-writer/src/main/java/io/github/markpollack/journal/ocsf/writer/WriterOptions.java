@@ -22,7 +22,7 @@ public record WriterOptions(Clock clock, int autoFlushEveryRecords, FaultInjecto
     }
 
     public static WriterOptions defaults() {
-        return new WriterOptions(Clock.systemUTC(), 0, FaultInjector.NONE, "prototype/full-1-complete-sources");
+        return new WriterOptions(Clock.systemUTC(), 0, FaultInjector.NONE, "integration/ocsf-stream-first");
     }
 
     public WriterOptions withClock(Clock c) {

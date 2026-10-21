@@ -8,9 +8,9 @@ package io.github.markpollack.journal.ocsf.writer;
 public final class Pins {
 
     public static final String PACKAGE_KIND = "agent-journal/ocsf-prototype-package";
-    public static final String PACKAGE_VERSION = "0.2.0-prototype";
+    public static final String PACKAGE_VERSION = "0.3.0-prototype";
     public static final String READER_CONTRACT = "agent-journal/ocsf-reader";
-    public static final String READER_CONTRACT_VERSION = "0.2";
+    public static final String READER_CONTRACT_VERSION = "0.3";
     public static final String SEMANTIC_OPERATIONS_VERSION = "0.2";
     public static final String SEMANTIC_CONTRACT_RESOURCE = "/ocsf/semantic-contract-0.2.0-prototype.json";
 

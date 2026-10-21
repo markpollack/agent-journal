@@ -43,6 +43,8 @@ public final class OcsfReaderTool {
     public static final int EXIT_REFUSED = 2;
     public static final int EXIT_DEFECTS = 3;
     public static final int EXIT_INCOMPLETE = 4;
+    /** {@code views} on a standalone event file without its ancillary semantic contract: the optional views are unavailable, the file is still interpretable. */
+    public static final int EXIT_UNAVAILABLE = 5;
     public static final int EXIT_USAGE = 64;
 
     /**
@@ -99,7 +101,13 @@ public final class OcsfReaderTool {
             }
         }
         switch (args[0]) {
-            case "views" -> write(AnalysisViews.all(pkg), args.length > 2 ? Path.of(args[2]) : null, out);
+            case "views" -> {
+                if (pkg.manifest.semanticContract() == null) {
+                    err.println("views unavailable: the package carries no semantic contract (it lives in the ancillary run.json, which is absent); the event file is interpretable without it");
+                    return EXIT_UNAVAILABLE;
+                }
+                write(AnalysisViews.all(pkg), args.length > 2 ? Path.of(args[2]) : null, out);
+            }
             case "measure" -> {
                 for (OcsfPackage core : pkg.all()) {
                     write(PackageMeasure.measure(core), args.length > 2 ? Path.of(args[2] + (core == pkg ? "" : "." + core.label().replace(':', '_'))) : null, out);

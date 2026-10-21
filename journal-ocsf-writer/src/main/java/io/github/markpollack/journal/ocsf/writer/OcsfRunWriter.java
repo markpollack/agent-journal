@@ -16,11 +16,18 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * The incremental Java writer of the OCSF-based run package (layout {@code 0.2.0-prototype}, NON-PRODUCTION). One
+ * The incremental Java writer of the OCSF-based run package (layout {@code 0.3.0-prototype}, NON-PRODUCTION). One
  * writer records one run: it opens the root core, accepts declared sources through {@link SourceInput} (the same
  * entry point for a replay driver and for a live capture), maps each native record as it arrives into OCSF
  * events or conservative fallback, routes a record's events to the root core or a linked child core by the owner
  * the mapper names, and keeps the persisted package readable before the input ends.
+ *
+ * <p>Each core's {@code events.jsonl} is independently portable: it opens with its {@code format}, {@code schema}
+ * and {@code run} declarations, declares every contract, source, definition and session before the first event that
+ * references it, records linked children, each source's end and its own finalization as further declarations, and
+ * never rewrites a line ({@link Declarations}). {@code run.json} beside it is an ancillary index and summary (final
+ * hash, counts, failure detail, extension source, semantic contract, mapping audit), never an interpretation
+ * dependency.
  *
  * <p>Lifecycle: {@code RECORDING} from {@link #open} until {@link #complete()} ({@code COMPLETED}, requires every
  * declared source to have ended), {@link #interrupt} ({@code INTERRUPTED}, ends open sources as interrupted) or a
@@ -28,7 +35,7 @@ import java.util.TreeMap;
  * call returns the state already reached. Sources admitted after the live output ended (a saved session file) are
  * appended after the events already persisted; nothing written earlier changes.
  */
-public final class OcsfRunWriter implements AutoCloseable {
+public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
 
     public enum State {
         RECORDING, COMPLETED, INTERRUPTED, FAILED
@@ -63,7 +70,7 @@ public final class OcsfRunWriter implements AutoCloseable {
         this.started = options.clock().instant();
         this.extensionSourceSha256 = SchemaPin.extensionSource(extensionSource);
         this.semanticContract = loadSemanticContract();
-        this.root = new CoreWriter(dir, run.runUid(), pin.compiled(), options);
+        this.root = new CoreWriter(dir, run.runUid(), this, runDeclaration(run.runUid(), null, null));
         root.flush(c -> manifest(c, null, null, List.of()));
         this.lastFlush = started;
     }
@@ -89,6 +96,71 @@ public final class OcsfRunWriter implements AutoCloseable {
         return run;
     }
 
+    // ------------------------------------------------------------------------------------------ declaration context
+
+    @Override
+    public SchemaPin pin() {
+        return pin;
+    }
+
+    @Override
+    public String extensionSourceSha256() {
+        return extensionSourceSha256;
+    }
+
+    @Override
+    public WriterOptions options() {
+        return options;
+    }
+
+    @Override
+    public String startedText() {
+        return started.toString();
+    }
+
+    @Override
+    public Jv.Obj contractDeclaration(String contractUid) {
+        return contracts.declaration(contractUid);
+    }
+
+    @Override
+    public Jv.Obj sourceDeclaration(String artifact) {
+        Source s = sources.get(artifact);
+        if (s == null) {
+            return null;
+        }
+        Jv.Obj d = new Jv.Obj().put("artifact", s.descriptor.artifact()).put("kind", s.descriptor.kind()).put("profile", s.descriptor.profile())
+                .put("surface", s.descriptor.surface());
+        if (s.descriptor.pathAtCapture() != null) {
+            d.put("path_at_capture", s.descriptor.pathAtCapture());
+        }
+        return d.put("contract_uid", contracts.uid(s.mapper.contractName()));
+    }
+
+    /** The {@code run} declaration of a core: identity, product, launch settings, parent/scope for a child, producer and capture time. */
+    private Jv.Obj runDeclaration(String coreRunUid, Jv parent, Jv sourceScope) {
+        Jv.Obj r = new Jv.Obj().put("run_uid", coreRunUid).put("invocation_index", run.invocationIndex()).put("capture_start", run.captureStart().toString());
+        r.put("cli", new Jv.Obj().put("name", run.cli().name()).put("version", run.cli().version()).put("vendor_name", run.cli().vendorName())
+                .put("type_id", run.cli().typeId()).put("type", run.cli().type()).put("product", run.cli().product()));
+        if (run.launchSettings() != null) {
+            r.put("launch_settings", run.launchSettings());
+        }
+        if (run.synthetic() != null && !run.synthetic().isNull()) {
+            r.put("synthetic", run.synthetic());
+        }
+        if (parent != null) {
+            r.put("parent", parent);
+        }
+        if (sourceScope != null) {
+            r.put("source_scope", sourceScope);
+        }
+        r.put("producer", new Jv.Obj().put("name", "agent-journal").put("version", options.producerVersion()).put("vendor_name", "Agent Journal"));
+        r.put("written_by", new Jv.Obj().put("name", Pins.WRITER_NAME).put("version", Pins.PACKAGE_VERSION)
+                .put("mode", "incremental: declarations and events appended as native records arrived; no batch conversion or re-layout"));
+        r.put("capture_time", started.toEpochMilli()).put("capture_time_text", started.toString()).put("started", started.toString());
+        return r;
+    }
+
     // ------------------------------------------------------------------------------------------ sources
 
     /** Declares a source and returns its input; a source may be declared at any time while recording. */
@@ -99,6 +171,7 @@ public final class OcsfRunWriter implements AutoCloseable {
         }
         Source s = new Source(descriptor);
         sources.put(descriptor.artifact(), s);
+        root.declareSource(descriptor.artifact());
         return s;
     }
 
@@ -243,7 +316,38 @@ public final class OcsfRunWriter implements AutoCloseable {
             endedAt = at;
             stateName = how == End.EOF ? "ENDED" : "INTERRUPTED";
             mapper.end(how, ctx);
+            declareEnd();
             flush();
+        }
+
+        /** Appends this source's {@code source_end} declaration to every core that declared the source. */
+        void declareEnd() {
+            Jv.Obj end = endDeclaration();
+            root.declareSourceEnd(descriptor.artifact(), end);
+            for (CoreWriter c : children.values()) {
+                c.declareSourceEnd(descriptor.artifact(), end);
+            }
+        }
+
+        Jv.Obj endDeclaration() {
+            Jv.Obj e = new Jv.Obj().put("artifact", descriptor.artifact()).put("how", endedHow.name()).put("at", endedAt.toString())
+                    .put("records", records).put("bytes", bytes).put("sha256", sha256()).put("opaque_records", opaque).put("trailing_newline", lastByteNewline);
+            if (incompleteTail != null) {
+                e.put("incomplete_tail_record", incompleteTail);
+            }
+            if (firstArrival != null) {
+                e.put("first_arrival", firstArrival.toString()).put("last_arrival", lastArrival.toString());
+            }
+            e.put("family_inventory", familyInventory());
+            return e;
+        }
+
+        Jv.Obj familyInventory() {
+            Jv.Obj fam = new Jv.Obj();
+            for (Map.Entry<String, SourceContext.Family> f : ctx.families.entrySet()) {
+                fam.put(f.getKey(), new Jv.Obj().put("records", f.getValue().records).put("bytes", f.getValue().bytes).put("disposition", f.getValue().disposition));
+            }
+            return fam;
         }
 
         @Override
@@ -295,11 +399,7 @@ public final class OcsfRunWriter implements AutoCloseable {
             if (firstArrival != null) {
                 s.put("first_arrival", firstArrival.toString()).put("last_arrival", lastArrival.toString());
             }
-            Jv.Obj fam = new Jv.Obj();
-            for (Map.Entry<String, SourceContext.Family> f : ctx.families.entrySet()) {
-                fam.put(f.getKey(), new Jv.Obj().put("records", f.getValue().records).put("bytes", f.getValue().bytes).put("disposition", f.getValue().disposition));
-            }
-            s.put("family_inventory", fam);
+            s.put("family_inventory", familyInventory());
             return s;
         }
     }
@@ -308,13 +408,24 @@ public final class OcsfRunWriter implements AutoCloseable {
         return children.computeIfAbsent(owner, o -> {
             try {
                 String path = "children/" + o.replaceAll("[^A-Za-z0-9_.-]", "_");
-                CoreWriter c = new CoreWriter(dir.resolve(path), run.runUid() + "/child/" + o, pin.compiled(), options);
+                String childRunUid = run.runUid() + "/child/" + o;
+                Jv.Obj parent = new Jv.Obj().put("run_uid", run.runUid()).put("spawn_tool_call_uid", o).put("invocation_index", run.invocationIndex());
+                CoreWriter c = new CoreWriter(dir.resolve(path), childRunUid, this, runDeclaration(childRunUid, parent, scope(o)));
+                root.declareChild(childRunUid, path, o, CHILD_BASIS, scope(null));
                 return c;
             }
             catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
         });
+    }
+
+    private static final String CHILD_BASIS = "records whose owner path (parent_tool_use_id) equals the spawning tool call id, routed by the mapper as they arrived (labelled split; not live child support)";
+
+    /** The owner scope of a core: {@code ownerValue} null for the root (records without an owner). */
+    private Jv.Obj scope(String ownerValue) {
+        return new Jv.Obj().put("artifact", ownerArtifact()).put("owner_path", "parent_tool_use_id").put("owner_value", ownerValue == null ? Jv.NULL : new Jv.Str(ownerValue))
+                .put("basis", "this core owns the records of the artifact whose owner_path member equals owner_value (null: records without one)");
     }
 
     // ------------------------------------------------------------------------------------------ lifecycle
@@ -371,6 +482,7 @@ public final class OcsfRunWriter implements AutoCloseable {
                 s.endedAt = now;
                 s.stateName = "INTERRUPTED";
                 s.mapper.end(SourceInput.End.INTERRUPTED, s.ctx);
+                s.declareEnd();
             }
         }
         finish(State.INTERRUPTED, reason);
@@ -382,6 +494,11 @@ public final class OcsfRunWriter implements AutoCloseable {
             ended = options.clock().instant();
             state = outcome;
             interruptionReason = reason;
+            Jv acquisition = acquisition();
+            for (CoreWriter c : children.values()) {
+                c.declareRecording(outcome.name(), started.toString(), ended.toString(), reason, acquisition);
+            }
+            root.declareRecording(outcome.name(), started.toString(), ended.toString(), reason, acquisition);
             for (Map.Entry<String, CoreWriter> c : children.entrySet()) {
                 c.getValue().finish(cw -> childManifest(cw, c.getKey()));
             }
@@ -442,17 +559,14 @@ public final class OcsfRunWriter implements AutoCloseable {
         List<Jv> links = new ArrayList<>();
         for (Map.Entry<String, CoreWriter> c : children.entrySet()) {
             links.add(new Jv.Obj().put("run_uid", c.getValue().runUid).put("path", dir.relativize(c.getValue().dir).toString().replace('\\', '/'))
-                    .put("spawn_tool_call_uid", c.getKey())
-                    .put("basis", "records whose owner path (parent_tool_use_id) equals the spawning tool call id, routed by the mapper as they arrived (labelled split; not live child support)"));
+                    .put("spawn_tool_call_uid", c.getKey()).put("basis", CHILD_BASIS));
         }
         return links;
     }
 
     private Jv childManifest(CoreWriter core, String owner) {
         Jv.Obj parent = new Jv.Obj().put("run_uid", run.runUid()).put("spawn_tool_call_uid", owner).put("invocation_index", run.invocationIndex());
-        Jv.Obj scope = new Jv.Obj().put("artifact", ownerArtifact()).put("owner_path", "parent_tool_use_id").put("owner_value", owner)
-                .put("basis", "this core owns the records of the artifact whose owner_path member equals owner_value (null: records without one)");
-        return manifest(core, parent, scope, List.of());
+        return manifest(core, parent, scope(owner), List.of());
     }
 
     private String ownerArtifact() {
@@ -469,23 +583,26 @@ public final class OcsfRunWriter implements AutoCloseable {
         Jv.Obj m = new Jv.Obj();
         Jv.Obj pkg = new Jv.Obj();
         pkg.put("kind", Pins.PACKAGE_KIND).put("version", Pins.PACKAGE_VERSION).put("non_production", true);
-        pkg.put("layout", new Jv.Obj().put("manifest", "run.json").put("events", "events.jsonl")
-                .put("children", "children/<name>/ (each a core with its own run.json and events.jsonl)")
-                .put("discovery", "a reader given events.jsonl opens the sibling run.json; a reader given a directory opens run.json in it; a detached events.jsonl is not self-describing"));
+        pkg.put("layout", new Jv.Obj().put("events", "events.jsonl").put("manifest", "run.json (ancillary)")
+                .put("children", "children/<name>/ (each an independently portable events.jsonl with its own ancillary run.json)")
+                .put("discovery", "events.jsonl is self-describing: its declaration records carry the format, schema, run context, contracts, sources, definitions, children, source ends and finalization; "
+                        + "a reader given events.jsonl needs nothing else; this run.json is an ancillary index and summary and may be absent"));
         pkg.put("reader_compat", new Jv.Obj().put("reader_contract", Pins.READER_CONTRACT).put("reader_contract_version", Pins.READER_CONTRACT_VERSION)
                 .put("semantic_operations_version", Pins.SEMANTIC_OPERATIONS_VERSION)
                 .put("note", "reader/software compatibility is pinned separately from the OCSF version, the extension version, the mapping contract versions and this package layout version"));
         String pkgState = core.failure() != null ? "FAILED" : isFinal ? state.name() : "RECORDING";
         pkg.put("state", pkgState);
-        pkg.put("events_count", core.persistedEvents()).put("events_bytes", core.persistedBytes());
+        pkg.put("events_count", core.persistedEvents()).put("declarations_count", core.persistedDeclarations()).put("events_bytes", core.persistedBytes());
+        pkg.put("persisted_prefix", new Jv.Obj().put("bytes", core.persistedBytes()).put("sha256", core.persistedPrefixSha256())
+                .put("meaning", "sha256 of the first `bytes` bytes of events.jsonl as persisted at the last flush (declaration and event lines); a reader of an open package can verify this prefix"));
         if (isFinal && core.finalSha256() != null) {
             pkg.put("events_jsonl_sha256", core.finalSha256());
         }
         else {
             pkg.put("events_jsonl_sha256", Jv.NULL);
             pkg.put("provisional", new Jv.Obj().put("note", pkgState.equals("FAILED")
-                    ? "the writer failed; events_count/events_bytes are what was confirmed written before the failure; no final hash exists"
-                    : "recording: events_count/events_bytes are the events persisted at the last flush; the final hash is written at finalization"));
+                    ? "the writer failed; events_count/declarations_count/events_bytes are what was confirmed written before the failure; no final hash exists and the file carries no recording declaration"
+                    : "recording: events_count/declarations_count/events_bytes are the lines persisted at the last flush; the final hash is written at finalization"));
         }
         m.put("package", pkg);
         if (run.synthetic() != null && !run.synthetic().isNull()) {
@@ -533,7 +650,7 @@ public final class OcsfRunWriter implements AutoCloseable {
         if (pin.excerptSha256() != null) {
             ocsf.put("compiled_excerpt_sha256", pin.excerptSha256());
         }
-        ocsf.put("compiled_schema_location", "referenced by hash; the definitions this core needs are embedded under definitions");
+        ocsf.put("compiled_schema_location", "referenced by hash; the definitions this core needs are declared in events.jsonl before use");
         m.put("ocsf", ocsf);
 
         m.put("extension", new Jv.Obj().put("name", SchemaPin.EXTENSION).put("uid", pin.extensionUid()).put("uid_status", Pins.EXTENSION_UID_STATUS)
@@ -542,11 +659,11 @@ public final class OcsfRunWriter implements AutoCloseable {
 
         Jv closure = core.closure(pin.classUids(), DefinitionClosure.Policy.WRITTEN);
         Jv full = core.closure(pin.classUids(), DefinitionClosure.Policy.FULL_REACHED);
-        m.put("definitions", new Jv.Obj().put("kind", "ocsf-compiled-definitions + extension-source")
-                .put("sha256", SchemaPin.sha256(DefinitionClosure.bytes(closure)))
-                .put("closure_bytes", DefinitionClosure.bytes(closure).length)
+        m.put("definitions", new Jv.Obj().put("kind", "declared in events.jsonl (definition records, before use) + extension-source here")
+                .put("declarations_count", core.declarationsAppended()).put("declaration_bytes", core.declarationBytes()).put("declarations_sha256", core.declarationsSha256())
+                .put("written_closure_bytes_measured", DefinitionClosure.bytes(closure).length)
                 .put("full_reached_closure_bytes_not_embedded", DefinitionClosure.bytes(full).length)
-                .put("closure", closure).put("extension_source", new Jv.Obj(extensionSource)));
+                .put("extension_source", new Jv.Obj(extensionSource)));
 
         Jv.Obj shared = new Jv.Obj();
         Jv.Obj agent = new Jv.Obj().put("name", run.cli().name()).put("version", run.cli().version()).put("type_id", run.cli().typeId()).put("type", run.cli().type());
@@ -558,7 +675,7 @@ public final class OcsfRunWriter implements AutoCloseable {
         shared.put("producer", new Jv.Obj().put("name", "agent-journal").put("version", options.producerVersion()).put("vendor_name", "Agent Journal"));
         shared.put("capture_time", started.toEpochMilli()).put("capture_time_text", started.toString());
         shared.put("written_by", new Jv.Obj().put("name", Pins.WRITER_NAME).put("version", Pins.PACKAGE_VERSION)
-                .put("mode", "incremental: events appended as native records arrived; no batch conversion or re-layout"));
+                .put("mode", "incremental: declarations and events appended as native records arrived; no batch conversion or re-layout"));
         shared.put("contracts", contracts.manifestSection());
         m.put("shared", shared);
 
@@ -574,7 +691,8 @@ public final class OcsfRunWriter implements AutoCloseable {
         m.put("semantic_contract", sc);
         m.put("time_policy", new Jv.Obj().put("time", "source-reported time when the record has one (time_basis 1); else the latest preceding reported time in the same artifact, else capture start (time_basis 2); metadata.original_time holds the source text verbatim; ordering is journal.sequence, never time")
                 .put("severity_id", "always 0 Unknown: Journal convention, not a vendor assertion"));
-        m.put("events", new Jv.Obj().put("count", core.persistedEvents()).put("appended", core.eventsAppended()).put("by_type", core.eventsByType()));
+        m.put("events", new Jv.Obj().put("count", core.persistedEvents()).put("appended", core.eventsAppended()).put("by_type", core.eventsByType())
+                .put("declarations_appended", core.declarationsAppended()));
         return m;
     }
 

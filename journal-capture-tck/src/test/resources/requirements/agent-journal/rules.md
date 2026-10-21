@@ -138,12 +138,12 @@ Tests: the Agent Judge dependency is test-scoped in `journal-capture-tck/pom.xml
 ### RULE-24
 **MUST** write `events.jsonl` as the independently portable unit: explicitly versioned declaration records carrying the actual schema definitions, the mapping-contract identity and the essential shared run, source and invocation context, each written once per file and before any event that references it, followed by the ordered execution events; `run.json` is an ancillary index and summary.
 **Reason:** A run has to be interpretable after only its event file is copied somewhere else; per-event schema repetition, sibling-file dependencies and remote registries all fail that test. Changed meaning (2026-10-21): the portable unit was the two-file core with linked children; it is now the event file alone, with each child event file carrying its own declarations.
-Tests: `IsolatedBootstrapTest#aCopiedCoreWithItsChildBootstrapsWithoutAnythingElse` (historical two-file core); the standalone event-file proof is not yet implemented.
+Tests: `StandaloneEventFileTest`, `StandalonePrefixTest` (layout 0.3.0-prototype); `IsolatedBootstrapTest#aCopiedCoreWithItsChildBootstrapsWithoutAnythingElse` (two-file core).
 
 ### RULE-25
 **MUST** be readable by a compatible Java reader from `events.jsonl` alone, without `run.json`, sibling files, the CLI, a hosted service, a schema cache, external schema resolution, optional analysis files or generated accessor code.
 **Reason:** Reader software is a versioned dependency; everything else the reader needs must travel inside the event file. A copy of the schema can speed reading but cannot supply a missing mandatory definition.
-Tests: `IsolatedBootstrapTest`, `PackageReaderTest#discoversTheManifestFromEventsJsonlAndFromTheDirectory` (historical two-file core); the standalone proof is not yet implemented.
+Tests: `StandaloneEventFileTest#theParentEventFileAloneIsInterpretedFromItsDeclarations`, `OcsfReaderToolTest#everyCommandReadsAnEventsFileAloneAndOnlyTheOptionalViewsNeedTheAncillaryManifest`, `IsolatedBootstrapTest`.
 
 ### RULE-26
 **MUST NOT** make `run.json`, an optional analysis file, a feedback file or the native archive the only location of a selected-input execution fact or of a definition needed to interpret one.

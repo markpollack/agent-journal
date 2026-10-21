@@ -29,8 +29,28 @@ import static org.assertj.core.api.Assertions.assertThat;
 class OcsfReaderToolTest {
 
     @Test
-    void everyCommandRefusesADetachedEventsFileWithExitTwo(@TempDir Path work) throws Exception {
+    void everyCommandReadsAnEventsFileAloneAndOnlyTheOptionalViewsNeedTheAncillaryManifest(@TempDir Path work) throws Exception {
         Path fixture = copy(CODEX, work);
+        Path alone = work.resolve("alone");
+        Files.createDirectories(alone);
+        Files.copy(pkg(fixture).resolve("events.jsonl"), alone.resolve("events.jsonl"));
+        String file = alone.resolve("events.jsonl").toString();
+        Result inspect = run("inspect", file);
+        assertThat(inspect.exit()).as(inspect.out()).isEqualTo(OcsfReaderTool.EXIT_OK);
+        assertThat(inspect.out()).contains("ANCILLARY_ABSENT").contains("class agentic_cli/tool_call");
+        assertThat(run("measure", file).exit()).isEqualTo(OcsfReaderTool.EXIT_OK);
+        assertThat(run("self-contained", file, work.resolve("sc.jsonl").toString()).exit()).isEqualTo(OcsfReaderTool.EXIT_OK);
+        assertThat(Files.exists(work.resolve("sc.jsonl"))).isTrue();
+        Result views = run("views", file);
+        assertThat(views.exit()).isEqualTo(OcsfReaderTool.EXIT_UNAVAILABLE);
+        assertThat(views.err()).contains("no semantic contract");
+        Result verify = run("verify", file, natives(fixture).toString());
+        assertThat(verify.exit()).as(verify.out()).isEqualTo(OcsfReaderTool.EXIT_OK);
+    }
+
+    @Test
+    void everyCommandRefusesADetachedHistoricalEventsFileWithExitTwo(@TempDir Path work) throws Exception {
+        Path fixture = OcsfFixtures.copyHistorical(OcsfFixtures.HISTORICAL_0_2_0, CODEX, work);
         Path detached = work.resolve("detached");
         Files.createDirectories(detached);
         Files.copy(pkg(fixture).resolve("events.jsonl"), detached.resolve("events.jsonl"));

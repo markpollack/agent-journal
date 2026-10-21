@@ -66,8 +66,25 @@ public final class PackageMeasure {
         out.put("normalized_only_bytes", num(normalized));
         out.put("residual_bytes", num(eventsBytes - normalized));
         out.put("envelope_only_bytes", num(envelope));
-        out.put("run_json_bytes", num(size(pkg.dir.resolve("run.json"))));
+        out.put("run_json_bytes", num(Files.isRegularFile(pkg.dir.resolve("run.json")) ? size(pkg.dir.resolve("run.json")) : 0));
         Json m = pkg.manifest.json();
+        if (pkg.declarations != null) {
+            out.put("declaration_lines", num(pkg.declarations.declarations.size()));
+            out.put("declaration_bytes", num(pkg.declarations.bytes()));
+            Map<String, Integer> byKind = new TreeMap<>();
+            Map<String, Integer> bytesByKind = new TreeMap<>();
+            for (DeclaredFile.Declaration d : pkg.declarations.declarations) {
+                byKind.merge(String.valueOf(d.kind()), 1, Integer::sum);
+                bytesByKind.merge(String.valueOf(d.kind()), NeutralJson.write(d.json()).getBytes(StandardCharsets.UTF_8).length + 1, Integer::sum);
+            }
+            Map<String, Json> bk = new LinkedHashMap<>();
+            byKind.forEach((k, v) -> bk.put(k, num(v)));
+            out.put("declarations_by_kind", new Json.JObject(bk));
+            Map<String, Json> bbk = new LinkedHashMap<>();
+            bytesByKind.forEach((k, v) -> bbk.put(k, num(v)));
+            out.put("declaration_bytes_by_kind", new Json.JObject(bbk));
+            out.put("event_lines_bytes", num(eventsBytes - pkg.declarations.bytes()));
+        }
         out.put("definitions_closure_bytes", num(bytes(m.path("definitions", "closure"))));
         out.put("definitions_full_reached_closure_bytes_not_embedded", m.path("definitions", "full_reached_closure_bytes_not_embedded") == null
                 ? Json.JNull.INSTANCE : m.path("definitions", "full_reached_closure_bytes_not_embedded"));
