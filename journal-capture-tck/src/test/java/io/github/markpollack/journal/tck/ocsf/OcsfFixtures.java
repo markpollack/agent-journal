@@ -114,10 +114,17 @@ final class OcsfFixtures {
         writeLines(file, events);
     }
 
+    /** Re-pins the events hash, count and bytes after an edit, so the edit is judged as a producer defect rather than tampering. */
     static void repin(Path core) {
         try {
-            String sha = NativeArtifact.sha256(Files.readAllBytes(core.resolve("events.jsonl")));
-            editManifest(core, run -> obj(run.get("package")).members().put("events_jsonl_sha256", str(sha)));
+            byte[] bytes = Files.readAllBytes(core.resolve("events.jsonl"));
+            String sha = NativeArtifact.sha256(bytes);
+            int count = lines(core.resolve("events.jsonl")).size();
+            editManifest(core, run -> {
+                obj(run.get("package")).members().put("events_jsonl_sha256", str(sha));
+                obj(run.get("package")).members().put("events_count", num(Integer.toString(count)));
+                obj(run.get("package")).members().put("events_bytes", num(Integer.toString(bytes.length)));
+            });
         }
         catch (IOException e) {
             throw new UncheckedIOException(e);
