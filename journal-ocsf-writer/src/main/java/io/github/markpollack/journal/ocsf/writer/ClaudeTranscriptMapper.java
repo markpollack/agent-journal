@@ -16,6 +16,7 @@ import static io.github.markpollack.journal.ocsf.writer.MapperSupport.text;
  */
 final class ClaudeTranscriptMapper implements SourceMapper {
 
+    static final MapperSupport.ClaudeRoute ROUTE = new MapperSupport.ClaudeRoute("claude-code-2.1.303-transcript", "claude.transcript", "claude.transcript.usage_status.v1: stop_reason non-null -> final (the transcript repeats the message's usage on each block record)", "claude.transcript.activity.v1: stop_reason non-null -> Completed", "toolUseResult");
     static final String CONTRACT = "claude-code-2.1.303-transcript";
 
     @Override
@@ -39,32 +40,12 @@ final class ClaudeTranscriptMapper implements SourceMapper {
         if ("assistant".equals(type) && m != null) {
             ctx.family(type, r.raw().length, "normalized: model_response (+ tool_call Requested per tool_use block); every message id admitted");
             MapperSupport.Time t = ctx.timeFor(r, ts);
-            boolean terminal = m.member("stop_reason") != null && !m.member("stop_reason").isNull();
-            Jv.Obj usage = MapperSupport.usage(2, terminal ? 2 : 1, "claude.transcript.usage_status.v1: stop_reason non-null -> final (the transcript repeats the message's usage on each block record)",
-                    ctx.sourceRef(r, uid, ts, false), MapperSupport.modelRef(text(m, "model"), 3, null), m.member("usage"));
-            MapperSupport.components(usage, m.member("usage"), "input_tokens", "input_tokens", "output_tokens", "output_tokens",
-                    "cache_read_input_tokens", "cache_read_tokens", "cache_creation_input_tokens", "cache_write_tokens");
-            Jv thinking = m.path("usage", "output_tokens_details", "thinking_tokens");
-            if (MapperSupport.isIntegral(thinking)) {
-                usage.put("reasoning_tokens", thinking);
-            }
-            Jv.Obj ev = ctx.event("model_response", terminal ? 2 : 1, r, t, CONTRACT, "claude.transcript.assistant->model_response", ts, uid, true, null);
-            ev.put("session_uid", sess).put("response_uid", text(m, "id")).put("model_ref", MapperSupport.modelRef(text(m, "model"), 3, null))
-                    .put("content_blocks", MapperSupport.blocks(ctx.contracts, CONTRACT, m.member("content")))
-                    .put("usage_observations", new Jv.Arr(List.of(usage)))
-                    .put("basis", "claude.transcript.activity.v1: stop_reason non-null -> Completed");
-            if (terminal) {
-                ev.put("stop_reason", text(m, "stop_reason"));
-            }
-            ev.put("data", o);
+            MapperSupport.ClaudeMessage msg = new MapperSupport.ClaudeMessage(ctx, r, t, ts, uid, sess);
+            Jv.Obj ev = MapperSupport.claudeModelResponse(ROUTE, msg, m, o);
             ctx.emit(ev);
             for (Jv b : m.member("content") == null ? List.<Jv>of() : m.member("content").elements()) {
                 if ("tool_use".equals(text(b, "type"))) {
-                    int k = ctx.contracts.toolKind(CONTRACT, text(b, "name"));
-                    Jv.Obj req = ctx.event("tool_call", 1, r, t, CONTRACT, "claude.transcript.assistant.tool_use->tool_call.requested", ts, uid, false, null);
-                    req.put("session_uid", sess).put("response_uid", text(m, "id")).put("tool_call_uid", text(b, "id")).put("tool_name", text(b, "name"))
-                            .put("tool_kind_id", k).put("tool_kind", MapperSupport.TOOL_KIND.get(k)).put("tool_kind_basis", ctx.contracts.toolKindRule(CONTRACT))
-                            .put("arguments", b.member("input") == null ? Jv.Null.INSTANCE : b.member("input")).put("data", b);
+                    Jv.Obj req = MapperSupport.claudeToolRequest(ROUTE, msg, text(m, "id"), b);
                     ctx.emit(req);
                 }
             }
@@ -72,6 +53,7 @@ final class ClaudeTranscriptMapper implements SourceMapper {
         }
         if ("user".equals(type) && m != null) {
             MapperSupport.Time t = ctx.timeFor(r, ts);
+            MapperSupport.ClaudeMessage msg = new MapperSupport.ClaudeMessage(ctx, r, t, ts, uid, sess);
             Jv content = m.member("content");
             int resultBlocks = 0;
             for (Jv b : content == null ? List.<Jv>of() : content.elements()) {
@@ -93,21 +75,7 @@ final class ClaudeTranscriptMapper implements SourceMapper {
                     continue;
                 }
                 String id = text(b, "tool_use_id");
-                Jv.Obj res = new Jv.Obj().put("data", b.member("content") == null ? Jv.Null.INSTANCE : b.member("content"));
-                Jv isError = b.member("is_error");
-                MapperSupport.Status status;
-                if (isError instanceof Jv.Bool e) {
-                    res.put("error_reported", e);
-                    status = new MapperSupport.Status(e.value() ? 2 : 1, 1, "reported: tool_result.is_error");
-                }
-                else {
-                    status = new MapperSupport.Status(0, 3, "is_error not reported on this tool_result block");
-                }
-                if (o.member("toolUseResult") != null) {
-                    res.put("structured_result", o.member("toolUseResult"));
-                }
-                Jv.Obj ev = ctx.event("tool_call", 2, r, t, CONTRACT, "claude.transcript.user.tool_result->tool_call.result", ts, uid, first, status);
-                ev.put("session_uid", sess).put("tool_call_uid", id).put("tool_result", res);
+                Jv.Obj ev = MapperSupport.claudeToolResult(ROUTE, msg, first, o, b);
                 Jv pd = o.member("permissionDecision");
                 if (pd instanceof Jv.Obj && resultBlocks == 1) {
                     String reported = text(pd, "decision");

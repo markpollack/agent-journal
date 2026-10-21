@@ -15,6 +15,7 @@ import static io.github.markpollack.journal.ocsf.writer.MapperSupport.text;
  */
 final class ClaudeStreamMapper implements SourceMapper {
 
+    static final MapperSupport.ClaudeRoute ROUTE = new MapperSupport.ClaudeRoute("claude-code-2.1.303-stream", "claude.stream", "claude.stream.usage_status.v1: stop_reason null -> provisional, non-null -> final", "claude.stream.activity.v1: stop_reason null -> Partial, non-null -> Completed", "tool_use_result");
     static final String CONTRACT = "claude-code-2.1.303-stream";
 
     @Override
@@ -40,33 +41,12 @@ final class ClaudeStreamMapper implements SourceMapper {
         if ("assistant".equals(type) && o.member("message") instanceof Jv.Obj m) {
             ctx.family(family, r.raw().length, "normalized: model_response (+ tool_call Requested per tool_use block)");
             MapperSupport.Time t = ctx.timeFor(r, ts);
-            boolean terminal = m.member("stop_reason") != null && !m.member("stop_reason").isNull();
-            int act = terminal ? 2 : 1;
-            Jv.Obj usage = MapperSupport.usage(2, terminal ? 2 : 1, "claude.stream.usage_status.v1: stop_reason null -> provisional, non-null -> final",
-                    ctx.sourceRef(r, uid, ts, false), MapperSupport.modelRef(text(m, "model"), 3, null), m.member("usage"));
-            MapperSupport.components(usage, m.member("usage"), "input_tokens", "input_tokens", "output_tokens", "output_tokens",
-                    "cache_read_input_tokens", "cache_read_tokens", "cache_creation_input_tokens", "cache_write_tokens");
-            Jv thinking = m.path("usage", "output_tokens_details", "thinking_tokens");
-            if (MapperSupport.isIntegral(thinking)) {
-                usage.put("reasoning_tokens", thinking);
-            }
-            Jv.Obj ev = ctx.event("model_response", act, r, t, CONTRACT, "claude.stream.assistant->model_response", ts, uid, true, null);
-            ev.put("session_uid", sess).put("response_uid", text(m, "id")).put("model_ref", MapperSupport.modelRef(text(m, "model"), 3, null))
-                    .put("content_blocks", MapperSupport.blocks(ctx.contracts, CONTRACT, m.member("content")))
-                    .put("usage_observations", new Jv.Arr(List.of(usage)))
-                    .put("basis", "claude.stream.activity.v1: stop_reason null -> Partial, non-null -> Completed");
-            if (terminal) {
-                ev.put("stop_reason", text(m, "stop_reason"));
-            }
-            ev.put("data", o);
+            MapperSupport.ClaudeMessage msg = new MapperSupport.ClaudeMessage(ctx, r, t, ts, uid, sess);
+            Jv.Obj ev = MapperSupport.claudeModelResponse(ROUTE, msg, m, o);
             ctx.emit(owner, ev);
             for (Jv b : m.member("content") == null ? List.<Jv>of() : m.member("content").elements()) {
                 if ("tool_use".equals(text(b, "type"))) {
-                    int k = ctx.contracts.toolKind(CONTRACT, text(b, "name"));
-                    Jv.Obj req = ctx.event("tool_call", 1, r, t, CONTRACT, "claude.stream.assistant.tool_use->tool_call.requested", ts, uid, false, null);
-                    req.put("session_uid", sess).put("response_uid", text(m, "id")).put("tool_call_uid", text(b, "id")).put("tool_name", text(b, "name"))
-                            .put("tool_kind_id", k).put("tool_kind", MapperSupport.TOOL_KIND.get(k)).put("tool_kind_basis", ctx.contracts.toolKindRule(CONTRACT))
-                            .put("arguments", b.member("input") == null ? Jv.Null.INSTANCE : b.member("input")).put("data", b);
+                    Jv.Obj req = MapperSupport.claudeToolRequest(ROUTE, msg, text(m, "id"), b);
                     ctx.emit(owner, req);
                 }
             }
@@ -74,6 +54,7 @@ final class ClaudeStreamMapper implements SourceMapper {
         }
         if ("user".equals(type) && o.member("message") instanceof Jv.Obj m) {
             MapperSupport.Time t = ctx.timeFor(r, ts);
+            MapperSupport.ClaudeMessage msg = new MapperSupport.ClaudeMessage(ctx, r, t, ts, uid, sess);
             Jv content = m.member("content");
             boolean hasResult = false;
             for (Jv b : content == null ? List.<Jv>of() : content.elements()) {
@@ -98,21 +79,7 @@ final class ClaudeStreamMapper implements SourceMapper {
                     continue;
                 }
                 String id = text(b, "tool_use_id");
-                Jv.Obj res = new Jv.Obj().put("data", b.member("content") == null ? Jv.Null.INSTANCE : b.member("content"));
-                Jv isError = b.member("is_error");
-                MapperSupport.Status status;
-                if (isError instanceof Jv.Bool e) {
-                    res.put("error_reported", e);
-                    status = new MapperSupport.Status(e.value() ? 2 : 1, 1, "reported: tool_result.is_error");
-                }
-                else {
-                    status = new MapperSupport.Status(0, 3, "is_error not reported on this tool_result block");
-                }
-                if (o.member("tool_use_result") != null) {
-                    res.put("structured_result", o.member("tool_use_result"));
-                }
-                Jv.Obj ev = ctx.event("tool_call", 2, r, t, CONTRACT, "claude.stream.user.tool_result->tool_call.result", ts, uid, first, status);
-                ev.put("session_uid", sess).put("tool_call_uid", id).put("tool_result", res);
+                Jv.Obj ev = MapperSupport.claudeToolResult(ROUTE, msg, first, o, b);
                 for (Jv meta : o.member("tool_result_meta") == null ? List.<Jv>of() : o.member("tool_result_meta").elements()) {
                     Jv pd = meta.member("permission_decision");
                     if (id != null && id.equals(text(meta, "id")) && pd instanceof Jv.Obj) {

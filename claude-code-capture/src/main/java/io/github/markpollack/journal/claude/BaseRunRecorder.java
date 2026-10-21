@@ -16,6 +16,7 @@ import io.github.markpollack.journal.trace.JournalStep;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -226,34 +227,7 @@ public abstract class BaseRunRecorder {
         // tool_result error bit is recorded as success/failure so isError round-trips through the
         // execution stream (so fromEvents matches fromPhaseCapture on the error flag).
         if (phase.hasToolUses()) {
-            Map<String, ToolResultRecord> resultsById = new LinkedHashMap<>();
-            if (phase.toolResults() != null) {
-                for (ToolResultRecord tr : phase.toolResults()) {
-                    resultsById.put(tr.toolUseId(), tr);
-                }
-            }
-            for (ToolUseRecord toolUse : phase.toolUses()) {
-                ToolResultRecord result = resultsById.get(toolUse.id());
-                boolean isError = result != null && result.isError();
-                currentRun.logEvent(ToolCallEvent.builder()
-                        .id(toolUse.id())
-                        .toolName(toolUse.name())
-                        .kind(toolUse.kind())
-                        .input(toolUse.input())
-                        // The tool's result, whole. Without it the normalized record holds no
-                        // successful tool output, only the error text of a failed call.
-                        .output(result != null ? result.content() : null)
-                        // J4: the dwell-time pair. The duration was previously computed at parse
-                        // time, written to a log line, and dropped; the turn ordinal was never
-                        // captured at all after v1. Without both, a semi-Markov model has no
-                        // holding time and no way to order the trajectory.
-                        .durationMs(result != null ? result.durationMs() : -1L)
-                        .turnIndex(toolUse.turnIndex())
-                        .turnId(toolUse.turnId())
-                        .success(!isError)
-                        .errorMessage(isError ? result.content() : null)
-                        .build());
-            }
+            logToolCalls(currentRun, phase.toolUses(), phase.toolResults());
         }
 
         recordSourceLayer(currentRun, phase, null, phase.toolResults());
@@ -454,28 +428,7 @@ public abstract class BaseRunRecorder {
                     .metadata(metadata)
                     .build());
 
-            Map<String, ToolResultRecord> resultsById = new LinkedHashMap<>();
-            for (ToolResultRecord result : subagent.toolResults()) {
-                resultsById.put(result.toolUseId(), result);
-            }
-            for (ToolUseRecord toolUse : subagent.toolUses()) {
-                ToolResultRecord result = resultsById.get(toolUse.id());
-                boolean isError = result != null && result.isError();
-                run.logEvent(ToolCallEvent.builder()
-                        .id(toolUse.id())
-                        .toolName(toolUse.name())
-                        .kind(toolUse.kind())
-                        .input(toolUse.input())
-                        // The child's tool result, whole, as on the main run (Stage 13 review R13-03: a child's
-                        // successful output was null although its source record kept it).
-                        .output(result != null ? result.content() : null)
-                        .durationMs(result != null ? result.durationMs() : -1L)
-                        .turnIndex(toolUse.turnIndex())
-                        .turnId(toolUse.turnId())
-                        .success(!isError)
-                        .errorMessage(isError ? result.content() : null)
-                        .build());
-            }
+            logToolCalls(run, subagent.toolUses(), subagent.toolResults());
 
             // The child's own tool results, so its durations carry the same tool_timing declaration as the main
             // loop's (R13-11: child durations were recorded without their source stated).
@@ -766,4 +719,35 @@ public abstract class BaseRunRecorder {
     /** Metadata key on the LLM call event: one map per model, as the result line's {@code modelUsage} reports it. */
     public static final String META_MODEL_USAGE = "modelUsage";
 
+    /**
+     * One {@link ToolCallEvent} per tool use, joined to its result by the vendor tool_use id (R2.3: the stable step
+     * identity, so feedback and eval can target a step without depending on reload order). The result is carried
+     * whole as the output (the error text when the call failed), its duration as the dwell time (J4) and the
+     * tool_result error bit as success/failure, so isError round-trips through the execution stream. Shared by the
+     * main run and each child run (R13-03: a child's successful output was once dropped although its record kept it).
+     */
+    private static void logToolCalls(Run target, Collection<ToolUseRecord> toolUses, Collection<ToolResultRecord> toolResults) {
+        Map<String, ToolResultRecord> resultsById = new LinkedHashMap<>();
+        if (toolResults != null) {
+            for (ToolResultRecord tr : toolResults) {
+                resultsById.put(tr.toolUseId(), tr);
+            }
+        }
+        for (ToolUseRecord toolUse : toolUses) {
+            ToolResultRecord result = resultsById.get(toolUse.id());
+            boolean isError = result != null && result.isError();
+            target.logEvent(ToolCallEvent.builder()
+                    .id(toolUse.id())
+                    .toolName(toolUse.name())
+                    .kind(toolUse.kind())
+                    .input(toolUse.input())
+                    .output(result != null ? result.content() : null)
+                    .durationMs(result != null ? result.durationMs() : -1L)
+                    .turnIndex(toolUse.turnIndex())
+                    .turnId(toolUse.turnId())
+                    .success(!isError)
+                    .errorMessage(isError ? result.content() : null)
+                    .build());
+        }
+    }
 }

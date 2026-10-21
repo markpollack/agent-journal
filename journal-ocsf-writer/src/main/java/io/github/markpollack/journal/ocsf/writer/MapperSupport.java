@@ -157,4 +157,81 @@ final class MapperSupport {
         }
         return out;
     }
+
+    // ---- shared by the Claude stream and transcript mappers (the same message shapes on two routes) -------------------
+
+    /**
+     * The constants of one Claude route: its mapping contract, the prefix of its rule ids ({@code claude.stream} or
+     * {@code claude.transcript}), the bases it states for usage status and response activity, and the record member
+     * that carries a tool's structured result ({@code tool_use_result} on the stream, {@code toolUseResult} in the transcript).
+     */
+    record ClaudeRoute(String contract, String rulePrefix, String usageBasis, String activityBasis, String structuredMember) {
+    }
+
+    /** One Claude record under a route: the mapping context, the record, its time, the reported time text, native uid and session. */
+    record ClaudeMessage(SourceContext ctx, NativeRecord r, Time t, String ts, String uid, String sess) {
+    }
+
+    /** A Claude assistant message's usage as a response-scope observation: the usage members, thinking tokens as reasoning_tokens when reported. */
+    static Jv.Obj claudeMessageUsage(ClaudeRoute route, ClaudeMessage c, Jv.Obj m, boolean terminal) {
+        Jv.Obj usage = usage(2, terminal ? 2 : 1, route.usageBasis(), c.ctx().sourceRef(c.r(), c.uid(), c.ts(), false), modelRef(text(m, "model"), 3, null), m.member("usage"));
+        components(usage, m.member("usage"), "input_tokens", "input_tokens", "output_tokens", "output_tokens",
+                "cache_read_input_tokens", "cache_read_tokens", "cache_creation_input_tokens", "cache_write_tokens");
+        Jv thinking = m.path("usage", "output_tokens_details", "thinking_tokens");
+        if (isIntegral(thinking)) {
+            usage.put("reasoning_tokens", thinking);
+        }
+        return usage;
+    }
+
+    /** A Claude assistant message as a model_response event (Partial until stop_reason is reported, then Completed), its usage observation attached. */
+    static Jv.Obj claudeModelResponse(ClaudeRoute route, ClaudeMessage c, Jv.Obj m, Jv o) {
+        boolean terminal = m.member("stop_reason") != null && !m.member("stop_reason").isNull();
+        Jv.Obj usage = claudeMessageUsage(route, c, m, terminal);
+        Jv.Obj ev = c.ctx().event("model_response", terminal ? 2 : 1, c.r(), c.t(), route.contract(), route.rulePrefix() + ".assistant->model_response", c.ts(), c.uid(), true, null);
+        ev.put("session_uid", c.sess()).put("response_uid", text(m, "id")).put("model_ref", modelRef(text(m, "model"), 3, null))
+                .put("content_blocks", blocks(c.ctx().contracts, route.contract(), m.member("content")))
+                .put("usage_observations", new Jv.Arr(List.of(usage)))
+                .put("basis", route.activityBasis());
+        if (terminal) {
+            ev.put("stop_reason", text(m, "stop_reason"));
+        }
+        ev.put("data", o);
+        return ev;
+    }
+
+    /** A tool_use block of a Claude assistant message as a tool_call Requested event, with the exact arguments. */
+    static Jv.Obj claudeToolRequest(ClaudeRoute route, ClaudeMessage c, String responseUid, Jv b) {
+        int k = c.ctx().contracts.toolKind(route.contract(), text(b, "name"));
+        Jv.Obj req = c.ctx().event("tool_call", 1, c.r(), c.t(), route.contract(), route.rulePrefix() + ".assistant.tool_use->tool_call.requested", c.ts(), c.uid(), false, null);
+        req.put("session_uid", c.sess()).put("response_uid", responseUid).put("tool_call_uid", text(b, "id")).put("tool_name", text(b, "name"))
+                .put("tool_kind_id", k).put("tool_kind", TOOL_KIND.get(k)).put("tool_kind_basis", c.ctx().contracts.toolKindRule(route.contract()))
+                .put("arguments", b.member("input") == null ? Jv.Null.INSTANCE : b.member("input")).put("data", b);
+        return req;
+    }
+
+    /**
+     * A tool_result block of a Claude user record as a tool_call Result observed event: the result content whole, the
+     * reported error bit as the status (not derivable when absent), and the record's structured result under the member
+     * the route names.
+     */
+    static Jv.Obj claudeToolResult(ClaudeRoute route, ClaudeMessage c, boolean first, Jv o, Jv b) {
+        String id = text(b, "tool_use_id");
+        Jv.Obj res = new Jv.Obj().put("data", b.member("content") == null ? Jv.Null.INSTANCE : b.member("content"));
+        Jv isError = b.member("is_error");
+        Status status;
+        if (isError instanceof Jv.Bool e) {
+            res.put("error_reported", e);
+            status = new Status(e.value() ? 2 : 1, 1, "reported: tool_result.is_error");
+        }
+        else {
+            status = new Status(0, 3, "is_error not reported on this tool_result block");
+        }
+        if (o.member(route.structuredMember()) != null) {
+            res.put("structured_result", o.member(route.structuredMember()));
+        }
+        Jv.Obj ev = c.ctx().event("tool_call", 2, c.r(), c.t(), route.contract(), route.rulePrefix() + ".user.tool_result->tool_call.result", c.ts(), c.uid(), first, status);
+        ev.put("session_uid", c.sess()).put("tool_call_uid", id).put("tool_result", res);
+        return ev;
+    }
 }
