@@ -40,53 +40,62 @@ public final class PhaseCaptureSources {
 		for (int i = 0; i < phases.size(); i++) {
 			PhaseCapture phase = phases.get(i);
 			String phaseId = "phase:" + phase.sessionId() + ":" + i;
-
-			// Phase-level subject (LLM_CALL)
-			Map<String, Object> metadata = new LinkedHashMap<>();
-			metadata.put("phaseName", phase.phaseName());
-			metadata.put("sessionId", phase.sessionId());
-			metadata.put("inputTokens", phase.inputTokens());
-			metadata.put("outputTokens", phase.outputTokens());
-			if (phase.thinkingTokensReported()) {
-				metadata.put("thinkingTokens", phase.thinkingTokens());
-			}
-			metadata.put("totalTokens", phase.totalTokens());
-			metadata.put("costUsd", phase.totalCostUsd());
-			metadata.put("durationMs", phase.durationMs());
-			metadata.put("numTurns", phase.numTurns());
-			metadata.put("success", !phase.isError());
-
-			subjects.add(new EvalSubject(
-					phaseId, EvalSubjectKind.LLM_CALL, "phase_capture", null, null,
-					"Phase: " + phase.phaseName(),
-					phase.promptText(), phase.textOutput(),
-					Map.copyOf(metadata)));
-
+			subjects.add(phaseSubject(phase, phaseId));
 			// Tool-level subjects (TOOL_CALL) for each tool use in the phase
 			if (phase.hasToolUses()) {
-				Map<String, String> toolResults = buildToolResultMap(phase);
-				List<ToolUseRecord> toolUses = phase.toolUses();
-				for (int j = 0; j < toolUses.size(); j++) {
-					ToolUseRecord tool = toolUses.get(j);
-					String toolId = phaseId + ":tool:" + j;
-
-					Map<String, Object> toolMeta = new LinkedHashMap<>();
-					toolMeta.put("toolName", tool.name());
-					toolMeta.put("phaseName", phase.phaseName());
-					toolMeta.put("sessionId", phase.sessionId());
-					toolMeta.put("toolUseId", tool.id());
-
-					String toolOutput = toolResults.get(tool.id());
-					boolean isError = isToolError(phase, tool.id());
-					toolMeta.put("success", !isError);
-
-					subjects.add(new EvalSubject(
-							toolId, EvalSubjectKind.TOOL_CALL, "phase_capture", null, null,
-							"Tool call: " + tool.name(),
-							tool.input(), toolOutput,
-							Map.copyOf(toolMeta)));
-				}
+				subjects.addAll(toolSubjects(phase, phaseId));
 			}
+		}
+		return subjects;
+	}
+
+	/** The phase-level subject (LLM_CALL). */
+	private static EvalSubject phaseSubject(PhaseCapture phase, String phaseId) {
+		Map<String, Object> metadata = new LinkedHashMap<>();
+		metadata.put("phaseName", phase.phaseName());
+		metadata.put("sessionId", phase.sessionId());
+		metadata.put("inputTokens", phase.inputTokens());
+		metadata.put("outputTokens", phase.outputTokens());
+		if (phase.thinkingTokensReported()) {
+			metadata.put("thinkingTokens", phase.thinkingTokens());
+		}
+		metadata.put("totalTokens", phase.totalTokens());
+		metadata.put("costUsd", phase.totalCostUsd());
+		metadata.put("durationMs", phase.durationMs());
+		metadata.put("numTurns", phase.numTurns());
+		metadata.put("success", !phase.isError());
+
+		return new EvalSubject(
+				phaseId, EvalSubjectKind.LLM_CALL, "phase_capture", null, null,
+				"Phase: " + phase.phaseName(),
+				phase.promptText(), phase.textOutput(),
+				Map.copyOf(metadata));
+	}
+
+	/** One subject (TOOL_CALL) per tool use of the phase, in order. */
+	private static List<EvalSubject> toolSubjects(PhaseCapture phase, String phaseId) {
+		List<EvalSubject> subjects = new ArrayList<>();
+		Map<String, String> toolResults = buildToolResultMap(phase);
+		List<ToolUseRecord> toolUses = phase.toolUses();
+		for (int j = 0; j < toolUses.size(); j++) {
+			ToolUseRecord tool = toolUses.get(j);
+			String toolId = phaseId + ":tool:" + j;
+
+			Map<String, Object> toolMeta = new LinkedHashMap<>();
+			toolMeta.put("toolName", tool.name());
+			toolMeta.put("phaseName", phase.phaseName());
+			toolMeta.put("sessionId", phase.sessionId());
+			toolMeta.put("toolUseId", tool.id());
+
+			String toolOutput = toolResults.get(tool.id());
+			boolean isError = isToolError(phase, tool.id());
+			toolMeta.put("success", !isError);
+
+			subjects.add(new EvalSubject(
+					toolId, EvalSubjectKind.TOOL_CALL, "phase_capture", null, null,
+					"Tool call: " + tool.name(),
+					tool.input(), toolOutput,
+					Map.copyOf(toolMeta)));
 		}
 		return subjects;
 	}
