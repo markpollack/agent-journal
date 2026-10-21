@@ -247,12 +247,43 @@ final class OcsfFixtures {
 
     /** Re-pins the events hash, count, bytes and persisted prefix after an edit, so the edit is judged as a producer defect rather than tampering. */
     static void repin(Path core) {
+        repin(core, true);
+    }
+
+    /**
+     * Edits the declaration lines like {@link #editDeclarations} but re-pins the manifest without keeping its state and
+     * the finalization declaration in step: for provoking exactly that inconsistency.
+     */
+    static void editDeclarationsWithoutSync(Path core, Consumer<List<Json>> edit) {
+        Path file = core.resolve("events.jsonl");
+        List<Json> all = lines(file);
+        List<Json> declarations = new ArrayList<>();
+        for (Json line : all) {
+            if (DeclaredFile.isDeclaration(line)) {
+                declarations.add(line);
+            }
+        }
+        edit.accept(declarations);
+        java.util.Set<Json> kept = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        kept.addAll(declarations);
+        List<Json> out = new ArrayList<>();
+        for (Json line : all) {
+            if (!DeclaredFile.isDeclaration(line) || kept.contains(line)) {
+                out.add(line);
+            }
+        }
+        writeLines(file, out);
+        repin(core, false);
+    }
+
+    /** @param sync whether to keep the finalization declaration in step with the manifest state (see {@link #editManifest}) */
+    static void repin(Path core, boolean sync) {
         try {
             byte[] bytes = Files.readAllBytes(core.resolve("events.jsonl"));
             String sha = NativeArtifact.sha256(bytes);
             int count = eventLines(core.resolve("events.jsonl")).size();
             int declarations = declarationLines(core.resolve("events.jsonl")).size();
-            editManifest(core, run -> {
+            Consumer<Json.JObject> pin = run -> {
                 Json.JObject pkg = obj(run.get("package"));
                 pkg.members().put("events_jsonl_sha256", str(sha));
                 pkg.members().put("events_count", num(Integer.toString(count)));
@@ -264,7 +295,16 @@ final class OcsfFixtures {
                     prefix.members().put("bytes", num(Integer.toString(bytes.length)));
                     prefix.members().put("sha256", str(sha));
                 }
-            });
+            };
+            if (sync) {
+                editManifest(core, pin);
+            }
+            else {
+                Path file = core.resolve("run.json");
+                Json.JObject run = (Json.JObject) NeutralJson.readDocument(file);
+                pin.accept(run);
+                write(file, NeutralJson.write(run) + "\n");
+            }
         }
         catch (IOException e) {
             throw new UncheckedIOException(e);

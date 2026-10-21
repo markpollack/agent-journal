@@ -115,7 +115,8 @@ public final class PackageReader {
         compatibility(derived, diags);
         RunManifest manifest = derived;
         Json ancillary = null;
-        if (Files.isRegularFile(manifestFile)) {
+        boolean ancillaryPresent = Files.isRegularFile(manifestFile);
+        if (ancillaryPresent) {
             try {
                 ancillary = NeutralJson.readDocument(manifestFile);
             }
@@ -143,7 +144,7 @@ public final class PackageReader {
                 }
             }
         }
-        else {
+        else if (!ancillaryPresent) {
             diags.add(new Diagnostic(Diagnostic.Severity.WARNING, "ANCILLARY_ABSENT",
                     "no run.json beside events.jsonl: read from its declarations alone; there is no whole-file hash, and the state is " + manifest.packageState()
                             + (declared.recording() == null ? " (no recording declaration: an open prefix, or the writer failed)" : " (from the recording declaration)")));
