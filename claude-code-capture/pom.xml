@@ -19,7 +19,7 @@
 
     <properties>
         <!-- java-guardrails PMD: fix-all module (Owner 2026-10-21). The ratchet starts at today's count and is lowered with each hotspot commit until it reaches 0; never raised -->
-        <pmd.ratchet>40</pmd.ratchet>
+        <pmd.ratchet>38</pmd.ratchet>
         <!-- java-guardrails JaCoCo floors: measured 2026-10-21 less 2 points (config/guardrails/decisions.md) -->
         <jacoco.minimum.line>0.92</jacoco.minimum.line>
         <jacoco.minimum.branch>0.77</jacoco.minimum.branch>

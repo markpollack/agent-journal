@@ -56,11 +56,30 @@ public final class ClaudeSessionFiles {
      * @return the transcript, or empty if none or several were found or the id is not usable as a file name
      */
     public static java.util.Optional<Path> locateTranscript(String sessionId, Path projectsRoot) {
-        if (sessionId == null || sessionId.isBlank() || !sessionId.matches("[A-Za-z0-9._-]+")
-                || !Files.isDirectory(projectsRoot)) {
+        if (sessionId == null || sessionId.isBlank() || !sessionId.matches("[A-Za-z0-9._-]+")) {
             return java.util.Optional.empty();
         }
+        List<Path> found;
+        try {
+            found = transcriptsNamed(sessionId, projectsRoot);
+        }
+        catch (IOException ex) {
+            return java.util.Optional.empty();
+        }
+        return found.size() == 1 ? java.util.Optional.of(found.get(0)) : java.util.Optional.empty();
+    }
+
+    /**
+     * The transcripts named {@code <sessionId>.jsonl} directly under the per-project directories of the projects
+     * root; none when the root is not a directory.
+     *
+     * @throws IOException if the projects root cannot be listed
+     */
+    private static List<Path> transcriptsNamed(String sessionId, Path projectsRoot) throws IOException {
         List<Path> found = new ArrayList<>();
+        if (!Files.isDirectory(projectsRoot)) {
+            return found;
+        }
         try (Stream<Path> projects = Files.list(projectsRoot)) {
             for (Path project : (Iterable<Path>) projects::iterator) {
                 Path candidate = project.resolve(sessionId + ".jsonl");
@@ -69,10 +88,7 @@ public final class ClaudeSessionFiles {
                 }
             }
         }
-        catch (IOException ex) {
-            return java.util.Optional.empty();
-        }
-        return found.size() == 1 ? java.util.Optional.of(found.get(0)) : java.util.Optional.empty();
+        return found;
     }
 
     public static boolean archive(RawArtifacts raw, String sessionId, Path projectsRoot) {
@@ -84,20 +100,13 @@ public final class ClaudeSessionFiles {
             raw.recordSessionFileNotCaptured("transcript", "the session id is not usable as a file name: " + sessionId);
             return false;
         }
-        List<Path> found = new ArrayList<>();
-        if (Files.isDirectory(projectsRoot)) {
-            try (Stream<Path> projects = Files.list(projectsRoot)) {
-                for (Path project : (Iterable<Path>) projects::iterator) {
-                    Path candidate = project.resolve(sessionId + ".jsonl");
-                    if (Files.isRegularFile(candidate)) {
-                        found.add(candidate);
-                    }
-                }
-            }
-            catch (IOException ex) {
-                raw.recordSessionFileNotCaptured("transcript", "could not list " + projectsRoot + ": " + ex.getMessage());
-                return false;
-            }
+        List<Path> found;
+        try {
+            found = transcriptsNamed(sessionId, projectsRoot);
+        }
+        catch (IOException ex) {
+            raw.recordSessionFileNotCaptured("transcript", "could not list " + projectsRoot + ": " + ex.getMessage());
+            return false;
         }
         if (found.size() != 1) {
             raw.recordSessionFileNotCaptured("transcript", found.isEmpty()
@@ -105,7 +114,11 @@ public final class ClaudeSessionFiles {
                     : "ambiguous: " + found.size() + " transcripts named " + sessionId + ".jsonl under " + projectsRoot);
             return false;
         }
-        Path transcript = found.get(0);
+        return zipSession(raw, found.get(0), sessionId);
+    }
+
+    /** Zips the transcript and, when present, the session directory beside it, as one archive. */
+    private static boolean zipSession(RawArtifacts raw, Path transcript, String sessionId) {
         Map<String, String> refs = Map.of("sessionId", sessionId);
         List<RawArtifacts.ZipSource> sources = new ArrayList<>();
         sources.add(new RawArtifacts.ZipSource(transcript, sessionId + ".jsonl"));
