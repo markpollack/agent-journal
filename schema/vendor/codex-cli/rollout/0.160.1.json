@@ -1,0 +1,5542 @@
+{
+ "kind": "agent-journal/native-source-specification",
+ "version": "0.1",
+ "status": "ACCEPTED 0.1.0 (2026-10-21, FULL-1R): baseline inventory frozen from the complete FULL-1 sources; drift reports propose changes, review accepts them by editing this file and bumping specification_version",
+ "specification_version": "0.1.0",
+ "profile": "codex_rollout",
+ "applies_to": {
+  "cli": "Codex CLI",
+  "version": "0.160.1",
+  "launch_mode": "codex exec --json (the rollout is the session file the CLI wrote)",
+  "source_kind": "saved session file",
+  "capture_route": "copied from ~/.codex/sessions/... after the run; the only rollout the manifest names",
+  "route_limit": "one rollout per run in this specimen"
+ },
+ "provenance": {
+  "observed_on": [
+   {
+    "artifact": "codex pair B rollout-1.jsonl",
+    "sha256": "bd2c011b2a77231d46991ad62d1e7ff836a27509b7ab778b2ba92ebe9af88236",
+    "records": 26,
+    "frozen_in": "plans/evidence/2026-10-19-stage-13/codex-pairs/B-multitool-failure/sha256.txt (steward, private)",
+    "bytes": 62039
+   }
+  ],
+  "produced_by": "journal-capture-tck NativeInventoryTool draft (RawInventory 0.1)",
+  "reviewed": "2026-10-21 FULL-1R execution; owner review pending at OCSF-1"
+ },
+ "limits": [
+  "one CLI version and one launch mode per profile: the inventory is an observed shape at the stated versions, not a vendor promise",
+  "a field observed in one record is not universal; a field absent from a specimen is not removed; nullability is what was seen",
+  "variants are discriminated by the vendor's own fields; a record with a new discriminator value is a new variant, not an error",
+  "data-keyed subtrees (tool inputs, tool-defined results, tool schemas, per-tool wire inputs) are tool/user data: only value kinds are recorded",
+  "a change of meaning under an unchanged shape is not visible to this inventory; the semantic oracle judges values",
+  "world_state and turn_context carry configuration snapshots whose full meaning is retained, not interpreted"
+ ],
+ "external_cross_checks": [
+  {
+   "name": "openai/codex rollout definitions / app-server generate-internal-json-schema",
+   "commit": "rust-v0.160.1 d27764b",
+   "role": "vendor",
+   "use": "the matching rollout schema export was not obtained in this pass; no path-level comparison was run"
+  }
+ ],
+ "open_variants": [],
+ "inventory": {
+  "observed_on": [
+   {
+    "artifact": "rollout-1.jsonl",
+    "sha256": "bd2c011b2a77231d46991ad62d1e7ff836a27509b7ab778b2ba92ebe9af88236",
+    "bytes": 62039,
+    "records": 26
+   }
+  ],
+  "data_keyed": [
+   "payload.output"
+  ],
+  "map_keyed": [],
+  "variants": {
+   "event_msg/item_completed/AgentMessage": {
+    "discriminators": {
+     "type": "event_msg",
+     "payload.type": "item_completed",
+     "payload.item.type": "AgentMessage"
+    },
+    "records": 2,
+    "evidence": [
+     "rollout-1.jsonl:11",
+     "rollout-1.jsonl:22"
+    ],
+    "paths": {
+     "ordinal": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:11",
+       "rollout-1.jsonl:22"
+      ]
+     },
+     "payload": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:11",
+       "rollout-1.jsonl:22"
+      ]
+     },
+     "payload.completed_at_ms": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:11",
+       "rollout-1.jsonl:22"
+      ]
+     },
+     "payload.item": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:11",
+       "rollout-1.jsonl:22"
+      ]
+     },
+     "payload.item.content": {
+      "kinds": {
+       "array": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:11",
+       "rollout-1.jsonl:22"
+      ]
+     },
+     "payload.item.content[]": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:11",
+       "rollout-1.jsonl:22"
+      ]
+     },
+     "payload.item.content[].text": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:11",
+       "rollout-1.jsonl:22"
+      ]
+     },
+     "payload.item.content[].type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:11",
+       "rollout-1.jsonl:22"
+      ]
+     },
+     "payload.item.id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:11",
+       "rollout-1.jsonl:22"
+      ]
+     },
+     "payload.item.phase": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:11",
+       "rollout-1.jsonl:22"
+      ]
+     },
+     "payload.item.type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:11",
+       "rollout-1.jsonl:22"
+      ]
+     },
+     "payload.started_at_ms": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:11",
+       "rollout-1.jsonl:22"
+      ]
+     },
+     "payload.thread_id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:11",
+       "rollout-1.jsonl:22"
+      ]
+     },
+     "payload.turn_id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:11",
+       "rollout-1.jsonl:22"
+      ]
+     },
+     "payload.type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:11",
+       "rollout-1.jsonl:22"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:11",
+       "rollout-1.jsonl:22"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:11",
+       "rollout-1.jsonl:22"
+      ]
+     }
+    }
+   },
+   "event_msg/item_completed/CommandExecution": {
+    "discriminators": {
+     "type": "event_msg",
+     "payload.type": "item_completed",
+     "payload.item.type": "CommandExecution"
+    },
+    "records": 5,
+    "evidence": [
+     "rollout-1.jsonl:15",
+     "rollout-1.jsonl:16",
+     "rollout-1.jsonl:17",
+     "rollout-1.jsonl:18",
+     "rollout-1.jsonl:19"
+    ],
+    "paths": {
+     "ordinal": {
+      "kinds": {
+       "integer": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload": {
+      "kinds": {
+       "object": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.completed_at_ms": {
+      "kinds": {
+       "integer": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.item": {
+      "kinds": {
+       "object": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.item.aggregated_output": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.item.command": {
+      "kinds": {
+       "array": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.item.command[]": {
+      "kinds": {
+       "string": 15
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.item.cwd": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.item.duration": {
+      "kinds": {
+       "object": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.item.duration.nanos": {
+      "kinds": {
+       "integer": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.item.duration.secs": {
+      "kinds": {
+       "integer": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.item.exit_code": {
+      "kinds": {
+       "integer": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.item.formatted_output": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.item.id": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.item.parsed_cmd": {
+      "kinds": {
+       "array": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.item.parsed_cmd[]": {
+      "kinds": {
+       "object": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.item.parsed_cmd[].cmd": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.item.parsed_cmd[].name": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 2,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17"
+      ]
+     },
+     "payload.item.parsed_cmd[].path": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 2,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17"
+      ]
+     },
+     "payload.item.parsed_cmd[].type": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.item.process_id": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.item.source": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.item.status": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.item.stderr": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.item.stdout": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.item.type": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.started_at_ms": {
+      "kinds": {
+       "integer": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.thread_id": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.turn_id": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "payload.type": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:15",
+       "rollout-1.jsonl:16",
+       "rollout-1.jsonl:17",
+       "rollout-1.jsonl:18",
+       "rollout-1.jsonl:19"
+      ]
+     }
+    }
+   },
+   "event_msg/item_completed/UserMessage": {
+    "discriminators": {
+     "type": "event_msg",
+     "payload.type": "item_completed",
+     "payload.item.type": "UserMessage"
+    },
+    "records": 1,
+    "evidence": [
+     "rollout-1.jsonl:10"
+    ],
+    "paths": {
+     "ordinal": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:10"
+      ]
+     },
+     "payload": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:10"
+      ]
+     },
+     "payload.completed_at_ms": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:10"
+      ]
+     },
+     "payload.item": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:10"
+      ]
+     },
+     "payload.item.content": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:10"
+      ]
+     },
+     "payload.item.content[]": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:10"
+      ]
+     },
+     "payload.item.content[].text": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:10"
+      ]
+     },
+     "payload.item.content[].text_elements": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 1,
+      "evidence": [
+       "rollout-1.jsonl:10"
+      ]
+     },
+     "payload.item.content[].type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:10"
+      ]
+     },
+     "payload.item.id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:10"
+      ]
+     },
+     "payload.item.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:10"
+      ]
+     },
+     "payload.started_at_ms": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:10"
+      ]
+     },
+     "payload.thread_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:10"
+      ]
+     },
+     "payload.turn_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:10"
+      ]
+     },
+     "payload.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:10"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:10"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:10"
+      ]
+     }
+    }
+   },
+   "event_msg/task_complete": {
+    "discriminators": {
+     "type": "event_msg",
+     "payload.type": "task_complete"
+    },
+    "records": 1,
+    "evidence": [
+     "rollout-1.jsonl:26"
+    ],
+    "paths": {
+     "ordinal": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:26"
+      ]
+     },
+     "payload": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:26"
+      ]
+     },
+     "payload.completed_at": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:26"
+      ]
+     },
+     "payload.duration_ms": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:26"
+      ]
+     },
+     "payload.last_agent_message": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:26"
+      ]
+     },
+     "payload.started_at": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:26"
+      ]
+     },
+     "payload.time_to_first_token_ms": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:26"
+      ]
+     },
+     "payload.turn_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:26"
+      ]
+     },
+     "payload.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:26"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:26"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:26"
+      ]
+     }
+    }
+   },
+   "event_msg/task_started": {
+    "discriminators": {
+     "type": "event_msg",
+     "payload.type": "task_started"
+    },
+    "records": 1,
+    "evidence": [
+     "rollout-1.jsonl:2"
+    ],
+    "paths": {
+     "ordinal": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:2"
+      ]
+     },
+     "payload": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:2"
+      ]
+     },
+     "payload.collaboration_mode_kind": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:2"
+      ]
+     },
+     "payload.model_context_window": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:2"
+      ]
+     },
+     "payload.root_turn_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:2"
+      ]
+     },
+     "payload.started_at": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:2"
+      ]
+     },
+     "payload.turn_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:2"
+      ]
+     },
+     "payload.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:2"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:2"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:2"
+      ]
+     }
+    }
+   },
+   "event_msg/token_count": {
+    "discriminators": {
+     "type": "event_msg",
+     "payload.type": "token_count"
+    },
+    "records": 2,
+    "evidence": [
+     "rollout-1.jsonl:21",
+     "rollout-1.jsonl:25"
+    ],
+    "paths": {
+     "ordinal": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.info": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.info.last_token_usage": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.info.last_token_usage.cache_write_input_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.info.last_token_usage.cached_input_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.info.last_token_usage.input_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.info.last_token_usage.output_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.info.last_token_usage.reasoning_output_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.info.last_token_usage.total_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.info.model_context_window": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.info.total_token_usage": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.info.total_token_usage.cache_write_input_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.info.total_token_usage.cached_input_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.info.total_token_usage.input_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.info.total_token_usage.output_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.info.total_token_usage.reasoning_output_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.info.total_token_usage.total_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.rate_limits": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.rate_limits.credits": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.rate_limits.credits.balance": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.rate_limits.credits.has_credits": {
+      "kinds": {
+       "boolean": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.rate_limits.credits.unlimited": {
+      "kinds": {
+       "boolean": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.rate_limits.individual_limit": {
+      "kinds": {
+       "null": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 2,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.rate_limits.limit_id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.rate_limits.limit_name": {
+      "kinds": {
+       "null": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 2,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.rate_limits.plan_type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.rate_limits.primary": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.rate_limits.primary.resets_at": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.rate_limits.primary.used_percent": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.rate_limits.primary.window_minutes": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.rate_limits.rate_limit_reached_type": {
+      "kinds": {
+       "null": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 2,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.rate_limits.secondary": {
+      "kinds": {
+       "null": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 2,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.rate_limits.spend_control_reached": {
+      "kinds": {
+       "null": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 2,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "payload.type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:21",
+       "rollout-1.jsonl:25"
+      ]
+     }
+    }
+   },
+   "response_item/custom_tool_call": {
+    "discriminators": {
+     "type": "response_item",
+     "payload.type": "custom_tool_call"
+    },
+    "records": 1,
+    "evidence": [
+     "rollout-1.jsonl:13"
+    ],
+    "paths": {
+     "ordinal": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:13"
+      ]
+     },
+     "payload": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:13"
+      ]
+     },
+     "payload.call_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:13"
+      ]
+     },
+     "payload.id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:13"
+      ]
+     },
+     "payload.input": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:13"
+      ]
+     },
+     "payload.internal_chat_message_metadata_passthrough": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:13"
+      ]
+     },
+     "payload.internal_chat_message_metadata_passthrough.create_time": {
+      "kinds": {
+       "decimal": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:13"
+      ]
+     },
+     "payload.internal_chat_message_metadata_passthrough.turn_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:13"
+      ]
+     },
+     "payload.name": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:13"
+      ]
+     },
+     "payload.status": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:13"
+      ]
+     },
+     "payload.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:13"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:13"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:13"
+      ]
+     }
+    }
+   },
+   "response_item/custom_tool_call_output": {
+    "discriminators": {
+     "type": "response_item",
+     "payload.type": "custom_tool_call_output"
+    },
+    "records": 1,
+    "evidence": [
+     "rollout-1.jsonl:20"
+    ],
+    "paths": {
+     "metadata": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:20"
+      ]
+     },
+     "metadata.client_authored": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:20"
+      ]
+     },
+     "metadata.fallback_token_limit_override": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:20"
+      ]
+     },
+     "ordinal": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:20"
+      ]
+     },
+     "payload": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:20"
+      ]
+     },
+     "payload.call_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:20"
+      ]
+     },
+     "payload.id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:20"
+      ]
+     },
+     "payload.internal_chat_message_metadata_passthrough": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:20"
+      ]
+     },
+     "payload.internal_chat_message_metadata_passthrough.create_time": {
+      "kinds": {
+       "decimal": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:20"
+      ]
+     },
+     "payload.internal_chat_message_metadata_passthrough.turn_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:20"
+      ]
+     },
+     "payload.output": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:20"
+      ]
+     },
+     "payload.output[]": {
+      "kinds": {
+       "object": 6
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:20"
+      ]
+     },
+     "payload.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:20"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:20"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:20"
+      ]
+     }
+    }
+   },
+   "response_item/message/assistant": {
+    "discriminators": {
+     "type": "response_item",
+     "payload.type": "message",
+     "payload.role": "assistant"
+    },
+    "records": 2,
+    "evidence": [
+     "rollout-1.jsonl:12",
+     "rollout-1.jsonl:23"
+    ],
+    "paths": {
+     "metadata": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "metadata.client_authored": {
+      "kinds": {
+       "boolean": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "metadata.retained_source": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "metadata.retained_source.complete": {
+      "kinds": {
+       "boolean": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "metadata.retained_source.id": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "metadata.retained_source.id.message_id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "metadata.retained_source.id.role": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "metadata.retained_source.id.turn_id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "metadata.retained_source.revision": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "metadata.user_input_order": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "ordinal": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "payload": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "payload.content": {
+      "kinds": {
+       "array": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "payload.content[]": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "payload.content[].text": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "payload.content[].type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "payload.id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "payload.internal_chat_message_metadata_passthrough": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "payload.internal_chat_message_metadata_passthrough.content_item_kinds": {
+      "kinds": {
+       "array": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "payload.internal_chat_message_metadata_passthrough.content_item_kinds[]": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "payload.internal_chat_message_metadata_passthrough.create_time": {
+      "kinds": {
+       "decimal": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "payload.internal_chat_message_metadata_passthrough.turn_id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "payload.phase": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "payload.role": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "payload.type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:12",
+       "rollout-1.jsonl:23"
+      ]
+     }
+    }
+   },
+   "response_item/message/developer": {
+    "discriminators": {
+     "type": "response_item",
+     "payload.type": "message",
+     "payload.role": "developer"
+    },
+    "records": 3,
+    "evidence": [
+     "rollout-1.jsonl:3",
+     "rollout-1.jsonl:4",
+     "rollout-1.jsonl:5"
+    ],
+    "paths": {
+     "metadata": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 2,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:3"
+      ]
+     },
+     "metadata.client_authored": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 2,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:3"
+      ]
+     },
+     "metadata.mcp_attribution": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 2,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:3"
+      ]
+     },
+     "metadata.mcp_attribution.status": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 2,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:3"
+      ]
+     },
+     "ordinal": {
+      "kinds": {
+       "integer": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:3",
+       "rollout-1.jsonl:4",
+       "rollout-1.jsonl:5"
+      ]
+     },
+     "payload": {
+      "kinds": {
+       "object": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:3",
+       "rollout-1.jsonl:4",
+       "rollout-1.jsonl:5"
+      ]
+     },
+     "payload.content": {
+      "kinds": {
+       "array": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:3",
+       "rollout-1.jsonl:4",
+       "rollout-1.jsonl:5"
+      ]
+     },
+     "payload.content[]": {
+      "kinds": {
+       "object": 6
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:3",
+       "rollout-1.jsonl:4",
+       "rollout-1.jsonl:5"
+      ]
+     },
+     "payload.content[].text": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:3",
+       "rollout-1.jsonl:4",
+       "rollout-1.jsonl:5"
+      ]
+     },
+     "payload.content[].type": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:3",
+       "rollout-1.jsonl:4",
+       "rollout-1.jsonl:5"
+      ]
+     },
+     "payload.id": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:3",
+       "rollout-1.jsonl:4",
+       "rollout-1.jsonl:5"
+      ]
+     },
+     "payload.internal_chat_message_metadata_passthrough": {
+      "kinds": {
+       "object": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:3",
+       "rollout-1.jsonl:4",
+       "rollout-1.jsonl:5"
+      ]
+     },
+     "payload.internal_chat_message_metadata_passthrough.content_item_kinds": {
+      "kinds": {
+       "array": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:3",
+       "rollout-1.jsonl:4",
+       "rollout-1.jsonl:5"
+      ]
+     },
+     "payload.internal_chat_message_metadata_passthrough.content_item_kinds[]": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:3",
+       "rollout-1.jsonl:4",
+       "rollout-1.jsonl:5"
+      ]
+     },
+     "payload.internal_chat_message_metadata_passthrough.create_time": {
+      "kinds": {
+       "decimal": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:3",
+       "rollout-1.jsonl:4",
+       "rollout-1.jsonl:5"
+      ]
+     },
+     "payload.internal_chat_message_metadata_passthrough.turn_id": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:3",
+       "rollout-1.jsonl:4",
+       "rollout-1.jsonl:5"
+      ]
+     },
+     "payload.role": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:3",
+       "rollout-1.jsonl:4",
+       "rollout-1.jsonl:5"
+      ]
+     },
+     "payload.type": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:3",
+       "rollout-1.jsonl:4",
+       "rollout-1.jsonl:5"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:3",
+       "rollout-1.jsonl:4",
+       "rollout-1.jsonl:5"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:3",
+       "rollout-1.jsonl:4",
+       "rollout-1.jsonl:5"
+      ]
+     }
+    }
+   },
+   "response_item/message/user": {
+    "discriminators": {
+     "type": "response_item",
+     "payload.type": "message",
+     "payload.role": "user"
+    },
+    "records": 2,
+    "evidence": [
+     "rollout-1.jsonl:6",
+     "rollout-1.jsonl:9"
+    ],
+    "paths": {
+     "metadata": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "metadata.client_authored": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "metadata.mcp_attribution": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "metadata.mcp_attribution.status": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "metadata.retained_source": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "metadata.retained_source.complete": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "metadata.retained_source.id": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "metadata.retained_source.id.message_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "metadata.retained_source.id.role": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "metadata.retained_source.id.turn_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "metadata.retained_source.revision": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "metadata.user_input_order": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "ordinal": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:6",
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "payload": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:6",
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "payload.content": {
+      "kinds": {
+       "array": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:6",
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "payload.content[]": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:6",
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "payload.content[].text": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:6",
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "payload.content[].type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:6",
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "payload.id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:6",
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "payload.internal_chat_message_metadata_passthrough": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:6",
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "payload.internal_chat_message_metadata_passthrough.content_item_kinds": {
+      "kinds": {
+       "array": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:6",
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "payload.internal_chat_message_metadata_passthrough.content_item_kinds[]": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:6",
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "payload.internal_chat_message_metadata_passthrough.create_time": {
+      "kinds": {
+       "decimal": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:6",
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "payload.internal_chat_message_metadata_passthrough.turn_id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:6",
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "payload.role": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:6",
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "payload.type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:6",
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:6",
+       "rollout-1.jsonl:9"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:6",
+       "rollout-1.jsonl:9"
+      ]
+     }
+    }
+   },
+   "session_meta": {
+    "discriminators": {
+     "type": "session_meta"
+    },
+    "records": 1,
+    "evidence": [
+     "rollout-1.jsonl:1"
+    ],
+    "paths": {
+     "ordinal": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.base_instructions": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.base_instructions.provenance": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.base_instructions.provenance.model": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.base_instructions.provenance.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.base_instructions.text": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.cli_version": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.context_window": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.context_window.window_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.creator_account_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.creator_user_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.cwd": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.git": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.git.branch": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.git.commit_hash": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.history_mode": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.model_provider": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.originator": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.runtime_workspace_roots": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.runtime_workspace_roots[]": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.session_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.source": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.thread_source": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "payload.timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:1"
+      ]
+     }
+    }
+   },
+   "token_usage_record": {
+    "discriminators": {
+     "type": "token_usage_record"
+    },
+    "records": 2,
+    "evidence": [
+     "rollout-1.jsonl:14",
+     "rollout-1.jsonl:24"
+    ],
+    "paths": {
+     "ordinal": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.response_id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.root_turn_id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.session_id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.thread_id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.thread_token_usage": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.thread_token_usage.cache_write_input_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.thread_token_usage.cached_input_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.thread_token_usage.input_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.thread_token_usage.output_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.thread_token_usage.reasoning_output_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.thread_token_usage.total_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.turn_id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.turn_token_usage": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.turn_token_usage.cache_write_input_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.turn_token_usage.cached_input_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.turn_token_usage.input_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.turn_token_usage.output_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.turn_token_usage.reasoning_output_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.turn_token_usage.total_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.usage": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.usage.cache_write_input_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.usage.cached_input_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.usage.input_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.usage.output_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.usage.reasoning_output_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "payload.usage.total_tokens": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:14",
+       "rollout-1.jsonl:24"
+      ]
+     }
+    }
+   },
+   "turn_context": {
+    "discriminators": {
+     "type": "turn_context"
+    },
+    "records": 1,
+    "evidence": [
+     "rollout-1.jsonl:8"
+    ],
+    "paths": {
+     "ordinal": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.approval_policy": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.approvals_reviewer": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.collaboration_mode": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.collaboration_mode.mode": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.collaboration_mode.settings": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.collaboration_mode.settings.developer_instructions": {
+      "kinds": {
+       "null": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 1,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.collaboration_mode.settings.model": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.collaboration_mode.settings.reasoning_effort": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.comp_hash": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.current_date": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.cwd": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.disabled_plugin_ids": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 1,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.effort": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.file_system_sandbox_policy": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.file_system_sandbox_policy.entries": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.file_system_sandbox_policy.entries[]": {
+      "kinds": {
+       "object": 8
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 8,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.file_system_sandbox_policy.entries[].access": {
+      "kinds": {
+       "string": 8
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 8,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.file_system_sandbox_policy.entries[].missing_path_behavior": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.file_system_sandbox_policy.entries[].path": {
+      "kinds": {
+       "object": 8
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 8,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.file_system_sandbox_policy.entries[].path.path": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.file_system_sandbox_policy.entries[].path.type": {
+      "kinds": {
+       "string": 8
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 8,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.file_system_sandbox_policy.entries[].path.value": {
+      "kinds": {
+       "object": 3
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.file_system_sandbox_policy.entries[].path.value.kind": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.file_system_sandbox_policy.kind": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.model": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.multi_agent_version": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.permission_profile": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.permission_profile.file_system": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.permission_profile.file_system.entries": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.permission_profile.file_system.entries[]": {
+      "kinds": {
+       "object": 8
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 8,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.permission_profile.file_system.entries[].access": {
+      "kinds": {
+       "string": 8
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 8,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.permission_profile.file_system.entries[].missing_path_behavior": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.permission_profile.file_system.entries[].path": {
+      "kinds": {
+       "object": 8
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 8,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.permission_profile.file_system.entries[].path.path": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.permission_profile.file_system.entries[].path.type": {
+      "kinds": {
+       "string": 8
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 8,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.permission_profile.file_system.entries[].path.value": {
+      "kinds": {
+       "object": 3
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.permission_profile.file_system.entries[].path.value.kind": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.permission_profile.file_system.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.permission_profile.network": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.permission_profile.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.realtime_active": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.root_turn_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.sandbox_policy": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.sandbox_policy.exclude_slash_tmp": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.sandbox_policy.exclude_tmpdir_env_var": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.sandbox_policy.network_access": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.sandbox_policy.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.summary": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.timezone": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.turn_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.workspace_roots": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "payload.workspace_roots[]": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:8"
+      ]
+     }
+    }
+   },
+   "world_state": {
+    "discriminators": {
+     "type": "world_state"
+    },
+    "records": 1,
+    "evidence": [
+     "rollout-1.jsonl:7"
+    ],
+    "paths": {
+     "ordinal": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.full": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.agents_md": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 1,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.apps_instructions": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.collaboration_mode": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.collaboration_mode.instructions": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.collaboration_mode.mode": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.collaboration_mode.model": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.context_window_guidance": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.environments": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.environments.current_date": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.environments.environments": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.environments.environments.local": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.environments.environments.local.cwd": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.environments.environments.local.shell": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.environments.environments.local.status": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.environments.filesystem": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.environments.timezone": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.environments_instructions": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.git_attribution": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.host_skills": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.host_skills.body": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.host_skills.includeInstructions": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.managed_developer_instructions": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 1,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.model": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.multi_agent_mode": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.multi_agent_mode.mode": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.multi_agent_mode.usage_hint_hash": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.multi_agent_usage_hint": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.permissions": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.permissions.approved_command_prefixes": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.permissions.approved_command_prefixes[]": {
+      "kinds": {
+       "array": 32
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 32,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.permissions.approved_command_prefixes[][]": {
+      "kinds": {
+       "string": 70
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 70,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.permissions.instructions": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.persistent_mode": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 1,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.plugins_instructions": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.realtime": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.realtime.active": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.skills": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "payload.state.skills.includeInstructions": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "rollout-1.jsonl:7"
+      ]
+     }
+    }
+   }
+  }
+ }
+}

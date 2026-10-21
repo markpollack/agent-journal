@@ -1,0 +1,3618 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "title" : "agent-journal native source codex_rollout 0.1.0",
+  "description" : "DERIVED from the accepted Journal inventory (codex_rollout); observed shape at the stated versions, not a vendor promise; regenerate, never hand-edit",
+  "x-journal-applies-to" : {
+    "cli" : "Codex CLI",
+    "version" : "0.160.1",
+    "launch_mode" : "codex exec --json (the rollout is the session file the CLI wrote)",
+    "source_kind" : "saved session file",
+    "capture_route" : "copied from ~/.codex/sessions/... after the run; the only rollout the manifest names",
+    "route_limit" : "one rollout per run in this specimen"
+  },
+  "x-journal-derived-from" : "agent-journal/native-source-specification 0.1.0",
+  "oneOf" : [ {
+    "$ref" : "#/$defs/event_msg_item_completed_AgentMessage"
+  }, {
+    "$ref" : "#/$defs/event_msg_item_completed_CommandExecution"
+  }, {
+    "$ref" : "#/$defs/event_msg_item_completed_UserMessage"
+  }, {
+    "$ref" : "#/$defs/event_msg_task_complete"
+  }, {
+    "$ref" : "#/$defs/event_msg_task_started"
+  }, {
+    "$ref" : "#/$defs/event_msg_token_count"
+  }, {
+    "$ref" : "#/$defs/response_item_custom_tool_call"
+  }, {
+    "$ref" : "#/$defs/response_item_custom_tool_call_output"
+  }, {
+    "$ref" : "#/$defs/response_item_message_assistant"
+  }, {
+    "$ref" : "#/$defs/response_item_message_developer"
+  }, {
+    "$ref" : "#/$defs/response_item_message_user"
+  }, {
+    "$ref" : "#/$defs/session_meta"
+  }, {
+    "$ref" : "#/$defs/token_usage_record"
+  }, {
+    "$ref" : "#/$defs/turn_context"
+  }, {
+    "$ref" : "#/$defs/world_state"
+  } ],
+  "$defs" : {
+    "event_msg_item_completed_AgentMessage" : {
+      "type" : "object",
+      "properties" : {
+        "ordinal" : {
+          "type" : "integer",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 2,
+            "null" : 0
+          }
+        },
+        "payload" : {
+          "type" : "object",
+          "properties" : {
+            "completed_at_ms" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "item" : {
+              "type" : "object",
+              "properties" : {
+                "content" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "object",
+                    "properties" : {
+                      "text" : {
+                        "type" : "string",
+                        "x-journal-observed" : {
+                          "empty" : 0,
+                          "present_in_records" : 2,
+                          "null" : 0
+                        }
+                      },
+                      "type" : {
+                        "type" : "string",
+                        "x-journal-observed" : {
+                          "empty" : 0,
+                          "present_in_records" : 2,
+                          "null" : 0
+                        }
+                      }
+                    },
+                    "required" : [ "text", "type" ],
+                    "additionalProperties" : false,
+                    "x-journal-observed" : {
+                      "empty" : 0,
+                      "present_in_records" : 2,
+                      "null" : 0
+                    }
+                  },
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "id" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "phase" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "type" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                }
+              },
+              "required" : [ "content", "id", "phase", "type" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "started_at_ms" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "thread_id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "turn_id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "type" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            }
+          },
+          "required" : [ "completed_at_ms", "item", "started_at_ms", "thread_id", "turn_id", "type" ],
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 2,
+            "null" : 0
+          }
+        },
+        "timestamp" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 2,
+            "null" : 0
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 2,
+            "null" : 0
+          }
+        }
+      },
+      "required" : [ "ordinal", "payload", "timestamp", "type" ],
+      "additionalProperties" : false,
+      "title" : "event_msg/item_completed/AgentMessage",
+      "x-journal-discriminators" : {
+        "type" : "event_msg",
+        "payload.type" : "item_completed",
+        "payload.item.type" : "AgentMessage"
+      },
+      "x-journal-observed-records" : 2
+    },
+    "event_msg_item_completed_CommandExecution" : {
+      "type" : "object",
+      "properties" : {
+        "ordinal" : {
+          "type" : "integer",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 5,
+            "null" : 0
+          }
+        },
+        "payload" : {
+          "type" : "object",
+          "properties" : {
+            "completed_at_ms" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 5,
+                "null" : 0
+              }
+            },
+            "item" : {
+              "type" : "object",
+              "properties" : {
+                "aggregated_output" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 5,
+                    "null" : 0
+                  }
+                },
+                "command" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string",
+                    "x-journal-observed" : {
+                      "empty" : 0,
+                      "present_in_records" : 5,
+                      "null" : 0
+                    }
+                  },
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 5,
+                    "null" : 0
+                  }
+                },
+                "cwd" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 5,
+                    "null" : 0
+                  }
+                },
+                "duration" : {
+                  "type" : "object",
+                  "properties" : {
+                    "nanos" : {
+                      "type" : "integer",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 5,
+                        "null" : 0
+                      }
+                    },
+                    "secs" : {
+                      "type" : "integer",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 5,
+                        "null" : 0
+                      }
+                    }
+                  },
+                  "required" : [ "nanos", "secs" ],
+                  "additionalProperties" : false,
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 5,
+                    "null" : 0
+                  }
+                },
+                "exit_code" : {
+                  "type" : "integer",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 5,
+                    "null" : 0
+                  }
+                },
+                "formatted_output" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 5,
+                    "null" : 0
+                  }
+                },
+                "id" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 5,
+                    "null" : 0
+                  }
+                },
+                "parsed_cmd" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "object",
+                    "properties" : {
+                      "cmd" : {
+                        "type" : "string",
+                        "x-journal-observed" : {
+                          "empty" : 0,
+                          "present_in_records" : 5,
+                          "null" : 0
+                        }
+                      },
+                      "name" : {
+                        "type" : "string",
+                        "x-journal-observed" : {
+                          "empty" : 0,
+                          "present_in_records" : 3,
+                          "null" : 0
+                        }
+                      },
+                      "path" : {
+                        "type" : "string",
+                        "x-journal-observed" : {
+                          "empty" : 0,
+                          "present_in_records" : 3,
+                          "null" : 0
+                        }
+                      },
+                      "type" : {
+                        "type" : "string",
+                        "x-journal-observed" : {
+                          "empty" : 0,
+                          "present_in_records" : 5,
+                          "null" : 0
+                        }
+                      }
+                    },
+                    "required" : [ "cmd", "type" ],
+                    "additionalProperties" : false,
+                    "x-journal-observed" : {
+                      "empty" : 0,
+                      "present_in_records" : 5,
+                      "null" : 0
+                    }
+                  },
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 5,
+                    "null" : 0
+                  }
+                },
+                "process_id" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 5,
+                    "null" : 0
+                  }
+                },
+                "source" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 5,
+                    "null" : 0
+                  }
+                },
+                "status" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 5,
+                    "null" : 0
+                  }
+                },
+                "stderr" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 5,
+                    "null" : 0
+                  }
+                },
+                "stdout" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 5,
+                    "null" : 0
+                  }
+                },
+                "type" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 5,
+                    "null" : 0
+                  }
+                }
+              },
+              "required" : [ "aggregated_output", "command", "cwd", "duration", "exit_code", "formatted_output", "id", "parsed_cmd", "process_id", "source", "status", "stderr", "stdout", "type" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 5,
+                "null" : 0
+              }
+            },
+            "started_at_ms" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 5,
+                "null" : 0
+              }
+            },
+            "thread_id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 5,
+                "null" : 0
+              }
+            },
+            "turn_id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 5,
+                "null" : 0
+              }
+            },
+            "type" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 5,
+                "null" : 0
+              }
+            }
+          },
+          "required" : [ "completed_at_ms", "item", "started_at_ms", "thread_id", "turn_id", "type" ],
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 5,
+            "null" : 0
+          }
+        },
+        "timestamp" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 5,
+            "null" : 0
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 5,
+            "null" : 0
+          }
+        }
+      },
+      "required" : [ "ordinal", "payload", "timestamp", "type" ],
+      "additionalProperties" : false,
+      "title" : "event_msg/item_completed/CommandExecution",
+      "x-journal-discriminators" : {
+        "type" : "event_msg",
+        "payload.type" : "item_completed",
+        "payload.item.type" : "CommandExecution"
+      },
+      "x-journal-observed-records" : 5
+    },
+    "event_msg_item_completed_UserMessage" : {
+      "type" : "object",
+      "properties" : {
+        "ordinal" : {
+          "type" : "integer",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "payload" : {
+          "type" : "object",
+          "properties" : {
+            "completed_at_ms" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "item" : {
+              "type" : "object",
+              "properties" : {
+                "content" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "object",
+                    "properties" : {
+                      "text" : {
+                        "type" : "string",
+                        "x-journal-observed" : {
+                          "empty" : 0,
+                          "present_in_records" : 1,
+                          "null" : 0
+                        }
+                      },
+                      "text_elements" : {
+                        "type" : "array",
+                        "x-journal-observed" : {
+                          "empty" : 1,
+                          "present_in_records" : 1,
+                          "null" : 0
+                        }
+                      },
+                      "type" : {
+                        "type" : "string",
+                        "x-journal-observed" : {
+                          "empty" : 0,
+                          "present_in_records" : 1,
+                          "null" : 0
+                        }
+                      }
+                    },
+                    "required" : [ "text", "text_elements", "type" ],
+                    "additionalProperties" : false,
+                    "x-journal-observed" : {
+                      "empty" : 0,
+                      "present_in_records" : 1,
+                      "null" : 0
+                    }
+                  },
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "id" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "type" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                }
+              },
+              "required" : [ "content", "id", "type" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "started_at_ms" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "thread_id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "turn_id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "type" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            }
+          },
+          "required" : [ "completed_at_ms", "item", "started_at_ms", "thread_id", "turn_id", "type" ],
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "timestamp" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        }
+      },
+      "required" : [ "ordinal", "payload", "timestamp", "type" ],
+      "additionalProperties" : false,
+      "title" : "event_msg/item_completed/UserMessage",
+      "x-journal-discriminators" : {
+        "type" : "event_msg",
+        "payload.type" : "item_completed",
+        "payload.item.type" : "UserMessage"
+      },
+      "x-journal-observed-records" : 1
+    },
+    "event_msg_task_complete" : {
+      "type" : "object",
+      "properties" : {
+        "ordinal" : {
+          "type" : "integer",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "payload" : {
+          "type" : "object",
+          "properties" : {
+            "completed_at" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "duration_ms" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "last_agent_message" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "started_at" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "time_to_first_token_ms" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "turn_id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "type" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            }
+          },
+          "required" : [ "completed_at", "duration_ms", "last_agent_message", "started_at", "time_to_first_token_ms", "turn_id", "type" ],
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "timestamp" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        }
+      },
+      "required" : [ "ordinal", "payload", "timestamp", "type" ],
+      "additionalProperties" : false,
+      "title" : "event_msg/task_complete",
+      "x-journal-discriminators" : {
+        "type" : "event_msg",
+        "payload.type" : "task_complete"
+      },
+      "x-journal-observed-records" : 1
+    },
+    "event_msg_task_started" : {
+      "type" : "object",
+      "properties" : {
+        "ordinal" : {
+          "type" : "integer",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "payload" : {
+          "type" : "object",
+          "properties" : {
+            "collaboration_mode_kind" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "model_context_window" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "root_turn_id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "started_at" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "turn_id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "type" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            }
+          },
+          "required" : [ "collaboration_mode_kind", "model_context_window", "root_turn_id", "started_at", "turn_id", "type" ],
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "timestamp" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        }
+      },
+      "required" : [ "ordinal", "payload", "timestamp", "type" ],
+      "additionalProperties" : false,
+      "title" : "event_msg/task_started",
+      "x-journal-discriminators" : {
+        "type" : "event_msg",
+        "payload.type" : "task_started"
+      },
+      "x-journal-observed-records" : 1
+    },
+    "event_msg_token_count" : {
+      "type" : "object",
+      "properties" : {
+        "ordinal" : {
+          "type" : "integer",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 2,
+            "null" : 0
+          }
+        },
+        "payload" : {
+          "type" : "object",
+          "properties" : {
+            "info" : {
+              "type" : "object",
+              "properties" : {
+                "last_token_usage" : {
+                  "type" : "object",
+                  "properties" : {
+                    "cache_write_input_tokens" : {
+                      "type" : "integer",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 2,
+                        "null" : 0
+                      }
+                    },
+                    "cached_input_tokens" : {
+                      "type" : "integer",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 2,
+                        "null" : 0
+                      }
+                    },
+                    "input_tokens" : {
+                      "type" : "integer",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 2,
+                        "null" : 0
+                      }
+                    },
+                    "output_tokens" : {
+                      "type" : "integer",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 2,
+                        "null" : 0
+                      }
+                    },
+                    "reasoning_output_tokens" : {
+                      "type" : "integer",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 2,
+                        "null" : 0
+                      }
+                    },
+                    "total_tokens" : {
+                      "type" : "integer",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 2,
+                        "null" : 0
+                      }
+                    }
+                  },
+                  "required" : [ "cache_write_input_tokens", "cached_input_tokens", "input_tokens", "output_tokens", "reasoning_output_tokens", "total_tokens" ],
+                  "additionalProperties" : false,
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "model_context_window" : {
+                  "type" : "integer",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "total_token_usage" : {
+                  "type" : "object",
+                  "properties" : {
+                    "cache_write_input_tokens" : {
+                      "type" : "integer",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 2,
+                        "null" : 0
+                      }
+                    },
+                    "cached_input_tokens" : {
+                      "type" : "integer",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 2,
+                        "null" : 0
+                      }
+                    },
+                    "input_tokens" : {
+                      "type" : "integer",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 2,
+                        "null" : 0
+                      }
+                    },
+                    "output_tokens" : {
+                      "type" : "integer",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 2,
+                        "null" : 0
+                      }
+                    },
+                    "reasoning_output_tokens" : {
+                      "type" : "integer",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 2,
+                        "null" : 0
+                      }
+                    },
+                    "total_tokens" : {
+                      "type" : "integer",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 2,
+                        "null" : 0
+                      }
+                    }
+                  },
+                  "required" : [ "cache_write_input_tokens", "cached_input_tokens", "input_tokens", "output_tokens", "reasoning_output_tokens", "total_tokens" ],
+                  "additionalProperties" : false,
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                }
+              },
+              "required" : [ "last_token_usage", "model_context_window", "total_token_usage" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "rate_limits" : {
+              "type" : "object",
+              "properties" : {
+                "credits" : {
+                  "type" : "object",
+                  "properties" : {
+                    "balance" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 2,
+                        "null" : 0
+                      }
+                    },
+                    "has_credits" : {
+                      "type" : "boolean",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 2,
+                        "null" : 0
+                      }
+                    },
+                    "unlimited" : {
+                      "type" : "boolean",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 2,
+                        "null" : 0
+                      }
+                    }
+                  },
+                  "required" : [ "balance", "has_credits", "unlimited" ],
+                  "additionalProperties" : false,
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "individual_limit" : {
+                  "type" : "null",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 2
+                  }
+                },
+                "limit_id" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "limit_name" : {
+                  "type" : "null",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 2
+                  }
+                },
+                "plan_type" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "primary" : {
+                  "type" : "object",
+                  "properties" : {
+                    "resets_at" : {
+                      "type" : "integer",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 2,
+                        "null" : 0
+                      }
+                    },
+                    "used_percent" : {
+                      "type" : "integer",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 2,
+                        "null" : 0
+                      }
+                    },
+                    "window_minutes" : {
+                      "type" : "integer",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 2,
+                        "null" : 0
+                      }
+                    }
+                  },
+                  "required" : [ "resets_at", "used_percent", "window_minutes" ],
+                  "additionalProperties" : false,
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "rate_limit_reached_type" : {
+                  "type" : "null",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 2
+                  }
+                },
+                "secondary" : {
+                  "type" : "null",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 2
+                  }
+                },
+                "spend_control_reached" : {
+                  "type" : "null",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 2
+                  }
+                }
+              },
+              "required" : [ "credits", "individual_limit", "limit_id", "limit_name", "plan_type", "primary", "rate_limit_reached_type", "secondary", "spend_control_reached" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "type" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            }
+          },
+          "required" : [ "info", "rate_limits", "type" ],
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 2,
+            "null" : 0
+          }
+        },
+        "timestamp" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 2,
+            "null" : 0
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 2,
+            "null" : 0
+          }
+        }
+      },
+      "required" : [ "ordinal", "payload", "timestamp", "type" ],
+      "additionalProperties" : false,
+      "title" : "event_msg/token_count",
+      "x-journal-discriminators" : {
+        "type" : "event_msg",
+        "payload.type" : "token_count"
+      },
+      "x-journal-observed-records" : 2
+    },
+    "response_item_custom_tool_call" : {
+      "type" : "object",
+      "properties" : {
+        "ordinal" : {
+          "type" : "integer",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "payload" : {
+          "type" : "object",
+          "properties" : {
+            "call_id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "input" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "internal_chat_message_metadata_passthrough" : {
+              "type" : "object",
+              "properties" : {
+                "create_time" : {
+                  "type" : "number",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "turn_id" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                }
+              },
+              "required" : [ "create_time", "turn_id" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "name" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "status" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "type" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            }
+          },
+          "required" : [ "call_id", "id", "input", "internal_chat_message_metadata_passthrough", "name", "status", "type" ],
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "timestamp" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        }
+      },
+      "required" : [ "ordinal", "payload", "timestamp", "type" ],
+      "additionalProperties" : false,
+      "title" : "response_item/custom_tool_call",
+      "x-journal-discriminators" : {
+        "type" : "response_item",
+        "payload.type" : "custom_tool_call"
+      },
+      "x-journal-observed-records" : 1
+    },
+    "response_item_custom_tool_call_output" : {
+      "type" : "object",
+      "properties" : {
+        "metadata" : {
+          "type" : "object",
+          "properties" : {
+            "client_authored" : {
+              "type" : "boolean",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "fallback_token_limit_override" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            }
+          },
+          "required" : [ "client_authored", "fallback_token_limit_override" ],
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "ordinal" : {
+          "type" : "integer",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "payload" : {
+          "type" : "object",
+          "properties" : {
+            "call_id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "internal_chat_message_metadata_passthrough" : {
+              "type" : "object",
+              "properties" : {
+                "create_time" : {
+                  "type" : "number",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "turn_id" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                }
+              },
+              "required" : [ "create_time", "turn_id" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "output" : {
+              "type" : "array",
+              "items" : {
+                "type" : "object",
+                "x-journal-observed" : {
+                  "empty" : 0,
+                  "present_in_records" : 1,
+                  "null" : 0
+                }
+              },
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "type" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            }
+          },
+          "required" : [ "call_id", "id", "internal_chat_message_metadata_passthrough", "output", "type" ],
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "timestamp" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        }
+      },
+      "required" : [ "metadata", "ordinal", "payload", "timestamp", "type" ],
+      "additionalProperties" : false,
+      "title" : "response_item/custom_tool_call_output",
+      "x-journal-discriminators" : {
+        "type" : "response_item",
+        "payload.type" : "custom_tool_call_output"
+      },
+      "x-journal-observed-records" : 1
+    },
+    "response_item_message_assistant" : {
+      "type" : "object",
+      "properties" : {
+        "metadata" : {
+          "type" : "object",
+          "properties" : {
+            "client_authored" : {
+              "type" : "boolean",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "retained_source" : {
+              "type" : "object",
+              "properties" : {
+                "complete" : {
+                  "type" : "boolean",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "id" : {
+                  "type" : "object",
+                  "properties" : {
+                    "message_id" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 2,
+                        "null" : 0
+                      }
+                    },
+                    "role" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 2,
+                        "null" : 0
+                      }
+                    },
+                    "turn_id" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 2,
+                        "null" : 0
+                      }
+                    }
+                  },
+                  "required" : [ "message_id", "role", "turn_id" ],
+                  "additionalProperties" : false,
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "revision" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                }
+              },
+              "required" : [ "complete", "id", "revision" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "user_input_order" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            }
+          },
+          "required" : [ "client_authored", "retained_source", "user_input_order" ],
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 2,
+            "null" : 0
+          }
+        },
+        "ordinal" : {
+          "type" : "integer",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 2,
+            "null" : 0
+          }
+        },
+        "payload" : {
+          "type" : "object",
+          "properties" : {
+            "content" : {
+              "type" : "array",
+              "items" : {
+                "type" : "object",
+                "properties" : {
+                  "text" : {
+                    "type" : "string",
+                    "x-journal-observed" : {
+                      "empty" : 0,
+                      "present_in_records" : 2,
+                      "null" : 0
+                    }
+                  },
+                  "type" : {
+                    "type" : "string",
+                    "x-journal-observed" : {
+                      "empty" : 0,
+                      "present_in_records" : 2,
+                      "null" : 0
+                    }
+                  }
+                },
+                "required" : [ "text", "type" ],
+                "additionalProperties" : false,
+                "x-journal-observed" : {
+                  "empty" : 0,
+                  "present_in_records" : 2,
+                  "null" : 0
+                }
+              },
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "internal_chat_message_metadata_passthrough" : {
+              "type" : "object",
+              "properties" : {
+                "content_item_kinds" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string",
+                    "x-journal-observed" : {
+                      "empty" : 0,
+                      "present_in_records" : 2,
+                      "null" : 0
+                    }
+                  },
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "create_time" : {
+                  "type" : "number",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "turn_id" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                }
+              },
+              "required" : [ "content_item_kinds", "create_time", "turn_id" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "phase" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "role" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "type" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            }
+          },
+          "required" : [ "content", "id", "internal_chat_message_metadata_passthrough", "phase", "role", "type" ],
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 2,
+            "null" : 0
+          }
+        },
+        "timestamp" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 2,
+            "null" : 0
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 2,
+            "null" : 0
+          }
+        }
+      },
+      "required" : [ "metadata", "ordinal", "payload", "timestamp", "type" ],
+      "additionalProperties" : false,
+      "title" : "response_item/message/assistant",
+      "x-journal-discriminators" : {
+        "type" : "response_item",
+        "payload.type" : "message",
+        "payload.role" : "assistant"
+      },
+      "x-journal-observed-records" : 2
+    },
+    "response_item_message_developer" : {
+      "type" : "object",
+      "properties" : {
+        "metadata" : {
+          "type" : "object",
+          "properties" : {
+            "client_authored" : {
+              "type" : "boolean",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "mcp_attribution" : {
+              "type" : "object",
+              "properties" : {
+                "status" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                }
+              },
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            }
+          },
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "ordinal" : {
+          "type" : "integer",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 3,
+            "null" : 0
+          }
+        },
+        "payload" : {
+          "type" : "object",
+          "properties" : {
+            "content" : {
+              "type" : "array",
+              "items" : {
+                "type" : "object",
+                "properties" : {
+                  "text" : {
+                    "type" : "string",
+                    "x-journal-observed" : {
+                      "empty" : 0,
+                      "present_in_records" : 3,
+                      "null" : 0
+                    }
+                  },
+                  "type" : {
+                    "type" : "string",
+                    "x-journal-observed" : {
+                      "empty" : 0,
+                      "present_in_records" : 3,
+                      "null" : 0
+                    }
+                  }
+                },
+                "required" : [ "text", "type" ],
+                "additionalProperties" : false,
+                "x-journal-observed" : {
+                  "empty" : 0,
+                  "present_in_records" : 3,
+                  "null" : 0
+                }
+              },
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 3,
+                "null" : 0
+              }
+            },
+            "id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 3,
+                "null" : 0
+              }
+            },
+            "internal_chat_message_metadata_passthrough" : {
+              "type" : "object",
+              "properties" : {
+                "content_item_kinds" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string",
+                    "x-journal-observed" : {
+                      "empty" : 0,
+                      "present_in_records" : 3,
+                      "null" : 0
+                    }
+                  },
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 3,
+                    "null" : 0
+                  }
+                },
+                "create_time" : {
+                  "type" : "number",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 3,
+                    "null" : 0
+                  }
+                },
+                "turn_id" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 3,
+                    "null" : 0
+                  }
+                }
+              },
+              "required" : [ "content_item_kinds", "create_time", "turn_id" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 3,
+                "null" : 0
+              }
+            },
+            "role" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 3,
+                "null" : 0
+              }
+            },
+            "type" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 3,
+                "null" : 0
+              }
+            }
+          },
+          "required" : [ "content", "id", "internal_chat_message_metadata_passthrough", "role", "type" ],
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 3,
+            "null" : 0
+          }
+        },
+        "timestamp" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 3,
+            "null" : 0
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 3,
+            "null" : 0
+          }
+        }
+      },
+      "required" : [ "ordinal", "payload", "timestamp", "type" ],
+      "additionalProperties" : false,
+      "title" : "response_item/message/developer",
+      "x-journal-discriminators" : {
+        "type" : "response_item",
+        "payload.type" : "message",
+        "payload.role" : "developer"
+      },
+      "x-journal-observed-records" : 3
+    },
+    "response_item_message_user" : {
+      "type" : "object",
+      "properties" : {
+        "metadata" : {
+          "type" : "object",
+          "properties" : {
+            "client_authored" : {
+              "type" : "boolean",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "mcp_attribution" : {
+              "type" : "object",
+              "properties" : {
+                "status" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                }
+              },
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "retained_source" : {
+              "type" : "object",
+              "properties" : {
+                "complete" : {
+                  "type" : "boolean",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "id" : {
+                  "type" : "object",
+                  "properties" : {
+                    "message_id" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    },
+                    "role" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    },
+                    "turn_id" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    }
+                  },
+                  "additionalProperties" : false,
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "revision" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                }
+              },
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "user_input_order" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            }
+          },
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "ordinal" : {
+          "type" : "integer",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 2,
+            "null" : 0
+          }
+        },
+        "payload" : {
+          "type" : "object",
+          "properties" : {
+            "content" : {
+              "type" : "array",
+              "items" : {
+                "type" : "object",
+                "properties" : {
+                  "text" : {
+                    "type" : "string",
+                    "x-journal-observed" : {
+                      "empty" : 0,
+                      "present_in_records" : 2,
+                      "null" : 0
+                    }
+                  },
+                  "type" : {
+                    "type" : "string",
+                    "x-journal-observed" : {
+                      "empty" : 0,
+                      "present_in_records" : 2,
+                      "null" : 0
+                    }
+                  }
+                },
+                "required" : [ "text", "type" ],
+                "additionalProperties" : false,
+                "x-journal-observed" : {
+                  "empty" : 0,
+                  "present_in_records" : 2,
+                  "null" : 0
+                }
+              },
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "internal_chat_message_metadata_passthrough" : {
+              "type" : "object",
+              "properties" : {
+                "content_item_kinds" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string",
+                    "x-journal-observed" : {
+                      "empty" : 0,
+                      "present_in_records" : 2,
+                      "null" : 0
+                    }
+                  },
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "create_time" : {
+                  "type" : "number",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "turn_id" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                }
+              },
+              "required" : [ "content_item_kinds", "create_time", "turn_id" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "role" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "type" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            }
+          },
+          "required" : [ "content", "id", "internal_chat_message_metadata_passthrough", "role", "type" ],
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 2,
+            "null" : 0
+          }
+        },
+        "timestamp" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 2,
+            "null" : 0
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 2,
+            "null" : 0
+          }
+        }
+      },
+      "required" : [ "ordinal", "payload", "timestamp", "type" ],
+      "additionalProperties" : false,
+      "title" : "response_item/message/user",
+      "x-journal-discriminators" : {
+        "type" : "response_item",
+        "payload.type" : "message",
+        "payload.role" : "user"
+      },
+      "x-journal-observed-records" : 2
+    },
+    "session_meta" : {
+      "type" : "object",
+      "properties" : {
+        "ordinal" : {
+          "type" : "integer",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "payload" : {
+          "type" : "object",
+          "properties" : {
+            "base_instructions" : {
+              "type" : "object",
+              "properties" : {
+                "provenance" : {
+                  "type" : "object",
+                  "properties" : {
+                    "model" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    },
+                    "type" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    }
+                  },
+                  "required" : [ "model", "type" ],
+                  "additionalProperties" : false,
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "text" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                }
+              },
+              "required" : [ "provenance", "text" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "cli_version" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "context_window" : {
+              "type" : "object",
+              "properties" : {
+                "window_id" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                }
+              },
+              "required" : [ "window_id" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "creator_account_id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "creator_user_id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "cwd" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "git" : {
+              "type" : "object",
+              "properties" : {
+                "branch" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "commit_hash" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                }
+              },
+              "required" : [ "branch", "commit_hash" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "history_mode" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "model_provider" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "originator" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "runtime_workspace_roots" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string",
+                "x-journal-observed" : {
+                  "empty" : 0,
+                  "present_in_records" : 1,
+                  "null" : 0
+                }
+              },
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "session_id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "source" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "thread_source" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "timestamp" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            }
+          },
+          "required" : [ "base_instructions", "cli_version", "context_window", "creator_account_id", "creator_user_id", "cwd", "git", "history_mode", "id", "model_provider", "originator", "runtime_workspace_roots", "session_id", "source", "thread_source", "timestamp" ],
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "timestamp" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        }
+      },
+      "required" : [ "ordinal", "payload", "timestamp", "type" ],
+      "additionalProperties" : false,
+      "title" : "session_meta",
+      "x-journal-discriminators" : {
+        "type" : "session_meta"
+      },
+      "x-journal-observed-records" : 1
+    },
+    "token_usage_record" : {
+      "type" : "object",
+      "properties" : {
+        "ordinal" : {
+          "type" : "integer",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 2,
+            "null" : 0
+          }
+        },
+        "payload" : {
+          "type" : "object",
+          "properties" : {
+            "response_id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "root_turn_id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "session_id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "thread_id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "thread_token_usage" : {
+              "type" : "object",
+              "properties" : {
+                "cache_write_input_tokens" : {
+                  "type" : "integer",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "cached_input_tokens" : {
+                  "type" : "integer",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "input_tokens" : {
+                  "type" : "integer",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "output_tokens" : {
+                  "type" : "integer",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "reasoning_output_tokens" : {
+                  "type" : "integer",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "total_tokens" : {
+                  "type" : "integer",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                }
+              },
+              "required" : [ "cache_write_input_tokens", "cached_input_tokens", "input_tokens", "output_tokens", "reasoning_output_tokens", "total_tokens" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "turn_id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "turn_token_usage" : {
+              "type" : "object",
+              "properties" : {
+                "cache_write_input_tokens" : {
+                  "type" : "integer",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "cached_input_tokens" : {
+                  "type" : "integer",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "input_tokens" : {
+                  "type" : "integer",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "output_tokens" : {
+                  "type" : "integer",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "reasoning_output_tokens" : {
+                  "type" : "integer",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "total_tokens" : {
+                  "type" : "integer",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                }
+              },
+              "required" : [ "cache_write_input_tokens", "cached_input_tokens", "input_tokens", "output_tokens", "reasoning_output_tokens", "total_tokens" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            },
+            "usage" : {
+              "type" : "object",
+              "properties" : {
+                "cache_write_input_tokens" : {
+                  "type" : "integer",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "cached_input_tokens" : {
+                  "type" : "integer",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "input_tokens" : {
+                  "type" : "integer",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "output_tokens" : {
+                  "type" : "integer",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "reasoning_output_tokens" : {
+                  "type" : "integer",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                },
+                "total_tokens" : {
+                  "type" : "integer",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 2,
+                    "null" : 0
+                  }
+                }
+              },
+              "required" : [ "cache_write_input_tokens", "cached_input_tokens", "input_tokens", "output_tokens", "reasoning_output_tokens", "total_tokens" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 2,
+                "null" : 0
+              }
+            }
+          },
+          "required" : [ "response_id", "root_turn_id", "session_id", "thread_id", "thread_token_usage", "turn_id", "turn_token_usage", "usage" ],
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 2,
+            "null" : 0
+          }
+        },
+        "timestamp" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 2,
+            "null" : 0
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 2,
+            "null" : 0
+          }
+        }
+      },
+      "required" : [ "ordinal", "payload", "timestamp", "type" ],
+      "additionalProperties" : false,
+      "title" : "token_usage_record",
+      "x-journal-discriminators" : {
+        "type" : "token_usage_record"
+      },
+      "x-journal-observed-records" : 2
+    },
+    "turn_context" : {
+      "type" : "object",
+      "properties" : {
+        "ordinal" : {
+          "type" : "integer",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "payload" : {
+          "type" : "object",
+          "properties" : {
+            "approval_policy" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "approvals_reviewer" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "collaboration_mode" : {
+              "type" : "object",
+              "properties" : {
+                "mode" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "settings" : {
+                  "type" : "object",
+                  "properties" : {
+                    "developer_instructions" : {
+                      "type" : "null",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 1
+                      }
+                    },
+                    "model" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    },
+                    "reasoning_effort" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    }
+                  },
+                  "required" : [ "developer_instructions", "model", "reasoning_effort" ],
+                  "additionalProperties" : false,
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                }
+              },
+              "required" : [ "mode", "settings" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "comp_hash" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "current_date" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "cwd" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "disabled_plugin_ids" : {
+              "type" : "array",
+              "x-journal-observed" : {
+                "empty" : 1,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "effort" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "file_system_sandbox_policy" : {
+              "type" : "object",
+              "properties" : {
+                "entries" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "object",
+                    "properties" : {
+                      "access" : {
+                        "type" : "string",
+                        "x-journal-observed" : {
+                          "empty" : 0,
+                          "present_in_records" : 1,
+                          "null" : 0
+                        }
+                      },
+                      "missing_path_behavior" : {
+                        "type" : "string",
+                        "x-journal-observed" : {
+                          "empty" : 0,
+                          "present_in_records" : 1,
+                          "null" : 0
+                        }
+                      },
+                      "path" : {
+                        "type" : "object",
+                        "properties" : {
+                          "path" : {
+                            "type" : "string",
+                            "x-journal-observed" : {
+                              "empty" : 0,
+                              "present_in_records" : 1,
+                              "null" : 0
+                            }
+                          },
+                          "type" : {
+                            "type" : "string",
+                            "x-journal-observed" : {
+                              "empty" : 0,
+                              "present_in_records" : 1,
+                              "null" : 0
+                            }
+                          },
+                          "value" : {
+                            "type" : "object",
+                            "properties" : {
+                              "kind" : {
+                                "type" : "string",
+                                "x-journal-observed" : {
+                                  "empty" : 0,
+                                  "present_in_records" : 1,
+                                  "null" : 0
+                                }
+                              }
+                            },
+                            "required" : [ "kind" ],
+                            "additionalProperties" : false,
+                            "x-journal-observed" : {
+                              "empty" : 0,
+                              "present_in_records" : 1,
+                              "null" : 0
+                            }
+                          }
+                        },
+                        "required" : [ "path", "type", "value" ],
+                        "additionalProperties" : false,
+                        "x-journal-observed" : {
+                          "empty" : 0,
+                          "present_in_records" : 1,
+                          "null" : 0
+                        }
+                      }
+                    },
+                    "required" : [ "access", "missing_path_behavior", "path" ],
+                    "additionalProperties" : false,
+                    "x-journal-observed" : {
+                      "empty" : 0,
+                      "present_in_records" : 1,
+                      "null" : 0
+                    }
+                  },
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "kind" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                }
+              },
+              "required" : [ "entries", "kind" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "model" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "multi_agent_version" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "permission_profile" : {
+              "type" : "object",
+              "properties" : {
+                "file_system" : {
+                  "type" : "object",
+                  "properties" : {
+                    "entries" : {
+                      "type" : "array",
+                      "items" : {
+                        "type" : "object",
+                        "properties" : {
+                          "access" : {
+                            "type" : "string",
+                            "x-journal-observed" : {
+                              "empty" : 0,
+                              "present_in_records" : 1,
+                              "null" : 0
+                            }
+                          },
+                          "missing_path_behavior" : {
+                            "type" : "string",
+                            "x-journal-observed" : {
+                              "empty" : 0,
+                              "present_in_records" : 1,
+                              "null" : 0
+                            }
+                          },
+                          "path" : {
+                            "type" : "object",
+                            "properties" : {
+                              "path" : {
+                                "type" : "string",
+                                "x-journal-observed" : {
+                                  "empty" : 0,
+                                  "present_in_records" : 1,
+                                  "null" : 0
+                                }
+                              },
+                              "type" : {
+                                "type" : "string",
+                                "x-journal-observed" : {
+                                  "empty" : 0,
+                                  "present_in_records" : 1,
+                                  "null" : 0
+                                }
+                              },
+                              "value" : {
+                                "type" : "object",
+                                "properties" : {
+                                  "kind" : {
+                                    "type" : "string",
+                                    "x-journal-observed" : {
+                                      "empty" : 0,
+                                      "present_in_records" : 1,
+                                      "null" : 0
+                                    }
+                                  }
+                                },
+                                "required" : [ "kind" ],
+                                "additionalProperties" : false,
+                                "x-journal-observed" : {
+                                  "empty" : 0,
+                                  "present_in_records" : 1,
+                                  "null" : 0
+                                }
+                              }
+                            },
+                            "required" : [ "path", "type", "value" ],
+                            "additionalProperties" : false,
+                            "x-journal-observed" : {
+                              "empty" : 0,
+                              "present_in_records" : 1,
+                              "null" : 0
+                            }
+                          }
+                        },
+                        "required" : [ "access", "missing_path_behavior", "path" ],
+                        "additionalProperties" : false,
+                        "x-journal-observed" : {
+                          "empty" : 0,
+                          "present_in_records" : 1,
+                          "null" : 0
+                        }
+                      },
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    },
+                    "type" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    }
+                  },
+                  "required" : [ "entries", "type" ],
+                  "additionalProperties" : false,
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "network" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "type" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                }
+              },
+              "required" : [ "file_system", "network", "type" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "realtime_active" : {
+              "type" : "boolean",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "root_turn_id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "sandbox_policy" : {
+              "type" : "object",
+              "properties" : {
+                "exclude_slash_tmp" : {
+                  "type" : "boolean",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "exclude_tmpdir_env_var" : {
+                  "type" : "boolean",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "network_access" : {
+                  "type" : "boolean",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "type" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                }
+              },
+              "required" : [ "exclude_slash_tmp", "exclude_tmpdir_env_var", "network_access", "type" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "summary" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "timezone" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "turn_id" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "workspace_roots" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string",
+                "x-journal-observed" : {
+                  "empty" : 0,
+                  "present_in_records" : 1,
+                  "null" : 0
+                }
+              },
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            }
+          },
+          "required" : [ "approval_policy", "approvals_reviewer", "collaboration_mode", "comp_hash", "current_date", "cwd", "disabled_plugin_ids", "effort", "file_system_sandbox_policy", "model", "multi_agent_version", "permission_profile", "realtime_active", "root_turn_id", "sandbox_policy", "summary", "timezone", "turn_id", "workspace_roots" ],
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "timestamp" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        }
+      },
+      "required" : [ "ordinal", "payload", "timestamp", "type" ],
+      "additionalProperties" : false,
+      "title" : "turn_context",
+      "x-journal-discriminators" : {
+        "type" : "turn_context"
+      },
+      "x-journal-observed-records" : 1
+    },
+    "world_state" : {
+      "type" : "object",
+      "properties" : {
+        "ordinal" : {
+          "type" : "integer",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "payload" : {
+          "type" : "object",
+          "properties" : {
+            "full" : {
+              "type" : "boolean",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "state" : {
+              "type" : "object",
+              "properties" : {
+                "agents_md" : {
+                  "type" : "object",
+                  "x-journal-observed" : {
+                    "empty" : 1,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "apps_instructions" : {
+                  "type" : "boolean",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "collaboration_mode" : {
+                  "type" : "object",
+                  "properties" : {
+                    "instructions" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    },
+                    "mode" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    },
+                    "model" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    }
+                  },
+                  "required" : [ "instructions", "mode", "model" ],
+                  "additionalProperties" : false,
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "context_window_guidance" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "environments" : {
+                  "type" : "object",
+                  "properties" : {
+                    "current_date" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    },
+                    "environments" : {
+                      "type" : "object",
+                      "properties" : {
+                        "local" : {
+                          "type" : "object",
+                          "properties" : {
+                            "cwd" : {
+                              "type" : "string",
+                              "x-journal-observed" : {
+                                "empty" : 0,
+                                "present_in_records" : 1,
+                                "null" : 0
+                              }
+                            },
+                            "shell" : {
+                              "type" : "string",
+                              "x-journal-observed" : {
+                                "empty" : 0,
+                                "present_in_records" : 1,
+                                "null" : 0
+                              }
+                            },
+                            "status" : {
+                              "type" : "string",
+                              "x-journal-observed" : {
+                                "empty" : 0,
+                                "present_in_records" : 1,
+                                "null" : 0
+                              }
+                            }
+                          },
+                          "required" : [ "cwd", "shell", "status" ],
+                          "additionalProperties" : false,
+                          "x-journal-observed" : {
+                            "empty" : 0,
+                            "present_in_records" : 1,
+                            "null" : 0
+                          }
+                        }
+                      },
+                      "required" : [ "local" ],
+                      "additionalProperties" : false,
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    },
+                    "filesystem" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    },
+                    "timezone" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    }
+                  },
+                  "required" : [ "current_date", "environments", "filesystem", "timezone" ],
+                  "additionalProperties" : false,
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "environments_instructions" : {
+                  "type" : "boolean",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "git_attribution" : {
+                  "type" : "boolean",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "host_skills" : {
+                  "type" : "object",
+                  "properties" : {
+                    "body" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    },
+                    "includeInstructions" : {
+                      "type" : "boolean",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    }
+                  },
+                  "required" : [ "body", "includeInstructions" ],
+                  "additionalProperties" : false,
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "managed_developer_instructions" : {
+                  "type" : "object",
+                  "x-journal-observed" : {
+                    "empty" : 1,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "model" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "multi_agent_mode" : {
+                  "type" : "object",
+                  "properties" : {
+                    "mode" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    },
+                    "usage_hint_hash" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    }
+                  },
+                  "required" : [ "mode", "usage_hint_hash" ],
+                  "additionalProperties" : false,
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "multi_agent_usage_hint" : {
+                  "type" : "string",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "permissions" : {
+                  "type" : "object",
+                  "properties" : {
+                    "approved_command_prefixes" : {
+                      "type" : "array",
+                      "items" : {
+                        "type" : "array",
+                        "items" : {
+                          "type" : "string",
+                          "x-journal-observed" : {
+                            "empty" : 0,
+                            "present_in_records" : 1,
+                            "null" : 0
+                          }
+                        },
+                        "x-journal-observed" : {
+                          "empty" : 0,
+                          "present_in_records" : 1,
+                          "null" : 0
+                        }
+                      },
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    },
+                    "instructions" : {
+                      "type" : "string",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    }
+                  },
+                  "required" : [ "approved_command_prefixes", "instructions" ],
+                  "additionalProperties" : false,
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "persistent_mode" : {
+                  "type" : "object",
+                  "x-journal-observed" : {
+                    "empty" : 1,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "plugins_instructions" : {
+                  "type" : "boolean",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "realtime" : {
+                  "type" : "object",
+                  "properties" : {
+                    "active" : {
+                      "type" : "boolean",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    }
+                  },
+                  "required" : [ "active" ],
+                  "additionalProperties" : false,
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                },
+                "skills" : {
+                  "type" : "object",
+                  "properties" : {
+                    "includeInstructions" : {
+                      "type" : "boolean",
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 1,
+                        "null" : 0
+                      }
+                    }
+                  },
+                  "required" : [ "includeInstructions" ],
+                  "additionalProperties" : false,
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                }
+              },
+              "required" : [ "agents_md", "apps_instructions", "collaboration_mode", "context_window_guidance", "environments", "environments_instructions", "git_attribution", "host_skills", "managed_developer_instructions", "model", "multi_agent_mode", "multi_agent_usage_hint", "permissions", "persistent_mode", "plugins_instructions", "realtime", "skills" ],
+              "additionalProperties" : false,
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            }
+          },
+          "required" : [ "full", "state" ],
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "timestamp" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        }
+      },
+      "required" : [ "ordinal", "payload", "timestamp", "type" ],
+      "additionalProperties" : false,
+      "title" : "world_state",
+      "x-journal-discriminators" : {
+        "type" : "world_state"
+      },
+      "x-journal-observed-records" : 1
+    }
+  }
+}

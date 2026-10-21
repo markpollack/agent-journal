@@ -1,0 +1,609 @@
+{
+ "kind": "agent-journal/native-source-specification",
+ "version": "0.1",
+ "status": "ACCEPTED 0.1.0 (2026-10-21, FULL-1R): baseline inventory frozen from the complete FULL-1 sources; drift reports propose changes, review accepts them by editing this file and bumping specification_version",
+ "specification_version": "0.1.0",
+ "profile": "codex_stream",
+ "applies_to": {
+  "cli": "Codex CLI",
+  "version": "0.160.1",
+  "launch_mode": "codex exec --json --sandbox workspace-write --skip-git-repo-check \"<prompt>\" < /dev/null",
+  "source_kind": "live output",
+  "capture_route": "stdout captured by the pair script",
+  "route_limit": "stdout only; stderr is a separate opaque artifact; app-server notifications are an explanatory reference, not this surface"
+ },
+ "provenance": {
+  "observed_on": [
+   {
+    "artifact": "codex pair B stream.jsonl",
+    "sha256": "aa41246baefc755b43f6c60ef371e060c0bc66f8f73c72c714d6f5b20540c0e4",
+    "records": 15,
+    "frozen_in": "plans/evidence/2026-10-19-stage-13/codex-pairs/B-multitool-failure/sha256.txt (steward, private)",
+    "bytes": 2402
+   }
+  ],
+  "produced_by": "journal-capture-tck NativeInventoryTool draft (RawInventory 0.1)",
+  "reviewed": "2026-10-21 FULL-1R execution; owner review pending at OCSF-1"
+ },
+ "limits": [
+  "one CLI version and one launch mode per profile: the inventory is an observed shape at the stated versions, not a vendor promise",
+  "a field observed in one record is not universal; a field absent from a specimen is not removed; nullability is what was seen",
+  "variants are discriminated by the vendor's own fields; a record with a new discriminator value is a new variant, not an error",
+  "data-keyed subtrees (tool inputs, tool-defined results, tool schemas, per-tool wire inputs) are tool/user data: only value kinds are recorded",
+  "a change of meaning under an unchanged shape is not visible to this inventory; the semantic oracle judges values",
+  "the stream carries no timestamps and no turn id; item ids are stream-scoped and do not occur in the rollout (R13-08)"
+ ],
+ "external_cross_checks": [
+  {
+   "name": "openai/codex codex-rs/exec (ThreadEvent types and the exec JSON event processor)",
+   "commit": "rust-v0.160.1 d27764b (research-checkouts.lock.json)",
+   "role": "vendor source",
+   "use": "the exec projection is explained by app-server types and conversion code; no published JSON Schema of the exec stdout; no path-level comparison was run"
+  }
+ ],
+ "open_variants": [],
+ "inventory": {
+  "observed_on": [
+   {
+    "artifact": "stream.jsonl",
+    "sha256": "aa41246baefc755b43f6c60ef371e060c0bc66f8f73c72c714d6f5b20540c0e4",
+    "bytes": 2402,
+    "records": 15
+   }
+  ],
+  "data_keyed": [],
+  "map_keyed": [],
+  "variants": {
+   "item.completed/agent_message": {
+    "discriminators": {
+     "type": "item.completed",
+     "item.type": "agent_message"
+    },
+    "records": 2,
+    "evidence": [
+     "stream.jsonl:3",
+     "stream.jsonl:14"
+    ],
+    "paths": {
+     "item": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:3",
+       "stream.jsonl:14"
+      ]
+     },
+     "item.id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:3",
+       "stream.jsonl:14"
+      ]
+     },
+     "item.text": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:3",
+       "stream.jsonl:14"
+      ]
+     },
+     "item.type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:3",
+       "stream.jsonl:14"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:3",
+       "stream.jsonl:14"
+      ]
+     }
+    }
+   },
+   "item.completed/command_execution": {
+    "discriminators": {
+     "type": "item.completed",
+     "item.type": "command_execution"
+    },
+    "records": 5,
+    "evidence": [
+     "stream.jsonl:5",
+     "stream.jsonl:7",
+     "stream.jsonl:9",
+     "stream.jsonl:11",
+     "stream.jsonl:13"
+    ],
+    "paths": {
+     "item": {
+      "kinds": {
+       "object": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5",
+       "stream.jsonl:7",
+       "stream.jsonl:9",
+       "stream.jsonl:11",
+       "stream.jsonl:13"
+      ]
+     },
+     "item.aggregated_output": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5",
+       "stream.jsonl:7",
+       "stream.jsonl:9",
+       "stream.jsonl:11",
+       "stream.jsonl:13"
+      ]
+     },
+     "item.command": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5",
+       "stream.jsonl:7",
+       "stream.jsonl:9",
+       "stream.jsonl:11",
+       "stream.jsonl:13"
+      ]
+     },
+     "item.exit_code": {
+      "kinds": {
+       "integer": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5",
+       "stream.jsonl:7",
+       "stream.jsonl:9",
+       "stream.jsonl:11",
+       "stream.jsonl:13"
+      ]
+     },
+     "item.id": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5",
+       "stream.jsonl:7",
+       "stream.jsonl:9",
+       "stream.jsonl:11",
+       "stream.jsonl:13"
+      ]
+     },
+     "item.status": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5",
+       "stream.jsonl:7",
+       "stream.jsonl:9",
+       "stream.jsonl:11",
+       "stream.jsonl:13"
+      ]
+     },
+     "item.type": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5",
+       "stream.jsonl:7",
+       "stream.jsonl:9",
+       "stream.jsonl:11",
+       "stream.jsonl:13"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5",
+       "stream.jsonl:7",
+       "stream.jsonl:9",
+       "stream.jsonl:11",
+       "stream.jsonl:13"
+      ]
+     }
+    }
+   },
+   "item.started/command_execution": {
+    "discriminators": {
+     "type": "item.started",
+     "item.type": "command_execution"
+    },
+    "records": 5,
+    "evidence": [
+     "stream.jsonl:4",
+     "stream.jsonl:6",
+     "stream.jsonl:8",
+     "stream.jsonl:10",
+     "stream.jsonl:12"
+    ],
+    "paths": {
+     "item": {
+      "kinds": {
+       "object": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:4",
+       "stream.jsonl:6",
+       "stream.jsonl:8",
+       "stream.jsonl:10",
+       "stream.jsonl:12"
+      ]
+     },
+     "item.aggregated_output": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:4",
+       "stream.jsonl:6",
+       "stream.jsonl:8",
+       "stream.jsonl:10",
+       "stream.jsonl:12"
+      ]
+     },
+     "item.command": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:4",
+       "stream.jsonl:6",
+       "stream.jsonl:8",
+       "stream.jsonl:10",
+       "stream.jsonl:12"
+      ]
+     },
+     "item.exit_code": {
+      "kinds": {
+       "null": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 5,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:4",
+       "stream.jsonl:6",
+       "stream.jsonl:8",
+       "stream.jsonl:10",
+       "stream.jsonl:12"
+      ]
+     },
+     "item.id": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:4",
+       "stream.jsonl:6",
+       "stream.jsonl:8",
+       "stream.jsonl:10",
+       "stream.jsonl:12"
+      ]
+     },
+     "item.status": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:4",
+       "stream.jsonl:6",
+       "stream.jsonl:8",
+       "stream.jsonl:10",
+       "stream.jsonl:12"
+      ]
+     },
+     "item.type": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:4",
+       "stream.jsonl:6",
+       "stream.jsonl:8",
+       "stream.jsonl:10",
+       "stream.jsonl:12"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:4",
+       "stream.jsonl:6",
+       "stream.jsonl:8",
+       "stream.jsonl:10",
+       "stream.jsonl:12"
+      ]
+     }
+    }
+   },
+   "thread.started": {
+    "discriminators": {
+     "type": "thread.started"
+    },
+    "records": 1,
+    "evidence": [
+     "stream.jsonl:1"
+    ],
+    "paths": {
+     "thread_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:1"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:1"
+      ]
+     }
+    }
+   },
+   "turn.completed": {
+    "discriminators": {
+     "type": "turn.completed"
+    },
+    "records": 1,
+    "evidence": [
+     "stream.jsonl:15"
+    ],
+    "paths": {
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:15"
+      ]
+     },
+     "usage": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:15"
+      ]
+     },
+     "usage.cache_write_input_tokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:15"
+      ]
+     },
+     "usage.cached_input_tokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:15"
+      ]
+     },
+     "usage.input_tokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:15"
+      ]
+     },
+     "usage.output_tokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:15"
+      ]
+     },
+     "usage.reasoning_output_tokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:15"
+      ]
+     }
+    }
+   },
+   "turn.started": {
+    "discriminators": {
+     "type": "turn.started"
+    },
+    "records": 1,
+    "evidence": [
+     "stream.jsonl:2"
+    ],
+    "paths": {
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:2"
+      ]
+     }
+    }
+   }
+  }
+ }
+}

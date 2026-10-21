@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LABELLED SYNTHETIC external description of a Claude session file, for testing the cross-check mechanism only",
+  "description": "Hand-authored 2026-10-21 in the shape of a community-style JSON Schema (alternatives discriminated by a const on 'type', $ref into $defs, one open subtree). It describes user and assistant lines with a deliberately incomplete property set and no attachment lines. It is not a vendor or community artifact and makes no claim about any CLI version.",
+  "anyOf": [
+    {"$ref": "#/$defs/UserLine"},
+    {"$ref": "#/$defs/AssistantLine"}
+  ],
+  "$defs": {
+    "UserLine": {
+      "type": "object",
+      "properties": {
+        "type": {"type": "string", "const": "user"},
+        "uuid": {"type": "string"},
+        "parentUuid": {"type": ["string", "null"]},
+        "sessionId": {"type": "string"},
+        "timestamp": {"type": "string"},
+        "cwd": {"type": "string"},
+        "message": {"$ref": "#/$defs/Message"},
+        "toolUseResult": {"type": "object"},
+        "declaredOnlyField": {"type": "string"}
+      },
+      "required": ["type", "uuid", "message"],
+      "additionalProperties": false
+    },
+    "AssistantLine": {
+      "type": "object",
+      "properties": {
+        "type": {"type": "string", "const": "assistant"},
+        "uuid": {"type": "string"},
+        "sessionId": {"type": "string"},
+        "timestamp": {"type": "string"},
+        "message": {"$ref": "#/$defs/Message"}
+      },
+      "required": ["type", "uuid", "message"],
+      "additionalProperties": false
+    },
+    "Message": {
+      "type": "object",
+      "properties": {
+        "role": {"type": "string"},
+        "content": {
+          "anyOf": [
+            {"type": "string"},
+            {"type": "array", "items": {"$ref": "#/$defs/Block"}}
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "Block": {
+      "type": "object",
+      "properties": {
+        "type": {"type": "string"},
+        "text": {"type": "string"},
+        "id": {"type": "string"},
+        "name": {"type": "string"},
+        "input": {"type": "object", "additionalProperties": true}
+      },
+      "additionalProperties": false
+    }
+  }
+}
