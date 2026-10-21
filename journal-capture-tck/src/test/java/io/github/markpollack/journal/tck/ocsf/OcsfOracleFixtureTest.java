@@ -31,7 +31,8 @@ class OcsfOracleFixtureTest {
         assertThat(report.check("population.results", owner).detail()).isEqualTo("3 expected, 3 observed");
         assertThat(report.check("population.responses", owner).detail()).isEqualTo("6 expected, 6 observed");
         assertThat(report.check("population.prompts", owner).detail()).isEqualTo("5 expected, 5 observed");
-        assertThat(report.check("population.usage", owner).detail()).isEqualTo("3 expected, 3 observed");
+        assertThat(report.check("population.usage", owner).detail()).isEqualTo("6 expected, 6 observed");
+        assertThat(report.check("population.contexts", owner).detail()).isEqualTo("7 expected, 7 observed");
         assertThat(report.check("population.operations", owner).detail()).isEqualTo("4 expected, 4 observed");
         assertThat(report.check("population.turn_completed", owner).detail()).isEqualTo("2 expected, 2 observed");
         assertThat(report.outcome("population.cost", owner)).as("the rollout reports no cost; none is claimed").isEqualTo(Outcome.NOT_APPLICABLE);
@@ -39,13 +40,14 @@ class OcsfOracleFixtureTest {
         assertThat(report.outcome("operation.values", owner)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("usage.values", owner)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("whole_record.coverage", owner)).isEqualTo(Outcome.VERIFIED);
-        assertThat(report.check("whole_record.coverage", owner).detail()).startsWith("33 owned record(s)");
+        assertThat(report.check("whole_record.coverage", owner).detail()).startsWith("39 owned record(s)");
         assertThat(report.outcome("whole_record.structure_value", owner)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("whole_record.representation", owner)).isEqualTo(Outcome.VERIFIED);
-        assertThat(report.outcome("whole_record.bytes", owner)).as("no opaque record in this fixture").isEqualTo(Outcome.NOT_APPLICABLE);
+        assertThat(report.outcome("whole_record.bytes", owner)).as("the one opaque line is byte-equal").isEqualTo(Outcome.VERIFIED);
+        assertThat(report.check("whole_record.bytes", owner).detail()).isEqualTo("1 opaque record(s) byte-equal");
         assertThat(report.outcome("reconstruction.structure_value", owner)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("reconstruction.bytes", owner)).as("observed byte equality on compact native JSON; not promised for parsed records").isEqualTo(Outcome.VERIFIED);
-        assertThat(report.check("reconstruction.bytes", owner).detail()).contains("33 parsed, observed");
+        assertThat(report.check("reconstruction.bytes", owner).detail()).contains("38 parsed, observed");
         assertThat(report.outcome("time.basis", owner)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("event.order", "main")).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("package.readable", "main")).isEqualTo(Outcome.VERIFIED);

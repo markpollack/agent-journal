@@ -142,9 +142,34 @@ final class OcsfFixtures {
     /** Edits a native artifact in place (a labelled fixture of the test's own making) and re-freezes the expected-source manifest to it. */
     static void editNative(Path fixture, String artifact, Consumer<List<Json>> edit) {
         Path file = natives(fixture).resolve(artifact);
-        List<Json> lines = lines(file);
+        List<String> raw;
+        try {
+            raw = Files.readAllLines(file, StandardCharsets.UTF_8);
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        // opaque lines (not one JSON object) are kept verbatim at their position; the edit sees them as null
+        List<Json> lines = new ArrayList<>();
+        for (String line : raw) {
+            Json json;
+            try {
+                json = NeutralJson.parse(line);
+                if (!(json instanceof Json.JObject)) {
+                    json = null;
+                }
+            }
+            catch (IllegalArgumentException e) {
+                json = null;
+            }
+            lines.add(json);
+        }
         edit.accept(lines);
-        writeLines(file, lines);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < lines.size(); i++) {
+            sb.append(lines.get(i) == null ? raw.get(i) : NeutralJson.write(lines.get(i))).append('\n');
+        }
+        write(file, sb.toString());
         refreeze(fixture);
     }
 

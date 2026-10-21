@@ -428,7 +428,7 @@ class OcsfOracleMutationTest {
             Path fixture = copy(CODEX, work);
             editManifest(pkg(fixture), run -> obj(run.member("sources").elements().get(0)).members().put("sha256", str("00")));
             assertThat(verify(fixture).check("source.inventory", ROLLOUT).detail()).contains("sha256 00 declared");
-            assertThat(all(OcsfFixtures.lines(pkg(fixture).resolve("events.jsonl")), e -> true)).hasSize(33);
+            assertThat(all(OcsfFixtures.lines(pkg(fixture).resolve("events.jsonl")), e -> true)).hasSize(39);
         }
     }
 }

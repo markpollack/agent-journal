@@ -382,7 +382,7 @@ class FullOneReviewRegressionTest {
             Path control = copy(CODEX, work.resolve("control"));
             OracleReport c = verify(control);
             assertThat(c.outcome("context.values", ROLLOUT)).isEqualTo(Outcome.VERIFIED);
-            assertThat(c.check("population.contexts", ROLLOUT).detail()).isEqualTo("5 expected, 5 observed");
+            assertThat(c.check("population.contexts", ROLLOUT).detail()).isEqualTo("7 expected, 7 observed");
 
             Path reordered = copy(CODEX, work.resolve("reordered"));
             editEvents(pkg(reordered), events -> {

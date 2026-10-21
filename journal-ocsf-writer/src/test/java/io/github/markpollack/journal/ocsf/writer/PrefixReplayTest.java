@@ -35,7 +35,7 @@ class PrefixReplayTest {
     void everyPrefixOfTheCodexRolloutIsJudgedDefectFreeByTheOracle(@TempDir Path work) throws Exception {
         List<String> summary = prefixes(work, CODEX, "rollout.jsonl", codexRollout());
         assertThat(summary).as(String.join("\n", summary)).allMatch(s -> s.endsWith("OK"));
-        assertThat(summary.size()).isEqualTo(33);
+        assertThat(summary.size()).isEqualTo(39);
     }
 
     @Test

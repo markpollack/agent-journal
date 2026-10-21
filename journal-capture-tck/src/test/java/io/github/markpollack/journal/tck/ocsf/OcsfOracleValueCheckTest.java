@@ -191,7 +191,7 @@ class OcsfOracleValueCheckTest {
             obj(last.member("source_ref")).members().put("record_index", num("2"));
         });
         OracleReport report = verify(fixture);
-        assertThat(report.check("event.order", "main").detail()).contains("rollout.jsonl record 2 after record 32");
+        assertThat(report.check("event.order", "main").detail()).contains("rollout.jsonl record 2 after record 38");
     }
 
     @Test
@@ -201,11 +201,11 @@ class OcsfOracleValueCheckTest {
             Json sr1 = at(events, "source_record", 1, 13);
             obj(sr1).members().put("activity_id", num("2"));                        // a parsed record claimed Opaque
             Json sr2 = at(events, "source_record", 1, 16);
-            obj(sr2.member("source_ref")).members().put("record_index", num("99"));    // points past the 33 records
+            obj(sr2.member("source_ref")).members().put("record_index", num("99"));    // points past the 39 records
         });
         OracleReport report = verify(fixture);
         assertThat(report.check("whole_record.class", ROLLOUT).detail()).contains("record 13 parsed but retained as Opaque");
-        assertThat(report.check("whole_record.coverage", ROLLOUT).detail()).contains("record 16: 0 whole-record events").contains("record 99 retained but the artifact has 33 records");
+        assertThat(report.check("whole_record.coverage", ROLLOUT).detail()).contains("record 16: 0 whole-record events").contains("record 99 retained but the artifact has 39 records");
     }
 
     @Test
@@ -214,7 +214,7 @@ class OcsfOracleValueCheckTest {
         // available here, so exercise the declared-exclusion path on the inventory instead: an undeclared exclusion is a defect
         Path fixture = copy(CODEX, work);
         OcsfFixtures.editManifest(pkg(fixture), run -> obj(run.member("sources").elements().get(0)).members().put("records", num("30")));
-        assertThat(verify(fixture).check("source.inventory", ROLLOUT).detail()).contains("records 30 declared, artifact has 33");
+        assertThat(verify(fixture).check("source.inventory", ROLLOUT).detail()).contains("records 30 declared, artifact has 39");
     }
 
     @Test

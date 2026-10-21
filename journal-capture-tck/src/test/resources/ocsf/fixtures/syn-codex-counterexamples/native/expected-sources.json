@@ -12,9 +12,9 @@
   {
    "artifact": "rollout.jsonl",
    "profile": "codex_rollout",
-   "sha256": "db5baca52bdd09dca37efd288f0dac7ec52fa81c26f38a1d2738c895ed204563",
-   "bytes": 11078,
-   "records": 33,
+   "sha256": "ba5d5524ec8406323ea32566231dff43e763845f9641729b35b84e7b85625298",
+   "bytes": 13114,
+   "records": 39,
    "required": true
   }
  ],

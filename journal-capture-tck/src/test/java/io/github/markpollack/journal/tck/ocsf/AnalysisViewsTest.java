@@ -96,7 +96,7 @@ class AnalysisViewsTest {
         Path fixture = copy(CODEX, work);
         Json u = AnalysisViews.usage(open(fixture));
         List<Json> groups = u.member("groups").elements();
-        assertThat(groups).hasSize(2);
+        assertThat(groups).as("turn-0001, turn-0002, the msg_a_3 response scope and the session scope from token_usage_record").hasSize(4);
         Json turn1 = groups.get(0);
         assertThat(turn1.member("owner").text()).isEqualTo("turn-0001-synthetic");
         assertThat(turn1.path("applicable_final", "input_tokens").scalarText()).as("the last cumulative token_count, not the sum 1000+2100").isEqualTo("2100");
