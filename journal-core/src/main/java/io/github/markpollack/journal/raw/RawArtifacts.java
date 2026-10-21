@@ -81,6 +81,9 @@ public final class RawArtifacts implements AutoCloseable {
 
     private boolean closed;
 
+    /** The monitor for every state change; a private object so callers cannot lock this instance (SpotBugs USO_UNSAFE_METHOD_SYNCHRONIZATION). */
+    private final Object lock = new Object();
+
     private RawArtifacts(Path rawDir, String vendor, String vendorVersion) {
         this.rawDir = rawDir;
         this.vendor = vendor;
@@ -117,12 +120,14 @@ public final class RawArtifacts implements AutoCloseable {
      * and, when known, {@code bytes}, {@code sha256}, {@code role}, {@code vendorRefs} and a failure {@code reason}.
      * A run record can carry these so the level-0 files are discoverable from {@code run.json}.
      */
-    public synchronized List<Map<String, Object>> entries() {
-        List<Map<String, Object>> copy = new ArrayList<>(entries.size());
-        for (Map<String, Object> entry : entries) {
-            copy.add(new LinkedHashMap<>(entry));
+    public List<Map<String, Object>> entries() {
+        synchronized (lock) {
+            List<Map<String, Object>> copy = new ArrayList<>(entries.size());
+            for (Map<String, Object> entry : entries) {
+                copy.add(new LinkedHashMap<>(entry));
+            }
+            return copy;
         }
-        return copy;
     }
 
     /**
@@ -164,53 +169,55 @@ public final class RawArtifacts implements AutoCloseable {
      * @param sources the files and directories to archive
      * @return {@code true} if every source was archived in full
      */
-    public synchronized boolean zipSessionFiles(String zipName, String role, Map<String, String> vendorRefs,
+    public boolean zipSessionFiles(String zipName, String role, Map<String, String> vendorRefs,
             List<ZipSource> sources) {
-        requireOpen();
-        requireName(zipName);
-        if (!zipName.endsWith(".zip")) {
-            throw new IllegalArgumentException("not a zip file name: " + zipName);
-        }
-        String relative = SESSION_DIR + "/" + zipName;
-        Map<String, Object> entry = newEntry("session-archive", relative);
-        if (role != null) {
-            entry.put("role", role);
-        }
-        if (vendorRefs != null && !vendorRefs.isEmpty()) {
-            entry.put("vendorRefs", new LinkedHashMap<>(vendorRefs));
-        }
-        List<Map<String, Object>> listed = new ArrayList<>();
-        List<Map<String, Object>> skipped = new ArrayList<>();
-        entry.put("entries", listed);
-        entry.put("skipped", skipped);
-        Path target = rawDir.resolve(relative);
-        try {
-            if (Files.exists(target)) {
-                failEntry(entry, "a file is already stored under this name");
-                writeManifestQuietly();
-                return false;
+        synchronized (lock) {
+            requireOpen();
+            requireName(zipName);
+            if (!zipName.endsWith(".zip")) {
+                throw new IllegalArgumentException("not a zip file name: " + zipName);
             }
-            Files.createDirectories(target.getParent());
-            try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(target))) {
-                for (ZipSource source : sources) {
-                    addSource(zip, source, listed, skipped);
+            String relative = SESSION_DIR + "/" + zipName;
+            Map<String, Object> entry = newEntry("session-archive", relative);
+            if (role != null) {
+                entry.put("role", role);
+            }
+            if (vendorRefs != null && !vendorRefs.isEmpty()) {
+                entry.put("vendorRefs", new LinkedHashMap<>(vendorRefs));
+            }
+            List<Map<String, Object>> listed = new ArrayList<>();
+            List<Map<String, Object>> skipped = new ArrayList<>();
+            entry.put("entries", listed);
+            entry.put("skipped", skipped);
+            Path target = rawDir.resolve(relative);
+            try {
+                if (Files.exists(target)) {
+                    failEntry(entry, "a file is already stored under this name");
+                    writeManifestQuietly();
+                    return false;
+                }
+                Files.createDirectories(target.getParent());
+                try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(target))) {
+                    for (ZipSource source : sources) {
+                        addSource(zip, source, listed, skipped);
+                    }
+                }
+                entry.put("bytes", Files.size(target));
+                entry.put("sha256", sha256(target));
+                if (listed.isEmpty()) {
+                    failEntry(entry, "nothing to archive");
+                }
+                else {
+                    entry.put("status", STATUS_COMPLETE);
+                    entry.put("finishedAt", Instant.now().toString());
                 }
             }
-            entry.put("bytes", Files.size(target));
-            entry.put("sha256", sha256(target));
-            if (listed.isEmpty()) {
-                failEntry(entry, "nothing to archive");
+            catch (IOException | RuntimeException ex) {
+                failEntry(entry, ex.getClass().getSimpleName() + ": " + ex.getMessage());
             }
-            else {
-                entry.put("status", STATUS_COMPLETE);
-                entry.put("finishedAt", Instant.now().toString());
-            }
+            writeManifestQuietly();
+            return STATUS_COMPLETE.equals(entry.get("status")) && skipped.isEmpty();
         }
-        catch (IOException | RuntimeException ex) {
-            failEntry(entry, ex.getClass().getSimpleName() + ": " + ex.getMessage());
-        }
-        writeManifestQuietly();
-        return STATUS_COMPLETE.equals(entry.get("status")) && skipped.isEmpty();
     }
 
     private void addSource(ZipOutputStream zip, ZipSource source, List<Map<String, Object>> listed,
@@ -309,30 +316,34 @@ public final class RawArtifacts implements AutoCloseable {
      * @param role what was looked for
      * @param reason why nothing was copied
      */
-    public synchronized void recordSessionFileNotCaptured(String role, String reason) {
-        requireOpen();
-        Map<String, Object> entry = newEntry("session-archive", null);
-        entry.put("role", role);
-        fail(entry, reason);
+    public void recordSessionFileNotCaptured(String role, String reason) {
+        synchronized (lock) {
+            requireOpen();
+            Map<String, Object> entry = newEntry("session-archive", null);
+            entry.put("role", role);
+            fail(entry, reason);
+        }
     }
 
     @Override
-    public synchronized void close() throws IOException {
-        if (closed) {
-            return;
-        }
-        IOException first = null;
-        closed = true;
-        try {
-            writeManifest();
-        }
-        catch (IOException ex) {
-            if (first == null) {
-                first = ex;
+    public void close() throws IOException {
+        synchronized (lock) {
+            if (closed) {
+                return;
             }
-        }
-        if (first != null) {
-            throw first;
+            IOException first = null;
+            closed = true;
+            try {
+                writeManifest();
+            }
+            catch (IOException ex) {
+                if (first == null) {
+                    first = ex;
+                }
+            }
+            if (first != null) {
+                throw first;
+            }
         }
     }
 
