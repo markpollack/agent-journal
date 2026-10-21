@@ -34,6 +34,15 @@ final class CodexClassifierSupport {
     // An argument array of strings; [bash|sh|zsh, -c|-lc, script] gives the script, anything else
     // the elements joined with single spaces. Used for classification only.
     static String joinedCommand(JsonNode command) {
+        List<String> words = textWords(command);
+        if (words == null) {
+            return null;
+        }
+        return isShellWithScript(words) ? words.get(2) : String.join(" ", words);
+    }
+
+    // The elements of a non-empty array of strings; null for any other node.
+    private static List<String> textWords(JsonNode command) {
         if (command == null || !command.isArray() || command.isEmpty()) {
             return null;
         }
@@ -44,11 +53,13 @@ final class CodexClassifierSupport {
             }
             words.add(word.asText());
         }
-        if (words.size() == 3 && SHELLS.contains(words.get(0))
-                && ("-c".equals(words.get(1)) || "-lc".equals(words.get(1)))) {
-            return words.get(2);
-        }
-        return String.join(" ", words);
+        return words;
+    }
+
+    // [bash|sh|zsh, -c|-lc, script]
+    private static boolean isShellWithScript(List<String> words) {
+        return words.size() == 3 && SHELLS.contains(words.get(0))
+                && ("-c".equals(words.get(1)) || "-lc".equals(words.get(1)));
     }
 
     static JsonNode parseObject(String json) {
