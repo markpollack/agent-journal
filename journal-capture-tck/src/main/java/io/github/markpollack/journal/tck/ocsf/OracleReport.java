@@ -7,6 +7,8 @@ import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 
 /**
  * The OCSF oracle's result: what it judged (native artifacts with hashes, the candidate package and its reader
@@ -53,16 +55,31 @@ public final class OracleReport {
 
     /** A copy of this report without one check (the required registry is kept): for testing that acceptance notices. */
     OracleReport without(String property, String owner) {
+        return filtered(c -> !(c.property().equals(property) && c.owner().equals(owner)));
+    }
+
+    /**
+     * A copy of this report keeping only the checks {@code keep} accepts (the required registry is kept): for
+     * testing that a consumer of the report notices a check that is absent or altered.
+     */
+    public OracleReport filtered(Predicate<Check> keep) {
         OracleReport copy = new OracleReport();
         copy.oracle.putAll(oracle);
         copy.candidate.putAll(candidate);
         copy.denominator.putAll(denominator);
         copy.required.addAll(required);
         for (Check c : checks) {
-            if (!(c.property().equals(property) && c.owner().equals(owner))) {
+            if (keep.test(c)) {
                 copy.checks.add(c);
             }
         }
+        return copy;
+    }
+
+    /** A copy of this report with one check replaced by {@code replacement} where {@code match} accepts it. */
+    public OracleReport replaced(Predicate<Check> match, UnaryOperator<Check> replacement) {
+        OracleReport copy = filtered(c -> true);
+        copy.checks.replaceAll(c -> match.test(c) ? replacement.apply(c) : c);
         return copy;
     }
 
