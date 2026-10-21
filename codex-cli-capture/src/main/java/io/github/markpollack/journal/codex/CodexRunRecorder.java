@@ -10,7 +10,6 @@ import io.github.markpollack.journal.event.CostBreakdown;
 import io.github.markpollack.journal.event.CustomEvent;
 import io.github.markpollack.journal.event.LLMCallEvent;
 import io.github.markpollack.journal.event.TimingInfo;
-import io.github.markpollack.journal.event.ToolCallEvent;
 import io.github.markpollack.journal.trace.JournalStep;
 
 import java.time.Instant;
@@ -127,62 +126,47 @@ public final class CodexRunRecorder {
      *         cannot keep derived events at all; the other events are logged by then
      */
     public void recordPhase(CodexPhaseCapture phase) {
-        if (phase.promptText() != null && !phase.promptText().isEmpty()) {
-            run.logEvent(CustomEvent.of("prompt",
-                    phaseAttributes(phase.phaseName(), "text", phase.promptText())));
-        }
+        CodexRunEvents.logPrompt(run, phase.phaseName(), phase.promptText());
         List<Map<String, Object>> subagentRuns = recordSubagents(phase);
-
-        Map<String, Object> metadata = new LinkedHashMap<>();
-        metadata.put("phaseName", phase.phaseName());
-        metadata.put("isError", phase.isError());
-        if (phase.errorMessage() != null) {
-            metadata.put("errorMessage", phase.errorMessage());
-        }
-        metadata.put("costAvailable", false);
-        metadata.put("costSource", "unreported");
-        if (phase.sessionId() != null) {
-            metadata.put("sessionId", phase.sessionId());
-        }
-        if (phase.cliVersion() != null) {
-            metadata.put("cliVersion", phase.cliVersion());
-        }
-
-        // Written only with sub-agent evidence (a spawn_agent call, a started activity or a child
-        // rollout), so a phase without any is recorded exactly as before.
-        boolean spawned = phase.toolUses().stream().anyMatch(use -> CodexJournalSteps.isSubagentSpawn(use.name()));
-        if (spawned || phase.hasSubagents() || !phase.spawnedThreadIds().isEmpty()) {
-            metadata.put(META_SUBAGENT_TRACKS_AVAILABLE, phase.subagentTracksAvailable());
-            if (phase.subagentTracksAvailable()) {
-                List<Map<String, Object>> withoutTrack = new ArrayList<>();
-                for (CodexPhaseCapture.SpawnWithoutTrack spawn : phase.subagentsWithoutTrack()) {
-                    Map<String, Object> entry = new LinkedHashMap<>();
-                    entry.put("callId", spawn.callId());
-                    entry.put("reason", spawn.reason());
-                    withoutTrack.add(entry);
-                }
-                metadata.put(META_SUBAGENTS, subagentRuns);
-                metadata.put(META_SUBAGENTS_WITHOUT_TRACK, withoutTrack);
-            }
-        }
         run.logEvent(LLMCallEvent.builder()
                 .provider("openai")
                 .model(phase.model() != null ? phase.model() : "unknown")
                 .tokenUsage(phase.tokenUsage())
                 .cost(CostBreakdown.of(0.0))
                 .timing(TimingInfo.of(phase.durationMs()))
-                .metadata(metadata)
+                .metadata(phaseMetadata(phase, subagentRuns))
                 .build());
+        CodexRunEvents.logToolCallsAndSteps(run, phase.phaseName(), phase.toolUses(), phase.vendorEvents(),
+                CodexJournalSteps.fromPhaseCapture(phase, run.id()));
+    }
 
-        for (CodexToolUseRecord tool : phase.toolUses()) {
-            run.logEvent(toolCallEvent(tool));
+    /** The parent {@code llm_call} metadata: the common keys, then the sub-agent keys when earned. */
+    private static Map<String, Object> phaseMetadata(CodexPhaseCapture phase, List<Map<String, Object>> subagentRuns) {
+        Map<String, Object> metadata = CodexRunEvents.llmCallMetadata(phase.phaseName(), phase.isError(), phase.errorMessage(),
+                phase.sessionId(), phase.cliVersion());
+        // Written only with sub-agent evidence (a spawn_agent call, a started activity or a child
+        // rollout), so a phase without any is recorded exactly as before.
+        boolean spawned = phase.toolUses().stream().anyMatch(use -> CodexJournalSteps.isSubagentSpawn(use.name()));
+        if (spawned || phase.hasSubagents() || !phase.spawnedThreadIds().isEmpty()) {
+            metadata.put(META_SUBAGENT_TRACKS_AVAILABLE, phase.subagentTracksAvailable());
+            if (phase.subagentTracksAvailable()) {
+                metadata.put(META_SUBAGENTS, subagentRuns);
+                metadata.put(META_SUBAGENTS_WITHOUT_TRACK, spawnsWithoutTrack(phase));
+            }
         }
-        logVendorEvents(run, phase.phaseName(), phase.vendorEvents());
+        return metadata;
+    }
 
-        Instant analyzedAt = Instant.now();
-        for (JournalStep step : CodexJournalSteps.fromPhaseCapture(phase, run.id())) {
-            run.logDerivedEvent(StepCostEvent.fromStep(step, analyzedAt));
+    /** One {@code callId}/{@code reason} entry per spawn that got no child run. */
+    private static List<Map<String, Object>> spawnsWithoutTrack(CodexPhaseCapture phase) {
+        List<Map<String, Object>> withoutTrack = new ArrayList<>();
+        for (CodexPhaseCapture.SpawnWithoutTrack spawn : phase.subagentsWithoutTrack()) {
+            Map<String, Object> entry = new LinkedHashMap<>();
+            entry.put("callId", spawn.callId());
+            entry.put("reason", spawn.reason());
+            withoutTrack.add(entry);
         }
+        return withoutTrack;
     }
 
     /** Parent {@code llm_call} metadata key: the child runs written for this phase. */
@@ -263,7 +247,7 @@ public final class CodexRunRecorder {
         try {
             if (subagent.promptText() != null && !subagent.promptText().isEmpty()) {
                 child.logEvent(CustomEvent.of("prompt",
-                        phaseAttributes(phase.phaseName(), "text", subagent.promptText())));
+                        CodexRunEvents.phaseAttributes(phase.phaseName(), "text", subagent.promptText())));
             }
             Map<String, Object> metadata = new LinkedHashMap<>();
             metadata.put("phaseName", phase.phaseName());
@@ -285,9 +269,9 @@ public final class CodexRunRecorder {
                     .metadata(metadata)
                     .build());
             for (CodexToolUseRecord tool : subagent.toolUses()) {
-                child.logEvent(toolCallEvent(tool));
+                child.logEvent(CodexRunEvents.toolCallEvent(tool));
             }
-            logVendorEvents(child, phase.phaseName(), subagent.vendorEvents());
+            CodexRunEvents.logVendorEvents(child, phase.phaseName(), subagent.vendorEvents());
             Instant analyzedAt = Instant.now();
             for (JournalStep step : CodexJournalSteps.forSubagent(subagent, child.id())) {
                 child.logDerivedEvent(StepCostEvent.fromStep(step, analyzedAt));
@@ -314,58 +298,5 @@ public final class CodexRunRecorder {
         entry.put("depth", subagent.depth());
         entry.put("status", subagent.status());
         return entry;
-    }
-
-    private static ToolCallEvent toolCallEvent(CodexToolUseRecord tool) {
-        return ToolCallEvent.builder()
-                .id(tool.id())
-                .toolName(tool.name())
-                .kind(tool.kind())
-                .input(tool.input())
-                .output(tool.output())
-                .durationMs(-1) // not measured
-                .success(!tool.isError())
-                .errorMessage(tool.errorMessage())
-                .build();
-    }
-
-    /**
-     * Logs each rollout record the parser did not consume as a {@code vendor_event} custom event
-     * with the attributes {@code vendor}, {@code kind}, {@code envelopeType}, {@code ordinal} (if
-     * Codex gave one), {@code vendorTimestamp} (as Codex wrote it) and {@code payload} (the whole
-     * record). The event's own time is Codex's timestamp when it parses, else now.
-     */
-    private static void logVendorEvents(Run target, String phaseName, List<CodexVendorEvent> vendorEvents) {
-        for (CodexVendorEvent vendorEvent : vendorEvents) {
-            Map<String, Object> attributes = phaseAttributes(phaseName, "vendor", "codex");
-            attributes.put("kind", vendorEvent.kind());
-            attributes.put("envelopeType", vendorEvent.envelopeType());
-            if (vendorEvent.ordinal() >= 0) {
-                attributes.put("ordinal", vendorEvent.ordinal());
-            }
-            Instant when = Instant.now();
-            if (vendorEvent.timestamp() != null) {
-                attributes.put("vendorTimestamp", vendorEvent.timestamp());
-                try {
-                    when = Instant.parse(vendorEvent.timestamp());
-                }
-                catch (java.time.format.DateTimeParseException ignored) {
-                    // keep now; the text is in the attributes
-                }
-            }
-            attributes.put("payload", vendorEvent.payload());
-            target.logEvent(new CustomEvent(when, "vendor_event", attributes));
-        }
-    }
-
-    // Not Map.of, which throws NullPointerException for a capture with no phase name; such a
-    // capture is recorded without the phase, since attributes must not hold null values.
-    private static Map<String, Object> phaseAttributes(String phaseName, String key, Object value) {
-        Map<String, Object> attributes = new LinkedHashMap<>();
-        if (phaseName != null) {
-            attributes.put("phase", phaseName);
-        }
-        attributes.put(key, value);
-        return attributes;
     }
 }
