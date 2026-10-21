@@ -4,14 +4,10 @@ import io.github.markpollack.journal.Journal;
 import io.github.markpollack.journal.Run;
 import io.github.markpollack.journal.RunBuilder;
 import io.github.markpollack.journal.RunStatus;
-import io.github.markpollack.journal.derived.StepCostEvent;
 import io.github.markpollack.journal.event.CostBreakdown;
-import io.github.markpollack.journal.event.CustomEvent;
 import io.github.markpollack.journal.event.LLMCallEvent;
 import io.github.markpollack.journal.event.TimingInfo;
-import io.github.markpollack.journal.trace.JournalStep;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -78,6 +74,22 @@ final class CodexSubagentRunRecorder {
     }
 
     private Map<String, Object> record(CodexPhaseCapture phase, CodexSubagentCapture subagent, String parentRunId) {
+        Run child = childRun(phase, subagent, parentRunId).start();
+        if (subagent.spawnCallId() != null) {
+            runIdBySpawnCallId.put(subagent.spawnCallId(), child.id());
+        }
+        try {
+            logChildRun(child, phase, subagent);
+            child.finish(finalStatus(subagent.status()));
+        } catch (RuntimeException e) {
+            child.fail(e);
+            throw e;
+        }
+        return entryFor(subagent, child);
+    }
+
+    /** The child run's tag and config: the thread, its depth, fork flag, spawn call, agent, session and model. */
+    private RunBuilder childRun(CodexPhaseCapture phase, CodexSubagentCapture subagent, String parentRunId) {
         RunBuilder builder = Journal.run(parent.experiment().id())
                 .parentRun(parentRunId)
                 .tag(CodexRunRecorder.TAG_TRACK, CodexRunRecorder.TRACK_SUBAGENT)
@@ -97,55 +109,42 @@ final class CodexSubagentRunRecorder {
         if (subagent.model() != null) {
             builder.config("model", subagent.model());
         }
-        Run child = builder.start();
-        if (subagent.spawnCallId() != null) {
-            runIdBySpawnCallId.put(subagent.spawnCallId(), child.id());
-        }
-        try {
-            if (subagent.promptText() != null && !subagent.promptText().isEmpty()) {
-                child.logEvent(CustomEvent.of("prompt",
-                        CodexRunEvents.phaseAttributes(phase.phaseName(), "text", subagent.promptText())));
-            }
-            Map<String, Object> metadata = new LinkedHashMap<>();
-            metadata.put("phaseName", phase.phaseName());
-            metadata.put("isError", !"completed".equals(subagent.status()));
-            metadata.put("costAvailable", false);
-            metadata.put("costSource", "unreported");
-            if (phase.sessionId() != null) {
-                metadata.put("sessionId", phase.sessionId());
-            }
-            if (subagent.cliVersion() != null) {
-                metadata.put("cliVersion", subagent.cliVersion());
-            }
-            child.logEvent(LLMCallEvent.builder()
-                    .provider("openai")
-                    .model(subagent.model() != null ? subagent.model() : "unknown")
-                    .tokenUsage(subagent.tokenUsage())
-                    .cost(CostBreakdown.of(0.0))
-                    .timing(TimingInfo.of(Math.max(0L, subagent.durationMs())))
-                    .metadata(metadata)
-                    .build());
-            for (CodexToolUseRecord tool : subagent.toolUses()) {
-                child.logEvent(CodexRunEvents.toolCallEvent(tool));
-            }
-            CodexRunEvents.logVendorEvents(child, phase.phaseName(), subagent.vendorEvents());
-            Instant analyzedAt = Instant.now();
-            for (JournalStep step : CodexJournalSteps.forSubagent(subagent, child.id())) {
-                child.logDerivedEvent(StepCostEvent.fromStep(step, analyzedAt));
-            }
-            child.setSummary("subagent.status", subagent.status());
-            child.setSummary("subagent.statusSource", subagent.statusSource());
-            child.setSummary("subagent.statusMeaning", CodexRunRecorder.STATUS_MEANING_LAST_OBSERVED_TURN);
-            child.setSummary("subagent.replayedRecordsSkipped", subagent.replayedRecordsSkipped());
-            child.finish(switch (subagent.status()) {
-                case "completed" -> RunStatus.FINISHED;
-                case "interrupted" -> RunStatus.FAILED;
-                default -> RunStatus.CRASHED; // end not observed; the status text is in the summary
-            });
-        } catch (RuntimeException e) {
-            child.fail(e);
-            throw e;
-        }
+        return builder;
+    }
+
+    /**
+     * Logs the child's events as {@link CodexRunRecorder#recordPhase} logs the parent's (prompt,
+     * {@code llm_call}, tool calls, vendor events, derived steps), then its status summaries.
+     */
+    private static void logChildRun(Run child, CodexPhaseCapture phase, CodexSubagentCapture subagent) {
+        CodexRunEvents.logPrompt(child, phase.phaseName(), subagent.promptText());
+        child.logEvent(LLMCallEvent.builder()
+                .provider("openai")
+                .model(subagent.model() != null ? subagent.model() : "unknown")
+                .tokenUsage(subagent.tokenUsage())
+                .cost(CostBreakdown.of(0.0))
+                .timing(TimingInfo.of(Math.max(0L, subagent.durationMs())))
+                .metadata(CodexRunEvents.llmCallMetadata(phase.phaseName(), !"completed".equals(subagent.status()),
+                        null, phase.sessionId(), subagent.cliVersion()))
+                .build());
+        CodexRunEvents.logToolCallsAndSteps(child, phase.phaseName(), subagent.toolUses(), subagent.vendorEvents(),
+                CodexJournalSteps.forSubagent(subagent, child.id()));
+        child.setSummary("subagent.status", subagent.status());
+        child.setSummary("subagent.statusSource", subagent.statusSource());
+        child.setSummary("subagent.statusMeaning", CodexRunRecorder.STATUS_MEANING_LAST_OBSERVED_TURN);
+        child.setSummary("subagent.replayedRecordsSkipped", subagent.replayedRecordsSkipped());
+    }
+
+    private static RunStatus finalStatus(String status) {
+        return switch (status) {
+            case "completed" -> RunStatus.FINISHED;
+            case "interrupted" -> RunStatus.FAILED;
+            default -> RunStatus.CRASHED; // end not observed; the status text is in the summary
+        };
+    }
+
+    /** The parent metadata entry naming the child run. */
+    private static Map<String, Object> entryFor(CodexSubagentCapture subagent, Run child) {
         Map<String, Object> entry = new LinkedHashMap<>();
         entry.put("spawnToolUseId", subagent.spawnCallId());
         entry.put("runId", child.id());
