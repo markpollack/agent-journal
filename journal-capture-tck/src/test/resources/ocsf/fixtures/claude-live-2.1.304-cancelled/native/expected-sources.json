@@ -1,0 +1,33 @@
+{
+ "kind": "agent-journal/expected-sources",
+ "version": "0.1",
+ "run_uid": "claude-live-2.1.304-cancelled",
+ "complete": false,
+ "frozen": {
+  "at": "after sanitization, before any package was written or judged",
+  "by": "sha256, bytes and line count of the sanitized stream; split cores from its distinct non-null parent_tool_use_id values",
+  "basis": "SANITIZED REAL LIVE RECORDING: the live frozen manifest recorded sha256 027a30f152c28d24b844e5f032babfe4ace3f4dea9fd4e4b9f8920bffe6c94fb over 16342 bytes; values were replaced as provenance.json lists, no record added or removed",
+  "live_process": {
+   "pid": 3945481,
+   "started": "2026-10-21T18:54:20.449238103Z",
+   "ended": "2026-10-21T18:54:26.972067730Z",
+   "how": "cancelled",
+   "exit_code": 143,
+   "exit_meaning": "143 (128+15): terminated by signal 15 under the usual shell convention (Java reports the code, not the signal)",
+   "cancel_reason": "deliberate cancellation after 12 record(s) (requested after 12)",
+   "stderr_bytes": 0,
+   "meaning": "the CLI process outcome; distinct from storage finalization (recording.state) and acquisition extent (acquisition.status): EOF never implies success"
+  }
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "profile": "claude_stream",
+   "sha256": "ba0e798c482a3b235989d85363290c9179100130cb6bc046b3387989704138c3",
+   "bytes": 11386,
+   "records": 12,
+   "required": true
+  }
+ ],
+ "children": []
+}

@@ -121,7 +121,11 @@ final class ClaudeStreamProfile implements SourceProfile {
                     f.costs.add(new ExpectedFacts.Cost(r.index(), o.member("total_cost_usd"), "USD", 4, basis));
                 }
                 for (Json d : o.member("permission_denials") == null ? List.<Json>of() : o.member("permission_denials").elements()) {
-                    f.decisions.add(new ExpectedFacts.Decision(r.index(), "denied", 2, null, null, 4, 3, 2, new ArrayList<>(), null));
+                    String deniedCall = SourceProfile.text(d, "tool_use_id");
+                    // the entry names the denied call (2.1.304): a reported identifier, unique; otherwise unattributed, never linked by position
+                    f.decisions.add(deniedCall != null
+                            ? new ExpectedFacts.Decision(r.index(), "denied", 2, null, null, 4, 1, 1, new ArrayList<>(List.of(deniedCall)), null)
+                            : new ExpectedFacts.Decision(r.index(), "denied", 2, null, null, 4, 3, 2, new ArrayList<>(), null));
                 }
             }
         }

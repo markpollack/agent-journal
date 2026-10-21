@@ -1,0 +1,35 @@
+{
+ "run_uid": "claude-live-2.1.304-cancelled",
+ "invocation_index": 0,
+ "capture_start": "2026-10-21T18:54:20.255623335Z",
+ "cli": {
+  "name": "Claude Code",
+  "vendor_name": "Anthropic",
+  "type_id": 1,
+  "type": "Native"
+ },
+ "launch_settings": {
+  "command": "replay of the sanitized live stream (original: claude -p Create five files one at a time in the current directory with the Write tool: f1.txt, f2.txt, f3.txt, f4.txt, f5.txt, each containing exactly its own file name. After writing each file, read it back with the Read tool before writing the next one. Finally reply with one line: \"done: 5 files\". --output-format stream-json --verbose ...)",
+  "cwd": "/work",
+  "route": "stdout",
+  "model_requested": "haiku",
+  "allowed_tools": [
+   "Read",
+   "Write"
+  ],
+  "original_route": "LIVE: CliCapture launch, raw stdout, independent byte copy"
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "kind": 1,
+   "profile": "claude_stream",
+   "route": "stdout",
+   "path": "<fixture>/native/claude-live-2.1.304-cancelled/stream.jsonl"
+  }
+ ],
+ "synthetic": {
+  "label": "SANITIZED REAL LIVE RECORDING (Claude Code 2.1.304, five sequential Write/Read pairs; the capture cancelled the CLI deliberately after 12 records (SIGTERM via the process handle; claude exited 143); acquisition interrupted, recording INTERRUPTED), replayed through the writer to produce this package; the live package itself is private steward evidence",
+  "derived_from": "live run claude-cancel-1 (ACCEPT-1, 2026-10-21)"
+ }
+}

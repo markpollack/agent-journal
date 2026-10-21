@@ -91,7 +91,7 @@
       "activity": "2 Turn completed",
       "usage": "usage -> scope 4 Run status 2 Final (rule claude.stream.result_usage.v1); modelUsage[m] -> scope 6 Model status 2 Final with model_ref{name=m, provider_kind=provider, provider_basis 1 Reported}",
       "cost": "total_cost_usd -> cost_observation total_cost, currency USD, scope 4 Run, cost_basis = modelUsage[*].costBasis when single model",
-      "permission": "permission_denials[] -> permission_decisions at scope 4 Run, attribution 3 Unattributed method 2 (none when empty)",
+      "permission": "permission_denials[] -> permission_decisions at scope 4 Run; attribution 1 Unique method 1 Reported identifier with candidates [tool_use_id] when the entry names tool_use_id (observed on 2.1.304), else 3 Unattributed method 2 (none when empty)",
       "status": "status_id 1 when subtype == success and is_error == false, else 2 (Reported)",
       "residual": "whole record in data"
     },
@@ -143,12 +143,12 @@
     "rate_limit_event": {
       "meaning": "a vendor account rate-limit status snapshot (rate_limit_info: status, resetsAt, rateLimitType, overageStatus, unifiedWindows utilization/resetsAt) emitted by the CLI during the run",
       "disposition": "retained-only (known meaning); not normalized: it is account state, not an execution fact, usage component or cost of this run; no common concept in the ACP/Spring AI/OTel/Weave/Phoenix mapping catalog; a consumer reads it from data",
-      "limit": "observed on 2.1.304 stdout only; absent from the 2.1.299 and 2.1.303 SDK-delivered streams"
+      "limit": "observed on every tested route: 2.1.299 sdk (fixture claude-child-2.1.299), 2.1.303 sdk (pair A inventory) and 2.1.304 stdout (live runs)"
     },
     "system/thinking_tokens": {
       "meaning": "a vendor running estimate of thinking tokens so far (estimated_tokens, estimated_tokens_delta) emitted before responses",
       "disposition": "retained-only (known meaning); not normalized: an estimate, not a reported usage component; normalizing it as reasoning_tokens would compete with the reported usage.output_tokens_details.thinking_tokens of the assistant and result records, which are normalized (reasoning_tokens)",
-      "limit": "observed on 2.1.304 stdout only; its relation to the reported final thinking_tokens is not specified by the vendor and is not asserted here"
+      "limit": "observed on every tested route (2.1.299 sdk, 2.1.303 sdk, 2.1.304 stdout); its relation to the reported final thinking_tokens is not specified by the vendor and is not asserted here"
     },
     "user (no tool_result)": {
       "meaning": "a user record whose content carries no tool_result block (the stream does not echo the submitted prompt; such records were not observed on the tested routes)",
@@ -159,6 +159,16 @@
       "meaning": "system records with a subtype other than init and thinking_tokens",
       "disposition": "retained-only: no normalization rule",
       "limit": "none observed on the tested routes"
+    },
+    "system/permission_denied": {
+      "meaning": "a system notification that a permission was denied for a tool call (message, tool_name, tool_use_id), observed on 2.1.304 stdout under --permission-mode default",
+      "disposition": "retained-only (known meaning); not normalized as a decision: the same denial is normalized at tool-call scope from tool_result_meta (decision reject, non_execution_kind user-rejected) and at run scope from permission_denials, which names the call; a third copy would double-count",
+      "limit": "observed once (the ACCEPT-1 denial run); its presence on other permission modes is not asserted"
+    },
+    "system/task_lifecycle": {
+      "meaning": "system/task_started, task_progress, task_updated, task_notification: sub-agent task lifecycle notifications (task_id, the spawning tool_use_id, subagent_type, description, prompt, status, vendor usage counters)",
+      "disposition": "retained-only (known meaning); the child run is represented by owner routing of the child-scope records to its own file; the vendor counters (duration_ms, tool_uses, total_tokens) are never copied into usage observations",
+      "limit": "observed on 2.1.299 sdk (fixture) and 2.1.304 stdout (live feature run)"
     }
   }
 }

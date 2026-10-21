@@ -8,7 +8,9 @@
   "contract": "claude-code/stream-json/2.1.303/0.2.0-prototype",
   "contract_file": "claude-code-2.1.303-stream",
   "evidence_fixtures": [
-    "claude-child-2.1.299"
+    "claude-child-2.1.299",
+    "claude-live-2.1.304-features",
+    "claude-live-2.1.304-denial"
   ],
   "rule_of_coverage": "every path the accepted specification or a committed fixture of this profile observes (vendor envelope; tool and user data subtrees are dispositioned as whole payloads) has exactly one disposition: normalized (a portable destination, the contract rule, and an oracle property that was VERIFIED with an occurrence on an evidence fixture in the same test run), retained (whole-record retention VERIFIED on the evidence fixture), omitted (a reviewed tested rule; none exists), or unresolved (retained, with the open question stated). FieldDispositionTest fails on a missing or duplicate disposition, a stale entry, an unresolvable destination, an undeclared rule, an unexercised normalized claim or a test reference that does not exist.",
   "entries": [
@@ -1405,6 +1407,19 @@
         "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
       ],
       "note": "sub-agent task patch (status, end_time)"
+    },
+    {
+      "variant": "system/permission_denied",
+      "path": "*",
+      "subtree": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+      ],
+      "note": "2.1.304 stdout: a system notification that a permission was denied for a tool call (message, tool_name, tool_use_id); retained whole with known meaning. The decision itself is normalized from the result record's tool_result_meta (tool-call scope) and the result line's permission_denials (run scope, attributed by the named tool_use_id); this notification is not a third decision"
     }
   ]
 }

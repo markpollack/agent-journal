@@ -70,7 +70,12 @@ class RequirementsEvidenceTest {
     static final String CLAUDE_CHILD = "claude-child-2.1.299";
     static final String CLAUDE_INTERRUPTED = "claude-child-2.1.299-interrupted";
     static final String CLAUDE_UNTESTED = "syn-claude-untested-version";
-    static final List<String> FIXTURES = List.of(CODEX_STREAM, CLAUDE_CHILD, CLAUDE_INTERRUPTED, CLAUDE_UNTESTED);
+    static final String LIVE_FEATURES = "claude-live-2.1.304-features";
+    static final String LIVE_DENIAL = "claude-live-2.1.304-denial";
+    static final String LIVE_CANCELLED = "claude-live-2.1.304-cancelled";
+    static final String LIVE_CODEX = "codex-live-0.160.1-commands";
+    static final String LIVE_CODEX_CANCELLED = "codex-live-0.160.1-cancelled";
+    static final List<String> FIXTURES = List.of(CODEX_STREAM, CLAUDE_CHILD, CLAUDE_INTERRUPTED, CLAUDE_UNTESTED, LIVE_FEATURES, LIVE_DENIAL, LIVE_CANCELLED, LIVE_CODEX, LIVE_CODEX_CANCELLED);
 
     /** The scenario a criterion's fixtures must exercise, decided from each fixture's frozen manifest, not from the report. */
     enum Scenario {
@@ -580,7 +585,8 @@ class RequirementsEvidenceTest {
         out.put("fixtures", FIXTURES);
         out.put("evidence_class", "committed public fixtures: labelled synthetic Codex exec stream; sanitized real Claude stream with one child core; "
                 + "the same stream's 10-record prefix replay-interrupted by the fixture driver (labelled); the same stream with its reported version edited to one no "
-                + "compatibility entry covers (labelled synthetic). Recorded replay and labelled synthetic; not live capture.");
+                + "compatibility entry covers (labelled synthetic); five sanitized real live recordings of ACCEPT-1 (Claude Code 2.1.304 feature, denial and cancelled "
+                + "runs; Codex CLI 0.160.1 command and cancelled runs) replayed through the writer. Recorded replay and labelled synthetic; the live captures themselves are private steward evidence.");
         out.put("reduction", "a criterion passes only when every named property is reported for every owner its fixtures' frozen expected sources imply and the named scenario was exercised; "
                 + "missing check: ERROR; DEFECTIVE: FAIL; unresolved/unsupported: ABSTAIN; no occurrence or no exercising fixture: ABSTAIN (not assessed)");
         out.put("rollup", rollup(judgments.values()).name());

@@ -8,7 +8,8 @@
   "contract": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
   "contract_file": "codex-cli-0.160.1-exec-stream",
   "evidence_fixtures": [
-    "syn-codex-exec-stream"
+    "syn-codex-exec-stream",
+    "codex-live-0.160.1-commands"
   ],
   "rule_of_coverage": "see claude-code/stream-json/dispositions.json; the same FieldDispositionTest applies",
   "entries": [

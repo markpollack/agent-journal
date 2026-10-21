@@ -57,8 +57,11 @@ class MappingCatalogTest {
     }
 
     static final List<Route> ROUTES = List.of(
-            new Route("claude", "ClaudeStreamProfile", OcsfFixtures.CHILD, "stream.jsonl", "Claude Code stream (2.1.299 sdk fixture)"),
-            new Route("codex", "CodexStreamProfile", OcsfFixtures.CODEX_STREAM, "stream.jsonl", "Codex CLI exec stream (0.160.1 labelled synthetic fixture)"));
+            new Route("claude", "ClaudeStreamProfile", OcsfFixtures.CHILD, "stream.jsonl", "Claude Code stream 2.1.299 sdk (sanitized real fixture)"),
+            new Route("claude", "ClaudeStreamProfile", OcsfFixtures.LIVE_FEATURES, "stream.jsonl", "Claude Code stream 2.1.304 stdout (sanitized live feature recording)"),
+            new Route("claude", "ClaudeStreamProfile", OcsfFixtures.LIVE_DENIAL, "stream.jsonl", "Claude Code stream 2.1.304 stdout (sanitized live denial recording)"),
+            new Route("codex", "CodexStreamProfile", OcsfFixtures.CODEX_STREAM, "stream.jsonl", "Codex CLI exec stream 0.160.1 (labelled synthetic fixture)"),
+            new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording)"));
 
     @Test
     void everyCatalogReferenceResolvesInJava(@TempDir Path work) throws IOException {
@@ -161,8 +164,8 @@ class MappingCatalogTest {
             for (Route r : ROUTES) {
                 String state = state(e, r, reports.get(r));
                 assertThat(state).as(id + " on " + r.label()).doesNotStartWith("defective");
-                row.put(r.cli(), state);
-                totals.computeIfAbsent(r.cli(), k -> new TreeMap<>()).merge(state.split(" ")[0], 1, Integer::sum);
+                row.put(r.label(), state);
+                totals.computeIfAbsent(r.label(), k -> new TreeMap<>()).merge(state.split(" ")[0], 1, Integer::sum);
                 md.append(' ').append(state).append(" |");
             }
             md.append('\n');
@@ -170,7 +173,7 @@ class MappingCatalogTest {
         }
         md.append("\n## Totals per route\n\n");
         for (Route r : ROUTES) {
-            md.append("- ").append(r.label()).append(": ").append(totals.get(r.cli())).append('\n');
+            md.append("- ").append(r.label()).append(": ").append(totals.get(r.label())).append('\n');
         }
         Path out = Path.of(System.getProperty("basedir", ".")).resolve("target").resolve("mapping-catalog");
         Files.createDirectories(out);

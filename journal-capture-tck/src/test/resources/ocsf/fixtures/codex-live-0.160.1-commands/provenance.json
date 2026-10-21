@@ -1,0 +1,42 @@
+{
+ "kind": "agent-journal/fixture-provenance",
+ "fixture": "codex-live-0.160.1-commands",
+ "origin": "SANITIZED REAL LIVE RECORDING (not synthetic)",
+ "evidence_class": "recorded replay of a live stream; the live capture itself (unsanitized) is private steward evidence under plans/evidence/2026-10-21-accept-1-live/",
+ "cli": "Codex CLI",
+ "cli_version": "0.160.1",
+ "cli_version_basis": "discovered once per run by the documented adapter path `codex --version` before launch, because the exec --json stream reports no version; the native session file was not consulted",
+ "mode_and_route": "CliCapture launch (opt-in integration): raw stdout, independent byte copy, flush per record",
+ "capture_command": [
+  "codex",
+  "exec",
+  "--json",
+  "--skip-git-repo-check",
+  "-s",
+  "workspace-write",
+  "-C",
+  "/tmp/claude-1000/-home-mark-projects-agent-journal-steward/6d58e999-f31a-4208-89d9-e2222ab6ee14/scratchpad/live/codex-features-1/task",
+  "In the current directory, run these shell commands one at a time as separate commands and report each output: (1) printf alpha > alpha.txt  (2) cat alpha.txt  (3) cat missing-file.txt   (this one is expected to fail; report the exact error)  (4) cat alpha.txt   (run it again, identically). Then reply with one short line summarizing what happened."
+ ],
+ "scenario": "command task under -s workspace-write: four separate shell commands including one that fails (exit 1) and one repeated identically under a new item id; turn usage; normal completion",
+ "live_run": "codex-features-1",
+ "live_process": {
+  "pid": 3942185,
+  "started": "2026-10-21T18:53:21.550849803Z",
+  "ended": "2026-10-21T18:53:37.938607301Z",
+  "how": "exited",
+  "exit_code": 0,
+  "exit_meaning": "0: the CLI reported success",
+  "stderr_bytes": 39,
+  "meaning": "the CLI process outcome; distinct from storage finalization (recording.state) and acquisition extent (acquisition.status): EOF never implies success"
+ },
+ "original_sha256": "065b853f44ba146020039eb4173f3c6c414172062e8319cb260e4fa2387d636a",
+ "original_bytes": 2391,
+ "sanitized_sha256": "342231e485af173418b3f380ad37333e8ae5494d916d669883446260f8cf55e1",
+ "sanitized_bytes": 2391,
+ "records": 13,
+ "sanitization": [
+  "thread_id -> stand-in"
+ ],
+ "privacy_review": "local paths, home directory, session/thread ids, record uuids, user configuration names (agents, skills, plugins, commands, MCP servers), memory and socket paths and account rate-limit numbers replaced; tool ids, message ids, request ids and model names kept (opaque); prompt text is the deliberate synthetic task; reviewed 2026-10-21"
+}

@@ -56,8 +56,8 @@ class FieldDispositionTest {
 
     /** Profile to (catalog, native fixtures whose stream artifact is inventoried). */
     static final Map<String, List<String>> PROFILE_FIXTURES = Map.of(
-            "claude_stream", List.of(OcsfFixtures.CHILD, OcsfFixtures.INTERRUPTED, "syn-claude-untested-version"),
-            "codex_stream", List.of(OcsfFixtures.CODEX_STREAM));
+            "claude_stream", List.of(OcsfFixtures.CHILD, OcsfFixtures.INTERRUPTED, "syn-claude-untested-version", OcsfFixtures.LIVE_FEATURES, OcsfFixtures.LIVE_DENIAL, OcsfFixtures.LIVE_CANCELLED),
+            "codex_stream", List.of(OcsfFixtures.CODEX_STREAM, OcsfFixtures.LIVE_CODEX, OcsfFixtures.LIVE_CODEX_CANCELLED));
     static final Map<String, String> CATALOGS = Map.of(
             "claude_stream", "schema/vendor/claude-code/stream-json/dispositions.json",
             "codex_stream", "schema/vendor/codex-cli/exec-json-stream/dispositions.json");

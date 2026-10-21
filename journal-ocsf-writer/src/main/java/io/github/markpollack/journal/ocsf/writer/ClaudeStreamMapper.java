@@ -164,9 +164,12 @@ final class ClaudeStreamMapper implements SourceMapper {
             }
             Jv.Arr pds = new Jv.Arr();
             for (Jv d : o.member("permission_denials") == null ? List.<Jv>of() : o.member("permission_denials").elements()) {
+                String deniedCall = text(d, "tool_use_id");
+                Jv.Obj attribution = deniedCall != null
+                        ? MapperSupport.attribution(1, 1, List.of(deniedCall), "permission_denials[].tool_use_id names the denied tool call (reported identifier)", null)
+                        : MapperSupport.attribution(3, 2, List.of(), "permission_denials entry names no tool call; not linked by position or text", null);
                 pds.add(new Jv.Obj().put("decision_id", 2).put("decision", "Denied").put("reported_decision", "denied").put("scope_id", 4).put("scope", "Run")
-                        .put("attribution", MapperSupport.attribution(3, 2, List.of(), "permission_denials entry; link to a tool call only if it names one", null))
-                        .put("source_ref", ctx.sourceRef(r, uid, ts, false)).put("data", d));
+                        .put("attribution", attribution).put("source_ref", ctx.sourceRef(r, uid, ts, false)).put("data", d));
             }
             if (!pds.elements().isEmpty()) {
                 ev.put("permission_decisions", pds);

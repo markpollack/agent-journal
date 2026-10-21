@@ -1,0 +1,37 @@
+{
+ "run_uid": "claude-live-2.1.304-features",
+ "invocation_index": 0,
+ "capture_start": "2026-10-21T18:51:55.295810376Z",
+ "cli": {
+  "name": "Claude Code",
+  "vendor_name": "Anthropic",
+  "type_id": 1,
+  "type": "Native"
+ },
+ "launch_settings": {
+  "command": "replay of the sanitized live stream (original: claude -p Do these steps in order in the current directory. 1. Use the Write tool to create alpha.txt containing exactly the single line \"alpha\" and beta.txt containing exactly the single line \"beta\". 2. Read alpha.txt and beta.txt, issuing both Read tool calls in the same assistant turn. 3. Run the shell command `cat missing-file.txt` once with the Bash tool and report the exact error text. 4. Use the Task tool with subagent_type general-purpose to read beta.txt and report its content back. 5. Read alpha.txt a second time. 6. Try to change alpha.txt from \"alpha\" to \"gamma\" with the Edit tool; if the tool is not permitted, say so and do not work around it. 7. Reply with one line: \"done: <content of alpha.txt> <content of beta.txt>\". --output-format stream-json --verbose ...)",
+  "cwd": "/work",
+  "route": "stdout",
+  "model_requested": "haiku",
+  "allowed_tools": [
+   "Read",
+   "Write",
+   "Bash",
+   "Task"
+  ],
+  "original_route": "LIVE: CliCapture launch, raw stdout, independent byte copy"
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "kind": 1,
+   "profile": "claude_stream",
+   "route": "stdout",
+   "path": "<fixture>/native/claude-live-2.1.304-features/stream.jsonl"
+  }
+ ],
+ "synthetic": {
+  "label": "SANITIZED REAL LIVE RECORDING (Claude Code 2.1.304, feature task: two Writes, two Reads in one turn, a failing Bash, an Agent sub-agent reading a file (child core), a repeated Read, an Edit under auto permission mode; normal completion), replayed through the writer to produce this package; the live package itself is private steward evidence",
+  "derived_from": "live run claude-features-1 (ACCEPT-1, 2026-10-21)"
+ }
+}

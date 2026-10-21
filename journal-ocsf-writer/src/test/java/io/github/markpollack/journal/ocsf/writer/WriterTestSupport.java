@@ -31,6 +31,12 @@ final class WriterTestSupport {
     static final String CODEX_STREAM = "syn-codex-exec-stream";
     static final String INTERRUPTED = "claude-child-2.1.299-interrupted";
     static final String UNTESTED = "syn-claude-untested-version";
+    /** Sanitized real live recordings of ACCEPT-1 (2026-10-21), replayed through the writer to produce their committed packages. */
+    static final String LIVE_FEATURES = "claude-live-2.1.304-features";
+    static final String LIVE_DENIAL = "claude-live-2.1.304-denial";
+    static final String LIVE_CANCELLED = "claude-live-2.1.304-cancelled";
+    static final String LIVE_CODEX = "codex-live-0.160.1-commands";
+    static final String LIVE_CODEX_CANCELLED = "codex-live-0.160.1-cancelled";
     static final String SPAWN = "toolu_01BnEuCUmZ2Vu1LpADzksmrJ";
 
     private WriterTestSupport() {

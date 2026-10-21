@@ -1,0 +1,32 @@
+{
+ "kind": "agent-journal/expected-sources",
+ "version": "0.1",
+ "run_uid": "claude-live-2.1.304-denial",
+ "complete": true,
+ "frozen": {
+  "at": "after sanitization, before any package was written or judged",
+  "by": "sha256, bytes and line count of the sanitized stream; split cores from its distinct non-null parent_tool_use_id values",
+  "basis": "SANITIZED REAL LIVE RECORDING: the live frozen manifest recorded sha256 63cf4e18beed58109a39812c8508c8f82338020201c44177d3a57893b4ad71a7 over 21134 bytes; values were replaced as provenance.json lists, no record added or removed",
+  "live_process": {
+   "pid": 3942181,
+   "started": "2026-10-21T18:53:21.513473771Z",
+   "ended": "2026-10-21T18:53:29.531749546Z",
+   "how": "exited",
+   "exit_code": 0,
+   "exit_meaning": "0: the CLI reported success",
+   "stderr_bytes": 0,
+   "meaning": "the CLI process outcome; distinct from storage finalization (recording.state) and acquisition extent (acquisition.status): EOF never implies success"
+  }
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "profile": "claude_stream",
+   "sha256": "9ad3dbef780b504ac318d620a5d859459cc5c8fea90e3a8d41b3698e6ec4273e",
+   "bytes": 15926,
+   "records": 18,
+   "required": true
+  }
+ ],
+ "children": []
+}

@@ -19,6 +19,11 @@ import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX_
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.FIXTURES;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.INTERRUPTED;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.PAIR;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CANCELLED;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CODEX;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CODEX_CANCELLED;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_DENIAL;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_FEATURES;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.UNTESTED;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStream;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStreamStdout;
@@ -44,6 +49,11 @@ class PublicFixtureRegenerationTest {
         write(CODEX_STREAM, List.of(codexStream()), List.of("stream.jsonl"));
         writeInterrupted(INTERRUPTED, CHILD, "stream.jsonl", 10);
         write(UNTESTED, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
+        write(LIVE_FEATURES, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
+        write(LIVE_DENIAL, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
+        write(LIVE_CODEX, List.of(codexStream()), List.of("stream.jsonl"));
+        writeCancelled(LIVE_CANCELLED, claudeStreamStdout());
+        writeCancelled(LIVE_CODEX_CANCELLED, codexStream());
     }
 
     /**
@@ -66,6 +76,27 @@ class PublicFixtureRegenerationTest {
             Replay.feedBytes(in, prefix, 1024, fixed, prefix.length, false);
             w.flush();
             w.interrupt("fixture driver stopped the replay after " + records + " whole records (labelled replay interruption)");
+        }
+        System.out.println("regenerated " + out);
+    }
+
+    /**
+     * A sanitized live recording whose capture cancelled the CLI: every acquired byte is replayed and the writer is
+     * interrupted with the reason the live capture recorded (the fixture's frozen manifest declares the run incomplete).
+     */
+    private static void writeCancelled(String fixture, SourceDescriptor source) throws IOException {
+        Path dir = FIXTURES.resolve(fixture);
+        Path out = dir.resolve("package");
+        delete(out);
+        byte[] data = Files.readAllBytes(dir.resolve("native").resolve("stream.jsonl"));
+        Jv expected = Jv.parse(Files.readString(dir.resolve("native").resolve("expected-sources.json")));
+        String reason = expected.path("frozen", "live_process", "cancel_reason").text();
+        Clock fixed = Clock.fixed(Instant.parse("2026-10-21T00:00:00Z"), ZoneOffset.UTC);
+        try (OcsfRunWriter w = OcsfRunWriter.open(out, run(fixture), SchemaPin.bundled(), WriterOptions.defaults().withClock(fixed))) {
+            SourceInput in = w.source(source);
+            Replay.feedBytes(in, data, 1024, fixed, data.length, false);
+            w.flush();
+            w.interrupt("replay of the sanitized live recording whose capture cancelled the CLI: " + reason);
         }
         System.out.println("regenerated " + out);
     }

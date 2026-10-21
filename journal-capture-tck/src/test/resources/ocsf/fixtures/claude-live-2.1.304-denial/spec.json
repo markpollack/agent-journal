@@ -1,0 +1,35 @@
+{
+ "run_uid": "claude-live-2.1.304-denial",
+ "invocation_index": 0,
+ "capture_start": "2026-10-21T18:53:21.310692330Z",
+ "cli": {
+  "name": "Claude Code",
+  "vendor_name": "Anthropic",
+  "type_id": 1,
+  "type": "Native"
+ },
+ "launch_settings": {
+  "command": "replay of the sanitized live stream (original: claude -p In the current directory: 1. Use the Write tool to create alpha.txt containing exactly the single line \"alpha\". 2. Use the Edit tool to change the word alpha in alpha.txt to gamma. If the Edit tool is denied or not permitted, do not work around it with any other tool; just report the denial. 3. Read alpha.txt and reply with one line: \"final: <content>\". --output-format stream-json --verbose ...)",
+  "cwd": "/work",
+  "route": "stdout",
+  "model_requested": "haiku",
+  "allowed_tools": [
+   "Read",
+   "Write"
+  ],
+  "original_route": "LIVE: CliCapture launch, raw stdout, independent byte copy"
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "kind": 1,
+   "profile": "claude_stream",
+   "route": "stdout",
+   "path": "<fixture>/native/claude-live-2.1.304-denial/stream.jsonl"
+  }
+ ],
+ "synthetic": {
+  "label": "SANITIZED REAL LIVE RECORDING (Claude Code 2.1.304, permission task under --permission-mode default with Read,Write allowed: a Write accepted by rule, an Edit rejected (user-rejected, error-flagged result, run-scope permission_denials naming the call), a Read; normal completion), replayed through the writer to produce this package; the live package itself is private steward evidence",
+  "derived_from": "live run claude-denial-1 (ACCEPT-1, 2026-10-21)"
+ }
+}
