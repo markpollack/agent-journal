@@ -51,11 +51,17 @@ class CliCaptureLifecycleTest {
     static final int OUTER_BOUND_SECONDS = 20;
     /** Short bounds so each scenario ends in seconds; the production defaults are 5 s and 30 s. */
     static final CliCapture.Limits LIMITS = new CliCapture.Limits(Duration.ofSeconds(1), Duration.ofSeconds(1));
+    /**
+     * Holds the script alive until SIGTERM, then exits 143: the background sleep ignores SIGTERM (inherited before the
+     * trap is reset), so the capture's termination of descendants cannot end the script's wait first and race its own
+     * signal; the script's trap kills the sleep and exits with the conventional 128+15.
+     */
+    static final String HOLD_THEN_EXIT_143_ON_TERM = "trap '' TERM\nsleep 60 > /dev/null 2>&1 &\nchild=$!\ntrap 'kill -9 $child 2>/dev/null; exit 143' TERM\nwait $child\nexit 0\n";
 
     /** A silent CLI (no byte ever) is cancelled at the configured deadline, not when a byte happens to arrive. */
     @Test
     void aSilentCliIsCancelledAtTheDeadline(@TempDir Path work) throws Exception {
-        StandIn standIn = standIn(work, "silent", "sleep 60 > /dev/null 2>&1 &\nchild=$!\ntrap 'kill $child 2>/dev/null; exit 143' TERM\nwait $child\nexit 0\n");
+        StandIn standIn = standIn(work, "silent", HOLD_THEN_EXIT_143_ON_TERM);
         CliCapture capture = new CliCapture(launch(standIn, work, null, 400L), options());
         long t0 = System.nanoTime();
         CliCapture.Result r = runBounded(capture, standIn);
@@ -81,7 +87,7 @@ class CliCaptureLifecycleTest {
     /** Output, then a stall: the deadline still fires, the acquired prefix is kept and judged incomplete. */
     @Test
     void outputThenAStallIsCancelledAtTheDeadlineWithThePrefixKept(@TempDir Path work) throws Exception {
-        StandIn standIn = standIn(work, "stall", "head -n 3 '" + stream() + "'\nsleep 60 > /dev/null 2>&1 &\nchild=$!\ntrap 'kill $child 2>/dev/null; exit 143' TERM\nwait $child\nexit 0\n");
+        StandIn standIn = standIn(work, "stall", "head -n 3 '" + stream() + "'\n" + HOLD_THEN_EXIT_143_ON_TERM);
         CliCapture capture = new CliCapture(launch(standIn, work, null, 600L), options());
         CliCapture.Result r = runBounded(capture, standIn);
 
@@ -188,7 +194,7 @@ class CliCaptureLifecycleTest {
     /** A CLI that closes its standard output but never exits is terminated after the grace; the complete stream is kept, nothing is presumed. */
     @Test
     void aCliThatClosesStdoutButDoesNotExitIsTerminatedAfterTheGrace(@TempDir Path work) throws Exception {
-        StandIn standIn = standIn(work, "lingers", "cat '" + stream() + "'\nexec 1>&-\nsleep 60 > /dev/null 2>&1 &\nchild=$!\ntrap 'kill $child 2>/dev/null; exit 143' TERM\nwait $child\nexit 0\n");
+        StandIn standIn = standIn(work, "lingers", "cat '" + stream() + "'\nexec 1>&-\n" + HOLD_THEN_EXIT_143_ON_TERM);
         CliCapture.Result r = runBounded(new CliCapture(launch(standIn, work, null, null), options()), standIn);
         assertThat(r.state()).as("the stream ended but the CLI did not: not presented as a completed run").isEqualTo(OcsfRunWriter.State.INTERRUPTED);
         assertThat(r.how()).isEqualTo("cancelled");
