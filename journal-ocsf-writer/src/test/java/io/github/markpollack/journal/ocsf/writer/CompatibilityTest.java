@@ -152,6 +152,77 @@ class CompatibilityTest {
     }
 
     @Test
+    void everyOtherMisconfigurationIsRejectedWhenTheRegistryLoads() {
+        String noRoutes = registry("""
+                {"id":"a","cli":"X","profile":"p","routes":[],"min_version":"1.0","max_version":"1.5","source_specification":{},"schema":{},"contract":"c","mapper":"m","tested":[]}""");
+        assertThatThrownBy(() -> Compatibility.of(Jv.parse(noRoutes))).hasMessageContaining("a: no routes");
+        String noSchema = registry("""
+                {"id":"a","cli":"X","profile":"p","routes":["stdout"],"min_version":"1.0","max_version":"1.5","source_specification":{},"contract":"c","mapper":"m","tested":[]}""");
+        assertThatThrownBy(() -> Compatibility.of(Jv.parse(noSchema))).hasMessageContaining("source_specification and schema are required");
+        String testedOffRoute = registry("""
+                {"id":"a","cli":"X","profile":"p","routes":["stdout"],"min_version":"1.0","max_version":"1.5","source_specification":{},"schema":{},"contract":"c","mapper":"m","tested":[{"version":"1.2","route":"sdk"}]}""");
+        assertThatThrownBy(() -> Compatibility.of(Jv.parse(testedOffRoute))).hasMessageContaining("tested route sdk is not one of the entry's routes [stdout]");
+        String blankId = registry("""
+                {"id":"","cli":"X","profile":"p","routes":["stdout"],"min_version":"1.0","max_version":"1.5","source_specification":{},"schema":{},"contract":"c","mapper":"m","tested":[]}""");
+        assertThatThrownBy(() -> Compatibility.of(Jv.parse(blankId))).hasMessageContaining("lacks id");
+        String missingMapper = registry("""
+                {"id":"a","cli":"X","profile":"p","routes":["stdout"],"min_version":"1.0","max_version":"1.5","source_specification":{},"schema":{},"contract":"c","tested":[]}""");
+        assertThatThrownBy(() -> Compatibility.of(Jv.parse(missingMapper))).hasMessageContaining("entry a lacks mapper");
+        String scopedTwice = "{\"kind\":\"agent-journal/compatibility-registry\",\"version\":\"0.1\",\"entries\":["
+                + "{\"id\":\"a\",\"cli\":\"X\",\"profile\":\"opaque\",\"routes\":[\"stdout\"],\"min_version\":\"1.0\",\"max_version\":\"1.5\",\"source_specification\":{},\"schema\":{},\"contract\":\"c\",\"mapper\":\"m\",\"tested\":[]}],"
+                + "\"not_version_scoped\":{\"opaque\":\"bytes only\"}}";
+        assertThatThrownBy(() -> Compatibility.of(Jv.parse(scopedTwice))).hasMessageContaining("declared not version-scoped and cannot also have an entry");
+        String disjoint = registry("""
+                {"id":"a","cli":"X","profile":"p","routes":["stdout"],"min_version":"1.0","max_version":"1.5","source_specification":{},"schema":{},"contract":"c","mapper":"m","tested":[]},
+                {"id":"b","cli":"X","profile":"p","routes":["stdout"],"min_version":"1.6","max_version":"2.0","source_specification":{},"schema":{},"contract":"c","mapper":"m","tested":[]}""");
+        assertThat(Compatibility.of(Jv.parse(disjoint)).entries()).as("disjoint ranges on one route").hasSize(2);
+        String otherCli = registry("""
+                {"id":"a","cli":"X","profile":"p","routes":["stdout"],"min_version":"1.0","max_version":"1.5","source_specification":{},"schema":{},"contract":"c","mapper":"m","tested":[]},
+                {"id":"b","cli":"Y","profile":"p","routes":["stdout"],"min_version":"1.0","max_version":"1.5","source_specification":{},"schema":{},"contract":"c","mapper":"m","tested":[]}""");
+        assertThat(Compatibility.of(Jv.parse(otherCli)).entries()).as("the same range under another CLI does not overlap").hasSize(2);
+        String noTestedMember = registry("""
+                {"id":"a","cli":"X","profile":"p","routes":["stdout"],"min_version":"1.0","max_version":"1.5","source_specification":{},"schema":{},"contract":"c","mapper":"m"}""");
+        assertThat(Compatibility.of(Jv.parse(noTestedMember)).entries().get(0).tested()).as("an absent tested member is an empty list").isEmpty();
+    }
+
+    @Test
+    void theDeclarationStatesEachStatusAndOnlyWhatTheSelectionKnows() {
+        Compatibility c = Compatibility.bundled();
+        Jv.Obj tested = Compatibility.declaration(c.select(CLAUDE, "claude_stream", "stdout", "2.1.304"), "stream.jsonl", "reported", 0, "abc");
+        assertThat(tested.get("status").text()).isEqualTo("tested");
+        assertThat(tested.get("normalizes").text()).isEqualTo("yes");
+        assertThat(tested.get("entry_id").text()).isEqualTo("claude-code/stream-json/2.1.304-stdout");
+        assertThat(tested.get("min_version").text()).isEqualTo("2.1.304");
+        assertThat(tested.get("note").text()).contains("exact tested combination");
+        assertThat(tested.get("tested").elements()).hasSize(1);
+        assertThat(tested.get("schema_sha256_in_use").text()).isEqualTo("abc");
+        assertThat(Jv.write(tested.get("records_before_selection"))).isEqualTo("0");
+
+        Jv.Obj unknown = Compatibility.declaration(c.select(CLAUDE, "claude_stream", "stdout", null), "stream.jsonl", "not known at launch", 0, "abc");
+        assertThat(unknown.get("status").text()).isEqualTo("version_unknown");
+        assertThat(unknown.get("version").isNull()).isTrue();
+        assertThat(unknown.get("normalizes").text()).startsWith("provisionally");
+        assertThat(unknown.get("entry_id")).isNull();
+
+        Jv.Obj noMatch = Compatibility.declaration(c.select(CLAUDE, "claude_stream", null, "2.1.304"), "stream.jsonl", "reported", 3, "abc");
+        assertThat(noMatch.get("status").text()).isEqualTo("no_match");
+        assertThat(noMatch.get("route").text()).isEqualTo("unspecified");
+        assertThat(noMatch.get("normalizes").text()).isEqualTo("no");
+        assertThat(Jv.write(noMatch.get("records_before_selection"))).isEqualTo("3");
+
+        Jv.Obj opaque = Compatibility.declaration(c.select(CLAUDE, "opaque_text", "stdout", "2.1.304"), "notes.txt", "reported", 0, "abc");
+        assertThat(opaque.get("status").text()).isEqualTo("not_version_scoped");
+        assertThat(opaque.get("normalizes").text()).isEqualTo("no");
+
+        Compatibility noNote = Compatibility.of(Jv.parse(registry("""
+                {"id":"a","cli":"X","profile":"p","routes":["stdout"],"min_version":"1.0","max_version":"1.5","source_specification":{},"schema":{},"contract":"c","mapper":"m","tested":[{"version":"1.0","route":"stdout"}]}""")));
+        Jv.Obj inRange = Compatibility.declaration(noNote.select("X", "p", "stdout", "1.2"), "s", "reported", 0, "abc");
+        assertThat(inRange.get("status").text()).isEqualTo("in_range");
+        assertThat(inRange.get("normalizes").text()).isEqualTo("yes");
+        assertThat(inRange.get("note")).as("no note is declared when the entry has none").isNull();
+    }
+
+    @Test
     void versionsCompareNumericallyPerComponent() {
         assertThat(Compatibility.compare("2.1.299", "2.1.304")).isNegative();
         assertThat(Compatibility.compare("2.1.304", "2.1.304")).isZero();

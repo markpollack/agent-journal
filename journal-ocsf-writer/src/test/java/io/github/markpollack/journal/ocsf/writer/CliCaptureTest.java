@@ -118,6 +118,8 @@ class CliCaptureTest {
         Path archived = work.resolve("out/archive").resolve(CLAUDE_SESSION + ".jsonl");
         assertThat(Files.readAllBytes(archived)).isEqualTo(Files.readAllBytes(sessionFile));
         assertThat(r.archive().get("sha256").text()).isEqualTo(CliCapture.sha256(Files.readAllBytes(sessionFile)));
+        assertThat(r.archive().get("located_by").text()).contains("session id the stream reported").contains("<home>/.claude/projects/");
+        assertThat(r.archive().get("located_at").text()).isEqualTo(sessionFile.toString());
         assertThat(p.manifest.json().member("archive").member("parsed").scalarText()).isEqualTo("false");
         assertThat(p.manifest.sources()).as("the archive is not a declared source").hasSize(1);
 
