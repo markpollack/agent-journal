@@ -130,8 +130,8 @@ public final class JournalSteps {
             toolErrors.put(tr.toolUseId(), tr.isError());
             toolDurations.put(tr.toolUseId(), tr.durationMs());
         }
-        return attribute(phase.turns(), nullSafe(phase.toolUses()), toolErrors, toolDurations,
-                phase.totalCostUsd(), runId, vendor);
+        return new StepAttribution(phase.toolUses(), toolErrors, toolDurations, phase.totalCostUsd(), runId, vendor)
+                .attribute(phase.turns());
     }
 
     /**
@@ -250,115 +250,14 @@ public final class JournalSteps {
     private static List<JournalStep> attributePhase(LLMCallEvent llm, List<ToolUseRecord> tools,
             Map<String, Boolean> toolErrors, Map<String, Long> toolDurations, String runId, String vendor) {
         Object rawTurns = (llm.metadata() != null) ? llm.metadata().get(META_TURNS) : null;
+        StepAttribution attribution = new StepAttribution(tools, toolErrors, toolDurations, llm.totalCostUsd(), runId,
+                vendor);
         if (llm.metadata() != null && Boolean.FALSE.equals(llm.metadata().get("costAvailable"))) {
             // No cost was reported for this call (a sub-agent's, whose cost is inside its parent's),
             // so the recorder wrote one zero-cost step per tool call; derive the same here.
-            return withoutReportedCost(turnsFromMetadata(rawTurns), tools, toolErrors, toolDurations, runId, vendor);
+            return attribution.withoutReportedCost(turnsFromMetadata(rawTurns));
         }
-        return attribute(turnsFromMetadata(rawTurns), tools, toolErrors, toolDurations, llm.totalCostUsd(), runId,
-                vendor);
-    }
-
-    /**
-     * The single attribution core shared by capture-time and offline derivation. Given the run total,
-     * the per-turn output tokens (the split weights), the per-turn tool grouping, and the tool id→name
-     * / id→error maps, it produces the per-step shares and folds the float residual into the last step.
-     */
-    private static List<JournalStep> attribute(List<TurnUsage> turns, List<ToolUseRecord> toolUses,
-            Map<String, Boolean> toolErrors, Map<String, Long> toolDurations, double actualCost, String runId,
-            String vendor) {
-        Map<String, String> toolNames = new LinkedHashMap<>();
-        for (ToolUseRecord tu : nullSafe(toolUses)) {
-            toolNames.put(tu.id(), tu.name());
-        }
-
-        List<JournalStep> steps = new ArrayList<>();
-
-        if (turns != null && !turns.isEmpty()) {
-            // Precise: split the run total across turns by output tokens; the within-turn even split
-            // among parallel tools is part of this proportional method (A1) → OUTPUT_TOKEN_PROPORTIONAL.
-            // That only holds when every turn's output is a measured value. When any is not reported
-            // (-1: the stream's figure is a placeholder), weighting by it would be noise, so the split
-            // is a flat even split across steps and is labelled EVEN_SPLIT.
-            final boolean outputKnown = turns.stream().allMatch(t -> t.outputTokens() >= 0);
-            final AttributionMethod method = outputKnown ? AttributionMethod.OUTPUT_TOKEN_PROPORTIONAL
-                    : AttributionMethod.EVEN_SPLIT;
-            warnUnlistedTools(turns, toolUses);
-            long totalOutput = outputKnown ? turns.stream().mapToLong(TurnUsage::outputTokens).sum() : 0;
-            int totalSlots = 0;
-            for (TurnUsage turn : turns) {
-                totalSlots += Math.max(1, turn.toolUseIds() == null ? 0 : turn.toolUseIds().size());
-            }
-            for (TurnUsage turn : turns) {
-                int slots = Math.max(1, turn.toolUseIds() == null ? 0 : turn.toolUseIds().size());
-                double weight = !outputKnown ? (double) slots / totalSlots
-                        : totalOutput > 0 ? (double) turn.outputTokens() / totalOutput : 1.0 / turns.size();
-                double turnCost = actualCost * weight;
-                List<String> tools = turn.toolUseIds();
-                if (tools == null || tools.isEmpty()) {
-                    // Tool-less turn (e.g. final text answer) → one turn-level step. It has no tool
-                    // result, so no observed duration: -1, not 0.
-                    steps.add(new JournalStep(runId, turn.messageId(), turn.messageId(), null,
-                            turn.inputTokens(), turn.outputTokens(), turnCost, actualCost, method, false, null,
-                            vendor, false, turn.thinkingTokens(), turn.cacheCreationInputTokens(),
-                            turn.cacheReadInputTokens(), turn.turnIndex(), -1L));
-                } else {
-                    double perTool = turnCost / tools.size();
-                    for (String toolId : tools) {
-                        String toolName = toolNames.get(toolId);
-                        steps.add(new JournalStep(runId, turn.messageId(), toolId, toolName,
-                                turn.inputTokens(), turn.outputTokens(), perTool, actualCost, method,
-                                Boolean.TRUE.equals(toolErrors.get(toolId)), null, vendor,
-                                isSubagentTool(toolName), turn.thinkingTokens(),
-                                turn.cacheCreationInputTokens(), turn.cacheReadInputTokens(), turn.turnIndex(),
-                                durationOf(toolDurations, toolId)));
-                    }
-                }
-            }
-        } else {
-            // Coarse fallback: no per-turn usage (rawJson absent / SDK < 1.3.0 / programmatic) → the whole
-            // allocation degrades to a flat even split across tool calls. Stamp the distinct EVEN_SPLIT (A1)
-            // so the coarseness is readable from the data after the capture-time WARN is gone; turnId and
-            // per-turn tokens are unavailable.
-            final AttributionMethod method = AttributionMethod.EVEN_SPLIT;
-            List<ToolUseRecord> tools = nullSafe(toolUses);
-            if (!tools.isEmpty()) {
-                warnCoarsenedOnce();
-                double perTool = actualCost / tools.size();
-                for (ToolUseRecord tu : tools) {
-                    // No per-turn usage means no token vector to carry, but the tool's own turn
-                    // linkage and observed duration survive independently of the cost split.
-                    steps.add(new JournalStep(runId, tu.turnId(), tu.id(), tu.name(), 0, 0, perTool, actualCost,
-                            method, Boolean.TRUE.equals(toolErrors.get(tu.id())), null, vendor,
-                            isSubagentTool(tu.name()), 0L, 0L, 0L, tu.turnIndex(),
-                            durationOf(toolDurations, tu.id())));
-                }
-            }
-        }
-
-        return foldResidualIntoLast(steps, actualCost);
-    }
-
-    /**
-     * Keeps the per-step sum exactly equal to the run total by adding the float residual to
-     * the last step — so "the total is true" survives the proportional split.
-     */
-    private static List<JournalStep> foldResidualIntoLast(List<JournalStep> steps, double actualCost) {
-        if (steps.isEmpty()) {
-            return steps;
-        }
-        double sum = steps.stream().mapToDouble(JournalStep::attributedCostUsd).sum();
-        double residual = actualCost - sum;
-        if (residual != 0.0) {
-            int i = steps.size() - 1;
-            JournalStep last = steps.get(i);
-            steps.set(i, new JournalStep(last.runId(), last.turnId(), last.stepId(), last.toolName(),
-                    last.inputTokens(), last.outputTokens(), last.attributedCostUsd() + residual,
-                    last.actualRunCostUsd(), last.attributionMethod(), last.isError(), last.agentState(),
-                    last.vendor(), last.isSubagentSpawn(), last.thinkingTokens(), last.cacheCreationTokens(),
-                    last.cacheReadTokens(), last.turnIndex(), last.durationMs()));
-        }
-        return steps;
+        return attribution.attribute(turnsFromMetadata(rawTurns));
     }
 
     // ========== Per-turn breakdown <-> LLMCallEvent.metadata (additive, for offline re-derivation) ==========
@@ -430,36 +329,8 @@ public final class JournalSteps {
             toolErrors.put(result.toolUseId(), result.isError());
             toolDurations.put(result.toolUseId(), result.durationMs());
         }
-        return withoutReportedCost(subagent.turns(), subagent.toolUses(), toolErrors, toolDurations, runId,
-                VENDOR_CLAUDE_CODE);
-    }
-
-    /**
-     * One zero-cost step per tool call, marked {@link AttributionMethod#EVEN_SPLIT}, each carrying the
-     * tokens of the turn that issued the call when that turn is known. Used both when recording a
-     * sub-agent and when deriving steps again from a run whose LLM call has {@code costAvailable=false},
-     * so the two give the same steps.
-     */
-    private static List<JournalStep> withoutReportedCost(List<TurnUsage> turns, List<ToolUseRecord> toolUses,
-            Map<String, Boolean> toolErrors, Map<String, Long> toolDurations, String runId, String vendor) {
-        Map<String, TurnUsage> turnByToolUseId = new LinkedHashMap<>();
-        for (TurnUsage turn : nullSafe(turns)) {
-            for (String toolUseId : nullSafe(turn.toolUseIds())) {
-                turnByToolUseId.put(toolUseId, turn);
-            }
-        }
-        List<JournalStep> steps = new ArrayList<>();
-        for (ToolUseRecord use : nullSafe(toolUses)) {
-            TurnUsage turn = turnByToolUseId.get(use.id());
-            steps.add(new JournalStep(runId, use.turnId(), use.id(), use.name(),
-                    turn != null ? turn.inputTokens() : 0, turn != null ? turn.outputTokens() : 0, 0.0, 0.0,
-                    AttributionMethod.EVEN_SPLIT, Boolean.TRUE.equals(toolErrors.get(use.id())), null,
-                    vendor, isSubagentTool(use.name()),
-                    turn != null ? turn.thinkingTokens() : 0, turn != null ? turn.cacheCreationInputTokens() : 0,
-                    turn != null ? turn.cacheReadInputTokens() : 0, use.turnIndex(),
-                    durationOf(toolDurations, use.id())));
-        }
-        return steps;
+        return new StepAttribution(subagent.toolUses(), toolErrors, toolDurations, 0.0, runId, VENDOR_CLAUDE_CODE)
+                .withoutReportedCost(subagent.turns());
     }
 
     /** Whether a tool name spawns a sub-agent; a tool call with no name never does. */
@@ -467,20 +338,11 @@ public final class JournalSteps {
         return name != null && SUBAGENT_TOOLS.contains(name);
     }
 
-    /** Observed duration for a step, or -1 when none was recorded (never 0 by default). */
-    private static long durationOf(Map<String, Long> toolDurations, String toolId) {
-        if (toolDurations == null) {
-            return -1L;
-        }
-        Long d = toolDurations.get(toolId);
-        return d != null ? d : -1L;
-    }
-
     /**
      * Logs one warning when some tool calls are listed by no turn. They get no step, so their
      * cost goes to the other steps; the split itself is left as it is.
      */
-    private static void warnUnlistedTools(List<TurnUsage> turns, List<ToolUseRecord> toolUses) {
+    static void warnUnlistedTools(List<TurnUsage> turns, List<ToolUseRecord> toolUses) {
         Set<String> listed = new HashSet<>();
         for (TurnUsage turn : turns) {
             listed.addAll(nullSafe(turn.toolUseIds()));
@@ -497,7 +359,7 @@ public final class JournalSteps {
         }
     }
 
-    private static void warnCoarsenedOnce() {
+    static void warnCoarsenedOnce() {
         if (COARSENED_WARNED.compareAndSet(false, true)) {
             log.warn("No per-turn usage available (turns empty); per-step cost attribution coarsened to a "
                     + "flat even split across tool calls — stamped attributionMethod={} (not {}). "
@@ -535,7 +397,7 @@ public final class JournalSteps {
         return out;
     }
 
-    private static <T> List<T> nullSafe(List<T> list) {
+    static <T> List<T> nullSafe(List<T> list) {
         return list != null ? list : List.of();
     }
 }
