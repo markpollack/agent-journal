@@ -22,7 +22,7 @@
     "rule": "submission.identity.v1"
   },
   "responses": {
-    "response_count": 3,
+    "identity_count": 3,
     "unresolved_count": 0,
     "rows": [
       {"response_uid": "msg_a_1", "identity_scope": "run", "occurrence_count": 2,
@@ -64,7 +64,7 @@
       {"tool_call_uid": "call_0002bbbb", "requests": [{"occurrence": "rollout.jsonl:22"}], "results": [{"occurrence": "rollout.jsonl:26"}]},
       {"tool_call_uid": "call_0003cccc", "requests": [{"occurrence": "rollout.jsonl:23"}], "results": [{"occurrence": "rollout.jsonl:27"}]}
     ],
-    "identical_result_content": [{"owners": ["call_0002bbbb", "call_0003cccc"], "kept_separate": true}]
+    "identical_content_distinct_owners": [{"owners": ["call_0002bbbb", "call_0003cccc"], "kept_separate": true}]
   },
   "children": []
 }

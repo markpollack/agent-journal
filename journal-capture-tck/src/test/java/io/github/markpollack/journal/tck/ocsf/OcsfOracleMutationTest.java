@@ -394,6 +394,7 @@ class OcsfOracleMutationTest {
             System.arraycopy(extra, 0, all, original.length, extra.length);
             System.arraycopy(bad, 0, all, original.length + extra.length, bad.length);
             Files.write(stream, all);
+            OcsfFixtures.refreeze(fixture); // the test's own labelled input is the frozen denominator
             OracleReport report = verify(fixture);
             // the strict parser did not end the inventory: records 28 (duplicate key), 29 (blank) and 30 (not UTF-8) are counted and owed
             assertThat(report.check("source.inventory", MAIN).detail()).contains("records 27 declared, artifact has 30").contains("opaque_records 0 declared, artifact has 3");
@@ -427,7 +428,7 @@ class OcsfOracleMutationTest {
             Path fixture = copy(CODEX, work);
             editManifest(pkg(fixture), run -> obj(run.member("sources").elements().get(0)).members().put("sha256", str("00")));
             assertThat(verify(fixture).check("source.inventory", ROLLOUT).detail()).contains("sha256 00 declared");
-            assertThat(all(OcsfFixtures.lines(pkg(fixture).resolve("events.jsonl")), e -> true)).hasSize(31);
+            assertThat(all(OcsfFixtures.lines(pkg(fixture).resolve("events.jsonl")), e -> true)).hasSize(33);
         }
     }
 }

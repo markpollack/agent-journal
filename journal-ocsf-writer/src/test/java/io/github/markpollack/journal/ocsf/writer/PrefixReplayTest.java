@@ -11,9 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX_STREAM;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.PAIR;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStream;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.codexRollout;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.codexStream;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.nativeOf;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.notVerified;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.options;
@@ -33,7 +35,14 @@ class PrefixReplayTest {
     void everyPrefixOfTheCodexRolloutIsJudgedDefectFreeByTheOracle(@TempDir Path work) throws Exception {
         List<String> summary = prefixes(work, CODEX, "rollout.jsonl", codexRollout());
         assertThat(summary).as(String.join("\n", summary)).allMatch(s -> s.endsWith("OK"));
-        assertThat(summary.size()).isEqualTo(31);
+        assertThat(summary.size()).isEqualTo(33);
+    }
+
+    @Test
+    void everyPrefixOfTheCodexExecStreamIsJudgedDefectFreeByTheOracle(@TempDir Path work) throws Exception {
+        List<String> summary = prefixes(work, CODEX_STREAM, "stream.jsonl", codexStream());
+        assertThat(summary).as(String.join("\n", summary)).allMatch(s -> s.endsWith("OK"));
+        assertThat(summary.size()).isEqualTo(12);
     }
 
     @Test

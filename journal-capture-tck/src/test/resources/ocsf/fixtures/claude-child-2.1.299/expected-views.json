@@ -11,7 +11,7 @@
   "label": "main",
   "submissions": {"submission_count": 0, "rows": []},
   "responses": {
-    "response_count": 3,
+    "identity_count": 3,
     "rows": [
       {"response_uid": "msg_011Cg2aRQ1iZf8BxQVUnD2jR", "identity_scope": "run", "occurrence_count": 2, "completed_stop_reasons": [],
        "artifacts": {"stream.jsonl": {"update_semantics": "APPEND_BLOCKS", "assembled_blocks": [{"block_type": "thinking", "from_record": 4}, {"block_type": "tool_use", "from_record": 5}]}}},
@@ -46,19 +46,19 @@
       {"tool_call_uid": "toolu_0183ddwvMmvPzqAU5Jeu5hwZ", "requests": [{"occurrence": "stream.jsonl:5", "name": "ToolSearch", "kind": "other"}], "results": [{"occurrence": "stream.jsonl:6", "error_reported": "unavailable at source", "status": "Unknown", "status_basis": "Not derivable"}]},
       {"tool_call_uid": "toolu_01BnEuCUmZ2Vu1LpADzksmrJ", "requests": [{"occurrence": "stream.jsonl:16", "name": "Agent", "kind": "other"}], "results": [{"occurrence": "stream.jsonl:24"}]}
     ],
-    "identical_result_content": []
+    "identical_content_distinct_owners": []
   },
   "children": [
     {
       "run_uid": "claude-child-2.1.299/child/toolu_01BnEuCUmZ2Vu1LpADzksmrJ",
       "label": "child:toolu_01BnEuCUmZ2Vu1LpADzksmrJ",
       "submissions": {"submission_count": 0},
-      "responses": {"response_count": 1, "rows": [{"response_uid": "msg_011Cg2aSBYeTae2cPghGn3eT", "occurrence_count": 1,
+      "responses": {"identity_count": 1, "rows": [{"response_uid": "msg_011Cg2aSBYeTae2cPghGn3eT", "occurrence_count": 1,
         "artifacts": {"stream.jsonl": {"update_semantics": "APPEND_BLOCKS", "assembled_blocks": [{"block_type": "tool_use", "from_record": 20}]}}}]},
       "usage": {"group_count": 1, "groups": [{"scope": "Model response", "owner": "msg_011Cg2aSBYeTae2cPghGn3eT", "source": "stream.jsonl", "final_observations": 0, "provisional_observations": 1, "applicable_final": null,
         "observations": [{"record_index": 20, "status": "Provisional", "components": {"output_tokens": 6}}]}]},
       "associations": {"rows": [{"fact": "permission_decision", "reported_decision": "accept", "occurrence": "stream.jsonl:21", "outcome": "Unique", "method": "Reported identifier", "attached_to_tool_call": "toolu_018fX6Mygf8aSE8c8bt7pyu6"}]},
-      "tool_exchanges": {"calls": [{"tool_call_uid": "toolu_018fX6Mygf8aSE8c8bt7pyu6", "requests": [{"occurrence": "stream.jsonl:20", "name": "Read", "kind": "read"}], "results": [{"occurrence": "stream.jsonl:21", "status": "Unknown"}]}], "identical_result_content": []},
+      "tool_exchanges": {"calls": [{"tool_call_uid": "toolu_018fX6Mygf8aSE8c8bt7pyu6", "requests": [{"occurrence": "stream.jsonl:20", "name": "Read", "kind": "read"}], "results": [{"occurrence": "stream.jsonl:21", "status": "Unknown"}]}], "identical_content_distinct_owners": []},
       "children": []
     }
   ]

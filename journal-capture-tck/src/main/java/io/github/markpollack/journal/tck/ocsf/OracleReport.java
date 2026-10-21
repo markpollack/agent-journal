@@ -20,6 +20,51 @@ public final class OracleReport {
     private final Map<String, Object> candidate = new LinkedHashMap<>();
     private final Map<String, Object> denominator = new LinkedHashMap<>();
     private final List<Check> checks = new ArrayList<>();
+    private final List<String> required = new ArrayList<>();
+
+    /** Registers a property the oracle is obliged to report for an owner; acceptance refuses a report that lacks it. */
+    void require(String owner, String... properties) {
+        for (String p : properties) {
+            String key = p + " [" + owner + "]";
+            if (!required.contains(key)) {
+                required.add(key);
+            }
+        }
+    }
+
+    /** The required {@code property [owner]} keys that no check in this report carries. */
+    public List<String> missingRequired() {
+        List<String> present = new ArrayList<>();
+        for (Check c : checks) {
+            present.add(c.property() + " [" + c.owner() + "]");
+        }
+        List<String> missing = new ArrayList<>();
+        for (String r : required) {
+            if (!present.contains(r)) {
+                missing.add(r);
+            }
+        }
+        return missing;
+    }
+
+    public List<String> required() {
+        return List.copyOf(required);
+    }
+
+    /** A copy of this report without one check (the required registry is kept): for testing that acceptance notices. */
+    OracleReport without(String property, String owner) {
+        OracleReport copy = new OracleReport();
+        copy.oracle.putAll(oracle);
+        copy.candidate.putAll(candidate);
+        copy.denominator.putAll(denominator);
+        copy.required.addAll(required);
+        for (Check c : checks) {
+            if (!(c.property().equals(property) && c.owner().equals(owner))) {
+                copy.checks.add(c);
+            }
+        }
+        return copy;
+    }
 
     void oracle(String key, Object value) {
         oracle.put(key, value);
@@ -122,6 +167,8 @@ public final class OracleReport {
             }
         }
         out.put("notVerified", notVerified);
+        out.put("required", List.copyOf(required));
+        out.put("missingRequired", missingRequired());
         return out;
     }
 

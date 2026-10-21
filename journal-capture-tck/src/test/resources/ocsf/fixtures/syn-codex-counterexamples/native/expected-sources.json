@@ -1,0 +1,22 @@
+{
+ "kind": "agent-journal/expected-sources",
+ "version": "0.1",
+ "run_uid": "syn-codex-counterexamples",
+ "complete": true,
+ "frozen": {
+  "at": "2026-10-21",
+  "by": "sha256 and line count of the committed native artifacts, written before the package was judged; independent of the package's own sources[]",
+  "basis": "the labelled synthetic Codex rollout (one artifact)"
+ },
+ "sources": [
+  {
+   "artifact": "rollout.jsonl",
+   "profile": "codex_rollout",
+   "sha256": "db5baca52bdd09dca37efd288f0dac7ec52fa81c26f38a1d2738c895ed204563",
+   "bytes": 11078,
+   "records": 33,
+   "required": true
+  }
+ ],
+ "children": []
+}

@@ -1,0 +1,28 @@
+{
+ "kind": "agent-journal/expected-sources",
+ "version": "0.1",
+ "run_uid": "claude-child-2.1.299",
+ "complete": true,
+ "frozen": {
+  "at": "2026-10-21",
+  "by": "sha256 and line count of the committed native artifacts, written before the package was judged; independent of the package's own sources[]",
+  "basis": "the sanitized real claude-child-2.1.299 stream (one artifact) and its one sub-agent split core"
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "profile": "claude_stream",
+   "sha256": "bf6177b0d1369d16ad4ac2e770bfe6a2920134ef09875dd355bc06ad6c9748fe",
+   "bytes": 24042,
+   "records": 27,
+   "required": true
+  }
+ ],
+ "children": [
+  {
+   "spawn_tool_call_uid": "toolu_01BnEuCUmZ2Vu1LpADzksmrJ",
+   "artifact": "stream.jsonl",
+   "owner_path": "parent_tool_use_id"
+  }
+ ]
+}

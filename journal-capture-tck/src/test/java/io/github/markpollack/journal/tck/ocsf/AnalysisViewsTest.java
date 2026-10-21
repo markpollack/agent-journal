@@ -66,7 +66,7 @@ class AnalysisViewsTest {
     @Test
     void responsesAssembleUpdatesAndKeepIdenticalContentUnderDifferentIdsSeparate(@TempDir Path work) {
         Json r = AnalysisViews.responses(open(copy(CODEX, work)));
-        assertThat(r.member("response_count").scalarText()).isEqualTo("3");
+        assertThat(r.member("identity_count").scalarText()).isEqualTo("3");
         List<Json> rows = r.member("rows").elements();
         assertThat(rows.get(0).member("occurrence_count").scalarText()).isEqualTo("2");
         Json art = rows.get(0).path("artifacts", "rollout.jsonl");
@@ -82,13 +82,13 @@ class AnalysisViewsTest {
     void claudeResponsesAppendBlocksAndTheChildCoreIsAssembledOnItsOwn(@TempDir Path work) {
         OcsfPackage p = open(copy(CHILD, work));
         Json r = AnalysisViews.responses(p);
-        assertThat(r.member("response_count").scalarText()).isEqualTo("3");
+        assertThat(r.member("identity_count").scalarText()).isEqualTo("3");
         Json first = r.member("rows").elements().get(1);
         assertThat(first.member("occurrence_count").scalarText()).isEqualTo("3");
         assertThat(first.path("artifacts", "stream.jsonl", "assembled_blocks").elements()).extracting(b -> b.member("block_type").text())
                 .containsExactly("thinking", "text", "tool_use");
         Json child = AnalysisViews.responses(p.children.get(0));
-        assertThat(child.member("response_count").scalarText()).isEqualTo("1");
+        assertThat(child.member("identity_count").scalarText()).isEqualTo("1");
     }
 
     @Test
@@ -160,7 +160,7 @@ class AnalysisViewsTest {
     void identicalResultContentUnderTwoOwnersIsKeptSeparate(@TempDir Path work) {
         Json t = AnalysisViews.toolExchanges(open(copy(CODEX, work)));
         assertThat(t.member("calls").elements()).hasSize(3);
-        List<Json> identical = t.member("identical_result_content").elements();
+        List<Json> identical = t.member("identical_content_distinct_owners").elements();
         assertThat(identical).hasSize(1);
         assertThat(identical.get(0).member("owners").elements()).extracting(Json::text).containsExactly("call_0002bbbb", "call_0003cccc");
         assertThat(identical.get(0).member("kept_separate")).isEqualTo(new Json.JBool(true));

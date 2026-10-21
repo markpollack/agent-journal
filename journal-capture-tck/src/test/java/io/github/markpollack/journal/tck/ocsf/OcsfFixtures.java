@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 final class OcsfFixtures {
 
     static final String CODEX = "syn-codex-counterexamples";
+    static final String CODEX_STREAM = "syn-codex-exec-stream";
     static final String CHILD = "claude-child-2.1.299";
     static final String SPAWN = "toolu_01BnEuCUmZ2Vu1LpADzksmrJ";
 
@@ -138,12 +139,44 @@ final class OcsfFixtures {
         write(file, NeutralJson.write(run) + "\n");
     }
 
-    /** Edits a native artifact in place (a labelled fixture of the test's own making). */
+    /** Edits a native artifact in place (a labelled fixture of the test's own making) and re-freezes the expected-source manifest to it. */
     static void editNative(Path fixture, String artifact, Consumer<List<Json>> edit) {
         Path file = natives(fixture).resolve(artifact);
         List<Json> lines = lines(file);
         edit.accept(lines);
         writeLines(file, lines);
+        refreeze(fixture);
+    }
+
+    /**
+     * Re-freezes {@code native/expected-sources.json} to the native artifacts as they are now: the test's own
+     * labelled inputs become the frozen denominator. Never used on a candidate package.
+     */
+    static void refreeze(Path fixture) {
+        Path manifest = natives(fixture).resolve(ExpectedSources.FILE_NAME);
+        if (!Files.isRegularFile(manifest)) {
+            return;
+        }
+        Json.JObject m = (Json.JObject) NeutralJson.readDocument(manifest);
+        for (Json s : m.member("sources").elements()) {
+            Path file = natives(fixture).resolve(s.member("artifact").text());
+            if (!Files.isRegularFile(file)) {
+                continue;
+            }
+            NativeArtifact art = NativeArtifact.read(file);
+            obj(s).members().put("sha256", str(art.sha256()));
+            obj(s).members().put("bytes", num(Integer.toString(art.bytes().length)));
+            obj(s).members().put("records", num(Integer.toString(art.records().size())));
+        }
+        write(manifest, NeutralJson.write(m) + "\n");
+    }
+
+    /** The frozen manifest of a fixture copy, for tests that edit it. */
+    static void editExpected(Path fixture, Consumer<Json.JObject> edit) {
+        Path manifest = natives(fixture).resolve(ExpectedSources.FILE_NAME);
+        Json.JObject m = (Json.JObject) NeutralJson.readDocument(manifest);
+        edit.accept(m);
+        write(manifest, NeutralJson.write(m) + "\n");
     }
 
     static Json.JObject obj(Json json) {

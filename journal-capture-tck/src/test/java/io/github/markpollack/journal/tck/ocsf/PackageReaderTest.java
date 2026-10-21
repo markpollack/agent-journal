@@ -34,8 +34,8 @@ class PackageReaderTest {
         OcsfPackage fromDir = PackageReader.open(pkg(fixture));
         assertThat(fromEvents.refused()).isFalse();
         assertThat(fromEvents.manifest.runUid()).isEqualTo("syn-codex-counterexamples");
-        assertThat(fromEvents.events).hasSize(31);
-        assertThat(fromDir.events).hasSize(31);
+        assertThat(fromEvents.events).hasSize(33);
+        assertThat(fromDir.events).hasSize(33);
         assertThat(fromEvents.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
         assertThat(fromEvents.manifest.packageVersion()).isEqualTo("0.2.0-prototype");
         assertThat(fromEvents.manifest.packageState()).isEqualTo("COMPLETED");
@@ -53,7 +53,7 @@ class PackageReaderTest {
         OcsfPackage p = PackageReader.open(detached.resolve("events.jsonl"));
         assertThat(p.refused()).isTrue();
         assertThat(p.diagnosticsWithCode("NO_MANIFEST")).hasSize(1);
-        assertThat(p.rawLines).hasSize(31);
+        assertThat(p.rawLines).hasSize(33);
         assertThat(p.events).isEmpty();
     }
 
@@ -76,7 +76,7 @@ class PackageReaderTest {
         assertThat(p.refused()).isTrue();
         assertThat(p.diagnosticsWithCode("PIN_MISMATCH").get(0).detail()).contains("tool_call uid 90211003 != definition uid 90111003");
         // the events are still parsed and available; tool_call events are now outside the pin table
-        assertThat(p.rawLines).hasSize(31);
+        assertThat(p.rawLines).hasSize(33);
         assertThat(p.diagnosticsWithCode("UNKNOWN_CLASS")).hasSize(1);
     }
 
@@ -87,7 +87,7 @@ class PackageReaderTest {
         OcsfPackage major = open(fixture);
         assertThat(major.refused()).isTrue();
         assertThat(major.diagnosticsWithCode("UNSUPPORTED_READER_CONTRACT_VERSION").get(0).detail()).contains("2.0").contains("0.2");
-        assertThat(major.rawLines).hasSize(31);
+        assertThat(major.rawLines).hasSize(33);
         editManifest(pkg(fixture), run -> obj(run.path("package", "reader_compat")).members().put("reader_contract_version", str("0.3")));
         OcsfPackage minor = open(fixture);
         assertThat(minor.refused()).isFalse();
@@ -110,7 +110,7 @@ class PackageReaderTest {
         OcsfPackage p = open(fixture);
         assertThat(p.refused()).isFalse();
         assertThat(p.diagnosticsWithCode("EVENTS_HASH_MISMATCH")).hasSize(1);
-        assertThat(p.events).hasSize(31);
+        assertThat(p.events).hasSize(33);
     }
 
     @Test
@@ -136,7 +136,7 @@ class PackageReaderTest {
         assertThat(p.refused()).isTrue();
         assertThat(p.diagnosticsWithCode("MISSING_DEFINITIONS")).hasSize(1);
         assertThat(p.catalog).isNull();
-        assertThat(p.events).hasSize(31);
+        assertThat(p.events).hasSize(33);
     }
 
     @Test
@@ -157,7 +157,7 @@ class PackageReaderTest {
         });
         OcsfPackage p = open(fixture);
         assertThat(p.refused()).isFalse();
-        assertThat(p.events).hasSize(31);
+        assertThat(p.events).hasSize(33);
         assertThat(p.events.get(0).className).isNull();
         assertThat(p.diagnosticsWithCode("UNKNOWN_CLASS").get(0).detail()).contains("90111099=1");
         assertThat(p.diagnosticsWithCode("UNKNOWN_ATTRIBUTE").get(0).detail()).contains("future_attribute");

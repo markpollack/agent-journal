@@ -1,0 +1,22 @@
+{
+ "kind": "agent-journal/expected-sources",
+ "version": "0.1",
+ "run_uid": "syn-codex-exec-stream",
+ "complete": true,
+ "frozen": {
+  "at": "2026-10-21",
+  "by": "sha256 and line count of the committed native artifact, written before the package was judged; independent of the package's own sources[]",
+  "basis": "the labelled synthetic Codex exec stream (one artifact)"
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "profile": "codex_stream",
+   "sha256": "8736630f3c4eae8e5c277423c52a33d071872ddb377622c3804e654f6bdf32f3",
+   "bytes": 1738,
+   "records": 12,
+   "required": true
+  }
+ ],
+ "children": []
+}

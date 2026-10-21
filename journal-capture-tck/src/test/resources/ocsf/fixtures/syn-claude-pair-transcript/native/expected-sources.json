@@ -1,0 +1,36 @@
+{
+ "kind": "agent-journal/expected-sources",
+ "version": "0.1",
+ "run_uid": "syn-claude-pair-transcript",
+ "complete": true,
+ "frozen": {
+  "at": "2026-10-21",
+  "by": "sha256 and line count of the committed native artifacts, written before the package was judged; independent of the package's own sources[]",
+  "basis": "the sanitized real stream plus the labelled synthetic transcript (two artifacts) and the one sub-agent split core of the stream"
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "profile": "claude_stream",
+   "sha256": "bf6177b0d1369d16ad4ac2e770bfe6a2920134ef09875dd355bc06ad6c9748fe",
+   "bytes": 24042,
+   "records": 27,
+   "required": true
+  },
+  {
+   "artifact": "transcript.jsonl",
+   "profile": "claude_transcript",
+   "sha256": "79518ce8ebe02cd6eb3c3284ce7a78c886020064758f293b9fea63b6604bcfe2",
+   "bytes": 7569,
+   "records": 17,
+   "required": true
+  }
+ ],
+ "children": [
+  {
+   "spawn_tool_call_uid": "toolu_01BnEuCUmZ2Vu1LpADzksmrJ",
+   "artifact": "stream.jsonl",
+   "owner_path": "parent_tool_use_id"
+  }
+ ]
+}

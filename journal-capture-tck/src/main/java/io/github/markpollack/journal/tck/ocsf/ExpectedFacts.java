@@ -60,11 +60,19 @@ public final class ExpectedFacts {
     }
 
     /**
-     * A settings / injected-context / accounting record (session_context). {@code settings} holds the exact native
-     * values the record reports under their normalized names (absent when not reported); {@code blocks} is the number
-     * of rendered content blocks the record carries, or {@code null} when the source renders nothing.
+     * One rendered content block of an injected-context record, read from the native record: the block type the
+     * contract promises, the exact text the source renders ({@code null} when the native element carries no text)
+     * and the native element itself, which the event must retain as {@code data}.
      */
-    public record Context(int recordIndex, int activityId, String contextKind, String turnUid, Map<String, Json> settings, String renderedRole, Integer blocks) {
+    public record Block(String blockType, String text, Json data) {
+    }
+
+    /**
+     * A settings / injected-context / accounting record (session_context). {@code settings} holds the exact native
+     * values the record reports under their normalized names (absent when not reported); {@code blocks} are the
+     * rendered content blocks in native order, or {@code null} when the source renders nothing.
+     */
+    public record Context(int recordIndex, int activityId, String contextKind, String turnUid, Map<String, Json> settings, String renderedRole, List<Block> blocks) {
     }
 
     public final String artifact;

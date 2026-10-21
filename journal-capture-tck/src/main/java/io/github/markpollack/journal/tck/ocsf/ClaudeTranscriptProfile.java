@@ -119,8 +119,16 @@ final class ClaudeTranscriptProfile implements SourceProfile {
                 f.normalized.add(r.index());
                 time(f, r, ts);
                 Json rendered = o.member("rendered");
+                List<ExpectedFacts.Block> blocks = null;
+                if (rendered instanceof Json.JArray a) {
+                    blocks = new java.util.ArrayList<>();
+                    for (Json el : a.elements()) {
+                        // rendered[] elements are {content: <text>}: the text rendered into the model input, verbatim
+                        blocks.add(new ExpectedFacts.Block("rendered", SourceProfile.text(el, "content"), el));
+                    }
+                }
                 f.contexts.add(new ExpectedFacts.Context(r.index(), 2, "attachment/" + SourceProfile.text(att, "type"), null, Map.of(),
-                        SourceProfile.text(o, "renderedRole"), rendered instanceof Json.JArray a ? a.elements().size() : null));
+                        SourceProfile.text(o, "renderedRole"), blocks));
                 continue;
             }
             if ("cost-state".equals(type)) {

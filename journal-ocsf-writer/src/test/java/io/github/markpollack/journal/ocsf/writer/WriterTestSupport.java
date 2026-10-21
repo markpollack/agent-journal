@@ -28,6 +28,7 @@ final class WriterTestSupport {
     static final String CHILD = "claude-child-2.1.299";
     static final String CODEX = "syn-codex-counterexamples";
     static final String PAIR = "syn-claude-pair-transcript";
+    static final String CODEX_STREAM = "syn-codex-exec-stream";
     static final String SPAWN = "toolu_01BnEuCUmZ2Vu1LpADzksmrJ";
 
     private WriterTestSupport() {
@@ -61,6 +62,37 @@ final class WriterTestSupport {
 
     static SourceDescriptor codexRollout() {
         return new SourceDescriptor("rollout.jsonl", 2, "codex_rollout", "fixture rollout replayed", null);
+    }
+
+    static SourceDescriptor codexStream() {
+        return new SourceDescriptor("stream.jsonl", 1, "codex_stream", "fixture exec --json stream replayed (labelled synthetic)", null);
+    }
+
+    /** Writes a frozen expected-source manifest for the artifacts in {@code nativeDir} (the test's own labelled inputs). */
+    static void freeze(Path nativeDir, String runUid, boolean complete, String... artifactProfilePairs) {
+        StringBuilder sb = new StringBuilder("{\"kind\":\"agent-journal/expected-sources\",\"version\":\"0.1\",\"run_uid\":\"" + runUid + "\",\"complete\":" + complete
+                + ",\"frozen\":{\"basis\":\"test-frozen from the native bytes the writer was fed\"},\"sources\":[");
+        for (int i = 0; i + 1 < artifactProfilePairs.length; i += 2) {
+            byte[] b = bytes(nativeDir.resolve(artifactProfilePairs[i]));
+            int records = 0;
+            for (byte x : b) {
+                if (x == '\n') {
+                    records++;
+                }
+            }
+            if (b.length > 0 && b[b.length - 1] != '\n') {
+                records++;
+            }
+            sb.append(i > 0 ? "," : "").append("{\"artifact\":\"").append(artifactProfilePairs[i]).append("\",\"profile\":\"").append(artifactProfilePairs[i + 1])
+                    .append("\",\"sha256\":\"").append(SchemaPin.sha256(b)).append("\",\"bytes\":").append(b.length).append(",\"records\":").append(records).append(",\"required\":true}");
+        }
+        sb.append("],\"children\":[]}\n");
+        try {
+            Files.writeString(nativeDir.resolve("expected-sources.json"), sb.toString(), StandardCharsets.UTF_8);
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     /** A clock that advances one millisecond per reading, from a fixed start. */

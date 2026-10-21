@@ -35,14 +35,18 @@ final class CodexStreamMapper implements SourceMapper {
         String family = itype == null ? String.valueOf(type) : type + "/" + itype;
         if ("item.completed".equals(type) && "agent_message".equals(itype)) {
             ctx.family(family, r.raw().length, "normalized: model_response Completed (stream-scoped item id)");
-            Jv.Obj block = new Jv.Obj().put("block_index", 0).put("block_type", "agent_message.text").put("block_kind_id", 1).put("block_kind", "Text")
-                    .put("basis", "item.text is a string");
-            if (text(it, "text") != null) {
-                block.put("text", text(it, "text"));
+            // item.text is the one content block; an agent_message without text has no block (the source carries none)
+            Jv.Arr blocks = new Jv.Arr();
+            if (it.member("text") != null && !it.member("text").isNull()) {
+                Jv.Obj block = new Jv.Obj().put("block_index", 0).put("block_type", "agent_message.text").put("block_kind_id", 1).put("block_kind", "Text")
+                        .put("basis", "item.text is a string");
+                if (text(it, "text") != null) {
+                    block.put("text", text(it, "text"));
+                }
+                blocks.add(block.put("data", it.member("text")));
             }
-            block.put("data", it.member("text") == null ? Jv.NULL : it.member("text"));
             Jv.Obj ev = ctx.event("model_response", 2, r, t, CONTRACT, "codex.stream.agent_message->model_response", null, text(it, "id"), true, null);
-            ev.put("session_uid", session).put("response_uid", text(it, "id")).put("content_blocks", new Jv.Arr(List.of(block)))
+            ev.put("session_uid", session).put("response_uid", text(it, "id")).put("content_blocks", blocks)
                     .put("basis", "item.completed is terminal; response_uid is the stream-scoped item id").put("data", o);
             ctx.emit(ev);
             return;

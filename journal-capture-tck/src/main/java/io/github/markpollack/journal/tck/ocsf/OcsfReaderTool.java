@@ -25,15 +25,17 @@ import java.util.Set;
  *   measure        &lt;events.jsonl|dir&gt; [out.json]      byte measurements per component
  *   reconstruct    &lt;events.jsonl|dir&gt; &lt;artifact&gt; &lt;out&gt;  scoped reconstruction of one source artifact
  *   self-contained &lt;events.jsonl|dir&gt; &lt;out.jsonl&gt;     export events with the shared facts joined back on
- *   verify         &lt;events.jsonl|dir&gt; &lt;native-dir&gt; [report.json]  the independent oracle against native artifacts
+ *   verify         &lt;events.jsonl|dir&gt; &lt;native-dir&gt; [report.json] [--expected &lt;expected-sources.json&gt;]
+ *                                                     the independent oracle against the frozen expected sources
  * </pre>
  *
  * Exit status, every command: {@link #EXIT_OK} 0; {@link #EXIT_REFUSED} 2 when the reader refused the package
  * (detached events file, unsupported version, pin mismatch; raw lines are still kept, nothing is interpreted);
  * {@link #EXIT_USAGE} 64 on bad arguments. {@code verify} additionally: {@link #EXIT_DEFECTS} 3 when the oracle
  * found a defect; {@link #EXIT_INCOMPLETE} 4 when it found no defect but a mandatory property is UNRESOLVED or
- * UNSUPPORTED, the package is not finalized, or an acquired population was waived by a declared exclusion. Zero
- * defects is therefore not acceptance; only 0 is.
+ * UNSUPPORTED, a required check is missing from the report, the package is not finalized, acquisition is not
+ * complete, no frozen expected-source manifest was supplied ({@code --expected} or {@code <native-dir>/expected-sources.json}),
+ * or an acquired population was waived by a declared exclusion. Zero defects is therefore not acceptance; only 0 is.
  */
 public final class OcsfReaderTool {
 
@@ -128,14 +130,30 @@ public final class OcsfReaderTool {
                 out.println("wrote " + pkg.events.size() + " self-contained event(s) to " + args[2]);
             }
             case "verify" -> {
-                if (args.length < 3) {
-                    err.println("usage: verify <events.jsonl|dir> <native-dir> [report.json]");
+                List<String> positional = new ArrayList<>();
+                Path expectedFile = null;
+                for (int i = 2; i < args.length; i++) {
+                    if ("--expected".equals(args[i])) {
+                        if (i + 1 >= args.length) {
+                            err.println("usage: verify <events.jsonl|dir> <native-dir> [report.json] [--expected <expected-sources.json>]");
+                            return EXIT_USAGE;
+                        }
+                        expectedFile = Path.of(args[++i]);
+                    }
+                    else {
+                        positional.add(args[i]);
+                    }
+                }
+                if (positional.isEmpty()) {
+                    err.println("usage: verify <events.jsonl|dir> <native-dir> [report.json] [--expected <expected-sources.json>]");
                     return EXIT_USAGE;
                 }
-                OracleReport report = OcsfOracle.verify(pkg, Path.of(args[2]));
+                Path nativeDir = Path.of(positional.get(0));
+                ExpectedSources expected = expectedFile != null ? ExpectedSources.read(expectedFile) : ExpectedSources.beside(nativeDir);
+                OracleReport report = OcsfOracle.verify(pkg, nativeDir, expected);
                 String json = PRETTY.writeValueAsString(report.toMap());
-                if (args.length > 3) {
-                    Files.writeString(Path.of(args[3]), json, StandardCharsets.UTF_8);
+                if (positional.size() > 1) {
+                    Files.writeString(Path.of(positional.get(1)), json, StandardCharsets.UTF_8);
                 }
                 out.println(PRETTY.writeValueAsString(report.summary()));
                 for (Check c : report.checks()) {
@@ -165,6 +183,9 @@ public final class OcsfReaderTool {
                 reasons.add(c.toString());
             }
             return new Acceptance(EXIT_DEFECTS, "DEFECTIVE", reasons);
+        }
+        for (String missing : report.missingRequired()) {
+            reasons.add("required check missing from the report: " + missing);
         }
         for (Check c : report.checks()) {
             if (c.outcome() == Check.Outcome.UNRESOLVED) {

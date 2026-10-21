@@ -32,19 +32,45 @@ import java.util.TreeSet;
  */
 public final class OcsfOracle {
 
+    /** Properties every judged core must report; acceptance refuses a report that lacks one. */
+    static final List<String> MANDATORY_CORE = List.of("package.readable", "package.state", "acquisition.complete", "event.order");
+
+    /** Properties every judged (available, frozen) source must report; acceptance refuses a report that lacks one. */
+    static final List<String> MANDATORY_SOURCE = List.of("source.inventory", "source.state", "whole_record.coverage", "whole_record.class",
+            "whole_record.structure_value", "whole_record.bytes", "whole_record.framing", "population.requests", "request.values",
+            "population.results", "result.owner", "result.values", "population.responses", "response.values", "population.prompts",
+            "prompt.values", "population.usage", "usage.values", "population.cost", "cost.values", "population.decisions", "decision.values",
+            "population.operations", "operation.values", "population.turn_completed", "turn.values", "population.turn_started",
+            "turn_started.values", "population.contexts", "context.values", "time.basis", "reconstruction.coverage",
+            "reconstruction.structure_value");
+
     private final OracleReport report = new OracleReport();
     private final Path nativeDir;
+    private final ExpectedSources expected;
 
-    private OcsfOracle(Path nativeDir) {
+    private OcsfOracle(Path nativeDir, ExpectedSources expected) {
         this.nativeDir = nativeDir;
+        this.expected = expected;
     }
 
     /**
+     * Verifies against the expected-source manifest found beside the native artifacts ({@code expected-sources.json}),
+     * or, when none exists, against the candidate's own declaration, which is then reported as an unresolved
+     * denominator and never accepted.
+     *
      * @param pkg the opened package (root core and linked children)
      * @param nativeDir directory holding the native artifacts under the names the package's source inventory uses
      */
     public static OracleReport verify(OcsfPackage pkg, Path nativeDir) {
-        OcsfOracle o = new OcsfOracle(nativeDir);
+        return verify(pkg, nativeDir, ExpectedSources.beside(nativeDir));
+    }
+
+    /**
+     * @param expected the independently frozen expected-source manifest, or {@code null} for candidate-declared
+     *        inspection (historical bounded packages), which cannot be accepted
+     */
+    public static OracleReport verify(OcsfPackage pkg, Path nativeDir, ExpectedSources expected) {
+        OcsfOracle o = new OcsfOracle(nativeDir, expected);
         o.describe(pkg);
         for (OcsfPackage core : pkg.all()) {
             o.core(core);
@@ -53,6 +79,8 @@ public final class OcsfOracle {
     }
 
     private void describe(OcsfPackage pkg) {
+        report.oracle("expectedSources", expected == null ? "none: candidate-declared inventory (inspection only; not acceptable)"
+                : expected.describe() + (expected.complete() ? " [complete run]" : " [not a complete run]"));
         report.candidate("rootDir", pkg.dir.toString());
         report.candidate("runUid", pkg.manifest == null ? null : pkg.manifest.runUid());
         report.candidate("packageVersion", pkg.manifest == null ? null : pkg.manifest.packageVersion());
@@ -75,25 +103,31 @@ public final class OcsfOracle {
 
     private void core(OcsfPackage core) {
         String label = core.label();
+        report.require(label, "package.readable");
         if (core.refused()) {
             report.add(Category.COMPLETENESS, "package.readable", label, Outcome.UNSUPPORTED,
                     "reader refused the package: " + core.diagnostics(Diagnostic.Severity.REFUSED));
             return;
         }
+        report.require(label, MANDATORY_CORE.toArray(String[]::new));
         report.add(Category.COMPLETENESS, "package.readable", label, core.diagnostics(Diagnostic.Severity.DEFECT).isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
                 core.diagnostics(Diagnostic.Severity.DEFECT).isEmpty() ? "pins, hashes, definitions and shared references resolve"
                         : core.diagnostics(Diagnostic.Severity.DEFECT).toString());
         String state = core.manifest.packageState();
         report.add(Category.COMPLETENESS, "package.state", label,
                 "COMPLETED".equals(state) ? Outcome.VERIFIED : "RECORDING".equals(state) || "FAILED".equals(state) ? Outcome.UNRESOLVED : Outcome.UNSUPPORTED,
-                "COMPLETED".equals(state) ? "finalized by the writer with every declared source ended"
+                "COMPLETED".equals(state) ? "storage finalized by the writer (final event count and hash); acquisition completeness is judged separately"
                         : "RECORDING".equals(state) ? "open package: the writer has not finalized it; judged as a prefix, never as complete"
                         : "FAILED".equals(state) ? "the writer failed: " + (core.manifest.json().path("recording", "failure") == null ? "no failure detail" : NeutralJson.write(core.manifest.json().path("recording", "failure")))
                         : state + ": the recording did not complete; the acquired evidence is judged, completeness is not claimed");
+        acquisition(core, label);
         order(core, label);
-        for (Json source : core.manifest.sources()) {
-            String artifact = SchemaCatalog.text(source, "artifact");
+        List<String> artifacts = sourceSet(core, label);
+        for (String artifact : artifacts) {
+            Json source = core.manifest.source(artifact);
+            ExpectedSources.Source exp = expected == null ? null : expected.source(artifact);
             String owner = label + "/" + artifact;
+            report.require(owner, "source.available");
             Path file = nativeDir.resolve(artifact);
             if (!Files.isRegularFile(file)) {
                 report.add(Category.COMPLETENESS, "source.available", owner, Outcome.UNRESOLVED, "native artifact not supplied at " + file);
@@ -106,6 +140,35 @@ public final class OcsfOracle {
             o.put("records", art.records().size());
             o.put("opaque", art.opaqueCount());
             report.oracle(owner, o);
+            if (exp != null && !sourceFrozen(exp, art, owner)) {
+                continue; // the supplied artifact is not the frozen one: judging the candidate against it would prove nothing
+            }
+            report.add(Category.COMPLETENESS, "source.available", owner, Outcome.VERIFIED, exp == null ? "native artifact supplied (candidate-declared; not frozen)"
+                    : "native artifact supplied and equal to the frozen expected source");
+            if (source != null) {
+                // an honestly incomplete candidate is judged on the prefix it declares it acquired (verified as a prefix of the
+                // supplied artifact); the shortfall against the frozen extent is reported by source.extent and acquisition.complete
+                art = acquiredPrefix(source, art, file, owner);
+            }
+            if (source == null) {
+                // the candidate omitted an expected source: every obligation still applies, with no events to satisfy them
+                source = new Json.JObject(Map.of("artifact", new Json.JString(artifact), "profile", new Json.JString(exp.profile())));
+            }
+            else if (exp != null && source.member("admit_response_uid") != null) {
+                // a candidate-declared admission never narrows a frozen denominator (and is a defect on the complete layout, below)
+                Map<String, Json> stripped = new LinkedHashMap<>(((Json.JObject) source).members());
+                stripped.remove("admit_response_uid");
+                if (!"0.1.0-prototype".equals(core.manifest.packageVersion())) {
+                    report.add(Category.COMPLETENESS, "source.admission", owner, Outcome.DEFECTIVE,
+                            "the candidate declares admit_response_uid " + SchemaCatalog.text(source, "admit_response_uid")
+                                    + " on a " + core.manifest.packageVersion() + " package; declared admission is ignored and every record is expected");
+                }
+                else {
+                    report.add(Category.COMPLETENESS, "source.admission", owner, Outcome.DEFECTIVE,
+                            "the candidate declares a bounded admission (admit_response_uid) but the frozen expected-source manifest requires the whole artifact");
+                }
+                source = new Json.JObject(stripped);
+            }
             if (source.member("admit_response_uid") != null && !"0.1.0-prototype".equals(core.manifest.packageVersion())) {
                 // a candidate cannot shrink its own denominator: declared admission is honoured only on the historical 0.1.0 layout
                 report.add(Category.COMPLETENESS, "source.admission", owner, Outcome.DEFECTIVE,
@@ -115,10 +178,11 @@ public final class OcsfOracle {
                 stripped.remove("admit_response_uid");
                 source = new Json.JObject(stripped);
             }
-            SourceProfile profile = SourceProfile.forName(SchemaCatalog.text(source, "profile"));
+            String profileName = exp != null ? exp.profile() : SchemaCatalog.text(source, "profile");
+            SourceProfile profile = SourceProfile.forName(profileName);
             if (profile == null) {
                 report.add(Category.COMPLETENESS, "source.profile", owner, Outcome.UNSUPPORTED,
-                        "no oracle profile for " + SchemaCatalog.text(source, "profile") + "; only retention is judged");
+                        "no oracle profile for " + profileName + "; only retention is judged");
                 profile = new OpaqueTextProfile();
             }
             Json scope = core.manifest.sourceScope();
@@ -140,12 +204,25 @@ public final class OcsfOracle {
             }
             ExpectedFacts facts = profile.expected(art, source, scope);
             report.denominator(owner, facts.counts());
-            sourceInventory(source, art, owner);
+            report.require(owner, MANDATORY_SOURCE.toArray(String[]::new));
             List<Event> events = new ArrayList<>();
             for (Event e : core.events) {
                 if (e.className != null && artifact.equals(e.artifact())) {
                     events.add(e);
                 }
+            }
+            boolean declared = core.manifest.source(artifact) != null;
+            if (!declared) {
+                report.add(Category.COMPLETENESS, "source.inventory", owner, Outcome.DEFECTIVE,
+                        "the candidate declares no such source; the frozen manifest expects " + art.records().size() + " record(s), " + art.bytes().length + " bytes");
+                report.add(Category.COMPLETENESS, "source.state", owner, Outcome.DEFECTIVE, "the candidate declares no such source, so no acquisition state exists for it");
+            }
+            else {
+                sourceInventory(source, art, owner);
+                sourceState(core, source, art, events, owner);
+            }
+            if (exp != null) {
+                sourceExtent(exp, declared ? source : null, owner);
             }
             retention(art, facts, events, owner, core);
             requests(facts, events, owner, core);
@@ -162,6 +239,302 @@ public final class OcsfOracle {
             time(art, facts, events, owner);
             reconstruction(art, facts, events, owner);
         }
+    }
+
+    // ------------------------------------------------------------------------------------------ denominator
+
+    /**
+     * The artifacts this core is judged on: the frozen expected set first (each compared with the candidate's
+     * declaration: omitted, duplicated or relabelled declarations are defects), then any artifact the candidate
+     * declares beyond the frozen set (a defect: it is not part of the selected run). Without a manifest the
+     * candidate's own declaration is the only denominator, which is reported as unresolved and never accepted.
+     */
+    private List<String> sourceSet(OcsfPackage core, String label) {
+        List<String> artifacts = new ArrayList<>();
+        Map<String, Integer> declared = new LinkedHashMap<>();
+        Map<String, String> declaredProfile = new LinkedHashMap<>();
+        for (Json s : core.manifest.sources()) {
+            String a = SchemaCatalog.text(s, "artifact");
+            declared.merge(a, 1, Integer::sum);
+            declaredProfile.putIfAbsent(a, SchemaCatalog.text(s, "profile"));
+        }
+        if (expected == null) {
+            report.add(Category.COMPLETENESS, "source.denominator", label, Outcome.UNRESOLVED,
+                    "no independent expected-source manifest: the denominator is the candidate's own declaration (" + declared.keySet()
+                            + "), which cannot establish that the selected run is wholly represented");
+            artifacts.addAll(declared.keySet());
+            return artifacts;
+        }
+        report.add(Category.COMPLETENESS, "source.denominator", label, Outcome.VERIFIED,
+                "frozen expected-source manifest: " + expected.sources().size() + " artifact(s) " + (expected.complete() ? "of a complete run" : "of a partial capture")
+                        + (expected.runUid() == null ? "" : " for run " + expected.runUid()));
+        if (expected.runUid() != null && core.manifest.parent() == null && !expected.runUid().equals(core.manifest.runUid())) {
+            report.add(Category.COMPLETENESS, "source.denominator", label, Outcome.DEFECTIVE,
+                    "the candidate's run_uid " + core.manifest.runUid() + " is not the frozen manifest's run " + expected.runUid());
+        }
+        for (ExpectedSources.Source e : expected.sources()) {
+            String owner = label + "/" + e.artifact();
+            artifacts.add(e.artifact());
+            report.require(owner, "source.expected");
+            Integer n = declared.get(e.artifact());
+            if (n == null) {
+                report.add(Category.COMPLETENESS, "source.expected", owner, e.required() ? Outcome.DEFECTIVE : Outcome.UNSUPPORTED,
+                        (e.required() ? "omitted: " : "optional source not declared: ") + "the frozen manifest expects " + e.artifact() + " (" + e.profile() + ", "
+                                + e.records() + " record(s), " + e.bytes() + " bytes) and the candidate declares no such source");
+            }
+            else if (n > 1) {
+                report.add(Category.COMPLETENESS, "source.expected", owner, Outcome.DEFECTIVE, "declared " + n + " times by the candidate");
+            }
+            else if (!e.profile().equals(declaredProfile.get(e.artifact()))) {
+                report.add(Category.COMPLETENESS, "source.expected", owner, Outcome.DEFECTIVE,
+                        "declared under profile " + declaredProfile.get(e.artifact()) + "; the frozen manifest expects " + e.profile() + " (the expected profile is applied)");
+            }
+            else {
+                report.add(Category.COMPLETENESS, "source.expected", owner, Outcome.VERIFIED, "declared once under the expected profile " + e.profile());
+            }
+        }
+        for (String a : declared.keySet()) {
+            if (expected.source(a) == null) {
+                artifacts.add(a);
+                report.add(Category.COMPLETENESS, "source.expected", label + "/" + a, Outcome.DEFECTIVE,
+                        "declared by the candidate but not part of the frozen expected-source manifest (" + expected.describe() + ")");
+            }
+        }
+        if (core.manifest.parent() == null) {
+            children(core, label);
+        }
+        return artifacts;
+    }
+
+    /** Expected split cores against the candidate's child links and each child's declared scope. */
+    private void children(OcsfPackage core, String label) {
+        List<String> problems = new ArrayList<>();
+        List<String> seen = new ArrayList<>();
+        for (OcsfPackage child : core.children) {
+            String spawn = child.manifest == null ? null : SchemaCatalog.text(child.manifest.parent(), "spawn_tool_call_uid");
+            seen.add(spawn);
+            ExpectedSources.Child e = expected.child(spawn);
+            if (e == null) {
+                problems.add("child " + spawn + " is not an expected split core");
+                continue;
+            }
+            Json scope = child.manifest.sourceScope();
+            if (scope == null || !e.artifact().equals(SchemaCatalog.text(scope, "artifact")) || !e.ownerPath().equals(SchemaCatalog.text(scope, "owner_path"))
+                    || !spawn.equals(SchemaCatalog.text(scope, "owner_value"))) {
+                problems.add("child " + spawn + " declares scope " + (scope == null ? "none" : NeutralJson.write(scope)) + "; expected " + e.artifact() + "." + e.ownerPath() + " = " + spawn);
+            }
+        }
+        for (ExpectedSources.Child e : expected.children()) {
+            if (!seen.contains(e.spawnToolCallUid())) {
+                problems.add("expected child " + e.spawnToolCallUid() + " (" + e.artifact() + "." + e.ownerPath() + ") is not linked by the candidate");
+            }
+        }
+        report.add(Category.COMPLETENESS, "package.children", label, problems.isEmpty() ? (expected.children().isEmpty() ? Outcome.NOT_APPLICABLE : Outcome.VERIFIED) : Outcome.DEFECTIVE,
+                problems.isEmpty() ? expected.children().size() + " expected split core(s), each linked with its declared owner scope" : String.join("; ", problems));
+    }
+
+    /** The supplied native artifact must be the frozen one; otherwise the comparison proves nothing and is unresolved. */
+    private boolean sourceFrozen(ExpectedSources.Source exp, NativeArtifact art, String owner) {
+        List<String> problems = new ArrayList<>();
+        if (exp.sha256() != null && !exp.sha256().equals(art.sha256())) {
+            problems.add("sha256 " + art.sha256() + " != frozen " + exp.sha256());
+        }
+        if (exp.bytes() != null && exp.bytes() != art.bytes().length) {
+            problems.add("bytes " + art.bytes().length + " != frozen " + exp.bytes());
+        }
+        if (exp.records() != null && exp.records() != art.records().size()) {
+            problems.add("records " + art.records().size() + " != frozen " + exp.records());
+        }
+        if (!problems.isEmpty()) {
+            report.add(Category.COMPLETENESS, "source.available", owner, Outcome.UNRESOLVED,
+                    "the supplied native artifact is not the frozen expected source: " + String.join("; ", problems));
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * The candidate's declared extent against the frozen one. A candidate that declares the source complete (final,
+     * ended by EOF, no incomplete tail) must declare exactly the frozen artifact; a candidate that honestly declares
+     * it incomplete has preserved a prefix, which is reported as unsupported for a complete run, never as verified.
+     */
+    private void sourceExtent(ExpectedSources.Source exp, Json source, String owner) {
+        if (source == null) {
+            report.add(Category.COMPLETENESS, "source.extent", owner, Outcome.DEFECTIVE, "not declared; expected " + exp.records() + " record(s), " + exp.bytes() + " bytes");
+            return;
+        }
+        boolean isFinal = RunManifest.sourceFinal(source);
+        String how = SchemaCatalog.text(source.member("ended"), "how");
+        boolean tail = source.member("incomplete_tail_record") != null;
+        boolean claimsComplete = isFinal && (how == null || "EOF".equals(how)) && !tail;
+        String sha = SchemaCatalog.text(source, "sha256");
+        Integer bytes = Event.integer(source.member("bytes"));
+        Integer records = Event.integer(source.member("records"));
+        boolean equal = (exp.sha256() == null || exp.sha256().equals(sha)) && (exp.bytes() == null || exp.bytes().equals(bytes)) && (exp.records() == null || exp.records().equals(records));
+        if (claimsComplete) {
+            report.add(Category.COMPLETENESS, "source.extent", owner, equal ? Outcome.VERIFIED : Outcome.DEFECTIVE,
+                    equal ? "declared complete with the frozen extent (" + records + " record(s), " + bytes + " bytes)"
+                            : "declared complete but with a different extent: " + records + " record(s), " + bytes + " bytes, sha256 " + sha + "; frozen: "
+                            + exp.records() + ", " + exp.bytes() + ", " + exp.sha256());
+            return;
+        }
+        boolean prefix = (exp.bytes() == null || bytes == null || bytes <= exp.bytes()) && (exp.records() == null || records == null || records <= exp.records());
+        report.add(Category.COMPLETENESS, "source.extent", owner, prefix ? (expected.complete() ? Outcome.UNSUPPORTED : Outcome.VERIFIED) : Outcome.DEFECTIVE,
+                prefix ? "declared incomplete (" + (isFinal ? "ended " + how : "open") + (tail ? ", incomplete tail" : "") + "): " + records + " of " + exp.records() + " record(s), "
+                        + bytes + " of " + exp.bytes() + " bytes acquired" + (expected.complete() ? "; preserved, not a complete capture of the frozen run" : "; within the declared partial capture")
+                        : "declared incomplete yet larger than the frozen extent: " + records + "/" + bytes + " vs " + exp.records() + "/" + exp.bytes());
+    }
+
+    /** Whether the candidate declares this source acquired to its natural end with its last record whole. */
+    private static boolean declaredComplete(Json source) {
+        String how = SchemaCatalog.text(source.member("ended"), "how");
+        return RunManifest.sourceFinal(source) && (how == null || "EOF".equals(how)) && source.member("incomplete_tail_record") == null;
+    }
+
+    /**
+     * For a source the candidate declares incomplete (open, interrupted or cut), the artifact prefix of the declared
+     * byte length, when that prefix is what the candidate hashed; otherwise the whole artifact. The per-record
+     * obligations then cover exactly what was acquired, while the extent and acquisition checks report the shortfall.
+     */
+    private NativeArtifact acquiredPrefix(Json source, NativeArtifact art, Path file, String owner) {
+        if (declaredComplete(source)) {
+            return art;
+        }
+        Integer bytes = Event.integer(source.member("bytes"));
+        if (bytes == null || bytes >= art.bytes().length) {
+            return art;
+        }
+        NativeArtifact prefix = NativeArtifact.ofBytes(file, java.util.Arrays.copyOf(art.bytes(), bytes));
+        String sha = SchemaCatalog.text(source, "sha256");
+        if (sha != null && !sha.equals(prefix.sha256())) {
+            return art; // the declared extent is not a prefix of the supplied artifact: judged against the whole, which reports it
+        }
+        Map<String, Object> o = new LinkedHashMap<>();
+        o.put("judged_prefix_bytes", bytes);
+        o.put("judged_prefix_records", prefix.records().size());
+        o.put("basis", "the candidate declares the source incomplete; its declared extent is a verified prefix of the supplied artifact and is what the per-record checks cover");
+        report.oracle(owner + " (acquired prefix)", o);
+        return prefix;
+    }
+
+    // ------------------------------------------------------------------------------------------ acquisition
+
+    /**
+     * Acquisition completeness, judged apart from storage finalization: every declared source ended by EOF with its
+     * last record whole, consistent source states, and a declared acquisition status that agrees with them. An
+     * honest incomplete acquisition is unsupported for a complete-run claim; inconsistent labels are defects.
+     */
+    private void acquisition(OcsfPackage core, String label) {
+        String state = core.manifest.packageState();
+        boolean finalized = core.manifest.finalized();
+        Json acq = core.manifest.json().path("recording", "acquisition");
+        String status = SchemaCatalog.text(acq, "status");
+        List<String> problems = new ArrayList<>();
+        List<String> incomplete = new ArrayList<>();
+        boolean pending = false;
+        List<Json> sources = core.manifest.sources();
+        for (Json s : sources) {
+            String a = SchemaCatalog.text(s, "artifact");
+            boolean isFinal = RunManifest.sourceFinal(s);
+            String st = SchemaCatalog.text(s, "state");
+            String how = SchemaCatalog.text(s.member("ended"), "how");
+            Json tail = s.member("incomplete_tail_record");
+            if (!isFinal) {
+                pending = true;
+                if (finalized) {
+                    problems.add(a + ": open source (state " + st + ", final false) inside a " + state + " package");
+                }
+                else {
+                    incomplete.add(a + ": still " + (st == null ? "open" : st.toLowerCase()));
+                }
+            }
+            if ("INTERRUPTED".equals(how) || "INTERRUPTED".equals(st)) {
+                incomplete.add(a + ": interrupted after " + Event.integer(s.member("records")) + " record(s)");
+            }
+            if (tail != null) {
+                incomplete.add(a + ": record " + tail.scalarText() + " incomplete at source end");
+            }
+            if (isFinal && st != null && !("ENDED".equals(st) && "EOF".equals(how)) && !("INTERRUPTED".equals(st) && "INTERRUPTED".equals(how))) {
+                problems.add(a + ": state " + st + " with ended.how " + how + " is inconsistent");
+            }
+        }
+        String derived = sources.isEmpty() ? "no sources declared" : pending ? "pending" : incomplete.isEmpty() ? "complete" : "incomplete";
+        if (status != null && !status.equals(derived)) {
+            problems.add("declared acquisition status '" + status + "' but the source states derive '" + derived + "'");
+        }
+        if (sources.isEmpty()) {
+            incomplete.add("no source declared: nothing was acquired");
+        }
+        if (acq == null && status == null) {
+            incomplete.add("no acquisition declaration (" + core.manifest.packageVersion() + " layout)");
+        }
+        Outcome outcome;
+        String detail;
+        if (!problems.isEmpty()) {
+            outcome = Outcome.DEFECTIVE;
+            detail = "inconsistent: " + String.join("; ", problems) + (incomplete.isEmpty() ? "" : " (incomplete: " + String.join("; ", incomplete) + ")");
+        }
+        else if ("RECORDING".equals(state) || "FAILED".equals(state)) {
+            outcome = Outcome.UNRESOLVED;
+            detail = ("RECORDING".equals(state) ? "still recording" : "the writer failed") + (incomplete.isEmpty() ? "" : ": " + String.join("; ", incomplete));
+        }
+        else if (!incomplete.isEmpty() || "INTERRUPTED".equals(state)) {
+            outcome = Outcome.UNSUPPORTED;
+            detail = "acquisition incomplete (storage " + state + "): " + String.join("; ", incomplete) + "; the acquired evidence is judged, a complete capture is not established";
+        }
+        else {
+            outcome = Outcome.VERIFIED;
+            detail = sources.size() + " declared source(s) each ended by EOF with its last record whole; declared status 'complete' agrees";
+        }
+        report.add(Category.COMPLETENESS, "acquisition.complete", label, outcome, detail);
+    }
+
+    /**
+     * One source's declared acquisition state against the package state, the native artifact and the events: an
+     * open source cannot sit inside a finalized package, a declared incomplete tail must be the artifact's last
+     * record, unterminated and not one JSON object, and must be retained as an Incomplete-at-source-end record;
+     * conversely an artifact that ends inside a record cannot be declared whole.
+     */
+    private void sourceState(OcsfPackage core, Json source, NativeArtifact art, List<Event> events, String owner) {
+        List<String> problems = new ArrayList<>();
+        boolean isFinal = RunManifest.sourceFinal(source);
+        String st = SchemaCatalog.text(source, "state");
+        String how = SchemaCatalog.text(source.member("ended"), "how");
+        Integer tail = Event.integer(source.member("incomplete_tail_record"));
+        if (!isFinal && core.manifest.finalized()) {
+            problems.add("open (final false, state " + st + ") inside a " + core.manifest.packageState() + " package");
+        }
+        if (isFinal && source.member("ended") == null && st != null) {
+            problems.add("final but no ended marker");
+        }
+        if (!isFinal && (source.member("ended") != null || SchemaCatalog.text(source, "sha256") != null)) {
+            problems.add("open yet carries " + (source.member("ended") != null ? "an ended marker" : "a sha256"));
+        }
+        NativeArtifact.Record last = art.records().isEmpty() ? null : art.records().get(art.records().size() - 1);
+        boolean nativeCut = last != null && "none".equals(last.lineEnding()) && !last.parsed() && last.status() != NativeArtifact.Status.BLANK;
+        if (tail != null) {
+            if (last == null || tail != last.index()) {
+                problems.add("incomplete_tail_record " + tail + " is not the artifact's last record (" + (last == null ? 0 : last.index()) + ")");
+            }
+            else if (!nativeCut) {
+                problems.add("incomplete_tail_record " + tail + " but the artifact's last record is " + last.status() + " with ending " + last.lineEnding());
+            }
+            boolean retained = false;
+            for (Event e : events) {
+                if (e.wholeRecord() && Objects.equals(e.recordIndex(), tail) && Objects.equals(e.integer("parse_status_id"), 5)) {
+                    retained = true;
+                }
+            }
+            if (!retained) {
+                problems.add("incomplete_tail_record " + tail + " is not retained as a parse_status 5 (Incomplete at source end) record");
+            }
+        }
+        else if (nativeCut && isFinal && "EOF".equals(how)) {
+            problems.add("the artifact ends inside record " + last.index() + " (" + last.status() + ", no terminator) but the source is declared ended by EOF with no incomplete tail");
+        }
+        report.add(Category.COMPLETENESS, "source.state", owner, problems.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
+                problems.isEmpty() ? (isFinal ? "final, ended " + how + (tail == null ? ", last record whole" : ", incomplete tail record " + tail + " retained as such") : "open (state " + st + "), no hash or end marker")
+                        : String.join("; ", problems));
     }
 
     // ------------------------------------------------------------------------------------------ inventory and order
@@ -1006,8 +1379,27 @@ public final class OcsfOracle {
                     problems.add(what + " content_blocks present but the source renders nothing");
                 }
             }
-            else if (e.get("content_blocks") == null || e.elements("content_blocks").size() != c.blocks()) {
-                problems.add(what + " content_blocks " + (e.get("content_blocks") == null ? "absent" : e.elements("content_blocks").size()) + " != " + c.blocks());
+            else if (e.get("content_blocks") == null || e.elements("content_blocks").size() != c.blocks().size()) {
+                problems.add(what + " content_blocks " + (e.get("content_blocks") == null ? "absent" : e.elements("content_blocks").size()) + " != " + c.blocks().size());
+            }
+            else {
+                // every promised block value: index, type, the rendered text verbatim and the native element retained as data
+                List<Json> blocks = e.elements("content_blocks");
+                for (int i = 0; i < blocks.size(); i++) {
+                    ExpectedFacts.Block want = c.blocks().get(i);
+                    Json b = blocks.get(i);
+                    if (!Objects.equals(b.member("block_index") == null ? null : b.member("block_index").scalarText(), Integer.toString(i))) {
+                        problems.add(what + " block " + i + " block_index " + (b.member("block_index") == null ? null : b.member("block_index").scalarText()));
+                    }
+                    if (!Objects.equals(want.blockType(), SchemaCatalog.text(b, "block_type"))) {
+                        problems.add(what + " block " + i + " block_type " + SchemaCatalog.text(b, "block_type") + " != " + want.blockType());
+                    }
+                    if (!Objects.equals(want.text(), SchemaCatalog.text(b, "text"))) {
+                        problems.add(what + " block " + i + " text differs from the source's rendered content (" + (want.text() == null ? "none rendered" : want.text().length() + " chars")
+                                + " at source, " + (SchemaCatalog.text(b, "text") == null ? "absent" : SchemaCatalog.text(b, "text").length() + " chars") + " normalized)");
+                    }
+                    compare(what + " block " + i + " data", want.data(), b.member("data"), problems, representation);
+                }
             }
             Json settings = e.get("settings");
             for (Map.Entry<String, Json> f : c.settings().entrySet()) {

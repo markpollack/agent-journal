@@ -88,7 +88,12 @@ final class CodexRolloutProfile implements SourceProfile {
                 }
                 else if ("developer".equals(role)) {
                     f.normalized.add(r.index());
-                    f.contexts.add(new ExpectedFacts.Context(r.index(), 2, "response_item/message/developer", currentTurn, Map.of(), "developer", blocks.size()));
+                    List<ExpectedFacts.Block> rendered = new ArrayList<>();
+                    for (Json b : blocks) {
+                        // content[] elements are {type: input_text, text}: the block type is the native type, the text verbatim
+                        rendered.add(new ExpectedFacts.Block(SourceProfile.text(b, "type") == null ? "(untyped)" : SourceProfile.text(b, "type"), SourceProfile.text(b, "text"), b));
+                    }
+                    f.contexts.add(new ExpectedFacts.Context(r.index(), 2, "response_item/message/developer", currentTurn, Map.of(), "developer", rendered));
                 }
                 continue;
             }

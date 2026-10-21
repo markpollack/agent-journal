@@ -39,13 +39,13 @@ class OcsfOracleFixtureTest {
         assertThat(report.outcome("operation.values", owner)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("usage.values", owner)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("whole_record.coverage", owner)).isEqualTo(Outcome.VERIFIED);
-        assertThat(report.check("whole_record.coverage", owner).detail()).startsWith("31 owned record(s)");
+        assertThat(report.check("whole_record.coverage", owner).detail()).startsWith("33 owned record(s)");
         assertThat(report.outcome("whole_record.structure_value", owner)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("whole_record.representation", owner)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("whole_record.bytes", owner)).as("no opaque record in this fixture").isEqualTo(Outcome.NOT_APPLICABLE);
         assertThat(report.outcome("reconstruction.structure_value", owner)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("reconstruction.bytes", owner)).as("observed byte equality on compact native JSON; not promised for parsed records").isEqualTo(Outcome.VERIFIED);
-        assertThat(report.check("reconstruction.bytes", owner).detail()).contains("31 parsed, observed");
+        assertThat(report.check("reconstruction.bytes", owner).detail()).contains("33 parsed, observed");
         assertThat(report.outcome("time.basis", owner)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("event.order", "main")).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("package.readable", "main")).isEqualTo(Outcome.VERIFIED);

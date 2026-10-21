@@ -275,9 +275,37 @@ public final class AnalysisViews {
             row.put("rule", str(SchemaCatalog.text(decl, "id")));
             rows.add(new Json.JObject(row));
         }
+        // count units: observations (events), source-scoped identities (rows), and a logical count only where every
+        // identity is reported at run scope (the same id across sources is the vendor's identity, not Journal's guess)
+        int observations = 0;
+        int runScoped = 0;
+        int artifactScoped = 0;
+        Map<String, Integer> artifactScopedBy = new TreeMap<>();
+        for (Map.Entry<String, List<Event>> g : groups.entrySet()) {
+            observations += g.getValue().size();
+            if (g.getKey().startsWith("unresolved:")) {
+                continue;
+            }
+            Json u = semantics.get(g.getValue().get(0).contractUid());
+            if (u != null && "artifact".equals(SchemaCatalog.text(u, "identity_scope"))) {
+                artifactScoped++;
+                artifactScopedBy.merge(g.getValue().get(0).artifact(), 1, Integer::sum);
+            }
+            else {
+                runScoped++;
+            }
+        }
         Map<String, Json> out = new LinkedHashMap<>();
-        out.put("response_count", num(rows.size() - unresolved));
+        out.put("observation_count", num(observations));
+        out.put("identity_count", num(rows.size() - unresolved));
         out.put("unresolved_count", num(unresolved));
+        out.put("identity_units", str(runScoped + " run-scoped (reported id shared across sources), " + artifactScoped + " artifact-scoped"
+                + (artifactScoped == 0 ? "" : " " + artifactScopedBy) + "; identities of different scopes are not combined"));
+        boolean logical = unresolved == 0 && artifactScoped == 0;
+        out.put("logical_count", logical ? num(runScoped) : Json.JNull.INSTANCE);
+        out.put("logical_count_basis", str(logical ? "every identity is a run-scoped reported id: one logical response per identity"
+                : unresolved > 0 ? "unavailable: " + unresolved + " response(s) without an id cannot be counted as distinct or as repeats"
+                : "unavailable: " + artifactScoped + " artifact-scoped identit(ies) are not linked to the " + runScoped + " run-scoped one(s) by any supported identity rule; equal text is not identity"));
         out.put("rows", new Json.JArray(rows));
         out.put("rule", str(SchemaCatalog.text(decl, "id")));
         return new Json.JObject(out);
@@ -451,7 +479,68 @@ public final class AnalysisViews {
         }
         Map<String, Json> out = new LinkedHashMap<>();
         out.put("rows", new Json.JArray(rows));
+        out.put("operations", operationIdentities(pkg));
         out.put("rule", str(SchemaCatalog.text(decl, "id")));
+        return new Json.JObject(out);
+    }
+
+    /**
+     * Operation count units: every observation (an operation event), the source-scoped identities (one per artifact
+     * and reported operation id, with the start/completion history of each), and a logical count only when all
+     * identities come from one artifact; identities of different artifacts are never joined by text or order.
+     */
+    static Json operationIdentities(OcsfPackage pkg) {
+        Map<String, Map<String, Json>> identities = new LinkedHashMap<>();
+        int observations = 0;
+        Map<String, Integer> byArtifact = new TreeMap<>();
+        for (Event e : pkg.events("tool_call", 3)) {
+            observations++;
+            Json op = e.get("tool_operation");
+            Json uid = op == null ? null : op.member("uid");
+            String key = e.artifact() + "|" + (uid == null || uid.isNull() ? "(no id) " + e.occurrence() : uid.text());
+            Map<String, Json> id = identities.computeIfAbsent(key, k -> {
+                Map<String, Json> m = new LinkedHashMap<>();
+                m.put("artifact", str(e.artifact()));
+                m.put("uid", uid == null ? Json.JNull.INSTANCE : uid);
+                m.put("identity_scope", str("artifact"));
+                m.put("observations", new Json.JArray(List.of()));
+                byArtifact.merge(e.artifact(), 1, Integer::sum);
+                return m;
+            });
+            Map<String, Json> o = new LinkedHashMap<>();
+            o.put("record_index", num(e.recordIndex()));
+            o.put("sequence", num(e.sequence));
+            o.put("reported_state", op == null || op.member("reported_state") == null ? Json.JNull.INSTANCE : op.member("reported_state"));
+            o.put("status", e.get("status") == null ? Json.JNull.INSTANCE : e.get("status"));
+            o.put("exit_code", op == null || op.member("exit_code") == null ? Json.JNull.INSTANCE : op.member("exit_code"));
+            ((Json.JArray) id.get("observations")).elements().add(new Json.JObject(o));
+        }
+        List<Json> list = new ArrayList<>();
+        for (Map<String, Json> id : identities.values()) {
+            List<Json> obs = ((Json.JArray) id.get("observations")).elements();
+            boolean completed = false;
+            for (Json o : obs) {
+                String s = o.member("reported_state") == null ? null : o.member("reported_state").text();
+                if ("completed".equals(s) || "failed".equals(s)) {
+                    completed = true;
+                }
+            }
+            id.put("observation_count", num(obs.size()));
+            id.put("completion_observed", new Json.JBool(completed));
+            list.add(new Json.JObject(id));
+        }
+        Map<String, Json> out = new LinkedHashMap<>();
+        out.put("observation_count", num(observations));
+        out.put("identity_count", num(identities.size()));
+        Map<String, Json> by = new LinkedHashMap<>();
+        byArtifact.forEach((a, n) -> by.put(a, num(n)));
+        out.put("identity_count_by_artifact", new Json.JObject(by));
+        out.put("identity_units", str("source-scoped: one identity per (artifact, reported operation id); start and completion of one id are observations of that identity"));
+        boolean logical = byArtifact.size() <= 1;
+        out.put("logical_count", logical ? num(identities.size()) : Json.JNull.INSTANCE);
+        out.put("logical_count_basis", str(logical ? "single source: each reported operation id is one execution reported by the vendor"
+                : "unavailable: operation ids of " + byArtifact.keySet() + " are not linked by any supported identity rule (equal command text or order is not identity)"));
+        out.put("identities", new Json.JArray(list));
         return new Json.JObject(out);
     }
 
@@ -504,8 +593,32 @@ public final class AnalysisViews {
                 r.put("status_basis", e.get("status_basis") == null ? Json.JNull.INSTANCE : e.get("status_basis"));
                 ((Json.JArray) call.get("results")).elements().add(new Json.JObject(r));
                 if (contentSha != null) {
-                    ownersByContent.computeIfAbsent(contentSha, k -> new ArrayList<>()).add(owner);
+                    List<String> owners = ownersByContent.computeIfAbsent(contentSha, k -> new ArrayList<>());
+                    if (!owners.contains(owner)) {
+                        owners.add(owner);
+                    }
                 }
+            }
+        }
+        // two distinct facts, never merged: the same owner observed more than once (for example in the live output
+        // and again in the saved session file), and identical content under distinct owners
+        List<Json> repeated = new ArrayList<>();
+        for (Map<String, Json> c : calls.values()) {
+            List<Json> results = ((Json.JArray) c.get("results")).elements();
+            if (results.size() > 1) {
+                Map<String, Json> g = new LinkedHashMap<>();
+                g.put("tool_call_uid", c.get("tool_call_uid"));
+                g.put("observation_count", num(results.size()));
+                List<Json> occ = new ArrayList<>();
+                List<String> shas = new ArrayList<>();
+                for (Json r : results) {
+                    occ.add(r.member("occurrence"));
+                    shas.add(r.member("content_sha256").text());
+                }
+                g.put("occurrences", new Json.JArray(occ));
+                g.put("content_equal", new Json.JBool(new java.util.HashSet<>(shas).size() == 1));
+                g.put("counted_as", str("one owner observed " + results.size() + " times; not " + results.size() + " results"));
+                repeated.add(new Json.JObject(g));
             }
         }
         List<Json> identical = new ArrayList<>();
@@ -524,7 +637,8 @@ public final class AnalysisViews {
             list.add(new Json.JObject(c));
         }
         out.put("calls", new Json.JArray(list));
-        out.put("identical_result_content", new Json.JArray(identical));
+        out.put("repeated_result_observations", new Json.JArray(repeated));
+        out.put("identical_content_distinct_owners", new Json.JArray(identical));
         out.put("rule", str(SchemaCatalog.text(decl, "id")));
         return new Json.JObject(out);
     }

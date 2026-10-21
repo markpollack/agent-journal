@@ -15,11 +15,13 @@ import java.util.stream.Stream;
 
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CHILD;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX_STREAM;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.FIXTURES;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.PAIR;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStream;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeTranscript;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.codexRollout;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.codexStream;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.nativeOf;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.run;
 
@@ -36,6 +38,7 @@ class PublicFixtureRegenerationTest {
         write(CHILD, List.of(claudeStream()), List.of("stream.jsonl"));
         write(CODEX, List.of(codexRollout()), List.of("rollout.jsonl"));
         write(PAIR, List.of(claudeStream(), claudeTranscript()), List.of("stream.jsonl", "transcript.jsonl"));
+        write(CODEX_STREAM, List.of(codexStream()), List.of("stream.jsonl"));
     }
 
     private static void write(String fixture, List<SourceDescriptor> sources, List<String> artifacts) throws IOException {

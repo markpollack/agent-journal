@@ -1,0 +1,12 @@
+{"type":"thread.started","thread_id":"00000000-0000-4000-8000-0000000c0de5"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"SYNTHETIC: I will run three commands.\n"}}
+{"type":"item.started","item":{"id":"item_1","type":"command_execution","command":"/bin/bash -lc 'printf alpha'","aggregated_output":"","exit_code":null,"status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item_1","type":"command_execution","command":"/bin/bash -lc 'printf alpha'","aggregated_output":"alpha","exit_code":0,"status":"completed"}}
+{"type":"item.started","item":{"id":"item_2","type":"command_execution","command":"/bin/bash -lc 'cat missing.txt'","aggregated_output":"","exit_code":null,"status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item_2","type":"command_execution","command":"/bin/bash -lc 'cat missing.txt'","aggregated_output":"cat: missing.txt: No such file or directory\n","exit_code":1,"status":"failed"}}
+{"type":"item.started","item":{"id":"item_3","type":"command_execution","command":"/bin/bash -lc 'sleep 60'","aggregated_output":"","exit_code":null,"status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item_4","type":"synthetic_unknown_item","note":"SYNTHETIC: an item type the contract does not know; retained whole"}}
+{"type":"synthetic.unknown_event","note":"SYNTHETIC: a top-level event type the contract does not know; retained whole"}
+{"type":"item.completed","item":{"id":"item_5","type":"agent_message","text":"SYNTHETIC: alpha printed; missing.txt is absent.\n"}}
+{"type":"turn.completed","usage":{"input_tokens":9007199254740993,"cached_input_tokens":24576,"cache_write_input_tokens":0,"output_tokens":143,"reasoning_output_tokens":7}}
