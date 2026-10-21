@@ -93,6 +93,14 @@
         <errorprone.failOnWarning>true</errorprone.failOnWarning>
         <errorprone.extraArgs>-XepDisableWarningsInGeneratedCode</errorprone.extraArgs>
         <nullaway.version>0.13.8</nullaway.version>
+        <!-- PMD size, complexity and duplication (config/pmd/ruleset.xml); CPD at 100 tokens. Mechanism from config/guardrails/decisions.md:
+             claude-code-capture and codex-cli-capture fix every violation; the other modules ratchet with pmd.maxAllowedViolations at
+             their measured count, lowered as fixes land. -->
+        <maven-pmd-plugin.version>3.28.0</maven-pmd-plugin.version>
+        <pmd.version>7.28.0</pmd.version>
+        <cpd.minimumTokens>100</cpd.minimumTokens>
+        <!-- the PMD ratchet: 0 (fix-all) unless a module declares today's count -->
+        <pmd.ratchet>0</pmd.ratchet>
     </properties>
 
     <modules>
@@ -345,6 +353,61 @@
                                 </rule>
                             </rules>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- PMD size, complexity and duplication gate: pmd:check and pmd:cpd-check fail
+                 verify on any violation. Rules and thresholds, each with its reason, are in
+                 config/pmd/ruleset.xml; CPD's token threshold is cpd.minimumTokens above. Main
+                 sources only. Fix a violation in the code: there is no baseline. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>${maven-pmd-plugin.version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>net.sourceforge.pmd</groupId>
+                        <artifactId>pmd-core</artifactId>
+                        <version>${pmd.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>net.sourceforge.pmd</groupId>
+                        <artifactId>pmd-java</artifactId>
+                        <version>${pmd.version}</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <rulesets>
+                        <ruleset>${maven.multiModuleProjectDirectory}/config/pmd/ruleset.xml</ruleset>
+                    </rulesets>
+                    <targetJdk>${java.version}</targetJdk>
+                    <includeTests>false</includeTests>
+                    <minimumTokens>${cpd.minimumTokens}</minimumTokens>
+                    <printFailingErrors>true</printFailingErrors>
+                    <failOnViolation>true</failOnViolation>
+                    <linkXRef>false</linkXRef>
+                </configuration>
+                <executions>
+                    <!-- Two executions, not one: maxAllowedViolations is read by both check and cpd-check, so a module's
+                         PMD ratchet (pmd.ratchet, 0 unless the module declares today's count) must be scoped to check alone
+                         or the same number of duplicate blocks would pass CPD unnoticed (found by falsify cpd, 2026-10-21). -->
+                    <execution>
+                        <id>pmd-gate</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <maxAllowedViolations>${pmd.ratchet}</maxAllowedViolations>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>cpd-gate</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>cpd-check</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>

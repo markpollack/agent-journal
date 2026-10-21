@@ -19,6 +19,8 @@
         contain with what Journal recorded, and checks the other criteria on real captures</description>
 
     <properties>
+        <!-- java-guardrails PMD ratchet: today's count (2026-10-21), lowered as fixes land; never raised -->
+        <pmd.ratchet>248</pmd.ratchet>
         <!-- java-guardrails JaCoCo floors: measured 2026-10-21 less 2 points (config/guardrails/decisions.md) -->
         <jacoco.minimum.line>0.85</jacoco.minimum.line>
         <jacoco.minimum.branch>0.74</jacoco.minimum.branch>

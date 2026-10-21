@@ -21,6 +21,8 @@
         journal-capture-tck reads its output and never calls it.</description>
 
     <properties>
+        <!-- java-guardrails PMD ratchet: today's count (2026-10-21), lowered as fixes land; never raised -->
+        <pmd.ratchet>63</pmd.ratchet>
         <!-- java-guardrails JaCoCo floors: measured 2026-10-21 less 2 points (config/guardrails/decisions.md) -->
         <jacoco.minimum.line>0.87</jacoco.minimum.line>
         <jacoco.minimum.branch>0.76</jacoco.minimum.branch>
