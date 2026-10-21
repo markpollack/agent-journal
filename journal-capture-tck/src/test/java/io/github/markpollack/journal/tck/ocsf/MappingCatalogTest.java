@@ -23,8 +23,9 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * RULE-35 / UC5-AC13: the reviewed concept-to-field-to-test crosswalk ({@code ocsf/crosswalk/crosswalk.json}, the
- * evidence catalog authored under FULL-1/FULL-1R and maintained here) is checked for reference validity in Java, and
+ * RULE-35 / UC5-AC13: the reviewed mapping catalog ({@code ocsf/mapping-catalog/mapping-catalog.json}: the table of how
+ * each vendor's fields correspond to Journal's common concepts, with the mapping rule and independent test for each;
+ * authored under FULL-1/FULL-1R as the "crosswalk" and maintained here under its clearer name) is checked for reference validity in Java, and
  * the common-concept coverage matrix is <em>derived</em> from its entries plus this run's oracle results, never from
  * matching field values.
  *
@@ -34,15 +35,15 @@ import static org.assertj.core.api.Assertions.assertThat;
  * reported in this run; every test reference exists in the test sources; every view is a known analysis view or
  * semantic operation.
  *
- * <p>The matrix, written to {@code target/crosswalk/COMMON-CONCEPTS.md} and {@code .json}, states one of five
+ * <p>The matrix, written to {@code target/mapping-catalog/COMMON-CONCEPTS.md} and {@code .json}, states one of five
  * separate states per concept and per CLI stream route: {@code verified} (a normalized concept whose oracle properties
  * were VERIFIED with an occurrence on that CLI's committed stream fixture), {@code retained-only} (reviewed as not
- * normalized), {@code unavailable-at-source} (the crosswalk records the stream has no such field), {@code unexercised}
+ * normalized), {@code unavailable-at-source} (the catalog records the stream has no such field), {@code unexercised}
  * (a concept whose check had no occurrence on the fixture, or an optional concept with no fixture), and
  * {@code unresolved} (a concept whose check was UNSUPPORTED/UNRESOLVED, or a normalized concept without an oracle
  * property for that profile). A DEFECTIVE outcome fails the test outright.
  */
-class CrosswalkTest {
+class MappingCatalogTest {
 
     static final Path PROJECT = Path.of("..").toAbsolutePath().normalize();
     static final Path WRITER_MAIN = PROJECT.resolve("journal-ocsf-writer/src/main/java/io/github/markpollack/journal/ocsf/writer");
@@ -51,7 +52,7 @@ class CrosswalkTest {
     static final List<Path> TEST_SOURCES = List.of(PROJECT.resolve("journal-capture-tck/src/test/java"), PROJECT.resolve("journal-ocsf-writer/src/test/java"));
     static final Set<String> VIEWS = Set.of("submissions", "responses", "usage", "associations", "tool_exchanges", "settings_context");
 
-    /** The CLI stream routes the matrix is computed for: crosswalk cli label, oracle profile class, committed fixture, fixture artifact. */
+    /** The CLI stream routes the matrix is computed for: catalog cli label, oracle profile class, committed fixture, fixture artifact. */
     record Route(String cli, String profile, String fixture, String artifact, String label) {
     }
 
@@ -60,8 +61,8 @@ class CrosswalkTest {
             new Route("codex", "CodexStreamProfile", OcsfFixtures.CODEX_STREAM, "stream.jsonl", "Codex CLI exec stream (0.160.1 labelled synthetic fixture)"));
 
     @Test
-    void everyCrosswalkReferenceResolvesInJava(@TempDir Path work) throws IOException {
-        List<Json> entries = NeutralJson.readDocument(Path.of(CrosswalkTest.class.getResource("/ocsf/crosswalk/crosswalk.json").getPath().replace("%20", " "))).elements();
+    void everyCatalogReferenceResolvesInJava(@TempDir Path work) throws IOException {
+        List<Json> entries = NeutralJson.readDocument(Path.of(MappingCatalogTest.class.getResource("/ocsf/mapping-catalog/mapping-catalog.json").getPath().replace("%20", " "))).elements();
         assertThat(entries).hasSize(38);
         SchemaCatalog schema = FieldDispositionTest.schema(work);
         Map<String, Json> contractsByUid = contractsByUid();
@@ -128,15 +129,15 @@ class CrosswalkTest {
 
     @Test
     void theCommonConceptMatrixIsDerivedFromTheEntriesAndThisRunsOracleResultsWithStatesKeptSeparate(@TempDir Path work) throws IOException {
-        List<Json> entries = NeutralJson.readDocument(Path.of(CrosswalkTest.class.getResource("/ocsf/crosswalk/crosswalk.json").getPath().replace("%20", " "))).elements();
+        List<Json> entries = NeutralJson.readDocument(Path.of(MappingCatalogTest.class.getResource("/ocsf/mapping-catalog/mapping-catalog.json").getPath().replace("%20", " "))).elements();
         Map<Route, OracleReport> reports = new LinkedHashMap<>();
         for (Route r : ROUTES) {
             reports.put(r, OcsfFixtures.verify(OcsfFixtures.copy(r.fixture(), work.resolve("m").resolve(r.fixture()))));
         }
         List<Map<String, Object>> rows = new ArrayList<>();
         Map<String, Map<String, Integer>> totals = new TreeMap<>();
-        StringBuilder md = new StringBuilder("# Common-concept coverage matrix\n\n");
-        md.append("Derived by `CrosswalkTest` from the reviewed crosswalk entries and the independent oracle's results on the committed stream fixtures in the same test run. ")
+        StringBuilder md = new StringBuilder("# Common-concept coverage matrix (from the mapping catalog)\n\n");
+        md.append("Derived by `MappingCatalogTest` from the reviewed mapping-catalog entries and the independent oracle's results on the committed stream fixtures in the same test run. ")
                 .append("States are kept separate: verified (oracle properties VERIFIED with an occurrence), retained-only (reviewed, not normalized), unavailable-at-source (the stream has no such field), ")
                 .append("unexercised (no occurrence on the fixture, or an optional concept with none), unresolved (UNSUPPORTED/UNRESOLVED, or no independent check for that profile). ")
                 .append("No state is computed by matching field values. A finite corpus: a state describes the named fixture, not every version or route.\n\n");
@@ -171,7 +172,7 @@ class CrosswalkTest {
         for (Route r : ROUTES) {
             md.append("- ").append(r.label()).append(": ").append(totals.get(r.cli())).append('\n');
         }
-        Path out = Path.of(System.getProperty("basedir", ".")).resolve("target").resolve("crosswalk");
+        Path out = Path.of(System.getProperty("basedir", ".")).resolve("target").resolve("mapping-catalog");
         Files.createDirectories(out);
         Files.writeString(out.resolve("COMMON-CONCEPTS.md"), md.toString(), StandardCharsets.UTF_8);
         Files.writeString(out.resolve("common-concepts.json"), toJson(rows, totals), StandardCharsets.UTF_8);
@@ -183,7 +184,7 @@ class CrosswalkTest {
 
     /**
      * One state for one concept on one route. The oracle's outcome on the route's fixture is the primary signal when
-     * the entry names an independent check for that profile; the crosswalk's native-evidence availability decides
+     * the entry names an independent check for that profile; the catalog's native-evidence availability decides
      * only when no such check exists (every evidence item for the route absent: unavailable-at-source).
      */
     static String state(Json entry, Route route, OracleReport report) {
@@ -304,7 +305,7 @@ class CrosswalkTest {
     }
 
     static String toJson(List<Map<String, Object>> rows, Map<String, Map<String, Integer>> totals) {
-        StringBuilder sb = new StringBuilder("{\n  \"derived_by\": \"CrosswalkTest (Java; oracle outcomes of this run; no value matching)\",\n  \"rows\": [\n");
+        StringBuilder sb = new StringBuilder("{\n  \"derived_by\": \"MappingCatalogTest (Java; oracle outcomes of this run; no value matching)\",\n  \"rows\": [\n");
         for (int i = 0; i < rows.size(); i++) {
             sb.append("    {");
             int j = 0;

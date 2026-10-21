@@ -62,6 +62,8 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
     private final Jv semanticContract;
     private String sessionUid;
     private String reportedCliVersion;
+    private Jv.Obj process;
+    private Jv.Obj archive;
 
     private OcsfRunWriter(Path dir, RunDescriptor run, SchemaPin pin, WriterOptions options) throws IOException {
         this.dir = dir;
@@ -96,6 +98,39 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
 
     public RunDescriptor run() {
         return run;
+    }
+
+    /** The native session id as known so far (declared at launch or reported by the selected source), or {@code null}. */
+    public String sessionUid() {
+        return sessionUid;
+    }
+
+    /** The CLI version as known so far (declared at launch or reported by the selected source), or {@code null}. */
+    public String knownCliVersion() {
+        return cliVersion();
+    }
+
+    /**
+     * The outcome of the CLI process a capture launched (how it ended, exit code, cancellation reason), recorded in
+     * the {@code recording} declaration of every file and in the manifest. Storage finalization, acquisition extent
+     * and process outcome stay distinct: a completely acquired stream of a CLI that exited non-zero is COMPLETED with
+     * a failed process, not a truncated acquisition. Set before finalization; ignored afterwards.
+     */
+    public void processOutcome(Jv.Obj outcome) {
+        if (state == State.RECORDING) {
+            this.process = outcome;
+        }
+    }
+
+    /**
+     * The native session file archived unchanged beside the package (artifact, bytes, sha256, how it was located),
+     * or why it could not be; recorded in the ancillary manifest only, outside the selected input and never read by
+     * the writer. Set before finalization; ignored afterwards.
+     */
+    public void archive(Jv.Obj archive) {
+        if (state == State.RECORDING) {
+            this.archive = archive;
+        }
     }
 
     // ------------------------------------------------------------------------------------------ declaration context
@@ -576,9 +611,9 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
             interruptionReason = reason;
             Jv acquisition = acquisition();
             for (CoreWriter c : children.values()) {
-                c.declareRecording(outcome.name(), started.toString(), ended.toString(), reason, acquisition);
+                c.declareRecording(outcome.name(), started.toString(), ended.toString(), reason, acquisition, process);
             }
-            root.declareRecording(outcome.name(), started.toString(), ended.toString(), reason, acquisition);
+            root.declareRecording(outcome.name(), started.toString(), ended.toString(), reason, acquisition, process);
             for (Map.Entry<String, CoreWriter> c : children.entrySet()) {
                 c.getValue().finish(cw -> childManifest(cw, c.getKey()));
             }
@@ -700,6 +735,9 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
             rec.put("failure", core.failure());
         }
         rec.put("acquisition", acquisition());
+        if (process != null) {
+            rec.put("process", process);
+        }
         rec.put("durability", "flush(): buffered event bytes are written to events.jsonl and run.json is replaced atomically (rename); they are then visible to other processes on this host through the OS page cache. "
                 + "fsync (FileChannel.force) is requested only at finalization and on failure, before the final hash is computed from the file as it is on disk. Nothing is claimed about power loss between a flush and finalization.");
         m.put("recording", rec);
@@ -765,6 +803,9 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         }
         m.put("sources", new Jv.Arr(src));
         m.put("natives", "native artifacts are Level 0 and are not part of this core; the oracle receives them separately");
+        if (archive != null) {
+            m.put("archive", archive);
+        }
 
         Jv.Obj sc = new Jv.Obj(((Jv.Obj) semanticContract).members());
         sc.put("sha256", SchemaPin.sha256(Jv.write(semanticContract.member("declarations")).getBytes(StandardCharsets.UTF_8)));

@@ -36,7 +36,9 @@ import java.util.Set;
  * <li>{@code child}: a linked child event file (location and spawn identity), never its content.</li>
  * <li>{@code source_end}: how a source ended, with its final extent, hash and family inventory.</li>
  * <li>{@code recording}: the writer's finalization of this file (COMPLETED or INTERRUPTED) with the acquisition
- * status; a file without one is an open prefix (or the writer failed, which only the ancillary manifest can say).</li>
+ * status and, for a capture that launched the CLI, the process outcome (how it ended, its exit code, a cancellation
+ * reason): storage finalization, acquisition extent and CLI outcome are three distinct facts; a file without one is
+ * an open prefix (or the writer failed, which only the ancillary manifest can say).</li>
  * </ul>
  *
  * Declarations are append-only and immutable once written; later facts arrive as new declarations with their own
@@ -106,6 +108,7 @@ final class Declarations {
         declare(objects, "recording", new Jv.Obj()
                 .put("state", scalar("string_t", "required")).put("started", scalar("string_t", "required")).put("ended", scalar("string_t", "required"))
                 .put("interruption_reason", scalar("string_t", "optional")).put("acquisition", scalar("json_t", "required"))
+                .put("process", scalar("json_t", "optional"))
                 .put("events_before", scalar("integer_t", "required")).put("declarations_before", scalar("integer_t", "required")));
         return objects;
     }

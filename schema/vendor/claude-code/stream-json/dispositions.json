@@ -190,7 +190,7 @@
       "tests": [
         "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
       ],
-      "note": "vendor-reported reasoning duration; a reported duration, not normalized (crosswalk reported-durations)"
+      "note": "vendor-reported reasoning duration; a reported duration, not normalized (mapping catalog reported-durations)"
     },
     {
       "variant": "assistant",
@@ -851,7 +851,7 @@
       "tests": [
         "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
       ],
-      "note": "reported duration (crosswalk reported-durations: retained-only, known meaning)"
+      "note": "reported duration (mapping catalog reported-durations: retained-only, known meaning)"
     },
     {
       "variant": "result",

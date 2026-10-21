@@ -334,6 +334,9 @@ public final class DeclaredFile {
                 rec.put("interruption_reason", recording.member("interruption_reason"));
             }
             rec.put("acquisition", recording.member("acquisition"));
+            if (recording.member("process") != null) {
+                rec.put("process", recording.member("process"));
+            }
         }
         else {
             rec.put("acquisition", derivedAcquisition());

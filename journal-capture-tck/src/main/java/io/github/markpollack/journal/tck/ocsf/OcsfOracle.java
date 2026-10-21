@@ -548,7 +548,8 @@ public final class OcsfOracle {
                     retained = true;
                 }
             }
-            if (!retained) {
+            if (!retained && core.manifest.parent() == null) {
+                // an unparsed tail has no owner path and belongs to the root core; a child core declares the same source end without owning it
                 problems.add("incomplete_tail_record " + tail + " is not retained as a parse_status 5 (Incomplete at source end) record");
             }
         }

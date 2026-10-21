@@ -198,12 +198,16 @@ final class CoreWriter {
         return declaredSources.contains(artifact);
     }
 
-    void declareRecording(String state, String started, String ended, String interruptionReason, Jv acquisition) {
+    void declareRecording(String state, String started, String ended, String interruptionReason, Jv acquisition, Jv process) {
         Jv.Obj r = new Jv.Obj().put("state", state).put("started", started).put("ended", ended);
         if (interruptionReason != null) {
             r.put("interruption_reason", interruptionReason);
         }
-        r.put("acquisition", acquisition).put("events_before", sequence).put("declarations_before", declarationIndex);
+        r.put("acquisition", acquisition);
+        if (process != null) {
+            r.put("process", process);
+        }
+        r.put("events_before", sequence).put("declarations_before", declarationIndex);
         declare("recording", "recording:end", r);
     }
 

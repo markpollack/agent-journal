@@ -262,10 +262,10 @@ Rule: RULE-11. Tests: `prototype/ocsf-acp/scripts/validate.sh` with the pinned t
 When a criterion's required property, applicable owner or named scenario is absent from the evidence, the requirements report shall report that criterion as error or not assessed and shall not report it as passed.
 Rule: RULE-36. Tests: `RequirementsEvidenceTest`, `RequirementsReporterReproductionTest`.
 
-### UC5-AC13: Derive the comparison matrix from the crosswalk
+### UC5-AC13: Derive the comparison matrix from the mapping catalog
 
-When common-model coverage is compared across CLIs, the matrix shall be generated from reviewed crosswalk entries with verified, retained-only, unavailable-at-source, unexercised and unresolved states kept separate.
-Rule: RULE-35. Tests: none yet. Status: not implemented in Java; the historical Python reference checker is not an acceptance check.
+When common-model coverage is compared across CLIs, the matrix shall be generated from reviewed mapping-catalog entries with verified, retained-only, unavailable-at-source, unexercised and unresolved states kept separate.
+Rule: RULE-35. Tests: `MappingCatalogTest#theCommonConceptMatrixIsDerivedFromTheEntriesAndThisRunsOracleResultsWithStatesKeptSeparate`, `MappingCatalogTest#everyCatalogReferenceResolvesInJava`. Status: implemented 2026-10-21 (ACCEPT-1); the matrix is written to `target/mapping-catalog/COMMON-CONCEPTS.md`; "mapping catalog" replaces the earlier term "crosswalk".
 
 ## Change log
 
@@ -277,3 +277,5 @@ carries its own declarations), UC5-AC1 (event file alone instead of the two-file
 (Java catalog check only; upstream validator moved to UC5-AC11). Added UC2-AC6, UC3-AC13 to
 UC3-AC15 and UC5-AC11 to UC5-AC13. No criterion was removed; `RequirementsRosterTest` pins the
 per-use-case counts 7, 6, 15, 8 and 13.
+
+2026-10-21, two-CLI streaming acceptance (ACCEPT-1): UC5-AC13 renamed in wording only ("mapping catalog" for "crosswalk") and marked implemented; no criterion added or removed.

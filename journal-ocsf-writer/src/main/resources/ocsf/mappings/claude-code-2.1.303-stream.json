@@ -142,7 +142,7 @@
     "reviewed": "2026-10-21 (ACCEPT-1): the 2.1.304 stdout stream families with no normalization rule, each with its meaning and the reason it stays retained-only; retention is whole-record under claude.stream.fallback->source_record, so no fact is lost and none is claimed as a portable field",
     "rate_limit_event": {
       "meaning": "a vendor account rate-limit status snapshot (rate_limit_info: status, resetsAt, rateLimitType, overageStatus, unifiedWindows utilization/resetsAt) emitted by the CLI during the run",
-      "disposition": "retained-only (known meaning); not normalized: it is account state, not an execution fact, usage component or cost of this run; no common concept in the ACP/Spring AI/OTel/Weave/Phoenix crosswalk; a consumer reads it from data",
+      "disposition": "retained-only (known meaning); not normalized: it is account state, not an execution fact, usage component or cost of this run; no common concept in the ACP/Spring AI/OTel/Weave/Phoenix mapping catalog; a consumer reads it from data",
       "limit": "observed on 2.1.304 stdout only; absent from the 2.1.299 and 2.1.303 SDK-delivered streams"
     },
     "system/thinking_tokens": {

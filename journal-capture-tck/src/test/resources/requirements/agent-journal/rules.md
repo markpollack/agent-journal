@@ -193,9 +193,9 @@ Tests: `RequirementsRosterTest`, `NativeRequirementTest`, `RequirementsEvidenceT
 Tests: `InventoryDriftTest` (observed paths and presence); dispositions per field are not yet recorded.
 
 ### RULE-35
-**MUST** derive common-model comparison matrices from reviewed structured crosswalk entries, each naming its source description and version range, record variant and field paths, canonical concept and destination, ownership and scope, mapper rule and independent test, with verified, retained-only, unavailable-at-source, unexercised and unresolved states kept separate, and MUST NOT discover a correspondence by matching equal field values.
+**MUST** derive common-model comparison matrices from reviewed structured mapping-catalog entries (the mapping catalog, formerly called the crosswalk, is the table of how each vendor's fields correspond to Journal's common concepts), each naming its source description and version range, record variant and field paths, canonical concept and destination, ownership and scope, mapper rule and independent test, with verified, retained-only, unavailable-at-source, unexercised and unresolved states kept separate, and MUST NOT discover a correspondence by matching equal field values.
 **Reason:** Equal values and overlapping shapes do not establish equal meaning; human review proposes a correspondence and fixed Java checks challenge it with counterexamples. The matrix is a calculation over accepted entries, not a rediscovery.
-Tests: none yet in Java; the crosswalk's Python reference checker and method-name matches are historical tooling.
+Tests: `MappingCatalogTest` (reference validity in Java and the derived common-concept matrix); the catalog's earlier Python reference checker is historical tooling.
 
 ### RULE-36
 **MUST** establish every required property, every applicable owner and every scenario a criterion names before reporting that criterion as passed, treating a configured check that is missing from the evidence as an error, an observed wrong value as a failure, and an unexercised trigger or insufficient evidence as not assessed.
@@ -216,3 +216,5 @@ values; RULE-24 and RULE-25 move the portable unit from the two-file core to `ev
 retiring the earlier dependency on a sibling `run.json`; RULE-26 adds `run.json` to the files that
 cannot be the only home of a fact; RULE-28 names the distinct evidence classes. Added RULE-33 to
 RULE-37. No rule was removed; `RequirementsRosterTest` pins 37 rules.
+
+2026-10-21, two-CLI streaming acceptance (ACCEPT-1): terminology only, no obligation changed: "mapping catalog" replaces "crosswalk" in RULE-35 (the Owner's clearer name for the table of vendor-field to common-concept correspondences); RULE-35's Tests: line now names the Java check.

@@ -8,8 +8,9 @@ import java.time.Clock;
 import java.util.List;
 
 /**
- * Command-line replay of recorded native artifacts through the incremental writer, and the non-default live capture
- * entry point ({@link LiveCapture}, {@code capture ...}, the stream on standard input):
+ * Command-line replay of recorded native artifacts through the incremental writer, the non-default stdin seam
+ * ({@link LiveCapture}, {@code capture ...}, the stream on standard input) and the opt-in launching capture
+ * ({@link CliCapture}, {@code launch ...}, which starts the CLI itself and carries its outcome):
  *
  * <pre>
  *   replay &lt;spec.json&gt; &lt;out-dir&gt; [--chunk N] [--flush-every N] [--base DIR] [--stop-after ARTIFACT:RECORDS]
@@ -30,9 +31,13 @@ public final class OcsfWriterTool {
         if (args.length >= 1 && "capture".equals(args[0])) {
             System.exit(LiveCapture.run(args, System.in, System.out, System.err));
         }
+        if (args.length >= 1 && "launch".equals(args[0])) {
+            System.exit(CliCapture.main(args, System.out, System.err));
+        }
         if (args.length < 3 || !"replay".equals(args[0])) {
             System.err.println("usage: replay <spec.json> <out-dir> [--chunk N] [--flush-every N] [--base DIR] [--stop-after ARTIFACT:RECORDS]");
-            System.err.println("       capture <spec.json> <out-dir> [--artifact NAME] [--profile PROFILE] [--surface TEXT] [--flush-every N] [--interrupt-flag FILE]  (stdin: the live stream)");
+            System.err.println("       capture <spec.json> <out-dir> [--artifact NAME] [--profile PROFILE] [--route ROUTE] [--surface TEXT] [--flush-every N] [--interrupt-flag FILE]  (stdin: the live stream)");
+            System.err.println("       launch <out-dir> --cli claude|codex --prompt TEXT --cwd DIR [--run-uid X] [--model M] [--allowed-tools A,B] [--sandbox MODE] [--executable PATH] [--home DIR] [--cancel-after-records N] [--cancel-after-ms N] [--arg EXTRA]...  (launches the CLI itself)");
             System.exit(64);
         }
         int chunk = 4096;

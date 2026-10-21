@@ -150,6 +150,7 @@ public final class PackageReader {
                             + (declared.recording() == null ? " (no recording declaration: an open prefix, or the writer failed)" : " (from the recording declaration)")));
         }
         stateWarnings(manifest.packageState(), diags);
+        processOutcome(manifest, diags);
         Json launchCli = declared.run() == null ? null : declared.run().member("cli");
         String launchVersion = SchemaCatalog.text(launchCli, "version");
         String reportedVersion = declared.cliVersion() == null ? null : SchemaCatalog.text(declared.cliVersion(), "version");
@@ -302,6 +303,32 @@ public final class PackageReader {
         else if ("INTERRUPTED".equals(state)) {
             diags.add(new Diagnostic(Diagnostic.Severity.WARNING, "PACKAGE_INTERRUPTED",
                     "the recording was interrupted before every source ended; the hash and counts are final for what was acquired"));
+        }
+    }
+
+    /**
+     * The CLI process outcome a launching capture recorded, kept apart from storage and acquisition: a non-zero exit
+     * is a warning on a package whose acquisition may still be complete; an unknown outcome is a warning that the
+     * capture could not establish how the CLI ended; a cancellation is named. Absent on replays and on the stdin seam.
+     */
+    private static void processOutcome(RunManifest m, List<Diagnostic> diags) {
+        Json p = m.json().member("recording") == null ? null : m.json().member("recording").member("process");
+        if (p == null) {
+            return;
+        }
+        String how = SchemaCatalog.text(p, "how");
+        Integer exit = Event.integer(p.member("exit_code"));
+        if ("unknown".equals(how) || exit == null) {
+            diags.add(new Diagnostic(Diagnostic.Severity.WARNING, "PROCESS_OUTCOME_UNKNOWN",
+                    "the capture could not establish how the CLI process ended (" + SchemaCatalog.text(p, "detail") + "); the CLI outcome is unknown, acquisition is judged separately"));
+        }
+        else if ("cancelled".equals(how)) {
+            diags.add(new Diagnostic(Diagnostic.Severity.WARNING, "CLI_CANCELLED",
+                    "the capture cancelled the CLI process (" + SchemaCatalog.text(p, "cancel_reason") + "); exit code " + exit));
+        }
+        else if (exit != 0) {
+            diags.add(new Diagnostic(Diagnostic.Severity.WARNING, "CLI_EXIT_NONZERO",
+                    "the CLI process exited with " + exit + " (" + SchemaCatalog.text(p, "exit_meaning") + "); a failed CLI run can still be a completely acquired stream, which acquisition.complete judges"));
         }
     }
 
