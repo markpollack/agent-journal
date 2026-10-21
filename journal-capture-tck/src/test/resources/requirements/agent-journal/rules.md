@@ -35,7 +35,7 @@ Tests: the writer accepts a native session file through the same entry point (`W
 **Reason:** The archive is the emergency fallback; keeping it byte-identical keeps it trustworthy, and keeping it outside the selected input keeps the preservation denominator honest.
 
 ### RULE-5
-**MUST NOT** parse an archived native session file to supplement, reconcile, deduplicate or enrich a streaming CLI's normalized output, including for final response usage.
+**MUST NOT** parse an archived native session file to supplement, reconcile, deduplicate or enrich a streaming CLI's normalized output, including for final response usage or to discover the CLI version.
 **Reason:** Enrichment reintroduces a second input and silently changes which facts the stream is credited with; the archived file stays available for research without entering `events.jsonl`.
 Tests: `FullOneReviewRegressionTest#omittingAnEntireSourceIsADefectOnEveryObligationOfThatSource` shows the frozen denominator is the selected input; no test yet rejects enrichment from an archive-only file.
 
@@ -60,9 +60,9 @@ Tests: the Claude `system/init` record carries the version into session settings
 Tests: `WriterLifecycleTest#persistedPrefixIsReadableAndQueryableBeforeEof` persists prefixes; no test yet varies when the version becomes known.
 
 ### RULE-10
-**MUST** record, with the version, which mapping contract was applied and whether that version is within the contract's tested applicability.
-**Reason:** Recording a version does not implement version-based mapping selection; the package has to say which mapping judged it and whether that pairing was ever tested.
-Tests: `PinsTest#mappingContractsDeclareEveryRuleTheMappersExecute`, `VendorSpecificationsTest` (declared applicability); runtime applicability status is not yet written.
+**MUST** select the source description and Java mapper for a source through exactly one explicit compatibility entry naming the CLI, source format or profile, launch route or mode, inclusive minimum and maximum CLI versions, source-description revision, schema, mapper identity and tested evidence, and MUST record that selection with the version and whether the version is within the entry's tested range.
+**Reason:** Recording a version does not implement version-based mapping selection; the file has to say which entry judged it and whether that pairing was ever tested. Overlapping or ambiguous entries are configuration errors, and a description may keep the name of its lowest supported version while a reviewed range grows.
+Tests: `PinsTest#mappingContractsDeclareEveryRuleTheMappersExecute`, `VendorSpecificationsTest` (declared applicability); a registry with explicit ranges and runtime applicability status is not yet implemented.
 
 ## Common model and preservation
 
@@ -72,8 +72,8 @@ Tests: `PinsTest#mappingContractsDeclareEveryRuleTheMappersExecute`, `VendorSpec
 Tests: `SchemaCatalogTest#savedValuesAreCheckedAgainstDeclaredTypesEnumsAndRequirements`, `PinsTest#bundledExtensionSourceListsEveryFileOfTheExtensionDirectory`.
 
 ### RULE-12
-**MUST NOT** populate a portable field with a value the selected source did not report, even when a framework or SDK defines a field for it.
-**Reason:** A field's existence in a model is not evidence that this CLI reported the fact; absence, zero and derived totals must stay distinguishable.
+**MUST NOT** populate a portable field with a value the selected source did not report, even when a framework or SDK defines a field for it, and MUST label Journal-generated identities, capture times and explicitly declared derivations as Journal's own rather than as vendor-reported values.
+**Reason:** A field's existence in a model is not evidence that this CLI reported the fact; absence, zero, derived totals and Journal's own bookkeeping must stay distinguishable from what the vendor said. No inference beyond the already declared, labelled derivations is added.
 Tests: `OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero`, `OcsfOracleValueCheckTest#responseContentPresentWhereTheSourceHasNoneIsADefect`.
 
 ### RULE-13
@@ -136,18 +136,18 @@ Tests: the Agent Judge dependency is test-scoped in `journal-capture-tck/pom.xml
 ## Portable output
 
 ### RULE-24
-**MUST** write `run.json`, `events.jsonl` and linked child cores as the portable core, carrying the selected input's execution facts and the schema and contract definitions a reader needs, once per scope.
-**Reason:** A run has to be interpretable after it is copied somewhere else; per-event schema repetition and remote registries both fail that test.
-Tests: `IsolatedBootstrapTest#aCopiedCoreWithItsChildBootstrapsWithoutAnythingElse`, `PackageReaderTest#selfContainedExportJoinsTheSharedFactsBackOntoAnEvent`.
+**MUST** write `events.jsonl` as the independently portable unit: explicitly versioned declaration records carrying the actual schema definitions, the mapping-contract identity and the essential shared run, source and invocation context, each written once per file and before any event that references it, followed by the ordered execution events; `run.json` is an ancillary index and summary.
+**Reason:** A run has to be interpretable after only its event file is copied somewhere else; per-event schema repetition, sibling-file dependencies and remote registries all fail that test. Changed meaning (2026-10-21): the portable unit was the two-file core with linked children; it is now the event file alone, with each child event file carrying its own declarations.
+Tests: `IsolatedBootstrapTest#aCopiedCoreWithItsChildBootstrapsWithoutAnythingElse` (historical two-file core); the standalone event-file proof is not yet implemented.
 
 ### RULE-25
-**MUST** be readable by a compatible Java reader from the core alone, without the CLI, a hosted service, optional analysis files or generated accessor code.
-**Reason:** Reader software is a versioned dependency; everything else the reader needs must travel with the run.
-Tests: `IsolatedBootstrapTest`, `PackageReaderTest#discoversTheManifestFromEventsJsonlAndFromTheDirectory`.
+**MUST** be readable by a compatible Java reader from `events.jsonl` alone, without `run.json`, sibling files, the CLI, a hosted service, a schema cache, external schema resolution, optional analysis files or generated accessor code.
+**Reason:** Reader software is a versioned dependency; everything else the reader needs must travel inside the event file. A copy of the schema can speed reading but cannot supply a missing mandatory definition.
+Tests: `IsolatedBootstrapTest`, `PackageReaderTest#discoversTheManifestFromEventsJsonlAndFromTheDirectory` (historical two-file core); the standalone proof is not yet implemented.
 
 ### RULE-26
-**MUST NOT** make an optional analysis file, a feedback file or the native archive the only location of a selected-input execution fact.
-**Reason:** Core acceptance omits those files; a fact that lives only there is a fact the core lost.
+**MUST NOT** make `run.json`, an optional analysis file, a feedback file or the native archive the only location of a selected-input execution fact or of a definition needed to interpret one.
+**Reason:** Event-file acceptance omits those files; a fact or definition that lives only there is one the event file lost.
 Tests: `OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction` judges the core without optional files.
 
 ### RULE-27
@@ -158,7 +158,7 @@ Tests: `OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstructi
 
 ### RULE-28
 **MUST** demonstrate each claimed feature with a committed fixture in which the feature actually occurred and an independent assertion that checks it, and MUST report scenarios without such a fixture as gaps.
-**Reason:** Asking a model to use a feature does not establish that it did; a finite corpus is scoped support, not universal vendor coverage.
+**Reason:** Asking a model to use a feature does not establish that it did; a finite corpus is scoped support, not universal vendor coverage. Schema validity, mutation sensitivity, recorded replay and live capture are different kinds of evidence and none substitutes for another.
 Tests: `CodexExecStreamTest`, `OcsfOracleFixtureTest#sanitizedClaudeStreamWithChildCoreIsJudgedPerCoreWithoutDefect`; interruption and media remain labelled-synthetic or unexercised.
 
 ### RULE-29
@@ -180,3 +180,39 @@ Tests: public fixtures under `src/test/resources/ocsf/fixtures/` carry `spec.jso
 **MUST** compare the requirement roster parsed by Agent Judge with every intended identifier in these documents, and MUST NOT infer compliance from a successful parse.
 **Reason:** The readers accept specific heading shapes and skip malformed entries; a roster that silently shrank would evaluate a specification nobody wrote.
 Tests: `RequirementsRosterTest`, `NativeRequirementTest`, `RequirementsEvidenceTest`.
+
+## Compatibility, dispositions and common-model maintenance
+
+### RULE-33
+**MUST** retain and flag as untested any acquired input whose CLI version, source format or launch route matches no compatibility entry, and MUST NOT select the numerically nearest entry or imply support for it.
+**Reason:** Two tested endpoints do not prove every intermediate release and nothing proves a future one; a no-match input is evidence to keep and a gap to report, not a reason to guess a mapper. Any partial untested normalization or strict mode is a separate tested proposal.
+
+### RULE-34
+**MUST** give every meaningful acquired field exactly one disposition: normalized into a portable field, retained in vendor residual or fallback data, omitted under a reviewed and tested redundancy or noise rule, or unresolved with retention.
+**Reason:** A field whose fate is unknown is a field that may have been lost; unknown semantics justify retention, never silent omission. Arbitrary user and tool data keys are dispositioned apart from the vendor envelope.
+Tests: `InventoryDriftTest` (observed paths and presence); dispositions per field are not yet recorded.
+
+### RULE-35
+**MUST** derive common-model comparison matrices from reviewed structured crosswalk entries, each naming its source description and version range, record variant and field paths, canonical concept and destination, ownership and scope, mapper rule and independent test, with verified, retained-only, unavailable-at-source, unexercised and unresolved states kept separate, and MUST NOT discover a correspondence by matching equal field values.
+**Reason:** Equal values and overlapping shapes do not establish equal meaning; human review proposes a correspondence and fixed Java checks challenge it with counterexamples. The matrix is a calculation over accepted entries, not a rediscovery.
+Tests: none yet in Java; the crosswalk's Python reference checker and method-name matches are historical tooling.
+
+### RULE-36
+**MUST** establish every required property, every applicable owner and every scenario a criterion names before reporting that criterion as passed, treating a configured check that is missing from the evidence as an error, an observed wrong value as a failure, and an unexercised trigger or insufficient evidence as not assessed.
+**Reason:** A reducer that passes on whichever checks happened to appear accepts partial evidence as full; a pass must be scoped to the obligations and scenarios actually exercised. Explicitly declared subject applicability may yield not-applicable; a trigger absent from a fixture is not such a declaration.
+Tests: `RequirementsEvidenceTest`, `RequirementsReporterReproductionTest`.
+
+### RULE-37
+**MUST NOT** repeat schema definitions per event, introduce a mapping or transformation language, generate a reader project, or call a model in a routine acceptance gate.
+**Reason:** Each of these adds a second model, a second runtime or an unrepeatable judge; deterministic Java checks over declared definitions are the ordinary acceptance mechanism, and AI assistance stays in review proposals.
+Tests: the RULE-23 build-file inspection in `RequirementsEvidenceTest` covers the writer's freedom from model and evaluation dependencies; the rest is enforced by review.
+
+## Change log
+
+2026-10-21, consolidated event-file work order (REQ-1 amendment). Retained identifiers with changed
+meaning: RULE-5 adds version discovery to the forbidden uses of the archive; RULE-10 now requires
+explicit compatibility entries and single selection; RULE-12 adds the labelling of Journal-generated
+values; RULE-24 and RULE-25 move the portable unit from the two-file core to `events.jsonl` alone,
+retiring the earlier dependency on a sibling `run.json`; RULE-26 adds `run.json` to the files that
+cannot be the only home of a fact; RULE-28 names the distinct evidence classes. Added RULE-33 to
+RULE-37. No rule was removed; `RequirementsRosterTest` pins 37 rules.

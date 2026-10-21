@@ -4,37 +4,38 @@ import io.github.markpollack.judge.judgment.Judgment;
 import io.github.markpollack.judge.judgment.JudgmentStatus;
 import io.github.markpollack.journal.tck.ocsf.ExpectedSources;
 import io.github.markpollack.journal.tck.ocsf.OracleReport;
+import io.github.markpollack.journal.tck.requirements.RequirementsEvidenceTest.Corpus;
+import io.github.markpollack.journal.tck.requirements.RequirementsEvidenceTest.Evidence;
 import io.github.markpollack.journal.tck.verify.Check;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import static io.github.markpollack.journal.tck.requirements.RequirementsEvidenceTest.CLAUDE_CHILD;
 import static io.github.markpollack.journal.tck.requirements.RequirementsEvidenceTest.CODEX_STREAM;
-import static io.github.markpollack.journal.tck.requirements.RequirementsEvidenceTest.CRITERION_PROPERTIES;
+import static io.github.markpollack.journal.tck.requirements.RequirementsEvidenceTest.CRITERION_EVIDENCE;
 import static io.github.markpollack.journal.tck.requirements.RequirementsEvidenceTest.judge;
+import static io.github.markpollack.journal.tck.requirements.RequirementsEvidenceTest.map;
 import static io.github.markpollack.journal.tck.requirements.RequirementsEvidenceTest.verifyFixtures;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Reproduces, against the unchanged requirements reporter of REQ-1 ({@code a6dce21}), the review findings on how it
- * reduces oracle checks to a criterion status. Each test pins what the reporter says today; the repair flips these
- * assertions to the corrected outcomes and keeps the scenarios as regressions.
+ * The review findings on the REQ-1 requirements reporter ({@code a6dce21}), first reproduced against the unchanged
+ * reporter (commit {@code fe2279d}, where every assertion below read PASS) and now pinned at their corrected
+ * outcomes as regressions of the repaired reporter.
  *
  * <ul>
- * <li>RR-01: UC3-AC2 covers response and prompt content but maps only the response properties, so prompt evidence
- * that is absent, or even DEFECTIVE, leaves the criterion PASS.</li>
- * <li>RR-02: the reducer passes on the subset of mapped properties that happened to appear; removing every check of
- * one required property (UC3-AC1's {@code result.owner}) or of one required owner (the child core) leaves PASS.</li>
- * <li>RR-03: UC4-AC5 (acquisition completeness kept separate from storage finalization when a source was
- * interrupted or cut) is PASS although every committed fixture is a complete run and no interrupted scenario was
- * exercised.</li>
- * <li>RR-04: UC5-AC3 (validation against the pinned compiled OCSF schema) is PASS on {@code package.readable}, a
- * property the Java reader computes; the report carries no evidence that the pinned upstream validator ran.</li>
+ * <li>RR-01: the content criterion covered responses and prompts but mapped only response properties. It is now
+ * split: UC3-AC2 (responses) and UC3-AC13 (prompts). Prompt evidence absent is ERROR on UC3-AC13 and DEFECTIVE
+ * prompt evidence is FAIL, while UC3-AC2 stays PASS on its own obligations.</li>
+ * <li>RR-02: removing every check of one required property or of one required owner is an incomplete instrument:
+ * ERROR, never PASS.</li>
+ * <li>RR-03: the interruption criterion is not assessed on complete runs; it needs a fixture whose frozen expected
+ * sources declare an incomplete run.</li>
+ * <li>RR-04: UC5-AC3 is narrowed to the Java catalog check it actually maps; the upstream validator is UC5-AC11 and
+ * is reported not assessed because no Maven check runs it.</li>
  * </ul>
  */
 class RequirementsReporterReproductionTest {
@@ -42,74 +43,70 @@ class RequirementsReporterReproductionTest {
     private static final String CHILD_OWNER = "child:toolu_01BnEuCUmZ2Vu1LpADzksmrJ/stream.jsonl";
 
     @Test
-    void rr01PromptEvidenceAbsentOrDefectiveLeavesTheContentCriterionPass(@TempDir Path work) {
-        Map<String, OracleReport> reports = verifyFixtures(work);
-        assertThat(CRITERION_PROPERTIES.get("UC3-AC2")).as("the mapping names response properties only")
-                .containsExactly("population.responses", "response.values");
-        for (OracleReport r : reports.values()) {
-            assertThat(r.checks()).as("the oracle does report prompt properties the mapping ignores")
-                    .anyMatch(c -> c.property().equals("prompt.values"));
+    void rr01PromptEvidenceAbsentIsAnErrorAndDefectiveIsAFailOnThePromptCriterionWhileResponsesPass(@TempDir Path work) {
+        Corpus corpus = verifyFixtures(work);
+        assertThat(CRITERION_EVIDENCE.get("UC3-AC2").properties()).as("responses only, by design since the split").containsExactly("population.responses", "response.values");
+        assertThat(CRITERION_EVIDENCE.get("UC3-AC13").properties()).as("prompts have their own criterion").containsExactly("population.prompts", "prompt.values");
+        for (OracleReport r : corpus.reports().values()) {
+            assertThat(r.checks()).anyMatch(c -> c.property().equals("prompt.values"));
         }
 
-        Map<String, OracleReport> noPrompts = map(reports, r -> r.filtered(c -> !c.property().startsWith("prompt.") && !c.property().equals("population.prompts")));
-        Judgment absent = judge("UC3-AC2", CRITERION_PROPERTIES.get("UC3-AC2"), noPrompts);
-        assertThat(absent.status()).as("REPRODUCED: no prompt evidence at all, criterion still PASS").isEqualTo(JudgmentStatus.PASS);
+        Corpus noPrompts = corpus.with(map(corpus.reports(), r -> r.filtered(c -> !c.property().startsWith("prompt.") && !c.property().equals("population.prompts"))));
+        assertThat(judge("UC3-AC2", CRITERION_EVIDENCE.get("UC3-AC2"), noPrompts).status()).as("responses are established on their own obligations").isEqualTo(JudgmentStatus.PASS);
+        Judgment absent = judge("UC3-AC13", CRITERION_EVIDENCE.get("UC3-AC13"), noPrompts);
+        assertThat(absent.status()).as("REPAIRED: no prompt evidence is an incomplete instrument").isEqualTo(JudgmentStatus.ERROR);
+        assertThat(absent.reasoning()).contains("population.prompts [main/stream.jsonl]").contains("prompt.values [" + CHILD_OWNER + "]");
 
-        Map<String, OracleReport> badPrompts = map(reports, r -> r.replaced(c -> c.property().equals("prompt.values"),
-                c -> new Check(c.category(), c.property(), c.owner(), Check.Outcome.DEFECTIVE, "synthetic: prompt text altered")));
-        Judgment defective = judge("UC3-AC2", CRITERION_PROPERTIES.get("UC3-AC2"), badPrompts);
-        assertThat(defective.status()).as("REPRODUCED: prompt evidence DEFECTIVE, criterion still PASS").isEqualTo(JudgmentStatus.PASS);
+        Corpus badPrompts = corpus.with(map(corpus.reports(), r -> r.replaced(c -> c.property().equals("prompt.values"),
+                c -> new Check(c.category(), c.property(), c.owner(), Check.Outcome.DEFECTIVE, "synthetic: prompt text altered"))));
+        Judgment defective = judge("UC3-AC13", CRITERION_EVIDENCE.get("UC3-AC13"), badPrompts);
+        assertThat(defective.status()).as("REPAIRED: DEFECTIVE prompt evidence fails the prompt criterion").isEqualTo(JudgmentStatus.FAIL);
+        assertThat(judge("UC3-AC2", CRITERION_EVIDENCE.get("UC3-AC2"), badPrompts).status()).as("and leaves the response criterion's own evidence intact").isEqualTo(JudgmentStatus.PASS);
     }
 
     @Test
-    void rr02RemovingOneRequiredPropertyOrOneRequiredOwnerLeavesTheCriterionPass(@TempDir Path work) {
-        Map<String, OracleReport> reports = verifyFixtures(work);
-        List<String> properties = CRITERION_PROPERTIES.get("UC3-AC1");
-        assertThat(properties).contains("result.owner");
-        Judgment control = judge("UC3-AC1", properties, reports);
-        assertThat(control.status()).isEqualTo(JudgmentStatus.PASS);
+    void rr02RemovingOneRequiredPropertyOrOneRequiredOwnerIsAnErrorNotAPass(@TempDir Path work) {
+        Corpus corpus = verifyFixtures(work);
+        Evidence evidence = CRITERION_EVIDENCE.get("UC3-AC1");
+        assertThat(evidence.properties()).contains("result.owner");
+        Judgment control = judge("UC3-AC1", evidence, corpus);
+        assertThat(control.status()).as(control.reasoning()).isEqualTo(JudgmentStatus.PASS);
+        assertThat(control.checks()).as("every property on every owner of both fixtures: 5 properties x (1 + 2) owners").hasSize(15);
 
-        Map<String, OracleReport> noOwnerProperty = map(reports, r -> r.filtered(c -> !c.property().equals("result.owner")));
-        Judgment missingProperty = judge("UC3-AC1", properties, noOwnerProperty);
-        assertThat(missingProperty.status()).as("REPRODUCED: result.owner never appears, criterion still PASS").isEqualTo(JudgmentStatus.PASS);
-        assertThat(missingProperty.checks()).noneMatch(c -> c.id().contains("result.owner"));
+        Judgment missingProperty = judge("UC3-AC1", evidence, corpus.with(map(corpus.reports(), r -> r.filtered(c -> !c.property().equals("result.owner")))));
+        assertThat(missingProperty.status()).as("REPAIRED: result.owner never appears").isEqualTo(JudgmentStatus.ERROR);
+        assertThat(missingProperty.reasoning()).contains("3 required check(s) missing").contains("result.owner [main/stream.jsonl]");
 
-        assertThat(reports.get(CLAUDE_CHILD).checks()).as("the child core is a judged owner").anyMatch(c -> c.owner().equals(CHILD_OWNER));
-        Map<String, OracleReport> noChildOwner = map(reports, r -> r.filtered(c -> !c.owner().equals(CHILD_OWNER)));
-        Judgment missingOwner = judge("UC3-AC1", properties, noChildOwner);
-        assertThat(missingOwner.status()).as("REPRODUCED: the child core has no check at all, criterion still PASS").isEqualTo(JudgmentStatus.PASS);
-        assertThat(missingOwner.checks()).noneMatch(c -> c.id().contains(CHILD_OWNER));
+        assertThat(corpus.reports().get(CLAUDE_CHILD).checks()).anyMatch(c -> c.owner().equals(CHILD_OWNER));
+        Judgment missingOwner = judge("UC3-AC1", evidence, corpus.with(map(corpus.reports(), r -> r.filtered(c -> !c.owner().equals(CHILD_OWNER)))));
+        assertThat(missingOwner.status()).as("REPAIRED: the child core, an owner the frozen manifest implies, has no check").isEqualTo(JudgmentStatus.ERROR);
+        assertThat(missingOwner.reasoning()).contains("5 required check(s) missing").contains(CHILD_OWNER);
     }
 
     @Test
-    void rr03InterruptionCriterionPassesOnCompleteRunsWithoutAnInterruptedScenario(@TempDir Path work) {
-        Map<String, OracleReport> reports = verifyFixtures(work);
+    void rr03InterruptionCriterionIsNotAssessedOnCompleteRuns(@TempDir Path work) {
+        Corpus corpus = verifyFixtures(work);
         for (String fixture : List.of(CODEX_STREAM, CLAUDE_CHILD)) {
-            ExpectedSources frozen = ExpectedSources.beside(RequirementsEvidenceTest.copyFixture(fixture, work.resolve("frozen")).resolve("native"));
+            ExpectedSources frozen = corpus.frozen().get(fixture);
             assertThat(frozen.complete()).as(fixture + " is frozen as a complete run; nothing was interrupted or cut").isTrue();
         }
-        for (OracleReport r : reports.values()) {
-            assertThat(r.checks()).noneMatch(c -> c.detail() != null && c.detail().contains("interrupted"));
-        }
-        Judgment j = judge("UC4-AC5", CRITERION_PROPERTIES.get("UC4-AC5"), reports);
-        assertThat(j.status()).as("REPRODUCED: baseline state checks on completed runs pass an interruption criterion").isEqualTo(JudgmentStatus.PASS);
+        Judgment j = judge("UC4-AC5", CRITERION_EVIDENCE.get("UC4-AC5"), corpus);
+        assertThat(j.status()).as("REPAIRED: baseline state checks on completed runs do not establish an interruption criterion").isEqualTo(JudgmentStatus.ABSTAIN);
+        assertThat(j.reasoning()).contains("not assessed").contains("no committed fixture exercises").contains("incomplete run");
+        assertThat(j.checks()).as("no obligation was evaluated on a fixture that does not exercise the scenario").isEmpty();
+        assertThat(judge("UC4-AC3", CRITERION_EVIDENCE.get("UC4-AC3"), corpus).status()).isEqualTo(JudgmentStatus.ABSTAIN);
     }
 
     @Test
-    void rr04SchemaValidationCriterionPassesOnTheJavaReaderCheckAlone(@TempDir Path work) {
-        Map<String, OracleReport> reports = verifyFixtures(work);
-        assertThat(CRITERION_PROPERTIES.get("UC5-AC3")).containsExactly("package.readable");
-        for (OracleReport r : reports.values()) {
-            assertThat(r.checks()).as("no check names the upstream OCSF validator").noneMatch(c -> c.property().startsWith("ocsf."));
+    void rr04JavaCatalogCheckAndUpstreamValidatorAreSeparateCriteria(@TempDir Path work) {
+        Corpus corpus = verifyFixtures(work);
+        assertThat(CRITERION_EVIDENCE.get("UC5-AC3").properties()).containsExactly("package.readable");
+        assertThat(CRITERION_EVIDENCE).as("REPAIRED: no oracle property claims the upstream validator ran").doesNotContainKey("UC5-AC11");
+        for (OracleReport r : corpus.reports().values()) {
+            assertThat(r.checks()).noneMatch(c -> c.property().startsWith("ocsf."));
         }
-        Judgment j = judge("UC5-AC3", CRITERION_PROPERTIES.get("UC5-AC3"), reports);
-        assertThat(j.status()).as("REPRODUCED: PASS without any upstream-validator evidence").isEqualTo(JudgmentStatus.PASS);
-        assertThat(j.reasoning()).doesNotContain("validator");
-    }
-
-    static Map<String, OracleReport> map(Map<String, OracleReport> reports, java.util.function.UnaryOperator<OracleReport> f) {
-        Map<String, OracleReport> out = new LinkedHashMap<>();
-        reports.forEach((k, v) -> out.put(k, f.apply(v)));
-        return out;
+        Judgment j = judge("UC5-AC3", CRITERION_EVIDENCE.get("UC5-AC3"), corpus);
+        assertThat(j.status()).isEqualTo(JudgmentStatus.PASS);
+        assertThat(j.reasoning()).as("the pass is scoped to the Java reader's check").contains("package.readable [main]").contains("scoped to");
     }
 }

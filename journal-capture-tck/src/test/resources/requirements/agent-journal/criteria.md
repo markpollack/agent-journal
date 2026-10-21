@@ -6,7 +6,11 @@ a `Tests:` line names executable checks that exist in this repository, or says `
 behavior is a target that no committed test establishes. A `Status:` line distinguishes behavior
 demonstrated on recorded replay or labelled synthetic fixtures from behavior not yet implemented.
 `RequirementsEvidenceTest` reports, per criterion, what the independent oracle established on the
-committed public fixtures and reports every other criterion as not assessed.
+committed public fixtures: a criterion passes only when every property it needs is reported for every
+applicable owner of every applicable fixture and the scenario it names was actually exercised; a
+configured check missing from the evidence is an error, a wrong observed value a failure, and an
+unexercised scenario or insufficient evidence is not assessed. Every other criterion is reported as
+not assessed.
 
 ## UC1: Recording and source selection
 
@@ -62,15 +66,20 @@ Rule: RULE-8. Tests: none yet. Status: not implemented; Codex's exec stream is t
 When records arrive before the CLI version is known, the capture shall retain them whole and in order.
 Rule: RULE-9. Tests: `WriterLifecycleTest#persistedPrefixIsReadableAndQueryableBeforeEof` (prefix retention). Status: version timing is not varied by any test.
 
-### UC2-AC4: State the mapping contract and its applicability
+### UC2-AC4: State the selected compatibility entry and its applicability
 
-When a run is recorded, `run.json` shall name the mapping contract applied to each source and whether the recorded CLI version is within that contract's tested applicability.
-Rule: RULE-10. Tests: `PinsTest#mappingContractsDeclareEveryRuleTheMappersExecute`, `VendorSpecificationsTest`. Status: contracts are named; the applicability status is not yet written.
+When a run is recorded, the event file's declarations shall name the compatibility entry applied to each source with its source-description revision, mapping contract and mapper identity, and whether the recorded CLI version is within that entry's tested range.
+Rule: RULE-10. Tests: `PinsTest#mappingContractsDeclareEveryRuleTheMappersExecute`, `VendorSpecificationsTest`. Status: contracts are named in `run.json`; the entry, its range and the applicability status are not yet written.
 
-### UC2-AC5: Record an untested version as untested
+### UC2-AC5: Retain and flag an untested version
 
-If the recorded CLI version is outside every tested applicability range, then the package shall record the compatibility status as untested rather than as supported.
-Rule: RULE-10. Tests: none yet. Status: not implemented; warning, retention and strict-mode behavior remain proposals.
+If the recorded CLI version, source format or launch route matches no compatibility entry, then the capture shall retain the acquired input, record the compatibility status as untested and surface a warning rather than select the nearest entry or record the version as supported.
+Rule: RULE-33. Tests: none yet. Status: not implemented; warning, retention and strict-mode behavior remain proposals.
+
+### UC2-AC6: Reject an ambiguous compatibility selection
+
+If more than one compatibility entry matches a CLI, source profile, launch route and version, then selection shall fail as a configuration error rather than choose one of them.
+Rule: RULE-10. Tests: none yet. Status: the registry data shape and its selection test are a bounded next step.
 
 ## UC3: Mapping and preservation
 
@@ -79,10 +88,10 @@ Rule: RULE-10. Tests: none yet. Status: not implemented; warning, retention and 
 When the source reports a tool request and its result, the events shall carry the native call identifier, the exact tool name, the structured arguments, and the result under the identifier the result record itself names.
 Rule: RULE-13, RULE-14. Tests: `OcsfOracleMutationTest#requestArgumentsAndToolKindAreExact`, `OcsfOracleMutationTest#identicalResultsSwappedBetweenOwnersAreADefect`.
 
-### UC3-AC2: Preserve ordered content blocks
+### UC3-AC2: Preserve ordered response content blocks
 
-When a response or prompt carries content blocks, the event shall preserve block order, block type, verbatim text and the native block data.
-Rule: RULE-13. Tests: `OcsfOracleValueCheckTest#responseActivityStopReasonModelAndBlocksAreEachChecked`, `FullOneReviewRegressionTest#changedRenderedTextIsAContextValueDefectWhileTheRawRecordIsIntact`.
+When a model response carries content blocks, the response event shall preserve block order, block type, verbatim text and the native block data.
+Rule: RULE-13. Tests: `OcsfOracleValueCheckTest#responseActivityStopReasonModelAndBlocksAreEachChecked`. Status: narrowed on 2026-10-21 from "a response or prompt" to responses; prompts are UC3-AC13.
 
 ### UC3-AC3: Preserve exact values, nulls and empty containers
 
@@ -134,6 +143,21 @@ Rule: RULE-21. Tests: `OcsfOracleValueCheckTest#recordIndexGoingBackwardsWithinA
 When compact residual extraction replaces whole-record retention, independent tests shall show that every native value, null, absence, empty container, owner and order remains reachable from the package.
 Rule: RULE-15, RULE-16. Tests: none yet. Status: not implemented; whole records are retained beside portable fields.
 
+### UC3-AC13: Preserve ordered prompt content blocks
+
+When a prompt carries content blocks, the prompt event shall preserve block order, block type, verbatim text and the native block data.
+Rule: RULE-13. Tests: `FullOneReviewRegressionTest#changedRenderedTextIsAContextValueDefectWhileTheRawRecordIsIntact` (context text), `OcsfOracleMutationTest`. Status: split from UC3-AC2 on 2026-10-21 so prompt evidence is required on its own; no committed public fixture carries a prompt occurrence (the `-p` stream does not echo the prompt), so `RequirementsEvidenceTest` reports it not assessed.
+
+### UC3-AC14: Dispose of every meaningful acquired field
+
+When a source field family is accepted into the maintained source inventory, each meaningful field shall carry one recorded disposition of normalized, retained, omitted under a tested rule, or unresolved with retention.
+Rule: RULE-34. Tests: `InventoryDriftTest` (observed inventory). Status: dispositions are not yet recorded per field.
+
+### UC3-AC15: Label Journal-generated time and identity as Journal's
+
+When an event's time or identity was supplied by Journal rather than reported by the source, the event shall label that value with its Journal basis and shall not present it as a vendor-reported value.
+Rule: RULE-12. Tests: `OcsfOracleValueCheckTest#fallbackTimeBasisClaimedAsSourceTimeIsADefect`, `OcsfOracleMutationTest#derivedAssociationPresentedAsReportedIsADefect`.
+
 ## UC4: Lifecycle and children
 
 ### UC4-AC1: Read a consistent prefix while recording
@@ -163,8 +187,8 @@ Rule: RULE-20. Tests: `WriterAcquisitionRegressionTest#aSourceEndedAsInterrupted
 
 ### UC4-AC6: Route child records to their own core
 
-When a record names a child owner such as a spawning tool call, the writer shall append it to that child's own core, linked from the parent and independently portable.
-Rule: RULE-21, RULE-24. Tests: `WriterLifecycleTest#childRecordsAreRoutedToTheirOwnCoreAsTheyArrive`, `PackageReaderTest#childCoresAreLinkedAndJudgedSeparately`.
+When a record names a child owner such as a spawning tool call, the writer shall append it to that child's own event file, which carries its own declarations and its parent and spawn identities, while the parent file identifies the child's location without claiming to contain its content.
+Rule: RULE-21, RULE-24. Tests: `WriterLifecycleTest#childRecordsAreRoutedToTheirOwnCoreAsTheyArrive`, `PackageReaderTest#childCoresAreLinkedAndJudgedSeparately`. Status: amended 2026-10-21; a child's own declarations are not yet written.
 
 ### UC4-AC7: Show an open request as open
 
@@ -178,20 +202,20 @@ Rule: RULE-18, RULE-19. Tests: none yet. Status: not implemented; live integrati
 
 ## UC5: Portable output and testing
 
-### UC5-AC1: Bootstrap from a copied core
+### UC5-AC1: Bootstrap from a copied event file
 
-When a core and its linked children are copied alone to a fresh directory without network access, a compatible Java reader shall discover the saved model, enumerate its fields and answer the agreed queries.
-Rule: RULE-24, RULE-25. Tests: `IsolatedBootstrapTest#aCopiedCoreWithItsChildBootstrapsWithoutAnythingElse`.
+When `events.jsonl` alone is copied to a fresh directory without `run.json`, sibling files, network access or a schema cache, a compatible Java reader shall discover the declared schema, enumerate its fields, types and enumerations, resolve the essential references and read the recorded execution facts and vendor data.
+Rule: RULE-24, RULE-25. Tests: `IsolatedBootstrapTest#aCopiedCoreWithItsChildBootstrapsWithoutAnythingElse` (historical two-file core). Status: changed meaning 2026-10-21, from the copied two-file core to the event file alone; the standalone proof is not yet implemented.
 
-### UC5-AC2: Refuse a detached events file
+### UC5-AC2: Fail explicitly on a missing or altered declaration
 
-If `events.jsonl` is presented without its `run.json`, then the reader shall refuse interpretation explicitly rather than guess the schema.
-Rule: RULE-25. Tests: `PackageReaderTest#discoversTheManifestFromEventsJsonlAndFromTheDirectory`, `OcsfReaderToolTest` (detached file exit 2).
+If a mandatory declaration or reference target is missing from or altered in `events.jsonl`, then the reader shall fail interpretation of the affected records explicitly with a diagnostic rather than guess the schema or silently skip them.
+Rule: RULE-25. Tests: `PackageReaderTest#missingDefinitionsRefuseInterpretationButKeepTheEvents`, `PackageReaderTest#missingDefinitionReferenceIsADefect` (historical two-file core). Status: retired meaning 2026-10-21: this criterion required refusing an `events.jsonl` presented without `run.json`; a standalone event file is now the accepted form and refusal applies to missing declarations inside it.
 
-### UC5-AC3: Validate events against the pinned schema
+### UC5-AC3: Check saved values against the embedded definitions
 
-When a package is written, its events shall validate against the pinned compiled OCSF extension schema and the saved values shall match the declared types, enumerations and requirements.
-Rule: RULE-11. Tests: `SchemaCatalogTest#savedValuesAreCheckedAgainstDeclaredTypesEnumsAndRequirements`, `PackageReaderTest#typeMismatchAndMissingRequiredAreDefects`. Status: the upstream validator run is a separately pinned tool step, not a Maven test.
+When a package is read, the saved values shall be checked by the Java reader against the embedded definitions' declared types, enumerations and requirements, with every mismatch reported as a diagnostic.
+Rule: RULE-11. Tests: `SchemaCatalogTest#savedValuesAreCheckedAgainstDeclaredTypesEnumsAndRequirements`, `PackageReaderTest#typeMismatchAndMissingRequiredAreDefects`. Status: narrowed 2026-10-21 to the Java catalog check; the upstream validator is UC5-AC11.
 
 ### UC5-AC4: Judge against a frozen source denominator
 
@@ -227,3 +251,29 @@ Rule: RULE-32. Tests: `RequirementsEvidenceTest`.
 
 When the oracle is mutation-tested, the killed, surviving and uncovered mutation counts and the threshold shall be reported separately from ordinary test results.
 Rule: RULE-29. Tests: the `pit` Maven profile in `journal-capture-tck/pom.xml`. Status: a measurement, not a gate on every build.
+
+### UC5-AC11: Validate execution records with the pinned upstream OCSF validator
+
+When a package is written, its execution event records, selected by the documented record-kind rule, shall validate without error under the pinned upstream OCSF validator against the pinned compiled extension schema.
+Rule: RULE-11. Tests: `prototype/ocsf-acp/scripts/validate.sh` with the pinned toolkit (a separately executed tool step, not a Maven test). Status: split from UC5-AC3 on 2026-10-21; `RequirementsEvidenceTest` reports it not assessed because no Maven check runs the validator.
+
+### UC5-AC12: Report a partially evidenced criterion as not passed
+
+When a criterion's required property, applicable owner or named scenario is absent from the evidence, the requirements report shall report that criterion as error or not assessed and shall not report it as passed.
+Rule: RULE-36. Tests: `RequirementsEvidenceTest`, `RequirementsReporterReproductionTest`.
+
+### UC5-AC13: Derive the comparison matrix from the crosswalk
+
+When common-model coverage is compared across CLIs, the matrix shall be generated from reviewed crosswalk entries with verified, retained-only, unavailable-at-source, unexercised and unresolved states kept separate.
+Rule: RULE-35. Tests: none yet. Status: not implemented in Java; the historical Python reference checker is not an acceptance check.
+
+## Change log
+
+2026-10-21, consolidated event-file work order (REQ-1 amendment). Retained identifiers with changed
+meaning: UC2-AC4 (compatibility entry instead of contract name in `run.json`), UC2-AC5 (retain and
+flag, rule RULE-33), UC3-AC2 (responses only; prompts moved to UC3-AC13), UC4-AC6 (child file
+carries its own declarations), UC5-AC1 (event file alone instead of the two-file core), UC5-AC2
+(detached-file refusal retired; explicit failure on a missing or altered declaration), UC5-AC3
+(Java catalog check only; upstream validator moved to UC5-AC11). Added UC2-AC6, UC3-AC13 to
+UC3-AC15 and UC5-AC11 to UC5-AC13. No criterion was removed; `RequirementsRosterTest` pins the
+per-use-case counts 7, 6, 15, 8 and 13.

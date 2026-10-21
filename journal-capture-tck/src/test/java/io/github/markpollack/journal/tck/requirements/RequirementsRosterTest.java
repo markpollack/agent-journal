@@ -27,10 +27,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RequirementsRosterTest {
 
     /** The intended rule roster, pinned so that removing or renumbering a rule is a deliberate edit here too. */
-    static final List<String> RULE_IDS = IntStream.rangeClosed(1, 32).mapToObj(i -> "RULE-" + i).toList();
+    static final List<String> RULE_IDS = IntStream.rangeClosed(1, 37).mapToObj(i -> "RULE-" + i).toList();
 
     /** Criteria per use case, pinned for the same reason: UC1 recording/source selection, UC2 version, UC3 mapping/preservation, UC4 lifecycle/children, UC5 portable output/testing. */
-    static final Map<String, Integer> CRITERIA_PER_USE_CASE = Map.of("UC1", 7, "UC2", 5, "UC3", 12, "UC4", 8, "UC5", 10);
+    static final Map<String, Integer> CRITERIA_PER_USE_CASE = Map.of("UC1", 7, "UC2", 6, "UC3", 15, "UC4", 8, "UC5", 13);
 
     static final Set<String> KEYWORDS = Set.of("MUST", "MUST NOT", "SHOULD", "SHOULD NOT", "MAY");
 

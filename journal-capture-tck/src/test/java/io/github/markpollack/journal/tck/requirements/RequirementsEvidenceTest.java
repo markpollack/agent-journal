@@ -8,6 +8,7 @@ import io.github.markpollack.judge.judgment.Judgment;
 import io.github.markpollack.judge.judgment.JudgmentStatus;
 import io.github.markpollack.judge.requirement.Requirement;
 import io.github.markpollack.judge.serialization.ResultJson;
+import io.github.markpollack.journal.tck.ocsf.ExpectedSources;
 import io.github.markpollack.journal.tck.ocsf.OcsfOracle;
 import io.github.markpollack.journal.tck.ocsf.OracleReport;
 import io.github.markpollack.journal.tck.ocsf.PackageReader;
@@ -26,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 
@@ -35,13 +37,26 @@ import static org.assertj.core.api.Assertions.assertThat;
  * One question per criterion: <em>does the independent oracle, run on the committed public fixtures, establish this
  * criterion's observable behavior for those fixtures?</em>
  *
- * <p>The answer is computed, never canned. A criterion is mapped to the oracle properties that embody it; the oracle
- * runs on the two committed public fixtures (a labelled synthetic Codex exec stream and a sanitized real Claude stream
- * with one child core); each (fixture, property, owner) outcome becomes one retained {@code Check}; the criterion's
- * status is the conjunction of those checks. A criterion with no mapping is {@code ABSTAIN}: not assessed, never
- * passed. A mapping that names a property the oracle did not emit is {@code ERROR}: a misconfigured judge, not a
- * failing subject. Every rule in {@code rules.md} is likewise {@code ABSTAIN} except the one with an executable
- * file check, so the roster rollup for both documents is {@code ABSTAIN} today, and this test asserts exactly that.
+ * <p>The answer is computed, never canned, and never from a subset. A criterion names the oracle properties that
+ * embody it and the scenario the fixtures must exercise ({@link Evidence}). The obligations are established
+ * independently of the report: every applicable fixture (one whose frozen {@code expected-sources.json} exercises
+ * the scenario) must carry a check for every named property on every owner the frozen manifest implies (the root
+ * core, each expected split core, and each expected artifact under each of them). Then:
+ *
+ * <ul>
+ * <li>a configured (fixture, property, owner) check missing from the report is {@code ERROR}: an incomplete
+ * instrument, never a pass;</li>
+ * <li>an observed {@code DEFECTIVE} check is {@code FAIL};</li>
+ * <li>an {@code UNRESOLVED} or {@code UNSUPPORTED} check (outside the outcomes a criterion explicitly accepts) is
+ * {@code ABSTAIN}: not established;</li>
+ * <li>no fixture exercising the named scenario, or only {@code NOT_APPLICABLE} checks (no occurrence on these
+ * fixtures), is {@code ABSTAIN}: not assessed;</li>
+ * <li>otherwise {@code PASS}, scoped to the fixtures and owners that actually carried an occurrence.</li>
+ * </ul>
+ *
+ * A criterion with no {@link Evidence} is {@code ABSTAIN}: not assessed. Every rule in {@code rules.md} is likewise
+ * {@code ABSTAIN} except the one with an executable file check. Two criteria about this reporter itself (UC5-AC9,
+ * UC5-AC12) are established by negative controls computed in the same run, and say so.
  *
  * <p>What a {@code PASS} here means: the behavior held on those fixtures under the oracle's definition. It is not
  * live-capture evidence, not universal vendor coverage, and not a compliance verdict for the product.
@@ -55,58 +70,139 @@ class RequirementsEvidenceTest {
     static final String CLAUDE_CHILD = "claude-child-2.1.299";
     static final List<String> FIXTURES = List.of(CODEX_STREAM, CLAUDE_CHILD);
 
-    /**
-     * Criterion to oracle properties. A property is matched on every owner (main core, child core, each source).
-     * Only criteria whose observable behavior an existing oracle property actually embodies are listed; the rest are
-     * reported as not assessed. Adding a row is a deliberate claim that the named property establishes the criterion.
-     */
-    static final Map<String, List<String>> CRITERION_PROPERTIES = new LinkedHashMap<>();
-    static {
-        CRITERION_PROPERTIES.put("UC1-AC6", List.of("source.denominator", "source.expected", "source.inventory"));
-        CRITERION_PROPERTIES.put("UC3-AC1", List.of("population.requests", "request.values", "population.results", "result.values", "result.owner"));
-        CRITERION_PROPERTIES.put("UC3-AC2", List.of("population.responses", "response.values"));
-        CRITERION_PROPERTIES.put("UC3-AC3", List.of("whole_record.structure_value"));
-        CRITERION_PROPERTIES.put("UC3-AC4", List.of("population.usage", "usage.values"));
-        CRITERION_PROPERTIES.put("UC3-AC5", List.of("population.cost", "cost.values"));
-        CRITERION_PROPERTIES.put("UC3-AC6", List.of("whole_record.coverage", "whole_record.class"));
-        CRITERION_PROPERTIES.put("UC3-AC7", List.of("population.decisions", "decision.values"));
-        CRITERION_PROPERTIES.put("UC3-AC8", List.of("population.operations", "operation.values"));
-        CRITERION_PROPERTIES.put("UC3-AC10", List.of("time.basis"));
-        CRITERION_PROPERTIES.put("UC3-AC11", List.of("event.order", "whole_record.framing"));
-        CRITERION_PROPERTIES.put("UC4-AC5", List.of("package.state", "acquisition.complete", "source.state", "source.extent"));
-        CRITERION_PROPERTIES.put("UC4-AC6", List.of("package.children"));
-        CRITERION_PROPERTIES.put("UC5-AC3", List.of("package.readable"));
-        CRITERION_PROPERTIES.put("UC5-AC4", List.of("source.denominator", "source.expected"));
+    /** The scenario a criterion's fixtures must exercise, decided from each fixture's frozen manifest, not from the report. */
+    enum Scenario {
+        ANY("any committed fixture"),
+        INTERRUPTED_SOURCE("a fixture whose frozen expected sources declare an incomplete run (a source interrupted or cut)"),
+        SPLIT_CHILD("a fixture whose frozen expected sources declare a split child core");
+
+        final String description;
+
+        Scenario(String description) {
+            this.description = description;
+        }
+
+        boolean exercisedBy(ExpectedSources frozen) {
+            return switch (this) {
+                case ANY -> true;
+                case INTERRUPTED_SOURCE -> !frozen.complete();
+                case SPLIT_CHILD -> !frozen.children().isEmpty();
+            };
+        }
     }
+
+    /**
+     * What a criterion needs: every named property on every applicable owner of every fixture that exercises the
+     * scenario, each with an accepted outcome. {@code VERIFIED} (and {@code REPRESENTATION_DIFFERS}, which is value
+     * preservation with a spelling difference) are accepted everywhere; a criterion whose required behavior is an
+     * honest refusal may additionally accept {@code UNSUPPORTED}.
+     */
+    record Evidence(List<String> properties, Scenario scenario, Set<Check.Outcome> accepted) {
+        static Evidence of(Scenario scenario, String... properties) {
+            return new Evidence(List.of(properties), scenario, Set.of(Check.Outcome.VERIFIED, Check.Outcome.REPRESENTATION_DIFFERS));
+        }
+
+        static Evidence acceptingUnsupported(Scenario scenario, String... properties) {
+            return new Evidence(List.of(properties), scenario, Set.of(Check.Outcome.VERIFIED, Check.Outcome.REPRESENTATION_DIFFERS, Check.Outcome.UNSUPPORTED));
+        }
+    }
+
+    /**
+     * Criterion to evidence. Only criteria whose observable behavior an existing oracle property actually embodies
+     * are listed; the rest are reported as not assessed. Adding a row is a deliberate claim that the named properties,
+     * on the named scenario, establish the criterion.
+     */
+    static final Map<String, Evidence> CRITERION_EVIDENCE = new LinkedHashMap<>();
+    static {
+        CRITERION_EVIDENCE.put("UC1-AC6", Evidence.of(Scenario.ANY, "source.denominator", "source.expected", "source.inventory"));
+        CRITERION_EVIDENCE.put("UC3-AC1", Evidence.of(Scenario.ANY, "population.requests", "request.values", "population.results", "result.values", "result.owner"));
+        CRITERION_EVIDENCE.put("UC3-AC2", Evidence.of(Scenario.ANY, "population.responses", "response.values"));
+        CRITERION_EVIDENCE.put("UC3-AC3", Evidence.of(Scenario.ANY, "whole_record.structure_value"));
+        CRITERION_EVIDENCE.put("UC3-AC4", Evidence.of(Scenario.ANY, "population.usage", "usage.values"));
+        CRITERION_EVIDENCE.put("UC3-AC5", Evidence.of(Scenario.ANY, "population.cost", "cost.values"));
+        CRITERION_EVIDENCE.put("UC3-AC6", Evidence.of(Scenario.ANY, "whole_record.coverage", "whole_record.class"));
+        CRITERION_EVIDENCE.put("UC3-AC7", Evidence.of(Scenario.ANY, "population.decisions", "decision.values"));
+        CRITERION_EVIDENCE.put("UC3-AC8", Evidence.of(Scenario.ANY, "population.operations", "operation.values"));
+        CRITERION_EVIDENCE.put("UC3-AC10", Evidence.of(Scenario.ANY, "time.basis"));
+        CRITERION_EVIDENCE.put("UC3-AC11", Evidence.of(Scenario.ANY, "event.order", "whole_record.framing"));
+        CRITERION_EVIDENCE.put("UC3-AC13", Evidence.of(Scenario.ANY, "population.prompts", "prompt.values"));
+        CRITERION_EVIDENCE.put("UC3-AC15", Evidence.of(Scenario.ANY, "time.basis"));
+        // an honestly interrupted or cut source is reported UNSUPPORTED-for-a-complete-claim by the oracle: that is the required
+        // behavior; an inconsistent label would be DEFECTIVE. Established only on a fixture that was actually interrupted.
+        CRITERION_EVIDENCE.put("UC4-AC3", Evidence.acceptingUnsupported(Scenario.INTERRUPTED_SOURCE, "source.state", "source.extent"));
+        CRITERION_EVIDENCE.put("UC4-AC5", Evidence.acceptingUnsupported(Scenario.INTERRUPTED_SOURCE, "package.state", "acquisition.complete", "source.state", "source.extent"));
+        CRITERION_EVIDENCE.put("UC4-AC6", Evidence.of(Scenario.SPLIT_CHILD, "package.children"));
+        CRITERION_EVIDENCE.put("UC5-AC3", Evidence.of(Scenario.ANY, "package.readable"));
+        CRITERION_EVIDENCE.put("UC5-AC4", Evidence.of(Scenario.ANY, "source.denominator", "source.expected"));
+    }
+
+    /** Properties the oracle reports once per core, on the core's label ({@code main}, {@code child:<spawn>}). */
+    static final Set<String> CORE_LEVEL = Set.of("package.readable", "package.state", "acquisition.complete", "event.order", "source.denominator");
+
+    /** Properties the oracle reports on the root core only. */
+    static final Set<String> ROOT_ONLY = Set.of("package.children");
 
     /** The one rule with an executable, deterministic check in this module: the writer declares no Agent Judge dependency. */
     static final String WRITER_INDEPENDENCE_RULE = "RULE-23";
 
+    /** Criteria about this reporter, established by the negative controls computed in {@link #reporterControls}. */
+    static final String UNASSESSED_REPORTING_CRITERION = "UC5-AC9";
+    static final String PARTIAL_EVIDENCE_CRITERION = "UC5-AC12";
+
+    /** The committed fixtures: each one's frozen expected sources (the independent source of obligations) and its oracle report. */
+    record Corpus(Map<String, ExpectedSources> frozen, Map<String, OracleReport> reports) {
+        Corpus with(Map<String, OracleReport> other) {
+            return new Corpus(frozen, other);
+        }
+    }
+
+    /** Statuses pinned per assessed criterion, so that a change in what the fixtures establish is a deliberate edit here. */
+    static final Map<String, JudgmentStatus> EXPECTED_STATUS = new TreeMap<>();
+    static {
+        for (String id : List.of("UC1-AC6", "UC3-AC1", "UC3-AC2", "UC3-AC3", "UC3-AC4", "UC3-AC5", "UC3-AC6", "UC3-AC7", "UC3-AC8", "UC3-AC10",
+                "UC3-AC11", "UC3-AC15", "UC4-AC6", "UC5-AC3", "UC5-AC4", UNASSESSED_REPORTING_CRITERION, PARTIAL_EVIDENCE_CRITERION)) {
+            EXPECTED_STATUS.put(id, JudgmentStatus.PASS);
+        }
+        // no committed fixture is an interrupted or cut run: the interruption criteria are not assessed, never passed on complete runs
+        EXPECTED_STATUS.put("UC4-AC3", JudgmentStatus.ABSTAIN);
+        EXPECTED_STATUS.put("UC4-AC5", JudgmentStatus.ABSTAIN);
+        // no committed fixture carries a prompt occurrence (the -p stream does not echo the prompt; the labelled Codex stream has none):
+        // the prompt criterion is not assessed. REQ-1's PASS of the former combined content criterion rested on responses only.
+        EXPECTED_STATUS.put("UC3-AC13", JudgmentStatus.ABSTAIN);
+    }
+
     @Test
-    void mappedCriteriaAreEstablishedOnTheCommittedFixturesAndEveryOtherRequirementIsReportedNotAssessed(@TempDir Path work) throws IOException {
+    void everyAssessedCriterionIsEstablishedOnAllItsObligationsAndEveryOtherRequirementIsReportedNotAssessed(@TempDir Path work) throws IOException {
         Document criteriaDoc = RequirementDocuments.load(RequirementDocuments.CRITERIA, work);
         Document rulesDoc = RequirementDocuments.load(RequirementDocuments.RULES, work);
         List<EarsRequirement> criteria = EarsRequirement.from(criteriaDoc.file(), criteriaDoc.revision());
         List<Rfc2119Requirement> rules = Rfc2119Requirement.from(rulesDoc.file(), rulesDoc.revision());
-        Map<String, OracleReport> reports = verifyFixtures(work.resolve("fixtures"));
+        Corpus corpus = verifyFixtures(work.resolve("fixtures"));
 
-        Map<String, Judgment> criteriaJudgments = judgeCriteria(criteria, reports);
+        Map<String, Judgment> criteriaJudgments = judgeCriteria(criteria, corpus);
         Map<String, Judgment> ruleJudgments = judgeRules(rules);
 
         // Roster: every requirement answered, none invented.
         assertThat(criteriaJudgments.keySet()).containsExactlyElementsOf(criteria.stream().map(EarsRequirement::id).toList());
         assertThat(ruleJudgments.keySet()).containsExactlyElementsOf(rules.stream().map(Rfc2119Requirement::id).toList());
-        assertThat(criteriaJudgments.keySet()).containsAll(CRITERION_PROPERTIES.keySet());
+        assertThat(criteriaJudgments.keySet()).containsAll(CRITERION_EVIDENCE.keySet());
 
-        // Mapped criteria: each PASS on the controls, with its denominator stated.
-        for (String id : CRITERION_PROPERTIES.keySet()) {
-            Judgment j = criteriaJudgments.get(id);
-            assertThat(j.status()).as(id + ": " + j.reasoning()).isEqualTo(JudgmentStatus.PASS);
-            assertThat(j.checks()).as(id + " retains one check per fixture/property/owner").isNotEmpty();
-            assertThat(j.reasoning()).as(id + " states its denominator").contains("VERIFIED on").contains("fixture");
+        // Assessed criteria: the pinned status each, with its obligations and scope stated. No ERROR anywhere: every
+        // configured check is reported by the oracle for every applicable owner.
+        for (Map.Entry<String, JudgmentStatus> e : EXPECTED_STATUS.entrySet()) {
+            Judgment j = criteriaJudgments.get(e.getKey());
+            assertThat(j.status()).as(e.getKey() + ": " + j.reasoning()).isEqualTo(e.getValue());
+            if (e.getValue() == JudgmentStatus.PASS) {
+                assertThat(j.checks()).as(e.getKey() + " retains one check per fixture/property/owner").isNotEmpty();
+                assertThat(j.reasoning()).as(e.getKey() + " states its scope").contains("scoped to");
+            }
+            else {
+                assertThat(j.reasoning()).as(e.getKey() + " says why it is not assessed").contains("not assessed");
+            }
         }
+        assertThat(criteriaJudgments.values()).noneMatch(j -> j.status() == JudgmentStatus.ERROR || j.status() == JudgmentStatus.FAIL);
 
-        // Everything else: not assessed, and said so. The list is pinned so that assessing one more is deliberate.
+        // Everything else: not assessed, and said so. The set is pinned so that assessing one more is deliberate.
         Set<String> notAssessed = new TreeSet<>();
         criteriaJudgments.forEach((id, j) -> {
             if (j.status() == JudgmentStatus.ABSTAIN) {
@@ -115,9 +211,12 @@ class RequirementsEvidenceTest {
             }
         });
         Set<String> expectedNotAssessed = new TreeSet<>(criteria.stream().map(EarsRequirement::id).toList());
-        expectedNotAssessed.removeAll(CRITERION_PROPERTIES.keySet());
+        EXPECTED_STATUS.forEach((id, s) -> {
+            if (s == JudgmentStatus.PASS) {
+                expectedNotAssessed.remove(id);
+            }
+        });
         assertThat(notAssessed).isEqualTo(expectedNotAssessed);
-        assertThat(criteriaJudgments.values()).noneMatch(j -> j.status() == JudgmentStatus.ERROR || j.status() == JudgmentStatus.FAIL);
 
         // Rollup: strict conjunction, as Agent Judge's own roster rollup does it. Unassessed requirements keep it from PASS.
         assertThat(rollup(criteriaJudgments.values())).isEqualTo(JudgmentStatus.ABSTAIN);
@@ -129,9 +228,14 @@ class RequirementsEvidenceTest {
         persist("rules", rulesDoc, rules, ruleJudgments);
     }
 
-    /** Negative control, watched red: a frozen manifest naming an artifact the package did not declare fails the denominator criteria. */
+    /**
+     * Negative control, watched red: a frozen manifest naming an artifact the package did not declare fails the
+     * denominator criterion (every obligation present, one DEFECTIVE) and errors the inventory criterion (the native
+     * artifact of the renamed source is not supplied, so its inventory check is missing: an incomplete instrument is
+     * reported before, and together with, the defect it did observe). The rollup is ERROR, never PASS.
+     */
     @Test
-    void aRenamedExpectedSourceTurnsTheDenominatorCriteriaRedAndTheRollupFails(@TempDir Path work) throws IOException {
+    void aRenamedExpectedSourceTurnsTheDenominatorCriteriaRedAndTheRollupIsNotPass(@TempDir Path work) throws IOException {
         Document criteriaDoc = RequirementDocuments.load(RequirementDocuments.CRITERIA, work);
         List<EarsRequirement> criteria = EarsRequirement.from(criteriaDoc.file(), criteriaDoc.revision());
         Path fixture = copyFixture(CLAUDE_CHILD, work.resolve("fixtures"));
@@ -141,42 +245,53 @@ class RequirementsEvidenceTest {
                 "\"artifact\": \"renamed.jsonl\",\n   \"profile\": \"claude_stream\"");
         assertThat(renamed).as("the mutation applied").isNotEqualTo(frozen);
         Files.writeString(manifest, renamed);
-        Map<String, OracleReport> reports = Map.of(CLAUDE_CHILD, verify(fixture));
-        assertThat(reports.get(CLAUDE_CHILD).defects()).as("the oracle itself reports the omission").isNotEmpty();
+        Corpus corpus = new Corpus(Map.of(CLAUDE_CHILD, ExpectedSources.read(manifest)), Map.of(CLAUDE_CHILD, verify(fixture)));
+        assertThat(corpus.reports().get(CLAUDE_CHILD).defects()).as("the oracle itself reports the omission").isNotEmpty();
 
-        Map<String, Judgment> judgments = judgeCriteria(criteria, reports);
+        Map<String, Judgment> judgments = judgeCriteria(criteria, corpus);
 
-        assertThat(judgments.get("UC5-AC4").status()).as(judgments.get("UC5-AC4").reasoning()).isEqualTo(JudgmentStatus.FAIL);
-        assertThat(judgments.get("UC1-AC6").status()).isEqualTo(JudgmentStatus.FAIL);
-        assertThat(judgments.get("UC5-AC4").checks()).anyMatch(c -> c.judgment().status() == JudgmentStatus.FAIL && c.id().contains("source.expected"));
-        assertThat(rollup(judgments.values())).isEqualTo(JudgmentStatus.FAIL);
+        Judgment denominator = judgments.get("UC5-AC4");
+        assertThat(denominator.status()).withFailMessage(denominator.reasoning()).isEqualTo(JudgmentStatus.FAIL);
+        assertThat(denominator.checks()).anyMatch(c -> c.judgment().status() == JudgmentStatus.FAIL && c.id().contains("source.expected [main/renamed.jsonl]"));
+        Judgment inventory = judgments.get("UC1-AC6");
+        assertThat(inventory.status()).withFailMessage(inventory.reasoning()).isEqualTo(JudgmentStatus.ERROR);
+        assertThat(inventory.reasoning()).contains("source.inventory [main/renamed.jsonl]").contains("DEFECTIVE check(s) observed");
+        assertThat(rollup(judgments.values())).isEqualTo(JudgmentStatus.ERROR);
     }
 
     /** Degenerate inputs: an empty report set and a property the oracle never emitted are judge errors, not passes. */
     @Test
-    void aMappingWithNoMatchingOracleCheckIsAnErrorNotAPass() {
-        OracleReport empty = verify(copyFixture(CODEX_STREAM, tempDir()));
-        Judgment unknownProperty = judge("UC9-AC9", List.of("property.that.does.not.exist"), Map.of(CODEX_STREAM, empty));
+    void aMappingWithNoMatchingOracleCheckIsAnErrorNotAPass(@TempDir Path work) {
+        Corpus corpus = verifyFixtures(work);
+        Judgment unknownProperty = judge("UC9-AC9", Evidence.of(Scenario.ANY, "property.that.does.not.exist"), corpus);
         assertThat(unknownProperty.status()).isEqualTo(JudgmentStatus.ERROR);
-        assertThat(unknownProperty.reasoning()).contains("0 check(s)");
+        assertThat(unknownProperty.reasoning()).contains("missing");
 
-        Judgment noFixtures = judge("UC9-AC9", List.of("result.owner"), Map.of());
-        assertThat(noFixtures.status()).isEqualTo(JudgmentStatus.ERROR);
+        Judgment noFixtures = judge("UC9-AC9", Evidence.of(Scenario.ANY, "result.owner"), new Corpus(Map.of(), Map.of()));
+        assertThat(noFixtures.status()).isEqualTo(JudgmentStatus.ABSTAIN);
+        assertThat(noFixtures.reasoning()).contains("no committed fixture");
 
-        Judgment onlyEmptyPopulation = judge("UC3-AC5", List.of("population.cost", "cost.values"), Map.of(CODEX_STREAM, empty));
+        Corpus codexOnly = new Corpus(Map.of(CODEX_STREAM, corpus.frozen().get(CODEX_STREAM)), Map.of(CODEX_STREAM, corpus.reports().get(CODEX_STREAM)));
+        Judgment onlyEmptyPopulation = judge("UC3-AC5", CRITERION_EVIDENCE.get("UC3-AC5"), codexOnly);
         assertThat(onlyEmptyPopulation.status()).as("the Codex stream reports no cost; NOT_APPLICABLE everywhere is no evidence").isEqualTo(JudgmentStatus.ABSTAIN);
         assertThat(onlyEmptyPopulation.reasoning()).contains("no occurrence");
     }
 
     // ---- the judge -------------------------------------------------------------------------------------------------
 
-    static Map<String, Judgment> judgeCriteria(List<EarsRequirement> criteria, Map<String, OracleReport> reports) {
+    static Map<String, Judgment> judgeCriteria(List<EarsRequirement> criteria, Corpus corpus) {
         Map<String, Judgment> out = new LinkedHashMap<>();
         for (EarsRequirement c : criteria) {
-            List<String> properties = CRITERION_PROPERTIES.get(c.id());
-            out.put(c.id(), properties == null
-                    ? Judgment.abstain("not assessed: no oracle property is mapped to " + c.id() + "; see its Tests: and Status: lines in criteria.md")
-                    : judge(c.id(), properties, reports));
+            Evidence evidence = CRITERION_EVIDENCE.get(c.id());
+            if (evidence != null) {
+                out.put(c.id(), judge(c.id(), evidence, corpus));
+            }
+            else if (UNASSESSED_REPORTING_CRITERION.equals(c.id()) || PARTIAL_EVIDENCE_CRITERION.equals(c.id())) {
+                out.put(c.id(), reporterControls(c.id(), corpus));
+            }
+            else {
+                out.put(c.id(), Judgment.abstain("not assessed: no oracle property is mapped to " + c.id() + "; see its Tests: and Status: lines in criteria.md"));
+            }
         }
         return out;
     }
@@ -208,47 +323,90 @@ class RequirementsEvidenceTest {
         }
     }
 
-    /**
-     * Conjunction over every (fixture, property, owner) check the oracle emitted for the mapped properties:
-     * any DEFECTIVE → FAIL; any UNRESOLVED or UNSUPPORTED (and no DEFECTIVE) → ABSTAIN; at least one VERIFIED and nothing
-     * worse → PASS; only NOT_APPLICABLE → ABSTAIN (no occurrence on these fixtures); no check at all → ERROR.
-     * REPRESENTATION_DIFFERS counts as VERIFIED for value preservation and is named in the check.
-     */
-    static Judgment judge(String id, List<String> properties, Map<String, OracleReport> reports) {
-        List<io.github.markpollack.judge.judgment.Check> checks = new ArrayList<>();
-        int verified = 0, defective = 0, unresolved = 0, notApplicable = 0;
-        for (Map.Entry<String, OracleReport> e : reports.entrySet()) {
-            for (Check c : e.getValue().checks()) {
-                if (!properties.contains(c.property())) {
-                    continue;
+    /** The owners a property must be reported on for one fixture, from its frozen manifest alone. */
+    static List<String> expectedOwners(String property, ExpectedSources frozen) {
+        List<String> labels = new ArrayList<>();
+        labels.add("main");
+        for (ExpectedSources.Child child : frozen.children()) {
+            labels.add("child:" + child.spawnToolCallUid());
+        }
+        List<String> owners = new ArrayList<>();
+        if (ROOT_ONLY.contains(property)) {
+            owners.add("main");
+        }
+        else if (CORE_LEVEL.contains(property)) {
+            owners.addAll(labels);
+        }
+        else {
+            for (String label : labels) {
+                for (ExpectedSources.Source s : frozen.sources()) {
+                    owners.add(label + "/" + s.artifact());
                 }
-                String name = e.getKey() + " " + c.property() + " [" + c.owner() + "]";
-                String detail = c.outcome() + (c.detail() == null || c.detail().isBlank() ? "" : ": " + c.detail());
-                switch (c.outcome()) {
-                    case VERIFIED, REPRESENTATION_DIFFERS -> {
-                        verified++;
-                        checks.add(io.github.markpollack.judge.judgment.Check.pass(name, detail));
+            }
+        }
+        return owners;
+    }
+
+    /**
+     * Conjunction over every obligation: for each fixture exercising the scenario, each property, each expected owner.
+     * Missing → ERROR; any DEFECTIVE → FAIL; any outcome outside the accepted set other than NOT_APPLICABLE → ABSTAIN;
+     * no applicable fixture or only NOT_APPLICABLE → ABSTAIN (not assessed); otherwise PASS, scoped.
+     */
+    static Judgment judge(String id, Evidence evidence, Corpus corpus) {
+        List<io.github.markpollack.judge.judgment.Check> checks = new ArrayList<>();
+        List<String> missing = new ArrayList<>();
+        List<String> applicable = new ArrayList<>();
+        List<String> skipped = new ArrayList<>();
+        List<String> verifiedOn = new ArrayList<>();
+        int accepted = 0, defective = 0, unresolved = 0, notApplicable = 0;
+        for (Map.Entry<String, ExpectedSources> f : corpus.frozen().entrySet()) {
+            String fixture = f.getKey();
+            if (!evidence.scenario().exercisedBy(f.getValue())) {
+                skipped.add(fixture);
+                continue;
+            }
+            applicable.add(fixture);
+            OracleReport report = corpus.reports().get(fixture);
+            for (String property : evidence.properties()) {
+                for (String owner : expectedOwners(property, f.getValue())) {
+                    String name = fixture + " " + property + " [" + owner + "]";
+                    Check c = report == null ? null : report.check(property, owner);
+                    if (c == null) {
+                        missing.add(name);
+                        checks.add(new io.github.markpollack.judge.judgment.Check(name, Judgment.error("required check missing from the oracle report")));
+                        continue;
                     }
-                    case DEFECTIVE -> {
+                    String detail = c.outcome() + (c.detail() == null || c.detail().isBlank() ? "" : ": " + c.detail());
+                    if (c.outcome() == Check.Outcome.DEFECTIVE) {
                         defective++;
                         checks.add(io.github.markpollack.judge.judgment.Check.fail(name, detail));
                     }
-                    case UNSUPPORTED, UNRESOLVED -> {
-                        unresolved++;
+                    else if (c.outcome() == Check.Outcome.NOT_APPLICABLE) {
+                        notApplicable++;
                         checks.add(new io.github.markpollack.judge.judgment.Check(name, Judgment.abstain(detail)));
                     }
-                    case NOT_APPLICABLE -> {
-                        notApplicable++;
+                    else if (evidence.accepted().contains(c.outcome())) {
+                        accepted++;
+                        verifiedOn.add(name);
+                        checks.add(io.github.markpollack.judge.judgment.Check.pass(name, detail));
+                    }
+                    else {
+                        unresolved++;
                         checks.add(new io.github.markpollack.judge.judgment.Check(name, Judgment.abstain(detail)));
                     }
                 }
             }
         }
-        String denominator = checks.size() + " check(s) over " + reports.size() + " fixture(s) for " + properties + ": "
-                + verified + " VERIFIED, " + defective + " DEFECTIVE, " + unresolved + " UNRESOLVED/UNSUPPORTED, " + notApplicable + " NOT_APPLICABLE";
+        String denominator = checks.size() + " obligation(s) over " + applicable.size() + " applicable fixture(s) " + applicable + " for " + evidence.properties()
+                + " on scenario " + evidence.scenario() + ": " + accepted + " accepted (" + evidence.accepted() + "), " + defective + " DEFECTIVE, " + unresolved
+                + " other, " + notApplicable + " NOT_APPLICABLE, " + missing.size() + " missing" + (skipped.isEmpty() ? "" : "; fixtures not exercising the scenario: " + skipped);
         Judgment.EnrichmentBuilder builder;
-        if (checks.isEmpty()) {
-            builder = Judgment.builder().error().reasoning(id + ": no oracle check matched; " + denominator);
+        if (applicable.isEmpty()) {
+            builder = Judgment.builder().abstain().reasoning(id + ": not assessed: no committed fixture exercises " + evidence.scenario().description + "; " + denominator);
+        }
+        else if (!missing.isEmpty()) {
+            builder = Judgment.builder().error().reasoning(id + ": incomplete instrument: " + missing.size() + " required check(s) missing from the oracle report: " + missing
+                    + (defective > 0 ? "; and " + defective + " DEFECTIVE check(s) observed on the checks that are present" : "") + "; " + denominator);
         }
         else if (defective > 0) {
             builder = Judgment.builder().fail().reasoning(id + ": DEFECTIVE on the fixtures; " + denominator);
@@ -256,13 +414,62 @@ class RequirementsEvidenceTest {
         else if (unresolved > 0) {
             builder = Judgment.builder().abstain().reasoning(id + ": not established, an unresolved or unsupported check remains; " + denominator);
         }
-        else if (verified > 0) {
-            builder = Judgment.builder().pass().reasoning(id + ": VERIFIED on " + reports.size() + " committed fixture(s) by the independent oracle; " + denominator);
+        else if (accepted > 0) {
+            builder = Judgment.builder().pass().reasoning(id + ": established by the independent oracle, scoped to " + verifiedOn.size() + " obligation(s) with an occurrence: "
+                    + verifiedOn + "; " + denominator);
         }
         else {
-            builder = Judgment.builder().abstain().reasoning(id + ": no occurrence on the committed fixtures; " + denominator);
+            builder = Judgment.builder().abstain().reasoning(id + ": not assessed: no occurrence on the committed fixtures; " + denominator);
         }
-        return builder.checks(checks).metadata("fixtures", List.copyOf(reports.keySet())).metadata("properties", properties).build();
+        return builder.checks(checks).metadata("fixtures", List.copyOf(applicable)).metadata("properties", evidence.properties())
+                .metadata("scenario", evidence.scenario().name()).metadata("accepted_outcomes", evidence.accepted().stream().map(Enum::name).sorted().toList()).build();
+    }
+
+    /**
+     * The reporter's own criteria, established by negative controls computed on the real reports in this run: one
+     * required property removed, one required owner removed, prompt evidence omitted while responses pass, and a
+     * scenario no fixture exercises. Each must stop a full-criterion PASS; the positive control must still pass.
+     */
+    static Judgment reporterControls(String id, Corpus corpus) {
+        List<io.github.markpollack.judge.judgment.Check> checks = new ArrayList<>();
+        Evidence requests = CRITERION_EVIDENCE.get("UC3-AC1");
+        control(checks, "positive control UC3-AC1 on the unmodified reports", judge("UC3-AC1", requests, corpus), JudgmentStatus.PASS);
+        control(checks, "one required property (result.owner) removed from every report",
+                judge("UC3-AC1", requests, corpus.with(map(corpus.reports(), r -> r.filtered(c -> !c.property().equals("result.owner"))))), JudgmentStatus.ERROR);
+        String childOwner = childOwner(corpus);
+        if (childOwner != null) {
+            control(checks, "one required owner (" + childOwner + ") removed from every report",
+                    judge("UC3-AC1", requests, corpus.with(map(corpus.reports(), r -> r.filtered(c -> !c.owner().equals(childOwner))))), JudgmentStatus.ERROR);
+        }
+        Corpus noPrompts = corpus.with(map(corpus.reports(), r -> r.filtered(c -> !c.property().equals("prompt.values") && !c.property().equals("population.prompts"))));
+        control(checks, "prompt evidence omitted: the response criterion UC3-AC2 still passes", judge("UC3-AC2", CRITERION_EVIDENCE.get("UC3-AC2"), noPrompts), JudgmentStatus.PASS);
+        control(checks, "prompt evidence omitted: the prompt criterion UC3-AC13 is an error", judge("UC3-AC13", CRITERION_EVIDENCE.get("UC3-AC13"), noPrompts), JudgmentStatus.ERROR);
+        control(checks, "a scenario no committed fixture exercises (interrupted source) is not assessed", judge("UC4-AC5", CRITERION_EVIDENCE.get("UC4-AC5"), corpus), JudgmentStatus.ABSTAIN);
+        boolean allHeld = checks.stream().allMatch(c -> c.judgment().status() == JudgmentStatus.PASS);
+        String reasoning = id + ": established by " + checks.size() + " negative/positive control(s) computed on the committed fixtures' real oracle reports in this run,"
+                + " scoped to this reporter's reduction (evidence about the reporter, not about the product); " + (allHeld ? "every control held" : "a control did not hold");
+        return (allHeld ? Judgment.builder().pass() : Judgment.builder().fail()).reasoning(reasoning).checks(checks).metadata("fixtures", List.copyOf(corpus.reports().keySet())).build();
+    }
+
+    private static void control(List<io.github.markpollack.judge.judgment.Check> checks, String name, Judgment observed, JudgmentStatus expected) {
+        String detail = "expected " + expected + ", observed " + observed.status() + ": " + observed.reasoning();
+        checks.add(observed.status() == expected ? io.github.markpollack.judge.judgment.Check.pass(name, detail) : io.github.markpollack.judge.judgment.Check.fail(name, detail));
+    }
+
+    /** The first split child's artifact owner across the corpus, from the frozen manifests, or {@code null}. */
+    static String childOwner(Corpus corpus) {
+        for (ExpectedSources frozen : corpus.frozen().values()) {
+            for (ExpectedSources.Child child : frozen.children()) {
+                return "child:" + child.spawnToolCallUid() + "/" + child.artifact();
+            }
+        }
+        return null;
+    }
+
+    static Map<String, OracleReport> map(Map<String, OracleReport> reports, java.util.function.UnaryOperator<OracleReport> f) {
+        Map<String, OracleReport> out = new LinkedHashMap<>();
+        reports.forEach((k, v) -> out.put(k, f.apply(v)));
+        return out;
     }
 
     static JudgmentStatus rollup(Iterable<Judgment> judgments) {
@@ -283,12 +490,15 @@ class RequirementsEvidenceTest {
 
     // ---- fixtures and persistence ----------------------------------------------------------------------------------
 
-    static Map<String, OracleReport> verifyFixtures(Path work) {
+    static Corpus verifyFixtures(Path work) {
+        Map<String, ExpectedSources> frozen = new LinkedHashMap<>();
         Map<String, OracleReport> reports = new LinkedHashMap<>();
         for (String name : FIXTURES) {
-            reports.put(name, verify(copyFixture(name, work)));
+            Path fixture = copyFixture(name, work);
+            frozen.put(name, ExpectedSources.beside(fixture.resolve("native")));
+            reports.put(name, verify(fixture));
         }
-        return reports;
+        return new Corpus(frozen, reports);
     }
 
     static OracleReport verify(Path fixture) {
@@ -338,7 +548,14 @@ class RequirementsEvidenceTest {
         out.put("question", "does the independent oracle, run on the committed public fixtures, establish this requirement's observable behavior for those fixtures?");
         out.put("fixtures", FIXTURES);
         out.put("evidence_class", "committed public fixtures: labelled synthetic Codex exec stream; sanitized real Claude stream with one child core. Not live capture.");
+        out.put("reduction", "a criterion passes only when every named property is reported for every owner its fixtures' frozen expected sources imply and the named scenario was exercised; "
+                + "missing check: ERROR; DEFECTIVE: FAIL; unresolved/unsupported: ABSTAIN; no occurrence or no exercising fixture: ABSTAIN (not assessed)");
         out.put("rollup", rollup(judgments.values()).name());
+        Map<String, Integer> byStatus = new TreeMap<>();
+        for (Judgment j : judgments.values()) {
+            byStatus.merge(j.status().name(), 1, Integer::sum);
+        }
+        out.put("by_status", byStatus);
         List<Map<String, Object>> items = new ArrayList<>();
         for (Requirement<?> r : requirements) {
             Map<String, Object> item = new LinkedHashMap<>();
