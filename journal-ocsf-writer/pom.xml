@@ -20,7 +20,21 @@
         readable before the input ends. NON-PRODUCTION: no production default uses it. The independent oracle in
         journal-capture-tck reads its output and never calls it.</description>
 
+    <properties>
+        <!-- TEST SCOPE ONLY: Agent Judge's RFC 2119 / EARS readers load the requirement documents for RequirementsAccountingIT
+             (the verify-phase accounting of every rule and criterion against this build's executed evidence). Nothing in main
+             depends on it; RULE-23 is checked by parsing this file's dependency scopes. Same snapshot as journal-capture-tck. -->
+        <agent-judge.version>0.19.0-SNAPSHOT</agent-judge.version>
+        <maven-failsafe-plugin.version>3.5.2</maven-failsafe-plugin.version>
+    </properties>
+
     <dependencies>
+        <dependency>
+            <groupId>io.github.markpollack</groupId>
+            <artifactId>agent-judge-ai-core</artifactId>
+            <version>${agent-judge.version}</version>
+            <scope>test</scope>
+        </dependency>
         <!-- Jackson streaming tokenizer only: the writer keeps its own lexically exact JSON tree -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -61,6 +75,24 @@
     </dependencies>
 
     <build>
+        <plugins>
+            <!-- The requirement accounting runs after both modules' unit tests, at the verify phase of `./mvnw clean verify`:
+                 RequirementsAccountingIT reads the TCK's oracle evidence report, both modules' surefire results and the
+                 committed upstream-validation summaries, and fails the build on a missing instrument or a failed obligation. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${maven-failsafe-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>

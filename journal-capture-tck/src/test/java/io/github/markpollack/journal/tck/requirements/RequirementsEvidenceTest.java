@@ -333,8 +333,23 @@ class RequirementsEvidenceTest {
         }
         try {
             String pom = Files.readString(writerPom);
-            boolean clean = !pom.contains("agent-judge") && !pom.contains("spring-ai") && !pom.contains("langchain4j");
-            String detail = writerPom + " declares " + (clean ? "no" : "an") + " evaluation or model dependency";
+            // every dependency naming an evaluation or model library must be test-scoped: a test-only reader is outside the writer and capture path
+            java.util.regex.Matcher m = java.util.regex.Pattern.compile("<dependency>(.*?)</dependency>", java.util.regex.Pattern.DOTALL).matcher(pom);
+            List<String> offending = new ArrayList<>();
+            int testScoped = 0;
+            while (m.find()) {
+                String d = m.group(1);
+                if (d.contains("agent-judge") || d.contains("spring-ai") || d.contains("langchain4j")) {
+                    if (d.contains("<scope>test</scope>")) {
+                        testScoped++;
+                    }
+                    else {
+                        offending.add(d.replaceAll("\\s+", " ").strip());
+                    }
+                }
+            }
+            boolean clean = offending.isEmpty();
+            String detail = writerPom + (clean ? " declares no evaluation or model dependency outside test scope (" + testScoped + " test-scoped)" : " declares an evaluation or model dependency outside test scope: " + offending);
             return clean ? Judgment.builder().pass().reasoning(detail).checks(List.of(io.github.markpollack.judge.judgment.Check.pass("journal-ocsf-writer/pom.xml", detail))).build()
                     : Judgment.builder().fail().reasoning(detail).checks(List.of(io.github.markpollack.judge.judgment.Check.fail("journal-ocsf-writer/pom.xml", detail))).build();
         }
