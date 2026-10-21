@@ -195,25 +195,36 @@ final class CodexToolClassifier {
         return navigationFallback != null ? navigationFallback : new ShellClassification(ToolKind.EXECUTE, null);
     }
 
+    // The executable vocabulary. An executable not listed is EXECUTE, like the build tools, package
+    // managers, git and interpreters listed here, which the table keeps as the known names.
+    private static final Map<String, ToolKind> KIND_BY_EXECUTABLE = Map.ofEntries(
+            Map.entry("rg", ToolKind.SEARCH), Map.entry("grep", ToolKind.SEARCH),
+            Map.entry("find", ToolKind.SEARCH), Map.entry("fd", ToolKind.SEARCH),
+            Map.entry("sed", ToolKind.READ), Map.entry("cat", ToolKind.READ), Map.entry("head", ToolKind.READ),
+            Map.entry("tail", ToolKind.READ), Map.entry("less", ToolKind.READ), Map.entry("bat", ToolKind.READ),
+            Map.entry("nl", ToolKind.READ),
+            Map.entry("wc", ToolKind.READ), Map.entry("ls", ToolKind.READ), Map.entry("tree", ToolKind.READ),
+            Map.entry("stat", ToolKind.READ), Map.entry("file", ToolKind.READ),
+            Map.entry("mvn", ToolKind.EXECUTE), Map.entry("mvnw", ToolKind.EXECUTE), Map.entry("gradle", ToolKind.EXECUTE),
+            Map.entry("gradlew", ToolKind.EXECUTE), Map.entry("pytest", ToolKind.EXECUTE), Map.entry("ctest", ToolKind.EXECUTE),
+            Map.entry("npm", ToolKind.EXECUTE), Map.entry("pnpm", ToolKind.EXECUTE), Map.entry("yarn", ToolKind.EXECUTE),
+            Map.entry("cargo", ToolKind.EXECUTE), Map.entry("go", ToolKind.EXECUTE),
+            Map.entry("git", ToolKind.EXECUTE), Map.entry("gh", ToolKind.EXECUTE),
+            Map.entry("curl", ToolKind.FETCH), Map.entry("wget", ToolKind.FETCH),
+            Map.entry("cp", ToolKind.EDIT), Map.entry("mkdir", ToolKind.EDIT), Map.entry("touch", ToolKind.EDIT),
+            Map.entry("install", ToolKind.EDIT),
+            Map.entry("mv", ToolKind.MOVE),
+            Map.entry("rm", ToolKind.DELETE), Map.entry("rmdir", ToolKind.DELETE),
+            Map.entry("python", ToolKind.EXECUTE), Map.entry("python3", ToolKind.EXECUTE), Map.entry("node", ToolKind.EXECUTE),
+            Map.entry("bash", ToolKind.EXECUTE), Map.entry("sh", ToolKind.EXECUTE), Map.entry("zsh", ToolKind.EXECUTE));
+
+    // The readers whose last argument is the file they read.
+    private static final Set<String> FILE_READERS = Set.of("sed", "cat", "head", "tail", "less", "bat", "nl");
+
     private static ShellClassification classifyExecutable(String executable, String segment) {
-        return switch (executable) {
-            case "rg", "grep", "find", "fd" -> new ShellClassification(ToolKind.SEARCH, null);
-            case "sed", "cat", "head", "tail", "less", "bat", "nl" ->
-                    new ShellClassification(ToolKind.READ, lastArgument(segment));
-            case "wc", "ls", "tree", "stat", "file" -> new ShellClassification(ToolKind.READ, null);
-            case "mvn", "mvnw", "gradle", "gradlew", "pytest", "ctest" ->
-                    new ShellClassification(ToolKind.EXECUTE, null);
-            case "npm", "pnpm", "yarn", "cargo", "go" ->
-                    new ShellClassification(ToolKind.EXECUTE, null);
-            case "git", "gh" -> new ShellClassification(ToolKind.EXECUTE, null);
-            case "curl", "wget" -> new ShellClassification(ToolKind.FETCH, null);
-            case "cp", "mkdir", "touch", "install" -> new ShellClassification(ToolKind.EDIT, null);
-            case "mv" -> new ShellClassification(ToolKind.MOVE, null);
-            case "rm", "rmdir" -> new ShellClassification(ToolKind.DELETE, null);
-            case "python", "python3", "node", "bash", "sh", "zsh" ->
-                    new ShellClassification(ToolKind.EXECUTE, null);
-            default -> new ShellClassification(ToolKind.EXECUTE, null);
-        };
+        ToolKind kind = KIND_BY_EXECUTABLE.getOrDefault(executable, ToolKind.EXECUTE);
+        String filePath = FILE_READERS.contains(executable) ? lastArgument(segment) : null;
+        return new ShellClassification(kind, filePath);
     }
 
     private static CommandToken commandToken(String segment) {
