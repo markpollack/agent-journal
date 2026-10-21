@@ -186,9 +186,9 @@ class RequirementsEvidenceTest {
         // exercises the interruption criteria; on the two complete runs alone they are not assessed (see the reporter controls)
         EXPECTED_STATUS.put("UC4-AC3", JudgmentStatus.PASS);
         EXPECTED_STATUS.put("UC4-AC5", JudgmentStatus.PASS);
-        // no committed fixture carries a prompt occurrence (the -p stream does not echo the prompt; the labelled Codex stream has none):
-        // the prompt criterion is not assessed. REQ-1's PASS of the former combined content criterion rested on responses only.
-        EXPECTED_STATUS.put("UC3-AC13", JudgmentStatus.ABSTAIN);
+        // the prompt criterion is established on the one scope where the stream reports a prompt: the child core of the live feature
+        // fixture (the sub-agent's prompt as delivered); the main thread's -p prompt is not echoed, so the PASS is scoped to that occurrence
+        EXPECTED_STATUS.put("UC3-AC13", JudgmentStatus.PASS);
     }
 
     @Test

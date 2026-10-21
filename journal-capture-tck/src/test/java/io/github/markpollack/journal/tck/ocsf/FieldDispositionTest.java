@@ -116,10 +116,10 @@ class FieldDispositionTest {
                 cost.destinations(), cost.rule(), cost.property(), List.of("OcsfOracleMutationTest#noSuchTestMethod"), cost.note(), cost.raw()))), observed, reports, schema))
                 .anyMatch(p -> p.contains("test OcsfOracleMutationTest#noSuchTestMethod") && p.contains("not found"));
 
-        // a normalized claim whose property has no occurrence on the evidence fixtures (prompts: the stream echoes none)
+        // a normalized claim whose property has no occurrence on the evidence fixtures (operations: Claude reports one result per call)
         assertThat(check(withEntries(catalog, replace(catalog, cost, new Entry(cost.variant(), cost.path(), cost.subtree(), cost.disposition(),
-                cost.destinations(), cost.rule(), "prompt.values", cost.tests(), cost.note(), cost.raw()))), observed, reports, schema))
-                .anyMatch(p -> p.contains("prompt.values") && p.contains("no exercised"));
+                cost.destinations(), cost.rule(), "operation.values", cost.tests(), cost.note(), cost.raw()))), observed, reports, schema))
+                .anyMatch(p -> p.contains("operation.values") && p.contains("no exercised"));
 
         // a stale entry: a path nothing observes
         List<Entry> stale = new ArrayList<>(catalog.entries());

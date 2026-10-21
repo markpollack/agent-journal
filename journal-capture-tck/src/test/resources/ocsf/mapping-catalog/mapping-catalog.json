@@ -2685,6 +2685,13 @@
     "records": "4-13",
     "field": "no call id on the stream; item ids absent from the rollout (R13-08) -> Unattributed",
     "availability": "absent"
+   },
+   {
+    "cli": "claude",
+    "artifact": "stream.jsonl",
+    "records": "all",
+    "field": "separately reported operation (none: Claude reports one result per call, so there is no operation to attribute)",
+    "availability": "absent"
    }
   ],
   "mapping": [
@@ -4685,6 +4692,13 @@
     "records": "fixture claude-child-2.1.299 (records with parent_tool_use_id = toolu_01BnEuCUmZ2Vu1LpADzksmrJ)",
     "field": "parent_tool_use_id non-null: the record belongs to the child spawned by that tool call; routed to the child file with its own declarations",
     "availability": "present"
+   },
+   {
+    "cli": "codex",
+    "artifact": "stream.jsonl",
+    "records": "all",
+    "field": "child run / spawning call (none: the exec stream reports no sub-agent concept on the tested runs)",
+    "availability": "absent"
    }
   ],
   "mapping": [
