@@ -374,8 +374,8 @@ public final class ClaudeStreamVerifier {
         }
         else {
             String runStatus = ClaudeStreamOracle.textOf(root.runJson, "status");
-            if ("FINISHED".equals(runStatus) && !"finished".equals(finalization)
-                    || "FAILED".equals(runStatus) && !"failed".equals(finalization)) {
+            if (("FINISHED".equals(runStatus) && !"finished".equals(finalization))
+                    || ("FAILED".equals(runStatus) && !"failed".equals(finalization))) {
                 status.add("finalization " + finalization + " with run status " + runStatus);
             }
         }
@@ -784,15 +784,10 @@ public final class ClaudeStreamVerifier {
         List<String> names = new ArrayList<>();
         List<String> inputValues = new ArrayList<>();
         List<String> inputSpelling = new ArrayList<>();
-        boolean anyNumberInput = false;
         List<String> stringResults = new ArrayList<>();
-        int stringResultCount = 0;
         List<String> structured = new ArrayList<>();
-        int structuredCount = 0;
         List<String> success = new ArrayList<>();
-        int withResult = 0;
         List<String> absent = new ArrayList<>();
-        int absentCount = 0;
         List<String> turns = new ArrayList<>();
         List<String> unresolvedResults = new ArrayList<>();
         Map<String, ToolResult> resultById = new LinkedHashMap<>();
@@ -848,7 +843,6 @@ public final class ClaudeStreamVerifier {
                 inputValues.add(use.id() + ": " + value.get(0) + (value.size() > 1 ? " (+" + (value.size() - 1) + ")" : ""));
             }
             if (use.input() != null && use.input().containsNumber()) {
-                anyNumberInput = true;
                 examinedNumeric++;
             }
             for (Difference d : differences) {
@@ -868,14 +862,12 @@ public final class ClaudeStreamVerifier {
             Json output = call.json().path("output");
             Json error = call.json().path("errorMessage");
             if (result == null) {
-                absentCount++;
                 examinedAbsent++;
                 if (!(output == null || output.isNull()) || !(error == null || error.isNull())) {
                     absent.add(use.id());
                 }
                 continue;
             }
-            withResult++;
             examinedWithResult++;
             Json successFlag = call.json().path("success");
             if (!(successFlag instanceof Json.JBool b) || b.value() == result.isError()) {
@@ -883,7 +875,6 @@ public final class ClaudeStreamVerifier {
             }
             Json content = result.content();
             if (content == null || content.isNull() || content instanceof Json.JString) {
-                stringResultCount++;
                 examinedString++;
                 String expectedText = content == null || content.isNull() ? null : content.text();
                 String outputText = output == null || output.isNull() ? null : output.text();
@@ -895,7 +886,6 @@ public final class ClaudeStreamVerifier {
                 }
             }
             else {
-                structuredCount++;
                 examinedStructured++;
                 if (output == null || output.isNull()) {
                     structured.add(use.id() + ": output absent");

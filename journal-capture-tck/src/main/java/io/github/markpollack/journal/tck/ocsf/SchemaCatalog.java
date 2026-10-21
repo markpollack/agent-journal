@@ -258,8 +258,8 @@ public final class SchemaCatalog {
         String t = attr.type() == null ? "" : attr.type();
         boolean ok;
         switch (t) {
-            case "integer_t", "long_t", "timestamp_t", "port_t" -> ok = v instanceof Json.JNumber n && n.value().scale() <= 0
-                    || v instanceof Json.JNumber n2 && n2.value().stripTrailingZeros().scale() <= 0;
+            case "integer_t", "long_t", "timestamp_t", "port_t" -> ok = (v instanceof Json.JNumber n && n.value().scale() <= 0)
+                    || (v instanceof Json.JNumber n2 && n2.value().stripTrailingZeros().scale() <= 0);
             case "float_t" -> ok = v instanceof Json.JNumber;
             case "boolean_t" -> ok = v instanceof Json.JBool;
             case "json_t" -> ok = true;

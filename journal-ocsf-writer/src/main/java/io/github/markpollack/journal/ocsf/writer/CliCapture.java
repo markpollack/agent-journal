@@ -1,5 +1,6 @@
 package io.github.markpollack.journal.ocsf.writer;
 
+import java.util.Locale;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -277,7 +278,7 @@ public final class CliCapture {
             }
             processOutcome = new Jv.Obj().put("pid", p.pid()).put("started", started.toString()).put("ended", ended.toString());
             if (exit == null) {
-                processOutcome.put("how", "unknown").put("exit_code", Jv.NULL).put("detail", "the process did not end within the grace period after it was killed");
+                processOutcome.put("how", "unknown").put("exit_code", Jv.Null.INSTANCE).put("detail", "the process did not end within the grace period after it was killed");
             }
             else if (writerFailure != null) {
                 processOutcome.put("how", "writer_failure").put("exit_code", exit).put("exit_meaning", exitMeaning(exit)).put("cancel_reason", cancelled)
@@ -337,7 +338,7 @@ public final class CliCapture {
     }
 
     private static java.io.File devNull() {
-        return new java.io.File(System.getProperty("os.name", "").toLowerCase().contains("win") ? "NUL" : "/dev/null");
+        return new java.io.File(System.getProperty("os.name", "").toLowerCase(Locale.ROOT).contains("win") ? "NUL" : "/dev/null");
     }
 
     /** What supervision established while standard output was open. */

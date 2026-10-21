@@ -27,6 +27,7 @@ public final class OcsfWriterTool {
     private OcsfWriterTool() {
     }
 
+    @SuppressWarnings("SystemOut") // a command-line tool: its standard output and error are its output
     public static void main(String[] args) throws IOException {
         if (args.length >= 1 && "capture".equals(args[0])) {
             System.exit(LiveCapture.run(args, System.in, System.out, System.err));

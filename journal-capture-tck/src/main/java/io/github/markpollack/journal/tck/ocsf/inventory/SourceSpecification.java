@@ -290,7 +290,6 @@ public final class SourceSpecification {
                 s.put("type", new Json.JArray(ts));
             }
             boolean data = dataKeyed.contains(path);
-            boolean map = mapKeyed.contains(path);
             if (!members.isEmpty()) {
                 Map<String, Json> props = new LinkedHashMap<>();
                 List<Json> required = new ArrayList<>();

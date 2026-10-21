@@ -1,5 +1,6 @@
 package io.github.markpollack.journal.tck.ocsf;
 
+import java.util.Locale;
 import io.github.markpollack.journal.tck.verify.Check.Category;
 import io.github.markpollack.journal.tck.verify.Check.Outcome;
 import io.github.markpollack.journal.tck.verify.Difference;
@@ -221,7 +222,7 @@ public final class OcsfOracle {
             else {
                 sourceInventory(source, art, owner);
                 sourceState(core, source, art, events, owner);
-                sourceCompatibility(core, source, events, owner);
+                sourceCompatibility(source, events, owner);
             }
             if (exp != null) {
                 sourceExtent(exp, declared ? source : null, owner);
@@ -257,7 +258,7 @@ public final class OcsfOracle {
                 turns(facts, events, owner);
                 started(facts, events, owner);
                 contexts(facts, events, owner);
-                time(art, facts, events, owner);
+                time(facts, events, owner);
                 identity(facts, events, owner);
             }
             reconstruction(art, facts, events, owner);
@@ -468,7 +469,7 @@ public final class OcsfOracle {
                     problems.add(a + ": open source (state " + st + ", final false) inside a " + state + " package");
                 }
                 else {
-                    incomplete.add(a + ": still " + (st == null ? "open" : st.toLowerCase()));
+                    incomplete.add(a + ": still " + (st == null ? "open" : st.toLowerCase(Locale.ROOT)));
                 }
             }
             if ("INTERRUPTED".equals(how) || "INTERRUPTED".equals(st)) {
@@ -571,7 +572,7 @@ public final class OcsfOracle {
      * the selection was normalized anyway, which is DEFECTIVE; version_unknown at the end of a source and a missing
      * declaration are UNRESOLVED. Candidates written before the registry carry none.
      */
-    private void sourceCompatibility(OcsfPackage core, Json source, List<Event> events, String owner) {
+    private void sourceCompatibility(Json source, List<Event> events, String owner) {
         Json c = source.member("compatibility");
         if (c == null) {
             report.add(Category.COMPLETENESS, "source.compatibility", owner, Outcome.UNRESOLVED,
@@ -1589,7 +1590,7 @@ public final class OcsfOracle {
 
     // ------------------------------------------------------------------------------------------ explanation
 
-    private void time(NativeArtifact art, ExpectedFacts facts, List<Event> events, String owner) {
+    private void time(ExpectedFacts facts, List<Event> events, String owner) {
         List<String> problems = new ArrayList<>();
         int examined = 0;
         for (Event e : events) {

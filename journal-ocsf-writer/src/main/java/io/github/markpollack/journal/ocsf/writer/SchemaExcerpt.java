@@ -25,6 +25,7 @@ public final class SchemaExcerpt {
     private SchemaExcerpt() {
     }
 
+    @SuppressWarnings("SystemOut") // a command-line tool: its standard output and error are its output
     public static void main(String[] args) throws IOException {
         if (args.length != 2) {
             System.err.println("usage: <compiled.json> <out.json>");

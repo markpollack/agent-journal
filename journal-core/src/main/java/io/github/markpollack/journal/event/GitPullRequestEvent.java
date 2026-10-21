@@ -1,5 +1,6 @@
 package io.github.markpollack.journal.event;
 
+import java.util.Locale;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -137,7 +138,7 @@ public record GitPullRequestEvent(
         map.put("title", title);
         map.put("source_branch", sourceBranch);
         map.put("target_branch", targetBranch);
-        map.put("action", action.name().toLowerCase());
+        map.put("action", action.name().toLowerCase(Locale.ROOT));
         return map;
     }
 }

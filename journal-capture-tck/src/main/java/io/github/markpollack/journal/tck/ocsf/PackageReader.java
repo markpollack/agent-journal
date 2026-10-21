@@ -98,7 +98,6 @@ public final class PackageReader {
                 return new OcsfPackage(dir, null, List.of(), rawLines, null, List.of(), diags, declared);
             }
         }
-        List<Json> eventJson = new ArrayList<>();
         int eventCount = 0;
         for (String text : rawLines) {
             try {

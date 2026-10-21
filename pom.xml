@@ -87,6 +87,12 @@
         <skipTests>false</skipTests>
         <jacoco.minimum.line>1.00</jacoco.minimum.line>
         <jacoco.minimum.branch>1.00</jacoco.minimum.branch>
+        <!-- Error Prone and NullAway (errorprone profile, JDK 21+ only; the javac internals it needs are opened in .mvn/jvm.config) -->
+        <errorprone.version>2.50.0</errorprone.version>
+        <!-- the errorprone profile fails on any finding; measure overrides both for report mode -->
+        <errorprone.failOnWarning>true</errorprone.failOnWarning>
+        <errorprone.extraArgs>-XepDisableWarningsInGeneratedCode</errorprone.extraArgs>
+        <nullaway.version>0.13.8</nullaway.version>
     </properties>
 
     <modules>
@@ -345,6 +351,78 @@
         </plugins>
     </build>
     <profiles>
+        <!-- Error Prone: Error Prone's own bug checks and NullAway, at ERROR, on main sources.
+             Error Prone 2.50 runs only on JDK 21+, while agent-journal targets Java 17 and its
+             release build may run on JDK 17, so the profile activates by JDK: every build on
+             JDK 21+ (including the CI job that exists for it) is checked, and a JDK 17
+             build compiles exactly as before. The javac internals Error Prone needs are
+             opened in .mvn/jvm.config. Scope:
+             - Error Prone's default-enabled checks, and failOnWarning (javac -Werror), so a
+               check whose default severity is WARNING fails the build like an ERROR one.
+               -Werror also fails on javac's own default warnings (removal, for one), which
+               are worth failing on too; suggestions stay notes. A new Error Prone version
+               brings its new checks in at ERROR: triage them on upgrade.
+             - Checks that are pure style for this code base are disabled by name below,
+               each with its reason. A real exception is a @SuppressWarnings with a reason.
+             - Beyond the defaults, one bug finder that fits this code base (no Reactor here, so
+               the kit's CheckReturnValue option is dropped):
+               SystemOut: the capture tools print their facts through PrintStreams handed in,
+               and a stray System.out in a library module is a defect.
+             - NullAway: only @NullMarked packages (OnlyNullMarked), in JSpecify mode.
+             - only the main compile execution (default-compile; a target that replaces it, as the
+               MCP Java SDK does with java-compile, names its own id here): test sources are
+               deliberately unchecked;
+             - never fork the compiler (compiler-plugin then hides every diagnostic). -->
+        <profile>
+            <id>errorprone</id>
+            <activation>
+                <jdk>[21,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-compile</id>
+                                <configuration>
+                                    <!-- errorprone.failOnWarning and errorprone.extraArgs are properties so that
+                                         `measure` can run the same profile in report mode:
+                                         -Derrorprone.failOnWarning=false -Derrorprone.extraArgs=-XepAllErrorsAsWarnings -->
+                                    <failOnWarning>${errorprone.failOnWarning}</failOnWarning>
+                                    <compilerArgs>
+                                        <arg>-parameters</arg>
+                                        <arg>-XDcompilePolicy=simple</arg>
+                                        <arg>-Xmaxerrs</arg>
+                                        <arg>10000</arg>
+                                        <arg>-Xmaxwarns</arg>
+                                        <arg>10000</arg>
+                                        <arg>--should-stop=ifError=FLOW</arg>
+                                        <arg>-XDaddTypeAnnotationsToSymbol=true</arg>
+                                        <!-- Disabled, as style, each with its reason in configs/errorprone/disabled-checks.txt:
+                                             StatementSwitchToExpressionSwitch, InlineMeSuggester, MissingSummary, StringSplitter (agent-journal, 2026-10-21). -->
+                                        <arg>-Xplugin:ErrorProne -Xep:StatementSwitchToExpressionSwitch:OFF -Xep:InlineMeSuggester:OFF -Xep:MissingSummary:OFF -Xep:StringSplitter:OFF -Xep:SystemOut:ERROR -Xep:NullAway:ERROR -XepOpt:NullAway:JSpecifyMode=true -XepOpt:NullAway:OnlyNullMarked=true ${errorprone.extraArgs}</arg>
+                                    </compilerArgs>
+                                    <annotationProcessorPaths>
+                                        <path>
+                                            <groupId>com.google.errorprone</groupId>
+                                            <artifactId>error_prone_core</artifactId>
+                                            <version>${errorprone.version}</version>
+                                        </path>
+                                        <path>
+                                            <groupId>com.uber.nullaway</groupId>
+                                            <artifactId>nullaway</artifactId>
+                                            <version>${nullaway.version}</version>
+                                        </path>
+                                    </annotationProcessorPaths>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <!--
             OWASP dependency-check — the local CVE path. It is deliberately not wired into
             GitHub Actions: the NVD acquisition is slow, shared across the portfolio, and

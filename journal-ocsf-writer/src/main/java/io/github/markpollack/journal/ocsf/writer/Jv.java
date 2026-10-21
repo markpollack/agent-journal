@@ -76,6 +76,7 @@ public sealed interface Jv permits Jv.Obj, Jv.Arr, Jv.Str, Jv.Num, Jv.Bool, Jv.N
             this.elements = new ArrayList<>(elements);
         }
 
+        @Override
         public List<Jv> elements() {
             return elements;
         }
@@ -111,8 +112,6 @@ public sealed interface Jv permits Jv.Obj, Jv.Arr, Jv.Str, Jv.Num, Jv.Bool, Jv.N
     record Null() implements Jv {
         public static final Null INSTANCE = new Null();
     }
-
-    Null NULL = Null.INSTANCE;
 
     static Str str(String s) {
         return new Str(s);

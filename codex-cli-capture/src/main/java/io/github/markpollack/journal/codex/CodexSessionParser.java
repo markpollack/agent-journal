@@ -71,8 +71,6 @@ import java.util.regex.Pattern;
  */
 public final class CodexSessionParser {
 
-    private static final Logger log = LoggerFactory.getLogger(CodexSessionParser.class);
-
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private static final Pattern EXIT_CODE = Pattern.compile("Process exited with code (\\d+)");

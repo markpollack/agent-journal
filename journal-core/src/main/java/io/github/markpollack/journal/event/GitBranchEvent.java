@@ -1,5 +1,6 @@
 package io.github.markpollack.journal.event;
 
+import java.util.Locale;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -88,7 +89,7 @@ public record GitBranchEvent(
     public Map<String, Object> toMap() {
         var map = new LinkedHashMap<String, Object>();
         map.put("branch", branchName);
-        map.put("action", action.name().toLowerCase());
+        map.put("action", action.name().toLowerCase(Locale.ROOT));
         if (fromRef != null) {
             map.put("from_ref", fromRef);
         }

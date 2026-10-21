@@ -221,7 +221,7 @@ public class TraceWriter implements Closeable {
      * {@code inputTokens}, {@code outputTokens}, {@code costUsd} (rounded to six decimal places),
      * {@code numTurns} and {@code durationMs}. When {@code meta} is not {@code null}, it adds
      * {@code sessionId} and {@code subtype} when they are not {@code null}, {@code isError},
-     * {@code durationApiMs}, {@code thinkingTokens}, {@code cacheCreationInputTokens},
+     * <code>durationApiMs</code>, {@code thinkingTokens}, {@code cacheCreationInputTokens},
      * {@code cacheReadInputTokens}, {@code stopReason} together with {@code maxTurns}, and
      * {@code structuredOutput} when it is not {@code null}. Last comes {@code runId}, if the
      * writer has one.

@@ -40,6 +40,7 @@ public final class NativeArtifact {
      * @param json the parsed object, {@code null} unless {@link Status#PARSED}
      * @param reason the parse failure, {@code null} when parsed
      */
+    @SuppressWarnings({"ArrayRecordComponent", "AvoidCommonTypeNames"}) // raw bytes are the value and records are compared by index, never by equals; the name is the TCK's public type (14 uses), kept
     public record Record(int index, byte[] raw, String lineEnding, Status status, String text, Json json, String reason) {
         public boolean parsed() {
             return status == Status.PARSED;

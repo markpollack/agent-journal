@@ -40,7 +40,7 @@ public final class ClaudeSessionFiles {
         return Path.of(System.getProperty("user.home"), ".claude", "projects");
     }
 
-    /**
+    /*
      * Archives the transcript and the session directory of one session.
      *
      * @param raw the run's raw artifacts

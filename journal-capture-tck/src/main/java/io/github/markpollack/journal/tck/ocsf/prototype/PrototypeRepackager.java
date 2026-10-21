@@ -60,6 +60,7 @@ public final class PrototypeRepackager {
     private final Path extensionDir;
 
     /** {@code <prototype-dir> <compiled.json> <extension-dir> <out-dir> [<owner-path> <owner-artifact>]}. */
+    @SuppressWarnings("SystemOut") // a command-line tool: its standard output and error are its output
     public static void main(String[] args) {
         if (args.length != 4 && args.length != 6) {
             System.err.println("usage: <prototype-dir> <compiled.json> <extension-dir> <out-dir> [<owner-path> <owner-artifact>]");

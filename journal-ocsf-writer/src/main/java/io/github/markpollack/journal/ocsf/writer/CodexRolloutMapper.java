@@ -122,7 +122,7 @@ final class CodexRolloutMapper implements SourceMapper {
             Jv.Obj ev = ctx.event("tool_call", 1, r, t, CONTRACT, "codex.rollout.custom_tool_call->tool_call.requested", ts, text(p, "id"), true, null);
             ev.put("session_uid", session).put("turn_uid", turn).put("tool_call_uid", text(p, "call_id")).put("tool_name", text(p, "name"))
                     .put("tool_kind_id", k).put("tool_kind", MapperSupport.TOOL_KIND.get(k)).put("tool_kind_basis", ctx.contracts.toolKindRule(CONTRACT))
-                    .put("arguments", p.member("input") == null ? Jv.NULL : p.member("input"));
+                    .put("arguments", p.member("input") == null ? Jv.Null.INSTANCE : p.member("input"));
             if (text(p, "status") != null) {
                 ev.put("reported_state", text(p, "status"));
             }
@@ -136,7 +136,7 @@ final class CodexRolloutMapper implements SourceMapper {
             Jv.Obj ev = ctx.event("tool_call", 2, r, t, CONTRACT, "codex.rollout.custom_tool_call_output->tool_call.result", ts, text(p, "id"), true,
                     new MapperSupport.Status(0, 3, "custom_tool_call_output reports no call-level status; per-command outcomes are on operations"));
             ev.put("session_uid", session).put("turn_uid", text(p, "internal_chat_message_metadata_passthrough", "turn_id")).put("tool_call_uid", text(p, "call_id"))
-                    .put("tool_result", new Jv.Obj().put("data", p.member("output") == null ? Jv.NULL : p.member("output"))).put("data", o);
+                    .put("tool_result", new Jv.Obj().put("data", p.member("output") == null ? Jv.Null.INSTANCE : p.member("output"))).put("data", o);
             ctx.emit(ev);
             return;
         }

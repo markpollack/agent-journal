@@ -12,6 +12,7 @@ import java.time.Instant;
  * JSON object under strict parsing, and the arrival time the capture reported. Nothing is dropped: a blank,
  * undecodable, malformed or cut-off line is a record like any other.
  */
+@SuppressWarnings("ArrayRecordComponent") // raw bytes are the value; records are identified by index, never compared by equals
 public record NativeRecord(int index, byte[] raw, String ending, Status status, String text, Jv json, String reason,
         Instant arrival) {
 

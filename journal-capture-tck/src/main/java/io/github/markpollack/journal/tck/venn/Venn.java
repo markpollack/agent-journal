@@ -166,8 +166,8 @@ public final class Venn {
         private final List<Leaf> all = new ArrayList<>();
         private final Map<Object, List<Leaf>> exact = new HashMap<>();
         private final List<Leaf> strings = new ArrayList<>();
-        private final Map<Leaf, List<int[]>> used = new IdentityHashMap<>();
-        private final Map<Leaf, Boolean> touched = new IdentityHashMap<>();
+        private final IdentityHashMap<Leaf, List<int[]>> used = new IdentityHashMap<>();
+        private final IdentityHashMap<Leaf, Boolean> touched = new IdentityHashMap<>();
         private final Map<String, List<Leaf>> byRecord = new HashMap<>();
 
         void add(Leaf leaf) {

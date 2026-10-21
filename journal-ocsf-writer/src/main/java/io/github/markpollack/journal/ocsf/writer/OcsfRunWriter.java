@@ -1,5 +1,6 @@
 package io.github.markpollack.journal.ocsf.writer;
 
+import java.util.Locale;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -96,6 +97,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         return state;
     }
 
+    @Override
     public RunDescriptor run() {
         return run;
     }
@@ -404,7 +406,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
                 String type = MapperSupport.text(o, "type");
                 String sub = MapperSupport.text(o, "subtype");
                 family = type == null ? "(untyped)" : sub == null ? type : type + "/" + sub;
-                ctx.family(family, r.raw().length, "retained-only: untested compatibility (" + selection.status().name().toLowerCase() + "); not normalized");
+                ctx.family(family, r.raw().length, "retained-only: untested compatibility (" + selection.status().name().toLowerCase(Locale.ROOT) + "); not normalized");
                 emit(null, ctx.fallback(r, Compatibility.UNTESTED_CONTRACT, "compat.no_match->source_record", family, null, null, sessionUid,
                         "retained whole: " + selection.detail()));
             }
@@ -539,7 +541,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
 
     /** The owner scope of a core: {@code ownerValue} null for the root (records without an owner). */
     private Jv.Obj scope(String ownerValue) {
-        return new Jv.Obj().put("artifact", ownerArtifact()).put("owner_path", "parent_tool_use_id").put("owner_value", ownerValue == null ? Jv.NULL : new Jv.Str(ownerValue))
+        return new Jv.Obj().put("artifact", ownerArtifact()).put("owner_path", "parent_tool_use_id").put("owner_value", ownerValue == null ? Jv.Null.INSTANCE : new Jv.Str(ownerValue))
                 .put("basis", "this core owns the records of the artifact whose owner_path member equals owner_value (null: records without one)");
     }
 
@@ -714,7 +716,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
             pkg.put("events_jsonl_sha256", core.finalSha256());
         }
         else {
-            pkg.put("events_jsonl_sha256", Jv.NULL);
+            pkg.put("events_jsonl_sha256", Jv.Null.INSTANCE);
             pkg.put("provisional", new Jv.Obj().put("note", pkgState.equals("FAILED")
                     ? "the writer failed; events_count/declarations_count/events_bytes are what was confirmed written before the failure; no final hash exists and the file carries no recording declaration"
                     : "recording: events_count/declarations_count/events_bytes are the lines persisted at the last flush; the final hash is written at finalization"));
@@ -723,7 +725,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         if (run.synthetic() != null && !run.synthetic().isNull()) {
             m.put("synthetic", run.synthetic());
         }
-        Jv.Obj rec = new Jv.Obj().put("started", started.toString()).put("last_flush", lastFlush == null ? Jv.NULL : new Jv.Str(lastFlush.toString()))
+        Jv.Obj rec = new Jv.Obj().put("started", started.toString()).put("last_flush", lastFlush == null ? Jv.Null.INSTANCE : new Jv.Str(lastFlush.toString()))
                 .put("flush_count", core.flushCount()).put("state", pkgState);
         if (ended != null) {
             rec.put("ended", ended.toString());
@@ -743,7 +745,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         m.put("recording", rec);
 
         Jv.Obj runObj = new Jv.Obj().put("run_uid", core.runUid).put("invocation_index", run.invocationIndex());
-        runObj.put("session_uid", sessionUid == null ? Jv.NULL : new Jv.Str(sessionUid));
+        runObj.put("session_uid", sessionUid == null ? Jv.Null.INSTANCE : new Jv.Str(sessionUid));
         runObj.put("capture_start", run.captureStart().toString());
         runObj.put("cli", new Jv.Obj().put("name", run.cli().name()).put("version", cliVersion()).put("vendor_name", run.cli().vendorName())
                 .put("type_id", run.cli().typeId()).put("type", run.cli().type()).put("version_basis", cliVersionBasis()));
@@ -758,7 +760,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
             runObj.put("source_scope", sourceScope);
         }
         else if (!children.isEmpty() && ownerArtifact() != null) {
-            runObj.put("source_scope", new Jv.Obj().put("artifact", ownerArtifact()).put("owner_path", "parent_tool_use_id").put("owner_value", Jv.NULL)
+            runObj.put("source_scope", new Jv.Obj().put("artifact", ownerArtifact()).put("owner_path", "parent_tool_use_id").put("owner_value", Jv.Null.INSTANCE)
                     .put("basis", "this core owns the records of the artifact whose owner_path member equals owner_value (null: records without one)"));
         }
         m.put("run", runObj);
@@ -823,7 +825,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         for (Source s : sources.values()) {
             if (s.endedHow == null) {
                 pending = true;
-                problems.add(s.descriptor.artifact() + ": " + s.stateName.toLowerCase());
+                problems.add(s.descriptor.artifact() + ": " + s.stateName.toLowerCase(Locale.ROOT));
             }
             else if (s.endedHow == SourceInput.End.INTERRUPTED) {
                 problems.add(s.descriptor.artifact() + ": interrupted after " + s.records + " record(s)");

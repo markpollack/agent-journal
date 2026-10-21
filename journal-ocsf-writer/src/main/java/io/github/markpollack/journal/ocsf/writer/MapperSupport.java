@@ -85,7 +85,7 @@ final class MapperSupport {
         if (modelRef != null) {
             u.put("model_ref", modelRef);
         }
-        return u.put("data", data == null ? Jv.NULL : data);
+        return u.put("data", data == null ? Jv.Null.INSTANCE : data);
     }
 
     static Jv.Obj attribution(int outcome, int method, List<String> candidates, String basis, String scopeUid) {

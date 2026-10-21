@@ -41,6 +41,7 @@ public final class NativeInventoryTool {
     private NativeInventoryTool() {
     }
 
+    @SuppressWarnings("SystemOut") // a command-line tool: its standard output and error are its output
     public static void main(String[] args) throws IOException {
         System.exit(run(args, System.out, System.err));
     }

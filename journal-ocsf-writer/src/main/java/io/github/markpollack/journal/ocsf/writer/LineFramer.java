@@ -15,6 +15,7 @@ import java.util.List;
 final class LineFramer {
 
     /** One framed line: its exact bytes without the terminator and the terminator seen ({@code LF} or {@code CRLF}). */
+    @SuppressWarnings("ArrayRecordComponent") // the framed bytes are the value; never compared by equals
     record Framed(byte[] raw, String ending) {
     }
 

@@ -303,7 +303,6 @@ public class SessionLogParser {
         // R2.2: per-model cost decomposition
         List<ModelCost> modelCosts = new ArrayList<>();
         Map<String, String> toolUseNames = new java.util.HashMap<>();
-        Map<String, Map<String, Object>> toolUseInputs = new java.util.HashMap<>();
         boolean sawResult = false;
         ResultMessage lastResult = null;
         // messages kept whole: everything that is not an ordinary assistant or user message
@@ -516,7 +515,6 @@ public class SessionLogParser {
                                 currentTurnIndex));
                         turnToolIds.add(toolUseBlock.id());
                         toolUseNames.put(toolUseBlock.id(), toolUseBlock.name());
-                        toolUseInputs.put(toolUseBlock.id(), toolUseBlock.input());
                         if (lineTimestamp != null) {
                             toolUseIssuedAt.put(toolUseBlock.id(), lineTimestamp);
                         }
@@ -1119,8 +1117,8 @@ public class SessionLogParser {
 
     private static int getInt(Map<String, Object> map, String key) {
         Object value = map.get(key);
-        if (value instanceof Number) {
-            return ((Number) value).intValue();
+        if (value instanceof Number n) {
+            return n.intValue();
         }
         return 0;
     }

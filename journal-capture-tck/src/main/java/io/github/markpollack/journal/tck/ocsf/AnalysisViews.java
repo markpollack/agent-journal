@@ -84,7 +84,7 @@ public final class AnalysisViews {
             String key;
             if (!counts) {
                 basis = "classifier " + rule;
-                key = "ctx:" + (++anonymous);
+                key = "ctx:" + ++anonymous;
             }
             else if (turnUid != null && text != null) {
                 basis = "turn_uid + exact text";
@@ -96,7 +96,7 @@ public final class AnalysisViews {
             }
             else {
                 basis = text == null ? "occurrence (no turn id; content unavailable at source)" : "occurrence (no turn id; a repeated identical text cannot be told from a new submission)";
-                key = "occ:" + (++anonymous);
+                key = "occ:" + ++anonymous;
             }
             final String fLabel = label;
             final boolean fCounts = counts;
@@ -163,7 +163,7 @@ public final class AnalysisViews {
             Json uid = e.get("response_uid");
             String key;
             if (uid == null || uid.isNull()) {
-                key = "unresolved:" + (++unresolved);
+                key = "unresolved:" + ++unresolved;
             }
             else {
                 key = "artifact".equals(scope) ? e.artifact() + "|" + uid.text() : uid.text();

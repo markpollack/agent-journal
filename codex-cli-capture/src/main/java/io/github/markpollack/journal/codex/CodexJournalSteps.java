@@ -18,7 +18,6 @@ public final class CodexJournalSteps {
         if (phase.toolUses().isEmpty()) {
             return List.of();
         }
-        List<JournalStep> steps = new ArrayList<>(phase.toolUses().size());
         return toolSteps(phase.toolUses(), runId);
     }
 

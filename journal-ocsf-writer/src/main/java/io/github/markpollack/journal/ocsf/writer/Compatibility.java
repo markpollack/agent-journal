@@ -1,5 +1,6 @@
 package io.github.markpollack.journal.ocsf.writer;
 
+import java.util.Locale;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -253,8 +254,8 @@ final class Compatibility {
     /** The {@code compatibility} declaration payload for a selection of one source. */
     static Jv.Obj declaration(Selection s, String artifact, String versionBasis, int recordsBefore, String schemaSha256) {
         Jv.Obj d = new Jv.Obj().put("artifact", artifact).put("cli", s.cli()).put("profile", s.profile()).put("route", s.route() == null ? "unspecified" : s.route())
-                .put("version", s.version() == null ? Jv.NULL : new Jv.Str(s.version())).put("version_basis", versionBasis)
-                .put("status", s.status().name().toLowerCase()).put("detail", s.detail()).put("records_before_selection", recordsBefore)
+                .put("version", s.version() == null ? Jv.Null.INSTANCE : new Jv.Str(s.version())).put("version_basis", versionBasis)
+                .put("status", s.status().name().toLowerCase(Locale.ROOT)).put("detail", s.detail()).put("records_before_selection", recordsBefore)
                 .put("normalizes", s.normalizes() && s.status() != Status.NOT_VERSION_SCOPED && s.status() != Status.VERSION_UNKNOWN ? "yes" : s.status() == Status.VERSION_UNKNOWN
                         ? "provisionally, under the profile's mapper, until the version is known" : "no");
         if (s.entry() != null) {

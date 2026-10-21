@@ -5,7 +5,8 @@ import io.github.markpollack.journal.metric.Tags;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -18,7 +19,7 @@ public final class DefaultCallTracker implements CallTracker {
 
     private final List<DefaultCall> rootCalls;
     private final List<DefaultCall> allCalls;
-    private final ThreadLocal<Stack<DefaultCall>> callStack;
+    private final ThreadLocal<Deque<DefaultCall>> callStack;
 
     /**
      * Creates a new call tracker.
@@ -26,7 +27,7 @@ public final class DefaultCallTracker implements CallTracker {
     public DefaultCallTracker() {
         this.rootCalls = new CopyOnWriteArrayList<>();
         this.allCalls = new CopyOnWriteArrayList<>();
-        this.callStack = ThreadLocal.withInitial(Stack::new);
+        this.callStack = ThreadLocal.withInitial(ArrayDeque::new);
     }
 
     @Override
@@ -50,7 +51,7 @@ public final class DefaultCallTracker implements CallTracker {
 
     @Override
     public Call currentCall() {
-        Stack<DefaultCall> stack = callStack.get();
+        Deque<DefaultCall> stack = callStack.get();
         return stack.isEmpty() ? null : stack.peek();
     }
 

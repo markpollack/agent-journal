@@ -217,7 +217,7 @@ public class RunRecorder extends BaseRunRecorder implements AutoCloseable {
         return currentRun;
     }
 
-    /**
+    /*
      * Ends the run {@code FINISHED}, after the storage check described in the class comment. If
      * the run has already ended, nothing is checked and its status does not change.
      *

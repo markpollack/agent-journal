@@ -64,7 +64,7 @@ final class ClaudeTranscriptMapper implements SourceMapper {
                     Jv.Obj req = ctx.event("tool_call", 1, r, t, CONTRACT, "claude.transcript.assistant.tool_use->tool_call.requested", ts, uid, false, null);
                     req.put("session_uid", sess).put("response_uid", text(m, "id")).put("tool_call_uid", text(b, "id")).put("tool_name", text(b, "name"))
                             .put("tool_kind_id", k).put("tool_kind", MapperSupport.TOOL_KIND.get(k)).put("tool_kind_basis", ctx.contracts.toolKindRule(CONTRACT))
-                            .put("arguments", b.member("input") == null ? Jv.NULL : b.member("input")).put("data", b);
+                            .put("arguments", b.member("input") == null ? Jv.Null.INSTANCE : b.member("input")).put("data", b);
                     ctx.emit(req);
                 }
             }
@@ -93,7 +93,7 @@ final class ClaudeTranscriptMapper implements SourceMapper {
                     continue;
                 }
                 String id = text(b, "tool_use_id");
-                Jv.Obj res = new Jv.Obj().put("data", b.member("content") == null ? Jv.NULL : b.member("content"));
+                Jv.Obj res = new Jv.Obj().put("data", b.member("content") == null ? Jv.Null.INSTANCE : b.member("content"));
                 Jv isError = b.member("is_error");
                 MapperSupport.Status status;
                 if (isError instanceof Jv.Bool e) {

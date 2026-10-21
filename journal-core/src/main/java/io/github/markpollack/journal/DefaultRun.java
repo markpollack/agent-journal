@@ -334,6 +334,7 @@ public final class DefaultRun implements Run {
     /**
      * Internal artifact record.
      */
+    @SuppressWarnings("ArrayRecordComponent") // the content bytes are the value; artifacts are never compared by equals
     public record Artifact(
             String name,
             byte[] content,
