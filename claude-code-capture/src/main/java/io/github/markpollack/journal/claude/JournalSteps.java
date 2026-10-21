@@ -217,34 +217,36 @@ public final class JournalSteps {
     public static TokenUsage aggregateUsageFromEvents(List<JournalEvent> events) {
         TokenUsage total = new TokenUsage(0, 0, 0, 0, 0, 0);
         for (JournalEvent e : nullSafe(events)) {
-            if (!(e instanceof LLMCallEvent llm)) {
-                continue;
+            if (e instanceof LLMCallEvent llm) {
+                total = total.plus(usageOfCall(llm));
             }
-            List<TurnUsage> turns = turnsFromMetadata(llm.metadata() != null ? llm.metadata().get(META_TURNS) : null);
-            if (turns.isEmpty()) {
-                // No per-turn truth in events → use the recorded headline vector as-is.
-                total = total.plus(llm.tokenUsage() != null ? llm.tokenUsage() : new TokenUsage(0, 0, 0, 0, 0, 0));
-                continue;
-            }
-            List<TokenUsage> perTurn = new ArrayList<>(turns.size());
-            for (TurnUsage t : turns) {
-                perTurn.add(new TokenUsage((int) t.inputTokens(), (int) Math.max(0, t.outputTokens()), 0,
-                        (int) t.cacheCreationInputTokens(), (int) t.cacheReadInputTokens(), 0));
-            }
-            TokenUsage summed = TokenUsage.sum(perTurn);
-            // Prefer the exact Σ per-turn thinking (1.9.0, read from the wire) over the recorded
-            // headline, which may still be the pre-1.9.0 chars/4 estimate.
-            long thinkingFromTurns = turns.stream().mapToLong(TurnUsage::thinkingTokens).sum();
-            int thinking = thinkingFromTurns > 0
-                    ? (int) thinkingFromTurns
-                    : (llm.tokenUsage() != null ? llm.tokenUsage().thinkingTokens() : 0);
-            // The per-turn output counts are start-of-message figures; the recorded headline holds
-            // the result message's count when that is larger (see PhaseCapture.aggregateUsage()).
-            int output = Math.max(summed.outputTokens(), llm.tokenUsage() != null ? llm.tokenUsage().outputTokens() : 0);
-            total = total.plus(new TokenUsage(summed.inputTokens(), output, thinking,
-                    summed.cacheCreationTokens(), summed.cacheReadTokens(), summed.toolUseTokens()));
         }
         return total;
+    }
+
+    /** One LLM call's usage: summed over its turns when the metadata carries them, else its recorded headline. */
+    private static TokenUsage usageOfCall(LLMCallEvent llm) {
+        List<TurnUsage> turns = turnsFromMetadata(llm.metadata() != null ? llm.metadata().get(META_TURNS) : null);
+        TokenUsage headline = llm.tokenUsage() != null ? llm.tokenUsage() : new TokenUsage(0, 0, 0, 0, 0, 0);
+        if (turns.isEmpty()) {
+            // No per-turn truth in events → use the recorded headline vector as-is.
+            return headline;
+        }
+        List<TokenUsage> perTurn = new ArrayList<>(turns.size());
+        for (TurnUsage t : turns) {
+            perTurn.add(new TokenUsage((int) t.inputTokens(), (int) Math.max(0, t.outputTokens()), 0,
+                    (int) t.cacheCreationInputTokens(), (int) t.cacheReadInputTokens(), 0));
+        }
+        TokenUsage summed = TokenUsage.sum(perTurn);
+        // Prefer the exact Σ per-turn thinking (1.9.0, read from the wire) over the recorded
+        // headline, which may still be the pre-1.9.0 chars/4 estimate.
+        long thinkingFromTurns = turns.stream().mapToLong(TurnUsage::thinkingTokens).sum();
+        int thinking = thinkingFromTurns > 0 ? (int) thinkingFromTurns : headline.thinkingTokens();
+        // The per-turn output counts are start-of-message figures; the recorded headline holds
+        // the result message's count when that is larger (see PhaseCapture.aggregateUsage()).
+        int output = Math.max(summed.outputTokens(), headline.outputTokens());
+        return new TokenUsage(summed.inputTokens(), output, thinking,
+                summed.cacheCreationTokens(), summed.cacheReadTokens(), summed.toolUseTokens());
     }
 
     private static List<JournalStep> attributePhase(LLMCallEvent llm, List<ToolUseRecord> tools,
