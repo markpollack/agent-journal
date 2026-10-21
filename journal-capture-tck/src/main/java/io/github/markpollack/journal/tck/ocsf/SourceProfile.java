@@ -82,7 +82,7 @@ public interface SourceProfile {
         }
         return switch (reported) {
             case "accept", "allow" -> 1;
-            case "deny" -> 2;
+            case "deny", "denied", "reject", "rejected" -> 2;
             default -> 99;
         };
     }

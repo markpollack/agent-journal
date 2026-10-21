@@ -107,12 +107,24 @@
       "residual": "whole record in data (mcp_servers, agents, skills, plugins, capabilities and the rest stay addressable there)"
     },
     {
+      "id": "claude.stream.user.prompt->prompt_turn.submitted",
+      "selector": {
+        "type": "user",
+        "block": "no tool_result block"
+      },
+      "target": "agentic_cli/prompt_turn",
+      "activity": "1 Prompt submitted",
+      "owner": "routed by parent_tool_use_id like every record; observed only in child scopes (the sub-agent's prompt as delivered by the spawning Agent call); the main thread's -p prompt is not echoed on the tested routes",
+      "content": "message.content -> content_blocks (order, type, verbatim text, whole block in data); no turn_uid: the stream reports none",
+      "residual": "whole record in data",
+      "added": "2026-10-21 (ACCEPT-1), observed on the 2.1.304 live feature run"
+    },
+    {
       "id": "claude.stream.fallback->source_record",
       "selector": {
         "type": [
           "system (other subtypes)",
-          "rate_limit_event",
-          "user without tool_result"
+          "rate_limit_event"
         ]
       },
       "target": "agentic_cli/source_record",
@@ -135,7 +147,7 @@
     }
   ],
   "unavailable_at_source": [
-    "user prompt content (the SDK input is not echoed as a stream record)",
+    "the main thread's user prompt content (the -p prompt is not echoed as a stream record; a child scope's prompt is, see claude.stream.user.prompt->prompt_turn.submitted)",
     "final per-response usage and stop_reason (the stream reports stop_reason null and provisional usage on these fixtures; see the transcript contract)"
   ],
   "retained_only_families": {
@@ -149,11 +161,6 @@
       "meaning": "a vendor running estimate of thinking tokens so far (estimated_tokens, estimated_tokens_delta) emitted before responses",
       "disposition": "retained-only (known meaning); not normalized: an estimate, not a reported usage component; normalizing it as reasoning_tokens would compete with the reported usage.output_tokens_details.thinking_tokens of the assistant and result records, which are normalized (reasoning_tokens)",
       "limit": "observed on every tested route (2.1.299 sdk, 2.1.303 sdk, 2.1.304 stdout); its relation to the reported final thinking_tokens is not specified by the vendor and is not asserted here"
-    },
-    "user (no tool_result)": {
-      "meaning": "a user record whose content carries no tool_result block (the stream does not echo the submitted prompt; such records were not observed on the tested routes)",
-      "disposition": "retained-only; would be the prompt family if a route ever echoed it (UC3-AC13 stays not assessed on the native stream)",
-      "limit": "no occurrence on the tested routes"
     },
     "system (other subtypes)": {
       "meaning": "system records with a subtype other than init and thinking_tokens",

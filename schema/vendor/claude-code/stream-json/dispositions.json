@@ -422,14 +422,22 @@
       "variant": "user",
       "path": "message",
       "subtree": true,
-      "disposition": "unresolved",
+      "disposition": "normalized",
       "evidence": {
-        "property": "whole_record.coverage"
+        "property": "prompt.values"
       },
       "tests": [
-        "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+        "OcsfOracleValueCheckTest#promptTurnIdAndTextsAreChecked",
+        "LiveFixtureFeaturesTest#theSubAgentPromptIsTheChildScopesVendorReportedPrompt"
       ],
-      "note": "a user record whose content carries text and no tool_result (observed once, in a child scope: the sub-agent's prompt as delivered). Retained whole as source_record. Open question: whether such a record is a caller-supplied prompt echo (prompt family, UC3-AC13) or vendor context; its provenance and finality are not stated by the source, so it is not normalized as a prompt. The main thread's own prompt is not echoed on the tested routes"
+      "note": "a user record whose content carries text and no tool_result: the prompt the stream reports for this scope. Observed only in a child scope (the sub-agent's prompt as delivered by the spawning Agent call; live feature run 2.1.304). The main thread's -p prompt is not echoed on the tested routes, so UC3-AC13 is established on child scopes only; no turn id is reported and none is invented",
+      "destination": [
+        "prompt_turn.content_blocks[].block_index",
+        "prompt_turn.content_blocks[].block_type",
+        "prompt_turn.content_blocks[].text",
+        "prompt_turn.content_blocks[].data"
+      ],
+      "rule": "claude.stream.user.prompt->prompt_turn.submitted"
     },
     {
       "variant": "user/tool_result",

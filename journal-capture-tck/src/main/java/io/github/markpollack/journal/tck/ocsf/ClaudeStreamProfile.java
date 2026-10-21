@@ -86,6 +86,13 @@ final class ClaudeStreamProfile implements SourceProfile {
                     }
                 }
             }
+            else if ("user".equals(type) && message != null && message.member("content") != null) {
+                // a user record without a tool_result block: the prompt the stream reports for this scope (observed in child scopes)
+                f.normalized.add(r.index());
+                Json content = message.member("content");
+                List<String> texts = content instanceof Json.JString s ? List.of(s.value()) : CodexRolloutProfile.texts(content.elements());
+                f.prompts.add(new ExpectedFacts.Prompt(r.index(), null, texts));
+            }
             else if ("system".equals(type) && "init".equals(SourceProfile.text(o, "subtype"))) {
                 f.normalized.add(r.index());
                 Map<String, Json> settings = ClaudeTranscriptProfile.settings(o, "cwd", "working_directory", "model", "model",

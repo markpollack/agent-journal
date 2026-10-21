@@ -82,8 +82,13 @@ final class ClaudeStreamMapper implements SourceMapper {
                 }
             }
             if (!hasResult) {
-                ctx.family("user (no tool_result)", r.raw().length, "retained-only: user record without a tool_result block");
-                ctx.emit(owner, ctx.fallback(r, CONTRACT, "claude.stream.fallback->source_record", "user (no tool_result)", ts, uid, sess, null));
+                // the stream echoes a prompt only in a child scope (the sub-agent's prompt as delivered by the spawning call); the main
+                // thread's -p prompt is never echoed. The record is a vendor-reported prompt submission with its content blocks; the stream
+                // names no turn id, so none is invented.
+                ctx.family("user (prompt)", r.raw().length, "normalized: prompt_turn Prompt submitted (user record without tool_result; observed in child scopes only)");
+                Jv.Obj ev = ctx.event("prompt_turn", 1, r, t, CONTRACT, "claude.stream.user.prompt->prompt_turn.submitted", ts, uid, true, null);
+                ev.put("session_uid", sess).put("content_blocks", MapperSupport.blocks(ctx.contracts, CONTRACT, content)).put("data", o);
+                ctx.emit(owner, ev);
                 return;
             }
             ctx.family("user", r.raw().length, "normalized: tool_call Result observed per tool_result block (+ permission_decision from tool_result_meta)");
