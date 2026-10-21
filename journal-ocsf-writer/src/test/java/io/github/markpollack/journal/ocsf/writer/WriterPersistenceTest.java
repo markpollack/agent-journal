@@ -143,7 +143,7 @@ class WriterPersistenceTest {
         assertThat(w.state()).isEqualTo(OcsfRunWriter.State.FAILED);
         assertThat(w.failure().get("operation").text()).isEqualTo("flush");
         assertThatThrownBy(w::flush).as("a failed writer refuses to flush").isInstanceOf(CoreWriter.WriterFailedException.class);
-        assertThatThrownBy(() -> w.source(new SourceDescriptor("late.jsonl", 2, "claude_transcript", "late", null))).isInstanceOf(CoreWriter.WriterFailedException.class);
+        assertThatThrownBy(() -> w.source(new SourceDescriptor("late.jsonl", 2, "claude_transcript", "native_session_file", "late", null))).isInstanceOf(CoreWriter.WriterFailedException.class);
         assertThat(w.interrupt("too late")).as("finalization after failure keeps FAILED").isEqualTo(OcsfRunWriter.State.FAILED);
         Jv m = manifest(core);
         assertThat(m.path("package", "state").text()).isEqualTo("FAILED");

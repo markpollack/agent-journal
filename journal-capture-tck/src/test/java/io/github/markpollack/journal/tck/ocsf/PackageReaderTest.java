@@ -235,8 +235,13 @@ class PackageReaderTest {
         assertThat(p.events).hasSize(26);
         assertThat(child.manifest.sourceScope().member("owner_value").text()).isEqualTo(OcsfFixtures.SPAWN);
         assertThat(p.manifest.sourceScope().member("owner_value").isNull()).isTrue();
-        // version-scoped contract: an explicit warning, not a support claim
-        assertThat(p.diagnosticsWithCode("CONTRACT_APPLICABILITY").get(0).detail()).contains("2.1.303").contains("2.1.299");
+        // applicability comes from the compatibility declaration: 2.1.299 on route sdk is a tested version of the selected entry, so no
+        // CONTRACT_APPLICABILITY warning is raised even though the contract document names 2.1.303 as its observed baseline
+        assertThat(p.diagnosticsWithCode("CONTRACT_APPLICABILITY")).isEmpty();
+        assertThat(p.diagnosticsWithCode("COMPATIBILITY_NO_MATCH")).isEmpty();
+        assertThat(p.manifest.compatibility("stream.jsonl").member("status").text()).isEqualTo("tested");
+        assertThat(p.manifest.compatibility("stream.jsonl").member("entry_id").text()).isEqualTo("claude-code/stream-json/2.1.299");
+        assertThat(child.manifest.compatibility("stream.jsonl").member("status").text()).as("the child file declares the selection too").isEqualTo("tested");
         // each core carries its own complete closure
         assertThat(child.catalog.classes()).containsKeys("agentic_cli/tool_call", "agentic_cli/model_response");
     }

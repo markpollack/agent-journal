@@ -4,7 +4,9 @@
     "product": "Codex CLI",
     "version": "0.160.1",
     "launch": "codex exec --json",
-    "source_kind": "Live output"
+    "source_kind": "Live output",
+    "compatibility_entry": "codex-cli/exec-json-stream/0.160.1",
+    "selection": "route stdout; the stream reports no version: the capture discovers it once per run with codex --version (RULE-8) and declares the basis"
   },
   "executor": "journal-ocsf-writer CodexStreamMapper (direct Java); one record at a time; no cross-record state",
   "record_discriminator": "type, then item.type",

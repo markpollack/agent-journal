@@ -159,6 +159,12 @@ public final class RunManifest {
         return s == null ? List.of() : s.elements();
     }
 
+    /** The compatibility selection in force for a declared source, or {@code null} when the package declares none. */
+    public Json compatibility(String artifact) {
+        Json s = source(artifact);
+        return s == null ? null : s.member("compatibility");
+    }
+
     public Json source(String artifact) {
         for (Json s : sources()) {
             if (artifact != null && artifact.equals(SchemaCatalog.text(s, "artifact"))) {

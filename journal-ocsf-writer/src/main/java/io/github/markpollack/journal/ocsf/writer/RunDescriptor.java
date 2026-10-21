@@ -17,10 +17,25 @@ import java.time.Instant;
  */
 public record RunDescriptor(String runUid, int invocationIndex, String sessionUid, Instant captureStart, Cli cli, Jv launchSettings, Jv synthetic) {
 
-    /** @param typeId the OCSF ai_agent type id (1 Native); {@code type} its caption */
-    public record Cli(String name, String version, String vendorName, int typeId, String type) {
+    /**
+     * @param typeId the OCSF ai_agent type id (1 Native); {@code type} its caption
+     * @param versionBasis how the capture knows {@code version} when it is given at launch (for example the
+     * documented once-per-run discovery command of a CLI whose stream reports none), or {@code null} for the default
+     * statement that the capture declared it
+     */
+    public record Cli(String name, String version, String vendorName, int typeId, String type, String versionBasis) {
+
+        public Cli(String name, String version, String vendorName, int typeId, String type) {
+            this(name, version, vendorName, typeId, type, null);
+        }
+
         public Jv.Obj product() {
             return new Jv.Obj().put("name", name).put("version", version).put("vendor_name", vendorName);
+        }
+
+        /** The basis stated for a version known at launch. */
+        public String declaredVersionBasis() {
+            return versionBasis != null ? versionBasis : "declared by the capture at launch";
         }
     }
 
@@ -32,7 +47,8 @@ public record RunDescriptor(String runUid, int invocationIndex, String sessionUi
                 Instant.parse(spec.member("capture_start").text()),
                 new Cli(cli.member("name").text(), cli.member("version") == null ? null : cli.member("version").text(), cli.member("vendor_name").text(),
                         cli.member("type_id") instanceof Jv.Num t ? (int) t.value().longValueExact() : 1,
-                        cli.member("type") == null ? "Native" : cli.member("type").text()),
+                        cli.member("type") == null ? "Native" : cli.member("type").text(),
+                        cli.member("version_basis") == null ? null : cli.member("version_basis").text()),
                 spec.member("launch_settings"), spec.member("synthetic"));
     }
 }

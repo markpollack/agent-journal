@@ -30,6 +30,7 @@ final class WriterTestSupport {
     static final String PAIR = "syn-claude-pair-transcript";
     static final String CODEX_STREAM = "syn-codex-exec-stream";
     static final String INTERRUPTED = "claude-child-2.1.299-interrupted";
+    static final String UNTESTED = "syn-claude-untested-version";
     static final String SPAWN = "toolu_01BnEuCUmZ2Vu1LpADzksmrJ";
 
     private WriterTestSupport() {
@@ -54,19 +55,24 @@ final class WriterTestSupport {
     }
 
     static SourceDescriptor claudeStream() {
-        return new SourceDescriptor("stream.jsonl", 1, "claude_stream", "fixture stream replayed", null);
+        return new SourceDescriptor("stream.jsonl", 1, "claude_stream", "sdk", "fixture stream replayed (SDK-delivered lines of the original capture)", null);
+    }
+
+    /** The same profile on the raw-stdout route (the route of the live captures). */
+    static SourceDescriptor claudeStreamStdout() {
+        return new SourceDescriptor("stream.jsonl", 1, "claude_stream", "stdout", "fixture stream replayed as raw standard output", null);
     }
 
     static SourceDescriptor claudeTranscript() {
-        return new SourceDescriptor("transcript.jsonl", 2, "claude_transcript", "fixture transcript replayed after the stream", null);
+        return new SourceDescriptor("transcript.jsonl", 2, "claude_transcript", "native_session_file", "fixture transcript replayed after the stream", null);
     }
 
     static SourceDescriptor codexRollout() {
-        return new SourceDescriptor("rollout.jsonl", 2, "codex_rollout", "fixture rollout replayed", null);
+        return new SourceDescriptor("rollout.jsonl", 2, "codex_rollout", "native_session_file", "fixture rollout replayed", null);
     }
 
     static SourceDescriptor codexStream() {
-        return new SourceDescriptor("stream.jsonl", 1, "codex_stream", "fixture exec --json stream replayed (labelled synthetic)", null);
+        return new SourceDescriptor("stream.jsonl", 1, "codex_stream", "stdout", "fixture exec --json stream replayed (labelled synthetic)", null);
     }
 
     /** Writes a frozen expected-source manifest for the artifacts in {@code nativeDir} (the test's own labelled inputs). */

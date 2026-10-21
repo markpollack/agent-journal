@@ -586,10 +586,55 @@ public final class PackageReader {
                         c.getKey() + " embedded sha256 " + actual + " differs from its pin " + pinned));
             }
             String appliesVersion = SchemaCatalog.text(embedded.member("applies_to"), "version");
-            if (appliesVersion != null && m.cliVersion() != null && !appliesVersion.equals(m.cliVersion())) {
+            if (appliesVersion != null && m.cliVersion() != null && !appliesVersion.equals(m.cliVersion()) && !selectedByCompatibility(m, c.getKey())) {
                 diags.add(new Diagnostic(Diagnostic.Severity.WARNING, "CONTRACT_APPLICABILITY",
                         c.getKey() + " applies to " + m.cliName() + " " + appliesVersion + " but the run reports " + m.cliVersion()
-                                + "; evidence is version-scoped, not a support claim"));
+                                + " and no compatibility declaration selected it; evidence is version-scoped, not a support claim"));
+            }
+        }
+        sourceCompatibility(m, diags);
+    }
+
+    /** Whether some declared source's compatibility selection (tested or in_range) names the contract. */
+    private static boolean selectedByCompatibility(RunManifest m, String contractUid) {
+        for (Json s : m.sources()) {
+            Json c = s.member("compatibility");
+            String status = SchemaCatalog.text(c, "status");
+            if (c != null && ("tested".equals(status) || "in_range".equals(status)) && contractUid.equals(SchemaCatalog.text(s, "contract_uid"))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * The compatibility selection each source declares (RULE-10, RULE-33): a tested selection is silent; an in-range
+     * selection, an unknown version and a no-match (retained, untested, not normalized) are warnings that name the
+     * source; a 0.3.0 source without any compatibility declaration predates the registry and is a warning too.
+     */
+    private static void sourceCompatibility(RunManifest m, List<Diagnostic> diags) {
+        for (Json s : m.sources()) {
+            String artifact = SchemaCatalog.text(s, "artifact");
+            Json c = s.member("compatibility");
+            if (c == null) {
+                if ("0.3.0-prototype".equals(m.packageVersion())) {
+                    diags.add(new Diagnostic(Diagnostic.Severity.WARNING, "COMPATIBILITY_UNDECLARED",
+                            artifact + ": no compatibility declaration; the file predates the registry or the writer omitted the selection, so no tested range is claimed"));
+                }
+                continue;
+            }
+            String status = SchemaCatalog.text(c, "status");
+            String detail = artifact + " (" + SchemaCatalog.text(c, "cli") + " " + SchemaCatalog.text(c, "version") + ", " + SchemaCatalog.text(c, "profile") + ", route "
+                    + SchemaCatalog.text(c, "route") + "): " + SchemaCatalog.text(c, "detail");
+            switch (String.valueOf(status)) {
+                case "tested" -> {
+                }
+                case "in_range" -> diags.add(new Diagnostic(Diagnostic.Severity.WARNING, "COMPATIBILITY_IN_RANGE", detail));
+                case "version_unknown" -> diags.add(new Diagnostic(Diagnostic.Severity.WARNING, "COMPATIBILITY_VERSION_UNKNOWN", detail));
+                case "no_match" -> diags.add(new Diagnostic(Diagnostic.Severity.WARNING, "COMPATIBILITY_NO_MATCH", detail));
+                case "not_version_scoped" -> {
+                }
+                default -> diags.add(new Diagnostic(Diagnostic.Severity.DEFECT, "COMPATIBILITY_STATUS_UNKNOWN", artifact + ": compatibility status " + status + " is not one this reader knows"));
             }
         }
     }

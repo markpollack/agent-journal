@@ -46,6 +46,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
     private final SchemaPin pin;
     private final WriterOptions options;
     private final MappingContracts contracts = new MappingContracts();
+    private final Compatibility compatibility = Compatibility.bundled();
     private final CoreWriter root;
     private final Map<String, CoreWriter> children = new LinkedHashMap<>();
     private final Map<String, Source> sources = new LinkedHashMap<>();
@@ -123,7 +124,16 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
     public void cliVersionReported(String version) {
         if (reportedCliVersion == null) {
             reportedCliVersion = version;
+            for (Source s : sources.values()) {
+                s.reselect();
+            }
         }
+    }
+
+    @Override
+    public List<Jv.Obj> compatibilityDeclarations(String artifact) {
+        Source s = sources.get(artifact);
+        return s == null ? List.of() : List.copyOf(s.compatibilityDeclared);
     }
 
     /** The CLI version as known: declared at launch, else the first stream-reported one, else {@code null}. */
@@ -132,7 +142,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
     }
 
     private String cliVersionBasis() {
-        return run.cli().version() != null ? "declared by the capture at launch" : reportedCliVersion != null
+        return run.cli().version() != null ? run.cli().declaredVersionBasis() : reportedCliVersion != null
                 ? "reported by the selected source (cli_version declaration); not known at launch, no version command was run"
                 : "not known at launch and not (yet) reported by the selected stream; no version command was run";
     }
@@ -149,7 +159,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
             return null;
         }
         Jv.Obj d = new Jv.Obj().put("artifact", s.descriptor.artifact()).put("kind", s.descriptor.kind()).put("profile", s.descriptor.profile())
-                .put("surface", s.descriptor.surface());
+                .put("route", s.descriptor.route() == null ? "unspecified" : s.descriptor.route()).put("surface", s.descriptor.surface());
         if (s.descriptor.pathAtCapture() != null) {
             d.put("path_at_capture", s.descriptor.pathAtCapture());
         }
@@ -161,7 +171,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         Jv.Obj r = new Jv.Obj().put("run_uid", coreRunUid).put("invocation_index", run.invocationIndex()).put("capture_start", run.captureStart().toString());
         r.put("cli", new Jv.Obj().put("name", run.cli().name()).put("version", run.cli().version()).put("vendor_name", run.cli().vendorName())
                 .put("type_id", run.cli().typeId()).put("type", run.cli().type()).put("product", run.cli().product())
-                .put("version_basis", run.cli().version() != null ? "declared by the capture at launch" : "not known at launch; a cli_version declaration follows if the selected stream reports it; no version command is run"));
+                .put("version_basis", run.cli().version() != null ? run.cli().declaredVersionBasis() : "not known at launch; a cli_version declaration follows if the selected stream reports it; no version command is run"));
         if (run.launchSettings() != null) {
             r.put("launch_settings", run.launchSettings());
         }
@@ -224,6 +234,8 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         Instant firstArrival;
         Instant lastArrival;
         boolean unterminatedSeen;
+        Compatibility.Selection selection;
+        final List<Jv.Obj> compatibilityDeclared = new ArrayList<>();
 
         Source(SourceDescriptor descriptor) {
             this.descriptor = descriptor;
@@ -235,6 +247,28 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
             catch (NoSuchAlgorithmException e) {
                 throw new IllegalStateException(e);
             }
+            this.selection = compatibility.select(run.cli().name(), descriptor.profile(), descriptor.route(), cliVersion());
+            compatibilityDeclared.add(Compatibility.declaration(selection, descriptor.artifact(), cliVersionBasis(), 0, pin.compiledSha256()));
+        }
+
+        /** Repeats the selection once the version is known; the new selection is appended to every file that references this source. */
+        void reselect() {
+            if (selection.status() != Compatibility.Status.VERSION_UNKNOWN || cliVersion() == null) {
+                return;
+            }
+            selection = compatibility.select(run.cli().name(), descriptor.profile(), descriptor.route(), cliVersion());
+            Jv.Obj d = Compatibility.declaration(selection, descriptor.artifact(), cliVersionBasis(), records, pin.compiledSha256());
+            compatibilityDeclared.add(d);
+            int n = compatibilityDeclared.size();
+            root.declareCompatibility(descriptor.artifact(), n, d);
+            for (CoreWriter c : children.values()) {
+                c.declareCompatibility(descriptor.artifact(), n, d);
+            }
+        }
+
+        /** The latest compatibility declaration of this source (the one in force). */
+        Jv.Obj compatibilityInForce() {
+            return compatibilityDeclared.get(compatibilityDeclared.size() - 1);
         }
 
         @Override
@@ -299,7 +333,12 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
                 }
             }
             try {
-                mapper.map(r, ctx);
+                if (!selection.normalizes()) {
+                    retainUntested(r);
+                }
+                else {
+                    mapper.map(r, ctx);
+                }
             }
             catch (RuntimeException e) {
                 // a mapper defect must not lose the record: retain it whole under the common opaque/fallback rules
@@ -316,6 +355,27 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
             recordsSinceFlush++;
             if (options.autoFlushEveryRecords() > 0 && recordsSinceFlush >= options.autoFlushEveryRecords()) {
                 flush();
+            }
+        }
+
+        /**
+         * RULE-33: the version, profile or route matched no compatibility entry, so the record is retained whole under
+         * the untested-compatibility contract and nothing is normalized; the nearest entry's mapper is not consulted.
+         */
+        private void retainUntested(NativeRecord r) {
+            String family;
+            if (r.parsed()) {
+                Jv o = r.json();
+                String type = MapperSupport.text(o, "type");
+                String sub = MapperSupport.text(o, "subtype");
+                family = type == null ? "(untyped)" : sub == null ? type : type + "/" + sub;
+                ctx.family(family, r.raw().length, "retained-only: untested compatibility (" + selection.status().name().toLowerCase() + "); not normalized");
+                emit(null, ctx.fallback(r, Compatibility.UNTESTED_CONTRACT, "compat.no_match->source_record", family, null, null, sessionUid,
+                        "retained whole: " + selection.detail()));
+            }
+            else {
+                ctx.family("opaque", r.raw().length, "retained-only: not one JSON object (bytes kept verbatim); untested compatibility");
+                emit(null, ctx.opaque(r, Compatibility.UNTESTED_CONTRACT));
             }
         }
 
@@ -400,11 +460,11 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         Jv manifestEntry() {
             boolean ended = endedHow != null;
             Jv.Obj s = new Jv.Obj().put("artifact", descriptor.artifact()).put("kind", descriptor.kind()).put("profile", descriptor.profile())
-                    .put("surface", descriptor.surface());
+                    .put("route", descriptor.route() == null ? "unspecified" : descriptor.route()).put("surface", descriptor.surface());
             if (descriptor.pathAtCapture() != null) {
                 s.put("path_at_capture", descriptor.pathAtCapture());
             }
-            s.put("contract_uid", contracts.uid(mapper.contractName())).put("state", stateName).put("final", ended)
+            s.put("contract_uid", contracts.uid(mapper.contractName())).put("compatibility", compatibilityInForce()).put("state", stateName).put("final", ended)
                     .put("records", records).put("bytes", bytes).put("opaque_records", opaque).put("trailing_newline", lastByteNewline);
             if (ended) {
                 s.put("sha256", sha256());

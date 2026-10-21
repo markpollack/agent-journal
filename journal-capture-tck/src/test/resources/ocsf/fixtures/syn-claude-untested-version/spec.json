@@ -1,0 +1,29 @@
+{
+ "run_uid": "syn-claude-untested-version",
+ "invocation_index": 0,
+ "capture_start": "2026-10-14T18:08:46Z",
+ "cli": {
+  "name": "Claude Code",
+  "vendor_name": "Anthropic",
+  "type_id": 1,
+  "type": "Native"
+ },
+ "launch_settings": {
+  "command": "claude -p --output-format stream-json (SYNTHETIC: the sanitized real 2.1.299 stream whose init record was edited to report 2.1.999; no CLI was run; the version is not given at launch so the stream reports it)",
+  "cwd": "/work",
+  "route": "stdout"
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "kind": 1,
+   "profile": "claude_stream",
+   "route": "stdout",
+   "path": "<fixture>/native/syn-claude-untested-version/stream.jsonl"
+  }
+ ],
+ "synthetic": {
+  "label": "LABELLED SYNTHETIC (2026-10-21, ACCEPT-1): the sanitized real claude-child-2.1.299 stream with claude_code_version edited to 2.1.999, a version outside every compatibility entry; exercises RULE-33 / UC2-AC5 / UC1-AC5: records after the version report are retained whole under the untested-compatibility contract, flagged, not normalized; the native session file is not selected",
+  "derived_from": "fixtures/claude-child-2.1.299/native/stream.jsonl (one field changed in record 1)"
+ }
+}

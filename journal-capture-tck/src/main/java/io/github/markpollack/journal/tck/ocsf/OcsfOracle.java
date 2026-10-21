@@ -36,7 +36,7 @@ public final class OcsfOracle {
     static final List<String> MANDATORY_CORE = List.of("package.readable", "package.state", "acquisition.complete", "event.order");
 
     /** Properties every judged (available, frozen) source must report; acceptance refuses a report that lacks one. */
-    static final List<String> MANDATORY_SOURCE = List.of("source.inventory", "source.state", "whole_record.coverage", "whole_record.class",
+    static final List<String> MANDATORY_SOURCE = List.of("source.inventory", "source.state", "source.compatibility", "whole_record.coverage", "whole_record.class",
             "whole_record.structure_value", "whole_record.bytes", "whole_record.framing", "population.requests", "request.values",
             "population.results", "result.owner", "result.values", "population.responses", "response.values", "population.prompts",
             "prompt.values", "population.usage", "usage.values", "population.cost", "cost.values", "population.decisions", "decision.values",
@@ -216,27 +216,47 @@ public final class OcsfOracle {
                 report.add(Category.COMPLETENESS, "source.inventory", owner, Outcome.DEFECTIVE,
                         "the candidate declares no such source; the frozen manifest expects " + art.records().size() + " record(s), " + art.bytes().length + " bytes");
                 report.add(Category.COMPLETENESS, "source.state", owner, Outcome.DEFECTIVE, "the candidate declares no such source, so no acquisition state exists for it");
+                report.add(Category.COMPLETENESS, "source.compatibility", owner, Outcome.DEFECTIVE, "the candidate declares no such source, so no compatibility selection exists for it");
             }
             else {
                 sourceInventory(source, art, owner);
                 sourceState(core, source, art, events, owner);
+                sourceCompatibility(core, source, events, owner);
             }
             if (exp != null) {
                 sourceExtent(exp, declared ? source : null, owner);
             }
-            retention(art, facts, events, owner, core);
-            requests(facts, events, owner, core);
-            results(facts, events, owner);
-            responses(facts, events, owner);
-            prompts(facts, events, owner);
-            usage(facts, events, owner);
-            cost(facts, events, owner);
-            decisions(facts, events, owner);
-            operations(facts, events, owner);
-            turns(facts, events, owner);
-            started(facts, events, owner);
-            contexts(facts, events, owner);
-            time(art, facts, events, owner);
+            Json compat = declared ? source.member("compatibility") : null;
+            Integer untestedFrom = compat != null && "no_match".equals(SchemaCatalog.text(compat, "status")) ? Event.integer(compat.member("records_before_selection")) : null;
+            retention(art, facts, events, owner, core, untestedFrom);
+            if (untestedFrom != null) {
+                // RULE-33: the candidate declares no normalization for this source (untested compatibility); every normalization
+                // family is reported UNSUPPORTED, never VERIFIED and never silently absent, so acceptance cannot credit it
+                String why = "compatibility no_match declared (records after " + untestedFrom + " retained whole under the untested-compatibility contract, not normalized): "
+                        + "normalization is not claimed for this source; expected occurrences by family: " + facts.counts();
+                for (String p : List.of("population.requests", "request.values", "population.results", "result.owner", "result.values", "population.responses", "response.values",
+                        "population.prompts", "prompt.values", "population.usage", "usage.values", "population.cost", "cost.values", "population.decisions", "decision.values",
+                        "population.operations", "operation.values", "population.turn_completed", "turn.values", "population.turn_started", "turn_started.values",
+                        "population.contexts", "context.values")) {
+                    report.add(Category.NORMALIZATION, p, owner, Outcome.UNSUPPORTED, why);
+                }
+                report.add(Category.EXPLANATION, "time.basis", owner, Outcome.UNSUPPORTED,
+                        "compatibility no_match declared: the source's time fields are a mapping this candidate does not claim; retained records carry the fallback basis");
+            }
+            else {
+                requests(facts, events, owner, core);
+                results(facts, events, owner);
+                responses(facts, events, owner);
+                prompts(facts, events, owner);
+                usage(facts, events, owner);
+                cost(facts, events, owner);
+                decisions(facts, events, owner);
+                operations(facts, events, owner);
+                turns(facts, events, owner);
+                started(facts, events, owner);
+                contexts(facts, events, owner);
+                time(art, facts, events, owner);
+            }
             reconstruction(art, facts, events, owner);
         }
     }
@@ -539,6 +559,104 @@ public final class OcsfOracle {
 
     // ------------------------------------------------------------------------------------------ inventory and order
 
+    /**
+     * The compatibility selection the candidate declares for this source, checked for internal honesty, never
+     * re-derived from a registry (the oracle holds none): a tested or in_range selection must name its entry, keep
+     * the version inside the declared range and have every normalized event of the source under the selected
+     * contract; a no_match selection is UNSUPPORTED (an honest absence of normalization) unless some record after
+     * the selection was normalized anyway, which is DEFECTIVE; version_unknown at the end of a source and a missing
+     * declaration are UNRESOLVED. Candidates written before the registry carry none.
+     */
+    private void sourceCompatibility(OcsfPackage core, Json source, List<Event> events, String owner) {
+        Json c = source.member("compatibility");
+        if (c == null) {
+            report.add(Category.COMPLETENESS, "source.compatibility", owner, Outcome.UNRESOLVED,
+                    "no compatibility declaration for this source: no tested range, entry or applicability status is claimed");
+            return;
+        }
+        String status = SchemaCatalog.text(c, "status");
+        String version = SchemaCatalog.text(c, "version");
+        String entry = SchemaCatalog.text(c, "entry_id");
+        Integer before = Event.integer(c.member("records_before_selection"));
+        String declaredContract = SchemaCatalog.text(source, "contract_uid");
+        List<String> problems = new ArrayList<>();
+        switch (String.valueOf(status)) {
+            case "tested", "in_range" -> {
+                if (entry == null) {
+                    problems.add("status " + status + " without an entry_id");
+                }
+                String min = SchemaCatalog.text(c, "min_version");
+                String max = SchemaCatalog.text(c, "max_version");
+                if (version == null || min == null || max == null) {
+                    problems.add("status " + status + " without version, min_version and max_version");
+                }
+                else if (compareVersions(min, version) > 0 || compareVersions(version, max) > 0) {
+                    problems.add("version " + version + " lies outside the declared range [" + min + ", " + max + "]");
+                }
+                int normalizedUnderOther = 0;
+                for (Event e : events) {
+                    if (!"source_record".equals(e.className) && declaredContract != null && !declaredContract.equals(e.contractUid())) {
+                        normalizedUnderOther++;
+                    }
+                }
+                if (normalizedUnderOther > 0) {
+                    problems.add(normalizedUnderOther + " normalized event(s) carry a contract other than the source's declared " + declaredContract);
+                }
+                if ("tested".equals(status) && c.member("tested") instanceof Json.JArray t) {
+                    boolean named = false;
+                    for (Json x : t.elements()) {
+                        if (version != null && version.equals(SchemaCatalog.text(x, "version"))) {
+                            named = true;
+                        }
+                    }
+                    if (!named) {
+                        problems.add("status tested but version " + version + " is not named under the declared tested evidence");
+                    }
+                }
+                report.add(Category.COMPLETENESS, "source.compatibility", owner, problems.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
+                        problems.isEmpty() ? "entry " + entry + " selected for " + SchemaCatalog.text(c, "cli") + " " + version + " on route " + SchemaCatalog.text(c, "route")
+                                + ", status " + status + ("in_range".equals(status) ? " (inside the reviewed range; not individually tested)" : "") : String.join("; ", problems));
+            }
+            case "no_match" -> {
+                int normalizedAfter = 0;
+                for (Event e : events) {
+                    if (!"source_record".equals(e.className) && e.recordIndex() != null && before != null && e.recordIndex() > before) {
+                        normalizedAfter++;
+                    }
+                }
+                if (entry != null) {
+                    problems.add("status no_match but an entry_id " + entry + " is named");
+                }
+                if (normalizedAfter > 0) {
+                    problems.add(normalizedAfter + " record(s) after the no_match selection (records_before_selection " + before + ") were normalized; a no_match source is retained whole, not normalized");
+                }
+                report.add(Category.COMPLETENESS, "source.compatibility", owner, problems.isEmpty() ? Outcome.UNSUPPORTED : Outcome.DEFECTIVE,
+                        problems.isEmpty() ? "no compatibility entry for " + SchemaCatalog.text(c, "cli") + " " + version + " (" + SchemaCatalog.text(c, "profile") + ", route "
+                                + SchemaCatalog.text(c, "route") + "): acquired input retained and flagged untested; normalization is not claimed" : String.join("; ", problems));
+            }
+            case "version_unknown" -> report.add(Category.COMPLETENESS, "source.compatibility", owner, Outcome.UNRESOLVED,
+                    "the version was never known for this source, so no entry was selected; records were mapped provisionally under the profile's contract " + declaredContract);
+            case "not_version_scoped" -> report.add(Category.COMPLETENESS, "source.compatibility", owner, Outcome.NOT_APPLICABLE,
+                    "profile " + SchemaCatalog.text(c, "profile") + " normalizes nothing and has no compatibility entry");
+            default -> report.add(Category.COMPLETENESS, "source.compatibility", owner, Outcome.UNRESOLVED, "compatibility status " + status + " is not one the oracle knows");
+        }
+    }
+
+    /** Numeric comparison per dot-separated component (the oracle's own, not the writer's). */
+    static int compareVersions(String a, String b) {
+        String[] x = a.split("\\.");
+        String[] y = b.split("\\.");
+        for (int i = 0; i < Math.max(x.length, y.length); i++) {
+            String p = i < x.length ? x[i] : "0";
+            String q = i < y.length ? y[i] : "0";
+            int c = p.matches("\\d+") && q.matches("\\d+") ? new java.math.BigInteger(p).compareTo(new java.math.BigInteger(q)) : p.compareTo(q);
+            if (c != 0) {
+                return c;
+            }
+        }
+        return 0;
+    }
+
     private void sourceInventory(Json source, NativeArtifact art, String owner) {
         List<String> problems = new ArrayList<>();
         boolean isFinal = RunManifest.sourceFinal(source);
@@ -600,7 +718,8 @@ public final class OcsfOracle {
 
     // ------------------------------------------------------------------------------------------ retention
 
-    private void retention(NativeArtifact art, ExpectedFacts facts, List<Event> events, String owner, OcsfPackage core) {
+    /** @param untestedFrom when the source's compatibility is no_match, the record count before that selection: later records are expected as fallback */
+    private void retention(NativeArtifact art, ExpectedFacts facts, List<Event> events, String owner, OcsfPackage core, Integer untestedFrom) {
         Map<Integer, List<Event>> whole = new TreeMap<>();
         for (Event e : events) {
             if (e.wholeRecord() && e.recordIndex() != null) {
@@ -646,7 +765,7 @@ public final class OcsfOracle {
             }
             Event e = evs.get(0);
             boolean fallback = "source_record".equals(e.className);
-            if (facts.normalized.contains(r.index()) && fallback) {
+            if (facts.normalized.contains(r.index()) && fallback && !(untestedFrom != null && r.index() > untestedFrom)) {
                 classProblems.add("record " + r.index() + " has a normalization rule but is retained only as a source_record fallback");
             }
             if (!facts.normalized.contains(r.index()) && r.parsed() && !fallback) {

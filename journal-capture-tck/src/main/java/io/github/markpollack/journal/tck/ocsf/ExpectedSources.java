@@ -36,7 +36,15 @@ public final class ExpectedSources {
     public static final String VERSION = "0.1";
 
     /** One expected artifact. {@code sha256}, {@code bytes} and {@code records} are the frozen extent. */
-    public record Source(String artifact, String profile, String sha256, Integer bytes, Integer records, boolean required) {
+    public record Source(String artifact, String profile, String sha256, Integer bytes, Integer records, boolean required, String expectedCompatibility) {
+        public Source(String artifact, String profile, String sha256, Integer bytes, Integer records, boolean required) {
+            this(artifact, profile, sha256, bytes, records, required, null);
+        }
+
+        /** Whether the frozen manifest expects this source's CLI version, profile or route to match no compatibility entry (an untested-version scenario). */
+        public boolean expectsNoCompatibilityMatch() {
+            return "no_match".equals(expectedCompatibility);
+        }
     }
 
     /** One expected split core: the owner value under {@code ownerPath} of {@code artifact} that the child owns. */
@@ -52,7 +60,7 @@ public final class ExpectedSources {
         for (Json s : json.member("sources") == null ? List.<Json>of() : json.member("sources").elements()) {
             Json req = s.member("required");
             sources.add(new Source(SchemaCatalog.text(s, "artifact"), SchemaCatalog.text(s, "profile"), SchemaCatalog.text(s, "sha256"),
-                    Event.integer(s.member("bytes")), Event.integer(s.member("records")), !(req instanceof Json.JBool b) || b.value()));
+                    Event.integer(s.member("bytes")), Event.integer(s.member("records")), !(req instanceof Json.JBool b) || b.value(), SchemaCatalog.text(s, "compatibility")));
         }
         for (Json c : json.member("children") == null ? List.<Json>of() : json.member("children").elements()) {
             children.add(new Child(SchemaCatalog.text(c, "spawn_tool_call_uid"), SchemaCatalog.text(c, "artifact"), SchemaCatalog.text(c, "owner_path")));

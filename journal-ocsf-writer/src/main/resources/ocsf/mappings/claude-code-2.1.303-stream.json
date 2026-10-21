@@ -3,8 +3,10 @@
   "applies_to": {
     "product": "Claude Code",
     "version": "2.1.303",
-    "launch": "-p --output-format stream-json (via claude-code-sdk 1.7.0 in the pair driver)",
-    "source_kind": "Live output"
+    "launch": "-p --output-format stream-json; routes sdk (claude-code-sdk rawJson lines) and stdout (raw standard output, C3 and ACCEPT-1)",
+    "source_kind": "Live output",
+    "versions": "selected through compatibility entry claude-code/stream-json/2.1.299 (inclusive reviewed range 2.1.299 to 2.1.304; tested 2.1.299 sdk, 2.1.303 sdk, 2.1.304 stdout); the compatibility declaration of each source states the selection and its status",
+    "compatibility_entry": "claude-code/stream-json/2.1.299"
   },
   "executor": "journal-ocsf-writer ClaudeStreamMapper (direct Java over the lexically exact Jv tree); one record at a time; state: artifact time fallback only",
   "record_discriminator": "type, then subtype",
@@ -135,5 +137,28 @@
   "unavailable_at_source": [
     "user prompt content (the SDK input is not echoed as a stream record)",
     "final per-response usage and stop_reason (the stream reports stop_reason null and provisional usage on these fixtures; see the transcript contract)"
-  ]
+  ],
+  "retained_only_families": {
+    "reviewed": "2026-10-21 (ACCEPT-1): the 2.1.304 stdout stream families with no normalization rule, each with its meaning and the reason it stays retained-only; retention is whole-record under claude.stream.fallback->source_record, so no fact is lost and none is claimed as a portable field",
+    "rate_limit_event": {
+      "meaning": "a vendor account rate-limit status snapshot (rate_limit_info: status, resetsAt, rateLimitType, overageStatus, unifiedWindows utilization/resetsAt) emitted by the CLI during the run",
+      "disposition": "retained-only (known meaning); not normalized: it is account state, not an execution fact, usage component or cost of this run; no common concept in the ACP/Spring AI/OTel/Weave/Phoenix crosswalk; a consumer reads it from data",
+      "limit": "observed on 2.1.304 stdout only; absent from the 2.1.299 and 2.1.303 SDK-delivered streams"
+    },
+    "system/thinking_tokens": {
+      "meaning": "a vendor running estimate of thinking tokens so far (estimated_tokens, estimated_tokens_delta) emitted before responses",
+      "disposition": "retained-only (known meaning); not normalized: an estimate, not a reported usage component; normalizing it as reasoning_tokens would compete with the reported usage.output_tokens_details.thinking_tokens of the assistant and result records, which are normalized (reasoning_tokens)",
+      "limit": "observed on 2.1.304 stdout only; its relation to the reported final thinking_tokens is not specified by the vendor and is not asserted here"
+    },
+    "user (no tool_result)": {
+      "meaning": "a user record whose content carries no tool_result block (the stream does not echo the submitted prompt; such records were not observed on the tested routes)",
+      "disposition": "retained-only; would be the prompt family if a route ever echoed it (UC3-AC13 stays not assessed on the native stream)",
+      "limit": "no occurrence on the tested routes"
+    },
+    "system (other subtypes)": {
+      "meaning": "system records with a subtype other than init and thinking_tokens",
+      "disposition": "retained-only: no normalization rule",
+      "limit": "none observed on the tested routes"
+    }
+  }
 }

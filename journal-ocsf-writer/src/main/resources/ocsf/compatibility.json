@@ -1,0 +1,83 @@
+{
+  "kind": "agent-journal/compatibility-registry",
+  "version": "0.1",
+  "reviewed": "2026-10-21 (ACCEPT-1)",
+  "selection_rule": "exactly one entry whose cli, profile and route match and whose inclusive [min_version, max_version] contains the CLI version selects the source description, contract and mapper; overlapping entries are a configuration error rejected at load; no match retains the acquired input under the untested-compatibility contract and flags it, never the numerically nearest entry; a version inside the range that is not listed under tested is reported in_range (reviewed range, not individually tested); a version not yet known is reported version_unknown until the stream reports it",
+  "routes": {
+    "stdout": "the CLI's raw standard output read by the capture process (no SDK stage)",
+    "sdk": "stream lines delivered by a vendor SDK (claude-code-sdk rawJson); a filtered surface",
+    "native_session_file": "the file the CLI wrote on its own account, read after the run"
+  },
+  "entries": [
+    {
+      "id": "claude-code/stream-json/2.1.299",
+      "cli": "Claude Code",
+      "profile": "claude_stream",
+      "routes": ["sdk", "stdout"],
+      "min_version": "2.1.299",
+      "max_version": "2.1.304",
+      "source_specification": {"path": "schema/vendor/claude-code/stream-json/2.1.303.json", "specification_version": "0.1.0", "profile": "claude_stream"},
+      "schema": {"extension": "agentic_cli", "version": "0.3.0-prototype", "compiled_sha256": "ec1b99bc2922651417949dbf6168664496a412a9b55951420a515519baeae78e"},
+      "contract": "claude-code-2.1.303-stream",
+      "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper",
+      "tested": [
+        {"version": "2.1.299", "route": "sdk", "evidence": "fixture claude-child-2.1.299 (sanitized real stream), OcsfOracleFixtureTest, RequirementsEvidenceTest, StandaloneEventFileTest"},
+        {"version": "2.1.303", "route": "sdk", "evidence": "private pair A stream (FULL-1/FULL-1R steward evidence 2026-10-21-complete-source-canonical, 2026-10-21-full1r)"},
+        {"version": "2.1.304", "route": "stdout", "evidence": "C3 live runs (steward evidence 2026-10-21-c3-live-claude); ACCEPT-1 live runs through the integrated launch path and their sanitized fixtures"}
+      ],
+      "note": "named for its lowest supported version; 2.1.300 to 2.1.302 lie inside the reviewed range and are reported in_range, not tested"
+    },
+    {
+      "id": "claude-code/session-transcript/2.1.299",
+      "cli": "Claude Code",
+      "profile": "claude_transcript",
+      "routes": ["native_session_file"],
+      "min_version": "2.1.299",
+      "max_version": "2.1.303",
+      "source_specification": {"path": "schema/vendor/claude-code/session-transcript/2.1.303.json", "specification_version": "0.1.0", "profile": "claude_transcript"},
+      "schema": {"extension": "agentic_cli", "version": "0.3.0-prototype", "compiled_sha256": "ec1b99bc2922651417949dbf6168664496a412a9b55951420a515519baeae78e"},
+      "contract": "claude-code-2.1.303-transcript",
+      "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeTranscriptMapper",
+      "tested": [
+        {"version": "2.1.299", "route": "native_session_file", "evidence": "fixture syn-claude-pair-transcript (labelled synthetic transcript in the shape of the 2.1.303 pair A families)"},
+        {"version": "2.1.303", "route": "native_session_file", "evidence": "private pair A transcript (FULL-1/FULL-1R steward evidence)"}
+      ],
+      "note": "experimental combined-source evidence only; a streaming CLI's native session file is archived, not admitted, under the stream-first policy"
+    },
+    {
+      "id": "codex-cli/exec-json-stream/0.160.1",
+      "cli": "Codex CLI",
+      "profile": "codex_stream",
+      "routes": ["stdout"],
+      "min_version": "0.160.1",
+      "max_version": "0.160.1",
+      "source_specification": {"path": "schema/vendor/codex-cli/exec-json-stream/0.160.1.json", "specification_version": "0.1.0", "profile": "codex_stream"},
+      "schema": {"extension": "agentic_cli", "version": "0.3.0-prototype", "compiled_sha256": "ec1b99bc2922651417949dbf6168664496a412a9b55951420a515519baeae78e"},
+      "contract": "codex-cli-0.160.1-exec-stream",
+      "mapper": "io.github.markpollack.journal.ocsf.writer.CodexStreamMapper",
+      "tested": [
+        {"version": "0.160.1", "route": "stdout", "evidence": "fixture syn-codex-exec-stream (labelled synthetic in the observed 0.160.1 key sets), CodexExecStreamTest; private pair B stream (FULL-1R); ACCEPT-1 live runs through the integrated launch path and their sanitized fixtures"}
+      ],
+      "note": "the exec --json stream reports no version; the documented discovery path is one `codex --version` per run"
+    },
+    {
+      "id": "codex-cli/rollout/0.160.1",
+      "cli": "Codex CLI",
+      "profile": "codex_rollout",
+      "routes": ["native_session_file"],
+      "min_version": "0.160.1",
+      "max_version": "0.160.1",
+      "source_specification": {"path": "schema/vendor/codex-cli/rollout/0.160.1.json", "specification_version": "0.1.0", "profile": "codex_rollout"},
+      "schema": {"extension": "agentic_cli", "version": "0.3.0-prototype", "compiled_sha256": "ec1b99bc2922651417949dbf6168664496a412a9b55951420a515519baeae78e"},
+      "contract": "codex-cli-0.160.1-rollout",
+      "mapper": "io.github.markpollack.journal.ocsf.writer.CodexRolloutMapper",
+      "tested": [
+        {"version": "0.160.1", "route": "native_session_file", "evidence": "fixture syn-codex-counterexamples (labelled synthetic rollout), OcsfOracleMutationTest; private pair B rollout (FULL-1R)"}
+      ],
+      "note": "experimental combined-source evidence only; Codex offers a stream, so its rollout is archived, not admitted, under the stream-first policy"
+    }
+  ],
+  "not_version_scoped": {
+    "opaque_text": "retains bytes only and normalizes nothing; it has no compatibility entry and is reported not_version_scoped"
+  }
+}

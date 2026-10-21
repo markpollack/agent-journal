@@ -3,7 +3,9 @@
   "applies_to": {
     "product": "Claude Code",
     "version": "2.1.303",
-    "source_kind": "Saved session file (~/.claude/projects/<cwd>/<session>.jsonl)"
+    "source_kind": "Saved session file (~/.claude/projects/<cwd>/<session>.jsonl)",
+    "compatibility_entry": "claude-code/session-transcript/2.1.299",
+    "selection": "route native_session_file; experimental combined-source evidence only"
   },
   "executor": "journal-ocsf-writer ClaudeTranscriptMapper (direct Java); one record at a time; state: artifact time fallback only",
   "record_discriminator": "type, then attachment.type / message.content shape",

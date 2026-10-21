@@ -71,7 +71,7 @@ class RequirementsReporterReproductionTest {
         assertThat(evidence.properties()).contains("result.owner");
         Judgment control = judge("UC3-AC1", evidence, corpus);
         assertThat(control.status()).as(control.reasoning()).isEqualTo(JudgmentStatus.PASS);
-        assertThat(control.checks()).as("every property on every owner of the three fixtures: 5 properties x (1 + 2 + 1) owners").hasSize(20);
+        assertThat(control.checks()).as("every property on every owner of the three matched fixtures: 5 properties x (1 + 2 + 1) owners; the untested-version fixture is outside the scenario").hasSize(20);
 
         Judgment missingProperty = judge("UC3-AC1", evidence, corpus.with(map(corpus.reports(), r -> r.filtered(c -> !c.property().equals("result.owner")))));
         assertThat(missingProperty.status()).as("REPAIRED: result.owner never appears").isEqualTo(JudgmentStatus.ERROR);
@@ -99,7 +99,7 @@ class RequirementsReporterReproductionTest {
         assertThat(all.frozen().get(RequirementsEvidenceTest.CLAUDE_INTERRUPTED).complete()).as("the replay-interrupted fixture is frozen as incomplete").isFalse();
         Judgment scoped = judge("UC4-AC5", CRITERION_EVIDENCE.get("UC4-AC5"), all);
         assertThat(scoped.status()).withFailMessage(scoped.reasoning()).isEqualTo(JudgmentStatus.PASS);
-        assertThat(scoped.reasoning()).contains("scoped to").contains(RequirementsEvidenceTest.CLAUDE_INTERRUPTED).contains("fixtures not exercising the scenario: [" + CODEX_STREAM + ", " + CLAUDE_CHILD + "]");
+        assertThat(scoped.reasoning()).contains("scoped to").contains(RequirementsEvidenceTest.CLAUDE_INTERRUPTED).contains("fixtures not exercising the scenario: [" + CODEX_STREAM + ", " + CLAUDE_CHILD + ", " + RequirementsEvidenceTest.CLAUDE_UNTESTED + "]");
         assertThat(scoped.checks()).as("only the interrupted fixture's obligations were evaluated").allMatch(c -> c.id().startsWith(RequirementsEvidenceTest.CLAUDE_INTERRUPTED));
     }
 

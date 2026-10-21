@@ -30,6 +30,9 @@ import java.util.Set;
  * <li>{@code session}: the native session id once the source reports it.</li>
  * <li>{@code cli_version}: the CLI version once the selected stream reports it (a capture launched without knowing
  * the version retains the records that arrive before it; no version command is run).</li>
+ * <li>{@code compatibility}: the compatibility selection for a source (entry, reviewed range, tested evidence and
+ * the status tested, in_range, no_match or version_unknown); declared with the source and again when a version
+ * becomes known, so the latest declaration for an artifact is the one in force (RULE-10, RULE-33).</li>
  * <li>{@code child}: a linked child event file (location and spawn identity), never its content.</li>
  * <li>{@code source_end}: how a source ended, with its final extent, hash and family inventory.</li>
  * <li>{@code recording}: the writer's finalization of this file (COMPLETED or INTERRUPTED) with the acquisition
@@ -73,6 +76,7 @@ final class Declarations {
                 .put("embedded", scalar("json_t", "required")).put("note", scalar("string_t", "optional")));
         declare(objects, "source", new Jv.Obj()
                 .put("artifact", scalar("string_t", "required")).put("kind", scalar("integer_t", "required")).put("profile", scalar("string_t", "required"))
+                .put("route", scalar("string_t", "optional"))
                 .put("surface", scalar("string_t", "optional")).put("path_at_capture", scalar("string_t", "optional")).put("contract_uid", scalar("string_t", "required")));
         declare(objects, "definition", new Jv.Obj()
                 .put("kind_of", scalar("string_t", "required")).put("key", scalar("string_t", "required")).put("amends", scalar("string_t", "optional"))
@@ -82,6 +86,14 @@ final class Declarations {
         declare(objects, "cli_version", new Jv.Obj()
                 .put("version", scalar("string_t", "required")).put("basis", scalar("string_t", "required")).put("record_index", scalar("integer_t", "optional"))
                 .put("artifact", scalar("string_t", "optional")));
+        declare(objects, "compatibility", new Jv.Obj()
+                .put("artifact", scalar("string_t", "required")).put("cli", scalar("string_t", "required")).put("profile", scalar("string_t", "required"))
+                .put("route", scalar("string_t", "required")).put("version", scalar("string_t", "optional")).put("version_basis", scalar("string_t", "required"))
+                .put("status", scalar("string_t", "required")).put("detail", scalar("string_t", "required")).put("records_before_selection", scalar("integer_t", "required"))
+                .put("normalizes", scalar("string_t", "required")).put("entry_id", scalar("string_t", "optional")).put("min_version", scalar("string_t", "optional"))
+                .put("max_version", scalar("string_t", "optional")).put("source_specification", scalar("json_t", "optional")).put("schema", scalar("json_t", "optional"))
+                .put("mapper", scalar("string_t", "optional")).put("contract", scalar("string_t", "optional")).put("tested", scalar("json_t", "optional"))
+                .put("note", scalar("string_t", "optional")).put("schema_sha256_in_use", scalar("string_t", "optional")));
         declare(objects, "child", new Jv.Obj()
                 .put("run_uid", scalar("string_t", "required")).put("path", scalar("string_t", "required")).put("spawn_tool_call_uid", scalar("string_t", "required"))
                 .put("basis", scalar("string_t", "optional")).put("parent_scope", scalar("json_t", "optional")));

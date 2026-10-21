@@ -16,7 +16,7 @@ import java.util.List;
  * </pre>
  *
  * The spec lists the run facts and the sources in admission order ({@code artifact}, {@code kind}, {@code profile},
- * {@code surface}, {@code path}); each source is fed in byte chunks of {@code --chunk} bytes (default 4096) and
+ * {@code route}, {@code surface}, {@code path}; a source without a route matches no compatibility entry and is retained unnormalized); each source is fed in byte chunks of {@code --chunk} bytes (default 4096) and
  * ended with EOF before the next source is admitted, which is the order a live capture sees them in (live output
  * first, the saved session file afterwards). {@code --stop-after} ends the named source after that many whole
  * records and interrupts the writer, for prefix evidence. The out directory must not exist.
@@ -75,6 +75,7 @@ public final class OcsfWriterTool {
                     file = base.resolve(file);
                 }
                 SourceDescriptor d = new SourceDescriptor(artifact, (int) ((Jv.Num) s.member("kind")).value().longValueExact(), s.member("profile").text(),
+                        s.member("route") == null ? null : s.member("route").text(),
                         s.member("surface") == null ? "recorded artifact replayed in byte chunks" : s.member("surface").text(), s.member("path").text());
                 SourceInput in = w.source(d);
                 if (artifact.equals(stopArtifact)) {

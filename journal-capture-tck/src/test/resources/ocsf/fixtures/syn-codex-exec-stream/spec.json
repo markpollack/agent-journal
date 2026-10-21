@@ -3,10 +3,26 @@
  "invocation_index": 0,
  "session_uid": "00000000-0000-4000-8000-0000000c0de5",
  "capture_start": "2026-10-21T09:00:00Z",
- "cli": {"name": "Codex CLI", "version": "0.160.1", "vendor_name": "OpenAI", "type_id": 1, "type": "Native"},
- "launch_settings": {"command": "codex exec --json (LABELLED SYNTHETIC stream; no CLI was run)", "cwd": "/work"},
+ "cli": {
+  "name": "Codex CLI",
+  "version": "0.160.1",
+  "vendor_name": "OpenAI",
+  "type_id": 1,
+  "type": "Native"
+ },
+ "launch_settings": {
+  "command": "codex exec --json (LABELLED SYNTHETIC stream; no CLI was run)",
+  "cwd": "/work"
+ },
  "sources": [
-  {"artifact": "stream.jsonl", "kind": 1, "profile": "codex_stream", "surface": "LABELLED SYNTHETIC exec --json stdout in the record shapes verified on the private Codex 0.160.1 pair B stream", "path": "<fixture>/native/syn-codex-exec-stream/stream.jsonl"}
+  {
+   "artifact": "stream.jsonl",
+   "kind": 1,
+   "profile": "codex_stream",
+   "surface": "LABELLED SYNTHETIC exec --json stdout in the record shapes verified on the private Codex 0.160.1 pair B stream",
+   "path": "<fixture>/native/syn-codex-exec-stream/stream.jsonl",
+   "route": "stdout"
+  }
  ],
  "synthetic": {
   "label": "LABELLED SYNTHETIC CODEX EXEC STREAM (2026-10-21): hand-authored in the exact key sets observed on the private 0.160.1 pair B stream (thread.started{thread_id}, turn.started{}, item.started/item.completed{item{id,type,command,aggregated_output,exit_code,status}}, agent_message{id,type,text}, turn.completed{usage{input_tokens,cached_input_tokens,cache_write_input_tokens,output_tokens,reasoning_output_tokens}}); the two records marked SYNTHETIC unknown are not vendor shapes and exist only to exercise whole-record fallback; not live evidence and not a new live run",

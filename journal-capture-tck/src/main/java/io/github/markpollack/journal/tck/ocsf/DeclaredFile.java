@@ -46,6 +46,7 @@ public final class DeclaredFile {
     private final Map<String, Json> contracts = new LinkedHashMap<>();
     private final List<String> sessions = new ArrayList<>();
     private Json cliVersion;
+    private final Map<String, List<Json>> compatibility = new LinkedHashMap<>();
     private final Map<String, Integer> declaredLine = new LinkedHashMap<>();
     private final Map<String, Map<String, Integer>> attributeLine = new LinkedHashMap<>();
     private final Map<String, Json.JObject> classes = new LinkedHashMap<>();
@@ -171,6 +172,7 @@ public final class DeclaredFile {
                     cliVersion = p;
                 }
             }
+            case "compatibility" -> compatibility.computeIfAbsent(SchemaCatalog.text(p, "artifact"), k -> new ArrayList<>()).add(p);
             case "child" -> children.add(p);
             case "recording" -> recording = p;
             default -> {
@@ -411,7 +413,7 @@ public final class DeclaredFile {
         m.put("shared", new Json.JObject(shared));
         List<Json> src = new ArrayList<>();
         for (Map.Entry<String, Json> s : sources.entrySet()) {
-            src.add(sourceEntry(s.getValue(), sourceEnds.get(s.getKey())));
+            src.add(sourceEntry(s.getValue(), sourceEnds.get(s.getKey()), compatibility.get(s.getKey())));
         }
         m.put("sources", new Json.JArray(src));
         if (schema.member("time_policy") != null) {
@@ -440,12 +442,22 @@ public final class DeclaredFile {
         return cliVersion;
     }
 
-    private static Json sourceEntry(Json source, Json end) {
+    /** The compatibility declarations of an artifact, oldest first; empty when the file declares none (a file written before the registry). */
+    public List<Json> compatibility(String artifact) {
+        List<Json> c = compatibility.get(artifact);
+        return c == null ? List.of() : List.copyOf(c);
+    }
+
+    private static Json sourceEntry(Json source, Json end, List<Json> compatibility) {
         Map<String, Json> s = new LinkedHashMap<>();
-        for (String k : List.of("artifact", "kind", "profile", "surface", "path_at_capture", "contract_uid")) {
+        for (String k : List.of("artifact", "kind", "profile", "route", "surface", "path_at_capture", "contract_uid")) {
             if (source.member(k) != null) {
                 s.put(k, source.member(k));
             }
+        }
+        if (compatibility != null && !compatibility.isEmpty()) {
+            s.put("compatibility", compatibility.get(compatibility.size() - 1));
+            s.put("compatibility_history", new Json.JArray(compatibility));
         }
         if (end == null) {
             s.put("state", str("RECORDING"));

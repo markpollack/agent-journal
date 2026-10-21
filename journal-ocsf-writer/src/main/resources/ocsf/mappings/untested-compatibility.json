@@ -1,0 +1,28 @@
+{
+  "contract_uid": "agent-journal/untested-compatibility/0.1",
+  "applies_to": {
+    "product": "any CLI whose version, source profile or launch route matches no compatibility entry",
+    "version": "none: this contract claims no version",
+    "launch": "any",
+    "source_kind": "any"
+  },
+  "executor": "journal-ocsf-writer OcsfRunWriter: once the compatibility selection for a source is no_match, every later record of that source bypasses its mapper and is retained whole under compat.no_match->source_record; nothing is normalized",
+  "record_discriminator": "none: every parsed record is retained whole",
+  "rules": [
+    {
+      "id": "compat.no_match->source_record",
+      "selector": "every parsed record of a source whose CLI version, profile or route matches no compatibility entry (RULE-33)",
+      "target": "agentic_cli/source_record",
+      "activity": "1 Parsed",
+      "residual": "whole record in data; record_type is the vendor discriminator; basis names the untested selection. No portable field is populated, so nothing implies supported normalization"
+    },
+    {
+      "id": "common.opaque->source_record",
+      "selector": "any line that is blank, not UTF-8, not one JSON object under strict duplicate-key parsing, or cut off by the end of the source",
+      "target": "agentic_cli/source_record",
+      "activity": "2 Opaque",
+      "residual": "raw_data (text) or raw_bytes_b64 (bytes); parse_status_id 5 Incomplete at source end when the source ended mid-record"
+    }
+  ],
+  "note": "a retention contract, not a mapping: it exists so that acquired input outside every tested range is preserved and flagged rather than guessed at (no nearest-entry selection) or lost"
+}

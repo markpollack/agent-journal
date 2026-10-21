@@ -69,13 +69,16 @@ class RequirementsEvidenceTest {
     static final String CODEX_STREAM = "syn-codex-exec-stream";
     static final String CLAUDE_CHILD = "claude-child-2.1.299";
     static final String CLAUDE_INTERRUPTED = "claude-child-2.1.299-interrupted";
-    static final List<String> FIXTURES = List.of(CODEX_STREAM, CLAUDE_CHILD, CLAUDE_INTERRUPTED);
+    static final String CLAUDE_UNTESTED = "syn-claude-untested-version";
+    static final List<String> FIXTURES = List.of(CODEX_STREAM, CLAUDE_CHILD, CLAUDE_INTERRUPTED, CLAUDE_UNTESTED);
 
     /** The scenario a criterion's fixtures must exercise, decided from each fixture's frozen manifest, not from the report. */
     enum Scenario {
         ANY("any committed fixture"),
         INTERRUPTED_SOURCE("a fixture whose frozen expected sources declare an incomplete run (a source interrupted or cut)"),
-        SPLIT_CHILD("a fixture whose frozen expected sources declare a split child core");
+        SPLIT_CHILD("a fixture whose frozen expected sources declare a split child core"),
+        UNTESTED_VERSION("a fixture whose frozen expected sources declare a source whose CLI version, profile or route matches no compatibility entry"),
+        MATCHED_COMPATIBILITY("a fixture whose frozen expected sources declare no untested-version source (every source is expected to select an entry)");
 
         final String description;
 
@@ -88,6 +91,8 @@ class RequirementsEvidenceTest {
                 case ANY -> true;
                 case INTERRUPTED_SOURCE -> !frozen.complete();
                 case SPLIT_CHILD -> !frozen.children().isEmpty();
+                case UNTESTED_VERSION -> frozen.sources().stream().anyMatch(ExpectedSources.Source::expectsNoCompatibilityMatch);
+                case MATCHED_COMPATIBILITY -> frozen.sources().stream().noneMatch(ExpectedSources.Source::expectsNoCompatibilityMatch);
             };
         }
     }
@@ -115,19 +120,27 @@ class RequirementsEvidenceTest {
      */
     static final Map<String, Evidence> CRITERION_EVIDENCE = new LinkedHashMap<>();
     static {
+        // normalization criteria are assessed on fixtures whose every source selected a compatibility entry (MATCHED_COMPATIBILITY):
+        // on an untested-version fixture the oracle reports every normalization family UNSUPPORTED by design, which is RULE-33's
+        // evidence (UC2-AC5), not evidence about the mapping; retention and denominator criteria apply to ANY fixture
+        // an untested version: the stream stays the only declared source (source.expected under the expected profile against a frozen
+        // manifest that names no native session file), retention holds, and the compatibility check is UNSUPPORTED (honest no-match)
+        CRITERION_EVIDENCE.put("UC1-AC5", Evidence.acceptingUnsupported(Scenario.UNTESTED_VERSION, "source.expected", "source.compatibility", "whole_record.coverage"));
         CRITERION_EVIDENCE.put("UC1-AC6", Evidence.of(Scenario.ANY, "source.denominator", "source.expected", "source.inventory"));
-        CRITERION_EVIDENCE.put("UC3-AC1", Evidence.of(Scenario.ANY, "population.requests", "request.values", "population.results", "result.values", "result.owner"));
-        CRITERION_EVIDENCE.put("UC3-AC2", Evidence.of(Scenario.ANY, "population.responses", "response.values"));
+        CRITERION_EVIDENCE.put("UC2-AC4", Evidence.of(Scenario.MATCHED_COMPATIBILITY, "source.compatibility"));
+        CRITERION_EVIDENCE.put("UC2-AC5", Evidence.acceptingUnsupported(Scenario.UNTESTED_VERSION, "source.compatibility", "whole_record.coverage"));
+        CRITERION_EVIDENCE.put("UC3-AC1", Evidence.of(Scenario.MATCHED_COMPATIBILITY, "population.requests", "request.values", "population.results", "result.values", "result.owner"));
+        CRITERION_EVIDENCE.put("UC3-AC2", Evidence.of(Scenario.MATCHED_COMPATIBILITY, "population.responses", "response.values"));
         CRITERION_EVIDENCE.put("UC3-AC3", Evidence.of(Scenario.ANY, "whole_record.structure_value"));
-        CRITERION_EVIDENCE.put("UC3-AC4", Evidence.of(Scenario.ANY, "population.usage", "usage.values"));
-        CRITERION_EVIDENCE.put("UC3-AC5", Evidence.of(Scenario.ANY, "population.cost", "cost.values"));
+        CRITERION_EVIDENCE.put("UC3-AC4", Evidence.of(Scenario.MATCHED_COMPATIBILITY, "population.usage", "usage.values"));
+        CRITERION_EVIDENCE.put("UC3-AC5", Evidence.of(Scenario.MATCHED_COMPATIBILITY, "population.cost", "cost.values"));
         CRITERION_EVIDENCE.put("UC3-AC6", Evidence.of(Scenario.ANY, "whole_record.coverage", "whole_record.class"));
-        CRITERION_EVIDENCE.put("UC3-AC7", Evidence.of(Scenario.ANY, "population.decisions", "decision.values"));
-        CRITERION_EVIDENCE.put("UC3-AC8", Evidence.of(Scenario.ANY, "population.operations", "operation.values"));
-        CRITERION_EVIDENCE.put("UC3-AC10", Evidence.of(Scenario.ANY, "time.basis"));
+        CRITERION_EVIDENCE.put("UC3-AC7", Evidence.of(Scenario.MATCHED_COMPATIBILITY, "population.decisions", "decision.values"));
+        CRITERION_EVIDENCE.put("UC3-AC8", Evidence.of(Scenario.MATCHED_COMPATIBILITY, "population.operations", "operation.values"));
+        CRITERION_EVIDENCE.put("UC3-AC10", Evidence.of(Scenario.MATCHED_COMPATIBILITY, "time.basis"));
         CRITERION_EVIDENCE.put("UC3-AC11", Evidence.of(Scenario.ANY, "event.order", "whole_record.framing"));
-        CRITERION_EVIDENCE.put("UC3-AC13", Evidence.of(Scenario.ANY, "population.prompts", "prompt.values"));
-        CRITERION_EVIDENCE.put("UC3-AC15", Evidence.of(Scenario.ANY, "time.basis"));
+        CRITERION_EVIDENCE.put("UC3-AC13", Evidence.of(Scenario.MATCHED_COMPATIBILITY, "population.prompts", "prompt.values"));
+        CRITERION_EVIDENCE.put("UC3-AC15", Evidence.of(Scenario.MATCHED_COMPATIBILITY, "time.basis"));
         // an honestly interrupted or cut source is reported UNSUPPORTED-for-a-complete-claim by the oracle: that is the required
         // behavior; an inconsistent label would be DEFECTIVE. Established only on a fixture that was actually interrupted.
         CRITERION_EVIDENCE.put("UC4-AC3", Evidence.acceptingUnsupported(Scenario.INTERRUPTED_SOURCE, "source.state", "source.extent"));
@@ -160,7 +173,7 @@ class RequirementsEvidenceTest {
     /** Statuses pinned per assessed criterion, so that a change in what the fixtures establish is a deliberate edit here. */
     static final Map<String, JudgmentStatus> EXPECTED_STATUS = new TreeMap<>();
     static {
-        for (String id : List.of("UC1-AC6", "UC3-AC1", "UC3-AC2", "UC3-AC3", "UC3-AC4", "UC3-AC5", "UC3-AC6", "UC3-AC7", "UC3-AC8", "UC3-AC10",
+        for (String id : List.of("UC1-AC5", "UC1-AC6", "UC2-AC4", "UC2-AC5", "UC3-AC1", "UC3-AC2", "UC3-AC3", "UC3-AC4", "UC3-AC5", "UC3-AC6", "UC3-AC7", "UC3-AC8", "UC3-AC10",
                 "UC3-AC11", "UC3-AC15", "UC4-AC6", "UC5-AC3", "UC5-AC4", UNASSESSED_REPORTING_CRITERION, PARTIAL_EVIDENCE_CRITERION)) {
             EXPECTED_STATUS.put(id, JudgmentStatus.PASS);
         }
@@ -566,7 +579,8 @@ class RequirementsEvidenceTest {
         out.put("question", "does the independent oracle, run on the committed public fixtures, establish this requirement's observable behavior for those fixtures?");
         out.put("fixtures", FIXTURES);
         out.put("evidence_class", "committed public fixtures: labelled synthetic Codex exec stream; sanitized real Claude stream with one child core; "
-                + "the same stream's 10-record prefix replay-interrupted by the fixture driver (labelled). Recorded replay and labelled synthetic; not live capture.");
+                + "the same stream's 10-record prefix replay-interrupted by the fixture driver (labelled); the same stream with its reported version edited to one no "
+                + "compatibility entry covers (labelled synthetic). Recorded replay and labelled synthetic; not live capture.");
         out.put("reduction", "a criterion passes only when every named property is reported for every owner its fixtures' frozen expected sources imply and the named scenario was exercised; "
                 + "missing check: ERROR; DEFECTIVE: FAIL; unresolved/unsupported: ABSTAIN; no occurrence or no exercising fixture: ABSTAIN (not assessed)");
         out.put("rollup", rollup(judgments.values()).name());

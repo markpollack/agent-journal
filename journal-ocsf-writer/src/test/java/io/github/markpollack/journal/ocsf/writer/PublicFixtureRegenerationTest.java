@@ -19,7 +19,9 @@ import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX_
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.FIXTURES;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.INTERRUPTED;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.PAIR;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.UNTESTED;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStream;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStreamStdout;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeTranscript;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.codexRollout;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.codexStream;
@@ -41,6 +43,7 @@ class PublicFixtureRegenerationTest {
         write(PAIR, List.of(claudeStream(), claudeTranscript()), List.of("stream.jsonl", "transcript.jsonl"));
         write(CODEX_STREAM, List.of(codexStream()), List.of("stream.jsonl"));
         writeInterrupted(INTERRUPTED, CHILD, "stream.jsonl", 10);
+        write(UNTESTED, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
     }
 
     /**

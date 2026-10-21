@@ -17,13 +17,13 @@ import java.time.Instant;
  * any SDK stage.
  *
  * <pre>
- *   capture &lt;spec.json&gt; &lt;out-dir&gt; [--artifact NAME] [--profile PROFILE] [--surface TEXT] [--flush-every N] [--interrupt-flag FILE]
+ *   capture &lt;spec.json&gt; &lt;out-dir&gt; [--artifact NAME] [--profile PROFILE] [--route ROUTE] [--surface TEXT] [--flush-every N] [--interrupt-flag FILE]
  * </pre>
  *
  * {@code spec.json} is the run descriptor ({@code run_uid}, {@code invocation_index}, {@code capture_start},
  * {@code cli} whose {@code version} may be absent when the stream is expected to report it, {@code launch_settings});
  * the stream is declared as {@code --artifact} (default {@code stream.jsonl}) under {@code --profile} (default
- * {@code claude_stream}). At end of input the source ends by EOF and the writer completes, unless the file named by
+ * {@code claude_stream}) on {@code --route} (default {@code stdout}, the raw standard output). At end of input the source ends by EOF and the writer completes, unless the file named by
  * {@code --interrupt-flag} exists, in which case the driver stopped the CLI and the writer is interrupted with the
  * flag file's content as the reason. The outcome, the run uid, the session uid and the reported CLI version are
  * printed on standard output for the driver.
@@ -37,11 +37,12 @@ public final class LiveCapture {
 
     static int run(String[] args, InputStream stdin, PrintStream out, PrintStream err) throws IOException {
         if (args.length < 3) {
-            err.println("usage: capture <spec.json> <out-dir> [--artifact NAME] [--profile PROFILE] [--surface TEXT] [--flush-every N] [--interrupt-flag FILE]");
+            err.println("usage: capture <spec.json> <out-dir> [--artifact NAME] [--profile PROFILE] [--route ROUTE] [--surface TEXT] [--flush-every N] [--interrupt-flag FILE]");
             return 64;
         }
         String artifact = "stream.jsonl";
         String profile = "claude_stream";
+        String route = "stdout";
         String surface = "live CLI standard output piped to this process (raw bytes, no SDK stage); an independent copy is taken by the driver";
         int flushEvery = 1;
         Path interruptFlag = null;
@@ -49,6 +50,7 @@ public final class LiveCapture {
             switch (args[i]) {
                 case "--artifact" -> artifact = args[++i];
                 case "--profile" -> profile = args[++i];
+                case "--route" -> route = args[++i];
                 case "--surface" -> surface = args[++i];
                 case "--flush-every" -> flushEvery = Integer.parseInt(args[++i]);
                 case "--interrupt-flag" -> interruptFlag = Path.of(args[++i]);
@@ -72,7 +74,7 @@ public final class LiveCapture {
         long bytes = 0;
         int records;
         try (OcsfRunWriter w = OcsfRunWriter.open(dir, run, SchemaPin.bundled(), options)) {
-            SourceInput in = w.source(new SourceDescriptor(artifact, 1, profile, surface, "stdin of the capture process"));
+            SourceInput in = w.source(new SourceDescriptor(artifact, 1, profile, route, surface, "stdin of the capture process"));
             w.flush();
             out.println("capture open " + dir + " run " + run.runUid() + " at " + started + " (flush every " + flushEvery + " record(s))");
             out.flush();

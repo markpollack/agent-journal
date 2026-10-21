@@ -30,7 +30,8 @@
    "artifact": "stream.jsonl",
    "kind": 1,
    "profile": "claude_stream",
-   "path": "<fixture>/native/claude-child-2.1.299/stream.jsonl"
+   "path": "<fixture>/native/claude-child-2.1.299/stream.jsonl",
+   "route": "sdk"
   }
  ],
  "synthetic": {

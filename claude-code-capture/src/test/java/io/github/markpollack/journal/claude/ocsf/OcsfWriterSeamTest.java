@@ -92,7 +92,7 @@ class OcsfWriterSeamTest {
         PhaseCapture capture;
         int seenBeforeEnd;
         try (OcsfRunWriter w = OcsfRunWriter.open(core, run, SchemaPin.bundled(), WriterOptions.defaults().withClock(clock).withAutoFlush(4))) {
-            SourceInput in = w.source(new SourceDescriptor("stream.jsonl", 1, "claude_stream",
+            SourceInput in = w.source(new SourceDescriptor("stream.jsonl", 1, "claude_stream", "sdk",
                     "SDK-delivered ParsedMessage.rawJson lines, teed at the Iterator<ParsedMessage> seam; lines the SDK does not parse are not delivered", null));
             List<ParsedMessage> seen = new ArrayList<>();
             Iterator<ParsedMessage> teed = tee(messages.iterator(), in, clock, m -> {

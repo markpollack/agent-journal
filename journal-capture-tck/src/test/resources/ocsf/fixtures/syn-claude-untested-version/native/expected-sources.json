@@ -1,0 +1,22 @@
+{
+ "kind": "agent-journal/expected-sources",
+ "version": "0.1",
+ "run_uid": "syn-claude-untested-version",
+ "complete": true,
+ "frozen": {
+  "basis": "LABELLED SYNTHETIC: the sanitized real claude-child-2.1.299 stream with record 1's claude_code_version changed to 2.1.999, a version no compatibility entry covers; frozen from those bytes before any package was judged"
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "profile": "claude_stream",
+   "sha256": "ce0a87b8e9d427996d8e0754ecf3f34985c606cea4a912a51c77582d018e286d",
+   "bytes": 24042,
+   "records": 27,
+   "required": true,
+   "compatibility": "no_match",
+   "compatibility_basis": "2.1.999 lies outside every reviewed range of the registry; the expected behavior is retention flagged untested, with no nearest-entry normalization and no native session file selected"
+  }
+ ],
+ "children": []
+}

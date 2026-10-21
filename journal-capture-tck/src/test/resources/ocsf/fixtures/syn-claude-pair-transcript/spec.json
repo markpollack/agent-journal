@@ -3,11 +3,36 @@
  "invocation_index": 0,
  "session_uid": "00000000-0000-4000-8000-000000000000",
  "capture_start": "2026-10-14T18:08:46Z",
- "cli": {"name": "Claude Code", "version": "2.1.299", "vendor_name": "Anthropic", "type_id": 1, "type": "Native"},
- "launch_settings": {"command": "claude -p --output-format stream-json (sanitized real stream + SYNTHETIC transcript)", "model": "claude-haiku-4-5-20251001", "permissionMode": "default (from stream record 1)", "cwd": "/work"},
+ "cli": {
+  "name": "Claude Code",
+  "version": "2.1.299",
+  "vendor_name": "Anthropic",
+  "type_id": 1,
+  "type": "Native"
+ },
+ "launch_settings": {
+  "command": "claude -p --output-format stream-json (sanitized real stream + SYNTHETIC transcript)",
+  "model": "claude-haiku-4-5-20251001",
+  "permissionMode": "default (from stream record 1)",
+  "cwd": "/work"
+ },
  "sources": [
-  {"artifact": "stream.jsonl", "kind": 1, "profile": "claude_stream", "surface": "the sanitized real 2.1.299 stream of claude-child-2.1.299 (live output, admitted first)", "path": "<fixture>/native/syn-claude-pair-transcript/stream.jsonl"},
-  {"artifact": "transcript.jsonl", "kind": 2, "profile": "claude_transcript", "surface": "LABELLED SYNTHETIC saved session file admitted after the stream ended", "path": "<fixture>/native/syn-claude-pair-transcript/transcript.jsonl"}
+  {
+   "artifact": "stream.jsonl",
+   "kind": 1,
+   "profile": "claude_stream",
+   "surface": "the sanitized real 2.1.299 stream of claude-child-2.1.299 (live output, admitted first)",
+   "path": "<fixture>/native/syn-claude-pair-transcript/stream.jsonl",
+   "route": "sdk"
+  },
+  {
+   "artifact": "transcript.jsonl",
+   "kind": 2,
+   "profile": "claude_transcript",
+   "surface": "LABELLED SYNTHETIC saved session file admitted after the stream ended",
+   "path": "<fixture>/native/syn-claude-pair-transcript/transcript.jsonl",
+   "route": "native_session_file"
+  }
  ],
  "synthetic": {
   "label": "LABELLED SYNTHETIC PAIR: the stream is the sanitized real claude-child-2.1.299 stream; the transcript is hand-authored (2026-10-21) in the shape of a Claude Code 2.1.299 session file for the main thread's first response (msg_011Cg2aRQ1iZf8BxQVUnD2jR) with every record family of the real 2.1.303 pair A transcript (queue-operation, user prompt, attachment x5 kinds, atis-latch, api-request-shape, api-request-blob, api-request, last-prompt, assistant with stop_reason and final usage, user tool_result with permissionDecision/toolUseResult, cost-state); not live evidence",

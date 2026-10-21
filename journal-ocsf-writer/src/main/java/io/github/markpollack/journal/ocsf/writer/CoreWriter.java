@@ -54,6 +54,9 @@ final class CoreWriter {
         /** The source declaration payload for an artifact, or {@code null} when the run never declared it. */
         Jv.Obj sourceDeclaration(String artifact);
 
+        /** The compatibility selections declared so far for an artifact, oldest first (the last is the one in force). */
+        java.util.List<Jv.Obj> compatibilityDeclarations(String artifact);
+
         /** The selected stream reported the CLI version (first report wins; later reports are not re-declared). */
         void cliVersionReported(String version);
 
@@ -143,6 +146,21 @@ final class CoreWriter {
         declareContract(source.get("contract_uid").text());
         declare("source", "source:" + artifact, source);
         declaredSources.add(artifact);
+        int n = 0;
+        for (Jv.Obj c : context.compatibilityDeclarations(artifact)) {
+            declareCompatibility(artifact, ++n, c);
+        }
+    }
+
+    /**
+     * Declares the n-th compatibility selection of a source this file references (the first with the source, a
+     * later one when the version became known); a no-op for a source this file never declared.
+     */
+    void declareCompatibility(String artifact, int n, Jv.Obj payload) {
+        String uid = "compatibility:" + artifact + "#" + n;
+        if (declaredSources.contains(artifact) && !declared(uid)) {
+            declare("compatibility", uid, payload);
+        }
     }
 
     void declareContract(String contractUid) {

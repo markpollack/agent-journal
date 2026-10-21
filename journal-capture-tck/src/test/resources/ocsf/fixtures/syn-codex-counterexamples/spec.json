@@ -29,7 +29,8 @@
    "artifact": "rollout.jsonl",
    "kind": 2,
    "profile": "codex_rollout",
-   "path": "<fixture>/native/syn-codex-counterexamples/rollout.jsonl"
+   "path": "<fixture>/native/syn-codex-counterexamples/rollout.jsonl",
+   "route": "native_session_file"
   }
  ],
  "synthetic": {
