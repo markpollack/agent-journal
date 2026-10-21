@@ -19,6 +19,9 @@
         contain with what Journal recorded, and checks the other criteria on real captures</description>
 
     <properties>
+        <!-- java-guardrails JaCoCo floors: measured 2026-10-21 less 2 points (config/guardrails/decisions.md) -->
+        <jacoco.minimum.line>0.85</jacoco.minimum.line>
+        <jacoco.minimum.branch>0.74</jacoco.minimum.branch>
         <!--
             Agent Judge is a test-only dependency: its RFC 2119 / EARS readers and native requirement types load the
             requirement documents under src/test/resources/requirements/ (see the tck.requirements tests). It never

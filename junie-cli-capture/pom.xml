@@ -17,6 +17,12 @@
     <name>Junie CLI Capture</name>
     <description>Junie CLI durable session trace to journal-core bridge</description>
 
+    <properties>
+        <!-- java-guardrails JaCoCo floors: measured 2026-10-21 less 2 points (config/guardrails/decisions.md) -->
+        <jacoco.minimum.line>0.91</jacoco.minimum.line>
+        <jacoco.minimum.branch>0.70</jacoco.minimum.branch>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.github.markpollack</groupId>

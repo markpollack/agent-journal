@@ -18,6 +18,9 @@
     <description>Claude Code SDK to journal-core bridge: phase capture, session parsing, and base run recording</description>
 
     <properties>
+        <!-- java-guardrails JaCoCo floors: measured 2026-10-21 less 2 points (config/guardrails/decisions.md) -->
+        <jacoco.minimum.line>0.92</jacoco.minimum.line>
+        <jacoco.minimum.branch>0.77</jacoco.minimum.branch>
         <!-- claude-code-sdk publishes Java 21 bytecode (class file 65), so this module
              cannot be compiled or run on 17 whatever the parent declares. journal-core
              keeps the 17 baseline; only the modules that bind a 21 SDK move up. -->

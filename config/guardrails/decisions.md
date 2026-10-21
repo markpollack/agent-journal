@@ -16,3 +16,4 @@ all concurrency or locking), so SpotBugs is second. Error Prone third (needs the
 PMD fourth: the long launcher methods are the refactor-to-testability target once the detectors above are green.
 ArchUnit last. PIT stays as a profile over named classes, run on the classes a change touched during work and whole
 module only at acceptance returns; it is not a per-commit gate.
+JACOCO_FLOORS: antigravity-cli-capture 94/68; claude-code-capture 92/77; codex-cli-capture 86/68; grok-cli-capture 90/72; journal-capture-tck 85/74; journal-core 82/64; journal-ocsf-writer 87/76; junie-cli-capture 91/70 (2026-10-21, the floors as proposed)

@@ -21,6 +21,9 @@
         journal-capture-tck reads its output and never calls it.</description>
 
     <properties>
+        <!-- java-guardrails JaCoCo floors: measured 2026-10-21 less 2 points (config/guardrails/decisions.md) -->
+        <jacoco.minimum.line>0.87</jacoco.minimum.line>
+        <jacoco.minimum.branch>0.76</jacoco.minimum.branch>
         <!-- TEST SCOPE ONLY: Agent Judge's RFC 2119 / EARS readers load the requirement documents for RequirementsAccountingIT
              (the verify-phase accounting of every rule and criterion against this build's executed evidence). Nothing in main
              depends on it; RULE-23 is checked by parsing this file's dependency scopes. Same snapshot as journal-capture-tck. -->

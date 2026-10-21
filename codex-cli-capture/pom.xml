@@ -17,6 +17,12 @@
     <name>Codex CLI Capture</name>
     <description>Codex CLI rollout JSONL to journal-core bridge</description>
 
+    <properties>
+        <!-- java-guardrails JaCoCo floors: measured 2026-10-21 less 2 points (config/guardrails/decisions.md) -->
+        <jacoco.minimum.line>0.86</jacoco.minimum.line>
+        <jacoco.minimum.branch>0.68</jacoco.minimum.branch>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.github.markpollack</groupId>
