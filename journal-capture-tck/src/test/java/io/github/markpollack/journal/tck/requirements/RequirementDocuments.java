@@ -23,8 +23,9 @@ import java.util.regex.Pattern;
  *
  * <p>The intended roster is deliberately read with a looser rule than the Agent Judge readers use. The readers accept
  * {@code ### RULE-n} followed by a bold keyword line and a {@code **Reason:**} line, or {@code ### UCn-ACm: Title}
- * followed by one sentence, and skip anything else without complaint. Comparing the parsed roster against every
- * heading is what turns a silently skipped requirement into a test failure.
+ * followed by one sentence; the permissive {@code from} skips anything else, the strict {@code fromStrict} (Agent
+ * Judge 0.19.0) refuses the document. Comparing the parsed roster against every heading is the independent check that
+ * turns a silently skipped requirement into a test failure whether or not the strict reader noticed it.
  */
 final class RequirementDocuments {
 
@@ -32,6 +33,8 @@ final class RequirementDocuments {
     static final String CRITERIA = "/requirements/agent-journal/criteria.md";
     static final String NEGATIVE_RULES = "/requirements/negative-control/rules.md";
     static final String NEGATIVE_CRITERIA = "/requirements/negative-control/criteria.md";
+    static final String APPLICABILITY_RULES = "/requirements/applicability-control/rules.md";
+    static final String APPLICABILITY_CRITERIA = "/requirements/applicability-control/criteria.md";
 
     /** Any third-level heading; the identifier is the first token, with a trailing colon removed. */
     private static final Pattern ANY_HEADING = Pattern.compile("^###\\s+(\\S+?):?(?:\\s.*)?$");

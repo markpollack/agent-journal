@@ -1,6 +1,8 @@
 package io.github.markpollack.journal.tck.requirements;
 
 import io.github.markpollack.judge.ai.requirements.EarsCriterion;
+import io.github.markpollack.judge.ai.requirements.RequirementDocumentException;
+import io.github.markpollack.judge.ai.requirements.RequirementDocumentProblem;
 import io.github.markpollack.judge.ai.requirements.Rfc2119Constraint;
 import io.github.markpollack.journal.tck.requirements.RequirementDocuments.Document;
 import org.junit.jupiter.api.Test;
@@ -16,11 +18,14 @@ import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * The requirement documents load through Agent Judge's actual readers with their complete, unique roster.
+ * The requirement documents load through Agent Judge's actual readers, strictly, with their complete, unique roster.
  *
- * <p>These tests establish that the documents are well-formed for the readers and that nothing was silently skipped.
+ * <p>These tests establish that the documents are well-formed for the readers and that nothing was silently skipped:
+ * the strict readers ({@code fromStrict}, Agent Judge 0.19.0) refuse a document with a malformed entry, and the
+ * independent heading roster is still compared against what the reader returned, so neither check stands alone.
  * They establish nothing about whether the implementation meets any rule or criterion; see
  * {@link RequirementsEvidenceTest} for what is and is not assessed.
  */
@@ -37,31 +42,35 @@ class RequirementsRosterTest {
     private static final Pattern EARS_OPENING = Pattern.compile("^(When|While|If|Where)\\b.*");
 
     @Test
-    void everyRuleHeadingIsParsedExactlyOnceAndMatchesThePinnedRoster(@TempDir Path work) {
+    void everyRuleHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedRoster(@TempDir Path work) {
         Document rules = RequirementDocuments.load(RequirementDocuments.RULES, work);
-        List<Rfc2119Constraint> parsed = Rfc2119Constraint.from(rules.file());
+        assertThat(Rfc2119Constraint.problems(rules.file())).as("the strict reader finds no malformed rule").isEmpty();
+        List<Rfc2119Constraint> parsed = Rfc2119Constraint.fromStrict(rules.file());
         List<String> ids = parsed.stream().map(Rfc2119Constraint::id).toList();
 
         assertThat(RequirementDocuments.rosterProblems(rules.intendedIds(), ids)).isEmpty();
         assertThat(ids).as("pinned roster; edit RULE_IDS deliberately when a rule is added or retired").isEqualTo(RULE_IDS);
         assertThat(parsed).hasSize(RULE_IDS.size());
+        assertThat(Rfc2119Constraint.from(rules.file())).as("permissive and strict agree on a well-formed document").isEqualTo(parsed);
     }
 
     @Test
-    void everyRuleStatesOneKeywordARequirementAndAReason(@TempDir Path work) {
+    void everyRuleStatesOneKeywordARequirementAndAReasonAndNoneDeclaresAnApplicabilityClause(@TempDir Path work) {
         Document rules = RequirementDocuments.load(RequirementDocuments.RULES, work);
-        for (Rfc2119Constraint rule : Rfc2119Constraint.from(rules.file())) {
+        for (Rfc2119Constraint rule : Rfc2119Constraint.fromStrict(rules.file())) {
             assertThat(KEYWORDS).as(rule.id() + " keyword").contains(rule.keyword());
             assertThat(rule.requirement()).as(rule.id() + " requirement").isNotBlank().doesNotStartWith("*");
             assertThat(rule.reason()).as(rule.id() + " reason").isNotBlank();
-            assertThat(rule.conditional()).as(rule.id() + " has no applicability clause; the reader never sets one").isFalse();
+            assertThat(rule.conditional()).as(rule.id() + " is unconditional: the document declares no Applies when: entry, so NOT_APPLICABLE is not an available answer").isFalse();
+            assertThat(rule.applicability()).isNull();
         }
     }
 
     @Test
-    void everyCriterionHeadingIsParsedExactlyOnceAndMatchesThePinnedCounts(@TempDir Path work) {
+    void everyCriterionHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedCounts(@TempDir Path work) {
         Document criteria = RequirementDocuments.load(RequirementDocuments.CRITERIA, work);
-        List<EarsCriterion> parsed = EarsCriterion.from(criteria.file());
+        assertThat(EarsCriterion.problems(criteria.file())).as("the strict reader finds no malformed criterion").isEmpty();
+        List<EarsCriterion> parsed = EarsCriterion.fromStrict(criteria.file());
         List<String> ids = parsed.stream().map(EarsCriterion::id).toList();
 
         assertThat(RequirementDocuments.rosterProblems(criteria.intendedIds(), ids)).isEmpty();
@@ -75,18 +84,20 @@ class RequirementsRosterTest {
             List<String> expected = IntStream.rangeClosed(1, CRITERIA_PER_USE_CASE.get(uc)).mapToObj(i -> uc + "-AC" + i).toList();
             assertThat(ids.stream().filter(id -> id.startsWith(uc + "-")).toList()).as(uc + " is numbered contiguously").isEqualTo(expected);
         }
+        assertThat(EarsCriterion.from(criteria.file())).as("permissive and strict agree on a well-formed document").isEqualTo(parsed);
     }
 
     @Test
-    void everyCriterionIsOneEarsSentenceTakenFromTheLineAfterItsHeading(@TempDir Path work) {
+    void everyCriterionIsOneEarsSentenceTakenFromTheLineAfterItsHeadingAndNoneDeclaresAnApplicabilityClause(@TempDir Path work) {
         Document criteria = RequirementDocuments.load(RequirementDocuments.CRITERIA, work);
-        for (EarsCriterion c : EarsCriterion.from(criteria.file())) {
+        for (EarsCriterion c : EarsCriterion.fromStrict(criteria.file())) {
             assertThat(c.title()).as(c.id() + " title").isNotBlank();
             assertThat(c.requirement()).as(c.id() + " is the requirement sentence, not a link line").doesNotStartWith("Rule:").doesNotStartWith("Tests:").doesNotStartWith("Status:");
             assertThat(EARS_OPENING.matcher(c.requirement()).matches()).as(c.id() + " opens with an EARS trigger: " + c.requirement()).isTrue();
             assertThat(c.requirement()).as(c.id() + " uses shall").contains(" shall ");
             assertThat(c.requirement().strip()).as(c.id() + " is one sentence").endsWith(".").doesNotContain(". ");
-            assertThat(c.conditional()).as(c.id() + " has no applicability clause; the reader never sets one").isFalse();
+            assertThat(c.conditional()).as(c.id() + " is unconditional: the document declares no Applies when: entry").isFalse();
+            assertThat(c.applicability()).isNull();
         }
     }
 
@@ -94,7 +105,7 @@ class RequirementsRosterTest {
     void everyRuleLinkInTheCriteriaNamesARuleThatParses(@TempDir Path work) {
         Document rules = RequirementDocuments.load(RequirementDocuments.RULES, work);
         Document criteria = RequirementDocuments.load(RequirementDocuments.CRITERIA, work);
-        Set<String> ruleIds = Set.copyOf(Rfc2119Constraint.from(rules.file()).stream().map(Rfc2119Constraint::id).toList());
+        Set<String> ruleIds = Set.copyOf(Rfc2119Constraint.fromStrict(rules.file()).stream().map(Rfc2119Constraint::id).toList());
         Matcher m = Pattern.compile("Rule: ([^.\\n]+)\\.").matcher(criteria.text());
         int links = 0;
         while (m.find()) {
@@ -106,27 +117,83 @@ class RequirementsRosterTest {
         assertThat(links).as("the criteria link to rules").isGreaterThanOrEqualTo(CRITERIA_PER_USE_CASE.values().stream().mapToInt(Integer::intValue).sum());
     }
 
+    /**
+     * Malformed-entry control, rules: the permissive reader still shrinks the roster silently (the independent heading
+     * comparison names each skipped rule, as before); the strict reader refuses the document and names the same
+     * entries with their lines, so a document nobody wrote cannot be evaluated by accident.
+     */
     @Test
-    void negativeControlRulesDocumentIsSilentlyShrunkByTheReaderAndTheRosterCheckNamesEachSkippedRule(@TempDir Path work) {
+    void negativeControlRulesDocumentIsRefusedByTheStrictReaderAndShrunkByThePermissiveOne(@TempDir Path work) {
         Document control = RequirementDocuments.load(RequirementDocuments.NEGATIVE_RULES, work);
-        List<String> parsed = Rfc2119Constraint.from(control.file()).stream().map(Rfc2119Constraint::id).toList();
+        List<String> permissive = Rfc2119Constraint.from(control.file()).stream().map(Rfc2119Constraint::id).toList();
 
         assertThat(control.intendedIds()).containsExactly("RULE-1", "RULE-2", "RULE-3");
-        assertThat(parsed).as("the reader skips a rule without a reason and a rule without a bold keyword, and reports nothing").containsExactly("RULE-1");
-        assertThat(RequirementDocuments.rosterProblems(control.intendedIds(), parsed)).containsExactly(
+        assertThat(permissive).as("the permissive reader skips a rule without a reason and a rule without a bold keyword").containsExactly("RULE-1");
+        assertThat(RequirementDocuments.rosterProblems(control.intendedIds(), permissive)).containsExactly(
                 "heading RULE-2 was not returned by the reader (malformed or skipped)",
                 "heading RULE-3 was not returned by the reader (malformed or skipped)");
+
+        List<RequirementDocumentProblem> problems = Rfc2119Constraint.problems(control.file());
+        assertThat(problems.stream().map(RequirementDocumentProblem::id).toList()).as("strict diagnostics name the malformed rules").containsExactly("RULE-2", "RULE-3");
+        assertThat(problems).allSatisfy(p -> {
+            assertThat(p.line()).isPositive();
+            assertThat(p.reason()).isNotBlank();
+        });
+        assertThatThrownBy(() -> Rfc2119Constraint.fromStrict(control.file()))
+                .isInstanceOf(RequirementDocumentException.class)
+                .satisfies(e -> assertThat(((RequirementDocumentException) e).problems()).isEqualTo(problems))
+                .hasMessageContaining("RULE-2").hasMessageContaining("RULE-3");
     }
 
+    /** Malformed-entry control, criteria: the same pair of behaviors for the EARS reader. */
     @Test
-    void negativeControlCriteriaDocumentIsSilentlyShrunkByTheReaderAndTheRosterCheckNamesEachSkippedCriterion(@TempDir Path work) {
+    void negativeControlCriteriaDocumentIsRefusedByTheStrictReaderAndShrunkByThePermissiveOne(@TempDir Path work) {
         Document control = RequirementDocuments.load(RequirementDocuments.NEGATIVE_CRITERIA, work);
-        List<String> parsed = EarsCriterion.from(control.file()).stream().map(EarsCriterion::id).toList();
+        List<String> permissive = EarsCriterion.from(control.file()).stream().map(EarsCriterion::id).toList();
 
         assertThat(control.intendedIds()).containsExactly("UC1-AC1", "UC1-AC2", "UC1-AC3");
-        assertThat(parsed).as("a heading without a colon and a heading without a sentence are skipped without complaint").containsExactly("UC1-AC1");
-        assertThat(RequirementDocuments.rosterProblems(control.intendedIds(), parsed)).containsExactly(
+        assertThat(permissive).as("the permissive reader skips a heading without a colon and a heading without a sentence").containsExactly("UC1-AC1");
+        assertThat(RequirementDocuments.rosterProblems(control.intendedIds(), permissive)).containsExactly(
                 "heading UC1-AC2 was not returned by the reader (malformed or skipped)",
                 "heading UC1-AC3 was not returned by the reader (malformed or skipped)");
+
+        List<RequirementDocumentProblem> problems = EarsCriterion.problems(control.file());
+        assertThat(problems).as("strict diagnostics for the malformed criteria").isNotEmpty();
+        assertThat(problems).allSatisfy(p -> {
+            assertThat(p.line()).isPositive();
+            assertThat(p.reason()).isNotBlank();
+        });
+        assertThatThrownBy(() -> EarsCriterion.fromStrict(control.file()))
+                .isInstanceOf(RequirementDocumentException.class)
+                .satisfies(e -> assertThat(((RequirementDocumentException) e).problems()).isEqualTo(problems));
+        // the independent roster comparison catches whatever the strict diagnostics do not name explicitly
+        Set<String> named = Set.copyOf(problems.stream().map(RequirementDocumentProblem::id).filter(java.util.Objects::nonNull).toList());
+        assertThat(named).isSubsetOf("UC1-AC1", "UC1-AC2", "UC1-AC3");
+        assertThat(named).doesNotContain("UC1-AC1");
+    }
+
+    /**
+     * Applicability control: an explicit {@code Applies when:} entry is loaded as the requirement's applicability
+     * (what makes NOT_APPLICABLE an available answer); a requirement without one is unconditional. The agent-journal
+     * documents declare none, as the tests above pin.
+     */
+    @Test
+    void anExplicitAppliesWhenEntryIsLoadedAsApplicabilityAndItsAbsenceMeansUnconditional(@TempDir Path work) {
+        Document rules = RequirementDocuments.load(RequirementDocuments.APPLICABILITY_RULES, work);
+        List<Rfc2119Constraint> parsedRules = Rfc2119Constraint.fromStrict(rules.file());
+        assertThat(parsedRules.stream().map(Rfc2119Constraint::id).toList()).isEqualTo(rules.intendedIds());
+        assertThat(parsedRules.get(0).conditional()).isTrue();
+        assertThat(parsedRules.get(0).applicability()).isEqualTo("the CLI offers a native session file and no stream.");
+        assertThat(parsedRules.get(0).requirement()).as("the applicability entry is not folded into the statement").doesNotContain("Applies when");
+        assertThat(parsedRules.get(1).conditional()).isFalse();
+        assertThat(parsedRules.get(1).applicability()).isNull();
+
+        Document criteria = RequirementDocuments.load(RequirementDocuments.APPLICABILITY_CRITERIA, work);
+        List<EarsCriterion> parsedCriteria = EarsCriterion.fromStrict(criteria.file());
+        assertThat(parsedCriteria.stream().map(EarsCriterion::id).toList()).isEqualTo(criteria.intendedIds());
+        assertThat(parsedCriteria.get(0).conditional()).isTrue();
+        assertThat(parsedCriteria.get(0).applicability()).isEqualTo("the CLI offers no stream output.");
+        assertThat(parsedCriteria.get(0).requirement()).startsWith("When the CLI writes a native session file");
+        assertThat(parsedCriteria.get(1).conditional()).isFalse();
     }
 }

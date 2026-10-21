@@ -11,21 +11,21 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Agent Judge's native requirement types constructed from the documents: identity, revision and source provenance
- * are what a retained result would carry, so they are checked here against the document bytes rather than assumed.
+ * Agent Judge's native requirement types constructed strictly from the documents: identity, revision and source
+ * provenance are what a retained result would carry, so they are checked here against the document bytes rather
+ * than assumed.
  */
 class NativeRequirementTest {
 
     @Test
     void rfcNativeRequirementsCarryTheRosterRevisionAndDocumentDigest(@TempDir Path work) {
         Document rules = RequirementDocuments.load(RequirementDocuments.RULES, work);
-        List<Rfc2119Requirement> requirements = Rfc2119Requirement.from(rules.file(), rules.revision());
+        List<Rfc2119Requirement> requirements = Rfc2119Requirement.fromStrict(rules.file(), rules.revision());
 
         assertThat(requirements.stream().map(Rfc2119Requirement::id).toList()).isEqualTo(RequirementsRosterTest.RULE_IDS);
         String digest = RequirementDocuments.sha256(rules.bytes());
@@ -44,8 +44,8 @@ class NativeRequirementTest {
     @Test
     void earsNativeRequirementsCarryTheSentenceTitleRevisionAndDocumentDigest(@TempDir Path work) {
         Document criteria = RequirementDocuments.load(RequirementDocuments.CRITERIA, work);
-        List<EarsRequirement> requirements = EarsRequirement.from(criteria.file(), criteria.revision());
-        List<EarsCriterion> parsed = EarsCriterion.from(criteria.file());
+        List<EarsRequirement> requirements = EarsRequirement.fromStrict(criteria.file(), criteria.revision());
+        List<EarsCriterion> parsed = EarsCriterion.fromStrict(criteria.file());
 
         assertThat(requirements).hasSameSizeAs(parsed);
         String digest = RequirementDocuments.sha256(criteria.bytes());
@@ -66,37 +66,41 @@ class NativeRequirementTest {
     @Test
     void sameBytesYieldEquivalentRequirementsAndAnEditedDocumentDoesNot(@TempDir Path work) {
         Document rules = RequirementDocuments.load(RequirementDocuments.RULES, work);
-        Rfc2119Requirement first = Rfc2119Requirement.from(rules.file(), rules.revision()).get(0);
-        Rfc2119Requirement again = Rfc2119Requirement.from(rules.file(), rules.revision()).get(0);
+        Rfc2119Requirement first = Rfc2119Requirement.fromStrict(rules.file(), rules.revision()).get(0);
+        Rfc2119Requirement again = Rfc2119Requirement.fromStrict(rules.file(), rules.revision()).get(0);
         assertThat(Requirement.equivalent(first, again)).isTrue();
 
-        Document control = RequirementDocuments.load(RequirementDocuments.NEGATIVE_RULES, work.resolve("other"));
-        Rfc2119Requirement other = Rfc2119Requirement.from(control.file(), control.revision()).get(0);
+        Document control = RequirementDocuments.load(RequirementDocuments.APPLICABILITY_RULES, work.resolve("other"));
+        Rfc2119Requirement other = Rfc2119Requirement.fromStrict(control.file(), control.revision()).get(0);
         assertThat(other.id()).isEqualTo(first.id());
         assertThat(Requirement.equivalent(first, other)).as("same identifier, different document bytes and revision").isFalse();
     }
 
     /**
-     * Observed reader behavior, recorded rather than worked around: {@code Rfc2119Requirement.from} places the
-     * clause-shortened {@link Rfc2119Constraint#title()} in {@code specification().requirement()} while the full
-     * sentence survives in {@code text()}. A judge that renders the native specification would therefore see a
-     * truncated rule. This test names the rules affected so the gap is visible; the fix belongs to Agent Judge.
+     * Inverted on 2026-10-21 with Agent Judge 0.19.0 (AJR-1): the native specification now carries the complete
+     * statement of every rule, and the prompt rendering contains it. The previous version of this test recorded the
+     * reader placing the clause-shortened title in the specification and listed the rules it truncated; none remain.
      */
     @Test
-    void nativeRfcSpecificationCarriesTheShortTitleWhileTextCarriesTheFullSentence(@TempDir Path work) {
+    void everyNativeRfcSpecificationCarriesTheCompleteStatementAndThePromptRendersIt(@TempDir Path work) {
         Document rules = RequirementDocuments.load(RequirementDocuments.RULES, work);
-        List<Rfc2119Constraint> constraints = Rfc2119Constraint.from(rules.file());
-        List<Rfc2119Requirement> requirements = Rfc2119Requirement.from(rules.file(), rules.revision());
-        List<String> truncated = new ArrayList<>();
+        List<Rfc2119Constraint> constraints = Rfc2119Constraint.fromStrict(rules.file());
+        List<Rfc2119Requirement> requirements = Rfc2119Requirement.fromStrict(rules.file(), rules.revision());
+        assertThat(requirements).hasSameSizeAs(constraints);
+        int shorterThanSentence = 0;
         for (int i = 0; i < constraints.size(); i++) {
             Rfc2119Constraint c = constraints.get(i);
             Rfc2119Requirement r = requirements.get(i);
-            assertThat(r.text()).as(c.id() + " text is the full prompt rendering").isEqualTo(c.asPrompt()).contains(c.requirement());
-            assertThat(r.specification().requirement()).as(c.id() + " native specification holds the title").isEqualTo(c.title());
+            assertThat(r.id()).isEqualTo(c.id());
+            assertThat(r.specification().requirement()).as(c.id() + " native specification is the complete statement, not the title").isEqualTo(c.requirement());
+            assertThat(r.specification().keyword()).isEqualTo(c.keyword());
+            assertThat(r.specification().reason()).isEqualTo(c.reason());
+            assertThat(r.text()).as(c.id() + " text is the full prompt rendering").isEqualTo(c.asPrompt()).contains(c.requirement()).contains(c.reason());
             if (!c.title().equals(c.requirement())) {
-                truncated.add(c.id());
+                shorterThanSentence++;
+                assertThat(r.specification().requirement()).as(c.id() + " is not truncated to its title").isNotEqualTo(c.title());
             }
         }
-        assertThat(truncated).as("rules whose native specification is shorter than the sentence; reported as an Agent Judge gap, not hidden").isNotEmpty();
+        assertThat(shorterThanSentence).as("the control is meaningful: titles shorter than their sentences exist in this document").isPositive();
     }
 }

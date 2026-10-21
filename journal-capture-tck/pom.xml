@@ -22,11 +22,17 @@
         <!--
             Agent Judge is a test-only dependency: its RFC 2119 / EARS readers and native requirement types load the
             requirement documents under src/test/resources/requirements/ (see the tck.requirements tests). It never
-            enters the writer or capture path. Published on Maven Central; its parent builds for Java 21, so the
-            tests of this module run on a 21+ JDK (as CI does) while the module itself still compiles at the
-            project's release level.
+            enters the writer or capture path. Its parent builds for Java 21, so the tests of this module run on a
+            21+ JDK (as CI does) while the module itself still compiles at the project's release level.
+
+            0.19.0-SNAPSHOT (adopted 2026-10-21 for dogfooding, by decision): carries the corrected readers from
+            markpollack/agent-judge 5277e18770534941933875e26dde5225a4eb8850 (full RFC statement in the native
+            specification, explicit `Applies when:` applicability, strict loading that refuses malformed entries).
+            Resolved from the local Maven installation on the same machine or from the parent's central-snapshots
+            repository (published build 0.19.0-20261021.173258-1); a SNAPSHOT coordinate is not a build identity,
+            so the consumed artifact's hash is recorded with each result in the steward evidence, never assumed.
         -->
-        <agent-judge.version>0.18.0</agent-judge.version>
+        <agent-judge.version>0.19.0-SNAPSHOT</agent-judge.version>
     </properties>
 
     <dependencies>

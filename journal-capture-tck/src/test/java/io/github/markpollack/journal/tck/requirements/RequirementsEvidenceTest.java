@@ -177,8 +177,8 @@ class RequirementsEvidenceTest {
     void everyAssessedCriterionIsEstablishedOnAllItsObligationsAndEveryOtherRequirementIsReportedNotAssessed(@TempDir Path work) throws IOException {
         Document criteriaDoc = RequirementDocuments.load(RequirementDocuments.CRITERIA, work);
         Document rulesDoc = RequirementDocuments.load(RequirementDocuments.RULES, work);
-        List<EarsRequirement> criteria = EarsRequirement.from(criteriaDoc.file(), criteriaDoc.revision());
-        List<Rfc2119Requirement> rules = Rfc2119Requirement.from(rulesDoc.file(), rulesDoc.revision());
+        List<EarsRequirement> criteria = EarsRequirement.fromStrict(criteriaDoc.file(), criteriaDoc.revision());
+        List<Rfc2119Requirement> rules = Rfc2119Requirement.fromStrict(rulesDoc.file(), rulesDoc.revision());
         Corpus corpus = verifyFixtures(work.resolve("fixtures"));
 
         Map<String, Judgment> criteriaJudgments = judgeCriteria(criteria, corpus);
@@ -239,7 +239,7 @@ class RequirementsEvidenceTest {
     @Test
     void aRenamedExpectedSourceTurnsTheDenominatorCriteriaRedAndTheRollupIsNotPass(@TempDir Path work) throws IOException {
         Document criteriaDoc = RequirementDocuments.load(RequirementDocuments.CRITERIA, work);
-        List<EarsRequirement> criteria = EarsRequirement.from(criteriaDoc.file(), criteriaDoc.revision());
+        List<EarsRequirement> criteria = EarsRequirement.fromStrict(criteriaDoc.file(), criteriaDoc.revision());
         Path fixture = copyFixture(CLAUDE_CHILD, work.resolve("fixtures"));
         Path manifest = fixture.resolve("native").resolve("expected-sources.json");
         String frozen = Files.readString(manifest);
