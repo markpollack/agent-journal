@@ -137,7 +137,7 @@ class CliCaptureTest {
             Files.writeString(claudeSessionFile(home, task, CLAUDE_SESSION), content, StandardCharsets.UTF_8);
             Path out = work.resolve("out-" + content.length());
             CliCapture.Launch base = launch(CliCapture.Cli.CLAUDE, fake, task, out, home, null, null);
-            CliCapture.Result r = new CliCapture(new CliCapture.Launch(base.cli(), base.command(), base.workDir(), base.prompt(), "archive-independence", out, null, null, home, null, base.launchNotes()),
+            CliCapture.Result r = new CliCapture(new CliCapture.Launch(base.cli(), base.command(), base.workDir(), base.prompt(), "archive-independence", out, null, null, home, null, base.launchNotes(), null),
                     options(work)).run();
             assertThat(r.state()).isEqualTo(OcsfRunWriter.State.COMPLETED);
             assertThat(r.archive().get("status").text()).isEqualTo("archived");
@@ -246,7 +246,7 @@ class CliCaptureTest {
         Files.createDirectories(rollout.getParent());
         Files.writeString(rollout, "{\"timestamp\":\"x\",\"type\":\"session_meta\",\"payload\":{\"id\":\"" + CODEX_THREAD + "\",\"cli_version\":\"0.160.1\"}}\n", StandardCharsets.UTF_8);
         List<String> command = CliCapture.codexCommand(fake.toString(), "say hello", null, "workspace-write", task, List.of());
-        CliCapture.Launch launch = new CliCapture.Launch(CliCapture.Cli.CODEX, command, task, "say hello", "codex-fake-1", work.resolve("out"), null, null, home, null, null);
+        CliCapture.Launch launch = new CliCapture.Launch(CliCapture.Cli.CODEX, command, task, "say hello", "codex-fake-1", work.resolve("out"), null, null, home, null, null, null);
         CliCapture.Result r = new CliCapture(launch, options(work)).run();
         assertThat(r.state()).isEqualTo(OcsfRunWriter.State.COMPLETED);
         assertThat(r.exitCode()).isZero();
@@ -287,7 +287,7 @@ class CliCaptureTest {
     static CliCapture.Launch launch(CliCapture.Cli cli, Path fake, Path task, Path out, Path home, Integer cancelAfterRecords, Long cancelAfterMs) {
         List<String> command = CliCapture.claudeCommand(fake.toString(), "TEST PROMPT (stand-in; no model)", null, List.of("Read", "Write"), List.of());
         return new CliCapture.Launch(cli, command, task, "TEST PROMPT (stand-in; no model)", "fake-" + out.getFileName(), out, cancelAfterRecords, cancelAfterMs, home, null,
-                new Jv.Obj().put("stand_in", "TEST-ONLY: a shell script replaying a committed stream; not a live CLI"));
+                new Jv.Obj().put("stand_in", "TEST-ONLY: a shell script replaying a committed stream; not a live CLI"), null);
     }
 
     static WriterOptions options(Path work) {

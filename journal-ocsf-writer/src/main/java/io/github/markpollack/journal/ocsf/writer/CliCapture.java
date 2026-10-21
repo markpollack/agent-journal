@@ -17,6 +17,9 @@ import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
@@ -74,9 +77,20 @@ public final class CliCapture {
      * @param home the home directory whose native session files are archived (normally the user's; a test's own)
      * @param versionCommand for Codex, the once-per-run discovery command (default {@code [<executable>, --version]}); ignored for Claude
      * @param launchNotes free launch settings the caller records (model, allowed tools, route label), or {@code null}
+     * @param limits the capture's own waiting bounds, or {@code null} for {@link Limits#DEFAULTS}
      */
     public record Launch(Cli cli, List<String> command, Path workDir, String prompt, String runUid, Path out, Integer cancelAfterRecords, Long cancelAfterMillis,
-            Path home, List<String> versionCommand, Jv.Obj launchNotes) {
+            Path home, List<String> versionCommand, Jv.Obj launchNotes, Limits limits) {
+    }
+
+    /**
+     * How long the capture itself waits, on its own monotonic clock and independently of output arrival: the grace
+     * after a termination request before the CLI is killed (also the wait for standard output to close after the CLI
+     * ended before its surviving descendants are killed, and the wait for the CLI to exit after its output ended),
+     * and the bound on the once-per-run version probe.
+     */
+    public record Limits(Duration terminationGrace, Duration versionProbeTimeout) {
+        public static final Limits DEFAULTS = new Limits(Duration.ofSeconds(5), Duration.ofSeconds(30));
     }
 
     /** What happened: the three distinct facts plus where everything is. */
@@ -91,20 +105,27 @@ public final class CliCapture {
         }
     }
 
-    static final Duration CANCEL_GRACE = Duration.ofSeconds(5);
     static final Pattern CODEX_VERSION = Pattern.compile("codex(?:-cli)?\\s+v?(\\d+(?:\\.\\d+)+)");
+    /** How often supervision looks at the clock and the process while standard output is open. */
+    static final long POLL_MILLIS = 20;
+    /** How often the CLI's descendants are noted while it is alive, so they can be cleaned up once it is gone. */
+    static final long DESCENDANT_SCAN_MILLIS = 250;
 
     private final Launch launch;
+    private final Limits limits;
     private final WriterOptions options;
     private final AtomicReference<String> cancelRequested = new AtomicReference<>();
+    /** Every descendant seen while the CLI was alive: a descendant that outlives the CLI is no longer reachable through it. */
+    private final Set<ProcessHandle> seenDescendants = ConcurrentHashMap.newKeySet();
     private volatile Process process;
 
     public CliCapture(Launch launch, WriterOptions options) {
         this.launch = launch;
+        this.limits = launch.limits() != null ? launch.limits() : Limits.DEFAULTS;
         this.options = options;
     }
 
-    /** Requests cancellation from any thread: the CLI is terminated (then killed after a grace period) and the recording is interrupted with this reason. */
+    /** Requests cancellation from any thread: the CLI is terminated (then killed after the grace period) and the recording is interrupted with this reason. */
     public void cancel(String reason) {
         if (cancelRequested.compareAndSet(null, reason)) {
             Process p = process;
@@ -115,14 +136,31 @@ public final class CliCapture {
     }
 
     /** Terminates through the process handle: {@code Process.destroy()} would also close the stdout pipe this capture is still draining. */
-    private static void terminate(Process p) {
-        p.descendants().forEach(ProcessHandle::destroy);
+    private void terminate(Process p) {
+        p.descendants().forEach(d -> {
+            seenDescendants.add(d);
+            d.destroy();
+        });
         p.toHandle().destroy();
     }
 
-    private static void kill(Process p) {
-        p.descendants().forEach(ProcessHandle::destroyForcibly);
+    /** Kills the CLI and every descendant seen, including those the CLI's exit already orphaned. */
+    private void kill(Process p) {
+        p.descendants().forEach(seenDescendants::add);
+        seenDescendants.forEach(ProcessHandle::destroyForcibly);
         p.toHandle().destroyForcibly();
+    }
+
+    /** Kills the descendants that outlived the CLI; returns how many were still alive. */
+    private int killSurvivingDescendants() {
+        int n = 0;
+        for (ProcessHandle h : seenDescendants) {
+            if (h.isAlive()) {
+                h.destroyForcibly();
+                n++;
+            }
+        }
+        return n;
     }
 
     /** The Claude Code streaming invocation: no version argument, no version command (the stream reports it). */
@@ -177,7 +215,7 @@ public final class CliCapture {
         String versionBasis = null;
         if (launch.cli() == Cli.CODEX) {
             List<String> vc = launch.versionCommand() != null ? launch.versionCommand() : List.of(launch.command().get(0), "--version");
-            version = discoverVersion(vc);
+            version = discoverVersion(vc, limits.versionProbeTimeout());
             versionBasis = "discovered once per run by the documented adapter path `" + String.join(" ", vc)
                     + "` before launch, because the exec --json stream reports no version; the native session file was not consulted";
         }
@@ -215,45 +253,30 @@ public final class CliCapture {
             if (cancelRequested.get() != null) {
                 terminate(p);
             }
-            Exception writerFailure = null;
-            IOException inputFailure = null;
-            try (InputStream stdout = p.getInputStream(); OutputStream copy = Files.newOutputStream(copyFile)) {
-                byte[] buf = new byte[8192];
-                int n;
-                while ((n = stdout.read(buf)) > 0) {
-                    copy.write(buf, 0, n);
-                    copy.flush();
-                    bytes += n;
-                    Instant arrival = clock.instant();
-                    if (writerFailure == null) {
-                        try {
-                            in.bytes(buf, 0, n, arrival);
-                            records = in.records();
-                        }
-                        catch (RuntimeException e) {
-                            // the writer failed (persistence): keep draining into the independent copy, stop the CLI
-                            writerFailure = e;
-                            cancel("writer failed: " + e.getMessage());
-                        }
-                    }
-                    if (cancelRequested.get() == null && launch.cancelAfterRecords() != null && records >= launch.cancelAfterRecords()) {
-                        cancel("deliberate cancellation after " + records + " record(s) (requested after " + launch.cancelAfterRecords() + ")");
-                    }
-                    if (cancelRequested.get() == null && launch.cancelAfterMillis() != null && Duration.between(started, clock.instant()).toMillis() >= launch.cancelAfterMillis()) {
-                        cancel("deliberate cancellation after " + launch.cancelAfterMillis() + " ms");
-                    }
-                }
+            Pump pump;
+            Supervision supervision;
+            try (OutputStream copy = Files.newOutputStream(copyFile)) {
+                // standard output is read on its own thread; this thread supervises on its own clock, never waiting on bytes
+                pump = new Pump(p.getInputStream(), copy, in, clock);
+                Thread reader = new Thread(pump, "cli-capture-stdout-" + p.pid());
+                reader.setDaemon(true);
+                reader.start();
+                supervision = supervise(p, pump);
             }
-            catch (IOException e) {
-                inputFailure = e;
-                cancel("input failure: " + e);
-            }
-            Integer exit = waitFor(p);
+            Integer exit = waitFor(p, supervision);
             Instant ended = clock.instant();
             String cancelled = cancelRequested.get();
+            bytes = pump.bytes();
+            records = pump.records();
+            RuntimeException writerFailure = pump.writerFailure();
+            IOException inputFailure = pump.inputFailure();
+            if (inputFailure != null) {
+                cancel("input failure: " + inputFailure);
+                cancelled = cancelRequested.get();
+            }
             processOutcome = new Jv.Obj().put("pid", p.pid()).put("started", started.toString()).put("ended", ended.toString());
             if (exit == null) {
-                processOutcome.put("how", "unknown").put("exit_code", Jv.NULL).put("detail", "the process did not end within the grace period after termination was requested");
+                processOutcome.put("how", "unknown").put("exit_code", Jv.NULL).put("detail", "the process did not end within the grace period after it was killed");
             }
             else if (writerFailure != null) {
                 processOutcome.put("how", "writer_failure").put("exit_code", exit).put("exit_meaning", exitMeaning(exit)).put("cancel_reason", cancelled)
@@ -268,7 +291,16 @@ public final class CliCapture {
             else {
                 processOutcome.put("how", "exited").put("exit_code", exit).put("exit_meaning", exitMeaning(exit));
             }
-            processOutcome.put("stderr_bytes", Files.exists(stderrFile) ? Files.size(stderrFile) : 0L)
+            if (supervision.killed) {
+                processOutcome.put("killed", "SIGKILL after the " + limits.terminationGrace().toMillis() + " ms grace period: the CLI had not ended after termination was requested");
+            }
+            if (supervision.descendantsKilled > 0) {
+                processOutcome.put("descendants_killed", supervision.descendantsKilled)
+                        .put("descendants_detail", supervision.descendantsKilled + " descendant process(es) still held standard output open " + limits.terminationGrace().toMillis()
+                                + " ms after the CLI ended and were killed; their output up to that point is in the independent copy");
+            }
+            processOutcome.put("stdout", supervision.stdoutEnd)
+                    .put("stderr_bytes", Files.exists(stderrFile) ? Files.size(stderrFile) : 0L)
                     .put("meaning", "the CLI process outcome; distinct from storage finalization (recording.state) and acquisition extent (acquisition.status): EOF never implies success");
             sessionUid = w.sessionUid();
             cliVersion = w.knownCliVersion();
@@ -278,6 +310,9 @@ public final class CliCapture {
                 w.processOutcome(processOutcome);
                 if (cancelled != null || inputFailure != null) {
                     state = w.interrupt(cancelled != null ? cancelled : "input failure");
+                }
+                else if (!pump.eof()) {
+                    state = w.interrupt("standard output did not end: " + supervision.stdoutEnd);
                 }
                 else {
                     in.end(SourceInput.End.EOF, ended);
@@ -302,22 +337,211 @@ public final class CliCapture {
         return new java.io.File(System.getProperty("os.name", "").toLowerCase().contains("win") ? "NUL" : "/dev/null");
     }
 
-    /** Waits for the process; after a cancellation, kills it when the grace period passes; {@code null} if it still would not end. */
-    private Integer waitFor(Process p) {
+    /** What supervision established while standard output was open. */
+    private static final class Supervision {
+        boolean killed;
+        int descendantsKilled;
+        String stdoutEnd = "closed: EOF reached";
+    }
+
+    /**
+     * Waits for standard output to end while enforcing, on this capture's monotonic clock and independently of
+     * output arrival: the deadline ({@code cancelAfterMillis}); the termination grace, after which a CLI that ignored
+     * termination is killed; and, once the CLI itself has ended, the grace for standard output to close before the
+     * descendants that outlived the CLI are killed and, failing that, before the open pipe is abandoned.
+     */
+    private Supervision supervise(Process p, Pump pump) {
+        Supervision s = new Supervision();
+        long grace = limits.terminationGrace().toNanos();
+        long launched = System.nanoTime();
+        Long deadline = launch.cancelAfterMillis() == null ? null : launched + TimeUnit.MILLISECONDS.toNanos(launch.cancelAfterMillis());
+        long terminatedAt = -1, exitedAt = -1, descendantsKilledAt = -1, scannedAt = -1;
         try {
-            if (cancelRequested.get() == null) {
-                return p.waitFor();
+            while (!pump.awaitEnd(POLL_MILLIS)) {
+                long now = System.nanoTime();
+                boolean alive = p.isAlive();
+                if (alive && (scannedAt < 0 || now - scannedAt >= TimeUnit.MILLISECONDS.toNanos(DESCENDANT_SCAN_MILLIS))) {
+                    p.descendants().forEach(seenDescendants::add);
+                    scannedAt = now;
+                }
+                if (cancelRequested.get() == null && deadline != null && now >= deadline) {
+                    cancel("deliberate cancellation after " + launch.cancelAfterMillis() + " ms");
+                }
+                if (cancelRequested.get() != null && terminatedAt < 0) {
+                    terminatedAt = now;
+                }
+                if (!alive && exitedAt < 0) {
+                    exitedAt = now;
+                }
+                if (alive && terminatedAt >= 0 && !s.killed && now - terminatedAt >= grace) {
+                    kill(p);
+                    s.killed = true;
+                }
+                if (!alive && now - exitedAt >= grace) {
+                    if (descendantsKilledAt < 0) {
+                        s.descendantsKilled = killSurvivingDescendants();
+                        descendantsKilledAt = now;
+                    }
+                    else if (now - descendantsKilledAt >= grace) {
+                        pump.abandon();
+                        s.stdoutEnd = "left open: standard output had not closed " + 2 * limits.terminationGrace().toMillis()
+                                + " ms after the CLI ended, even after its surviving descendants were killed; acquisition stopped here and the open pipe was abandoned";
+                        break;
+                    }
+                }
             }
-            if (p.waitFor(CANCEL_GRACE.toMillis(), TimeUnit.MILLISECONDS)) {
-                return p.exitValue();
-            }
-            kill(p);
-            return p.waitFor(CANCEL_GRACE.toMillis(), TimeUnit.MILLISECONDS) ? p.exitValue() : null;
         }
         catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             kill(p);
+            s.killed = true;
+            pump.abandon();
+            s.stdoutEnd = "left open: the capture thread was interrupted; the CLI was killed and acquisition stopped here";
+        }
+        return s;
+    }
+
+    /**
+     * Waits for the CLI to exit once its standard output has ended: within the grace normally; a CLI that stays
+     * alive after its output ended is terminated, then killed; {@code null} if it still would not end.
+     */
+    private Integer waitFor(Process p, Supervision s) {
+        long graceMs = limits.terminationGrace().toMillis();
+        try {
+            if (p.waitFor(graceMs, TimeUnit.MILLISECONDS)) {
+                return p.exitValue();
+            }
+            cancel("the CLI did not exit within " + graceMs + " ms after its standard output ended");
+            if (p.waitFor(graceMs, TimeUnit.MILLISECONDS)) {
+                return p.exitValue();
+            }
+            kill(p);
+            s.killed = true;
+            return p.waitFor(graceMs, TimeUnit.MILLISECONDS) ? p.exitValue() : null;
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            kill(p);
+            s.killed = true;
             return null;
+        }
+    }
+
+    /**
+     * Reads the CLI's standard output on its own thread: every chunk goes to the independent copy first, then to the
+     * writer; record-count cancellation and writer failure are noticed here, where the counts are known. Once
+     * abandoned, a chunk in flight finishes and anything read later is dropped, so the capture can finalize while
+     * an orphaned writer still holds the pipe open.
+     */
+    private final class Pump implements Runnable {
+        private final InputStream stdout;
+        private final OutputStream copy;
+        private final SourceInput in;
+        private final Clock clock;
+        private final CountDownLatch ended = new CountDownLatch(1);
+        private final Object lock = new Object();
+        private boolean abandoned;
+        private boolean eof;
+        private long bytes;
+        private int records;
+        private RuntimeException writerFailure;
+        private IOException inputFailure;
+
+        Pump(InputStream stdout, OutputStream copy, SourceInput in, Clock clock) {
+            this.stdout = stdout;
+            this.copy = copy;
+            this.in = in;
+            this.clock = clock;
+        }
+
+        @Override
+        public void run() {
+            byte[] buf = new byte[8192];
+            try {
+                int n;
+                while ((n = stdout.read(buf)) > 0) {
+                    synchronized (lock) {
+                        if (abandoned) {
+                            return;
+                        }
+                        accept(buf, n);
+                    }
+                }
+                synchronized (lock) {
+                    eof = !abandoned;
+                }
+            }
+            catch (IOException e) {
+                synchronized (lock) {
+                    if (!abandoned) {
+                        inputFailure = e;
+                    }
+                }
+            }
+            finally {
+                ended.countDown();
+            }
+        }
+
+        private void accept(byte[] buf, int n) throws IOException {
+            copy.write(buf, 0, n);
+            copy.flush();
+            bytes += n;
+            Instant arrival = clock.instant();
+            if (writerFailure == null) {
+                try {
+                    in.bytes(buf, 0, n, arrival);
+                    records = in.records();
+                }
+                catch (RuntimeException e) {
+                    // the writer failed (persistence): keep draining into the independent copy, stop the CLI
+                    writerFailure = e;
+                    cancel("writer failed: " + e.getMessage());
+                }
+            }
+            if (cancelRequested.get() == null && launch.cancelAfterRecords() != null && records >= launch.cancelAfterRecords()) {
+                cancel("deliberate cancellation after " + records + " record(s) (requested after " + launch.cancelAfterRecords() + ")");
+            }
+        }
+
+        boolean awaitEnd(long millis) throws InterruptedException {
+            return ended.await(millis, TimeUnit.MILLISECONDS);
+        }
+
+        void abandon() {
+            synchronized (lock) {
+                abandoned = true;
+            }
+        }
+
+        boolean eof() {
+            synchronized (lock) {
+                return eof;
+            }
+        }
+
+        long bytes() {
+            synchronized (lock) {
+                return bytes;
+            }
+        }
+
+        int records() {
+            synchronized (lock) {
+                return records;
+            }
+        }
+
+        RuntimeException writerFailure() {
+            synchronized (lock) {
+                return writerFailure;
+            }
+        }
+
+        IOException inputFailure() {
+            synchronized (lock) {
+                return inputFailure;
+            }
         }
     }
 
@@ -331,20 +555,42 @@ public final class CliCapture {
         return exit + ": the CLI reported failure; whether its stream was completely acquired is judged separately";
     }
 
-    /** Runs the discovery command once and parses its version; the command's own output is the basis. */
-    static String discoverVersion(List<String> command) throws IOException {
+    /**
+     * Runs the discovery command once, bounded, and parses its version; the command's own output is the basis. A
+     * probe that has not ended within the bound is killed and reported as a failure, never waited for.
+     */
+    static String discoverVersion(List<String> command, Duration timeout) throws IOException {
         ProcessBuilder pb = new ProcessBuilder(command).redirectErrorStream(true).redirectInput(ProcessBuilder.Redirect.from(devNull()));
         Process p = pb.start();
-        String text;
-        try (InputStream in = p.getInputStream()) {
-            text = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-        }
+        java.io.ByteArrayOutputStream collected = new java.io.ByteArrayOutputStream();
+        Thread reader = new Thread(() -> {
+            try (InputStream in = p.getInputStream()) {
+                in.transferTo(collected);
+            }
+            catch (IOException ignored) {
+                // the probe was killed or its pipe broke; whatever arrived is judged below
+            }
+        }, "cli-capture-version-probe-" + p.pid());
+        reader.setDaemon(true);
+        reader.start();
+        String what = "version discovery `" + String.join(" ", command) + "`";
         try {
-            p.waitFor(30, TimeUnit.SECONDS);
+            if (!p.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS)) {
+                p.descendants().forEach(ProcessHandle::destroyForcibly);
+                p.destroyForcibly();
+                throw new IOException(what + " did not end within " + timeout.toMillis() + " ms; the probe was killed and no version was taken from it");
+            }
+            reader.join(timeout.toMillis());
+            if (reader.isAlive()) {
+                throw new IOException(what + " ended but its standard output did not close within " + timeout.toMillis() + " ms; no version was taken from it");
+            }
         }
         catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            p.destroyForcibly();
+            throw new IOException(what + " was interrupted", e);
         }
+        String text = collected.toString(StandardCharsets.UTF_8);
         Matcher m = CODEX_VERSION.matcher(text);
         if (!m.find()) {
             throw new IOException("version discovery `" + String.join(" ", command) + "` printed no recognizable version: " + text.strip());
@@ -513,7 +759,7 @@ public final class CliCapture {
             notes.put("sandbox_requested", sandbox);
         }
         Launch launch = new Launch(cli, command, workDir, prompt, runUid != null ? runUid : "launch-" + Instant.now().toEpochMilli(), outDir, cancelRecords, cancelMs,
-                home == null ? null : Path.of(home), null, notes);
+                home == null ? null : Path.of(home), null, notes, null);
         CliCapture capture = new CliCapture(launch, WriterOptions.defaults().withAutoFlush(1));
         Thread hook = new Thread(() -> capture.cancel("the capture process received a termination signal"));
         Runtime.getRuntime().addShutdownHook(hook);

@@ -156,6 +156,10 @@ class RequirementsAccountingIT {
                 junit("CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy", STAND_IN + ": EOF, exit 0, COMPLETED")));
         CRITERIA.put("UC4-AC3", List.of(oracle("UC4-AC3", "replay-interrupted 2.1.299 prefix; live cancelled Claude 2.1.304 and Codex 0.160.1 fixtures"),
                 junit("CliCaptureTest#aDeliberateCancellationTerminatesTheProcessAndInterruptsTheRecordingWithTheReason", STAND_IN + ": SIGTERM via the handle, exit 143, reason recorded"),
+                junit("CliCaptureLifecycleTest#aSilentCliIsCancelledAtTheDeadline", STAND_IN + ": the deadline fires without any output; 0 records, honest interruption"),
+                junit("CliCaptureLifecycleTest#outputThenAStallIsCancelledAtTheDeadlineWithThePrefixKept", STAND_IN + ": the deadline fires during a stall; the prefix is kept and judged incomplete"),
+                junit("CliCaptureLifecycleTest#aCliThatIgnoresTerminationAndKeepsStdoutOpenIsKilledAfterTheGrace", STAND_IN + ": SIGKILL after the grace, exit 137, prefix kept"),
+                junit("CliCaptureLifecycleTest#aDescendantKeepingStdoutOpenAfterTheCliEndedIsKilledAndTheCaptureEnds", STAND_IN + ": orphaned descendant killed, capture ends"),
                 live("deliberate cancellations of both CLIs")));
         CRITERIA.put("UC4-AC4", List.of(junit("WriterLifecycleTest#injectedWriteFailureLeavesAnHonestFailedPackage", "injected write failure"),
                 junit("CliCaptureTest#aPersistenceFailureStopsTheProcessLeavesAFailedPackageAndKeepsTheIndependentCopyWhole", STAND_IN + ": writer failure stops the CLI")));

@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -47,8 +48,9 @@ import static org.assertj.core.api.Assertions.fail;
 @EnabledOnOs({OS.LINUX, OS.MAC})
 class CliCaptureLifecycleTest {
 
-    static final String SESSION = "00000000-0000-4000-8000-0000000000a1";
     static final int OUTER_BOUND_SECONDS = 20;
+    /** Short bounds so each scenario ends in seconds; the production defaults are 5 s and 30 s. */
+    static final CliCapture.Limits LIMITS = new CliCapture.Limits(Duration.ofSeconds(1), Duration.ofSeconds(1));
 
     /** A silent CLI (no byte ever) is cancelled at the configured deadline, not when a byte happens to arrive. */
     @Test
@@ -115,9 +117,11 @@ class CliCaptureLifecycleTest {
         assertThat(r.exitCode()).as("SIGKILL after the grace: 128+9").isEqualTo(137);
         assertThat(r.process().get("cancel_reason").text()).contains("deliberate cancellation after 3 record(s)");
         assertThat(r.process().get("exit_meaning").text()).contains("terminated by signal 9");
+        assertThat(r.process().get("killed").text()).contains("SIGKILL after the 1000 ms grace period");
+        assertThat(r.process().get("stdout").text()).isEqualTo("closed: EOF reached");
         assertThat(r.records()).isEqualTo(3);
         assertThat(Files.readAllBytes(r.independentCopy())).isEqualTo(firstLines(3));
-        assertThat(elapsedMs).as("ended once the grace period passed").isGreaterThanOrEqualTo(CliCapture.CANCEL_GRACE.toMillis()).isLessThan(OUTER_BOUND_SECONDS * 1000L / 2);
+        assertThat(elapsedMs).as("ended once the grace period passed").isGreaterThanOrEqualTo(LIMITS.terminationGrace().toMillis()).isLessThan(OUTER_BOUND_SECONDS * 1000L / 2);
         OcsfPackage p = PackageReader.open(r.packageDir().resolve("events.jsonl"));
         assertThat(p.manifest.packageState()).isEqualTo("INTERRUPTED");
         assertThat(p.diagnosticsWithCode("CLI_CANCELLED")).hasSize(1);
@@ -139,6 +143,10 @@ class CliCaptureLifecycleTest {
         assertThat(r.state()).isEqualTo(OcsfRunWriter.State.INTERRUPTED);
         assertThat(r.how()).isEqualTo("cancelled");
         assertThat(r.exitCode()).as("the CLI itself honoured SIGTERM").isEqualTo(143);
+        assertThat(r.process().get("killed")).as("the CLI itself was not killed").isNull();
+        assertThat(r.process().get("descendants_killed").text()).isEqualTo("1");
+        assertThat(r.process().get("descendants_detail").text()).contains("still held standard output open");
+        assertThat(r.process().get("stdout").text()).as("the pipe closed once the descendant was killed").isEqualTo("closed: EOF reached");
         assertThat(r.records()).isEqualTo(3);
         assertThat(Files.readAllBytes(r.independentCopy())).isEqualTo(firstLines(3));
         OcsfPackage p = PackageReader.open(r.packageDir().resolve("events.jsonl"));
@@ -153,7 +161,7 @@ class CliCaptureLifecycleTest {
         Path task = Files.createDirectories(work.resolve("task"));
         List<String> command = CliCapture.codexCommand(standIn.script.toString(), "TEST PROMPT (stand-in; no model)", null, null, task, List.of());
         CliCapture.Launch launch = new CliCapture.Launch(CliCapture.Cli.CODEX, command, task, "TEST PROMPT (stand-in; no model)", "probe-hang", work.resolve("out"), null, null,
-                work.resolve("home"), null, new Jv.Obj().put("stand_in", "TEST-ONLY: a shell script whose --version never ends; not a live CLI"));
+                work.resolve("home"), null, new Jv.Obj().put("stand_in", "TEST-ONLY: a shell script whose --version never ends; not a live CLI"), LIMITS);
         CliCapture capture = new CliCapture(launch, options());
         CompletableFuture<Throwable> failure = CompletableFuture.supplyAsync(() -> {
             try {
@@ -174,6 +182,20 @@ class CliCaptureLifecycleTest {
         }
         assertThat(t).as("an explicit failure, not a silent wait").isInstanceOf(IOException.class);
         assertThat(t.getMessage()).contains("--version").contains("did not end within");
+        standIn.assertNothingLeftRunning();
+    }
+
+    /** A CLI that closes its standard output but never exits is terminated after the grace; the complete stream is kept, nothing is presumed. */
+    @Test
+    void aCliThatClosesStdoutButDoesNotExitIsTerminatedAfterTheGrace(@TempDir Path work) throws Exception {
+        StandIn standIn = standIn(work, "lingers", "cat '" + stream() + "'\nexec 1>&-\nsleep 60 > /dev/null 2>&1 &\nchild=$!\ntrap 'kill $child 2>/dev/null; exit 143' TERM\nwait $child\nexit 0\n");
+        CliCapture.Result r = runBounded(new CliCapture(launch(standIn, work, null, null), options()), standIn);
+        assertThat(r.state()).as("the stream ended but the CLI did not: not presented as a completed run").isEqualTo(OcsfRunWriter.State.INTERRUPTED);
+        assertThat(r.how()).isEqualTo("cancelled");
+        assertThat(r.exitCode()).isEqualTo(143);
+        assertThat(r.process().get("cancel_reason").text()).isEqualTo("the CLI did not exit within 1000 ms after its standard output ended");
+        assertThat(r.records()).isEqualTo(50);
+        assertThat(Files.readAllBytes(r.independentCopy())).isEqualTo(Files.readAllBytes(stream()));
         standIn.assertNothingLeftRunning();
     }
 
@@ -217,7 +239,7 @@ class CliCaptureLifecycleTest {
         Path task = Files.createDirectories(work.resolve("task"));
         List<String> command = CliCapture.claudeCommand(standIn.script.toString(), "TEST PROMPT (stand-in; no model)", null, List.of("Read", "Write"), List.of());
         return new CliCapture.Launch(CliCapture.Cli.CLAUDE, command, task, "TEST PROMPT (stand-in; no model)", "lifecycle-" + standIn.name, work.resolve("out"), cancelAfterRecords, cancelAfterMs,
-                work.resolve("home"), null, new Jv.Obj().put("stand_in", "TEST-ONLY: a shell script (" + standIn.name + "); not a live CLI"));
+                work.resolve("home"), null, new Jv.Obj().put("stand_in", "TEST-ONLY: a shell script (" + standIn.name + "); not a live CLI"), LIMITS);
     }
 
     /** Runs the capture on its own thread under the outer bound; on timeout kills the stand-in and fails. */
