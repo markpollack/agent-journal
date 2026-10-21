@@ -1,8 +1,8 @@
 {
   "kind": "agent-journal/compatibility-registry",
   "version": "0.1",
-  "reviewed": "2026-10-21 (ACCEPT-1)",
-  "selection_rule": "exactly one entry whose cli, profile and route match and whose inclusive [min_version, max_version] contains the CLI version selects the source description, contract and mapper; overlapping entries are a configuration error rejected at load; no match retains the acquired input under the untested-compatibility contract and flags it, never the numerically nearest entry; a version inside the range that is not listed under tested is reported in_range (reviewed range, not individually tested); a version not yet known is reported version_unknown until the stream reports it",
+  "reviewed": "2026-10-21 (ACCEPT-1; narrowed to exact tested version/route combinations in the ACCEPT-1 follow-up, Owner disposition 4)",
+  "selection_rule": "exactly one entry whose cli, profile and route match and whose inclusive [min_version, max_version] contains the CLI version selects the source description, contract and mapper; overlapping entries are a configuration error rejected at load; no match retains the acquired input under the untested-compatibility contract and flags it, never the numerically nearest entry; a version inside the range that is not listed under tested is reported in_range (reviewed range, not individually tested; no bundled entry currently has such a range: every entry is one exactly tested version on its tested route, and 2.1.300 to 2.1.302, 2.1.299 or 2.1.303 on stdout and 2.1.304 on sdk match no entry); a version not yet known is reported version_unknown until the stream reports it",
   "routes": {
     "stdout": "the CLI's raw standard output read by the capture process (no SDK stage)",
     "sdk": "stream lines delivered by a vendor SDK (claude-code-sdk rawJson); a filtered surface",
@@ -10,39 +10,84 @@
   },
   "entries": [
     {
-      "id": "claude-code/stream-json/2.1.299",
+      "id": "claude-code/stream-json/2.1.299-sdk",
       "cli": "Claude Code",
       "profile": "claude_stream",
-      "routes": ["sdk", "stdout"],
+      "routes": ["sdk"],
       "min_version": "2.1.299",
+      "max_version": "2.1.299",
+      "source_specification": {"path": "schema/vendor/claude-code/stream-json/2.1.303.json", "specification_version": "0.1.0", "profile": "claude_stream"},
+      "schema": {"extension": "agentic_cli", "version": "0.3.0-prototype", "compiled_sha256": "ec1b99bc2922651417949dbf6168664496a412a9b55951420a515519baeae78e"},
+      "contract": "claude-code-2.1.303-stream",
+      "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper",
+      "tested": [
+        {"version": "2.1.299", "route": "sdk", "evidence": "fixture claude-child-2.1.299 (sanitized real stream), OcsfOracleFixtureTest, RequirementsEvidenceTest, StandaloneEventFileTest"}
+      ],
+      "note": "exact tested combination (Owner disposition 4, 2026-10-21): 2.1.299 on the sdk route only; 2.1.299 on raw stdout matches no entry"
+    },
+    {
+      "id": "claude-code/stream-json/2.1.303-sdk",
+      "cli": "Claude Code",
+      "profile": "claude_stream",
+      "routes": ["sdk"],
+      "min_version": "2.1.303",
+      "max_version": "2.1.303",
+      "source_specification": {"path": "schema/vendor/claude-code/stream-json/2.1.303.json", "specification_version": "0.1.0", "profile": "claude_stream"},
+      "schema": {"extension": "agentic_cli", "version": "0.3.0-prototype", "compiled_sha256": "ec1b99bc2922651417949dbf6168664496a412a9b55951420a515519baeae78e"},
+      "contract": "claude-code-2.1.303-stream",
+      "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper",
+      "tested": [
+        {"version": "2.1.303", "route": "sdk", "evidence": "private pair A stream (FULL-1/FULL-1R steward evidence 2026-10-21-complete-source-canonical, 2026-10-21-full1r)"}
+      ],
+      "note": "exact tested combination: 2.1.303 on the sdk route only (the contract's observed baseline); 2.1.303 on raw stdout matches no entry"
+    },
+    {
+      "id": "claude-code/stream-json/2.1.304-stdout",
+      "cli": "Claude Code",
+      "profile": "claude_stream",
+      "routes": ["stdout"],
+      "min_version": "2.1.304",
       "max_version": "2.1.304",
       "source_specification": {"path": "schema/vendor/claude-code/stream-json/2.1.303.json", "specification_version": "0.1.0", "profile": "claude_stream"},
       "schema": {"extension": "agentic_cli", "version": "0.3.0-prototype", "compiled_sha256": "ec1b99bc2922651417949dbf6168664496a412a9b55951420a515519baeae78e"},
       "contract": "claude-code-2.1.303-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper",
       "tested": [
-        {"version": "2.1.299", "route": "sdk", "evidence": "fixture claude-child-2.1.299 (sanitized real stream), OcsfOracleFixtureTest, RequirementsEvidenceTest, StandaloneEventFileTest"},
-        {"version": "2.1.303", "route": "sdk", "evidence": "private pair A stream (FULL-1/FULL-1R steward evidence 2026-10-21-complete-source-canonical, 2026-10-21-full1r)"},
-        {"version": "2.1.304", "route": "stdout", "evidence": "C3 live runs (steward evidence 2026-10-21-c3-live-claude); ACCEPT-1 live runs through the integrated launch path and their sanitized fixtures"}
+        {"version": "2.1.304", "route": "stdout", "evidence": "C3 live runs (steward evidence 2026-10-21-c3-live-claude); ACCEPT-1 live runs through the integrated launch path (CliCapture) and their sanitized fixtures claude-live-2.1.304-features, -denial, -cancelled"}
       ],
-      "note": "named for its lowest supported version; 2.1.300 to 2.1.302 lie inside the reviewed range and are reported in_range, not tested"
+      "note": "exact tested combination: 2.1.304 on raw stdout launched by CliCapture; 2.1.304 on the sdk route matches no entry"
     },
     {
-      "id": "claude-code/session-transcript/2.1.299",
+      "id": "claude-code/session-transcript/2.1.299-session-file",
       "cli": "Claude Code",
       "profile": "claude_transcript",
       "routes": ["native_session_file"],
       "min_version": "2.1.299",
+      "max_version": "2.1.299",
+      "source_specification": {"path": "schema/vendor/claude-code/session-transcript/2.1.303.json", "specification_version": "0.1.0", "profile": "claude_transcript"},
+      "schema": {"extension": "agentic_cli", "version": "0.3.0-prototype", "compiled_sha256": "ec1b99bc2922651417949dbf6168664496a412a9b55951420a515519baeae78e"},
+      "contract": "claude-code-2.1.303-transcript",
+      "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeTranscriptMapper",
+      "tested": [
+        {"version": "2.1.299", "route": "native_session_file", "evidence": "fixture syn-claude-pair-transcript (labelled synthetic transcript in the shape of the 2.1.303 pair A families)"}
+      ],
+      "note": "experimental combined-source evidence only; a streaming CLI's native session file is archived, not admitted, under the stream-first policy; exact tested version (2.1.300 to 2.1.302 match no entry)"
+    },
+    {
+      "id": "claude-code/session-transcript/2.1.303-session-file",
+      "cli": "Claude Code",
+      "profile": "claude_transcript",
+      "routes": ["native_session_file"],
+      "min_version": "2.1.303",
       "max_version": "2.1.303",
       "source_specification": {"path": "schema/vendor/claude-code/session-transcript/2.1.303.json", "specification_version": "0.1.0", "profile": "claude_transcript"},
       "schema": {"extension": "agentic_cli", "version": "0.3.0-prototype", "compiled_sha256": "ec1b99bc2922651417949dbf6168664496a412a9b55951420a515519baeae78e"},
       "contract": "claude-code-2.1.303-transcript",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeTranscriptMapper",
       "tested": [
-        {"version": "2.1.299", "route": "native_session_file", "evidence": "fixture syn-claude-pair-transcript (labelled synthetic transcript in the shape of the 2.1.303 pair A families)"},
         {"version": "2.1.303", "route": "native_session_file", "evidence": "private pair A transcript (FULL-1/FULL-1R steward evidence)"}
       ],
-      "note": "experimental combined-source evidence only; a streaming CLI's native session file is archived, not admitted, under the stream-first policy"
+      "note": "experimental combined-source evidence only; a streaming CLI's native session file is archived, not admitted, under the stream-first policy; exact tested version (2.1.300 to 2.1.302 match no entry)"
     },
     {
       "id": "codex-cli/exec-json-stream/0.160.1",

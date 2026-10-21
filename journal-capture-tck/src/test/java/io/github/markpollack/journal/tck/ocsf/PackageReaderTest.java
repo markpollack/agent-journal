@@ -240,7 +240,7 @@ class PackageReaderTest {
         assertThat(p.diagnosticsWithCode("CONTRACT_APPLICABILITY")).isEmpty();
         assertThat(p.diagnosticsWithCode("COMPATIBILITY_NO_MATCH")).isEmpty();
         assertThat(p.manifest.compatibility("stream.jsonl").member("status").text()).isEqualTo("tested");
-        assertThat(p.manifest.compatibility("stream.jsonl").member("entry_id").text()).isEqualTo("claude-code/stream-json/2.1.299");
+        assertThat(p.manifest.compatibility("stream.jsonl").member("entry_id").text()).isEqualTo("claude-code/stream-json/2.1.299-sdk");
         assertThat(child.manifest.compatibility("stream.jsonl").member("status").text()).as("the child file declares the selection too").isEqualTo("tested");
         // each core carries its own complete closure
         assertThat(child.catalog.classes()).containsKeys("agentic_cli/tool_call", "agentic_cli/model_response");

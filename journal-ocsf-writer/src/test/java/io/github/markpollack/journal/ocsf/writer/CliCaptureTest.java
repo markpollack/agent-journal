@@ -24,13 +24,15 @@ import java.util.concurrent.TimeUnit;
 
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CHILD;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX_STREAM;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_FEATURES;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.nativeOf;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.verify;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * The opt-in launching capture ({@link CliCapture}) with stand-in CLIs: small shell scripts that replay a committed
- * stream line by line with delays and end the way each scenario needs. TEST-ONLY FAULTS, labelled as such: nothing
+ * stream (the sanitized real 2.1.304 stdout recording, the one tested combination for the stdout route) line by line
+ * with delays and end the way each scenario needs. TEST-ONLY FAULTS, labelled as such: nothing
  * here is a live CLI; the live Claude and Codex runs are separate steward evidence and are never reported as this.
  *
  * <p>What is established deterministically: the package is readable before the process exits; EOF with exit 0 is a
@@ -45,7 +47,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @EnabledOnOs({OS.LINUX, OS.MAC})
 class CliCaptureTest {
 
-    static final String CLAUDE_SESSION = "00000000-0000-4000-8000-000000000000";
+    static final String CLAUDE_SESSION = "00000000-0000-4000-8000-0000000000a1";
+    static final String LIVE_SPAWN = "toolu_01WBvs5eGudfYPm8YvrTYTQK";
     static final String CODEX_THREAD = "00000000-0000-4000-8000-0000000c0de5";
 
     @Test
@@ -54,7 +57,7 @@ class CliCaptureTest {
         Path home = Files.createDirectories(work.resolve("home"));
         Path sessionFile = claudeSessionFile(home, task, CLAUDE_SESSION);
         Files.writeString(sessionFile, "{\"this\":\"is the native session file\",\"n\":1}\n{broken json on purpose\n", StandardCharsets.UTF_8);
-        Path fake = fakeClaude(work, nativeOf(CHILD, "stream.jsonl"), 60, 0, false);
+        Path fake = fakeClaude(work, nativeOf(LIVE_FEATURES, "stream.jsonl"), 60, 0, false);
         CliCapture capture = new CliCapture(launch(CliCapture.Cli.CLAUDE, fake, task, work.resolve("out"), home, null, null), options(work));
         CompletableFuture<CliCapture.Result> running = CompletableFuture.supplyAsync(() -> {
             try {
@@ -92,10 +95,10 @@ class CliCaptureTest {
         assertThat(r.state()).isEqualTo(OcsfRunWriter.State.COMPLETED);
         assertThat(r.how()).isEqualTo("exited");
         assertThat(r.exitCode()).isZero();
-        assertThat(r.records()).isEqualTo(27);
+        assertThat(r.records()).isEqualTo(50);
         assertThat(r.sessionUid()).isEqualTo(CLAUDE_SESSION);
-        assertThat(r.cliVersion()).as("reported by the stream; none at launch").isEqualTo("2.1.299");
-        assertThat(Files.readAllBytes(r.independentCopy())).isEqualTo(Files.readAllBytes(nativeOf(CHILD, "stream.jsonl")));
+        assertThat(r.cliVersion()).as("reported by the stream; none at launch").isEqualTo("2.1.304");
+        assertThat(Files.readAllBytes(r.independentCopy())).isEqualTo(Files.readAllBytes(nativeOf(LIVE_FEATURES, "stream.jsonl")));
 
         OcsfPackage p = PackageReader.open(r.packageDir().resolve("events.jsonl"));
         assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).as(p.diagnostics.toString()).isEmpty();
@@ -105,7 +108,8 @@ class CliCaptureTest {
         assertThat(p.manifest.text("run", "launch_settings", "caller_input", "provenance")).contains("caller-supplied").contains("not reported by the CLI");
         assertThat(p.manifest.text("run", "launch_settings", "route")).isEqualTo("stdout");
         assertThat(p.manifest.text("run", "cli", "version_basis")).contains("reported by the selected source");
-        assertThat(p.manifest.compatibility("stream.jsonl").member("status").text()).as("2.1.299 on the stdout route: tested on sdk only").isEqualTo("in_range");
+        assertThat(p.manifest.compatibility("stream.jsonl").member("status").text()).as("2.1.304 on the stdout route: the exactly tested combination").isEqualTo("tested");
+        assertThat(p.manifest.compatibility("stream.jsonl").member("entry_id").text()).isEqualTo("claude-code/stream-json/2.1.304-stdout");
         assertThat(p.diagnosticsWithCode("CLI_EXIT_NONZERO")).isEmpty();
         assertThat(p.children).hasSize(1);
 
@@ -123,14 +127,42 @@ class CliCaptureTest {
         assertThat(report.outcome("acquisition.complete", "main")).isEqualTo(Check.Outcome.VERIFIED);
         assertThat(report.outcome("source.inventory", "main/stream.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
         assertThat(report.outcome("package.children", "main")).as("the split core frozen from the copy's owner paths is the one the candidate linked").isEqualTo(Check.Outcome.VERIFIED);
-        assertThat(Files.readString(r.expectedSources())).contains("\"spawn_tool_call_uid\":\"toolu_01BnEuCUmZ2Vu1LpADzksmrJ\"");
+        assertThat(Files.readString(r.expectedSources())).contains("\"spawn_tool_call_uid\":\"" + LIVE_SPAWN + "\"");
+    }
+
+    /** A version tested on another route only (2.1.299, sdk) replayed on stdout: no match, retained whole and flagged; no child split, nothing normalized after the version report. */
+    @Test
+    void aVersionTestedOnAnotherRouteOnlyIsNoMatchRetainedAndFlagged(@TempDir Path work) throws Exception {
+        Path task = Files.createDirectories(work.resolve("task"));
+        Path fake = fakeClaude(work, nativeOf(CHILD, "stream.jsonl"), 0, 0, false);
+        CliCapture.Result r = new CliCapture(launch(CliCapture.Cli.CLAUDE, fake, task, work.resolve("out"), work.resolve("home"), null, null), options(work)).run();
+        assertThat(r.state()).isEqualTo(OcsfRunWriter.State.COMPLETED);
+        assertThat(r.how()).isEqualTo("exited");
+        assertThat(r.records()).isEqualTo(27);
+        assertThat(r.cliVersion()).isEqualTo("2.1.299");
+        OcsfPackage p = PackageReader.open(r.packageDir().resolve("events.jsonl"));
+        assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).as(p.diagnostics.toString()).isEmpty();
+        assertThat(p.manifest.compatibility("stream.jsonl").member("status").text()).as("2.1.299 is tested on the sdk route only; stdout matches no entry").isEqualTo("no_match");
+        assertThat(p.manifest.compatibility("stream.jsonl").member("entry_id")).as("the nearest entry is not selected").isNull();
+        assertThat(p.manifest.compatibility("stream.jsonl").member("normalizes").text()).isEqualTo("no");
+        assertThat(p.manifest.compatibility("stream.jsonl").member("detail").text()).contains("2.1.299").contains("route stdout").contains("claude-code/stream-json/2.1.304-stdout [2.1.304, 2.1.304]");
+        assertThat(p.diagnosticsWithCode("COMPATIBILITY_NO_MATCH")).hasSize(1);
+        assertThat(p.children).as("owner routing is normalization; nothing after the selection was normalized").isEmpty();
+        assertThat(p.events.stream().filter(e -> e.recordIndex() != null && e.recordIndex() > 1).map(e -> e.className).distinct().toList()).containsExactly("source_record");
+        String frozen = Files.readString(r.expectedSources());
+        assertThat(frozen).as("the frozen manifest expects retention, not a split core").contains("\"compatibility\":\"no_match\"").contains("\"children\":[]");
+        OracleReport report = verify(r.packageDir(), work.resolve("out/native"));
+        assertThat(report.defects()).as(report.toString()).isEmpty();
+        assertThat(report.outcome("source.compatibility", "main/stream.jsonl")).isEqualTo(Check.Outcome.UNSUPPORTED);
+        assertThat(report.outcome("whole_record.coverage", "main/stream.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
+        assertThat(report.outcome("acquisition.complete", "main")).isEqualTo(Check.Outcome.VERIFIED);
     }
 
     /** Changing the archived file's contents cannot change the normalized output: the integration never opens it. */
     @Test
     void theArchiveContentsCannotChangeTheNormalizedStreamOutput(@TempDir Path work) throws Exception {
         Path task = Files.createDirectories(work.resolve("task"));
-        Path fake = fakeClaude(work, nativeOf(CHILD, "stream.jsonl"), 0, 0, false);
+        Path fake = fakeClaude(work, nativeOf(LIVE_FEATURES, "stream.jsonl"), 0, 0, false);
         byte[] first = null;
         for (String content : List.of("{\"variant\":\"A\",\"claude_code_version\":\"9.9.9\",\"usage\":{\"input_tokens\":123456}}\n", "garbage \u0000 bytes, not JSON at all")) {
             Path home = Files.createDirectories(work.resolve("home-" + content.length()));
@@ -153,14 +185,14 @@ class CliCaptureTest {
             }
             assertThat(text).doesNotContain("9.9.9").doesNotContain("123456");
             OcsfPackage p = PackageReader.open(out.resolve("package/events.jsonl"));
-            assertThat(p.manifest.cliVersion()).isEqualTo("2.1.299");
+            assertThat(p.manifest.cliVersion()).isEqualTo("2.1.304");
         }
     }
 
     @Test
     void aNonZeroExitAfterACompleteStreamIsACompletelyAcquiredFailedRun(@TempDir Path work) throws Exception {
         Path task = Files.createDirectories(work.resolve("task"));
-        Path fake = fakeClaude(work, nativeOf(CHILD, "stream.jsonl"), 0, 2, false);
+        Path fake = fakeClaude(work, nativeOf(LIVE_FEATURES, "stream.jsonl"), 0, 2, false);
         CliCapture.Result r = new CliCapture(launch(CliCapture.Cli.CLAUDE, fake, task, work.resolve("out"), work.resolve("home"), null, null), options(work)).run();
         assertThat(r.state()).as("storage: finalized").isEqualTo(OcsfRunWriter.State.COMPLETED);
         assertThat(r.how()).isEqualTo("exited");
@@ -177,13 +209,13 @@ class CliCaptureTest {
     @Test
     void aDeliberateCancellationTerminatesTheProcessAndInterruptsTheRecordingWithTheReason(@TempDir Path work) throws Exception {
         Path task = Files.createDirectories(work.resolve("task"));
-        Path fake = fakeClaude(work, nativeOf(CHILD, "stream.jsonl"), 150, 0, false);
+        Path fake = fakeClaude(work, nativeOf(LIVE_FEATURES, "stream.jsonl"), 150, 0, false);
         CliCapture.Result r = new CliCapture(launch(CliCapture.Cli.CLAUDE, fake, task, work.resolve("out"), work.resolve("home"), 6, null), options(work)).run();
         assertThat(r.state()).isEqualTo(OcsfRunWriter.State.INTERRUPTED);
         assertThat(r.how()).isEqualTo("cancelled");
         assertThat(r.exitCode()).as("SIGTERM to a shell loop: 128+15").isEqualTo(143);
         assertThat(r.process().get("cancel_reason").text()).contains("deliberate cancellation after").contains("requested after 6");
-        assertThat(r.records()).isGreaterThanOrEqualTo(6).isLessThan(27);
+        assertThat(r.records()).isGreaterThanOrEqualTo(6).isLessThan(50);
         OcsfPackage p = PackageReader.open(r.packageDir().resolve("events.jsonl"));
         assertThat(p.manifest.packageState()).isEqualTo("INTERRUPTED");
         assertThat(p.manifest.text("recording", "interruption_reason")).contains("deliberate cancellation");
@@ -201,7 +233,7 @@ class CliCaptureTest {
     @Test
     void anAbnormalExitInsideARecordLeavesAnHonestIncompleteTailAndAFailedProcess(@TempDir Path work) throws Exception {
         Path task = Files.createDirectories(work.resolve("task"));
-        Path fake = fakeClaude(work, nativeOf(CHILD, "stream.jsonl"), 0, 1, true);
+        Path fake = fakeClaude(work, nativeOf(LIVE_FEATURES, "stream.jsonl"), 0, 1, true);
         CliCapture.Result r = new CliCapture(launch(CliCapture.Cli.CLAUDE, fake, task, work.resolve("out"), work.resolve("home"), null, null), options(work)).run();
         assertThat(r.state()).as("EOF reached: storage finalized").isEqualTo(OcsfRunWriter.State.COMPLETED);
         assertThat(r.how()).isEqualTo("exited");
@@ -218,7 +250,7 @@ class CliCaptureTest {
     @Test
     void aPersistenceFailureStopsTheProcessLeavesAFailedPackageAndKeepsTheIndependentCopyWhole(@TempDir Path work) throws Exception {
         Path task = Files.createDirectories(work.resolve("task"));
-        Path fake = fakeClaude(work, nativeOf(CHILD, "stream.jsonl"), 40, 0, false);
+        Path fake = fakeClaude(work, nativeOf(LIVE_FEATURES, "stream.jsonl"), 40, 0, false);
         int[] writes = {0};
         WriterOptions faulty = options(work).withFaults((operation, detail) -> {
             if (operation.equals("append") && ++writes[0] == 4) {
@@ -270,13 +302,13 @@ class CliCaptureTest {
     @Test
     void theLaunchCommandLineRunsAStandInAndPrintsTheThreeFacts(@TempDir Path work) throws Exception {
         Path task = Files.createDirectories(work.resolve("task"));
-        Path fake = fakeClaude(work, nativeOf(CHILD, "stream.jsonl"), 0, 0, false);
+        Path fake = fakeClaude(work, nativeOf(LIVE_FEATURES, "stream.jsonl"), 0, 0, false);
         java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
         int exit = CliCapture.main(new String[] {"launch", work.resolve("out").toString(), "--cli", "claude", "--prompt", "hello", "--cwd", task.toString(),
                 "--executable", fake.toString(), "--home", work.resolve("home").toString(), "--run-uid", "launch-test", "--model", "haiku", "--allowed-tools", "Read,Write"},
                 new java.io.PrintStream(out, true, StandardCharsets.UTF_8), System.err);
         assertThat(exit).isZero();
-        assertThat(out.toString(StandardCharsets.UTF_8)).contains("launch COMPLETED process exited exit 0").contains("session " + CLAUDE_SESSION).contains("cli_version 2.1.299").contains("records 27");
+        assertThat(out.toString(StandardCharsets.UTF_8)).contains("launch COMPLETED process exited exit 0").contains("session " + CLAUDE_SESSION).contains("cli_version 2.1.304").contains("records 50");
         OcsfPackage p = PackageReader.open(work.resolve("out/package/events.jsonl"));
         assertThat(p.manifest.text("run", "launch_settings", "model_requested")).isEqualTo("haiku");
         assertThat(p.manifest.json().member("run").member("launch_settings").member("command").elements().get(1).text()).isEqualTo("-p");

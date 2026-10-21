@@ -4,7 +4,7 @@
  "fixture": "syn-codex-counterexamples",
  "core": "main",
  "events_jsonl": "fixtures/syn-codex-counterexamples/package/events.jsonl",
- "events_jsonl_sha256": "5f6b3661db36f5f8b323e63fb2c1925a1fc46cbf52085efbc9033aff13c302d4",
+ "events_jsonl_sha256": "1262292cfd85c3513b0a7eb76c3dee75f4d508794f9548cbdbc95c3988b8e1f4",
  "execution_records": 39,
  "declarations_skipped": 46,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",

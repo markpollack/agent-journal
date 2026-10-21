@@ -3,7 +3,7 @@
   "version": "0.1",
   "reviewed": "2026-10-21 (ACCEPT-1)",
   "profile": "codex_stream",
-  "compatibility_entry": "codex-cli/exec-json-stream/0.160.1",
+  "compatibility_entries": ["codex-cli/exec-json-stream/0.160.1"],
   "specification": "schema/vendor/codex-cli/exec-json-stream/0.160.1.json",
   "contract": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
   "contract_file": "codex-cli-0.160.1-exec-stream",

@@ -103,7 +103,7 @@ class RequirementsAccountingIT {
     static final Map<String, List<Item>> CRITERIA = new LinkedHashMap<>();
     static {
         CRITERIA.put("UC1-AC1", List.of(junit("CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy", STAND_IN),
-                junit("LiveCaptureSeamTest#aStreamPipedToTheCaptureSeamIsRecordedWithItsReportedVersionAndJudgedAgainstTheBytes", "recorded Claude 2.1.299 stream through the stdin seam"),
+                junit("LiveCaptureSeamTest#aStreamPipedToTheCaptureSeamIsRecordedWithItsReportedVersionAndJudgedAgainstTheBytes", "recorded Claude 2.1.304 stdout stream through the stdin seam"),
                 junit("LiveFixtureFeaturesTest#theClaudeFeatureRecordingExhibitsToolsChildrenFailureUsageAndRetainedFamilies", CLAUDE_ALL),
                 junit("LiveFixtureFeaturesTest#theCodexRecordingExhibitsOperationsFailureRepetitionAndUsage", CODEX_ALL), live("both CLIs launched by CliCapture, streams normalized live")));
         CRITERIA.put("UC1-AC2", List.of(deferred("no session-only CLI is in the two-CLI scope: Claude Code and Codex both offer a stream and are captured from it; the import mechanism exists (PrefixReplayTest on a rollout) but the selection rule for a session-only CLI is unexercised and remains an open obligation, not NOT_APPLICABLE")));
@@ -116,7 +116,7 @@ class RequirementsAccountingIT {
         CRITERIA.put("UC1-AC6", List.of(oracle("UC1-AC6", BOTH)));
         CRITERIA.put("UC1-AC7", List.of(junit("CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy", STAND_IN + ": the frozen denominator is the stream alone while the archive exists"),
                 junit("FullOneReviewRegressionTest#omittingAnEntireSourceIsADefectOnEveryObligationOfThatSource", "frozen manifest defines the denominator")));
-        CRITERIA.put("UC2-AC1", List.of(junit("LiveCaptureSeamTest#aStreamPipedToTheCaptureSeamIsRecordedWithItsReportedVersionAndJudgedAgainstTheBytes", "Claude 2.1.299 (seam)"),
+        CRITERIA.put("UC2-AC1", List.of(junit("LiveCaptureSeamTest#aStreamPipedToTheCaptureSeamIsRecordedWithItsReportedVersionAndJudgedAgainstTheBytes", "Claude 2.1.304 (seam)"),
                 junit("CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy", STAND_IN + ": no version at launch, reported by the stream, no version command"),
                 junit("OracleFullSourceTest#alteringAReportedSettingOrAddingAnUnreportedOneIsAContextValueDefect", "settings values exact"), live("Claude 2.1.304 reported by the stream on three runs")));
         CRITERIA.put("UC2-AC2", List.of(junit("CliCaptureTest#codexVersionIsDiscoveredOnceByTheDocumentedCommandAndTheThreadIdBecomesTheSession", STAND_IN + ": codex --version counted once; basis declared"),

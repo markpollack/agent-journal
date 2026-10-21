@@ -5,8 +5,8 @@
     "version": "2.1.303",
     "launch": "-p --output-format stream-json; routes sdk (claude-code-sdk rawJson lines) and stdout (raw standard output, C3 and ACCEPT-1)",
     "source_kind": "Live output",
-    "versions": "selected through compatibility entry claude-code/stream-json/2.1.299 (inclusive reviewed range 2.1.299 to 2.1.304; tested 2.1.299 sdk, 2.1.303 sdk, 2.1.304 stdout); the compatibility declaration of each source states the selection and its status",
-    "compatibility_entry": "claude-code/stream-json/2.1.299"
+    "versions": "selected through one of three exact compatibility entries (2.1.299 sdk, 2.1.303 sdk, 2.1.304 stdout); no other version or route selects this contract; the compatibility declaration of each source states the selection and its status",
+    "compatibility_entries": ["claude-code/stream-json/2.1.299-sdk", "claude-code/stream-json/2.1.303-sdk", "claude-code/stream-json/2.1.304-stdout"]
   },
   "executor": "journal-ocsf-writer ClaudeStreamMapper (direct Java over the lexically exact Jv tree); one record at a time; state: artifact time fallback only",
   "record_discriminator": "type, then subtype",

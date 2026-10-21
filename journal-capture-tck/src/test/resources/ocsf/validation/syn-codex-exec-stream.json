@@ -4,7 +4,7 @@
  "fixture": "syn-codex-exec-stream",
  "core": "main",
  "events_jsonl": "fixtures/syn-codex-exec-stream/package/events.jsonl",
- "events_jsonl_sha256": "bd96aefc2704bfeb530c9f5ab91ee0d9559ce4dae16be3cf696aaea7e3b208ef",
+ "events_jsonl_sha256": "bd99b15464ee37532ea91b28200d56c0594fab17fd718fad7080faadba4b717d",
  "execution_records": 12,
  "declarations_skipped": 41,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",

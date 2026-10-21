@@ -5,7 +5,7 @@
     "version": "0.160.1",
     "launch": "codex exec --json (rollout file is the saved session; the exec stream is a separate live-output contract)",
     "source_kind": "Saved session file",
-    "compatibility_entry": "codex-cli/rollout/0.160.1",
+    "compatibility_entries": ["codex-cli/rollout/0.160.1"],
     "selection": "route native_session_file; experimental combined-source evidence only"
   },
   "executor": "journal-ocsf-writer CodexRolloutMapper (direct Java); one record at a time; state: turn in force, custom_tool_calls seen, token_counts of the current turn, artifact time fallback",

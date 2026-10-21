@@ -241,6 +241,7 @@ public final class CliCapture {
         long bytes = 0;
         String sessionUid = null;
         String cliVersion = version;
+        Jv.Obj compatibilityInForce = null;
         try (OcsfRunWriter w = OcsfRunWriter.open(out.resolve("package"), run, SchemaPin.bundled(), options)) {
             SourceInput in = w.source(new SourceDescriptor("stream.jsonl", 1, launch.cli().profile, "stdout",
                     "live CLI standard output read by the launching capture (raw bytes, no SDK stage); independent copy native/stream.jsonl", "stdout of the launched process"));
@@ -304,6 +305,8 @@ public final class CliCapture {
                     .put("meaning", "the CLI process outcome; distinct from storage finalization (recording.state) and acquisition extent (acquisition.status): EOF never implies success");
             sessionUid = w.sessionUid();
             cliVersion = w.knownCliVersion();
+            List<Jv.Obj> declared = w.compatibilityDeclarations("stream.jsonl");
+            compatibilityInForce = declared.isEmpty() ? null : declared.get(declared.size() - 1);
             if (w.state() == OcsfRunWriter.State.RECORDING) {
                 archive = archiveNativeSessionFile(out.resolve("archive"), sessionUid);
                 w.archive(archive);
@@ -329,7 +332,7 @@ public final class CliCapture {
         }
         Files.writeString(out.resolve("archive").resolve("archive.json"), Jv.write(archive == null ? new Jv.Obj().put("status", "not attempted") : archive) + "\n", StandardCharsets.UTF_8);
         boolean completeRun = state == OcsfRunWriter.State.COMPLETED && "exited".equals(processOutcome.get("how").text());
-        Path expected = freezeExpectedSources(out.resolve("native"), copyFile, launch.runUid(), launch.cli().profile, completeRun, processOutcome);
+        Path expected = freezeExpectedSources(out.resolve("native"), copyFile, launch.runUid(), launch.cli().profile, completeRun, processOutcome, compatibilityInForce);
         return new Result(state, processOutcome, archive, out.resolve("package"), copyFile, expected, records, bytes, sessionUid, cliVersion, stderrFile);
     }
 
@@ -644,8 +647,12 @@ public final class CliCapture {
                 .put("located_by", launch.cli() == Cli.CLAUDE ? "the session id the stream reported, under <home>/.claude/projects/<encoded cwd>/" : "the thread id the stream reported, matched against <home>/.codex/sessions/**/rollout-*-<thread>.jsonl");
     }
 
-    /** The frozen expected-source manifest from the independent copy, written after acquisition and before any judging. */
-    static Path freezeExpectedSources(Path nativeDir, Path copy, String runUid, String profile, boolean complete, Jv.Obj process) throws IOException {
+    /**
+     * The frozen expected-source manifest from the independent copy, written after acquisition and before any judging.
+     * Split cores are expected only when the compatibility selection in force normalizes: a no_match source is retained
+     * whole, so no child core is expected and the manifest states the expected status (as the untested-version fixture does).
+     */
+    static Path freezeExpectedSources(Path nativeDir, Path copy, String runUid, String profile, boolean complete, Jv.Obj process, Jv.Obj compatibilityInForce) throws IOException {
         byte[] b = Files.readAllBytes(copy);
         int records = 0;
         for (byte x : b) {
@@ -658,7 +665,9 @@ public final class CliCapture {
         }
         // expected split cores, read from the copy with the plain JSON parser (never the mapper): one per distinct non-null owner path
         Jv.Arr children = new Jv.Arr();
-        if ("claude_stream".equals(profile)) {
+        String status = compatibilityInForce == null ? null : compatibilityInForce.get("status").text();
+        boolean noMatch = "no_match".equals(status);
+        if ("claude_stream".equals(profile) && !noMatch) {
             List<String> seen = new ArrayList<>();
             for (String line : new String(b, StandardCharsets.UTF_8).split("\n")) {
                 if (line.isBlank()) {
@@ -677,10 +686,15 @@ public final class CliCapture {
                 }
             }
         }
+        Jv.Obj source = new Jv.Obj().put("artifact", "stream.jsonl").put("profile", profile).put("sha256", sha256(b)).put("bytes", b.length).put("records", records).put("required", true);
+        if (noMatch) {
+            source.put("compatibility", "no_match").put("compatibility_basis", "the selection the writer declared for the stream-reported version matched no registry entry ("
+                    + compatibilityInForce.get("detail").text() + "); the expected behavior is retention flagged untested, with no split core and no nearest-entry normalization");
+        }
         Jv.Obj m = new Jv.Obj().put("kind", "agent-journal/expected-sources").put("version", "0.1").put("run_uid", runUid).put("complete", complete)
                 .put("frozen", new Jv.Obj().put("at", "after acquisition, before judging").put("by", "sha256, bytes and line count of the independent byte copy of the CLI's standard output (written before the writer saw each chunk); split cores from the copy's distinct non-null parent_tool_use_id values")
                         .put("basis", "LIVE launch by CliCapture; the capture's own package output was not consulted").put("process", process))
-                .put("sources", new Jv.Arr(List.of(new Jv.Obj().put("artifact", "stream.jsonl").put("profile", profile).put("sha256", sha256(b)).put("bytes", b.length).put("records", records).put("required", true))))
+                .put("sources", new Jv.Arr(List.of(source)))
                 .put("children", children);
         Path f = nativeDir.resolve("expected-sources.json");
         Files.writeString(f, Jv.write(m) + "\n", StandardCharsets.UTF_8);

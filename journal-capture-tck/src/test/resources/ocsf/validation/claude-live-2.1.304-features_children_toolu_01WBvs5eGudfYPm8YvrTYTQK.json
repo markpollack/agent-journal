@@ -4,7 +4,7 @@
  "fixture": "claude-live-2.1.304-features",
  "core": "children/toolu_01WBvs5eGudfYPm8YvrTYTQK",
  "events_jsonl": "fixtures/claude-live-2.1.304-features/package/children/toolu_01WBvs5eGudfYPm8YvrTYTQK/events.jsonl",
- "events_jsonl_sha256": "2f2cf04bfb41615f79ce790efc479c38fea2ce3bba050989c7b70ec0d981c6e5",
+ "events_jsonl_sha256": "9808f3a5e1d9a52e6ec29e68a673edba851067577a243330614a522f308303f2",
  "execution_records": 7,
  "declarations_skipped": 41,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",

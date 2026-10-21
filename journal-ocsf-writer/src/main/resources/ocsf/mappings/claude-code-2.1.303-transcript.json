@@ -4,7 +4,7 @@
     "product": "Claude Code",
     "version": "2.1.303",
     "source_kind": "Saved session file (~/.claude/projects/<cwd>/<session>.jsonl)",
-    "compatibility_entry": "claude-code/session-transcript/2.1.299",
+    "compatibility_entries": ["claude-code/session-transcript/2.1.299-session-file", "claude-code/session-transcript/2.1.303-session-file"],
     "selection": "route native_session_file; experimental combined-source evidence only"
   },
   "executor": "journal-ocsf-writer ClaudeTranscriptMapper (direct Java); one record at a time; state: artifact time fallback only",

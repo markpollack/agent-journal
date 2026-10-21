@@ -58,7 +58,7 @@ class UntestedCompatibilityTest {
         assertThat(inForce.member("entry_id")).as("no entry is named: the nearest one is not selected").isNull();
         assertThat(inForce.member("records_before_selection").scalarText()).isEqualTo("1");
         assertThat(inForce.member("normalizes").text()).isEqualTo("no");
-        assertThat(inForce.member("detail").text()).contains("2.1.999").contains("[2.1.299, 2.1.304]").contains("nearest entry is not selected").contains("RULE-33");
+        assertThat(inForce.member("detail").text()).contains("2.1.999").contains("claude-code/stream-json/2.1.304-stdout [2.1.304, 2.1.304]").contains("nearest entry is not selected").contains("RULE-33");
         assertThat(p.manifest.compatibility("stream.jsonl").member("status").text()).isEqualTo("no_match");
 
         // record 1 (the init record that carried the version) was mapped under the profile's contract before the version was known;
@@ -148,7 +148,7 @@ class UntestedCompatibilityTest {
         List<Json> history = p.declarations.compatibility("stream.jsonl");
         assertThat(history).hasSize(1);
         assertThat(history.get(0).member("status").text()).isEqualTo("tested");
-        assertThat(history.get(0).member("entry_id").text()).isEqualTo("claude-code/stream-json/2.1.299");
+        assertThat(history.get(0).member("entry_id").text()).isEqualTo("claude-code/stream-json/2.1.299-sdk");
         assertThat(history.get(0).member("route").text()).isEqualTo("sdk");
         assertThat(p.diagnosticsWithCode("COMPATIBILITY_NO_MATCH")).isEmpty();
         assertThat(p.diagnosticsWithCode("COMPATIBILITY_IN_RANGE")).isEmpty();

@@ -3,7 +3,7 @@
   "version": "0.1",
   "reviewed": "2026-10-21 (ACCEPT-1)",
   "profile": "claude_stream",
-  "compatibility_entry": "claude-code/stream-json/2.1.299",
+  "compatibility_entries": ["claude-code/stream-json/2.1.299-sdk", "claude-code/stream-json/2.1.303-sdk", "claude-code/stream-json/2.1.304-stdout"],
   "specification": "schema/vendor/claude-code/stream-json/2.1.303.json",
   "contract": "claude-code/stream-json/2.1.303/0.2.0-prototype",
   "contract_file": "claude-code-2.1.303-stream",

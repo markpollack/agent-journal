@@ -59,7 +59,7 @@ class CompatibilityAndIdentityOracleTest {
         Path control = copy(CHILD, work.resolve("control"));
         OracleReport ok = verify(control);
         assertThat(ok.outcome("source.compatibility", MAIN)).isEqualTo(Outcome.VERIFIED);
-        assertThat(ok.check("source.compatibility", MAIN).detail()).contains("entry claude-code/stream-json/2.1.299 selected").contains("status tested").doesNotContain("not individually tested");
+        assertThat(ok.check("source.compatibility", MAIN).detail()).contains("entry claude-code/stream-json/2.1.299-sdk selected").contains("status tested").doesNotContain("not individually tested");
 
         Path noEntry = copy(CHILD, work.resolve("no-entry"));
         editCompatibility(noEntry, c -> c.members().remove("entry_id"));
@@ -67,7 +67,7 @@ class CompatibilityAndIdentityOracleTest {
 
         Path outside = copy(CHILD, work.resolve("outside"));
         editCompatibility(outside, c -> c.members().put("min_version", str("2.1.300")));
-        assertThat(verify(outside).check("source.compatibility", MAIN).detail()).contains("version 2.1.299 lies outside the declared range [2.1.300, 2.1.304]");
+        assertThat(verify(outside).check("source.compatibility", MAIN).detail()).contains("version 2.1.299 lies outside the declared range [2.1.300, 2.1.299]");
 
         Path aboveMax = copy(CHILD, work.resolve("above-max"));
         editCompatibility(aboveMax, c -> c.members().put("max_version", str("2.1.298")));
@@ -158,10 +158,10 @@ class CompatibilityAndIdentityOracleTest {
 
         // an entry named beside no_match
         Path named = copy(UNTESTED, work.resolve("named"));
-        editCompatibility(named, c -> c.members().put("entry_id", str("claude-code/stream-json/2.1.299")));
+        editCompatibility(named, c -> c.members().put("entry_id", str("claude-code/stream-json/2.1.299-sdk")));
         OracleReport nm = verify(named);
         assertThat(nm.outcome("source.compatibility", MAIN)).isEqualTo(Outcome.DEFECTIVE);
-        assertThat(nm.check("source.compatibility", MAIN).detail()).contains("status no_match but an entry_id claude-code/stream-json/2.1.299 is named");
+        assertThat(nm.check("source.compatibility", MAIN).detail()).contains("status no_match but an entry_id claude-code/stream-json/2.1.299-sdk is named");
 
         // the selection claimed earlier than it was: the init record (1) was normalized, so a records_before_selection of 0 is a lie
         Path earlier = copy(UNTESTED, work.resolve("earlier"));

@@ -4,7 +4,7 @@
  "fixture": "claude-live-2.1.304-cancelled",
  "core": "main",
  "events_jsonl": "fixtures/claude-live-2.1.304-cancelled/package/events.jsonl",
- "events_jsonl_sha256": "9a433f538f541ed38d8f92f47e6885772ee9aa82f53fed1d7ceaf9dfef274195",
+ "events_jsonl_sha256": "39a03d76fe6014654a4ed56477074a55f538dd6ed384442fb623bdc655c6d8a7",
  "execution_records": 15,
  "declarations_skipped": 45,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
