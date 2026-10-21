@@ -158,6 +158,13 @@
                                 <param>io.github.markpollack.journal.ocsf.writer.CodexRolloutMapper</param>
                                 <param>io.github.markpollack.journal.ocsf.writer.CodexStreamMapper</param>
                                 <param>io.github.markpollack.journal.ocsf.writer.MapperSupport</param>
+                                <!-- Added in the ACCEPT-1 follow-up (Owner-authorized target addition, 2026-10-21): the launching capture and the
+                                     compatibility registry, with their nested classes (Pump, Supervision, Entry, Selection); exact names keep the
+                                     test classes of the same prefix out of the mutation scope. -->
+                                <param>io.github.markpollack.journal.ocsf.writer.CliCapture</param>
+                                <param>io.github.markpollack.journal.ocsf.writer.CliCapture$*</param>
+                                <param>io.github.markpollack.journal.ocsf.writer.Compatibility</param>
+                                <param>io.github.markpollack.journal.ocsf.writer.Compatibility$*</param>
                             </targetClasses>
                             <targetTests>
                                 <param>io.github.markpollack.journal.ocsf.writer.*Test</param>
