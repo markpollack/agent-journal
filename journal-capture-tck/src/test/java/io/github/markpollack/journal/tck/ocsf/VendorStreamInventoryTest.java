@@ -41,7 +41,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * inventory must be refreshed), and every family seen in a live recording is declared; families only a labelled
  * synthetic fixture invents are reported as unknown and must be retained;</li>
  * <li>replaying the recordings through the writer, each record of a declared family produces exactly the rule the
- * inventory states for it: a family claimed normalized that falls back to raw retention fails;</li>
+ * inventory states for it (its primary rule, plus any {@code also_rules}, nothing else): a family claimed normalized
+ * that falls back to raw retention fails;</li>
  * <li>with {@code -Dcodex.checkout=<clone>}, the pinned vendor files still have their recorded blob ids at the pinned
  * commit, and {@code -Dcodex.refresh=<rev>} lists the files that changed since, which a refresh must re-review.</li>
  * </ul>
@@ -53,9 +54,14 @@ class VendorStreamInventoryTest {
 
     static final ObjectMapper MAPPER = new ObjectMapper();
     static final Pattern HEX40 = Pattern.compile("[0-9a-f]{40}");
+    static final Pattern HEX64 = Pattern.compile("[0-9a-f]{64}");
 
-    /** A profile with a pinned vendor inventory: its file, the live and synthetic recordings of its route. */
-    record Profile(String profile, String inventory, String checkoutProperty, List<String> live, List<String> synthetic) {
+    /**
+     * A profile with a pinned vendor inventory: its file, the property naming a local copy of the pinned vendor source
+     * for the gated pin check, the live and synthetic recordings of its route, and the undeclared families its committed
+     * recordings are known to carry (shapes a labelled synthetic fixture invents, or lines the reader refuses).
+     */
+    record Profile(String profile, String inventory, String checkoutProperty, List<String> live, List<String> synthetic, Set<String> expectedUnknown) {
         List<String> all() {
             List<String> out = new ArrayList<>(live);
             out.addAll(synthetic);
@@ -66,7 +72,12 @@ class VendorStreamInventoryTest {
     static final List<Profile> PROFILES = List.of(
             new Profile("codex_stream", "schema/vendor/codex-cli/exec-json-stream/0.160.1-vendor-inventory.json", "codex.checkout",
                     List.of(OcsfFixtures.LIVE_CODEX, OcsfFixtures.LIVE_CODEX_CANCELLED, OcsfFixtures.LIVE_CODEX_FILE_CHANGE, OcsfFixtures.LIVE_CODEX_MCP, OcsfFixtures.LIVE_CODEX_REASONING, OcsfFixtures.LIVE_CODEX_PLAN, OcsfFixtures.LIVE_CODEX_WEB_SEARCH, OcsfFixtures.LIVE_CODEX_COLLAB_WAIT, OcsfFixtures.LIVE_CODEX_INTERRUPT_OPEN, OcsfFixtures.LIVE_CODEX_SANDBOX_REFUSAL),
-                    List.of(OcsfFixtures.CODEX_STREAM, OcsfFixtures.CODEX_FAMILIES, OcsfFixtures.CODEX_TURN_FAILED)));
+                    List.of(OcsfFixtures.CODEX_STREAM, OcsfFixtures.CODEX_FAMILIES, OcsfFixtures.CODEX_TURN_FAILED),
+                    // the two shapes the labelled synthetic stream invents to exercise fallback, and the web_search lines,
+                    // which the neutral reader refuses as malformed because they carry two "id" members (a defect to resolve)
+                    Set.of("synthetic.unknown_event", "item.completed/synthetic_unknown_item", "(opaque:MALFORMED)")),
+            new Profile("claude_stream", "schema/vendor/claude-code/stream-json/2.1.304-vendor-inventory.json", "claude.sdk",
+                    List.of(OcsfFixtures.LIVE_FEATURES, OcsfFixtures.LIVE_DENIAL, OcsfFixtures.LIVE_CANCELLED), List.of(), Set.of()));
 
     static JsonNode inventory(Profile p) {
         try {
@@ -100,12 +111,13 @@ class VendorStreamInventoryTest {
     /** Inventory shape and pins. */
     static List<String> shapeProblems(JsonNode inv) {
         List<String> problems = new ArrayList<>();
-        if (!HEX40.matcher(inv.path("source").path("commit").asText()).matches()) {
-            problems.add("the vendor source names no exact commit");
+        JsonNode src = inv.path("source");
+        if (!HEX40.matcher(src.path("commit").asText()).matches() && (src.path("package").asText().isEmpty() || src.path("version").asText().isEmpty())) {
+            problems.add("the vendor source names no exact commit or package version");
         }
-        inv.path("source").path("files").fields().forEachRemaining(e -> {
-            if (!HEX40.matcher(e.getValue().asText()).matches()) {
-                problems.add("vendor file " + e.getKey() + " has no blob id");
+        src.path("files").fields().forEachRemaining(e -> {
+            if (!HEX40.matcher(e.getValue().asText()).matches() && !HEX64.matcher(e.getValue().asText()).matches()) {
+                problems.add("vendor file " + e.getKey() + " has no git blob id or sha256");
             }
         });
         Set<String> seen = new TreeSet<>();
@@ -172,7 +184,12 @@ class VendorStreamInventoryTest {
                 }
                 continue;
             }
-            List<String> declared = paths(f);
+            List<String> declared = new ArrayList<>(paths(f));
+            for (JsonNode u : inv.path("reviewed_undeclared")) {
+                if (o.getKey().equals(u.path("variant").asText())) {
+                    declared.add(u.path("path").asText());
+                }
+            }
             for (String path : o.getValue()) {
                 boolean ok = declared.contains(path) || (path.endsWith("[]") && declared.contains(path.substring(0, path.length() - 2))) || declared.stream().anyMatch(d -> (path.startsWith(d + ".") || path.startsWith(d + "["))
                         && declared.stream().noneMatch(q -> !q.equals(d) && (q.startsWith(d + ".") || q.startsWith(d + "["))));
@@ -184,8 +201,20 @@ class VendorStreamInventoryTest {
         return problems;
     }
 
-    /** The family of one native line, read leniently so that a record the neutral reader refuses still names its family. */
-    static String variant(String line) {
+    /**
+     * The family of one native line: the neutral inventory's own variant rule for the profile, or, for a line the neutral
+     * reader refuses (Codex web_search with two "id" members), a lenient reading of its discriminators.
+     */
+    static String variant(String profile, String line) {
+        try {
+            Json o = NeutralJson.parse(line);
+            if (o instanceof Json.JObject) {
+                return RawInventory.ProfileRules.forProfile(profile).variant(o);
+            }
+        }
+        catch (RuntimeException e) {
+            // fall through to the lenient reading
+        }
         try {
             JsonNode o = MAPPER.readTree(line);
             String type = o.path("type").asText(null);
@@ -198,21 +227,31 @@ class VendorStreamInventoryTest {
     }
 
     /** Per declared family on one replayed fixture: the rule ids its records actually produced. */
-    static Map<String, Set<String>> rulesByFamily(Path fixture) throws IOException {
+    static Map<String, Set<String>> rulesByFamily(String profile, Path fixture) throws IOException {
         List<String> lines = Files.readAllLines(OcsfFixtures.natives(fixture).resolve("stream.jsonl"), StandardCharsets.UTF_8);
         Map<Integer, Set<String>> rules = new TreeMap<>();
-        for (Event e : OcsfFixtures.open(fixture).events) {
-            if (e.className != null && e.recordIndex() != null) {
-                rules.computeIfAbsent(e.recordIndex(), k -> new TreeSet<>()).add(e.text("unmapped", "rule_id"));
+        for (OcsfPackage core : OcsfFixtures.open(fixture).all()) {
+            for (Event e : core.events) {
+                if (e.className != null && e.recordIndex() != null) {
+                    rules.computeIfAbsent(e.recordIndex(), k -> new TreeSet<>()).add(e.text("unmapped", "rule_id"));
+                }
             }
         }
         Map<String, Set<String>> out = new TreeMap<>();
         for (int i = 0; i < lines.size(); i++) {
-            String v = variant(lines.get(i));
+            String v = variant(profile, lines.get(i));
             if (v != null) {
                 out.computeIfAbsent(v, k -> new TreeSet<>()).addAll(rules.getOrDefault(i + 1, Set.of("(no event)")));
             }
         }
+        return out;
+    }
+
+    /** The rules a family's records may produce: its primary rule plus any the inventory lists in {@code also_rules}. */
+    static Set<String> allowed(JsonNode family) {
+        Set<String> out = new TreeSet<>();
+        out.add(family.path("journal").path("rule").asText());
+        family.path("journal").path("also_rules").forEach(r -> out.add(r.asText()));
         return out;
     }
 
@@ -228,7 +267,7 @@ class VendorStreamInventoryTest {
                         problems.add(fx.getKey() + ": unknown family " + r.getKey() + " is not retained (" + r.getValue() + ")");
                     }
                 }
-                else if (!r.getValue().equals(Set.of(expected))) {
+                else if (!r.getValue().contains(expected) || !allowed(f).containsAll(r.getValue())) {
                     problems.add(fx.getKey() + ": family " + r.getKey() + " produced " + r.getValue() + " but the inventory states " + expected
                             + ("normalized".equals(f.path("journal").path("behavior").asText()) ? " (a required canonical mapping replaced by raw-only fallback?)" : ""));
                 }
@@ -251,7 +290,7 @@ class VendorStreamInventoryTest {
         for (String f : p.all()) {
             Path fixture = OcsfFixtures.copy(f, work.resolve("fx"));
             fixtures.put(f, fixture);
-            rules.put(f, rulesByFamily(fixture));
+            rules.put(f, rulesByFamily(p.profile(), fixture));
             if (p.live().contains(f)) {
                 liveVariants.addAll(rules.get(f).keySet());
             }
@@ -267,11 +306,7 @@ class VendorStreamInventoryTest {
             assertThat(dispositionProblems(r.inventory(), r.catalog())).as(p.profile()).isEmpty();
             Set<String> unknown = new TreeSet<>();
             assertThat(reconciliationProblems(r.inventory(), r.observed(), r.liveVariants(), unknown)).as(p.profile()).isEmpty();
-            // undeclared: the two record shapes the labelled synthetic stream invents to exercise fallback, and the web_search
-            // lines, which the neutral reader refuses as malformed because they carry two "id" members (a defect to resolve;
-            // everyDeclaredFamilyBehavesAsItsInventoryStates shows they are retained as opaque bytes)
-            assertThat(unknown).as(p.profile() + " unknown families").containsExactlyInAnyOrder("synthetic.unknown_event", "item.completed/synthetic_unknown_item",
-                    "(opaque:MALFORMED)");
+            assertThat(unknown).as(p.profile() + " unknown families").isEqualTo(new TreeSet<>(p.expectedUnknown()));
         }
     }
 
@@ -337,6 +372,14 @@ class VendorStreamInventoryTest {
             var it = inv.path("source").path("files").fields();
             while (it.hasNext()) {
                 var e = it.next();
+                if (HEX64.matcher(e.getValue().asText()).matches()) {
+                    // a package artifact pinned by sha256: the checkout property names the directory holding the extracted package
+                    Path f = Path.of(checkout).resolve(e.getKey());
+                    if (Files.isRegularFile(f)) {
+                        assertThat(NeutralJson.sha256(f)).as(e.getKey()).isEqualTo(e.getValue().asText());
+                    }
+                    continue;
+                }
                 assertThat(blob(checkout, commit, e.getKey())).as(e.getKey() + " at " + commit).isEqualTo(e.getValue().asText());
                 if (refresh != null && !e.getValue().asText().equals(blob(checkout, refresh, e.getKey()))) {
                     changed.add(e.getKey());

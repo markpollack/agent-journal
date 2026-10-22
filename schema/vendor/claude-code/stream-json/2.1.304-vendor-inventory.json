@@ -1,0 +1,5708 @@
+{
+ "kind": "agent-journal/vendor-stream-inventory",
+ "version": "0.1",
+ "reviewed": "2026-10-22",
+ "cli": "Claude Code",
+ "cli_version": "2.1.304",
+ "profile": "claude_stream",
+ "compatibility_entry": "claude-code/stream-json/2.1.304-stdout",
+ "surface": "claude -p --output-format stream-json standard output (StdoutMessage: the SDKMessage union, active_goal and, with --input-format stream-json, the control protocol); not the session transcript files",
+ "source": {
+  "package": "@anthropic-ai/claude-agent-sdk",
+  "version": "0.3.304",
+  "files": {
+   "anthropic-ai-claude-agent-sdk-0.3.304.tgz": "e2c92532d3fa5cd76b18266de39f3f7ee6914a2fe608b873f6f1160c081fb3ad",
+   "package.json": "395cba4e778453bd5ab6c4f067bb68e26e66544ad641fa8a5c273ceddc1d14d2",
+   "sdk.d.ts": "a30343b6cb2f9b4ce08ec78563a19b2a9209bb8590acb5ac46adb2bbcba1b36e",
+   "api/anthropic-ai-sdk-0.135.0.tgz": "4f64c1e27e39734cff0eec08221b5f012b82001fda589072c93b0cbe4b65b271",
+   "api/resources/beta/messages/messages.d.mts": "3a34c46be2a5b8b179a38149f14855c78aeec9f26ff4ee606ccca3709db41600",
+   "api/resources/messages/messages.d.mts": "4991c3cad10abac21369fe82b2c2d89a328d5009d852127bc1cbf9ff50b42647"
+  },
+  "method": "reviewed reading of the pinned npm artifacts (file sha256 above). Claude Code is closed source; the published declaration of its stream-json output is the Agent SDK's sdk.d.ts, whose StdoutMessage type is documented as everything the CLI writes to stdout in stream-json mode (the SDKMessage union, SDKActiveGoalMessage and the control protocol). Package @anthropic-ai/claude-agent-sdk@0.3.304: registry integrity sha512-Ivkt7/UAkATibzvqT31eY71lAp7YdPzfbKDpmbHN9+AQWFh/Ac6tYkL2J1sipJ7tU4IK48w0YxuRW9aI//veFA== (re-computed over the fetched tarball), shasum 2f89b45da4833c76f36a286ea11263bb1f2ad36c; its package.json declares claudeCodeVersion 2.1.304, published 2026-10-19 one minute after @anthropic-ai/claude-code@2.1.304. sdk.d.ts imports BetaMessage, BetaRawMessageStreamEvent, BetaUsage and MessageParam from the peer @anthropic-ai/sdk (>=0.93.0); the CLI is a native binary and the API types version it bundles is not published, so the content-block, stream-event and usage members are read from @anthropic-ai/sdk@0.135.0 (files prefixed api/; integrity sha512-WWrdL57JhU5KoynpTjt9GXK6k7ud9nPw2uw/Trn+oBXh6s0KpjhAccWZm2Qxw08ARYG1UDQj5iC+JO42j1rt/g==), the latest release before 2026-10-19 and inside the peer range: a stated choice, not proof of the bundled version. Variant names follow the claude_stream raw inventory (type; system/<subtype>; user/tool_result when a tool_result block is present; result without subtype). Paths join members with '.', arrays with '[]', map keys with '{*}'; message.content[].input, tool_use_result and permission_denials[].tool_input are tool data listed as one path. No TypeScript parsing or pattern extraction: a refresh re-reads the files when their sha256 change",
+  "secondary_declaration": "sdk.d.ts is a filtered publication: members internal to the CLI are elided from the type bodies (visible as runs of blank lines), so recorded output carries members it does not declare. Reconciliation against the accepted 2.1.303 specification and the committed 2.1.299/2.1.304 fixtures found, undeclared: assistant thinking_display, thinking_duration_ms, wire_tool_inputs; user/tool_result tool_result_meta[] (id, permission_decision{decision, source, reason_type}, non_execution_kind); result subagent_stats, safety_stops; system/init original_cwd, additional_directories, memory_paths, messaging_socket_path, per_turn_effort_active, analytics_disabled, product_feedback_disabled; system/task_notification handback, handback_report; rate_limit_event rate_limit_info.unifiedWindows. These are observed extras for review, not declarations, and are not listed as fields. sdk-tools.d.ts declares per-tool input/output shapes for the tool-data payloads and is not inventoried path by path. The Python SDK types.py used earlier as an external cross-check is not the authority for this inventory"
+ },
+ "families": [
+  {
+   "variant": "system/init",
+   "emitted": "always",
+   "lifecycle": "first message of each turn (re-emitted per turn; 'the newest frame wins' for re-emitted values)",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKSystemMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "init"
+     ],
+     "symbol": "sdk.d.ts#SDKSystemMessage"
+    },
+    {
+     "path": "claude_code_version",
+     "type": "string",
+     "meaning": "CLI version reported by the stream",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKSystemMessage"
+    },
+    {
+     "path": "cwd",
+     "type": "string",
+     "meaning": "working directory",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKSystemMessage"
+    },
+    {
+     "path": "model",
+     "type": "string",
+     "meaning": "session model",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKSystemMessage"
+    },
+    {
+     "path": "permissionMode",
+     "type": "string",
+     "meaning": "permission mode",
+     "availability": "always",
+     "values": [
+      "default",
+      "acceptEdits",
+      "bypassPermissions",
+      "plan",
+      "dontAsk",
+      "auto"
+     ],
+     "symbol": "sdk.d.ts#PermissionMode"
+    },
+    {
+     "path": "tools",
+     "type": "array",
+     "meaning": "names of the available tools",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKSystemMessage"
+    },
+    {
+     "path": "mcp_servers",
+     "type": "array",
+     "meaning": "configured MCP servers: name, status, source (source absent on older CLIs)",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKSystemMessage"
+    },
+    {
+     "path": "slash_commands",
+     "type": "array",
+     "meaning": "available slash commands",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKSystemMessage"
+    },
+    {
+     "path": "terminal_slash_commands",
+     "type": "array",
+     "meaning": "subset of slash_commands bound to the local terminal",
+     "availability": "conditional",
+     "condition": "only when non-empty",
+     "symbol": "sdk.d.ts#SDKSystemMessage"
+    },
+    {
+     "path": "skills",
+     "type": "array",
+     "meaning": "available skills",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKSystemMessage"
+    },
+    {
+     "path": "plugins",
+     "type": "array",
+     "meaning": "loaded plugins: name, path, version (version only when the manifest declares one)",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKSystemMessage"
+    },
+    {
+     "path": "plugin_errors",
+     "type": "array",
+     "meaning": "plugin load errors: plugin, type, message, path",
+     "availability": "conditional",
+     "condition": "only when a plugin failed to load (never on Remote Control workers)",
+     "symbol": "sdk.d.ts#SDKSystemMessage"
+    },
+    {
+     "path": "agents",
+     "type": "array",
+     "meaning": "available agent names",
+     "availability": "conditional",
+     "condition": "optional in the declaration",
+     "symbol": "sdk.d.ts#SDKSystemMessage"
+    },
+    {
+     "path": "apiKeySource",
+     "type": "string",
+     "meaning": "where the API credential came from (no credential value)",
+     "availability": "always",
+     "values": [
+      "ANTHROPIC_API_KEY",
+      "apiKeyHelper",
+      "/login managed key",
+      "none",
+      "user",
+      "project",
+      "org",
+      "temporary",
+      "oauth"
+     ],
+     "symbol": "sdk.d.ts#ApiKeySource"
+    },
+    {
+     "path": "betas",
+     "type": "array",
+     "meaning": "API beta flags in use",
+     "availability": "conditional",
+     "condition": "optional in the declaration",
+     "symbol": "sdk.d.ts#SDKSystemMessage"
+    },
+    {
+     "path": "output_style",
+     "type": "string",
+     "meaning": "output style name",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKSystemMessage"
+    },
+    {
+     "path": "fast_mode_state",
+     "type": "string",
+     "meaning": "fast mode state",
+     "availability": "conditional",
+     "condition": "optional in the declaration",
+     "values": [
+      "off",
+      "cooldown",
+      "on"
+     ],
+     "symbol": "sdk.d.ts#FastModeState"
+    },
+    {
+     "path": "fast_mode_disabled_reason",
+     "type": "string",
+     "meaning": "why fast mode cannot serve",
+     "availability": "conditional",
+     "condition": "absent when nothing blocks fast mode",
+     "values": [
+      "free",
+      "preference",
+      "extra_usage_disabled",
+      "network_error",
+      "unknown",
+      "not_first_party",
+      "disabled_by_env",
+      "model_not_allowed",
+      "sdk_opt_in_required",
+      "pending"
+     ],
+     "symbol": "sdk.d.ts#FastModeDisabledReason"
+    },
+    {
+     "path": "effort",
+     "type": "string|null",
+     "meaning": "effort level of the next request",
+     "availability": "conditional",
+     "condition": "Remote Control bridge init frames only",
+     "values": [
+      "low",
+      "medium",
+      "high",
+      "xhigh",
+      "max"
+     ],
+     "symbol": "sdk.d.ts#SDKSystemMessage"
+    },
+    {
+     "path": "view_mode",
+     "type": "string",
+     "meaning": "transcript view mode",
+     "availability": "conditional",
+     "condition": "per-turn init of headless stream-json runs; absent on older CLIs",
+     "values": [
+      "focus",
+      "default"
+     ],
+     "symbol": "sdk.d.ts#SDKSystemMessage"
+    },
+    {
+     "path": "capabilities",
+     "type": "array",
+     "meaning": "protocol capability flags (open set: interrupt_receipt_v1, interrupt_cancel_queued_v1, queued_notifications, ...)",
+     "availability": "conditional",
+     "condition": "absent on older CLIs",
+     "symbol": "sdk.d.ts#SDKSystemMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKSystemMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKSystemMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "normalized",
+    "rule": "claude.stream.system.init->session_context.settings",
+    "note": "one session_context Settings reported event per init record: cwd -> working_directory, model, permissionMode -> permission_mode, claude_code_version -> version (also the compatibility-selection input), tools -> tool_names; every other member is retained in data only. Observed init records also carry members the published type does not declare (original_cwd, additional_directories, memory_paths, messaging_socket_path, per_turn_effort_active, analytics_disabled, product_feedback_disabled)"
+   }
+  },
+  {
+   "variant": "assistant",
+   "emitted": "conditional",
+   "condition": "for every model response block (and synthetic error or slash-command output messages)",
+   "lifecycle": "one message per completed content block while a response streams; several consecutive messages share message.id; stop_reason is null and usage is not final on these (the turn's stop reason and total usage arrive on the result)",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "assistant"
+     ],
+     "symbol": "sdk.d.ts#SDKAssistantMessage"
+    },
+    {
+     "path": "message",
+     "type": "object",
+     "meaning": "an Anthropic Messages API Message (role assistant)",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMessage"
+    },
+    {
+     "path": "message.id",
+     "type": "string",
+     "meaning": "API message id; shared by every block-message of one API response",
+     "availability": "always",
+     "identity": "model response id",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMessage"
+    },
+    {
+     "path": "message.type",
+     "type": "string",
+     "meaning": "object type",
+     "availability": "always",
+     "values": [
+      "message"
+     ],
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMessage"
+    },
+    {
+     "path": "message.role",
+     "type": "string",
+     "meaning": "role",
+     "availability": "always",
+     "values": [
+      "assistant"
+     ],
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMessage"
+    },
+    {
+     "path": "message.model",
+     "type": "string",
+     "meaning": "model that produced the response",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMessage"
+    },
+    {
+     "path": "message.content",
+     "type": "array",
+     "meaning": "content blocks; when streamed, typically the single block this message delivers",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaContentBlock"
+    },
+    {
+     "path": "message.content[].type",
+     "type": "string",
+     "meaning": "content block kind",
+     "availability": "always",
+     "values": [
+      "text",
+      "thinking",
+      "redacted_thinking",
+      "tool_use",
+      "server_tool_use",
+      "web_search_tool_result",
+      "web_fetch_tool_result",
+      "advisor_tool_result",
+      "code_execution_tool_result",
+      "bash_code_execution_tool_result",
+      "text_editor_code_execution_tool_result",
+      "tool_search_tool_result",
+      "mcp_tool_use",
+      "mcp_tool_result",
+      "container_upload",
+      "compaction",
+      "fallback",
+      "mcp_tool_listing"
+     ],
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaContentBlock"
+    },
+    {
+     "path": "message.content[].text",
+     "type": "string",
+     "meaning": "text of a text block",
+     "availability": "conditional",
+     "condition": "type text",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaTextBlock"
+    },
+    {
+     "path": "message.content[].citations",
+     "type": "array|null",
+     "meaning": "citations of a text block",
+     "availability": "conditional",
+     "condition": "type text",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaTextBlock"
+    },
+    {
+     "path": "message.content[].thinking",
+     "type": "string",
+     "meaning": "thinking text",
+     "availability": "conditional",
+     "condition": "type thinking",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaThinkingBlock"
+    },
+    {
+     "path": "message.content[].signature",
+     "type": "string",
+     "meaning": "thinking signature (opaque)",
+     "availability": "conditional",
+     "condition": "type thinking (also compaction, optional)",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaThinkingBlock"
+    },
+    {
+     "path": "message.content[].data",
+     "type": "string",
+     "meaning": "encrypted redacted thinking",
+     "availability": "conditional",
+     "condition": "type redacted_thinking",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaRedactedThinkingBlock"
+    },
+    {
+     "path": "message.content[].id",
+     "type": "string",
+     "meaning": "tool call id",
+     "availability": "conditional",
+     "condition": "type tool_use, server_tool_use, mcp_tool_use",
+     "identity": "tool call id (tool_use_id)",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaToolUseBlock"
+    },
+    {
+     "path": "message.content[].name",
+     "type": "string",
+     "meaning": "tool name (MCP tools as mcp__server__tool)",
+     "availability": "conditional",
+     "condition": "type tool_use, server_tool_use, mcp_tool_use",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaToolUseBlock"
+    },
+    {
+     "path": "message.content[].input",
+     "type": "json",
+     "meaning": "tool arguments (tool data, data-keyed)",
+     "availability": "conditional",
+     "condition": "type tool_use, server_tool_use, mcp_tool_use",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaToolUseBlock"
+    },
+    {
+     "path": "message.content[].caller",
+     "type": "object",
+     "meaning": "who issued the call (direct or a server tool)",
+     "availability": "conditional",
+     "condition": "optional on tool_use, server_tool_use and some server tool results",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaToolUseBlock"
+    },
+    {
+     "path": "message.content[].caller.type",
+     "type": "string",
+     "meaning": "caller kind",
+     "availability": "conditional",
+     "condition": "when caller is present",
+     "values": [
+      "direct",
+      "code_execution_20250825",
+      "code_execution_20260120"
+     ],
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaDirectCaller"
+    },
+    {
+     "path": "message.content[].toolset_name",
+     "type": "string|null",
+     "meaning": "toolset family of a toolset member tool_use",
+     "availability": "conditional",
+     "condition": "optional on tool_use",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaToolUseBlock"
+    },
+    {
+     "path": "message.content[].server_name",
+     "type": "string",
+     "meaning": "MCP server of an API-side MCP connector call",
+     "availability": "conditional",
+     "condition": "type mcp_tool_use",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMCPToolUseBlock"
+    },
+    {
+     "path": "message.content[].tool_use_id",
+     "type": "string",
+     "meaning": "server tool call this result block answers",
+     "availability": "conditional",
+     "condition": "server tool result kinds and mcp_tool_result",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaWebSearchToolResultBlock"
+    },
+    {
+     "path": "message.content[].content",
+     "type": "json",
+     "meaning": "server tool result payload, or compaction summary",
+     "availability": "conditional",
+     "condition": "server tool result kinds, mcp_tool_result, compaction",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaWebSearchToolResultBlock"
+    },
+    {
+     "path": "message.content[].is_error",
+     "type": "boolean",
+     "meaning": "error bit of an API-side MCP tool result",
+     "availability": "conditional",
+     "condition": "type mcp_tool_result",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMCPToolResultBlock"
+    },
+    {
+     "path": "message.content[].file_id",
+     "type": "string",
+     "meaning": "uploaded container file id",
+     "availability": "conditional",
+     "condition": "type container_upload",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaContainerUploadBlock"
+    },
+    {
+     "path": "message.content[].encrypted_content",
+     "type": "string|null",
+     "meaning": "encrypted compaction state",
+     "availability": "conditional",
+     "condition": "type compaction",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaCompactionBlock"
+    },
+    {
+     "path": "message.content[].from",
+     "type": "object",
+     "meaning": "model handing over at a server-side fallback",
+     "availability": "conditional",
+     "condition": "type fallback",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaFallbackBlock"
+    },
+    {
+     "path": "message.content[].to",
+     "type": "object",
+     "meaning": "fallback model producing the following content",
+     "availability": "conditional",
+     "condition": "type fallback",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaFallbackBlock"
+    },
+    {
+     "path": "message.content[].trigger",
+     "type": "object",
+     "meaning": "what caused the fallback",
+     "availability": "conditional",
+     "condition": "type fallback",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaFallbackBlock"
+    },
+    {
+     "path": "message.content[].mcp_server_name",
+     "type": "string",
+     "meaning": "MCP server whose tools are listed",
+     "availability": "conditional",
+     "condition": "type mcp_tool_listing",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMCPToolListingBlock"
+    },
+    {
+     "path": "message.content[].tools",
+     "type": "array",
+     "meaning": "listed MCP tools",
+     "availability": "conditional",
+     "condition": "type mcp_tool_listing",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMCPToolListingBlock"
+    },
+    {
+     "path": "message.stop_reason",
+     "type": "string|null",
+     "meaning": "why the response stopped; null on streamed block-messages",
+     "availability": "always",
+     "values": [
+      "end_turn",
+      "max_tokens",
+      "stop_sequence",
+      "tool_use",
+      "pause_turn",
+      "compaction",
+      "refusal",
+      "model_context_window_exceeded"
+     ],
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaStopReason"
+    },
+    {
+     "path": "message.stop_sequence",
+     "type": "string|null",
+     "meaning": "matched custom stop sequence",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMessage"
+    },
+    {
+     "path": "message.stop_details",
+     "type": "object|null",
+     "meaning": "refusal details (category, explanation, fallback credit, recommended model)",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaRefusalStopDetails"
+    },
+    {
+     "path": "message.container",
+     "type": "object|null",
+     "meaning": "code-execution container used (id, expires_at, skills)",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaContainer"
+    },
+    {
+     "path": "message.context_management",
+     "type": "object|null",
+     "meaning": "context management strategies applied",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMessage"
+    },
+    {
+     "path": "message.diagnostics",
+     "type": "object|null",
+     "meaning": "request diagnostics (prompt-cache divergence)",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMessage"
+    },
+    {
+     "path": "message.input_transformations",
+     "type": "array|null",
+     "meaning": "request blocks the API dropped or allowed despite a binding check",
+     "availability": "conditional",
+     "condition": "optional; requires a beta",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMessage"
+    },
+    {
+     "path": "message.usage",
+     "type": "object",
+     "meaning": "Messages API usage object (per API response; not final on streamed block-messages)",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaUsage"
+    },
+    {
+     "path": "message.usage.input_tokens",
+     "type": "integer",
+     "meaning": "input tokens",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaUsage"
+    },
+    {
+     "path": "message.usage.output_tokens",
+     "type": "integer",
+     "meaning": "output tokens",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaUsage"
+    },
+    {
+     "path": "message.usage.cache_read_input_tokens",
+     "type": "integer|null",
+     "meaning": "input tokens read from the prompt cache",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaUsage"
+    },
+    {
+     "path": "message.usage.cache_creation_input_tokens",
+     "type": "integer|null",
+     "meaning": "input tokens written to the prompt cache",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaUsage"
+    },
+    {
+     "path": "message.usage.cache_creation",
+     "type": "object|null",
+     "meaning": "cache-write breakdown by TTL",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaCacheCreation"
+    },
+    {
+     "path": "message.usage.cache_creation.ephemeral_5m_input_tokens",
+     "type": "integer",
+     "meaning": "tokens written to the 5-minute cache",
+     "availability": "conditional",
+     "condition": "when cache_creation is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaCacheCreation"
+    },
+    {
+     "path": "message.usage.cache_creation.ephemeral_1h_input_tokens",
+     "type": "integer",
+     "meaning": "tokens written to the 1-hour cache",
+     "availability": "conditional",
+     "condition": "when cache_creation is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaCacheCreation"
+    },
+    {
+     "path": "message.usage.output_tokens_details",
+     "type": "object|null",
+     "meaning": "output breakdown; thinking_tokens = reasoning tokens inside output_tokens",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaOutputTokensDetails"
+    },
+    {
+     "path": "message.usage.output_tokens_details.thinking_tokens",
+     "type": "integer",
+     "meaning": "reasoning tokens (already counted in output_tokens)",
+     "availability": "conditional",
+     "condition": "when output_tokens_details is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaOutputTokensDetails"
+    },
+    {
+     "path": "message.usage.server_tool_use",
+     "type": "object|null",
+     "meaning": "server tool request counts",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaServerToolUsage"
+    },
+    {
+     "path": "message.usage.server_tool_use.web_search_requests",
+     "type": "integer",
+     "meaning": "web search requests",
+     "availability": "conditional",
+     "condition": "when server_tool_use is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaServerToolUsage"
+    },
+    {
+     "path": "message.usage.server_tool_use.web_fetch_requests",
+     "type": "integer",
+     "meaning": "web fetch requests",
+     "availability": "conditional",
+     "condition": "when server_tool_use is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaServerToolUsage"
+    },
+    {
+     "path": "message.usage.iterations",
+     "type": "array|null",
+     "meaning": "per-sampling-iteration usage",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaIterationsUsage"
+    },
+    {
+     "path": "message.usage.iterations[].type",
+     "type": "string",
+     "meaning": "iteration kind (compaction tokens are not in the top-level fields)",
+     "availability": "conditional",
+     "condition": "when iterations is present",
+     "values": [
+      "message",
+      "compaction",
+      "advisor_message",
+      "fallback_message"
+     ],
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaIterationsUsage"
+    },
+    {
+     "path": "message.usage.iterations[].model",
+     "type": "string|null",
+     "meaning": "model of a message/advisor/fallback iteration",
+     "availability": "conditional",
+     "condition": "message, advisor_message, fallback_message iterations",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMessageIterationUsage"
+    },
+    {
+     "path": "message.usage.iterations[].input_tokens",
+     "type": "integer",
+     "meaning": "iteration input tokens",
+     "availability": "conditional",
+     "condition": "when iterations is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMessageIterationUsage"
+    },
+    {
+     "path": "message.usage.iterations[].output_tokens",
+     "type": "integer",
+     "meaning": "iteration output tokens",
+     "availability": "conditional",
+     "condition": "when iterations is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMessageIterationUsage"
+    },
+    {
+     "path": "message.usage.iterations[].cache_read_input_tokens",
+     "type": "integer",
+     "meaning": "iteration cache read tokens",
+     "availability": "conditional",
+     "condition": "when iterations is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMessageIterationUsage"
+    },
+    {
+     "path": "message.usage.iterations[].cache_creation_input_tokens",
+     "type": "integer",
+     "meaning": "iteration cache write tokens",
+     "availability": "conditional",
+     "condition": "when iterations is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMessageIterationUsage"
+    },
+    {
+     "path": "message.usage.iterations[].cache_creation",
+     "type": "object|null",
+     "meaning": "iteration cache-write breakdown by TTL",
+     "availability": "conditional",
+     "condition": "when iterations is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaCacheCreation"
+    },
+    {
+     "path": "message.usage.iterations[].cache_creation.ephemeral_5m_input_tokens",
+     "type": "integer",
+     "meaning": "iteration tokens written to the 5-minute cache",
+     "availability": "conditional",
+     "condition": "when the iteration's cache_creation is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaCacheCreation"
+    },
+    {
+     "path": "message.usage.iterations[].cache_creation.ephemeral_1h_input_tokens",
+     "type": "integer",
+     "meaning": "iteration tokens written to the 1-hour cache",
+     "availability": "conditional",
+     "condition": "when the iteration's cache_creation is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaCacheCreation"
+    },
+    {
+     "path": "message.usage.service_tier",
+     "type": "string|null",
+     "meaning": "service tier",
+     "availability": "always",
+     "values": [
+      "standard",
+      "priority",
+      "batch"
+     ],
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaUsage"
+    },
+    {
+     "path": "message.usage.speed",
+     "type": "string|null",
+     "meaning": "inference speed mode",
+     "availability": "always",
+     "values": [
+      "standard",
+      "fast"
+     ],
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaUsage"
+    },
+    {
+     "path": "message.usage.inference_geo",
+     "type": "string|null",
+     "meaning": "inference region",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaUsage"
+    },
+    {
+     "path": "message.usage.fallback_credit",
+     "type": "object|null",
+     "meaning": "outcome of a presented fallback-credit token",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaUsage"
+    },
+    {
+     "path": "parent_tool_use_id",
+     "type": "string|null",
+     "meaning": "tool_use id of the Agent/Task call whose subagent produced this message; null on the main thread",
+     "availability": "always",
+     "identity": "owner: spawning tool call",
+     "symbol": "sdk.d.ts#SDKAssistantMessage"
+    },
+    {
+     "path": "error",
+     "type": "string",
+     "meaning": "API error kind of a synthetic error assistant message",
+     "availability": "conditional",
+     "condition": "only on a synthetic message reporting an API error",
+     "values": [
+      "authentication_failed",
+      "oauth_org_not_allowed",
+      "account_on_hold",
+      "verification_required",
+      "billing_error",
+      "rate_limit",
+      "overloaded",
+      "invalid_request",
+      "model_not_found",
+      "server_error",
+      "unknown",
+      "max_output_tokens",
+      "cloud_credential_error"
+     ],
+     "symbol": "sdk.d.ts#SDKAssistantMessageError"
+    },
+    {
+     "path": "request_id",
+     "type": "string",
+     "meaning": "API request id",
+     "availability": "conditional",
+     "condition": "optional in the declaration",
+     "symbol": "sdk.d.ts#SDKAssistantMessage"
+    },
+    {
+     "path": "user_message_uuid",
+     "type": "string",
+     "meaning": "client uuid of the user message this turn answers (reply binding)",
+     "availability": "conditional",
+     "condition": "stamped on the first reply frame(s) of a turn that had a client uuid; absent otherwise and on subagent frames",
+     "identity": "client message id",
+     "symbol": "sdk.d.ts#SDKAssistantMessage"
+    },
+    {
+     "path": "user_message_uuids",
+     "type": "array",
+     "meaning": "client uuids of every user message this turn consumed (at most 64)",
+     "availability": "conditional",
+     "condition": "present exactly when user_message_uuid is",
+     "symbol": "sdk.d.ts#SDKAssistantMessage"
+    },
+    {
+     "path": "resume_reason",
+     "type": "string",
+     "meaning": "why this turn continues one a worker restart interrupted (host reason or 'interrupted_turn')",
+     "availability": "conditional",
+     "condition": "only on a turn resumed after a worker restart",
+     "symbol": "sdk.d.ts#SDKAssistantMessage"
+    },
+    {
+     "path": "resumed_from_incomplete_thinking",
+     "type": "boolean",
+     "meaning": "true when this turn continued a truncated thinking turn (max-output-tokens recovery)",
+     "availability": "conditional",
+     "condition": "only then",
+     "values": [
+      "true"
+     ],
+     "symbol": "sdk.d.ts#SDKAssistantMessage"
+    },
+    {
+     "path": "supersedes",
+     "type": "array",
+     "meaning": "wire uuids of previously delivered messages this one replaces (refusal-fallback supersede)",
+     "availability": "conditional",
+     "condition": "refusal fallback only",
+     "symbol": "sdk.d.ts#SDKAssistantMessage"
+    },
+    {
+     "path": "aborted",
+     "type": "boolean",
+     "meaning": "true when an interrupt truncated this message before stop_reason arrived",
+     "availability": "conditional",
+     "condition": "only on an aborted message",
+     "values": [
+      "true"
+     ],
+     "symbol": "sdk.d.ts#SDKAssistantMessage"
+    },
+    {
+     "path": "agent_id",
+     "type": "string",
+     "meaning": "subagent instance id (the task_id of its task_* events)",
+     "availability": "conditional",
+     "condition": "absent on main-thread messages",
+     "identity": "subagent task id",
+     "symbol": "sdk.d.ts#SDKAssistantMessage"
+    },
+    {
+     "path": "subagent_type",
+     "type": "string",
+     "meaning": "subagent type that produced the message",
+     "availability": "conditional",
+     "condition": "subagent messages only",
+     "symbol": "sdk.d.ts#SDKAssistantMessage"
+    },
+    {
+     "path": "task_description",
+     "type": "string",
+     "meaning": "description of the subagent task",
+     "availability": "conditional",
+     "condition": "subagent messages only",
+     "symbol": "sdk.d.ts#SDKAssistantMessage"
+    },
+    {
+     "path": "timestamp",
+     "type": "string",
+     "meaning": "ISO time the block finished on the originating host (display only; not for ordering)",
+     "availability": "conditional",
+     "condition": "older emitters omit it",
+     "symbol": "sdk.d.ts#SDKAssistantMessage"
+    },
+    {
+     "path": "context_usage",
+     "type": "object",
+     "meaning": "structured /context report",
+     "availability": "conditional",
+     "condition": "only on the synthetic message delivering a /context result",
+     "symbol": "sdk.d.ts#SDKContextUsage"
+    },
+    {
+     "path": "usage_report",
+     "type": "object",
+     "meaning": "structured /usage report",
+     "availability": "conditional",
+     "condition": "only on the synthetic message delivering a /usage result",
+     "symbol": "sdk.d.ts#SDKUsageReport"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKAssistantMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKAssistantMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "normalized",
+    "rule": "claude.stream.assistant->model_response",
+    "note": "one model_response per record (Partial while message.stop_reason is null, Completed otherwise; usage Provisional/Final accordingly; input, output, cache read/write and output_tokens_details.thinking_tokens as components); each tool_use block also yields a tool_call Requested (claude.stream.assistant.tool_use->tool_call.requested) with the exact input. Block kinds map through claude.block_type_to_kind.v1 (text, thinking, tool_use, tool_result, image); every other kind (redacted_thinking, server_tool_use, mcp_tool_use, server tool results, compaction, fallback, ...) becomes block kind Other with the whole block in data and no tool_call. error, aborted, supersedes, user_message_uuid(s), resume_reason, context_usage and usage_report are retained in data only (no eviction on supersedes). A record without a message object falls to the fallback. Observed records also carry undeclared members (thinking_display, thinking_duration_ms, wire_tool_inputs); only text, thinking and tool_use blocks have been observed",
+    "also_rules": [
+     "claude.stream.assistant.tool_use->tool_call.requested"
+    ]
+   }
+  },
+  {
+   "variant": "user",
+   "emitted": "conditional",
+   "condition": "when the CLI adds user-role content without a tool_result block (subagent prompt, synthetic/injected message) or replays a client message",
+   "lifecycle": "a user-role message the CLI adds to the conversation (no tool_result block): a subagent's delivered prompt, a synthetic/injected user message, or, with replay requested, the echo (isReplay) of a client-sent user message",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "user"
+     ],
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "message",
+     "type": "object",
+     "meaning": "an Anthropic Messages API MessageParam (role user)",
+     "availability": "always",
+     "symbol": "api/resources/messages/messages.d.mts#MessageParam"
+    },
+    {
+     "path": "message.role",
+     "type": "string",
+     "meaning": "role",
+     "availability": "always",
+     "values": [
+      "user"
+     ],
+     "symbol": "api/resources/messages/messages.d.mts#MessageParam"
+    },
+    {
+     "path": "message.content",
+     "type": "string|array",
+     "meaning": "the prompt as a string or as content blocks",
+     "availability": "always",
+     "symbol": "api/resources/messages/messages.d.mts#MessageParam"
+    },
+    {
+     "path": "message.content[].type",
+     "type": "string",
+     "meaning": "content block kind",
+     "availability": "conditional",
+     "condition": "when content is an array; a record with any tool_result block is the user/tool_result variant",
+     "values": [
+      "text",
+      "image",
+      "document",
+      "search_result",
+      "thinking",
+      "redacted_thinking",
+      "tool_use",
+      "server_tool_use",
+      "web_search_tool_result",
+      "web_fetch_tool_result",
+      "code_execution_tool_result",
+      "bash_code_execution_tool_result",
+      "text_editor_code_execution_tool_result",
+      "tool_search_tool_result",
+      "container_upload"
+     ],
+     "symbol": "api/resources/messages/messages.d.mts#ContentBlockParam"
+    },
+    {
+     "path": "message.content[].text",
+     "type": "string",
+     "meaning": "text of a text block",
+     "availability": "conditional",
+     "condition": "type text",
+     "symbol": "api/resources/messages/messages.d.mts#TextBlockParam"
+    },
+    {
+     "path": "message.content[].source",
+     "type": "object",
+     "meaning": "image/document source",
+     "availability": "conditional",
+     "condition": "type image, document, search_result",
+     "symbol": "api/resources/messages/messages.d.mts#ImageBlockParam"
+    },
+    {
+     "path": "parent_tool_use_id",
+     "type": "string|null",
+     "meaning": "spawning Agent/Task tool_use id for a subagent's message; null on the main thread",
+     "availability": "always",
+     "identity": "owner: spawning tool call",
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "isSynthetic",
+     "type": "boolean",
+     "meaning": "the CLI generated this user message",
+     "availability": "conditional",
+     "condition": "optional in the declaration",
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "isReplay",
+     "type": "boolean",
+     "meaning": "echo of a user message the client sent",
+     "availability": "conditional",
+     "condition": "only on replayed messages (replay of user messages requested with stream-json input)",
+     "values": [
+      "true"
+     ],
+     "symbol": "sdk.d.ts#SDKUserMessageReplay"
+    },
+    {
+     "path": "file_attachments",
+     "type": "array",
+     "meaning": "attachments of a replayed message",
+     "availability": "conditional",
+     "condition": "replayed messages only",
+     "symbol": "sdk.d.ts#SDKUserMessageReplay"
+    },
+    {
+     "path": "priority",
+     "type": "string",
+     "meaning": "queue priority",
+     "availability": "conditional",
+     "condition": "optional in the declaration",
+     "values": [
+      "now",
+      "next",
+      "later"
+     ],
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "origin",
+     "type": "object",
+     "meaning": "provenance of the user-role message (kind and kind-specific members)",
+     "availability": "conditional",
+     "condition": "optional; absent means unattributed",
+     "symbol": "sdk.d.ts#SDKMessageOrigin"
+    },
+    {
+     "path": "origin.kind",
+     "type": "string",
+     "meaning": "provenance kind",
+     "availability": "conditional",
+     "condition": "when origin is present",
+     "values": [
+      "human",
+      "channel",
+      "peer",
+      "task-notification",
+      "coordinator",
+      "unclassified",
+      "observer",
+      "auto-continuation",
+      "observer-activity"
+     ],
+     "symbol": "sdk.d.ts#SDKMessageOrigin"
+    },
+    {
+     "path": "shouldQuery",
+     "type": "boolean",
+     "meaning": "false: appended without triggering a turn",
+     "availability": "conditional",
+     "condition": "optional in the declaration",
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "client_composed",
+     "type": "boolean",
+     "meaning": "the client composed the turn from content the user did not type",
+     "availability": "conditional",
+     "condition": "optional in the declaration",
+     "values": [
+      "true"
+     ],
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "pasted_content",
+     "type": "array",
+     "meaning": "pasted content entries appended to the typed text",
+     "availability": "conditional",
+     "condition": "optional in the declaration",
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "inline_pastes",
+     "type": "array",
+     "meaning": "pasted text still inside message.content",
+     "availability": "conditional",
+     "condition": "optional in the declaration",
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "timestamp",
+     "type": "string",
+     "meaning": "ISO creation time on the originating host",
+     "availability": "conditional",
+     "condition": "older emitters omit it",
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "agent_id",
+     "type": "string",
+     "meaning": "subagent instance id (the task_id of its task_* events)",
+     "availability": "conditional",
+     "condition": "absent on main-thread messages",
+     "identity": "subagent task id",
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "subagent_type",
+     "type": "string",
+     "meaning": "subagent type that produced the message",
+     "availability": "conditional",
+     "condition": "subagent messages only",
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "task_description",
+     "type": "string",
+     "meaning": "description of the subagent task",
+     "availability": "conditional",
+     "condition": "subagent messages only",
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "conditional",
+     "condition": "optional on SDKUserMessage; required on a replay",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "conditional",
+     "condition": "optional on SDKUserMessage; required on a replay",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "normalized",
+    "rule": "claude.stream.user.prompt->prompt_turn.submitted",
+    "note": "every user record without a tool_result block becomes a prompt_turn Prompt submitted with its content blocks (a bare string is one Text block); the selection does not consult isReplay, isSynthetic, origin or shouldQuery, which stay in data only. Observed only as a subagent's delivered prompt (child scope); a replayed main-thread prompt or a synthetic user message would also be normalized as a submission"
+   }
+  },
+  {
+   "variant": "user/tool_result",
+   "emitted": "conditional",
+   "condition": "for every executed or refused tool call",
+   "lifecycle": "after the tool runs (or is refused), the user-role message carrying the tool_result block(s) that answer assistant tool_use blocks",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "user"
+     ],
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "message",
+     "type": "object",
+     "meaning": "an Anthropic Messages API MessageParam (role user)",
+     "availability": "always",
+     "symbol": "api/resources/messages/messages.d.mts#MessageParam"
+    },
+    {
+     "path": "message.role",
+     "type": "string",
+     "meaning": "role",
+     "availability": "always",
+     "values": [
+      "user"
+     ],
+     "symbol": "api/resources/messages/messages.d.mts#MessageParam"
+    },
+    {
+     "path": "message.content",
+     "type": "array",
+     "meaning": "content blocks, at least one tool_result",
+     "availability": "always",
+     "symbol": "api/resources/messages/messages.d.mts#MessageParam"
+    },
+    {
+     "path": "message.content[].type",
+     "type": "string",
+     "meaning": "content block kind",
+     "availability": "always",
+     "values": [
+      "text",
+      "image",
+      "document",
+      "search_result",
+      "thinking",
+      "redacted_thinking",
+      "tool_use",
+      "tool_result",
+      "server_tool_use",
+      "web_search_tool_result",
+      "web_fetch_tool_result",
+      "code_execution_tool_result",
+      "bash_code_execution_tool_result",
+      "text_editor_code_execution_tool_result",
+      "tool_search_tool_result",
+      "container_upload"
+     ],
+     "symbol": "api/resources/messages/messages.d.mts#ContentBlockParam"
+    },
+    {
+     "path": "message.content[].tool_use_id",
+     "type": "string",
+     "meaning": "the tool_use id this result answers",
+     "availability": "conditional",
+     "condition": "type tool_result (and server tool result kinds)",
+     "identity": "tool call id (tool_use_id)",
+     "symbol": "api/resources/messages/messages.d.mts#ToolResultBlockParam"
+    },
+    {
+     "path": "message.content[].content",
+     "type": "string|array",
+     "meaning": "the result sent to the model: a string or blocks",
+     "availability": "conditional",
+     "condition": "optional on tool_result",
+     "symbol": "api/resources/messages/messages.d.mts#ToolResultBlockParam"
+    },
+    {
+     "path": "message.content[].content[].type",
+     "type": "string",
+     "meaning": "result block kind",
+     "availability": "conditional",
+     "condition": "when the result content is an array",
+     "values": [
+      "text",
+      "image",
+      "search_result",
+      "document",
+      "tool_reference",
+      "browser_state"
+     ],
+     "symbol": "api/resources/messages/messages.d.mts#ToolResultBlockParam"
+    },
+    {
+     "path": "message.content[].content[].text",
+     "type": "string",
+     "meaning": "text of a text result block",
+     "availability": "conditional",
+     "condition": "result block type text",
+     "symbol": "api/resources/messages/messages.d.mts#TextBlockParam"
+    },
+    {
+     "path": "message.content[].content[].tool_name",
+     "type": "string",
+     "meaning": "tool named by a tool_reference result block (tool search)",
+     "availability": "conditional",
+     "condition": "result block type tool_reference",
+     "symbol": "api/resources/messages/messages.d.mts#ToolReferenceBlockParam"
+    },
+    {
+     "path": "message.content[].is_error",
+     "type": "boolean",
+     "meaning": "the tool reported an error",
+     "availability": "conditional",
+     "condition": "optional on tool_result",
+     "symbol": "api/resources/messages/messages.d.mts#ToolResultBlockParam"
+    },
+    {
+     "path": "tool_use_result",
+     "type": "json",
+     "meaning": "the tool's full structured Output object (per-tool shape; data-keyed); {detachedToolCall: true} for a call still running",
+     "availability": "conditional",
+     "condition": "optional; MCP and dynamic tools carry their own shapes",
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "parent_tool_use_id",
+     "type": "string|null",
+     "meaning": "spawning Agent/Task tool_use id for a subagent's message; null on the main thread",
+     "availability": "always",
+     "identity": "owner: spawning tool call",
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "isSynthetic",
+     "type": "boolean",
+     "meaning": "the CLI generated this user message",
+     "availability": "conditional",
+     "condition": "optional in the declaration",
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "timestamp",
+     "type": "string",
+     "meaning": "ISO creation time on the originating host",
+     "availability": "conditional",
+     "condition": "older emitters omit it",
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "agent_id",
+     "type": "string",
+     "meaning": "subagent instance id (the task_id of its task_* events)",
+     "availability": "conditional",
+     "condition": "absent on main-thread messages",
+     "identity": "subagent task id",
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "subagent_type",
+     "type": "string",
+     "meaning": "subagent type that produced the message",
+     "availability": "conditional",
+     "condition": "subagent messages only",
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "task_description",
+     "type": "string",
+     "meaning": "description of the subagent task",
+     "availability": "conditional",
+     "condition": "subagent messages only",
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "conditional",
+     "condition": "optional in the declaration",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "conditional",
+     "condition": "optional in the declaration",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKUserMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "normalized",
+    "rule": "claude.stream.user.tool_result->tool_call.result",
+    "note": "one tool_call Result observed per tool_result block, owned by the block's own tool_use_id; is_error gives status (absent -> Unknown); tool_use_result -> structured_result; the per-call permission decision comes from tool_result_meta[] (matched by id), a member observed on every recorded result line but NOT declared by the published SDK types (nor is tool_result_meta[].non_execution_kind). Non-tool_result blocks of the same record are kept only in the first result event's data"
+   }
+  },
+  {
+   "variant": "result",
+   "emitted": "conditional",
+   "condition": "once per completed turn; absent when the process is killed or cancelled before the turn ends",
+   "lifecycle": "exactly one per turn, after that turn's assistant, user and stream_event messages (informational system messages may follow); the turn-complete signal; in single-prompt mode the process exits after it",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "result"
+     ],
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "outcome kind",
+     "availability": "always",
+     "values": [
+      "success",
+      "error_during_execution",
+      "error_max_turns",
+      "error_max_budget_usd",
+      "error_max_structured_output_retries"
+     ],
+     "symbol": "sdk.d.ts#SDKResultMessage"
+    },
+    {
+     "path": "is_error",
+     "type": "boolean",
+     "meaning": "the turn ended in error (success with true = ended on an API error)",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    },
+    {
+     "path": "result",
+     "type": "string",
+     "meaning": "final assistant text, or the error text when is_error",
+     "availability": "conditional",
+     "condition": "subtype success",
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    },
+    {
+     "path": "errors",
+     "type": "array",
+     "meaning": "error messages",
+     "availability": "conditional",
+     "condition": "error subtypes",
+     "symbol": "sdk.d.ts#SDKResultError"
+    },
+    {
+     "path": "startup_failure_reason",
+     "type": "string",
+     "meaning": "known startup-failure cause on the zeroed error_during_execution result",
+     "availability": "conditional",
+     "condition": "error_during_execution written on a known startup failure",
+     "values": [
+      "org_pin_api_key_conflict",
+      "provider_not_allowed",
+      "org_verify_failed",
+      "org_pin_mismatch",
+      "managed_settings_invalid",
+      "remote_settings_required_unavailable",
+      "gateway_signin_required",
+      "gateway_access_denied",
+      "proxy_invalid",
+      "temp_dir_unusable",
+      "cwd_unavailable",
+      "shell_tool_missing",
+      "session_held_by_background",
+      "worktree_resume_refused",
+      "worktree_unverified",
+      "cli_version_too_old",
+      "bypass_root",
+      "org_config_required_unavailable",
+      "org_config_refused"
+     ],
+     "symbol": "sdk.d.ts#SDKStartupFailureReason"
+    },
+    {
+     "path": "stop_reason",
+     "type": "string|null",
+     "meaning": "final stop reason of the turn",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    },
+    {
+     "path": "terminal_reason",
+     "type": "string",
+     "meaning": "why the query loop terminated",
+     "availability": "conditional",
+     "condition": "unset when the loop was bypassed (local slash command)",
+     "values": [
+      "blocking_limit",
+      "rapid_refill_breaker",
+      "prompt_too_long",
+      "image_error",
+      "model_error",
+      "api_error",
+      "malformed_tool_use_exhausted",
+      "aborted_streaming",
+      "aborted_tools",
+      "stop_hook_prevented",
+      "hook_stopped",
+      "tool_deferred",
+      "max_turns",
+      "background_requested",
+      "completed",
+      "budget_exhausted",
+      "structured_output_retry_exhausted",
+      "tool_deferred_unavailable",
+      "turn_setup_failed"
+     ],
+     "symbol": "sdk.d.ts#TerminalReason"
+    },
+    {
+     "path": "api_error_status",
+     "type": "integer|null",
+     "meaning": "HTTP status of the API error that ended the turn",
+     "availability": "conditional",
+     "condition": "subtype success, optional",
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    },
+    {
+     "path": "num_turns",
+     "type": "integer",
+     "meaning": "model round-trips within this turn",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    },
+    {
+     "path": "duration_ms",
+     "type": "integer",
+     "meaning": "turn wall duration",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    },
+    {
+     "path": "duration_api_ms",
+     "type": "integer",
+     "meaning": "time spent in API calls",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    },
+    {
+     "path": "ttft_ms",
+     "type": "integer",
+     "meaning": "time to first token",
+     "availability": "conditional",
+     "condition": "subtype success, optional",
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    },
+    {
+     "path": "ttft_stream_ms",
+     "type": "integer",
+     "meaning": "time to first streamed token",
+     "availability": "conditional",
+     "condition": "subtype success, optional",
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    },
+    {
+     "path": "time_to_request_ms",
+     "type": "integer",
+     "meaning": "time to the first API request",
+     "availability": "conditional",
+     "condition": "subtype success, optional",
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    },
+    {
+     "path": "first_content_frame_ms",
+     "type": "integer",
+     "meaning": "time to the first content frame",
+     "availability": "conditional",
+     "condition": "subtype success, optional (with request_sent_wall_ms, first_stream_post_*, first_text_post_*, time_to_request_from_spawn_ms, warm_spare_claimed, time_origin_ms latency members)",
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    },
+    {
+     "path": "total_cost_usd",
+     "type": "number",
+     "meaning": "cumulative estimated cost in USD for this query() call (running total across turns; an estimate)",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    },
+    {
+     "path": "usage",
+     "type": "object",
+     "meaning": "Messages API usage object (MAIN AGENT LOOP ONLY, per turn; excludes subagent, sidechain and auxiliary calls)",
+     "availability": "always",
+     "symbol": "sdk.d.ts#NonNullableUsage"
+    },
+    {
+     "path": "usage.input_tokens",
+     "type": "integer",
+     "meaning": "input tokens",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaUsage"
+    },
+    {
+     "path": "usage.output_tokens",
+     "type": "integer",
+     "meaning": "output tokens",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaUsage"
+    },
+    {
+     "path": "usage.cache_read_input_tokens",
+     "type": "integer|null",
+     "meaning": "input tokens read from the prompt cache",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaUsage"
+    },
+    {
+     "path": "usage.cache_creation_input_tokens",
+     "type": "integer|null",
+     "meaning": "input tokens written to the prompt cache",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaUsage"
+    },
+    {
+     "path": "usage.cache_creation",
+     "type": "object|null",
+     "meaning": "cache-write breakdown by TTL",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaCacheCreation"
+    },
+    {
+     "path": "usage.cache_creation.ephemeral_5m_input_tokens",
+     "type": "integer",
+     "meaning": "tokens written to the 5-minute cache",
+     "availability": "conditional",
+     "condition": "when cache_creation is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaCacheCreation"
+    },
+    {
+     "path": "usage.cache_creation.ephemeral_1h_input_tokens",
+     "type": "integer",
+     "meaning": "tokens written to the 1-hour cache",
+     "availability": "conditional",
+     "condition": "when cache_creation is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaCacheCreation"
+    },
+    {
+     "path": "usage.output_tokens_details",
+     "type": "object|null",
+     "meaning": "output breakdown; thinking_tokens = reasoning tokens inside output_tokens",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaOutputTokensDetails"
+    },
+    {
+     "path": "usage.output_tokens_details.thinking_tokens",
+     "type": "integer",
+     "meaning": "reasoning tokens (already counted in output_tokens)",
+     "availability": "conditional",
+     "condition": "when output_tokens_details is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaOutputTokensDetails"
+    },
+    {
+     "path": "usage.server_tool_use",
+     "type": "object|null",
+     "meaning": "server tool request counts",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaServerToolUsage"
+    },
+    {
+     "path": "usage.server_tool_use.web_search_requests",
+     "type": "integer",
+     "meaning": "web search requests",
+     "availability": "conditional",
+     "condition": "when server_tool_use is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaServerToolUsage"
+    },
+    {
+     "path": "usage.server_tool_use.web_fetch_requests",
+     "type": "integer",
+     "meaning": "web fetch requests",
+     "availability": "conditional",
+     "condition": "when server_tool_use is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaServerToolUsage"
+    },
+    {
+     "path": "usage.iterations",
+     "type": "array|null",
+     "meaning": "per-sampling-iteration usage",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaIterationsUsage"
+    },
+    {
+     "path": "usage.iterations[].type",
+     "type": "string",
+     "meaning": "iteration kind (compaction tokens are not in the top-level fields)",
+     "availability": "conditional",
+     "condition": "when iterations is present",
+     "values": [
+      "message",
+      "compaction",
+      "advisor_message",
+      "fallback_message"
+     ],
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaIterationsUsage"
+    },
+    {
+     "path": "usage.iterations[].model",
+     "type": "string|null",
+     "meaning": "model of a message/advisor/fallback iteration",
+     "availability": "conditional",
+     "condition": "message, advisor_message, fallback_message iterations",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMessageIterationUsage"
+    },
+    {
+     "path": "usage.iterations[].input_tokens",
+     "type": "integer",
+     "meaning": "iteration input tokens",
+     "availability": "conditional",
+     "condition": "when iterations is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMessageIterationUsage"
+    },
+    {
+     "path": "usage.iterations[].output_tokens",
+     "type": "integer",
+     "meaning": "iteration output tokens",
+     "availability": "conditional",
+     "condition": "when iterations is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMessageIterationUsage"
+    },
+    {
+     "path": "usage.iterations[].cache_read_input_tokens",
+     "type": "integer",
+     "meaning": "iteration cache read tokens",
+     "availability": "conditional",
+     "condition": "when iterations is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMessageIterationUsage"
+    },
+    {
+     "path": "usage.iterations[].cache_creation_input_tokens",
+     "type": "integer",
+     "meaning": "iteration cache write tokens",
+     "availability": "conditional",
+     "condition": "when iterations is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaMessageIterationUsage"
+    },
+    {
+     "path": "usage.iterations[].cache_creation",
+     "type": "object|null",
+     "meaning": "iteration cache-write breakdown by TTL",
+     "availability": "conditional",
+     "condition": "when iterations is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaCacheCreation"
+    },
+    {
+     "path": "usage.iterations[].cache_creation.ephemeral_5m_input_tokens",
+     "type": "integer",
+     "meaning": "iteration tokens written to the 5-minute cache",
+     "availability": "conditional",
+     "condition": "when the iteration's cache_creation is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaCacheCreation"
+    },
+    {
+     "path": "usage.iterations[].cache_creation.ephemeral_1h_input_tokens",
+     "type": "integer",
+     "meaning": "iteration tokens written to the 1-hour cache",
+     "availability": "conditional",
+     "condition": "when the iteration's cache_creation is present",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaCacheCreation"
+    },
+    {
+     "path": "usage.service_tier",
+     "type": "string|null",
+     "meaning": "service tier",
+     "availability": "always",
+     "values": [
+      "standard",
+      "priority",
+      "batch"
+     ],
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaUsage"
+    },
+    {
+     "path": "usage.speed",
+     "type": "string|null",
+     "meaning": "inference speed mode",
+     "availability": "always",
+     "values": [
+      "standard",
+      "fast"
+     ],
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaUsage"
+    },
+    {
+     "path": "usage.inference_geo",
+     "type": "string|null",
+     "meaning": "inference region",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaUsage"
+    },
+    {
+     "path": "usage.fallback_credit",
+     "type": "object|null",
+     "meaning": "outcome of a presented fallback-credit token",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaUsage"
+    },
+    {
+     "path": "modelUsage",
+     "type": "object",
+     "meaning": "per-model totals keyed by model string for every query-pipeline call (main loop, subagents, compaction, ...); cumulative across turns",
+     "availability": "always",
+     "symbol": "sdk.d.ts#ModelUsage"
+    },
+    {
+     "path": "modelUsage.{*}",
+     "type": "object",
+     "meaning": "one model's totals (key: the raw model string)",
+     "availability": "always",
+     "symbol": "sdk.d.ts#ModelUsage"
+    },
+    {
+     "path": "modelUsage.{*}.inputTokens",
+     "type": "integer",
+     "meaning": "input tokens",
+     "availability": "always",
+     "symbol": "sdk.d.ts#ModelUsage"
+    },
+    {
+     "path": "modelUsage.{*}.outputTokens",
+     "type": "integer",
+     "meaning": "output tokens (thinking included)",
+     "availability": "always",
+     "symbol": "sdk.d.ts#ModelUsage"
+    },
+    {
+     "path": "modelUsage.{*}.thinkingTokens",
+     "type": "integer",
+     "meaning": "thinking tokens inside outputTokens",
+     "availability": "conditional",
+     "condition": "only when every counted turn ran on a CLI that records it",
+     "symbol": "sdk.d.ts#ModelUsage"
+    },
+    {
+     "path": "modelUsage.{*}.cacheReadInputTokens",
+     "type": "integer",
+     "meaning": "cache read tokens",
+     "availability": "always",
+     "symbol": "sdk.d.ts#ModelUsage"
+    },
+    {
+     "path": "modelUsage.{*}.cacheCreationInputTokens",
+     "type": "integer",
+     "meaning": "cache write tokens",
+     "availability": "always",
+     "symbol": "sdk.d.ts#ModelUsage"
+    },
+    {
+     "path": "modelUsage.{*}.webSearchRequests",
+     "type": "integer",
+     "meaning": "web search requests",
+     "availability": "always",
+     "symbol": "sdk.d.ts#ModelUsage"
+    },
+    {
+     "path": "modelUsage.{*}.costUSD",
+     "type": "number",
+     "meaning": "estimated cost for this model",
+     "availability": "always",
+     "symbol": "sdk.d.ts#ModelUsage"
+    },
+    {
+     "path": "modelUsage.{*}.contextWindow",
+     "type": "integer",
+     "meaning": "context window size",
+     "availability": "always",
+     "symbol": "sdk.d.ts#ModelUsage"
+    },
+    {
+     "path": "modelUsage.{*}.maxOutputTokens",
+     "type": "integer",
+     "meaning": "max output tokens",
+     "availability": "always",
+     "symbol": "sdk.d.ts#ModelUsage"
+    },
+    {
+     "path": "modelUsage.{*}.canonicalModel",
+     "type": "string",
+     "meaning": "canonical model id used for pricing",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#ModelUsage"
+    },
+    {
+     "path": "modelUsage.{*}.provider",
+     "type": "string",
+     "meaning": "API provider that served the model",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#ModelUsage"
+    },
+    {
+     "path": "modelUsage.{*}.costBasis",
+     "type": "string",
+     "meaning": "price table used",
+     "availability": "conditional",
+     "condition": "absent until a request for the model was priced",
+     "values": [
+      "list",
+      "managed",
+      "unknown"
+     ],
+     "symbol": "sdk.d.ts#ModelUsage"
+    },
+    {
+     "path": "permission_denials",
+     "type": "array",
+     "meaning": "tool calls denied during the turn (authoritative record)",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKPermissionDenial"
+    },
+    {
+     "path": "permission_denials[].tool_name",
+     "type": "string",
+     "meaning": "denied tool",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKPermissionDenial"
+    },
+    {
+     "path": "permission_denials[].tool_use_id",
+     "type": "string",
+     "meaning": "denied tool call",
+     "availability": "always",
+     "identity": "tool call id (tool_use_id)",
+     "symbol": "sdk.d.ts#SDKPermissionDenial"
+    },
+    {
+     "path": "permission_denials[].tool_input",
+     "type": "json",
+     "meaning": "denied call's input (tool data)",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKPermissionDenial"
+    },
+    {
+     "path": "queued_turn_count",
+     "type": "integer",
+     "meaning": "user sends still queued",
+     "availability": "conditional",
+     "condition": "absent on fatal startup results and surfaces without a queue",
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    },
+    {
+     "path": "result_index",
+     "type": "integer",
+     "meaning": "delivery sequence of this result within the run (a gap means a lost result)",
+     "availability": "conditional",
+     "condition": "absent from older producers",
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    },
+    {
+     "path": "structured_output",
+     "type": "json",
+     "meaning": "validated structured output",
+     "availability": "conditional",
+     "condition": "subtype success when an output format was requested",
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    },
+    {
+     "path": "deferred_tool_use",
+     "type": "object",
+     "meaning": "a deferred tool call (id, name, input)",
+     "availability": "conditional",
+     "condition": "subtype success when a tool call was deferred",
+     "symbol": "sdk.d.ts#SDKDeferredToolUse"
+    },
+    {
+     "path": "local_command",
+     "type": "string",
+     "meaning": "local slash command that produced the result",
+     "availability": "conditional",
+     "condition": "subtype success, optional",
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    },
+    {
+     "path": "fast_mode_state",
+     "type": "string",
+     "meaning": "fast mode state",
+     "availability": "conditional",
+     "condition": "optional",
+     "values": [
+      "off",
+      "cooldown",
+      "on"
+     ],
+     "symbol": "sdk.d.ts#FastModeState"
+    },
+    {
+     "path": "fast_mode_disabled_reason",
+     "type": "string",
+     "meaning": "why fast mode cannot serve",
+     "availability": "conditional",
+     "condition": "optional",
+     "values": [
+      "free",
+      "preference",
+      "extra_usage_disabled",
+      "network_error",
+      "unknown",
+      "not_first_party",
+      "disabled_by_env",
+      "model_not_allowed",
+      "sdk_opt_in_required",
+      "pending"
+     ],
+     "symbol": "sdk.d.ts#FastModeDisabledReason"
+    },
+    {
+     "path": "origin",
+     "type": "object",
+     "meaning": "provenance of the triggering message",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKMessageOrigin"
+    },
+    {
+     "path": "user_message_uuid",
+     "type": "string",
+     "meaning": "client uuid of the user message this turn answers (reply binding)",
+     "availability": "conditional",
+     "condition": "stamped on the first reply frame(s) of a turn that had a client uuid; absent otherwise and on subagent frames",
+     "identity": "client message id",
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    },
+    {
+     "path": "user_message_uuids",
+     "type": "array",
+     "meaning": "client uuids of every user message this turn consumed (at most 64)",
+     "availability": "conditional",
+     "condition": "present exactly when user_message_uuid is",
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    },
+    {
+     "path": "resume_reason",
+     "type": "string",
+     "meaning": "why this turn continues one a worker restart interrupted (host reason or 'interrupted_turn')",
+     "availability": "conditional",
+     "condition": "only on a turn resumed after a worker restart",
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKResultSuccess"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "normalized",
+    "rule": "claude.stream.result->prompt_turn.completed",
+    "note": "prompt_turn Turn completed: status Success only for subtype success with is_error false, else Failure; stop_reason; usage -> Run-scope final usage and modelUsage.{model} -> Model-scope final usage with reported provider; total_cost_usd -> Run cost (costBasis only when one model reported); permission_denials -> Run-scope decisions attributed by tool_use_id. errors, startup_failure_reason, terminal_reason, structured_output, deferred_tool_use, latencies and counters are retained in data only. Only subtype success has been observed (the error subtypes are declared but unrecorded); observed results also carry undeclared members (subagent_stats, safety_stops)"
+   }
+  },
+  {
+   "variant": "stream_event",
+   "emitted": "conditional",
+   "condition": "only when partial messages are requested (--include-partial-messages / includePartialMessages)",
+   "lifecycle": "incremental Messages API streaming events while a response is generated; the complete assistant message still follows",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "stream_event"
+     ],
+     "symbol": "sdk.d.ts#SDKPartialAssistantMessage"
+    },
+    {
+     "path": "event",
+     "type": "object",
+     "meaning": "one Messages API raw stream event",
+     "availability": "always",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaRawMessageStreamEvent"
+    },
+    {
+     "path": "event.type",
+     "type": "string",
+     "meaning": "stream event kind",
+     "availability": "always",
+     "values": [
+      "message_start",
+      "message_delta",
+      "message_stop",
+      "content_block_start",
+      "content_block_delta",
+      "content_block_stop"
+     ],
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaRawMessageStreamEvent"
+    },
+    {
+     "path": "event.message",
+     "type": "object",
+     "meaning": "the opening Message (empty content, stop_reason null)",
+     "availability": "conditional",
+     "condition": "message_start",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaRawMessageStartEvent"
+    },
+    {
+     "path": "event.index",
+     "type": "integer",
+     "meaning": "content block index",
+     "availability": "conditional",
+     "condition": "content_block_* events",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaRawContentBlockStartEvent"
+    },
+    {
+     "path": "event.content_block",
+     "type": "object",
+     "meaning": "the opening content block (same kinds as assistant message.content[].type)",
+     "availability": "conditional",
+     "condition": "content_block_start",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaRawContentBlockStartEvent"
+    },
+    {
+     "path": "event.delta",
+     "type": "object",
+     "meaning": "a block delta, or the message-level delta (stop_reason, stop_sequence, stop_details, container)",
+     "availability": "conditional",
+     "condition": "content_block_delta, message_delta",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaRawContentBlockDelta"
+    },
+    {
+     "path": "event.delta.type",
+     "type": "string",
+     "meaning": "block delta kind",
+     "availability": "conditional",
+     "condition": "content_block_delta",
+     "values": [
+      "text_delta",
+      "input_json_delta",
+      "citations_delta",
+      "thinking_delta",
+      "signature_delta",
+      "compaction_delta"
+     ],
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaRawContentBlockDelta"
+    },
+    {
+     "path": "event.usage",
+     "type": "object",
+     "meaning": "cumulative usage at message_delta (output_tokens final)",
+     "availability": "conditional",
+     "condition": "message_delta",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaRawMessageDeltaEvent"
+    },
+    {
+     "path": "event.context_management",
+     "type": "object|null",
+     "meaning": "context management applied",
+     "availability": "conditional",
+     "condition": "message_delta",
+     "symbol": "api/resources/beta/messages/messages.d.mts#BetaRawMessageDeltaEvent"
+    },
+    {
+     "path": "parent_tool_use_id",
+     "type": "string|null",
+     "meaning": "spawning tool call for a subagent's stream; null on the main thread",
+     "availability": "always",
+     "identity": "owner: spawning tool call",
+     "symbol": "sdk.d.ts#SDKPartialAssistantMessage"
+    },
+    {
+     "path": "ttft_ms",
+     "type": "integer",
+     "meaning": "time to first token",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKPartialAssistantMessage"
+    },
+    {
+     "path": "user_message_uuid",
+     "type": "string",
+     "meaning": "client uuid of the user message this turn answers (reply binding)",
+     "availability": "conditional",
+     "condition": "stamped on the first reply frame(s) of a turn that had a client uuid; absent otherwise and on subagent frames",
+     "identity": "client message id",
+     "symbol": "sdk.d.ts#SDKPartialAssistantMessage"
+    },
+    {
+     "path": "user_message_uuids",
+     "type": "array",
+     "meaning": "client uuids of every user message this turn consumed (at most 64)",
+     "availability": "conditional",
+     "condition": "present exactly when user_message_uuid is",
+     "symbol": "sdk.d.ts#SDKPartialAssistantMessage"
+    },
+    {
+     "path": "resume_reason",
+     "type": "string",
+     "meaning": "why this turn continues one a worker restart interrupted (host reason or 'interrupted_turn')",
+     "availability": "conditional",
+     "condition": "only on a turn resumed after a worker restart",
+     "symbol": "sdk.d.ts#SDKPartialAssistantMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKPartialAssistantMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKPartialAssistantMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. The message_delta stop_reason and final usage that the complete assistant block-messages lack would be available here but are not read"
+   }
+  },
+  {
+   "variant": "system/compact_boundary",
+   "emitted": "conditional",
+   "condition": "when the conversation is compacted (manual /compact or automatic)",
+   "lifecycle": "at the compaction boundary",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKCompactBoundaryMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "compact_boundary"
+     ],
+     "symbol": "sdk.d.ts#SDKCompactBoundaryMessage"
+    },
+    {
+     "path": "compact_metadata",
+     "type": "object",
+     "meaning": "compaction facts",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKCompactBoundaryMessage"
+    },
+    {
+     "path": "compact_metadata.trigger",
+     "type": "string",
+     "meaning": "what started compaction",
+     "availability": "always",
+     "values": [
+      "manual",
+      "auto"
+     ],
+     "symbol": "sdk.d.ts#SDKCompactBoundaryMessage"
+    },
+    {
+     "path": "compact_metadata.pre_tokens",
+     "type": "integer",
+     "meaning": "context tokens before compaction",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKCompactBoundaryMessage"
+    },
+    {
+     "path": "compact_metadata.post_tokens",
+     "type": "integer",
+     "meaning": "context tokens after compaction",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKCompactBoundaryMessage"
+    },
+    {
+     "path": "compact_metadata.duration_ms",
+     "type": "integer",
+     "meaning": "compaction duration",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKCompactBoundaryMessage"
+    },
+    {
+     "path": "compact_metadata.preserved_segment",
+     "type": "object",
+     "meaning": "relink anchors (head_uuid, anchor_uuid, tail_uuid) of kept messages",
+     "availability": "conditional",
+     "condition": "partial compaction only",
+     "symbol": "sdk.d.ts#SDKCompactBoundaryMessage"
+    },
+    {
+     "path": "compact_metadata.preserved_messages",
+     "type": "object",
+     "meaning": "ordered kept message uuids with anchor_uuid",
+     "availability": "conditional",
+     "condition": "partial compaction only",
+     "symbol": "sdk.d.ts#SDKCompactBoundaryMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKCompactBoundaryMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKCompactBoundaryMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. context compaction is not a normalized lifecycle fact"
+   }
+  },
+  {
+   "variant": "system/status",
+   "emitted": "conditional",
+   "condition": "on a status change (compacting, requesting, idle) or permission mode change",
+   "lifecycle": "whenever the loop status changes",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKStatusMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "status"
+     ],
+     "symbol": "sdk.d.ts#SDKStatusMessage"
+    },
+    {
+     "path": "status",
+     "type": "string|null",
+     "meaning": "current loop status",
+     "availability": "always",
+     "values": [
+      "compacting",
+      "requesting"
+     ],
+     "symbol": "sdk.d.ts#SDKStatus"
+    },
+    {
+     "path": "permissionMode",
+     "type": "string",
+     "meaning": "new permission mode",
+     "availability": "conditional",
+     "condition": "optional",
+     "values": [
+      "default",
+      "acceptEdits",
+      "bypassPermissions",
+      "plan",
+      "dontAsk",
+      "auto"
+     ],
+     "symbol": "sdk.d.ts#PermissionMode"
+    },
+    {
+     "path": "compact_result",
+     "type": "string",
+     "meaning": "compaction outcome",
+     "availability": "conditional",
+     "condition": "optional",
+     "values": [
+      "success",
+      "failed"
+     ],
+     "symbol": "sdk.d.ts#SDKStatusMessage"
+    },
+    {
+     "path": "compact_error",
+     "type": "string",
+     "meaning": "compaction error",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKStatusMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKStatusMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKStatusMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. a mid-session permission mode change is not normalized as a settings change"
+   }
+  },
+  {
+   "variant": "system/api_retry",
+   "emitted": "conditional",
+   "condition": "when an API request fails with a retryable error and will be retried",
+   "lifecycle": "before each retry",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKAPIRetryMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "api_retry"
+     ],
+     "symbol": "sdk.d.ts#SDKAPIRetryMessage"
+    },
+    {
+     "path": "attempt",
+     "type": "integer",
+     "meaning": "retry attempt number",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKAPIRetryMessage"
+    },
+    {
+     "path": "max_retries",
+     "type": "integer",
+     "meaning": "retry cap",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKAPIRetryMessage"
+    },
+    {
+     "path": "retry_delay_ms",
+     "type": "integer",
+     "meaning": "delay before the retry",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKAPIRetryMessage"
+    },
+    {
+     "path": "error_status",
+     "type": "integer|null",
+     "meaning": "HTTP status; null for connection errors",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKAPIRetryMessage"
+    },
+    {
+     "path": "error",
+     "type": "string",
+     "meaning": "error kind",
+     "availability": "always",
+     "values": [
+      "authentication_failed",
+      "oauth_org_not_allowed",
+      "account_on_hold",
+      "verification_required",
+      "billing_error",
+      "rate_limit",
+      "overloaded",
+      "invalid_request",
+      "model_not_found",
+      "server_error",
+      "unknown",
+      "max_output_tokens",
+      "cloud_credential_error"
+     ],
+     "symbol": "sdk.d.ts#SDKAssistantMessageError"
+    },
+    {
+     "path": "no_response",
+     "type": "object",
+     "meaning": "first-byte timeout details (waited_ms, retry_wait_ms)",
+     "availability": "conditional",
+     "condition": "only on a first-byte timeout",
+     "symbol": "sdk.d.ts#SDKAPIRetryMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKAPIRetryMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKAPIRetryMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. API retries/errors are not normalized"
+   }
+  },
+  {
+   "variant": "system/control_request_progress",
+   "emitted": "conditional",
+   "condition": "only for a long-running client-originated control_request (currently side_question), so only with stream-json input",
+   "lifecycle": "after the worker accepts the request, and per API retry",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKControlRequestProgressMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "control_request_progress"
+     ],
+     "symbol": "sdk.d.ts#SDKControlRequestProgressMessage"
+    },
+    {
+     "path": "request_id",
+     "type": "string",
+     "meaning": "the in-flight control_request",
+     "availability": "always",
+     "identity": "control request id",
+     "symbol": "sdk.d.ts#SDKControlRequestProgressMessage"
+    },
+    {
+     "path": "status",
+     "type": "string",
+     "meaning": "progress state",
+     "availability": "always",
+     "values": [
+      "started",
+      "api_retry"
+     ],
+     "symbol": "sdk.d.ts#SDKControlRequestProgressMessage"
+    },
+    {
+     "path": "attempt",
+     "type": "integer",
+     "meaning": "retry attempt",
+     "availability": "conditional",
+     "condition": "status api_retry",
+     "symbol": "sdk.d.ts#SDKControlRequestProgressMessage"
+    },
+    {
+     "path": "max_retries",
+     "type": "integer",
+     "meaning": "retry cap",
+     "availability": "conditional",
+     "condition": "status api_retry",
+     "symbol": "sdk.d.ts#SDKControlRequestProgressMessage"
+    },
+    {
+     "path": "retry_delay_ms",
+     "type": "integer",
+     "meaning": "retry delay",
+     "availability": "conditional",
+     "condition": "status api_retry",
+     "symbol": "sdk.d.ts#SDKControlRequestProgressMessage"
+    },
+    {
+     "path": "error_status",
+     "type": "integer|null",
+     "meaning": "HTTP status",
+     "availability": "conditional",
+     "condition": "status api_retry",
+     "symbol": "sdk.d.ts#SDKControlRequestProgressMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKControlRequestProgressMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKControlRequestProgressMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination"
+   }
+  },
+  {
+   "variant": "system/model_refusal_fallback",
+   "emitted": "conditional",
+   "condition": "when the model ends with stop_reason refusal and the turn is retried once on a fallback model",
+   "lifecycle": "after the retraction of the refused partial",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKModelRefusalFallbackMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "model_refusal_fallback"
+     ],
+     "symbol": "sdk.d.ts#SDKModelRefusalFallbackMessage"
+    },
+    {
+     "path": "trigger",
+     "type": "string",
+     "meaning": "fallback trigger",
+     "availability": "always",
+     "values": [
+      "refusal"
+     ],
+     "symbol": "sdk.d.ts#SDKModelRefusalFallbackMessage"
+    },
+    {
+     "path": "direction",
+     "type": "string",
+     "meaning": "fallback direction (only retry is emitted)",
+     "availability": "always",
+     "values": [
+      "retry",
+      "revert",
+      "sticky"
+     ],
+     "symbol": "sdk.d.ts#SDKModelRefusalFallbackMessage"
+    },
+    {
+     "path": "scope",
+     "type": "string",
+     "meaning": "session swap or local (subagent/side question) fallback",
+     "availability": "conditional",
+     "condition": "absent from older CLIs (treat as session)",
+     "values": [
+      "session",
+      "local"
+     ],
+     "symbol": "sdk.d.ts#SDKModelRefusalFallbackMessage"
+    },
+    {
+     "path": "original_model",
+     "type": "string",
+     "meaning": "refusing model",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKModelRefusalFallbackMessage"
+    },
+    {
+     "path": "fallback_model",
+     "type": "string",
+     "meaning": "model used for the retry",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKModelRefusalFallbackMessage"
+    },
+    {
+     "path": "request_id",
+     "type": "string|null",
+     "meaning": "API request id of the refused response",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKModelRefusalFallbackMessage"
+    },
+    {
+     "path": "api_refusal_category",
+     "type": "string|null",
+     "meaning": "refusal category (open set)",
+     "availability": "conditional",
+     "condition": "absent from older CLIs",
+     "symbol": "sdk.d.ts#SDKModelRefusalFallbackMessage"
+    },
+    {
+     "path": "api_refusal_explanation",
+     "type": "string|null",
+     "meaning": "refusal explanation (display only)",
+     "availability": "conditional",
+     "condition": "client lane only",
+     "symbol": "sdk.d.ts#SDKModelRefusalFallbackMessage"
+    },
+    {
+     "path": "retracted_message_uuids",
+     "type": "array",
+     "meaning": "wire uuids of messages this fallback retracted (evict them)",
+     "availability": "conditional",
+     "condition": "absent from older CLIs",
+     "symbol": "sdk.d.ts#SDKModelRefusalFallbackMessage"
+    },
+    {
+     "path": "refused_user_message_uuid",
+     "type": "string|null",
+     "meaning": "user message the refused request was for",
+     "availability": "conditional",
+     "condition": "absent from older CLIs",
+     "symbol": "sdk.d.ts#SDKModelRefusalFallbackMessage"
+    },
+    {
+     "path": "content",
+     "type": "string",
+     "meaning": "banner text",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKModelRefusalFallbackMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKModelRefusalFallbackMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKModelRefusalFallbackMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. Journal does not evict the retracted messages: their earlier model_response/tool_call events remain, and the model change is not normalized"
+   }
+  },
+  {
+   "variant": "system/model_refusal_no_fallback",
+   "emitted": "conditional",
+   "condition": "when the model ends with stop_reason refusal and no retry runs",
+   "lifecycle": "at the end of the refused response",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKModelRefusalNoFallbackMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "model_refusal_no_fallback"
+     ],
+     "symbol": "sdk.d.ts#SDKModelRefusalNoFallbackMessage"
+    },
+    {
+     "path": "original_model",
+     "type": "string",
+     "meaning": "refusing model",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKModelRefusalNoFallbackMessage"
+    },
+    {
+     "path": "request_id",
+     "type": "string|null",
+     "meaning": "API request id",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKModelRefusalNoFallbackMessage"
+    },
+    {
+     "path": "api_refusal_category",
+     "type": "string|null",
+     "meaning": "refusal category",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKModelRefusalNoFallbackMessage"
+    },
+    {
+     "path": "api_refusal_explanation",
+     "type": "string|null",
+     "meaning": "refusal explanation",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKModelRefusalNoFallbackMessage"
+    },
+    {
+     "path": "refused_user_message_uuid",
+     "type": "string|null",
+     "meaning": "user message the refused request was for",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKModelRefusalNoFallbackMessage"
+    },
+    {
+     "path": "content",
+     "type": "string",
+     "meaning": "banner text",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKModelRefusalNoFallbackMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKModelRefusalNoFallbackMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKModelRefusalNoFallbackMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination"
+   }
+  },
+  {
+   "variant": "system/local_command_output",
+   "emitted": "conditional",
+   "condition": "when a local slash command (e.g. /usage) produces output",
+   "lifecycle": "after the command runs",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKLocalCommandOutputMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "local_command_output"
+     ],
+     "symbol": "sdk.d.ts#SDKLocalCommandOutputMessage"
+    },
+    {
+     "path": "content",
+     "type": "string",
+     "meaning": "command output text",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKLocalCommandOutputMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKLocalCommandOutputMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKLocalCommandOutputMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination"
+   }
+  },
+  {
+   "variant": "system/hook_started",
+   "emitted": "conditional",
+   "condition": "SessionStart and Setup hooks always; other hook events only when hook events are requested (includeHookEvents)",
+   "lifecycle": "when a hook starts",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKHookStartedMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "hook_started"
+     ],
+     "symbol": "sdk.d.ts#SDKHookStartedMessage"
+    },
+    {
+     "path": "hook_id",
+     "type": "string",
+     "meaning": "hook execution id; shared by started/progress/response",
+     "availability": "always",
+     "identity": "hook execution id",
+     "symbol": "sdk.d.ts#SDKHookStartedMessage"
+    },
+    {
+     "path": "hook_name",
+     "type": "string",
+     "meaning": "hook name",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKHookStartedMessage"
+    },
+    {
+     "path": "hook_event",
+     "type": "string",
+     "meaning": "hook event (PreToolUse, PostToolUse, Stop, SessionStart, ...)",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKHookStartedMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKHookStartedMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKHookStartedMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. hook executions are not normalized"
+   }
+  },
+  {
+   "variant": "system/hook_progress",
+   "emitted": "conditional",
+   "condition": "as for hook_started",
+   "lifecycle": "while a hook runs",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKHookProgressMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "hook_progress"
+     ],
+     "symbol": "sdk.d.ts#SDKHookProgressMessage"
+    },
+    {
+     "path": "hook_id",
+     "type": "string",
+     "meaning": "hook execution id; shared by started/progress/response",
+     "availability": "always",
+     "identity": "hook execution id",
+     "symbol": "sdk.d.ts#SDKHookProgressMessage"
+    },
+    {
+     "path": "hook_name",
+     "type": "string",
+     "meaning": "hook name",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKHookProgressMessage"
+    },
+    {
+     "path": "hook_event",
+     "type": "string",
+     "meaning": "hook event (PreToolUse, PostToolUse, Stop, SessionStart, ...)",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKHookProgressMessage"
+    },
+    {
+     "path": "stdout",
+     "type": "string",
+     "meaning": "hook stdout so far",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKHookProgressMessage"
+    },
+    {
+     "path": "stderr",
+     "type": "string",
+     "meaning": "hook stderr so far",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKHookProgressMessage"
+    },
+    {
+     "path": "output",
+     "type": "string",
+     "meaning": "combined hook output so far",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKHookProgressMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKHookProgressMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKHookProgressMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. hook executions are not normalized"
+   }
+  },
+  {
+   "variant": "system/hook_response",
+   "emitted": "conditional",
+   "condition": "as for hook_started",
+   "lifecycle": "when a hook finishes",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKHookResponseMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "hook_response"
+     ],
+     "symbol": "sdk.d.ts#SDKHookResponseMessage"
+    },
+    {
+     "path": "hook_id",
+     "type": "string",
+     "meaning": "hook execution id; shared by started/progress/response",
+     "availability": "always",
+     "identity": "hook execution id",
+     "symbol": "sdk.d.ts#SDKHookResponseMessage"
+    },
+    {
+     "path": "hook_name",
+     "type": "string",
+     "meaning": "hook name",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKHookResponseMessage"
+    },
+    {
+     "path": "hook_event",
+     "type": "string",
+     "meaning": "hook event (PreToolUse, PostToolUse, Stop, SessionStart, ...)",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKHookResponseMessage"
+    },
+    {
+     "path": "output",
+     "type": "string",
+     "meaning": "hook output",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKHookResponseMessage"
+    },
+    {
+     "path": "stdout",
+     "type": "string",
+     "meaning": "hook stdout",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKHookResponseMessage"
+    },
+    {
+     "path": "stderr",
+     "type": "string",
+     "meaning": "hook stderr",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKHookResponseMessage"
+    },
+    {
+     "path": "exit_code",
+     "type": "integer",
+     "meaning": "hook exit code",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKHookResponseMessage"
+    },
+    {
+     "path": "outcome",
+     "type": "string",
+     "meaning": "hook outcome",
+     "availability": "always",
+     "values": [
+      "success",
+      "error",
+      "cancelled"
+     ],
+     "symbol": "sdk.d.ts#SDKHookResponseMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKHookResponseMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKHookResponseMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. hook executions are not normalized"
+   }
+  },
+  {
+   "variant": "system/plugin_install",
+   "emitted": "conditional",
+   "condition": "headless plugin installation (CLAUDE_CODE_SYNC_PLUGIN_INSTALL)",
+   "lifecycle": "started/completed bracket the install; installed/failed per marketplace",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKPluginInstallMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "plugin_install"
+     ],
+     "symbol": "sdk.d.ts#SDKPluginInstallMessage"
+    },
+    {
+     "path": "status",
+     "type": "string",
+     "meaning": "install progress",
+     "availability": "always",
+     "values": [
+      "started",
+      "installed",
+      "failed",
+      "completed"
+     ],
+     "symbol": "sdk.d.ts#SDKPluginInstallMessage"
+    },
+    {
+     "path": "name",
+     "type": "string",
+     "meaning": "marketplace name",
+     "availability": "conditional",
+     "condition": "installed/failed",
+     "symbol": "sdk.d.ts#SDKPluginInstallMessage"
+    },
+    {
+     "path": "error",
+     "type": "string",
+     "meaning": "failure text",
+     "availability": "conditional",
+     "condition": "failed",
+     "symbol": "sdk.d.ts#SDKPluginInstallMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKPluginInstallMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKPluginInstallMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination"
+   }
+  },
+  {
+   "variant": "tool_progress",
+   "emitted": "conditional",
+   "condition": "while a tool call runs (elapsed-time progress / heartbeat)",
+   "lifecycle": "periodically during a running tool call",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "tool_progress"
+     ],
+     "symbol": "sdk.d.ts#SDKToolProgressMessage"
+    },
+    {
+     "path": "tool_use_id",
+     "type": "string",
+     "meaning": "the running tool call",
+     "availability": "always",
+     "identity": "tool call id (tool_use_id)",
+     "symbol": "sdk.d.ts#SDKToolProgressMessage"
+    },
+    {
+     "path": "tool_name",
+     "type": "string",
+     "meaning": "tool name",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKToolProgressMessage"
+    },
+    {
+     "path": "parent_tool_use_id",
+     "type": "string|null",
+     "meaning": "spawning tool call for a subagent's tool",
+     "availability": "always",
+     "identity": "owner: spawning tool call",
+     "symbol": "sdk.d.ts#SDKToolProgressMessage"
+    },
+    {
+     "path": "elapsed_time_seconds",
+     "type": "number",
+     "meaning": "elapsed time",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKToolProgressMessage"
+    },
+    {
+     "path": "task_id",
+     "type": "string",
+     "meaning": "task running the tool",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKToolProgressMessage"
+    },
+    {
+     "path": "heartbeat",
+     "type": "boolean",
+     "meaning": "heartbeat-only frame",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKToolProgressMessage"
+    },
+    {
+     "path": "subagent_type",
+     "type": "string",
+     "meaning": "subagent type",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKToolProgressMessage"
+    },
+    {
+     "path": "subagent_retry",
+     "type": "object",
+     "meaning": "subagent API retry details (agent_id, attempt, max_retries, retry_delay_ms, error_status, error_category)",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKToolProgressMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKToolProgressMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKToolProgressMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. tool progress is not linked to the tool_call"
+   }
+  },
+  {
+   "variant": "auth_status",
+   "emitted": "conditional",
+   "condition": "during an authentication flow",
+   "lifecycle": "while authenticating",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "auth_status"
+     ],
+     "symbol": "sdk.d.ts#SDKAuthStatusMessage"
+    },
+    {
+     "path": "isAuthenticating",
+     "type": "boolean",
+     "meaning": "authentication in progress",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKAuthStatusMessage"
+    },
+    {
+     "path": "output",
+     "type": "array",
+     "meaning": "authentication output lines",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKAuthStatusMessage"
+    },
+    {
+     "path": "error",
+     "type": "string",
+     "meaning": "authentication error",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKAuthStatusMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKAuthStatusMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKAuthStatusMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination"
+   }
+  },
+  {
+   "variant": "system/task_started",
+   "emitted": "conditional",
+   "condition": "when a subagent, background shell, monitor, workflow or MCP task is registered",
+   "lifecycle": "first task_* event of a task run",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKTaskStartedMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "task_started"
+     ],
+     "symbol": "sdk.d.ts#SDKTaskStartedMessage"
+    },
+    {
+     "path": "task_id",
+     "type": "string",
+     "meaning": "task id (equals agent_id on the subagent's messages)",
+     "availability": "always",
+     "identity": "subagent task id",
+     "symbol": "sdk.d.ts#SDKTaskStartedMessage"
+    },
+    {
+     "path": "run_id",
+     "type": "string",
+     "meaning": "id of one run of the task (a resumed task keeps task_id and gets a new run_id)",
+     "availability": "conditional",
+     "condition": "absent for unregistered tasks and older CLIs",
+     "identity": "task run id",
+     "symbol": "sdk.d.ts#SDKTaskStartedMessage"
+    },
+    {
+     "path": "tool_use_id",
+     "type": "string",
+     "meaning": "spawning tool call",
+     "availability": "conditional",
+     "condition": "optional",
+     "identity": "tool call id (tool_use_id)",
+     "symbol": "sdk.d.ts#SDKTaskStartedMessage"
+    },
+    {
+     "path": "description",
+     "type": "string",
+     "meaning": "task description",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKTaskStartedMessage"
+    },
+    {
+     "path": "subagent_type",
+     "type": "string",
+     "meaning": "subagent type",
+     "availability": "conditional",
+     "condition": "Task tool subagents",
+     "symbol": "sdk.d.ts#SDKTaskStartedMessage"
+    },
+    {
+     "path": "is_backgrounded",
+     "type": "boolean",
+     "meaning": "registered in the background",
+     "availability": "conditional",
+     "condition": "local_agent and local_bash tasks",
+     "symbol": "sdk.d.ts#SDKTaskStartedMessage"
+    },
+    {
+     "path": "spawn_depth",
+     "type": "integer",
+     "meaning": "nesting depth of a spawned subagent",
+     "availability": "conditional",
+     "condition": "local_agent tasks",
+     "symbol": "sdk.d.ts#SDKTaskStartedMessage"
+    },
+    {
+     "path": "parent_task_id",
+     "type": "string",
+     "meaning": "task id of the launching subagent",
+     "availability": "conditional",
+     "condition": "absent when launched by the main thread",
+     "identity": "parent subagent task id",
+     "symbol": "sdk.d.ts#SDKTaskStartedMessage"
+    },
+    {
+     "path": "task_type",
+     "type": "string",
+     "meaning": "task type (local_agent, local_bash, local_workflow, mcp_task, ...)",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKTaskStartedMessage"
+    },
+    {
+     "path": "workflow_name",
+     "type": "string",
+     "meaning": "workflow script name",
+     "availability": "conditional",
+     "condition": "task_type local_workflow",
+     "symbol": "sdk.d.ts#SDKTaskStartedMessage"
+    },
+    {
+     "path": "prompt",
+     "type": "string",
+     "meaning": "task prompt",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKTaskStartedMessage"
+    },
+    {
+     "path": "skip_transcript",
+     "type": "boolean",
+     "meaning": "housekeeping task",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKTaskStartedMessage"
+    },
+    {
+     "path": "ambient",
+     "type": "boolean",
+     "meaning": "not activity",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKTaskStartedMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKTaskStartedMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKTaskStartedMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. the child run is represented by owner routing of parent_tool_use_id records, not by these events; parent_task_id nesting is not normalized"
+   }
+  },
+  {
+   "variant": "system/task_progress",
+   "emitted": "conditional",
+   "condition": "while a task runs",
+   "lifecycle": "between task_started and task_notification",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKTaskProgressMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "task_progress"
+     ],
+     "symbol": "sdk.d.ts#SDKTaskProgressMessage"
+    },
+    {
+     "path": "task_id",
+     "type": "string",
+     "meaning": "task id",
+     "availability": "always",
+     "identity": "subagent task id",
+     "symbol": "sdk.d.ts#SDKTaskProgressMessage"
+    },
+    {
+     "path": "run_id",
+     "type": "string",
+     "meaning": "id of one run of the task (a resumed task keeps task_id and gets a new run_id)",
+     "availability": "conditional",
+     "condition": "optional",
+     "identity": "task run id",
+     "symbol": "sdk.d.ts#SDKTaskProgressMessage"
+    },
+    {
+     "path": "tool_use_id",
+     "type": "string",
+     "meaning": "spawning tool call",
+     "availability": "conditional",
+     "condition": "optional",
+     "identity": "tool call id (tool_use_id)",
+     "symbol": "sdk.d.ts#SDKTaskProgressMessage"
+    },
+    {
+     "path": "description",
+     "type": "string",
+     "meaning": "task description",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKTaskProgressMessage"
+    },
+    {
+     "path": "subagent_type",
+     "type": "string",
+     "meaning": "subagent type",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKTaskProgressMessage"
+    },
+    {
+     "path": "usage",
+     "type": "object",
+     "meaning": "vendor running counters",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKTaskProgressMessage"
+    },
+    {
+     "path": "usage.total_tokens",
+     "type": "integer",
+     "meaning": "tokens used by the task so far",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKTaskProgressMessage"
+    },
+    {
+     "path": "usage.tool_uses",
+     "type": "integer",
+     "meaning": "tool uses so far",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKTaskProgressMessage"
+    },
+    {
+     "path": "usage.duration_ms",
+     "type": "integer",
+     "meaning": "elapsed time",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKTaskProgressMessage"
+    },
+    {
+     "path": "last_tool_name",
+     "type": "string",
+     "meaning": "last tool the task used",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKTaskProgressMessage"
+    },
+    {
+     "path": "summary",
+     "type": "string",
+     "meaning": "one-line status (model-generated for local_agent with agentProgressSummaries; MCP status for mcp_task)",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKTaskProgressMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKTaskProgressMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKTaskProgressMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. vendor counters are never copied into usage observations"
+   }
+  },
+  {
+   "variant": "system/task_updated",
+   "emitted": "conditional",
+   "condition": "when a task's state changes",
+   "lifecycle": "between task_started and task_notification",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKTaskUpdatedMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "task_updated"
+     ],
+     "symbol": "sdk.d.ts#SDKTaskUpdatedMessage"
+    },
+    {
+     "path": "task_id",
+     "type": "string",
+     "meaning": "task id",
+     "availability": "always",
+     "identity": "subagent task id",
+     "symbol": "sdk.d.ts#SDKTaskUpdatedMessage"
+    },
+    {
+     "path": "run_id",
+     "type": "string",
+     "meaning": "id of one run of the task (a resumed task keeps task_id and gets a new run_id)",
+     "availability": "conditional",
+     "condition": "optional",
+     "identity": "task run id",
+     "symbol": "sdk.d.ts#SDKTaskUpdatedMessage"
+    },
+    {
+     "path": "patch",
+     "type": "object",
+     "meaning": "changed task fields (merge semantics)",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKTaskUpdatedMessage"
+    },
+    {
+     "path": "patch.status",
+     "type": "string",
+     "meaning": "task status",
+     "availability": "conditional",
+     "condition": "when changed",
+     "values": [
+      "pending",
+      "running",
+      "completed",
+      "failed",
+      "killed",
+      "paused"
+     ],
+     "symbol": "sdk.d.ts#SDKTaskUpdatedMessage"
+    },
+    {
+     "path": "patch.description",
+     "type": "string",
+     "meaning": "description",
+     "availability": "conditional",
+     "condition": "when changed",
+     "symbol": "sdk.d.ts#SDKTaskUpdatedMessage"
+    },
+    {
+     "path": "patch.end_time",
+     "type": "number",
+     "meaning": "end time",
+     "availability": "conditional",
+     "condition": "when changed",
+     "symbol": "sdk.d.ts#SDKTaskUpdatedMessage"
+    },
+    {
+     "path": "patch.total_paused_ms",
+     "type": "integer",
+     "meaning": "paused time",
+     "availability": "conditional",
+     "condition": "when changed",
+     "symbol": "sdk.d.ts#SDKTaskUpdatedMessage"
+    },
+    {
+     "path": "patch.error",
+     "type": "string",
+     "meaning": "task error",
+     "availability": "conditional",
+     "condition": "when changed",
+     "symbol": "sdk.d.ts#SDKTaskUpdatedMessage"
+    },
+    {
+     "path": "patch.is_backgrounded",
+     "type": "boolean",
+     "meaning": "moved to the background",
+     "availability": "conditional",
+     "condition": "when changed",
+     "symbol": "sdk.d.ts#SDKTaskUpdatedMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKTaskUpdatedMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKTaskUpdatedMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination"
+   }
+  },
+  {
+   "variant": "system/task_notification",
+   "emitted": "conditional",
+   "condition": "when a task ends",
+   "lifecycle": "terminal task_* event of a task run",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKTaskNotificationMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "task_notification"
+     ],
+     "symbol": "sdk.d.ts#SDKTaskNotificationMessage"
+    },
+    {
+     "path": "task_id",
+     "type": "string",
+     "meaning": "task id",
+     "availability": "always",
+     "identity": "subagent task id",
+     "symbol": "sdk.d.ts#SDKTaskNotificationMessage"
+    },
+    {
+     "path": "run_id",
+     "type": "string",
+     "meaning": "id of one run of the task (a resumed task keeps task_id and gets a new run_id)",
+     "availability": "conditional",
+     "condition": "optional",
+     "identity": "task run id",
+     "symbol": "sdk.d.ts#SDKTaskNotificationMessage"
+    },
+    {
+     "path": "tool_use_id",
+     "type": "string",
+     "meaning": "spawning tool call",
+     "availability": "conditional",
+     "condition": "optional",
+     "identity": "tool call id (tool_use_id)",
+     "symbol": "sdk.d.ts#SDKTaskNotificationMessage"
+    },
+    {
+     "path": "status",
+     "type": "string",
+     "meaning": "terminal status",
+     "availability": "always",
+     "values": [
+      "completed",
+      "failed",
+      "stopped"
+     ],
+     "symbol": "sdk.d.ts#SDKTaskNotificationMessage"
+    },
+    {
+     "path": "reason",
+     "type": "string",
+     "meaning": "non-ordinary end cause",
+     "availability": "conditional",
+     "condition": "only after a worker restart orphaned the task",
+     "values": [
+      "worker_restart"
+     ],
+     "symbol": "sdk.d.ts#SDKTaskNotificationMessage"
+    },
+    {
+     "path": "output_file",
+     "type": "string",
+     "meaning": "task output file path",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKTaskNotificationMessage"
+    },
+    {
+     "path": "summary",
+     "type": "string",
+     "meaning": "task summary",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKTaskNotificationMessage"
+    },
+    {
+     "path": "usage",
+     "type": "object",
+     "meaning": "vendor counters",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKTaskNotificationMessage"
+    },
+    {
+     "path": "usage.total_tokens",
+     "type": "integer",
+     "meaning": "tokens used by the task",
+     "availability": "conditional",
+     "condition": "when usage is present",
+     "symbol": "sdk.d.ts#SDKTaskNotificationMessage"
+    },
+    {
+     "path": "usage.tool_uses",
+     "type": "integer",
+     "meaning": "tool uses",
+     "availability": "conditional",
+     "condition": "when usage is present",
+     "symbol": "sdk.d.ts#SDKTaskNotificationMessage"
+    },
+    {
+     "path": "usage.duration_ms",
+     "type": "integer",
+     "meaning": "task duration",
+     "availability": "conditional",
+     "condition": "when usage is present",
+     "symbol": "sdk.d.ts#SDKTaskNotificationMessage"
+    },
+    {
+     "path": "resource_links",
+     "type": "array",
+     "meaning": "resource_link blocks of a backgrounded MCP task's final result",
+     "availability": "conditional",
+     "condition": "completed mcp_task with links",
+     "symbol": "sdk.d.ts#SDKMcpResourceLink"
+    },
+    {
+     "path": "skip_transcript",
+     "type": "boolean",
+     "meaning": "housekeeping task",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKTaskNotificationMessage"
+    },
+    {
+     "path": "ambient",
+     "type": "boolean",
+     "meaning": "not activity",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKTaskNotificationMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKTaskNotificationMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKTaskNotificationMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. task end status is not normalized onto the spawning tool_call; observed records also carry undeclared handback/handback_report members"
+   }
+  },
+  {
+   "variant": "system/background_tasks_changed",
+   "emitted": "conditional",
+   "condition": "whenever background-task membership (or an entry's ambient/parent_task_id) changes; nothing at startup",
+   "lifecycle": "level signal with replace semantics",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKBackgroundTasksChangedMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "background_tasks_changed"
+     ],
+     "symbol": "sdk.d.ts#SDKBackgroundTasksChangedMessage"
+    },
+    {
+     "path": "tasks",
+     "type": "array",
+     "meaning": "every live background task (task_id, run_id, task_type, subagent_type, description, parent_task_id, ambient)",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKBackgroundTasksChangedMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKBackgroundTasksChangedMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKBackgroundTasksChangedMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination"
+   }
+  },
+  {
+   "variant": "system/thinking_tokens",
+   "emitted": "conditional",
+   "condition": "during the redacted-thinking phase of a response",
+   "lifecycle": "before the response's blocks; running estimate per thinking block",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKThinkingTokensMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "thinking_tokens"
+     ],
+     "symbol": "sdk.d.ts#SDKThinkingTokensMessage"
+    },
+    {
+     "path": "estimated_tokens",
+     "type": "integer",
+     "meaning": "running estimate for the current thinking block",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKThinkingTokensMessage"
+    },
+    {
+     "path": "estimated_tokens_delta",
+     "type": "integer",
+     "meaning": "increment carried by this frame",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKThinkingTokensMessage"
+    },
+    {
+     "path": "user_message_uuid",
+     "type": "string",
+     "meaning": "client uuid of the triggering user message",
+     "availability": "conditional",
+     "condition": "headless turns with a client uuid",
+     "identity": "client message id",
+     "symbol": "sdk.d.ts#SDKThinkingTokensMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKThinkingTokensMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKThinkingTokensMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. an estimate, not reported usage; the reported thinking_tokens are normalized from assistant/result usage"
+   }
+  },
+  {
+   "variant": "system/session_state_changed",
+   "emitted": "conditional",
+   "condition": "on session state transitions",
+   "lifecycle": "'idle' fires after the held-back result flushes (authoritative turn-over)",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKSessionStateChangedMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "session_state_changed"
+     ],
+     "symbol": "sdk.d.ts#SDKSessionStateChangedMessage"
+    },
+    {
+     "path": "state",
+     "type": "string",
+     "meaning": "session state",
+     "availability": "always",
+     "values": [
+      "idle",
+      "running",
+      "requires_action"
+     ],
+     "symbol": "sdk.d.ts#SDKSessionStateChangedMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKSessionStateChangedMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKSessionStateChangedMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination"
+   }
+  },
+  {
+   "variant": "system/worker_shutting_down",
+   "emitted": "conditional",
+   "condition": "Remote Control bridge graceful teardown with a reason only",
+   "lifecycle": "before the heartbeat stops",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKWorkerShuttingDownMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "worker_shutting_down"
+     ],
+     "symbol": "sdk.d.ts#SDKWorkerShuttingDownMessage"
+    },
+    {
+     "path": "reason",
+     "type": "string",
+     "meaning": "host-set snake_case reason",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKWorkerShuttingDownMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKWorkerShuttingDownMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKWorkerShuttingDownMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination"
+   }
+  },
+  {
+   "variant": "system/commands_changed",
+   "emitted": "conditional",
+   "condition": "after a mid-session change of the slash-command list",
+   "lifecycle": "fire-and-forget push (replace semantics)",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKCommandsChangedMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "commands_changed"
+     ],
+     "symbol": "sdk.d.ts#SDKCommandsChangedMessage"
+    },
+    {
+     "path": "commands",
+     "type": "array",
+     "meaning": "the full slash-command list",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKCommandsChangedMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKCommandsChangedMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKCommandsChangedMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination"
+   }
+  },
+  {
+   "variant": "system/notification",
+   "emitted": "conditional",
+   "condition": "when the loop queues a text notification",
+   "lifecycle": "as queued",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKNotificationMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "notification"
+     ],
+     "symbol": "sdk.d.ts#SDKNotificationMessage"
+    },
+    {
+     "path": "key",
+     "type": "string",
+     "meaning": "notification key",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKNotificationMessage"
+    },
+    {
+     "path": "text",
+     "type": "string",
+     "meaning": "notification text",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKNotificationMessage"
+    },
+    {
+     "path": "priority",
+     "type": "string",
+     "meaning": "priority",
+     "availability": "always",
+     "values": [
+      "low",
+      "medium",
+      "high",
+      "immediate"
+     ],
+     "symbol": "sdk.d.ts#SDKNotificationMessage"
+    },
+    {
+     "path": "color",
+     "type": "string",
+     "meaning": "display color",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKNotificationMessage"
+    },
+    {
+     "path": "timeout_ms",
+     "type": "integer",
+     "meaning": "display timeout",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKNotificationMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKNotificationMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKNotificationMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination"
+   }
+  },
+  {
+   "variant": "system/files_persisted",
+   "emitted": "conditional",
+   "condition": "when files are persisted (file-persistence surfaces)",
+   "lifecycle": "after persistence",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKFilesPersistedEvent"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "files_persisted"
+     ],
+     "symbol": "sdk.d.ts#SDKFilesPersistedEvent"
+    },
+    {
+     "path": "files",
+     "type": "array",
+     "meaning": "persisted files (filename, file_id)",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKFilesPersistedEvent"
+    },
+    {
+     "path": "failed",
+     "type": "array",
+     "meaning": "failed files (filename, error)",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKFilesPersistedEvent"
+    },
+    {
+     "path": "processed_at",
+     "type": "string",
+     "meaning": "processing time",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKFilesPersistedEvent"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKFilesPersistedEvent"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKFilesPersistedEvent"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination"
+   }
+  },
+  {
+   "variant": "tool_use_summary",
+   "emitted": "conditional",
+   "condition": "when the CLI summarizes preceding tool uses",
+   "lifecycle": "after the summarized tool calls",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "tool_use_summary"
+     ],
+     "symbol": "sdk.d.ts#SDKToolUseSummaryMessage"
+    },
+    {
+     "path": "summary",
+     "type": "string",
+     "meaning": "summary text",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKToolUseSummaryMessage"
+    },
+    {
+     "path": "preceding_tool_use_ids",
+     "type": "array",
+     "meaning": "tool calls summarized",
+     "availability": "always",
+     "identity": "tool call ids (tool_use_id)",
+     "symbol": "sdk.d.ts#SDKToolUseSummaryMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKToolUseSummaryMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKToolUseSummaryMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination"
+   }
+  },
+  {
+   "variant": "system/memory_recall",
+   "emitted": "conditional",
+   "condition": "when the memory recall supervisor surfaces memories into the turn",
+   "lifecycle": "during the turn",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKMemoryRecallMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "memory_recall"
+     ],
+     "symbol": "sdk.d.ts#SDKMemoryRecallMessage"
+    },
+    {
+     "path": "mode",
+     "type": "string",
+     "meaning": "recall mode",
+     "availability": "always",
+     "values": [
+      "select",
+      "synthesize"
+     ],
+     "symbol": "sdk.d.ts#SDKMemoryRecallMessage"
+    },
+    {
+     "path": "memories",
+     "type": "array",
+     "meaning": "recalled memories (path, scope personal/team/organization, content)",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKMemoryRecallMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKMemoryRecallMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKMemoryRecallMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. injected memory context is not normalized"
+   }
+  },
+  {
+   "variant": "rate_limit_event",
+   "emitted": "conditional",
+   "condition": "when rate-limit information changes (subscription accounts)",
+   "lifecycle": "as reported",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "rate_limit_event"
+     ],
+     "symbol": "sdk.d.ts#SDKRateLimitEvent"
+    },
+    {
+     "path": "rate_limit_info",
+     "type": "object",
+     "meaning": "rate limit status snapshot",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKRateLimitInfo"
+    },
+    {
+     "path": "rate_limit_info.status",
+     "type": "string",
+     "meaning": "status",
+     "availability": "always",
+     "values": [
+      "allowed",
+      "allowed_warning",
+      "rejected"
+     ],
+     "symbol": "sdk.d.ts#SDKRateLimitInfo"
+    },
+    {
+     "path": "rate_limit_info.resetsAt",
+     "type": "number",
+     "meaning": "reset time",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKRateLimitInfo"
+    },
+    {
+     "path": "rate_limit_info.rateLimitType",
+     "type": "string",
+     "meaning": "limit window",
+     "availability": "conditional",
+     "condition": "optional",
+     "values": [
+      "five_hour",
+      "seven_day",
+      "seven_day_opus",
+      "seven_day_sonnet",
+      "seven_day_overage_included",
+      "overage"
+     ],
+     "symbol": "sdk.d.ts#SDKRateLimitInfo"
+    },
+    {
+     "path": "rate_limit_info.utilization",
+     "type": "number",
+     "meaning": "utilization",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKRateLimitInfo"
+    },
+    {
+     "path": "rate_limit_info.overageStatus",
+     "type": "string",
+     "meaning": "overage status",
+     "availability": "conditional",
+     "condition": "optional",
+     "values": [
+      "allowed",
+      "allowed_warning",
+      "rejected"
+     ],
+     "symbol": "sdk.d.ts#SDKRateLimitInfo"
+    },
+    {
+     "path": "rate_limit_info.overageDisabledReason",
+     "type": "string",
+     "meaning": "why overage is disabled",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKRateLimitInfo"
+    },
+    {
+     "path": "rate_limit_info.isUsingOverage",
+     "type": "boolean",
+     "meaning": "using overage",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKRateLimitInfo"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKRateLimitEvent"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKRateLimitEvent"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. account state, not an execution fact; observed records also carry undeclared rate_limit_info.unifiedWindows"
+   }
+  },
+  {
+   "variant": "system/elicitation_complete",
+   "emitted": "conditional",
+   "condition": "when an MCP server confirms a URL-mode elicitation is complete",
+   "lifecycle": "after the elicitation",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKElicitationCompleteMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "elicitation_complete"
+     ],
+     "symbol": "sdk.d.ts#SDKElicitationCompleteMessage"
+    },
+    {
+     "path": "mcp_server_name",
+     "type": "string",
+     "meaning": "MCP server",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKElicitationCompleteMessage"
+    },
+    {
+     "path": "elicitation_id",
+     "type": "string",
+     "meaning": "elicitation id",
+     "availability": "always",
+     "identity": "elicitation id",
+     "symbol": "sdk.d.ts#SDKElicitationCompleteMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKElicitationCompleteMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKElicitationCompleteMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination"
+   }
+  },
+  {
+   "variant": "system/permission_denied",
+   "emitted": "conditional",
+   "condition": "when a tool call is auto-denied without an interactive prompt (classifier, dontAsk, headless auto-deny, deny rule, or an 'ask' with no prompt surface); best-effort",
+   "lifecycle": "at the denial, before the tool_result returning the rejection",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKPermissionDeniedMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "permission_denied"
+     ],
+     "symbol": "sdk.d.ts#SDKPermissionDeniedMessage"
+    },
+    {
+     "path": "tool_name",
+     "type": "string",
+     "meaning": "denied tool",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKPermissionDeniedMessage"
+    },
+    {
+     "path": "tool_use_id",
+     "type": "string",
+     "meaning": "denied tool call",
+     "availability": "always",
+     "identity": "tool call id (tool_use_id)",
+     "symbol": "sdk.d.ts#SDKPermissionDeniedMessage"
+    },
+    {
+     "path": "agent_id",
+     "type": "string",
+     "meaning": "subagent id when the call was inside a subagent",
+     "availability": "conditional",
+     "condition": "optional",
+     "identity": "subagent task id",
+     "symbol": "sdk.d.ts#SDKPermissionDeniedMessage"
+    },
+    {
+     "path": "decision_reason_type",
+     "type": "string",
+     "meaning": "deciding component (classifier, asyncAgent, mode, rule, ...)",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKPermissionDeniedMessage"
+    },
+    {
+     "path": "decision_reason",
+     "type": "string",
+     "meaning": "human-readable reason",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKPermissionDeniedMessage"
+    },
+    {
+     "path": "message",
+     "type": "string",
+     "meaning": "rejection message returned to the model",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKPermissionDeniedMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKPermissionDeniedMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKPermissionDeniedMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. the denial is normalized from tool_result_meta (tool-call scope) and result.permission_denials (run scope) instead; decision_reason_type is not carried over"
+   }
+  },
+  {
+   "variant": "prompt_suggestion",
+   "emitted": "conditional",
+   "condition": "after each turn when prompt suggestions are enabled",
+   "lifecycle": "after the result",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "prompt_suggestion"
+     ],
+     "symbol": "sdk.d.ts#SDKPromptSuggestionMessage"
+    },
+    {
+     "path": "suggestion",
+     "type": "string",
+     "meaning": "predicted next user prompt",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKPromptSuggestionMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKPromptSuggestionMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKPromptSuggestionMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination"
+   }
+  },
+  {
+   "variant": "system/mirror_error",
+   "emitted": "conditional",
+   "condition": "when a transcript-mirror batch append fails after bounded retry (the batch is dropped)",
+   "lifecycle": "after the failed append",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKMirrorErrorMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "mirror_error"
+     ],
+     "symbol": "sdk.d.ts#SDKMirrorErrorMessage"
+    },
+    {
+     "path": "error",
+     "type": "string",
+     "meaning": "failure text",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKMirrorErrorMessage"
+    },
+    {
+     "path": "key",
+     "type": "object",
+     "meaning": "mirror key (projectKey, sessionId, subpath)",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKMirrorErrorMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKMirrorErrorMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKMirrorErrorMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination"
+   }
+  },
+  {
+   "variant": "system/informational",
+   "emitted": "conditional",
+   "condition": "for loop banners: status lines, hook feedback (e.g. a blocking hook's reason), slash-command output",
+   "lifecycle": "as emitted",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "system"
+     ],
+     "symbol": "sdk.d.ts#SDKInformationalMessage"
+    },
+    {
+     "path": "subtype",
+     "type": "string",
+     "meaning": "system message subtype (second-level discriminator)",
+     "availability": "always",
+     "values": [
+      "informational"
+     ],
+     "symbol": "sdk.d.ts#SDKInformationalMessage"
+    },
+    {
+     "path": "content",
+     "type": "string",
+     "meaning": "banner text",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKInformationalMessage"
+    },
+    {
+     "path": "level",
+     "type": "string",
+     "meaning": "render level",
+     "availability": "always",
+     "values": [
+      "info",
+      "notice",
+      "suggestion",
+      "warning"
+     ],
+     "symbol": "sdk.d.ts#SDKInformationalMessage"
+    },
+    {
+     "path": "tool_use_id",
+     "type": "string",
+     "meaning": "tool call the line belongs to",
+     "availability": "conditional",
+     "condition": "optional",
+     "identity": "tool call id (tool_use_id)",
+     "symbol": "sdk.d.ts#SDKInformationalMessage"
+    },
+    {
+     "path": "prevent_continuation",
+     "type": "boolean",
+     "meaning": "execution stops after this message",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKInformationalMessage"
+    },
+    {
+     "path": "tag",
+     "type": "string",
+     "meaning": "opaque feature tag",
+     "availability": "conditional",
+     "condition": "optional",
+     "symbol": "sdk.d.ts#SDKInformationalMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKInformationalMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKInformationalMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. a prevent_continuation stop is not normalized"
+   }
+  },
+  {
+   "variant": "conversation_reset",
+   "emitted": "conditional",
+   "condition": "on /clear, plan-mode exit with clear, fresh-session and onboarding flows",
+   "lifecycle": "the transcript restarts under new_conversation_id",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "conversation_reset"
+     ],
+     "symbol": "sdk.d.ts#SDKConversationResetMessage"
+    },
+    {
+     "path": "new_conversation_id",
+     "type": "string",
+     "meaning": "new conversation id",
+     "availability": "always",
+     "identity": "native conversation id (new)",
+     "symbol": "sdk.d.ts#SDKConversationResetMessage"
+    },
+    {
+     "path": "trigger",
+     "type": "string",
+     "meaning": "what discarded the conversation",
+     "availability": "conditional",
+     "condition": "absent from older emitters",
+     "values": [
+      "clear",
+      "plan_mode_exit",
+      "fresh_session",
+      "onboarding"
+     ],
+     "symbol": "sdk.d.ts#SDKConversationResetMessage"
+    },
+    {
+     "path": "user_message_uuid",
+     "type": "string",
+     "meaning": "the /clear user message",
+     "availability": "conditional",
+     "condition": "trigger clear only",
+     "symbol": "sdk.d.ts#SDKConversationResetMessage"
+    },
+    {
+     "path": "timestamp",
+     "type": "string",
+     "meaning": "reset time (display only)",
+     "availability": "conditional",
+     "condition": "absent from older emitters",
+     "symbol": "sdk.d.ts#SDKConversationResetMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKConversationResetMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKConversationResetMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. a conversation-identity change is not normalized"
+   }
+  },
+  {
+   "variant": "active_goal",
+   "emitted": "conditional",
+   "condition": "when a /goal Stop hook reports met (clears) or not-yet-met",
+   "lifecycle": "per goal check",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "active_goal"
+     ],
+     "symbol": "sdk.d.ts#SDKActiveGoalMessage"
+    },
+    {
+     "path": "value",
+     "type": "object|null",
+     "meaning": "the goal (condition, iterations, set_at, tokens_at_start, last_reason); null when cleared",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKActiveGoalMessage"
+    },
+    {
+     "path": "uuid",
+     "type": "string",
+     "meaning": "native record id (wire uuid) of this message",
+     "availability": "always",
+     "identity": "native record id",
+     "symbol": "sdk.d.ts#SDKActiveGoalMessage"
+    },
+    {
+     "path": "session_id",
+     "type": "string",
+     "meaning": "the session (conversation) id",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "sdk.d.ts#SDKActiveGoalMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. declared on StdoutMessage beside the SDKMessage union"
+   }
+  },
+  {
+   "variant": "control_request",
+   "emitted": "conditional",
+   "condition": "only when the client drives the CLI with --input-format stream-json (the bidirectional control protocol)",
+   "lifecycle": "a CLI-originated request the client must answer with one control_response (or withdraw with control_cancel_request)",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "control_request"
+     ],
+     "symbol": "sdk.d.ts#SDKControlRequest"
+    },
+    {
+     "path": "request_id",
+     "type": "string",
+     "meaning": "sender-chosen request id echoed by the response",
+     "availability": "always",
+     "identity": "control request id",
+     "symbol": "sdk.d.ts#SDKControlRequest"
+    },
+    {
+     "path": "request",
+     "type": "object",
+     "meaning": "the request body",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKControlRequestInner"
+    },
+    {
+     "path": "request.subtype",
+     "type": "string",
+     "meaning": "request kind; the CLI originates can_use_tool, hook_callback, mcp_message, elicitation and request_user_dialog (the other members of the union are client-originated)",
+     "availability": "always",
+     "values": [
+      "can_use_tool",
+      "hook_callback",
+      "mcp_message",
+      "elicitation",
+      "request_user_dialog"
+     ],
+     "symbol": "sdk.d.ts#SDKControlRequestInner"
+    },
+    {
+     "path": "request.tool_name",
+     "type": "string",
+     "meaning": "tool awaiting permission",
+     "availability": "conditional",
+     "condition": "can_use_tool",
+     "symbol": "sdk.d.ts#SDKControlPermissionRequest"
+    },
+    {
+     "path": "request.input",
+     "type": "json",
+     "meaning": "tool input awaiting permission (tool data) or hook input",
+     "availability": "conditional",
+     "condition": "can_use_tool, hook_callback",
+     "symbol": "sdk.d.ts#SDKControlPermissionRequest"
+    },
+    {
+     "path": "request.tool_use_id",
+     "type": "string",
+     "meaning": "tool call awaiting permission",
+     "availability": "conditional",
+     "condition": "can_use_tool (optional on hook_callback, request_user_dialog)",
+     "identity": "tool call id (tool_use_id)",
+     "symbol": "sdk.d.ts#SDKControlPermissionRequest"
+    },
+    {
+     "path": "request.decision_reason_type",
+     "type": "string",
+     "meaning": "why the CLI asks",
+     "availability": "conditional",
+     "condition": "can_use_tool, optional",
+     "values": [
+      "rule",
+      "mode",
+      "subcommandResults",
+      "permissionPromptTool",
+      "hook",
+      "asyncAgent",
+      "sandboxOverride",
+      "workingDir",
+      "safetyCheck",
+      "classifier",
+      "other"
+     ],
+     "symbol": "sdk.d.ts#SDKControlPermissionRequest"
+    },
+    {
+     "path": "request.permission_suggestions",
+     "type": "array",
+     "meaning": "suggested permission updates",
+     "availability": "conditional",
+     "condition": "can_use_tool, optional",
+     "symbol": "sdk.d.ts#SDKControlPermissionRequest"
+    },
+    {
+     "path": "request.agent_id",
+     "type": "string",
+     "meaning": "subagent whose call awaits permission",
+     "availability": "conditional",
+     "condition": "can_use_tool, optional",
+     "symbol": "sdk.d.ts#SDKControlPermissionRequest"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. A can_use_tool request is the interactive permission ask; its answer is client stdin and is not on stdout"
+   }
+  },
+  {
+   "variant": "control_response",
+   "emitted": "conditional",
+   "condition": "only when the client drives the CLI with --input-format stream-json (the bidirectional control protocol)",
+   "lifecycle": "the single reply to a client-originated control_request (initialize, interrupt, set_model, ...)",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "control_response"
+     ],
+     "symbol": "sdk.d.ts#SDKControlResponse"
+    },
+    {
+     "path": "response",
+     "type": "object",
+     "meaning": "success or error reply",
+     "availability": "always",
+     "symbol": "sdk.d.ts#SDKControlResponse"
+    },
+    {
+     "path": "response.subtype",
+     "type": "string",
+     "meaning": "reply kind",
+     "availability": "always",
+     "values": [
+      "success",
+      "error"
+     ],
+     "symbol": "sdk.d.ts#ControlResponse"
+    },
+    {
+     "path": "response.request_id",
+     "type": "string",
+     "meaning": "the answered request",
+     "availability": "always",
+     "identity": "control request id",
+     "symbol": "sdk.d.ts#ControlResponse"
+    },
+    {
+     "path": "response.response",
+     "type": "json",
+     "meaning": "success payload for the request subtype",
+     "availability": "conditional",
+     "condition": "success, optional",
+     "symbol": "sdk.d.ts#ControlResponse"
+    },
+    {
+     "path": "response.error",
+     "type": "string",
+     "meaning": "failure description",
+     "availability": "conditional",
+     "condition": "error",
+     "symbol": "sdk.d.ts#ControlErrorResponse"
+    },
+    {
+     "path": "response.pending_permission_requests",
+     "type": "array",
+     "meaning": "unresolved can_use_tool requests",
+     "availability": "conditional",
+     "condition": "always on a success initialize response from 2.1.268",
+     "symbol": "sdk.d.ts#ControlResponse"
+    },
+    {
+     "path": "response.pending_user_dialog_requests",
+     "type": "array",
+     "meaning": "unresolved request_user_dialog requests",
+     "availability": "conditional",
+     "condition": "always on a success initialize response from 2.1.268",
+     "symbol": "sdk.d.ts#ControlResponse"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination"
+   }
+  },
+  {
+   "variant": "control_cancel_request",
+   "emitted": "conditional",
+   "condition": "only when the client drives the CLI with --input-format stream-json (the bidirectional control protocol)",
+   "lifecycle": "withdraws one of the CLI's own in-flight control_requests (e.g. a pending can_use_tool after an interrupt)",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "control_cancel_request"
+     ],
+     "symbol": "sdk.d.ts#SDKControlCancelRequest"
+    },
+    {
+     "path": "request_id",
+     "type": "string",
+     "meaning": "the withdrawn request",
+     "availability": "always",
+     "identity": "control request id",
+     "symbol": "sdk.d.ts#SDKControlCancelRequest"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination"
+   }
+  },
+  {
+   "variant": "keep_alive",
+   "emitted": "conditional",
+   "condition": "periodically, e.g. while a long-running control request is in progress (stream-json input mode)",
+   "lifecycle": "liveness heartbeat; receivers ignore it (no payload; SDK startup marks add startup_mark outside the schema)",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "message discriminator",
+     "availability": "always",
+     "values": [
+      "keep_alive"
+     ],
+     "symbol": "sdk.d.ts#SDKKeepAliveMessage"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "claude.stream.fallback->source_record",
+    "note": "declared by the SDK types; not seen in the accepted 2.1.303 specification or the committed Claude stream fixtures. retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. The record has no uuid or session_id"
+   }
+  }
+ ],
+ "omitted_by_projection": [
+  {
+   "what": "final stop reason and final usage of each API response",
+   "applies_to": "assistant",
+   "consequence": "streamed assistant block-messages carry stop_reason null and non-final usage; the turn's stop reason and totals arrive only on the result (per-response values are only in stream_event message_delta, emitted on request)",
+   "symbol": "sdk.d.ts#SDKAssistantMessage"
+  },
+  {
+   "what": "the client's own prompt",
+   "applies_to": "user",
+   "consequence": "a prompt given to -p is not echoed; a client-sent user message is echoed only as a replay (isReplay) when replay is requested with stream-json input",
+   "symbol": "sdk.d.ts#SDKUserMessageReplay"
+  },
+  {
+   "what": "partial streaming deltas",
+   "applies_to": "stream_event",
+   "consequence": "token-level text/thinking/tool-input deltas exist only with --include-partial-messages",
+   "symbol": "sdk.d.ts#SDKPartialAssistantMessage"
+  },
+  {
+   "what": "hook lifecycle except SessionStart and Setup",
+   "applies_to": "system/hook_started, system/hook_progress, system/hook_response",
+   "consequence": "hook executions are invisible unless hook events are requested",
+   "symbol": "sdk.d.ts#Options.includeHookEvents"
+  },
+  {
+   "what": "subagent, sidechain and auxiliary model calls in result.usage",
+   "applies_to": "result",
+   "consequence": "usage is the main agent loop per turn only; modelUsage covers the query pipeline but excludes internal helper calls (permission classifier, token-count probes)",
+   "symbol": "sdk.d.ts#SDKResultSuccess.usage, ModelUsage"
+  },
+  {
+   "what": "denials decided before the permission layer",
+   "applies_to": "system/permission_denied",
+   "consequence": "PreToolUse hook denies, deny-rule overrides of hook decisions, path-scoped file-tool deny rules and the MCP permission-prompt-tool surface emit no permission_denied frame; result.permission_denials is the authoritative record",
+   "symbol": "sdk.d.ts#SDKPermissionDeniedMessage"
+  },
+  {
+   "what": "thinking text during the redacted-thinking phase",
+   "applies_to": "system/thinking_tokens",
+   "consequence": "only a running token estimate is reported while the API streams pings",
+   "symbol": "sdk.d.ts#SDKThinkingTokensMessage"
+  },
+  {
+   "what": "background-task set at startup",
+   "applies_to": "system/background_tasks_changed",
+   "consequence": "nothing is emitted at process start; consumers reset to empty",
+   "symbol": "sdk.d.ts#SDKBackgroundTasksChangedMessage"
+  },
+  {
+   "what": "a detached tool call's output",
+   "applies_to": "user/tool_result",
+   "consequence": "a call that stepped aside for a user message carries {detachedToolCall: true} in tool_use_result; its result reaches the model in a later turn",
+   "symbol": "sdk.d.ts#SDKUserMessage.tool_use_result"
+  },
+  {
+   "what": "reliable source ordering time",
+   "applies_to": "assistant, user, user/tool_result, conversation_reset",
+   "consequence": "timestamp is the originating host's clock, for display only, and older emitters omit it; most other families carry no time",
+   "symbol": "sdk.d.ts#SDKAssistantMessage.timestamp"
+  }
+ ],
+ "reviewed_undeclared": [
+  {
+   "variant": "assistant",
+   "path": "thinking_display",
+   "note": "emitted by Claude Code 2.1.304 and observed on its committed recordings; the published sdk.d.ts omits it (a CLI-internal member: blank lines inside the type body); reviewed as a vendor-envelope field and dispositioned in dispositions.json"
+  },
+  {
+   "variant": "assistant",
+   "path": "thinking_duration_ms",
+   "note": "emitted by Claude Code 2.1.304 and observed on its committed recordings; the published sdk.d.ts omits it (a CLI-internal member: blank lines inside the type body); reviewed as a vendor-envelope field and dispositioned in dispositions.json"
+  },
+  {
+   "variant": "assistant",
+   "path": "wire_tool_inputs",
+   "note": "emitted by Claude Code 2.1.304 and observed on its committed recordings; the published sdk.d.ts omits it (a CLI-internal member: blank lines inside the type body); reviewed as a vendor-envelope field and dispositioned in dispositions.json"
+  },
+  {
+   "variant": "rate_limit_event",
+   "path": "rate_limit_info.unifiedWindows",
+   "note": "emitted by Claude Code 2.1.304 and observed on its committed recordings; the published sdk.d.ts omits it (a CLI-internal member: blank lines inside the type body); reviewed as a vendor-envelope field and dispositioned in dispositions.json"
+  },
+  {
+   "variant": "result",
+   "path": "safety_stops",
+   "note": "emitted by Claude Code 2.1.304 and observed on its committed recordings; the published sdk.d.ts omits it (a CLI-internal member: blank lines inside the type body); reviewed as a vendor-envelope field and dispositioned in dispositions.json"
+  },
+  {
+   "variant": "result",
+   "path": "subagent_stats",
+   "note": "emitted by Claude Code 2.1.304 and observed on its committed recordings; the published sdk.d.ts omits it (a CLI-internal member: blank lines inside the type body); reviewed as a vendor-envelope field and dispositioned in dispositions.json"
+  },
+  {
+   "variant": "system/init",
+   "path": "additional_directories",
+   "note": "emitted by Claude Code 2.1.304 and observed on its committed recordings; the published sdk.d.ts omits it (a CLI-internal member: blank lines inside the type body); reviewed as a vendor-envelope field and dispositioned in dispositions.json"
+  },
+  {
+   "variant": "system/init",
+   "path": "analytics_disabled",
+   "note": "emitted by Claude Code 2.1.304 and observed on its committed recordings; the published sdk.d.ts omits it (a CLI-internal member: blank lines inside the type body); reviewed as a vendor-envelope field and dispositioned in dispositions.json"
+  },
+  {
+   "variant": "system/init",
+   "path": "memory_paths",
+   "note": "emitted by Claude Code 2.1.304 and observed on its committed recordings; the published sdk.d.ts omits it (a CLI-internal member: blank lines inside the type body); reviewed as a vendor-envelope field and dispositioned in dispositions.json"
+  },
+  {
+   "variant": "system/init",
+   "path": "messaging_socket_path",
+   "note": "emitted by Claude Code 2.1.304 and observed on its committed recordings; the published sdk.d.ts omits it (a CLI-internal member: blank lines inside the type body); reviewed as a vendor-envelope field and dispositioned in dispositions.json"
+  },
+  {
+   "variant": "system/init",
+   "path": "original_cwd",
+   "note": "emitted by Claude Code 2.1.304 and observed on its committed recordings; the published sdk.d.ts omits it (a CLI-internal member: blank lines inside the type body); reviewed as a vendor-envelope field and dispositioned in dispositions.json"
+  },
+  {
+   "variant": "system/init",
+   "path": "per_turn_effort_active",
+   "note": "emitted by Claude Code 2.1.304 and observed on its committed recordings; the published sdk.d.ts omits it (a CLI-internal member: blank lines inside the type body); reviewed as a vendor-envelope field and dispositioned in dispositions.json"
+  },
+  {
+   "variant": "system/init",
+   "path": "product_feedback_disabled",
+   "note": "emitted by Claude Code 2.1.304 and observed on its committed recordings; the published sdk.d.ts omits it (a CLI-internal member: blank lines inside the type body); reviewed as a vendor-envelope field and dispositioned in dispositions.json"
+  },
+  {
+   "variant": "system/task_notification",
+   "path": "handback",
+   "note": "emitted by Claude Code 2.1.304 and observed on its committed recordings; the published sdk.d.ts omits it (a CLI-internal member: blank lines inside the type body); reviewed as a vendor-envelope field and dispositioned in dispositions.json"
+  },
+  {
+   "variant": "system/task_notification",
+   "path": "handback_report",
+   "note": "emitted by Claude Code 2.1.304 and observed on its committed recordings; the published sdk.d.ts omits it (a CLI-internal member: blank lines inside the type body); reviewed as a vendor-envelope field and dispositioned in dispositions.json"
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_result_meta",
+   "note": "emitted by Claude Code 2.1.304 and observed on its committed recordings; the published sdk.d.ts omits it (a CLI-internal member: blank lines inside the type body); reviewed as a vendor-envelope field and dispositioned in dispositions.json"
+  }
+ ]
+}
