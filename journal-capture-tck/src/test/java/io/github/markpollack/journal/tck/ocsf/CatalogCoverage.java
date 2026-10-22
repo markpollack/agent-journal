@@ -141,6 +141,9 @@ final class CatalogCoverage {
             return "unresolved (no frozen expected-source manifest: the owed population is unknown)";
         }
         String disposition = SchemaCatalog.text(entry, "disposition");
+        if ("pending".equals(disposition)) {
+            return "unresolved (pending concept: no destination, mapping or independent check yet)";
+        }
         List<Obligation> owed = obligations(catalog, entry, route, expected, report);
         List<String> missing = new ArrayList<>();
         List<String> unresolved = new ArrayList<>();

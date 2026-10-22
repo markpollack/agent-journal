@@ -1,0 +1,455 @@
+{
+ "kind": "agent-journal/foundation-pins",
+ "version": "0.1",
+ "reviewed": "2026-10-22",
+ "meaning": "Shared pins for the mapping catalog: each foundation (a standard or common model, never a CLI) with its exact revision; each tested integration with versions, configuration, input and evidence boundary; each evidence source an evidence id resolves to. Private teardown evidence is named by id and hash only.",
+ "foundations": [
+  {
+   "id": "spring_ai.release",
+   "family": "spring_ai",
+   "name": "Spring AI common chat model, latest release",
+   "kind": "release",
+   "repository": "spring-projects/spring-ai",
+   "ref": "tag v2.0.1",
+   "revision": "c9107fdac0a6c88489c08bb88abcee74c146981d",
+   "commit_date": "2026-08-11",
+   "files_read": [
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/messages/AbstractMessage.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/messages/AssistantMessage.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/messages/ToolResponseMessage.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/messages/UserMessage.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/messages/MessageType.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/memory/ChatMemory.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/metadata/ChatResponseMetadata.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/metadata/DefaultUsage.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/metadata/Usage.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/metadata/ChatGenerationMetadata.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/metadata/DefaultChatGenerationMetadata.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/model/Generation.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/model/ChatResponse.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/model/MessageAggregator.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/support/UsageCalculator.java",
+    "models/spring-ai-anthropic/src/main/java/org/springframework/ai/anthropic/AnthropicChatModel.java",
+    "models/spring-ai-openai/src/main/java/org/springframework/ai/openai/OpenAiChatModel.java (targeted: usage, ChunkMerger, reasoning key, created)",
+    "spring-ai-commons/src/main/java/org/springframework/ai/observation/conventions/AiProvider.java",
+    "spring-ai-commons/src/main/java/org/springframework/ai/observation/conventions/AiObservationAttributes.java"
+   ],
+   "notes": "messages/part/* and spring-ai-session do not exist at this revision (verified by tree listing)."
+  },
+  {
+   "id": "spring_ai.development",
+   "family": "spring_ai",
+   "name": "Spring AI common chat model, inspected development",
+   "kind": "development",
+   "repository": "spring-projects/spring-ai",
+   "ref": "main as inspected",
+   "revision": "cba03cdd219d9ee45d30c691349bfc733f6d1110",
+   "commit_date": "2026-10-16",
+   "files_read": [
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/messages/part/MessagePart.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/messages/part/OpaquePayload.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/messages/part/ReasoningPart.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/messages/part/TextPart.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/messages/part/ToolCallPart.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/messages/part/ToolResultPart.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/messages/part/UnknownPart.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/messages/part/MediaPart.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/messages/part/StreamingParts.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/messages/part/StreamingPartIndexer.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/metadata/NativeUsageSerializer.java",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/messages/AbstractMessage.java (diff)",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/messages/AssistantMessage.java (diff)",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/messages/ToolResponseMessage.java (diff)",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/metadata/DefaultUsage.java (diff)",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/memory/ChatMemory.java (diff)",
+    "spring-ai-model/src/main/java/org/springframework/ai/chat/model/MessageAggregator.java (targeted)",
+    "spring-ai-session/src/main/java/org/springframework/ai/session/Session.java",
+    "spring-ai-session/src/main/java/org/springframework/ai/session/SessionEvent.java",
+    "spring-ai-session/src/main/java/org/springframework/ai/session/EventType.java",
+    "spring-ai-session/src/main/java/org/springframework/ai/session/SessionAttributes.java",
+    "spring-ai-session/src/main/java/org/springframework/ai/session/CreateSessionRequest.java",
+    "spring-ai-session/src/main/java/org/springframework/ai/session/DefaultSessionService.java (targeted)",
+    "spring-ai-docs/src/main/antora/modules/ROOT/pages/api/session/concepts.adoc",
+    "models/spring-ai-anthropic/src/main/java/org/springframework/ai/anthropic/AnthropicChatModel.java (targeted: buildGenerations, streaming, unknownPart)",
+    "models/spring-ai-openai/src/main/java/org/springframework/ai/openai/OpenAiChatModel.java (targeted)",
+    "spring-ai-model/src/main/java/org/springframework/ai/support/UsageCalculator.java"
+   ],
+   "notes": "Part API and spring-ai-session are @since 2.1.0 (unreleased at this pin); NativeUsageSerializer is @since 2.0.2. None of these are attributed to 2.0.1."
+  },
+  {
+   "id": "acp.v1",
+   "family": "acp",
+   "name": "Agent Client Protocol v1 (stable schema and docs)",
+   "kind": "specification",
+   "repository": "agentclientprotocol/agent-client-protocol",
+   "revision": "b4f0b13d76b24c936862d35adfa2ca54d80b0897",
+   "commit_date": "2026-10-20",
+   "schema_crate_version": "1.26.0 (schema/v1/Cargo.toml at the pin)",
+   "files_read": [
+    "docs/protocol/v1/prompt-turn.mdx",
+    "docs/protocol/v1/tool-calls.mdx",
+    "docs/protocol/v1/session-setup.mdx",
+    "docs/protocol/v1/terminals.mdx",
+    "docs/protocol/v1/content.mdx (sections)",
+    "docs/protocol/v1/extensibility.mdx (sections)",
+    "docs/protocol/v1/session-config-options.mdx (sections)",
+    "docs/protocol/v1/error.mdx",
+    "schema/v1/schema.json",
+    "schema/v1/schema.unstable.json (targeted: Usage, PromptResponse, Subagent*, NewSessionRequest)",
+    "schema/v1/meta.json",
+    "schema/v1/CHANGELOG.md (head)"
+   ],
+   "notes": "Claims rest on stable schema/v1/schema.json and v1 docs; unstable-only definitions are named as such and not counted as v1 support."
+  },
+  {
+   "id": "otel_genai.semconv",
+   "family": "otel_genai",
+   "name": "OpenTelemetry GenAI semantic conventions",
+   "kind": "development",
+   "repository": "open-telemetry/semantic-conventions-genai",
+   "tag": null,
+   "tag_status": "no release tag exists on or before 2026-10-19 (repository has no tags; CHANGELOG shows only Unreleased; RELEASING.md plans vX.Y.Z-dev prerelease tags)",
+   "commit": "547934afa90a34298441caf80c43b27255c3a292",
+   "commit_date": "2026-10-18T02:49:01Z",
+   "pin_kind": "development (main head as of 2026-10-19)",
+   "schema_url": "https://opentelemetry.io/schemas/gen-ai-dev/1.42.0-dev",
+   "files": [
+    "model/manifest.yaml",
+    "model/gen-ai/registry.yaml",
+    "model/gen-ai/spans.yaml",
+    "model/gen-ai/events.yaml",
+    "model/gen-ai/metrics.yaml",
+    "model/gen-ai/token-metrics.yaml",
+    "model/gen-ai/entities.yaml",
+    "model/gen-ai/gen-ai-input-messages.json",
+    "model/gen-ai/gen-ai-output-messages.json",
+    "docs/gen-ai/gen-ai-spans.md",
+    "docs/gen-ai/gen-ai-agent-spans.md",
+    "docs/gen-ai/anthropic.md"
+   ],
+   "stability": "development: the manifest and every gen_ai attribute, span and event are development",
+   "moved_from": {
+    "repository": "open-telemetry/semantic-conventions",
+    "move_commit": "c9e48b1d1af565454b73b9e14f0841bca4670ada",
+    "move_date": "2026-05-05",
+    "last_release_with_genai": {
+     "tag": "v1.41.1",
+     "commit": "ead83b9b0fa36540c1642fce46e874f002ac23f1",
+     "date": "2026-05-11",
+     "files": [
+      "model/gen-ai/registry.yaml",
+      "model/gen-ai/spans.yaml",
+      "model/gen-ai/events.yaml",
+      "docs/gen-ai/gen-ai-output-messages.json"
+     ],
+     "stability": "development"
+    },
+    "latest_release_on_or_before_2026-10-19": {
+     "tag": "v1.44.0",
+     "commit": "e10a930844c6951757a43b849d364f7d056ac32b",
+     "date": "2026-08-04",
+     "note": "contains only 'Moved' stubs and deprecated GenAI yaml (true since v1.42.0); it is the core dependency named in the GenAI manifest (CLI spans cited from it)"
+    }
+   },
+   "claim_basis": "Records rest on the development commit. Cited attributes also present in v1.41.1: conversation.id, tool.call.id, response.id/model/finish_reasons, usage input/output/cache_read/reasoning.output_tokens, input/output messages with reasoning parts. Development-only: gen_ai.response.status, cache_write.input_tokens (v1.41.1 uses cache_creation.input_tokens), execute_tool.command refinement, skill attributes, the non-zero usage rule (2026-10-17) and the tool.call.id 'iff supplied' rule (2026-10-17)."
+  },
+  {
+   "id": "openinference.semconv",
+   "family": "openinference",
+   "name": "OpenInference semantic conventions",
+   "kind": "release",
+   "repository": "Arize-ai/openinference",
+   "package": "openinference-semantic-conventions",
+   "package_version": "0.1.41",
+   "tag": "python-openinference-semantic-conventions-v0.1.41",
+   "tag_commit": "48becd7a6098992c189ba86b837e5acf045270ef",
+   "tag_date": "2026-10-01",
+   "spec_head": "7da3360c377afd8d23830b05b21c3164703705c1",
+   "spec_head_date": "2026-10-19",
+   "files": [
+    "python/openinference-semantic-conventions/src/openinference/semconv/trace/__init__.py (at the tag)",
+    "spec/semantic_conventions.md",
+    "spec/llm_spans.md",
+    "spec/tool_calling.md",
+    "spec/multimodal_attributes.md",
+    "spec/configuration.md",
+    "spec/traces.md (at the head)"
+   ],
+   "stability": "no stability levels declared; the spec carries no version of its own and the package is 0.x",
+   "claim_basis": "Attribute names rest on the 0.1.41 tag; spec prose on 7da3360. The tag is an ancestor of the head and between them only spec/configuration.md and spec/decision_spans.md change and the python package is unchanged, so every claim here holds at both."
+  },
+  {
+   "id": "weave.agents_schema",
+   "family": "weave",
+   "name": "W&B Weave Agents/OTel trace model as ingested by weave 0.53.12",
+   "kind": "release",
+   "repository": "wandb/weave",
+   "package_version": "0.53.12",
+   "tag": "v0.53.12",
+   "commit": "9c3780483c5c743daba1487a5f75e1fdf7c5c347",
+   "files": [
+    "weave/shared/agents/types.py#AgentSpanSchema, NormalizedMessage",
+    "weave/shared/agents/semconv.py",
+    "weave/trace_server/opentelemetry/genai_extraction.py",
+    "weave/trace_server/agents/span_costs.py"
+   ],
+   "emitter": "plugin @coreweave/forge-agent-lens-for-claude-code 0.4.0 (c46d5d26) via @coreweave/forge-sdk 0.1.0-beta.0; plugin behaviour cited only through weave-refresh-2026-10-19 ledger claims",
+   "stability": "no schema version or stability marker; the pin is the package release",
+   "readback": "blocked: hosted Agents-store readback was not performed (weave-refresh-2026-10-19:W45); persistence claims rest on Weave's ingest code run locally (replay) or on source",
+   "claim_basis": "Schema and ingest claims read at 9c37804; plugin row claims from the cited ledger."
+  }
+ ],
+ "unresolved": [
+  "otel_genai.semconv: open-telemetry/semantic-conventions-genai has no release tag on or before 2026-10-19; only a development commit (547934a) can be pinned. The first GenAI release after the move is unresolved.",
+  "otel_genai.semconv emitter side: Claude Code 2.1.303's native OTel exporter (the Phoenix route) emits gen_ai.* attributes beside claude_code.* ones, but nothing establishes which semantic-conventions revision it implements. This is an emitter-side reference, not the convention pin.",
+  "otel_genai.semconv emitter side: the Weave plugin 0.4.0 / forge-sdk 0.1.0-beta.0 emits gen_ai.usage.cache_creation.input_tokens (the v1.41.1 name; renamed cache_write at the development pin) and does not declare its target revision. Weave 0.53.12 ingest reads only the cache_creation name.",
+  "openinference.semconv: the spec has no version identifier of its own; spec claims are pinned to a repository commit (7da3360), and the instrumentor (anthropic 3.0.3) is emitter behaviour outside this foundation.",
+  "weave.agents_schema: the span-building SDK @coreweave/forge-sdk 0.1.0-beta.0 has a private source repository (only its published dist was read in the teardown), so its source pin is unresolved.",
+  "weave.agents_schema: hosted Agents-store persistence and readback (spans.query, include_details, include_costs, size limits) is blocked; nothing here asserts hosted behaviour (weave-refresh-2026-10-19:W45)."
+ ],
+ "integrations": [
+  {
+   "id": "journal.claude-code-2.1.304-stdout",
+   "name": "Journal OCSF writer, Claude Code 2.1.304 raw stdout",
+   "current": true,
+   "derived_from": "claude-code/stream-json/2.1.304-stdout",
+   "evidence_class": "replay-observed",
+   "readback_status": "Sanitized live recordings replayed through the current writer; the persisted event files are read back by the independent oracle. States are derived from the CLI coverage calculation, not entered by hand."
+  },
+  {
+   "id": "journal.codex-cli-0.160.1-stdout",
+   "name": "Journal OCSF writer, Codex CLI 0.160.1 raw stdout",
+   "current": true,
+   "derived_from": "codex-cli/exec-json-stream/0.160.1",
+   "evidence_class": "replay-observed",
+   "readback_status": "Sanitized live recordings (and one labelled synthetic stream) replayed through the current writer; the persisted event files are read back by the independent oracle. Derived from the CLI coverage calculation."
+  },
+  {
+   "id": "weave.plugin-0.4.0.otlp-export",
+   "name": "Weave Claude Code plugin OTLP export",
+   "versions": {
+    "claude_code": "2.1.303",
+    "plugin": "@coreweave/forge-agent-lens-for-claude-code 0.4.0 (tag v0.4.0, c46d5d26b73ed733a3d4a9848255e32e667fb548)",
+    "span_sdk": "@coreweave/forge-sdk 0.1.0-beta.0",
+    "weave_ingest_replayed": "weave 0.53.12 (9c3780483c5c743daba1487a5f75e1fdf7c5c347)",
+    "model": "claude-haiku-5-5 (alias haiku)"
+   },
+   "configuration": "Plugin built from source and loaded with --plugin-dir; OTLP/HTTP protobuf export redirected to a local receiver; no backend account; MAX_THINKING_TOKENS=4000; CLAUDE.md disabled; synthetic prompts.",
+   "input_source": "Three live Claude Code runs (run1-multitool, run2-interrupt, run3-permission) and six synthetic hook-event replays (auto_deny, bigpayload, sigkill, sigterm, stop_failure, smoke); exported bytes also pushed through weave Agents ingest code locally.",
+   "evidence_class": "live-observed",
+   "evidence_classes_present": [
+    "live-observed",
+    "replay-observed",
+    "source-verified"
+   ],
+   "readback_status": "Export captured at a local OTLP receiver; Agents-store rows produced by running weave 0.53.12 ingest code locally over the exported bytes (replay, not hosted readback). Hosted readback blocked (see weave.agents-store.hosted).",
+   "capture_artifacts": 87,
+   "artifact_manifest": {
+    "file": "captures/refresh-2026-10-19/MANIFEST.json",
+    "ledger": "weave-refresh-2026-10-19",
+    "sha256": "ebcf496d39c39de6512a51d3add8efaf32d267dd79857d14792e95debeabe882"
+   },
+   "current": false
+  },
+  {
+   "id": "weave.agents-store.hosted",
+   "name": "W&B Weave hosted Agents store",
+   "versions": {
+    "weave_server": "hosted service, version not observable",
+    "client_reference": "weave 0.53.12"
+   },
+   "configuration": "Not run: no authorized credential.",
+   "input_source": "none",
+   "evidence_class": "blocked",
+   "evidence_classes_present": [
+    "blocked"
+   ],
+   "readback_status": "blocked: spans.query, include_costs/include_details, feedback, retention and accepted sizes not read back; nothing asserts absence of any backend capability.",
+   "capture_artifacts": 0,
+   "current": false
+  },
+  {
+   "id": "phoenix-20.23.0.claude-native-otel",
+   "name": "Claude Code native OpenTelemetry into Phoenix",
+   "versions": {
+    "claude_code": "2.1.303",
+    "phoenix": "arize-phoenix 20.23.0 (f4d3998ef8bef674ca888b2053aa58a178de6909)",
+    "phoenix_client": "3.5.0",
+    "model": "claude-haiku-5-5 (alias haiku)"
+   },
+   "configuration": "CLAUDE_CODE_ENABLE_TELEMETRY=1 and CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1; OTLP http/protobuf to a local tee keeping raw traces/logs/metrics, traces forwarded to local Phoenix (SQLite, no auth); content flags OTEL_LOG_USER_PROMPTS/TOOL_DETAILS/TOOL_CONTENT/ASSISTANT_RESPONSES=1 and raw API bodies to files in runs 1-2, none in run 3; detailed beta tracing off.",
+   "input_source": "Three live Claude Code runs (cc-run1 multi-tool/failure/denial/sub-agent with thinking, cc-run2 SIGINT interrupt, cc-run3 default privacy).",
+   "evidence_class": "persisted-readback",
+   "evidence_classes_present": [
+    "persisted-readback",
+    "live-observed",
+    "specification-only"
+   ],
+   "readback_status": "Persisted local Phoenix database read back (reduced copy tracked); 50/50 readback checks as expected, several asserting expected absence.",
+   "capture_artifacts": 39,
+   "artifact_manifest": {
+    "file": "captures/refresh-2026-10-19/MANIFEST.json",
+    "ledger": "arize-refresh-2026-10-19",
+    "sha256": "c9b270b3ad106fa8498c3130f75bd869d0b0d082f7daca7160eca39dbe7b973c"
+   },
+   "notes": "OTLP logs and metrics are rejected by Phoenix OSS (405), so log-only facts are outside this route. A separate emitter-independent probe (size-probe.txt, synthetic sentinel spans) found Phoenix stores 1 KB to 8 MB strings byte-for-byte; that is a store property, not an observation of this route.",
+   "current": false
+  },
+  {
+   "id": "phoenix-20.23.0.oi-anthropic-3.0.3",
+   "name": "OpenInference Anthropic instrumentor into Phoenix",
+   "versions": {
+    "instrumentor": "openinference-instrumentation-anthropic 3.0.3 (release c364180e5be52f0cdc00fbc88f9462603569f4e2); head 7da3360c377afd8d23830b05b21c3164703705c1 also tested",
+    "semconv_package": "openinference-semantic-conventions 0.1.41",
+    "phoenix": "arize-phoenix 20.23.0",
+    "anthropic_sdk": "1.15.0"
+   },
+   "configuration": "Real SDK path against a local mock Messages server; two instrumentor builds by five OPENINFERENCE_HIDE_* privacy configurations; spans exported to local Phoenix.",
+   "input_source": "Replay: one recorded Claude Code 2.1.162 thinking block (June tee capture, not in the refresh manifest) plus synthetic Messages payloads (non-stream and streamed).",
+   "evidence_class": "replay-observed",
+   "evidence_classes_present": [
+    "replay-observed",
+    "source-verified"
+   ],
+   "readback_status": "Persisted local Phoenix database read back (oi-anthropic projects).",
+   "capture_artifacts": 1,
+   "artifact_manifest": {
+    "file": "captures/refresh-2026-10-19/MANIFEST.json",
+    "ledger": "arize-refresh-2026-10-19",
+    "sha256": "c9b270b3ad106fa8498c3130f75bd869d0b0d082f7daca7160eca39dbe7b973c"
+   },
+   "notes": "Replayed inputs persisted into Phoenix and read back from the database; classed replay-observed because the input is replayed, not a live Claude Code run.",
+   "current": false
+  },
+  {
+   "id": "phoenix-20.23.0.arize-harness-plugin",
+   "name": "Arize coding-harness-tracing Claude Code plugin into Phoenix",
+   "versions": {
+    "plugin": "Arize-ai/coding-harness-tracing 6db784844a5aa5e9608fac109ef4a39906eaf07a, Claude Code plugin 1.0.3",
+    "phoenix": "arize-phoenix 20.23.0"
+   },
+   "configuration": "Unmodified hook scripts executed with a scratch HOME and prompt/tool-detail/tool-content logging enabled; never installed into a live Claude Code session.",
+   "input_source": "Replay: hook stdin JSON reconstructed from the real cc-run1 transcript (Claude Code 2.1.303); two variants (with and without Agent tool_response).",
+   "evidence_class": "replay-observed",
+   "evidence_classes_present": [
+    "replay-observed",
+    "source-verified"
+   ],
+   "readback_status": "Persisted local Phoenix database read back (plugin replay projects); live plugin behaviour unverified.",
+   "capture_artifacts": 5,
+   "artifact_manifest": {
+    "file": "captures/refresh-2026-10-19/MANIFEST.json",
+    "ledger": "arize-refresh-2026-10-19",
+    "sha256": "c9b270b3ad106fa8498c3130f75bd869d0b0d082f7daca7160eca39dbe7b973c"
+   },
+   "current": false
+  },
+  {
+   "id": "arize-ax.hosted",
+   "name": "Arize AX hosted",
+   "versions": {
+    "service": "not observable"
+   },
+   "configuration": "Not run: no account or credentials.",
+   "input_source": "none",
+   "evidence_class": "blocked",
+   "evidence_classes_present": [
+    "blocked"
+   ],
+   "readback_status": "blocked: ingestion, retention, storage limits and evaluators not tested; Phoenix OSS results do not establish AX.",
+   "capture_artifacts": 0,
+   "current": false
+  },
+  {
+   "id": "journal-1.12.0-snapshot.claude-2.1.303",
+   "name": "Journal legacy writer (HISTORICAL October report column)",
+   "versions": {
+    "journal": "1.12.0-SNAPSHOT, run packages schemaVersion 1, main f652231 to 83d5057 during the refresh",
+    "claude_code": "2.1.303",
+    "model": "claude-haiku-4-5"
+   },
+   "configuration": "claude -p --output-format stream-json --verbose with allowed tools Bash, Read, Write, Glob, Grep, Task (+Agent); RunRecorder + JsonFileStorage from the stream; Level 0 deliberately absent for readback.",
+   "input_source": "Four live pairs: A multi-tool, B failure then success, C no sub-agent spawned, D sub-agent via the Agent tool; stream and session transcript captured, stream only parsed.",
+   "evidence_class": "persisted-readback",
+   "evidence_classes_present": [
+    "persisted-readback",
+    "live-observed",
+    "source-verified"
+   ],
+   "readback_status": "Run packages persisted locally and read back with Level 0 absent (readback.json per pair, stream as oracle).",
+   "capture_artifacts": 38,
+   "artifact_manifest": {
+    "file": "journal-side/MANIFEST.json",
+    "ledger": "journal-refresh-2026-10-19",
+    "sha256": "d3e433f409ccb425e74fe8dc3df030d198cd4483e9a5492428cf167e7b95f777"
+   },
+   "notes": "Historical column only: it records the legacy writer as measured at the October refresh and never stands for the current OCSF writer. Later closures (assistant text, block order, signature, permission decisions, cost validity) belong to later producers and are not observations of this integration. Model differs from the competitor runs (haiku-4-5 vs haiku-5-5); scenarios differ.",
+   "current": false
+  }
+ ],
+ "evidence_sources": [
+  {
+   "prefix": "spring-ai-note-2026-10-20",
+   "kind": "private steward research note",
+   "meaning": "Spring AI source inspection at release v2.0.1 and development cba03cd (2026-10-20)"
+  },
+  {
+   "prefix": "weave-refresh-2026-10-19",
+   "kind": "claim ledger",
+   "repository": "private Weave teardown repository",
+   "file": "schemas/claim-ledger-refresh-2026-10-19.jsonl",
+   "commit": "e432d586ed8db2b11c4f633df6d1a8ed28406ca3",
+   "sha256": "df34eca599f98e27abd3e54a6ce92fccdd83506a1a3a09c56ced7e608af9aec8",
+   "rows": 48
+  },
+  {
+   "prefix": "arize-refresh-2026-10-19",
+   "kind": "claim ledger",
+   "repository": "private Arize/Phoenix teardown repository",
+   "file": "schemas/claim-ledger-refresh-2026-10-19.jsonl",
+   "commit": "f2ebbcfe6d49f34ff6e0c573bd5ab2a0ac572acf",
+   "read_at_commit": "8b7d3e242bb68518d48ebf1bdd1d872825587978",
+   "sha256": "34f195d25d4155574cd22ab927871ca50035abc6b800aa28417f8a1983f7b24d",
+   "rows": 28
+  },
+  {
+   "prefix": "journal-refresh-2026-10-19",
+   "kind": "claim ledger",
+   "repository": "private steward repository",
+   "file": "plans/evidence/2026-10-19-competitor-refresh/claim-ledger-journal-2026-10-19.jsonl",
+   "commit": "9a05cfffd1a0bc68674730e00cc214f34a685455",
+   "read_at_commit": "d89b3540b5d9d9c1a2679604f0a0e5d79b58bee5",
+   "sha256": "68236bacfc67117aaacc4f73f2440acbdb36e21c5bb706169ec996fa73523563",
+   "rows": 32
+  },
+  {
+   "prefix": "competitor-refresh-2026-10-19",
+   "kind": "report section 3 concept matrix",
+   "repository": "private steward repository",
+   "file": "plans/evidence/2026-10-19-competitor-refresh/REPORT.md",
+   "commit": "0a226fe5b028f175a64f0fe605ad2f38fa782bfe",
+   "read_at_commit": "d89b3540b5d9d9c1a2679604f0a0e5d79b58bee5",
+   "sha256": "92d600ee7450410ed9ef2a043349e1d81cd159b0a4ef7a0c9414c6961e22f21d",
+   "rows": 25
+  },
+  {
+   "prefix": "weave-matrix-2026-10-19",
+   "kind": "report section 7 capability matrix",
+   "repository": "private Weave teardown repository",
+   "file": "schemas/refresh-2026-10-19-weave.md",
+   "commit": "e432d586ed8db2b11c4f633df6d1a8ed28406ca3",
+   "sha256": "2ed549f98da11fa7d6f9bc0fc4427b63d16934adbfa1a18b0a96e579a8195418",
+   "rows": 34
+  },
+  {
+   "prefix": "arize-matrix-2026-10-19",
+   "kind": "report section 5 capability matrix",
+   "repository": "private Arize/Phoenix teardown repository",
+   "file": "schemas/refresh-2026-10-19-arize.md",
+   "commit": "f2ebbcfe6d49f34ff6e0c573bd5ab2a0ac572acf",
+   "read_at_commit": "8b7d3e242bb68518d48ebf1bdd1d872825587978",
+   "sha256": "4de41f892e575e5a014f0b35fe2d70c59b304739ff0a9f1bbfc5dac3fb0bbf4f",
+   "rows": 20
+  }
+ ]
+}

@@ -116,7 +116,7 @@ class MappingCatalogTest {
             if (!ids.add(id)) {
                 problems.add("duplicate id " + id);
             }
-            for (String k : List.of("id", "concept", "question", "upstream", "ocsf", "native_evidence", "mapping", "oracle", "views", "tests", "disposition", "notes")) {
+            for (String k : List.of("id", "concept", "question", "foundations", "ocsf", "native_evidence", "mapping", "oracle", "views", "tests", "disposition", "decision", "notes", "observations")) {
                 if (e.member(k) == null) {
                     problems.add(id + ": missing key " + k);
                 }
@@ -303,6 +303,30 @@ class MappingCatalogTest {
             return "unavailable-at-source (" + perRecording.size() + " recordings)";
         }
         return perRecording.isEmpty() ? "unexercised (no recording)" : perRecording.values().iterator().next();
+    }
+
+    /** Concept id to compatibility entry to combined route state, over every committed recording, for every column. */
+    static Map<String, Map<String, String>> routeStates(Json catalog, Path work) {
+        Map<Route, Path> fixtures = new LinkedHashMap<>();
+        Map<Route, OracleReport> reports = new LinkedHashMap<>();
+        for (Route r : ROUTES) {
+            Path fixture = OcsfFixtures.copy(r.fixture(), work.resolve("states"));
+            fixtures.put(r, fixture);
+            reports.put(r, OcsfFixtures.verify(fixture));
+        }
+        Map<String, Map<String, String>> out = new LinkedHashMap<>();
+        for (Json e : catalog.member("concepts").elements()) {
+            Map<String, String> byRoute = new LinkedHashMap<>();
+            for (Column col : COLUMNS) {
+                Map<String, String> perRecording = new LinkedHashMap<>();
+                for (Route r : recordings(col.entry())) {
+                    perRecording.put(r.fixture(), CatalogCoverage.state(catalog, e, r, fixtures.get(r), reports.get(r)));
+                }
+                byRoute.put(col.entry(), combine(perRecording));
+            }
+            out.put(SchemaCatalog.text(e, "id"), byRoute);
+        }
+        return out;
     }
 
     static String word(String state) {

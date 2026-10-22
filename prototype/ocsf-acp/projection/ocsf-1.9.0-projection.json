@@ -1,0 +1,1785 @@
+{
+ "upstream": {
+  "repository": "ocsf/ocsf-schema",
+  "release": "1.9.0",
+  "commit": "856d462bd20dc46cc1ffed2dfffe3b91ef0fbeba"
+ },
+ "extension": {
+  "name": "agentic_cli",
+  "version": "0.3.0-prototype"
+ },
+ "purpose": "Comparison inventory only: for each attribute our extension defines, the upstream attribute it means, if any, and the verdict. It does not reshape the extension; our attributes and names are kept.",
+ "evidence_class": "source-verified",
+ "upstream_objects_at_release": {
+  "present": [
+   "ai_agent",
+   "ai_model",
+   "message_context",
+   "metadata",
+   "product",
+   "api",
+   "request",
+   "response",
+   "process",
+   "process_entity",
+   "file",
+   "authorization",
+   "transformation_info",
+   "profiles/ai_operation",
+   "profiles/security_control"
+  ],
+  "absent": [
+   "ai_capability",
+   "ai_status"
+  ],
+  "absent_note": "ai_capability and ai_status exist only on the development head, not in release 1.9.0; rows cite them only in caveats."
+ },
+ "inheritance": {
+  "cli_agent": {
+   "extends": "ai_agent",
+   "upstream_file": "objects/ai_agent.json",
+   "treatment": "cli_agent declares product (added) and instance_uid (override); the other attributes are inherited from ai_agent unchanged and map to themselves. Rows carry inherited_from."
+  },
+  "classes": {
+   "extends": "base_event",
+   "upstream_file": "events/base_event.json",
+   "treatment": "Class rows cover attributes each class declares, including the activity_id override. Base-event attributes the classes inherit unchanged appear once each as base_event.<attribute> rows marked envelope."
+  }
+ },
+ "not_rowed": "Attributes contributed by base_event's optional profiles (cloud, datetime, host, osint, record_integrity, security_control) and the datetime profile's derived _dt siblings (for example journal.capture_time_dt) are not rows: the writer enables only the datetime profile, and the _dt values render timestamp_t attributes already rowed.",
+ "class_level": [
+  {
+   "ours": "prompt_turn",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no agent-execution class; projecting onto API Activity or Process Activity is a lossy reshaping, not a counterpart."
+  },
+  {
+   "ours": "model_response",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no agent-execution class; projecting onto API Activity or Process Activity is a lossy reshaping, not a counterpart."
+  },
+  {
+   "ours": "tool_call",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no agent-execution class; projecting onto API Activity or Process Activity is a lossy reshaping, not a counterpart."
+  },
+  {
+   "ours": "source_record",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no agent-execution class; projecting onto API Activity or Process Activity is a lossy reshaping, not a counterpart."
+  },
+  {
+   "ours": "session_context",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no agent-execution class; projecting onto API Activity or Process Activity is a lossy reshaping, not a counterpart."
+  }
+ ],
+ "rows": [
+  {
+   "ours": "prompt_turn.activity_id",
+   "ours_kind": "class",
+   "upstream": "base_event.activity_id",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Same envelope attribute; the activity enum values are extension-defined because 1.9.0 has no agent-execution class."
+  },
+  {
+   "ours": "prompt_turn.cli_agent",
+   "ours_kind": "class",
+   "upstream": "ai_operation.ai_agent",
+   "upstream_file": "profiles/ai_operation.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Requires the ai_operation profile, which the writer does not enable; cli_agent's extra product attribute does not survive as ai_agent, and the value lives once per run in run.json rather than on each event."
+  },
+  {
+   "ours": "prompt_turn.journal",
+   "ours_kind": "class",
+   "upstream": "base_event.metadata",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Only parts have homes (metadata.sequence, metadata.transformation_info_list); run identity, invocation index and time basis have none."
+  },
+  {
+   "ours": "prompt_turn.source_ref",
+   "ours_kind": "class",
+   "upstream": "base_event.metadata",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Native id and time land in metadata.original_event_uid and metadata.original_time, but the occurrence identity (artifact plus record index) has no home."
+  },
+  {
+   "ours": "prompt_turn.session_uid",
+   "ours_kind": "class",
+   "upstream": "ai_agent.instance_uid",
+   "upstream_file": "objects/ai_agent.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Our ACP session id; upstream has two candidate homes (ai_agent.instance_uid via the ai_operation profile, and message_context.uid) and neither carries how the value was obtained."
+  },
+  {
+   "ours": "prompt_turn.turn_uid",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no prompt-turn concept; message_context.uid is a session or conversation identifier, not a turn."
+  },
+  {
+   "ours": "prompt_turn.content_blocks",
+   "ours_kind": "class",
+   "upstream": "message_context.prompt_text",
+   "upstream_file": "objects/message_context.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Ordered typed blocks flatten into one string; block kinds, tool-call links and the exact native blocks are lost."
+  },
+  {
+   "ours": "prompt_turn.stop_reason",
+   "ours_kind": "class",
+   "upstream": "base_event.status_code",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps_with_loss",
+   "caveat": "status_code is a generic source outcome code with no stop-reason meaning and competes with reported_state for the same slot; ai_status is not released at 1.9.0 (development head only)."
+  },
+  {
+   "ours": "prompt_turn.model_ref",
+   "ours_kind": "class",
+   "upstream": "ai_operation.ai_model",
+   "upstream_file": "profiles/ai_operation.json",
+   "verdict": "maps_with_loss",
+   "caveat": "ai_model requires ai_provider as an organization name, which the admitted sources do not report per response; our provider basis has no home."
+  },
+  {
+   "ours": "prompt_turn.usage_observations",
+   "ours_kind": "class",
+   "upstream": "message_context",
+   "upstream_file": "objects/message_context.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Upstream holds one set of integer counts per event; several observations, their scope, provisional or final status and source record are lost."
+  },
+  {
+   "ours": "prompt_turn.cost_observation",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no cost, price or currency attribute for AI usage."
+  },
+  {
+   "ours": "prompt_turn.permission_decisions",
+   "ours_kind": "class",
+   "upstream": "security_control.authorizations",
+   "upstream_file": "profiles/security_control.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Requires the security_control profile; authorization carries a decision string only, without scope, attribution, decision source or reported label."
+  },
+  {
+   "ours": "prompt_turn.status_basis_id",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute records whether status_id was reported or derived."
+  },
+  {
+   "ours": "prompt_turn.status_basis",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of status_basis_id, which has no counterpart."
+  },
+  {
+   "ours": "prompt_turn.derivation",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute names the rule and inputs behind a derived value."
+  },
+  {
+   "ours": "prompt_turn.data",
+   "ours_kind": "class",
+   "upstream": "base_event.raw_data",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps_with_loss",
+   "caveat": "raw_data is a verbatim string; ours is the parsed JSON value, so the representation changes."
+  },
+  {
+   "ours": "model_response.activity_id",
+   "ours_kind": "class",
+   "upstream": "base_event.activity_id",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Same envelope attribute; the activity enum values are extension-defined because 1.9.0 has no agent-execution class."
+  },
+  {
+   "ours": "model_response.cli_agent",
+   "ours_kind": "class",
+   "upstream": "ai_operation.ai_agent",
+   "upstream_file": "profiles/ai_operation.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Requires the ai_operation profile, which the writer does not enable; cli_agent's extra product attribute does not survive as ai_agent, and the value lives once per run in run.json rather than on each event."
+  },
+  {
+   "ours": "model_response.journal",
+   "ours_kind": "class",
+   "upstream": "base_event.metadata",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Only parts have homes (metadata.sequence, metadata.transformation_info_list); run identity, invocation index and time basis have none."
+  },
+  {
+   "ours": "model_response.source_ref",
+   "ours_kind": "class",
+   "upstream": "base_event.metadata",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Native id and time land in metadata.original_event_uid and metadata.original_time, but the occurrence identity (artifact plus record index) has no home."
+  },
+  {
+   "ours": "model_response.session_uid",
+   "ours_kind": "class",
+   "upstream": "ai_agent.instance_uid",
+   "upstream_file": "objects/ai_agent.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Our ACP session id; upstream has two candidate homes (ai_agent.instance_uid via the ai_operation profile, and message_context.uid) and neither carries how the value was obtained."
+  },
+  {
+   "ours": "model_response.turn_uid",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no prompt-turn concept; message_context.uid is a session or conversation identifier, not a turn."
+  },
+  {
+   "ours": "model_response.response_uid",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No per-response identifier at 1.9.0: message_context.uid identifies a session or conversation and api.request.uid a request, not the provider's response id."
+  },
+  {
+   "ours": "model_response.model_ref",
+   "ours_kind": "class",
+   "upstream": "ai_operation.ai_model",
+   "upstream_file": "profiles/ai_operation.json",
+   "verdict": "maps_with_loss",
+   "caveat": "ai_model requires ai_provider as an organization name, which the admitted sources do not report per response; our provider basis has no home."
+  },
+  {
+   "ours": "model_response.content_blocks",
+   "ours_kind": "class",
+   "upstream": "message_context.response_text",
+   "upstream_file": "objects/message_context.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Ordered typed blocks (text, thought, tool call) flatten into one string; one response spans several records and events here, upstream assumes one text per message."
+  },
+  {
+   "ours": "model_response.stop_reason",
+   "ours_kind": "class",
+   "upstream": "base_event.status_code",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps_with_loss",
+   "caveat": "status_code is a generic source outcome code with no stop-reason meaning and competes with reported_state for the same slot; ai_status is not released at 1.9.0 (development head only)."
+  },
+  {
+   "ours": "model_response.reported_state",
+   "ours_kind": "class",
+   "upstream": "base_event.status_code",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Verbatim source status fits status_code, but it is the event's single outcome code, not a lifecycle state of the response or request."
+  },
+  {
+   "ours": "model_response.usage_observations",
+   "ours_kind": "class",
+   "upstream": "message_context",
+   "upstream_file": "objects/message_context.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Upstream holds one set of integer counts per event; several observations, their scope, provisional or final status and source record are lost."
+  },
+  {
+   "ours": "model_response.basis",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "transformation_info names a whole mapping, not the per-event rule that classified a record or generated an identifier."
+  },
+  {
+   "ours": "model_response.data",
+   "ours_kind": "class",
+   "upstream": "base_event.unmapped",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps_with_loss",
+   "caveat": "unmapped is a free container for unmapped source fields; ours is the exact native residual with no claim of completeness lost on projection."
+  },
+  {
+   "ours": "tool_call.activity_id",
+   "ours_kind": "class",
+   "upstream": "base_event.activity_id",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Same envelope attribute; the activity enum values are extension-defined because 1.9.0 has no agent-execution class."
+  },
+  {
+   "ours": "tool_call.cli_agent",
+   "ours_kind": "class",
+   "upstream": "ai_operation.ai_agent",
+   "upstream_file": "profiles/ai_operation.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Requires the ai_operation profile, which the writer does not enable; cli_agent's extra product attribute does not survive as ai_agent, and the value lives once per run in run.json rather than on each event."
+  },
+  {
+   "ours": "tool_call.journal",
+   "ours_kind": "class",
+   "upstream": "base_event.metadata",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Only parts have homes (metadata.sequence, metadata.transformation_info_list); run identity, invocation index and time basis have none."
+  },
+  {
+   "ours": "tool_call.source_ref",
+   "ours_kind": "class",
+   "upstream": "base_event.metadata",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Native id and time land in metadata.original_event_uid and metadata.original_time, but the occurrence identity (artifact plus record index) has no home."
+  },
+  {
+   "ours": "tool_call.session_uid",
+   "ours_kind": "class",
+   "upstream": "ai_agent.instance_uid",
+   "upstream_file": "objects/ai_agent.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Our ACP session id; upstream has two candidate homes (ai_agent.instance_uid via the ai_operation profile, and message_context.uid) and neither carries how the value was obtained."
+  },
+  {
+   "ours": "tool_call.turn_uid",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no prompt-turn concept; message_context.uid is a session or conversation identifier, not a turn."
+  },
+  {
+   "ours": "tool_call.response_uid",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No per-response identifier at 1.9.0: message_context.uid identifies a session or conversation and api.request.uid a request, not the provider's response id."
+  },
+  {
+   "ours": "tool_call.tool_call_uid",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No tool-call identifier at 1.9.0; the development head's ai_capability with transaction_uid (a JSON-RPC request id) is unreleased."
+  },
+  {
+   "ours": "tool_call.tool_name",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No tool identity at 1.9.0; the development head's ai_capability.name is unreleased and generalizes tools with resources and prompt templates."
+  },
+  {
+   "ours": "tool_call.tool_kind_id",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream classification of an agent tool request (ACP tool kind)."
+  },
+  {
+   "ours": "tool_call.tool_kind",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of tool_kind_id, which has no counterpart."
+  },
+  {
+   "ours": "tool_call.tool_kind_basis",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute names the rule that assigned a tool kind."
+  },
+  {
+   "ours": "tool_call.arguments",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No tool-arguments attribute at 1.9.0; api.request.data would require reshaping a tool call as API Activity."
+  },
+  {
+   "ours": "tool_call.tool_result",
+   "ours_kind": "class",
+   "upstream": "message_context.response_text",
+   "upstream_file": "objects/message_context.json",
+   "verdict": "maps_with_loss",
+   "caveat": "response_text covers content returned by a tool, as a string; structured result, error flag and the exact JSON value are lost."
+  },
+  {
+   "ours": "tool_call.tool_operation",
+   "ours_kind": "class",
+   "upstream": "process",
+   "upstream_file": "objects/process.json",
+   "verdict": "maps_with_loss",
+   "caveat": "A reported operation becomes a process object; its native identity, attribution to the wrapping call, captured output and native record are lost, and it is not an observed operating-system process."
+  },
+  {
+   "ours": "tool_call.reported_state",
+   "ours_kind": "class",
+   "upstream": "base_event.status_code",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Verbatim source status fits status_code, but it is the event's single outcome code, not a lifecycle state of the response or request."
+  },
+  {
+   "ours": "tool_call.permission_decision",
+   "ours_kind": "class",
+   "upstream": "security_control.authorizations",
+   "upstream_file": "profiles/security_control.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Requires the security_control profile; one decision becomes an array element carrying a decision string only, without scope, attribution or reported label."
+  },
+  {
+   "ours": "tool_call.status_basis_id",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute records whether status_id was reported or derived."
+  },
+  {
+   "ours": "tool_call.status_basis",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of status_basis_id, which has no counterpart."
+  },
+  {
+   "ours": "tool_call.derivation",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute names the rule and inputs behind a derived value."
+  },
+  {
+   "ours": "tool_call.data",
+   "ours_kind": "class",
+   "upstream": "base_event.unmapped",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps_with_loss",
+   "caveat": "unmapped is a free container for unmapped source fields; ours is the exact native residual with no claim of completeness lost on projection."
+  },
+  {
+   "ours": "source_record.activity_id",
+   "ours_kind": "class",
+   "upstream": "base_event.activity_id",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Same envelope attribute; the activity enum values are extension-defined because 1.9.0 has no agent-execution class."
+  },
+  {
+   "ours": "source_record.cli_agent",
+   "ours_kind": "class",
+   "upstream": "ai_operation.ai_agent",
+   "upstream_file": "profiles/ai_operation.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Requires the ai_operation profile, which the writer does not enable; cli_agent's extra product attribute does not survive as ai_agent, and the value lives once per run in run.json rather than on each event."
+  },
+  {
+   "ours": "source_record.journal",
+   "ours_kind": "class",
+   "upstream": "base_event.metadata",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Only parts have homes (metadata.sequence, metadata.transformation_info_list); run identity, invocation index and time basis have none."
+  },
+  {
+   "ours": "source_record.source_ref",
+   "ours_kind": "class",
+   "upstream": "base_event.metadata",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Native id and time land in metadata.original_event_uid and metadata.original_time, but the occurrence identity (artifact plus record index) has no home."
+  },
+  {
+   "ours": "source_record.session_uid",
+   "ours_kind": "class",
+   "upstream": "ai_agent.instance_uid",
+   "upstream_file": "objects/ai_agent.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Our ACP session id; upstream has two candidate homes (ai_agent.instance_uid via the ai_operation profile, and message_context.uid) and neither carries how the value was obtained."
+  },
+  {
+   "ours": "source_record.record_type",
+   "ours_kind": "class",
+   "upstream": "metadata.event_code",
+   "upstream_file": "objects/metadata.json",
+   "verdict": "maps_with_loss",
+   "caveat": "event_code identifies the original event type; ours is the discriminator the mapping contract defines, possibly composed from several native fields."
+  },
+  {
+   "ours": "source_record.parse_status_id",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute states whether a retained native record parsed; status_id describes the activity's outcome."
+  },
+  {
+   "ours": "source_record.parse_status",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of parse_status_id, which has no counterpart."
+  },
+  {
+   "ours": "source_record.basis",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "transformation_info names a whole mapping, not the per-event rule that classified a record or generated an identifier."
+  },
+  {
+   "ours": "source_record.data",
+   "ours_kind": "class",
+   "upstream": "base_event.raw_data",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps_with_loss",
+   "caveat": "raw_data is a verbatim string; ours is the parsed JSON value, so the representation changes."
+  },
+  {
+   "ours": "source_record.raw_data",
+   "ours_kind": "class",
+   "upstream": "base_event.raw_data",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Same attribute, used here only for a record that decodes as text but is not one JSON object."
+  },
+  {
+   "ours": "source_record.raw_bytes_b64",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "raw_data is a string; no upstream attribute carries bytes that are not valid text."
+  },
+  {
+   "ours": "session_context.activity_id",
+   "ours_kind": "class",
+   "upstream": "base_event.activity_id",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Same envelope attribute; the activity enum values are extension-defined because 1.9.0 has no agent-execution class."
+  },
+  {
+   "ours": "session_context.cli_agent",
+   "ours_kind": "class",
+   "upstream": "ai_operation.ai_agent",
+   "upstream_file": "profiles/ai_operation.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Requires the ai_operation profile, which the writer does not enable; cli_agent's extra product attribute does not survive as ai_agent, and the value lives once per run in run.json rather than on each event."
+  },
+  {
+   "ours": "session_context.journal",
+   "ours_kind": "class",
+   "upstream": "base_event.metadata",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Only parts have homes (metadata.sequence, metadata.transformation_info_list); run identity, invocation index and time basis have none."
+  },
+  {
+   "ours": "session_context.source_ref",
+   "ours_kind": "class",
+   "upstream": "base_event.metadata",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Native id and time land in metadata.original_event_uid and metadata.original_time, but the occurrence identity (artifact plus record index) has no home."
+  },
+  {
+   "ours": "session_context.session_uid",
+   "ours_kind": "class",
+   "upstream": "ai_agent.instance_uid",
+   "upstream_file": "objects/ai_agent.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Our ACP session id; upstream has two candidate homes (ai_agent.instance_uid via the ai_operation profile, and message_context.uid) and neither carries how the value was obtained."
+  },
+  {
+   "ours": "session_context.turn_uid",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no prompt-turn concept; message_context.uid is a session or conversation identifier, not a turn."
+  },
+  {
+   "ours": "session_context.response_uid",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No per-response identifier at 1.9.0: message_context.uid identifies a session or conversation and api.request.uid a request, not the provider's response id."
+  },
+  {
+   "ours": "session_context.context_kind",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute carries the native kind of a settings, injected-context or accounting record."
+  },
+  {
+   "ours": "session_context.rendered_role",
+   "ours_kind": "class",
+   "upstream": "message_context.ai_role_id",
+   "upstream_file": "objects/message_context.json",
+   "verdict": "maps_with_loss",
+   "caveat": "The upstream role enum (User, Assistant, Tool, Agent, Orchestrator, Retriever) has no system or developer value; the reported string is normalized."
+  },
+  {
+   "ours": "session_context.settings",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream object for an agent CLI's reported launch or session settings."
+  },
+  {
+   "ours": "session_context.content_blocks",
+   "ours_kind": "class",
+   "upstream": "message_context.prompt_text",
+   "upstream_file": "objects/message_context.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Injected context would merge with the user's prompt in one string; the distinction between submitted prompt and injected context is lost."
+  },
+  {
+   "ours": "session_context.usage_observations",
+   "ours_kind": "class",
+   "upstream": "message_context",
+   "upstream_file": "objects/message_context.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Upstream holds one set of integer counts per event; several observations, their scope, provisional or final status and source record are lost."
+  },
+  {
+   "ours": "session_context.cost_observation",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no cost, price or currency attribute for AI usage."
+  },
+  {
+   "ours": "session_context.basis",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "transformation_info names a whole mapping, not the per-event rule that classified a record or generated an identifier."
+  },
+  {
+   "ours": "session_context.data",
+   "ours_kind": "class",
+   "upstream": "base_event.raw_data",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps_with_loss",
+   "caveat": "raw_data is a verbatim string; ours is the parsed JSON value, so the representation changes."
+  },
+  {
+   "ours": "attribution.outcome_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute declares whether a fact's owner was established."
+  },
+  {
+   "ours": "attribution.outcome",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of outcome_id, which has no counterpart."
+  },
+  {
+   "ours": "attribution.candidates",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute lists candidate owners of a fact."
+  },
+  {
+   "ours": "attribution.basis",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute records the join keys or rule behind an attribution."
+  },
+  {
+   "ours": "attribution.scope_uid",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute names the scope within which owners were considered."
+  },
+  {
+   "ours": "attribution.method_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute distinguishes a reported identifier from a derived association."
+  },
+  {
+   "ours": "attribution.method",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of method_id, which has no counterpart."
+  },
+  {
+   "ours": "cli_agent.product",
+   "ours_kind": "object",
+   "upstream": "metadata.product",
+   "upstream_file": "objects/metadata.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Added by the extension; ai_agent has no product, and metadata.product holds the same product at event scope, where it cannot distinguish a child agent's product from the reporting CLI.",
+   "inherited_from": null
+  },
+  {
+   "ours": "cli_agent.instance_uid",
+   "ours_kind": "object",
+   "upstream": "ai_agent.instance_uid",
+   "upstream_file": "objects/ai_agent.json",
+   "verdict": "maps",
+   "caveat": "Declared override of the inherited attribute (native session id); how the value was obtained is not carried.",
+   "inherited_from": null
+  },
+  {
+   "ours": "cli_agent.ai_model",
+   "ours_kind": "object",
+   "upstream": "ai_agent.ai_model",
+   "upstream_file": "objects/ai_agent.json",
+   "verdict": "maps",
+   "caveat": "Inherited from ai_agent and unchanged; the writer records the reported model in model_ref instead, because ai_model requires a provider organization.",
+   "inherited_from": "ai_agent"
+  },
+  {
+   "ours": "cli_agent.charter",
+   "ours_kind": "object",
+   "upstream": "ai_agent.charter",
+   "upstream_file": "objects/ai_agent.json",
+   "verdict": "maps",
+   "caveat": "Inherited from ai_agent and unchanged; not populated by the writer.",
+   "inherited_from": "ai_agent"
+  },
+  {
+   "ours": "cli_agent.name",
+   "ours_kind": "object",
+   "upstream": "ai_agent.name",
+   "upstream_file": "objects/ai_agent.json",
+   "verdict": "maps",
+   "caveat": "Inherited from ai_agent and unchanged; holds the CLI product name.",
+   "inherited_from": "ai_agent"
+  },
+  {
+   "ours": "cli_agent.type",
+   "ours_kind": "object",
+   "upstream": "ai_agent.type",
+   "upstream_file": "objects/ai_agent.json",
+   "verdict": "maps",
+   "caveat": "Inherited from ai_agent and unchanged; caption sibling of type_id.",
+   "inherited_from": "ai_agent"
+  },
+  {
+   "ours": "cli_agent.type_id",
+   "ours_kind": "object",
+   "upstream": "ai_agent.type_id",
+   "upstream_file": "objects/ai_agent.json",
+   "verdict": "maps",
+   "caveat": "Inherited from ai_agent and unchanged; the framework enum (Native, LangChain, AutoGen, CrewAI) names no agent CLI, so a CLI is Native or Other.",
+   "inherited_from": "ai_agent"
+  },
+  {
+   "ours": "cli_agent.uid",
+   "ours_kind": "object",
+   "upstream": "ai_agent.uid",
+   "upstream_file": "objects/ai_agent.json",
+   "verdict": "maps",
+   "caveat": "Inherited from ai_agent and unchanged; set only when a source reports a stable logical agent identity.",
+   "inherited_from": "ai_agent"
+  },
+  {
+   "ours": "cli_agent.uid_numeric",
+   "ours_kind": "object",
+   "upstream": "ai_agent.uid_numeric",
+   "upstream_file": "objects/_entity.json",
+   "verdict": "maps",
+   "caveat": "Inherited from the base entity through ai_agent; not populated by the writer.",
+   "inherited_from": "ai_agent"
+  },
+  {
+   "ours": "cli_agent.version",
+   "ours_kind": "object",
+   "upstream": "ai_agent.version",
+   "upstream_file": "objects/ai_agent.json",
+   "verdict": "maps",
+   "caveat": "Inherited from ai_agent and unchanged; holds the CLI version.",
+   "inherited_from": "ai_agent"
+  },
+  {
+   "ours": "content_block.block_index",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Upstream message text is one string with no block order."
+  },
+  {
+   "ours": "content_block.block_type",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute for a native content block type."
+  },
+  {
+   "ours": "content_block.block_kind_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream content-kind classification (text, thought, tool call, tool result, image)."
+  },
+  {
+   "ours": "content_block.block_kind",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of block_kind_id, which has no counterpart."
+  },
+  {
+   "ours": "content_block.basis",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute names the rule that assigned a block kind."
+  },
+  {
+   "ours": "content_block.text",
+   "ours_kind": "object",
+   "upstream": "message_context.prompt_text",
+   "upstream_file": "objects/message_context.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Per-block text concatenates into one prompt_text or response_text string, chosen by the event's direction."
+  },
+  {
+   "ours": "content_block.tool_call_uid",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream link from message content to a tool call at 1.9.0."
+  },
+  {
+   "ours": "content_block.data",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute retains a native content block exactly."
+  },
+  {
+   "ours": "cost_observation.total_cost",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no AI cost attribute."
+  },
+  {
+   "ours": "cost_observation.currency",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no currency attribute for AI usage cost."
+  },
+  {
+   "ours": "cost_observation.scope_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream cost, so no cost scope."
+  },
+  {
+   "ours": "cost_observation.scope",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of scope_id, which has no counterpart."
+  },
+  {
+   "ours": "cost_observation.cost_basis",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream pricing basis for AI usage."
+  },
+  {
+   "ours": "cost_observation.source_ref",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Upstream source attribution is per event (metadata), not per observation."
+  },
+  {
+   "ours": "cost_observation.data",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute retains the native cost value exactly."
+  },
+  {
+   "ours": "journal_provenance.run_uid",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream run identity; metadata.correlation_uid is a generic correlation key without ownership meaning."
+  },
+  {
+   "ours": "journal_provenance.invocation_index",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute for the CLI invocation's position within a run."
+  },
+  {
+   "ours": "journal_provenance.sequence",
+   "ours_kind": "object",
+   "upstream": "metadata.sequence",
+   "upstream_file": "objects/metadata.json",
+   "verdict": "maps",
+   "caveat": "Same ordering meaning; that the order is run-scoped occurrence order, never clock order, is our declaration."
+  },
+  {
+   "ours": "journal_provenance.producer",
+   "ours_kind": "object",
+   "upstream": "transformation_info.product",
+   "upstream_file": "objects/transformation_info.json",
+   "verdict": "maps",
+   "caveat": "Reached through metadata.transformation_info_list as one list element."
+  },
+  {
+   "ours": "journal_provenance.contract_uid",
+   "ours_kind": "object",
+   "upstream": "transformation_info.uid",
+   "upstream_file": "objects/transformation_info.json",
+   "verdict": "maps",
+   "caveat": "Reached through metadata.transformation_info_list as one list element."
+  },
+  {
+   "ours": "journal_provenance.contract_sha256",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "transformation_info has no hash of the mapping document."
+  },
+  {
+   "ours": "journal_provenance.capture_time",
+   "ours_kind": "object",
+   "upstream": "transformation_info.time",
+   "upstream_file": "objects/transformation_info.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Upstream is the transformation time; ours is when Journal observed or transformed the record, without distinguishing the two."
+  },
+  {
+   "ours": "journal_provenance.capture_time_text",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute carries a separately reported full-precision transformation time; the datetime profile only renders timestamp_t values."
+  },
+  {
+   "ours": "journal_provenance.time_basis_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute states how the event time was established (source record, fallback, capture)."
+  },
+  {
+   "ours": "journal_provenance.time_basis",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of time_basis_id, which has no counterpart."
+  },
+  {
+   "ours": "journal_provenance.basis",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute records which record supplied a fallback time."
+  },
+  {
+   "ours": "model_ref.name",
+   "ours_kind": "object",
+   "upstream": "ai_model.name",
+   "upstream_file": "objects/ai_model.json",
+   "verdict": "maps",
+   "caveat": "Same meaning: the model identifier as reported."
+  },
+  {
+   "ours": "model_ref.version",
+   "ours_kind": "object",
+   "upstream": "ai_model.version",
+   "upstream_file": "objects/ai_model.json",
+   "verdict": "maps",
+   "caveat": "Same meaning when the source reports a version separately from the name."
+  },
+  {
+   "ours": "model_ref.provider_kind",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "ai_model.ai_provider is an organization name; ours is a reported provider classification (for example firstParty), not an organization."
+  },
+  {
+   "ours": "model_ref.provider_basis_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute states whether provider information was reported, derived or unavailable."
+  },
+  {
+   "ours": "model_ref.provider_basis",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of provider_basis_id, which has no counterpart."
+  },
+  {
+   "ours": "operation.uid",
+   "ours_kind": "object",
+   "upstream": "process_entity.uid",
+   "upstream_file": "objects/process_entity.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Upstream uid is assigned by the producer for a process; ours is the CLI's native identifier for a reported operation."
+  },
+  {
+   "ours": "operation.argv",
+   "ours_kind": "object",
+   "upstream": "process_entity.cmd_line",
+   "upstream_file": "objects/process_entity.json",
+   "verdict": "maps_with_loss",
+   "caveat": "An argument vector flattens into one command-line string; argument boundaries are lost."
+  },
+  {
+   "ours": "operation.exit_code",
+   "ours_kind": "object",
+   "upstream": "process_activity.exit_code",
+   "upstream_file": "events/system/process_activity.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Upstream exit_code is a Process Activity class attribute, not a process object attribute; an operation nested in a tool call loses its owner."
+  },
+  {
+   "ours": "operation.reported_state",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "The process object has no state; base_event.status_code is event-scope and taken by the tool call's own state."
+  },
+  {
+   "ours": "operation.stdout",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute for captured standard output."
+  },
+  {
+   "ours": "operation.stderr",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute for captured standard error."
+  },
+  {
+   "ours": "operation.attribution",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribution of an operation to a wrapping call."
+  },
+  {
+   "ours": "operation.data",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute retains the native operation record exactly."
+  },
+  {
+   "ours": "permission_decision.decision_id",
+   "ours_kind": "object",
+   "upstream": "authorization.decision",
+   "upstream_file": "objects/authorization.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Upstream decision is a free string with no normalized id enum."
+  },
+  {
+   "ours": "permission_decision.decision",
+   "ours_kind": "object",
+   "upstream": "authorization.decision",
+   "upstream_file": "objects/authorization.json",
+   "verdict": "maps",
+   "caveat": "Same meaning: the normalized decision caption (Allowed, Denied)."
+  },
+  {
+   "ours": "permission_decision.reported_decision",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "authorization.decision holds one label; the source's own label beside the normalized one has no home."
+  },
+  {
+   "ours": "permission_decision.decision_source",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute names who or what made an authorization decision."
+  },
+  {
+   "ours": "permission_decision.reason_type",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute for the reported reason category of a decision."
+  },
+  {
+   "ours": "permission_decision.scope_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream scope for an authorization decision."
+  },
+  {
+   "ours": "permission_decision.scope",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of scope_id, which has no counterpart."
+  },
+  {
+   "ours": "permission_decision.attribution",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribution of a decision to a tool call."
+  },
+  {
+   "ours": "permission_decision.source_ref",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Upstream source attribution is per event (metadata), not per decision."
+  },
+  {
+   "ours": "permission_decision.data",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute retains the native decision record exactly."
+  },
+  {
+   "ours": "session_settings.working_directory",
+   "ours_kind": "object",
+   "upstream": "process.working_directory",
+   "upstream_file": "objects/process.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Upstream is an attribute of an observed process; ours is a setting the CLI reported in a record."
+  },
+  {
+   "ours": "session_settings.model",
+   "ours_kind": "object",
+   "upstream": "ai_model.name",
+   "upstream_file": "objects/ai_model.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Ours is the configured model the CLI reported, not the model a response used."
+  },
+  {
+   "ours": "session_settings.provider",
+   "ours_kind": "object",
+   "upstream": "ai_model.ai_provider",
+   "upstream_file": "objects/ai_model.json",
+   "verdict": "maps_with_loss",
+   "caveat": "ai_provider is an organization name; ours is the reported string, which is not guaranteed to be one."
+  },
+  {
+   "ours": "session_settings.version",
+   "ours_kind": "object",
+   "upstream": "ai_agent.version",
+   "upstream_file": "objects/ai_agent.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Ours is the CLI version as one record reports it, which may differ from the run-level CLI version."
+  },
+  {
+   "ours": "session_settings.permission_mode",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute for an agent CLI's permission mode; policy describes security policies."
+  },
+  {
+   "ours": "session_settings.approval_policy",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute for an agent CLI's approval policy."
+  },
+  {
+   "ours": "session_settings.sandbox_policy",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "process.sandbox names a containment jail; ours is the CLI's reported sandbox policy value."
+  },
+  {
+   "ours": "session_settings.tool_names",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream list of tools available to an agent at 1.9.0."
+  },
+  {
+   "ours": "session_settings.git_branch",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream version-control branch attribute."
+  },
+  {
+   "ours": "source_ref.source_kind_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream distinction between live output and a saved session file."
+  },
+  {
+   "ours": "source_ref.source_kind",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of source_kind_id, which has no counterpart."
+  },
+  {
+   "ours": "source_ref.artifact",
+   "ours_kind": "object",
+   "upstream": "metadata.log_source",
+   "upstream_file": "objects/metadata.json",
+   "verdict": "maps_with_loss",
+   "caveat": "log_source is free text such as a file path; ours is a name in the run's source inventory."
+  },
+  {
+   "ours": "source_ref.artifact_sha256",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "raw_data_hash fingerprints raw_data, not the whole source artifact; events carry no file object for it."
+  },
+  {
+   "ours": "source_ref.record_index",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream occurrence index of a record within its source artifact."
+  },
+  {
+   "ours": "source_ref.native_uid",
+   "ours_kind": "object",
+   "upstream": "metadata.original_event_uid",
+   "upstream_file": "objects/metadata.json",
+   "verdict": "maps",
+   "caveat": "Same meaning at event level; when source_ref is nested in an observation, upstream has no per-observation home."
+  },
+  {
+   "ours": "source_ref.native_time",
+   "ours_kind": "object",
+   "upstream": "metadata.original_time",
+   "upstream_file": "objects/metadata.json",
+   "verdict": "maps",
+   "caveat": "Same meaning at event level; when source_ref is nested in an observation, upstream has no per-observation home."
+  },
+  {
+   "ours": "source_ref.record_bytes",
+   "ours_kind": "object",
+   "upstream": "base_event.raw_data_size",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps_with_loss",
+   "caveat": "raw_data_size is the size of raw_data; ours is the record line's byte length without terminator, present even when no raw text is retained."
+  },
+  {
+   "ours": "source_ref.line_ending",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute for the observed line terminator."
+  },
+  {
+   "ours": "source_ref.is_whole_record",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "metadata.is_truncated describes OCSF event truncation, not whether retained data is a whole native record or a fragment."
+  },
+  {
+   "ours": "tool_result.data",
+   "ours_kind": "object",
+   "upstream": "message_context.response_text",
+   "upstream_file": "objects/message_context.json",
+   "verdict": "maps_with_loss",
+   "caveat": "response_text is a string; a result reported as an array or object changes representation."
+  },
+  {
+   "ours": "tool_result.error_reported",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream flag for a source-reported tool error; status_id is a normalized event outcome."
+  },
+  {
+   "ours": "tool_result.structured_result",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute for structured result detail beside model-visible content."
+  },
+  {
+   "ours": "tool_result.reported_state",
+   "ours_kind": "object",
+   "upstream": "base_event.status_code",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Only by lifting to event scope, where tool_call.reported_state competes for the same slot."
+  },
+  {
+   "ours": "usage_observation.scope_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Upstream counts are per message context with no declared scope."
+  },
+  {
+   "ours": "usage_observation.scope",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of scope_id, which has no counterpart."
+  },
+  {
+   "ours": "usage_observation.usage_status_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Upstream counts carry no provisional or final status."
+  },
+  {
+   "ours": "usage_observation.usage_status",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of usage_status_id, which has no counterpart."
+  },
+  {
+   "ours": "usage_observation.basis",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute records the rule that established usage status."
+  },
+  {
+   "ours": "usage_observation.source_ref",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Upstream source attribution is per event (metadata), not per observation."
+  },
+  {
+   "ours": "usage_observation.model_ref",
+   "ours_kind": "object",
+   "upstream": "ai_operation.ai_model",
+   "upstream_file": "profiles/ai_operation.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Upstream model is per event; a per-observation model reference is lost, and ai_model requires a provider organization."
+  },
+  {
+   "ours": "usage_observation.input_tokens",
+   "ours_kind": "object",
+   "upstream": "message_context.prompt_tokens",
+   "upstream_file": "objects/message_context.json",
+   "verdict": "maps_with_loss",
+   "caveat": "integer_t versus our long_t; scope and provisional or final status are lost, and whether cached input is included is unspecified upstream."
+  },
+  {
+   "ours": "usage_observation.output_tokens",
+   "ours_kind": "object",
+   "upstream": "message_context.completion_tokens",
+   "upstream_file": "objects/message_context.json",
+   "verdict": "maps_with_loss",
+   "caveat": "integer_t versus our long_t; scope and provisional or final status are lost."
+  },
+  {
+   "ours": "usage_observation.cache_read_tokens",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream cache-read token count at 1.9.0."
+  },
+  {
+   "ours": "usage_observation.cache_write_tokens",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream cache-write token count at 1.9.0."
+  },
+  {
+   "ours": "usage_observation.reasoning_tokens",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream reasoning token count at 1.9.0."
+  },
+  {
+   "ours": "usage_observation.reported_total_tokens",
+   "ours_kind": "object",
+   "upstream": "message_context.total_tokens",
+   "upstream_file": "objects/message_context.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Upstream defines total as prompt plus completion; ours is present only when the source reports a total and is never computed."
+  },
+  {
+   "ours": "usage_observation.data",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute retains the native usage object exactly."
+  },
+  {
+   "ours": "base_event.activity_name",
+   "ours_kind": "class",
+   "upstream": "base_event.activity_name",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Shared OCSF envelope, set on every event.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.category_name",
+   "ours_kind": "class",
+   "upstream": "base_event.category_name",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Shared OCSF envelope, set on every event.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.category_uid",
+   "ours_kind": "class",
+   "upstream": "base_event.category_uid",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Shared OCSF envelope, set on every event.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.class_name",
+   "ours_kind": "class",
+   "upstream": "base_event.class_name",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Shared OCSF envelope, set on every event.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.class_uid",
+   "ours_kind": "class",
+   "upstream": "base_event.class_uid",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Shared OCSF envelope, set on every event.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.count",
+   "ours_kind": "class",
+   "upstream": "base_event.count",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Shared OCSF envelope, inherited by all five classes; not populated by the writer.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.duration",
+   "ours_kind": "class",
+   "upstream": "base_event.duration",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Shared OCSF envelope, inherited by all five classes; not populated by the writer.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.end_time",
+   "ours_kind": "class",
+   "upstream": "base_event.end_time",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Shared OCSF envelope, inherited by all five classes; not populated by the writer.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.enrichments",
+   "ours_kind": "class",
+   "upstream": "base_event.enrichments",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Shared OCSF envelope, inherited by all five classes; not populated by the writer.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.message",
+   "ours_kind": "class",
+   "upstream": "base_event.message",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Shared OCSF envelope, inherited by all five classes; not populated by the writer.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.metadata",
+   "ours_kind": "class",
+   "upstream": "base_event.metadata",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "The writer sets version, product (the CLI), extensions, profiles, original_time and original_event_uid.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.observables",
+   "ours_kind": "class",
+   "upstream": "base_event.observables",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Shared OCSF envelope, inherited by all five classes; not populated by the writer.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.raw_data",
+   "ours_kind": "class",
+   "upstream": "base_event.raw_data",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Inherited unchanged by four classes; source_record overrides its description (separate row).",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.raw_data_hash",
+   "ours_kind": "class",
+   "upstream": "base_event.raw_data_hash",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Shared OCSF envelope, inherited by all five classes; not populated by the writer.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.raw_data_size",
+   "ours_kind": "class",
+   "upstream": "base_event.raw_data_size",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Shared OCSF envelope, inherited by all five classes; not populated by the writer.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.severity",
+   "ours_kind": "class",
+   "upstream": "base_event.severity",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Always Unknown, the caption of severity_id 0.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.severity_id",
+   "ours_kind": "class",
+   "upstream": "base_event.severity_id",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Always 0 Unknown by Journal convention, not a vendor assertion.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.start_time",
+   "ours_kind": "class",
+   "upstream": "base_event.start_time",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Shared OCSF envelope, inherited by all five classes; not populated by the writer.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.status",
+   "ours_kind": "class",
+   "upstream": "base_event.status",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Caption sibling of status_id.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.status_code",
+   "ours_kind": "class",
+   "upstream": "base_event.status_code",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Shared OCSF envelope, inherited by all five classes; not populated by the writer.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.status_detail",
+   "ours_kind": "class",
+   "upstream": "base_event.status_detail",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Shared OCSF envelope, inherited by all five classes; not populated by the writer.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.status_id",
+   "ours_kind": "class",
+   "upstream": "base_event.status_id",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Set on prompt_turn and tool_call with status_basis_id stating whether it was reported or derived.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.time",
+   "ours_kind": "class",
+   "upstream": "base_event.time",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Source-reported time when the record has one, else a declared fallback stated in journal.time_basis_id.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.timezone_offset",
+   "ours_kind": "class",
+   "upstream": "base_event.timezone_offset",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Shared OCSF envelope, inherited by all five classes; not populated by the writer.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.type_name",
+   "ours_kind": "class",
+   "upstream": "base_event.type_name",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Shared OCSF envelope, set on every event.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.type_uid",
+   "ours_kind": "class",
+   "upstream": "base_event.type_uid",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "Shared OCSF envelope, set on every event.",
+   "envelope": true
+  },
+  {
+   "ours": "base_event.unmapped",
+   "ours_kind": "class",
+   "upstream": "base_event.unmapped",
+   "upstream_file": "events/base_event.json",
+   "verdict": "maps",
+   "caveat": "The writer uses it for the mapping rule id, which is Journal provenance rather than unmapped source data.",
+   "envelope": true
+  }
+ ]
+}

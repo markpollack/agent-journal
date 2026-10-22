@@ -1,0 +1,1662 @@
+{
+ "kind": "agent-journal/foundation-inventory",
+ "version": "0.1",
+ "reviewed": "2026-10-22",
+ "meaning": "Every row of the October teardown ledgers and comparison matrices, each accounted for as an existing concept, a proposed (pending) concept or an explicit exclusion with its kind and reason. The denominator for the union of execution concepts.",
+ "sources": [
+  "weave-refresh-2026-10-19",
+  "arize-refresh-2026-10-19",
+  "journal-refresh-2026-10-19",
+  "competitor-refresh-2026-10-19",
+  "weave-matrix-2026-10-19",
+  "arize-matrix-2026-10-19"
+ ],
+ "rows": [
+  {
+   "evidence": "weave-refresh-2026-10-19:W01",
+   "summary": "Pinned releases of the plugin, weave library, span SDK and Claude Code; plugin renamed and relicensed.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "version-pin-only",
+    "reason": "Release identity and licence only; carried into the integration record, not an information item."
+   }
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W02",
+   "summary": "Capture mechanism: hooks to a RAM-only daemon to OTLP export; tool data from hook payloads, assistant content from transcript reverse-read.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "integration-mechanics",
+    "reason": "Describes how the integration acquires data; its per-item consequences are recorded as observations."
+   }
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W03",
+   "summary": "June span-name claim refuted: rows are invoke_agent/chat/execute_tool; session is an attribute; permission is a span event.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "integration-mechanics",
+    "reason": "Span naming and tree shape of one integration; identity items are mapped through the matrix rows."
+   }
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W04",
+   "summary": "Reported cost omitted by the plugin; Claude Code reports cost only at session/model scope (cost-state, stream result).",
+   "in_scope": true,
+   "concept": "reported-cost",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W05",
+   "summary": "Backend computes cost at query time from tokens times a price table; never stored.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "pricing-calculation",
+    "reason": "Calculated cost is a backend price-table derivation, not a reported execution fact."
+   }
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W06",
+   "summary": "Sub-agent interiors are fully captured (whole sidechain parsed); June first-line claim refuted.",
+   "in_scope": true,
+   "concept": "child-runs",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W07",
+   "summary": "Sub-agent link: parent span, agent id equal to sidechain agentId, spawning tool call id as a custom attribute.",
+   "in_scope": true,
+   "concept": "child-runs",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W08",
+   "summary": "Async sub-agent: parent output is a launch stub; the background notification opens a second root trace with no typed prompt.",
+   "in_scope": true,
+   "concept": "prompt-turn-identity",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W09",
+   "summary": "Thinking blocks with empty text and a signature are dropped entirely (no part, signature or placeholder).",
+   "in_scope": true,
+   "concept": "reasoning-blocks-and-signature",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W10",
+   "summary": "redacted_thinking becomes a \"[redacted]\" placeholder part without its opaque data.",
+   "in_scope": true,
+   "concept": "redacted-or-encrypted-reasoning",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W11",
+   "summary": "Reasoning tokens exported as 0: plugin reads a field Claude Code does not write (output_tokens_details.thinking_tokens).",
+   "in_scope": true,
+   "concept": "reasoning-token-counts",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W12",
+   "summary": "Per-response usage exact; input is the sum of uncached and cache counters; no usage on turn/session rows.",
+   "in_scope": true,
+   "concept": "usage-components-and-cache",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W13",
+   "summary": "Stream-json assistant events carry provisional output_tokens; final values are in the transcript, message_delta and result.",
+   "in_scope": true,
+   "concept": "usage-scope-finality-and-repeats",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W14",
+   "summary": "Cache TTL split, service_tier, speed, inference_geo, iterations and server_tool_use counters not exported.",
+   "in_scope": true,
+   "concept": "usage-components-and-cache",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W15",
+   "summary": "Every transcript tool_use has exactly one tool row with deep-equal arguments and a result; repeated names stay distinct by id.",
+   "in_scope": true,
+   "concept": "tool-result-ownership-and-content",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W16",
+   "summary": "Stored tool result is the hook tool_response JSON, not the model-visible tool_result text (equal in 1 of 6).",
+   "in_scope": true,
+   "concept": "tool-result-ownership-and-content",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W17",
+   "summary": "Tool arguments/results are re-serialized server-side (2.50 becomes 2.5); credential-named keys redacted; large result kept.",
+   "in_scope": true,
+   "concept": "tool-request-identity-and-arguments",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W18",
+   "summary": "Text/tool_call order within a response preserved; tool rows are siblings of chat rows; turn output is joined text.",
+   "in_scope": true,
+   "concept": "ordered-content-blocks",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W19",
+   "summary": "Typed prompt text captured; attachments/images/files not; system instructions only via InstructionsLoaded.",
+   "in_scope": true,
+   "concept": "user-submission",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W20",
+   "summary": "Schema supports blob/uri/file parts and content refs; plugin emits only text/thinking/tool_use.",
+   "in_scope": true,
+   "concept": "media-and-multimodal-blocks",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W21",
+   "summary": "One response split across transcript records is folded by message.id into one final row; sent spans are immutable.",
+   "in_scope": true,
+   "concept": "response-update-assembly",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W22",
+   "summary": "Failed tool becomes status ERROR with a coarse error type and the error text as result.",
+   "in_scope": true,
+   "concept": "tool-result-error-and-status",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W23",
+   "summary": "SIGTERM interrupt: open call closed as session_ended with no result; partial output exists only in the transcript; root UNSET.",
+   "in_scope": true,
+   "concept": "interrupted-run-and-never-observed-result",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W24",
+   "summary": "Manual permission denial: request recorded as a span event, decision and denial text absent, call mislabelled incomplete with a wrong duration.",
+   "in_scope": true,
+   "concept": "permission-decisions",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W25",
+   "summary": "Auto-mode PermissionDenied hook yields request and resolved(approved=false) events and error type permission_denied.",
+   "in_scope": true,
+   "concept": "permission-decisions",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W26",
+   "summary": "Permission events live only in the events dump (no column).",
+   "in_scope": true,
+   "concept": "permission-decisions",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W27",
+   "summary": "Daemon SIGKILL loses open spans and the root; completed children exported with an absent parent.",
+   "in_scope": true,
+   "concept": "interrupted-run-and-never-observed-result",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W28",
+   "summary": "Daemon SIGTERM closes open work as daemon_shutdown and flushes.",
+   "in_scope": true,
+   "concept": "interrupted-run-and-never-observed-result",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W29",
+   "summary": "Hook payloads over 4 MiB are dropped silently; the completed tool is recorded as incomplete with no result.",
+   "in_scope": true,
+   "concept": null,
+   "new_concept": "payload-size-and-truncation",
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W30",
+   "summary": "Turn root span stays open until the next prompt or SessionEnd, so its duration is not the run duration; native durations not exported.",
+   "in_scope": true,
+   "concept": "reported-durations",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W31",
+   "summary": "Child spans are exported before the root; readers must tolerate dangling parents.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "integration-mechanics",
+    "reason": "Export ordering of one integration; not an information item of the execution."
+   }
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W32",
+   "summary": "Request model is set from the response model value; requestedModel dropped; provider guessed from the id prefix.",
+   "in_scope": true,
+   "concept": "model-identity-and-provider",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W33",
+   "summary": "Native transcript fields never exported (uuid chain, requestId, promptId, isSidechain, permissionMode, effort, cost-state, api-request records, attachments).",
+   "in_scope": true,
+   "concept": "whole-record-residual-and-reconstruction",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W34",
+   "summary": "Agents-store row layout: dedicated columns for ids/tokens/tool fields, messages as JSON-parts strings, custom attrs maps, events and raw span dumps.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "integration-mechanics",
+    "reason": "Backend storage layout; per-item queryability is recorded in observations."
+   }
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W35",
+   "summary": "Classic Calls OTLP mapping would keep tool args/results only in the raw dump; not the plugin path.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "integration-mechanics",
+    "reason": "An alternative backend path not used by the tested integration."
+   }
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W36",
+   "summary": "Agents spans expire by TTL (default far-future sentinel, per-project days); eval columns expire with the span.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "backend-retention",
+    "reason": "Backend retention policy, not an execution fact."
+   }
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W37",
+   "summary": "Plugin has no redaction; logs written with restrictive permissions.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "privacy-policy",
+    "reason": "Privacy posture of the integration, not an execution fact."
+   }
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W38",
+   "summary": "Weave native Call and Feedback model field inventory.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "other",
+    "reason": "Backend data-model inventory; execution items are covered by the matrix rows."
+   }
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W39",
+   "summary": "Readback APIs (calls query, agents spans query/stats/custom attrs, conversations, traces); hosted use blocked.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "integration-mechanics",
+    "reason": "Backend query API surface; readback status is recorded on the hosted integration."
+   }
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W40",
+   "summary": "apply_scorer writes a Feedback row referencing the call; verdict separate from the judged call tree.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "evaluation-linkage",
+    "reason": "Verdict storage belongs to evaluation, not to the execution record."
+   }
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W41",
+   "summary": "Eval linkage columns on Agents spans; only the imperative logger supplies row/trial/example.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "evaluation-linkage",
+    "reason": "Dataset/trial coordinates belong to Agent Eval; Journal supplies stable ids."
+   }
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W42",
+   "summary": "Feedback on agent spans denormalizes span trace/conversation/agent name.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "evaluation-linkage",
+    "reason": "Verdict-to-span linkage is evaluation storage."
+   }
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W43",
+   "summary": "Claude Code plugin rows carry no eval linkage.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "evaluation-linkage",
+    "reason": "Evaluation linkage, not applicable to this capture."
+   }
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W44",
+   "summary": "Claude Code app version missing in live exports (read from a first transcript line that lacks it).",
+   "in_scope": true,
+   "concept": "launch-and-session-settings",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W45",
+   "summary": "Hosted Agents-store readback blocked: no authorized credential.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "other",
+    "reason": "Blocked-evidence status; recorded as the hosted integration readback status, never as absence."
+   }
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W46",
+   "summary": "Re-run of the historical evaluation capture scripts blocked (credentials).",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "other",
+    "reason": "Blocked evaluation re-run; outside the execution domain."
+   }
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W47",
+   "summary": "Plugin documentation page is stale; retention and readback API undocumented.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "other",
+    "reason": "Documentation hygiene, not an information item."
+   }
+  },
+  {
+   "evidence": "weave-refresh-2026-10-19:W48",
+   "summary": "Server ingest always redacts credential-named keys; pii-v1 is a closed deployment policy.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "privacy-policy",
+    "reason": "Server-side redaction policy."
+   }
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:H1",
+   "summary": "OpenInference already defined reasoning content parts (text, signature, redacted data) and reasoning token counts; June standards-gap claim refuted.",
+   "in_scope": true,
+   "concept": "reasoning-blocks-and-signature",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:H2",
+   "summary": "Anthropic instrumentor 1.0.6 dropped thinking; fixed in 1.1.0; server-tool blocks still dropped in released 3.0.3.",
+   "in_scope": true,
+   "concept": "reasoning-blocks-and-signature",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:H3",
+   "summary": "Phoenix persisted reasoning parts with text and verbatim signature (sha256 match) and redacted data, streamed and non-streamed, via instrumentor 3.0.3.",
+   "in_scope": true,
+   "concept": "reasoning-blocks-and-signature",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:H4",
+   "summary": "OPENINFERENCE_HIDE_* knobs differ: HIDE_OUTPUTS loses reasoning, HIDE_OUTPUT_MESSAGES keeps the raw blob, HIDE_OUTPUT_TEXT keeps the signature.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "privacy-policy",
+    "reason": "Per-field redaction configuration, not an execution fact."
+   }
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:H5",
+   "summary": "Phoenix store keeps 1 KB to 8 MB attribute and event strings byte-for-byte; content present only if the emitter sends it.",
+   "in_scope": true,
+   "concept": null,
+   "new_concept": "payload-size-and-truncation",
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:H6",
+   "summary": "Arize ships first-party coding-harness tracing for many CLIs; harness-invisibility claim refuted.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "integration-mechanics",
+    "reason": "Existence of an integration; capability is compared per item."
+   }
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:H7",
+   "summary": "Claude Code OTel now also emits gen_ai.* and Phoenix synthesizes agent/LLM/tool spans; tokens, cost, content and thinking not mapped.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "integration-mechanics",
+    "reason": "Conformance/translation summary of one route; its per-item results are recorded as observations."
+   }
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:H8",
+   "summary": "Claude Code OTel vocabulary: traces beta; events include api_request, api_error, retries_exhausted, raw bodies, subagent_completed, compaction, hook_*, skill_activated.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "integration-mechanics",
+    "reason": "Event vocabulary of a native emitter; the items it names are mapped or proposed as concepts."
+   }
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:H9",
+   "summary": "Thinking text is never exported via Claude Code OTel; native blocks are empty text plus signature.",
+   "in_scope": true,
+   "concept": "reasoning-blocks-and-signature",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:H10",
+   "summary": "Thinking tokens exist on 2.1.303 (modelUsage.thinkingTokens, output_tokens_details.thinking_tokens); main-agent blocks identical on wire and transcript.",
+   "in_scope": true,
+   "concept": "reasoning-token-counts",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:H11",
+   "summary": "Experiment, example, repetition, run, step verdict reachable by one soft trace_id join; step verdicts lost when the trace project is deleted.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "evaluation-linkage",
+    "reason": "Dataset/experiment/verdict linkage belongs to Agent Eval."
+   }
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:H12",
+   "summary": "Trace retention cascade confirmed; OSS default retention disabled.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "backend-retention",
+    "reason": "Backend retention policy."
+   }
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:H13",
+   "summary": "Phoenix schema now 66 tables; linkage conclusions unchanged.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "other",
+    "reason": "Backend schema inventory."
+   }
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:N1",
+   "summary": "Claude Code OTel tool exchange in Phoenix: one tool span per tool_use_id; Bash command/output recovered; Read/Write/Edit arguments only as file_path; failed calls no output.",
+   "in_scope": true,
+   "concept": "tool-request-identity-and-arguments",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:N2",
+   "summary": "Assistant answer text and ordered content absent from persisted Claude Code OTel spans; only in OTLP logs that Phoenix OSS rejects.",
+   "in_scope": true,
+   "concept": "ordered-content-blocks",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:N3",
+   "summary": "Failure as ERROR status; denial as blocked_on_user(decision, source) with no execution child; interruption leaves no tool span, an orphan span, and no partial output anywhere.",
+   "in_scope": true,
+   "concept": "interrupted-run-and-never-observed-result",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:N4",
+   "summary": "Sub-agent spans carry agent_id/parent_agent_id and nest under the Agent tool span; transcript meta.json and wire task events also link the child.",
+   "in_scope": true,
+   "concept": "child-runs",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:N5",
+   "summary": "Step usage authoritative from api_request/llm_request and transcript; wire placeholders; Phoenix cost columns empty for Claude Code OTel; calculated vs reported cost differ.",
+   "in_scope": true,
+   "concept": "usage-scope-finality-and-repeats",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:N6",
+   "summary": "Default Claude Code OTel privacy: prompts/responses redacted, but account identifiers stamped on every span.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "privacy-policy",
+    "reason": "Default redaction posture and identity stamping."
+   }
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:N7",
+   "summary": "Arize harness plugin replay: turn chain, per-response LLM spans with tokens incl. cache, tool spans with input and raw result JSON; no thinking; no subagent subtree in replay.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "integration-mechanics",
+    "reason": "Integration-level summary; its per-item results are recorded as observations."
+   }
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:N8",
+   "summary": "Arize AX blocked: no credentials.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "other",
+    "reason": "Blocked-evidence status; recorded as the hosted integration readback status."
+   }
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:N9",
+   "summary": "Other CLIs and the OpenInference codex package not executed (blocked).",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "other",
+    "reason": "Blocked coverage of other harnesses; no information item."
+   }
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:N10",
+   "summary": "claude-agent-sdk instrumentor covers the Python SDK, not a bare CLI run; not exercised.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "integration-mechanics",
+    "reason": "Scope of a different integration."
+   }
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:N11",
+   "summary": "API-level retries explicit (attempt, client_request_id, api_error/retries_exhausted); model-driven retries have no link anywhere.",
+   "in_scope": true,
+   "concept": null,
+   "new_concept": "api-request-attempts",
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:N12",
+   "summary": "Native wire/transcript changes since June: new system subtypes, result fields, transcript record types, permissionDecision, subagent meta files.",
+   "in_scope": true,
+   "concept": "retained-only-known-meaning-families",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:N13",
+   "summary": "Scope of the June tee experiment and loader sweep; what still needs fresh capture.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "other",
+    "reason": "Evidence-inventory history, not an information item."
+   }
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:N14",
+   "summary": "Claude Code OTel truncates content at 60 KB with _truncated and _original_length (documented, not exercised).",
+   "in_scope": true,
+   "concept": null,
+   "new_concept": "payload-size-and-truncation",
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-refresh-2026-10-19:N15",
+   "summary": "OpenInference image parts (base64 truncated at 32,000), generic typed parts for unknown blocks, streaming accumulated to final blocks; not exercised.",
+   "in_scope": true,
+   "concept": "media-and-multimodal-blocks",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:J-01",
+   "summary": "The Claude parser builds events from the live stream; the session transcript is never read.",
+   "in_scope": true,
+   "concept": "source-occurrence-provenance",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:J-02",
+   "summary": "Successful tool output is in the normalized record (all tool calls on pairs A-D).",
+   "in_scope": true,
+   "concept": "tool-result-ownership-and-content",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:J-03",
+   "summary": "Assistant text absent from the normalized record at the refresh (later closed).",
+   "in_scope": true,
+   "concept": "ordered-content-blocks",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:J-04",
+   "summary": "Block order not recoverable at the refresh (later closed).",
+   "in_scope": true,
+   "concept": "ordered-content-blocks",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:J-05",
+   "summary": "Thinking text kept; signature, display mode and duration dropped at the refresh (signature later closed).",
+   "in_scope": true,
+   "concept": "reasoning-blocks-and-signature",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:J-06",
+   "summary": "Sub-agents recorded as linked child runs; sidechain meta (agentType, description, spawnDepth, finished) not captured.",
+   "in_scope": true,
+   "concept": "child-runs",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:J-07",
+   "summary": "Permission decisions present on stream and transcript, absent from Level 1 at the refresh (later closed).",
+   "in_scope": true,
+   "concept": "permission-decisions",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:J-08",
+   "summary": "Reported cost total written into inputCostUsd with other components 0; validity flags missing on the main call.",
+   "in_scope": true,
+   "concept": "reported-cost",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:J-09",
+   "summary": "Usage recorded at run scope with per-turn and per-model detail; transcript per-iteration usage not read.",
+   "in_scope": true,
+   "concept": "usage-scope-finality-and-repeats",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:J-10",
+   "summary": "Stream system init inventory and result details retained whole as vendor events, not typed.",
+   "in_scope": true,
+   "concept": "retained-only-known-meaning-families",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:J-11",
+   "summary": "rate_limit_event lines not preserved until an SDK release.",
+   "in_scope": true,
+   "concept": "retained-only-known-meaning-families",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:J-12",
+   "summary": "Evaluation verdicts can address run, item or step through FeedbackTarget; not exercised.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "evaluation-linkage",
+    "reason": "Verdict storage and linkage belong to evaluation."
+   }
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:J-13",
+   "summary": "Transcript API-request bookkeeping records (api-request*, attachment, cost-state, queue-operation, ...) outside Level 1.",
+   "in_scope": true,
+   "concept": "retained-only-known-meaning-families",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:J-14",
+   "summary": "Level 0 archiving was caller-invoked, not default (later default-on for Claude).",
+   "in_scope": true,
+   "concept": "whole-record-residual-and-reconstruction",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:J-15",
+   "summary": "A matching-based coverage figure cannot be quoted as preservation until ownership checks exist.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "other",
+    "reason": "Verifier methodology, not an information item."
+   }
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:R13-01",
+   "summary": "Failure paths secure captured sources; Level 1 metadata does not depend on the Level 0 archive.",
+   "in_scope": true,
+   "concept": "interrupted-run-and-never-observed-result",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:R13-02",
+   "summary": "A cost the vendor did not report is recorded as unknown, not as a reported zero.",
+   "in_scope": true,
+   "concept": "reported-cost",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:R13-03",
+   "summary": "A sub-agent tool output is normalized on the child run.",
+   "in_scope": true,
+   "concept": "child-runs",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:R13-04",
+   "summary": "Structured (array) tool results were stringified, losing native structure (open, counted).",
+   "in_scope": true,
+   "concept": "tool-result-ownership-and-content",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:R13-05",
+   "summary": "Readback compares values, owners, sequence and multiplicity; not yet the independent checker.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "other",
+    "reason": "Verifier methodology."
+   }
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:R13-06",
+   "summary": "Finalization, source acquisition and preservation status kept apart; known omissions stay in the denominator.",
+   "in_scope": true,
+   "concept": "interrupted-run-and-never-observed-result",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:R13-07",
+   "summary": "Every source invocation of a run is inventoried and archived; occurrences scoped by invocation.",
+   "in_scope": true,
+   "concept": "journal-run-and-invocation",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:R13-08",
+   "summary": "Codex exec stream ids never occur in the rollout; rollout is not proven a superset of the stream.",
+   "in_scope": true,
+   "concept": "source-occurrence-provenance",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:R13-09",
+   "summary": "Integral tool-input numbers arrive as doubles through the typed layer (representation differs, value verified).",
+   "in_scope": true,
+   "concept": "tool-request-identity-and-arguments",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:R13-10",
+   "summary": "Child-run source records carried invocation -1 (closed later).",
+   "in_scope": true,
+   "concept": "source-occurrence-provenance",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:R13-11",
+   "summary": "Child-run tool durations lacked a declared source (closed later).",
+   "in_scope": true,
+   "concept": "reported-durations",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:JV-1",
+   "summary": "Independent Java oracle and candidate readers with a coverage report.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "other",
+    "reason": "Verifier implementation."
+   }
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:JV-2",
+   "summary": "Mutation tests for false acceptances in the verifier.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "other",
+    "reason": "Verifier implementation."
+   }
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:JV-3",
+   "summary": "Java reports replace the Python readback acceptance role on pairs A-D.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "other",
+    "reason": "Verifier evidence run."
+   }
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:FB-1",
+   "summary": "Child runs reference their invocation and declare tool durations across two invocations.",
+   "in_scope": true,
+   "concept": "source-occurrence-provenance",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:FB-2",
+   "summary": "Verifier cannot label an unexamined population verified; refuses repeated invocations.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "other",
+    "reason": "Verifier implementation."
+   }
+  },
+  {
+   "evidence": "journal-refresh-2026-10-19:FB-3",
+   "summary": "Fresh producer outputs for pairs A-D verified in Java, full and core-only.",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "other",
+    "reason": "Verifier evidence run."
+   }
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-1",
+   "summary": "Session identity",
+   "in_scope": true,
+   "concept": "session-identity",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-2",
+   "summary": "Turn / run identity incl. system-injected roots and turn duration",
+   "in_scope": true,
+   "concept": "prompt-turn-identity",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-3",
+   "summary": "Model request identity (response id, per-request record)",
+   "in_scope": true,
+   "concept": "model-response-identity",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-4",
+   "summary": "Tool call to result pairing and argument completeness",
+   "in_scope": true,
+   "concept": "tool-request-identity-and-arguments",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-5",
+   "summary": "Repeated names / identical values stay distinct by id",
+   "in_scope": true,
+   "concept": "tool-result-ownership-and-content",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-6",
+   "summary": "Child run / sub-agent, spawn link, async stub, sidechain meta",
+   "in_scope": true,
+   "concept": "child-runs",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-7",
+   "summary": "Ordered user/assistant content",
+   "in_scope": true,
+   "concept": "ordered-content-blocks",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-8",
+   "summary": "Thinking text and signature",
+   "in_scope": true,
+   "concept": "reasoning-blocks-and-signature",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-9",
+   "summary": "Partial / updated blocks",
+   "in_scope": true,
+   "concept": "response-update-assembly",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-10",
+   "summary": "Multimodal / attachments",
+   "in_scope": true,
+   "concept": "media-and-multimodal-blocks",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-11",
+   "summary": "Errors / failed tool",
+   "in_scope": true,
+   "concept": "tool-result-error-and-status",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-12",
+   "summary": "Retries (API attempts vs model-driven re-issue)",
+   "in_scope": true,
+   "concept": null,
+   "new_concept": "api-request-attempts",
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-13",
+   "summary": "Permission requests / decisions",
+   "in_scope": true,
+   "concept": "permission-decisions",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-14",
+   "summary": "Interrupted / incomplete operations, terminal state per operation",
+   "in_scope": true,
+   "concept": "interrupted-run-and-never-observed-result",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-15",
+   "summary": "Model identity",
+   "in_scope": true,
+   "concept": "model-identity-and-provider",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-16",
+   "summary": "Usage at its scope",
+   "in_scope": true,
+   "concept": "usage-components-and-cache",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-17",
+   "summary": "Reasoning tokens",
+   "in_scope": true,
+   "concept": "reasoning-token-counts",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-18",
+   "summary": "Reported vs calculated cost",
+   "in_scope": true,
+   "concept": "reported-cost",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-19",
+   "summary": "Durations",
+   "in_scope": true,
+   "concept": "reported-durations",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-20",
+   "summary": "Vendor extensions / unknown fields of consumed records",
+   "in_scope": true,
+   "concept": "whole-record-residual-and-reconstruction",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-21",
+   "summary": "Raw payloads / provenance / reconstruction (archive linkage, occurrence addressing)",
+   "in_scope": true,
+   "concept": "source-occurrence-provenance",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-22",
+   "summary": "Size limits",
+   "in_scope": true,
+   "concept": null,
+   "new_concept": "payload-size-and-truncation",
+   "exclusion": null
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-23",
+   "summary": "Privacy / redaction",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "privacy-policy",
+    "reason": "Redaction posture of each product; Journal treats publication-time redaction as a separate decision."
+   }
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-24",
+   "summary": "Eval / dataset / item / repetition links",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "evaluation-linkage",
+    "reason": "Datasets and experiments belong to Agent Eval; Journal supplies stable ids."
+   }
+  },
+  {
+   "evidence": "competitor-refresh-2026-10-19:row-25",
+   "summary": "Retention",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "backend-retention",
+    "reason": "Backend retention policy."
+   }
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-1",
+   "summary": "Which session (conversation_id, resume chain walked)",
+   "in_scope": true,
+   "concept": "session-identity",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-2",
+   "summary": "Which turn (trace = turn; system-injected roots)",
+   "in_scope": true,
+   "concept": "prompt-turn-identity",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-3",
+   "summary": "Which model call (chat row, response_id)",
+   "in_scope": true,
+   "concept": "model-response-identity",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-4",
+   "summary": "Which tool call, paired how (tool_call_id join)",
+   "in_scope": true,
+   "concept": "tool-request-identity-and-arguments",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-5",
+   "summary": "Child run (nested invoke_agent, spawn link as map entry)",
+   "in_scope": true,
+   "concept": "child-runs",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-6",
+   "summary": "Ordered user/assistant content",
+   "in_scope": true,
+   "concept": "ordered-content-blocks",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-7",
+   "summary": "User input (typed prompt; attachments)",
+   "in_scope": true,
+   "concept": "user-submission",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-8",
+   "summary": "Instructions/context (CLAUDE.md via InstructionsLoaded)",
+   "in_scope": true,
+   "concept": "injected-context",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-9",
+   "summary": "Multimodal refs",
+   "in_scope": true,
+   "concept": "media-and-multimodal-blocks",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-10",
+   "summary": "Thinking text",
+   "in_scope": true,
+   "concept": "reasoning-blocks-and-signature",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-11",
+   "summary": "Opaque signature / redacted thinking",
+   "in_scope": true,
+   "concept": "redacted-or-encrypted-reasoning",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-12",
+   "summary": "Partial/updated blocks",
+   "in_scope": true,
+   "concept": "response-update-assembly",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-13",
+   "summary": "Complete tool arguments",
+   "in_scope": true,
+   "concept": "tool-request-identity-and-arguments",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-14",
+   "summary": "Complete tool result",
+   "in_scope": true,
+   "concept": "tool-result-ownership-and-content",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-15",
+   "summary": "Repeated names / identical values",
+   "in_scope": true,
+   "concept": "tool-result-ownership-and-content",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-16",
+   "summary": "Errors",
+   "in_scope": true,
+   "concept": "tool-result-error-and-status",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-17",
+   "summary": "Retries (same intent re-issued)",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "analysis-only",
+    "reason": "Model-driven retry is a derived relation (arguments and order); no source reports it. API attempts are a separate proposed concept."
+   }
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-18",
+   "summary": "Permission requests",
+   "in_scope": true,
+   "concept": "permission-decisions",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-19",
+   "summary": "Interruption / incomplete ops",
+   "in_scope": true,
+   "concept": "interrupted-run-and-never-observed-result",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-20",
+   "summary": "Model identity",
+   "in_scope": true,
+   "concept": "model-identity-and-provider",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-21",
+   "summary": "Usage at its scope",
+   "in_scope": true,
+   "concept": "usage-components-and-cache",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-22",
+   "summary": "Cache counters",
+   "in_scope": true,
+   "concept": "usage-components-and-cache",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-23",
+   "summary": "Reasoning tokens",
+   "in_scope": true,
+   "concept": "reasoning-token-counts",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-24",
+   "summary": "Run totals",
+   "in_scope": true,
+   "concept": "usage-scope-finality-and-repeats",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-25",
+   "summary": "Reported cost",
+   "in_scope": true,
+   "concept": "reported-cost",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-26",
+   "summary": "Calculated cost",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "pricing-calculation",
+    "reason": "Query-time price-table estimate."
+   }
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-27",
+   "summary": "Durations",
+   "in_scope": true,
+   "concept": "reported-durations",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-28",
+   "summary": "Vendor extensions / unknown fields",
+   "in_scope": true,
+   "concept": "whole-record-residual-and-reconstruction",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-29",
+   "summary": "Raw payloads / provenance (raw span dump, integration and app version)",
+   "in_scope": true,
+   "concept": "source-occurrence-provenance",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-30",
+   "summary": "Reconstruction",
+   "in_scope": true,
+   "concept": "whole-record-residual-and-reconstruction",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-31",
+   "summary": "Verdict linkage (low-level)",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "evaluation-linkage",
+    "reason": "Verdict storage."
+   }
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-32",
+   "summary": "Evaluation / dataset / item / repetition links",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "evaluation-linkage",
+    "reason": "Dataset and trial coordinates belong to Agent Eval."
+   }
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-33",
+   "summary": "Retention",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "backend-retention",
+    "reason": "Backend retention policy."
+   }
+  },
+  {
+   "evidence": "weave-matrix-2026-10-19:row-34",
+   "summary": "Privacy / redaction",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "privacy-policy",
+    "reason": "Redaction posture."
+   }
+  },
+  {
+   "evidence": "arize-matrix-2026-10-19:row-1",
+   "summary": "Which session (session.id from gen_ai.conversation.id)",
+   "in_scope": true,
+   "concept": "session-identity",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-matrix-2026-10-19:row-2",
+   "summary": "Which turn / run (interaction trace; plugin turn chain)",
+   "in_scope": true,
+   "concept": "prompt-turn-identity",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-matrix-2026-10-19:row-3",
+   "summary": "Which model request (llm_request span, request_id, attempt)",
+   "in_scope": true,
+   "concept": "model-response-identity",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-matrix-2026-10-19:row-4",
+   "summary": "Which tool call and its result (tool_use_id)",
+   "in_scope": true,
+   "concept": "tool-request-identity-and-arguments",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-matrix-2026-10-19:row-5",
+   "summary": "Child run (agent_id, parent_agent_id)",
+   "in_scope": true,
+   "concept": "child-runs",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-matrix-2026-10-19:row-6",
+   "summary": "Ordered user/assistant content",
+   "in_scope": true,
+   "concept": "ordered-content-blocks",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-matrix-2026-10-19:row-7",
+   "summary": "Multimodal refs",
+   "in_scope": true,
+   "concept": "media-and-multimodal-blocks",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-matrix-2026-10-19:row-8",
+   "summary": "Thinking + opaque signature",
+   "in_scope": true,
+   "concept": "reasoning-blocks-and-signature",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-matrix-2026-10-19:row-9",
+   "summary": "Partial/updated blocks",
+   "in_scope": true,
+   "concept": "response-update-assembly",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-matrix-2026-10-19:row-10",
+   "summary": "Complete tool arguments",
+   "in_scope": true,
+   "concept": "tool-request-identity-and-arguments",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-matrix-2026-10-19:row-11",
+   "summary": "Complete tool results",
+   "in_scope": true,
+   "concept": "tool-result-ownership-and-content",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-matrix-2026-10-19:row-12",
+   "summary": "Errors",
+   "in_scope": true,
+   "concept": "tool-result-error-and-status",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-matrix-2026-10-19:row-13",
+   "summary": "Retries (API attempt vs model retry)",
+   "in_scope": true,
+   "concept": null,
+   "new_concept": "api-request-attempts",
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-matrix-2026-10-19:row-14",
+   "summary": "Permission requests/decisions",
+   "in_scope": true,
+   "concept": "permission-decisions",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-matrix-2026-10-19:row-15",
+   "summary": "Interrupted/incomplete ops",
+   "in_scope": true,
+   "concept": "interrupted-run-and-never-observed-result",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-matrix-2026-10-19:row-16",
+   "summary": "Model identity",
+   "in_scope": true,
+   "concept": "model-identity-and-provider",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-matrix-2026-10-19:row-17",
+   "summary": "Usage + cache at scope",
+   "in_scope": true,
+   "concept": "usage-components-and-cache",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-matrix-2026-10-19:row-18",
+   "summary": "Reported vs calculated cost, durations",
+   "in_scope": true,
+   "concept": "reported-cost",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-matrix-2026-10-19:row-19",
+   "summary": "Vendor extensions / raw / provenance",
+   "in_scope": true,
+   "concept": "whole-record-residual-and-reconstruction",
+   "new_concept": null,
+   "exclusion": null
+  },
+  {
+   "evidence": "arize-matrix-2026-10-19:row-20",
+   "summary": "Dataset/experiment/item/repetition links",
+   "in_scope": false,
+   "concept": null,
+   "new_concept": null,
+   "exclusion": {
+    "kind": "evaluation-linkage",
+    "reason": "Datasets and experiments belong to Agent Eval."
+   }
+  }
+ ]
+}
