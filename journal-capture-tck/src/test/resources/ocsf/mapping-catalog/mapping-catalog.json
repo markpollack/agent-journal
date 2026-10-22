@@ -1533,8 +1533,19 @@
      "cli": "codex",
      "artifact": "stream.jsonl",
      "records": "3,14",
-     "field": "item.id (item_0, item_6; artifact-scoped, absent from the rollout)",
-     "availability": "present"
+     "field": "item.id (item_0, item_6): stream-local content-item ids (0.6.0-prototype item_uid), not response identities",
+     "availability": "absent"
+    },
+    {
+     "cli": "codex",
+     "artifact": "stream.jsonl",
+     "route": "codex-cli/exec-json-stream/0.160.1",
+     "records": "every committed recording of the route",
+     "field": "model response identity",
+     "availability": "absent",
+     "scenario": "path:item.response_id",
+     "vendor_omission": "original item id (app-server item id; for tools the model-facing call id)",
+     "basis": "vendor source (exec_events.rs ThreadItem carries only the id the processor mints; map_item_with_id drops the original ids, and no response id exists in the projection) and the route's recordings: agent-message and reasoning items are content items of unidentified responses, recorded as item_uid with no response_uid (SEM-CLOSE, codex.exec-stream.stream-local-identity r2)"
     }
    ],
    "mapping": [
@@ -1588,14 +1599,6 @@
       "population.responses",
       "response.values"
      ]
-    },
-    {
-     "profile": "CodexStreamProfile",
-     "family": "Response",
-     "properties": [
-      "population.responses",
-      "response.values"
-     ]
     }
    ],
    "views": [
@@ -1614,7 +1617,7 @@
     "value": "adapt",
     "reason": "Native response id plus the model that produced it, per response; OpenInference has no response id and ACP's messageId is an agent-message id."
    },
-   "notes": "Codex reports no model on the response records; the model is only in turn_context/world_state settings (see model-identity-and-provider). Codex stream ids are artifact-scoped (identity_scope artifact in response.assembly.v1, R13-08) so a stream response and a rollout response are never equated. Claude per-response provider is Unavailable (provider_basis 3) because the message carries no provider; the result record's modelUsage[m].provider is a reported provider kind at model scope. FULL-1R (review FR-04): the responses view states its count units: observation_count (events), identity_count (source-scoped identities, split into run-scoped and artifact-scoped) and logical_count, which is a number only when every identity is a run-scoped reported id and null otherwise with a basis. Pair B: 4 identities (2 rollout run-scoped, 2 stream artifact-scoped), logical count unavailable; pair A: 4 identities and 4 logical responses.",
+   "notes": "Codex reports no model on the response records; the model is only in turn_context/world_state settings (see model-identity-and-provider). The Codex exec stream reports no response identity: its item ids are stream-local content-item ids (0.6.0-prototype item_uid, never response_uid; response.assembly.v1 mode UNKNOWN), so stream content and rollout responses are never equated. Claude per-response provider is Unavailable (provider_basis 3) because the message carries no provider; the result record's modelUsage[m].provider is a reported provider kind at model scope. FULL-1R (review FR-04): the responses view states its count units: observation_count (events), identity_count (source-scoped identities, split into run-scoped and artifact-scoped) and logical_count, which is a number only when every identity is a run-scoped reported id and null otherwise with a basis. Pair B: 4 identities (2 rollout run-scoped, 2 stream artifact-scoped), logical count unavailable; pair A: 4 identities and 4 logical responses.",
    "observations": [
     {
      "item": "native response id per provider response",
@@ -4309,7 +4312,7 @@
   },
   {
    "id": "tool-kind-classification",
-   "concept": "ACP tool kind of the requested activity (name table, no OS-effect claim)",
+   "concept": "ACP tool kind of the tool activity (a declared name, family or namespace table; no OS-effect claim)",
    "question": "What kind of activity did each tool request describe, by which declared rule, without asserting what happened on the operating system?",
    "foundations": [
     {
@@ -4531,7 +4534,7 @@
     "value": "adopt",
     "reason": "ACP v1 ToolKind vocabulary taken as is, with the mapping basis recorded; a kind is not evidence of an operating-system effect."
    },
-   "notes": "The tables are claude.tool_name_to_kind.v1 and codex.tool_name_to_kind.v1 in the contracts (Task and unknown names -> 99 other). The oracle recomputes the kind from the name table independently of the writer. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: tool families that imply a kind (mcp_tool_call, collab_tool_call, web_search, file_change, command_execution). SEM-1 (2026-10-22): the Codex exec stream's tool families (kind by the contract's name table: web_search 5 search, file_change 2 edit, MCP and collaboration tools 99 other) are normalized under contract 0.3.0-prototype, a candidate whose meaning awaits the Project Owner's approval; the earlier route claim that Journal only retained them (vendor families ['item.completed/collab_tool_call', 'item.completed/file_change', 'item.completed/mcp_tool_call', 'item.completed/web_search']) is replaced by the oracle obligations above.",
+   "notes": "The tables are claude.tool_name_to_kind.v1 and codex.tool_name_to_kind.v1 in the contracts (Task and unknown names -> 99 other). The oracle recomputes the kind from the name table independently of the writer. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: tool families that imply a kind (mcp_tool_call, collab_tool_call, web_search, file_change, command_execution). SEM-1 (2026-10-22): the Codex exec stream's tool families (kind by the contract's name table: web_search 5 search, file_change 2 edit, MCP and collaboration tools 99 other) are normalized under contract 0.3.0-prototype, a candidate whose meaning awaits the Project Owner's approval; the earlier route claim that Journal only retained them (vendor families ['item.completed/collab_tool_call', 'item.completed/file_change', 'item.completed/mcp_tool_call', 'item.completed/web_search']) is replaced by the oracle obligations above. SEM-CLOSE (0.6.0-prototype, Codex contract 0.4.0): on the Codex exec stream the kind comes from the item family (family_kind_table: web_search 5, file_change 2, otherwise 99) and an MCP tool takes a kind only from a reviewed binding of its exact server and tool (namespace_kind_bindings: none, so 99), never from a bare name such as exec; the oracle profile states these kinds itself instead of reading the embedded table.",
    "observations": []
   },
   {
