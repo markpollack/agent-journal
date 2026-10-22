@@ -55,6 +55,11 @@ class CompatibilityTest {
         assertThat(high.entry().id()).isEqualTo("claude-code/stream-json/2.1.304-stdout");
         assertThat(high.entry()).as("one entry per exactly tested combination").isNotSameAs(low.entry()).isNotSameAs(mid.entry());
         assertThat(high.entry().contract()).as("the three exact entries share the one reviewed contract and mapper").isEqualTo(low.entry().contract()).isEqualTo(mid.entry().contract());
+        assertThat(low.entry().isRetired()).as("the sdk route is historical evidence only (Owner, 2026-10-22)").isTrue();
+        assertThat(mid.entry().isRetired()).isTrue();
+        assertThat(high.entry().isRetired()).as("raw stdout is the production route").isFalse();
+        assertThat(Compatibility.declaration(low, "stream.jsonl", "reported", 0, "abc").get("retired").text()).contains("historical evidence only");
+        assertThat(Compatibility.declaration(high, "stream.jsonl", "reported", 0, "abc").get("retired")).isNull();
         Compatibility.Selection codex = c.select(CODEX, "codex_stream", "stdout", "0.160.1");
         assertThat(codex.status()).isEqualTo(Compatibility.Status.TESTED);
         assertThat(codex.entry().id()).isEqualTo("codex-cli/exec-json-stream/0.160.1");

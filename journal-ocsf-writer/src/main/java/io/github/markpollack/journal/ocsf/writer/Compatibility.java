@@ -42,7 +42,12 @@ final class Compatibility {
     }
 
     record Entry(String id, String cli, String profile, List<String> routes, String minVersion, String maxVersion, Jv sourceSpecification, Jv schema,
-            String contract, String mapper, List<Jv> tested, String note, Jv raw) {
+            String contract, String mapper, List<Jv> tested, String note, String retired, Jv raw) {
+
+        /** A retired entry still selects (its labelled recordings replay as tested on their route) but is historical evidence, not a production route. */
+        boolean isRetired() {
+            return retired != null;
+        }
 
         boolean keyMatches(String cli, String profile, String route) {
             return this.cli.equals(cli) && this.profile.equals(profile) && route != null && routes.contains(route);
@@ -93,7 +98,7 @@ final class Compatibility {
             }
             List<Jv> tested = new ArrayList<>(e.member("tested") == null ? List.of() : e.member("tested").elements());
             list.add(new Entry(required(e, "id"), required(e, "cli"), required(e, "profile"), List.copyOf(routes), required(e, "min_version"), required(e, "max_version"),
-                    e.member("source_specification"), e.member("schema"), required(e, "contract"), required(e, "mapper"), List.copyOf(tested), MapperSupport.text(e, "note"), e));
+                    e.member("source_specification"), e.member("schema"), required(e, "contract"), required(e, "mapper"), List.copyOf(tested), MapperSupport.text(e, "note"), MapperSupport.text(e, "retired"), e));
         }
         this.entries = List.copyOf(list);
         if (document.member("not_version_scoped") instanceof Jv.Obj n) {
@@ -264,6 +269,9 @@ final class Compatibility {
                     .put("schema", e.schema()).put("mapper", e.mapper()).put("contract", e.contract()).put("tested", new Jv.Arr(e.tested()));
             if (e.note() != null) {
                 d.put("note", e.note());
+            }
+            if (e.isRetired()) {
+                d.put("retired", e.retired());
             }
         }
         d.put("schema_sha256_in_use", schemaSha256);

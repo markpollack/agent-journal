@@ -11,6 +11,7 @@
   "entries": [
     {
       "id": "claude-code/stream-json/2.1.299-sdk",
+      "retired": "2026-10-22 (Owner): the sdk route is historical evidence only, a filtered surface delivered by the Java claude-code-sdk in earlier milestones; raw stdout is the only production route; this entry stays so the labelled 2.1.299 recordings replay as tested on their route and is never extended",
       "cli": "Claude Code",
       "profile": "claude_stream",
       "routes": ["sdk"],
@@ -27,6 +28,7 @@
     },
     {
       "id": "claude-code/stream-json/2.1.303-sdk",
+      "retired": "2026-10-22 (Owner): the sdk route is historical evidence only, a filtered surface delivered by the Java claude-code-sdk in earlier milestones; raw stdout is the only production route; this entry stays so the labelled 2.1.303 recordings replay as tested on their route and is never extended",
       "cli": "Claude Code",
       "profile": "claude_stream",
       "routes": ["sdk"],
