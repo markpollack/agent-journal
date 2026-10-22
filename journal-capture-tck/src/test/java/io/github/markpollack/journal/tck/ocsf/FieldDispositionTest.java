@@ -34,7 +34,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * data subtrees ({@code .{*}}) are covered by the entry of their enclosing vendor path. Then:
  * <ul>
  * <li>an observed (variant, path) without a disposition, or with two exact dispositions, fails naming it;</li>
- * <li>an entry that matches nothing observed is stale and fails;</li>
+ * <li>an entry that matches nothing observed is stale and fails, unless it is marked {@code vendor_declared}: a field the pinned
+ * vendor inventory declares stays dispositioned while no recording carries it (unexercised; {@code VendorStreamInventoryTest}
+ * checks every such entry against the inventory), and its evidence obligations apply once a recording carries it;</li>
  * <li>a {@code normalized} entry names destinations that resolve in the declared schema of a committed package (or a
  * declaration field the format defines), a rule the named contract declares (or the contract's discriminator/routing
  * member), and an oracle property that this test's own oracle run reported VERIFIED or REPRESENTATION_DIFFERS with
@@ -57,7 +59,7 @@ class FieldDispositionTest {
     /** Profile to (catalog, native fixtures whose stream artifact is inventoried). */
     static final Map<String, List<String>> PROFILE_FIXTURES = Map.of(
             "claude_stream", List.of(OcsfFixtures.CHILD, OcsfFixtures.INTERRUPTED, "syn-claude-untested-version", OcsfFixtures.LIVE_FEATURES, OcsfFixtures.LIVE_DENIAL, OcsfFixtures.LIVE_CANCELLED),
-            "codex_stream", List.of(OcsfFixtures.CODEX_STREAM, OcsfFixtures.LIVE_CODEX, OcsfFixtures.LIVE_CODEX_CANCELLED));
+            "codex_stream", List.of(OcsfFixtures.CODEX_STREAM, OcsfFixtures.LIVE_CODEX, OcsfFixtures.LIVE_CODEX_CANCELLED, OcsfFixtures.CODEX_FAMILIES, OcsfFixtures.CODEX_TURN_FAILED));
     static final Map<String, String> CATALOGS = Map.of(
             "claude_stream", "schema/vendor/claude-code/stream-json/dispositions.json",
             "codex_stream", "schema/vendor/codex-cli/exec-json-stream/dispositions.json");
@@ -65,6 +67,11 @@ class FieldDispositionTest {
     record Entry(String variant, String path, boolean subtree, String disposition, List<String> destinations, String rule, String property, List<String> tests, String note, Json raw) {
         String key() {
             return variant + ":" + path;
+        }
+
+        /** Declared by the pinned vendor inventory: kept when no recording carries it (unexercised), never silently dropped as stale. */
+        boolean vendorDeclared() {
+            return raw != null && raw.member("vendor_declared") instanceof Json.JBool b && b.value();
         }
     }
 
@@ -125,6 +132,11 @@ class FieldDispositionTest {
         List<Entry> stale = new ArrayList<>(catalog.entries());
         stale.add(new Entry("result", "no_such_field", false, "retained", List.of(), null, "whole_record.coverage", List.of(), null, null));
         assertThat(check(withEntries(catalog, stale), observed, reports, schema)).anyMatch(p -> p.contains("stale") && p.contains("result:no_such_field"));
+        // the same unobserved entry marked vendor-declared is kept as unexercised, not stale
+        List<Entry> declared = new ArrayList<>(catalog.entries());
+        declared.add(new Entry("result", "no_such_field", false, "retained", List.of(), null, "whole_record.coverage", List.of(), null,
+                NeutralJson.parse("{\"vendor_declared\": true}")));
+        assertThat(check(withEntries(catalog, declared), observed, reports, schema)).noneMatch(p -> p.contains("result:no_such_field"));
 
         // an omission without its reviewed rule
         assertThat(check(withEntries(catalog, replace(catalog, cost, new Entry(cost.variant(), cost.path(), cost.subtree(), "omitted",
@@ -156,12 +168,15 @@ class FieldDispositionTest {
             }
         }
         for (Entry e : catalog.entries()) {
-            if (!used.contains(e)) {
+            if (!used.contains(e) && !e.vendorDeclared()) {
                 problems.add("stale disposition " + e.key() + ": no observed field matches it");
             }
         }
         Map<String, Json> contract = contract(catalog.contractFile());
         for (Entry e : catalog.entries()) {
+            if (!used.contains(e)) {
+                continue; // a vendor-declared field no committed recording carries: unexercised, its evidence cannot exist yet
+            }
             switch (e.disposition()) {
                 case "normalized" -> {
                     if (e.destinations().isEmpty()) {

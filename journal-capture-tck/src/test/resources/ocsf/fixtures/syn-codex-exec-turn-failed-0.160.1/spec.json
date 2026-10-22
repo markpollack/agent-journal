@@ -1,0 +1,33 @@
+{
+ "run_uid": "syn-codex-exec-turn-failed-0.160.1",
+ "invocation_index": 0,
+ "session_uid": "00000000-0000-4000-8000-00000000fa03",
+ "capture_start": "2026-10-22T09:00:00Z",
+ "cli": {
+  "name": "Codex CLI",
+  "version": "0.160.1",
+  "vendor_name": "OpenAI",
+  "type_id": 1,
+  "type": "Native"
+ },
+ "launch_settings": {
+  "command": "codex exec --json (LABELLED SYNTHETIC stream derived from the vendor's exec types and processor tests; no CLI was run)",
+  "cwd": "/work"
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "kind": 1,
+   "profile": "codex_stream",
+   "surface": "LABELLED SYNTHETIC exec --json stdout, source-grounded: ThreadEvent::Error and ThreadEvent::TurnFailed as declared in codex-rs/exec/src/exec_events.rs and emitted by collect_thread_events on ServerNotification::Error and a Failed turn (event_processor_with_jsonl_output.rs at rust-v0.160.1 d27764b; test turn_failure_prefers_structured_error_message)",
+   "path": "<fixture>/native/syn-codex-exec-turn-failed-0.160.1/stream.jsonl",
+   "route": "stdout"
+  }
+ ],
+ "synthetic": {
+  "label": "LABELLED SYNTHETIC CODEX EXEC STREAM (FND-1, 2026-10-22): hand-authored from the pinned vendor source, not a recording; not live evidence and not a support claim",
+  "purpose": [
+   "the failure ending of an exec turn: a top-level error event followed by turn.failed{error{message}} (no turn.completed and no usage)"
+  ]
+ }
+}

@@ -33,6 +33,9 @@ final class OcsfFixtures {
     static final String LIVE_CANCELLED = "claude-live-2.1.304-cancelled";
     static final String LIVE_CODEX = "codex-live-0.160.1-commands";
     static final String LIVE_CODEX_CANCELLED = "codex-live-0.160.1-cancelled";
+    /** Labelled synthetic Codex 0.160.1 exec streams derived from the vendor's exec types and processor tests (FND-1): every item family, and the failed-turn ending. */
+    static final String CODEX_FAMILIES = "syn-codex-exec-families-0.160.1";
+    static final String CODEX_TURN_FAILED = "syn-codex-exec-turn-failed-0.160.1";
     static final String LIVE_SPAWN = "toolu_01WBvs5eGudfYPm8YvrTYTQK";
     /** The historical two-file layout, kept unchanged under {@code fixtures-historical/0.2.0-prototype/<name>/package}. */
     static final String HISTORICAL_0_2_0 = "0.2.0-prototype";

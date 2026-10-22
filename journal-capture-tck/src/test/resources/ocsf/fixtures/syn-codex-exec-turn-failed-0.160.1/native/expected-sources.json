@@ -1,0 +1,22 @@
+{
+ "kind": "agent-journal/expected-sources",
+ "version": "0.1",
+ "run_uid": "syn-codex-exec-turn-failed-0.160.1",
+ "complete": true,
+ "frozen": {
+  "at": "2026-10-22",
+  "by": "sha256 and line count of the committed native artifact, written before the package was judged; independent of the package's own sources[]",
+  "basis": "a labelled synthetic Codex exec stream (one artifact), source-grounded in the pinned vendor types"
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "profile": "codex_stream",
+   "sha256": "31bef14c9106e0fb4293c303a95e7105cf874c20e912f2b69d79ebb83db5c693",
+   "bytes": 273,
+   "records": 4,
+   "required": true
+  }
+ ],
+ "children": []
+}

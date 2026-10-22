@@ -1,0 +1,22 @@
+{"type":"thread.started","thread_id":"00000000-0000-4000-8000-00000000fa01"}
+{"type":"turn.started"}
+{"type":"item.started","item":{"id":"item_0","type":"todo_list","items":[{"text":"SYNTHETIC: inspect the project","completed":false},{"text":"SYNTHETIC: report","completed":false}]}}
+{"type":"item.completed","item":{"id":"item_1","type":"reasoning","text":"SYNTHETIC: **Planning** listing files first"}}
+{"type":"item.started","item":{"id":"item_2","type":"command_execution","command":"ls","aggregated_output":"","exit_code":null,"status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item_2","type":"command_execution","command":"ls","aggregated_output":"a.txt\n","exit_code":0,"status":"completed"}}
+{"type":"item.completed","item":{"id":"item_3","type":"command_execution","command":"rm -rf build","aggregated_output":"","exit_code":null,"status":"declined"}}
+{"type":"item.started","item":{"id":"item_4","type":"mcp_tool_call","server":"server_c","tool":"tool_z","arguments":{"query":"journal","limit":2},"result":null,"error":null,"status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item_4","type":"mcp_tool_call","server":"server_c","tool":"tool_z","arguments":{"query":"journal","limit":2},"result":{"content":[{"type":"text","text":"done"}],"_meta":{"origin":"SYNTHETIC"},"structured_content":{"status":"ok"}},"error":null,"status":"completed"}}
+{"type":"item.started","item":{"id":"item_5","type":"mcp_tool_call","server":"server_b","tool":"tool_fail","arguments":null,"result":null,"error":null,"status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item_5","type":"mcp_tool_call","server":"server_b","tool":"tool_fail","arguments":null,"result":null,"error":{"message":"SYNTHETIC: tool failed"},"status":"failed"}}
+{"type":"item.started","item":{"id":"item_6","type":"collab_tool_call","tool":"spawn_agent","sender_thread_id":"00000000-0000-4000-8000-00000000fa01","receiver_thread_ids":[],"prompt":"SYNTHETIC: review the diff","agents_states":{},"status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item_6","type":"collab_tool_call","tool":"spawn_agent","sender_thread_id":"00000000-0000-4000-8000-00000000fa01","receiver_thread_ids":["00000000-0000-4000-8000-00000000fa02"],"prompt":"SYNTHETIC: review the diff","agents_states":{"00000000-0000-4000-8000-00000000fa02":{"status":"running","message":null}},"status":"completed"}}
+{"type":"item.started","item":{"id":"item_7","type":"web_search","id":"search-1","query":"","action":{"type":"other"}}}
+{"type":"item.completed","item":{"id":"item_7","type":"web_search","id":"search-1","query":"https://example.com/docs","action":{"type":"open_page","url":"https://example.com/docs"},"results":[{"url":"https://example.com/docs","content":"configuration"}]}}
+{"type":"item.completed","item":{"id":"item_8","type":"file_change","changes":[{"path":"src/a.txt","kind":"add"},{"path":"src/b.txt","kind":"update"},{"path":"old.txt","kind":"delete"}],"status":"completed"}}
+{"type":"item.completed","item":{"id":"item_9","type":"file_change","changes":[{"path":"src/c.txt","kind":"update"}],"status":"failed"}}
+{"type":"item.updated","item":{"id":"item_0","type":"todo_list","items":[{"text":"SYNTHETIC: inspect the project","completed":true},{"text":"SYNTHETIC: report","completed":false}]}}
+{"type":"item.completed","item":{"id":"item_10","type":"error","message":"SYNTHETIC: model rerouted: model-a -> model-b (HighRiskCyberActivity)"}}
+{"type":"item.completed","item":{"id":"item_11","type":"agent_message","text":"SYNTHETIC: done."}}
+{"type":"item.completed","item":{"id":"item_0","type":"todo_list","items":[{"text":"SYNTHETIC: inspect the project","completed":true},{"text":"SYNTHETIC: report","completed":true}]}}
+{"type":"turn.completed","usage":{"input_tokens":1200,"cached_input_tokens":200,"cache_write_input_tokens":0,"output_tokens":80,"reasoning_output_tokens":16}}

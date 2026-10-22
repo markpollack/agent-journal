@@ -1,0 +1,1704 @@
+{
+ "kind": "agent-journal/vendor-stream-inventory",
+ "version": "0.1",
+ "reviewed": "2026-10-22",
+ "cli": "Codex CLI",
+ "cli_version": "0.160.1",
+ "profile": "codex_stream",
+ "compatibility_entry": "codex-cli/exec-json-stream/0.160.1",
+ "surface": "codex exec --json standard output (the exec JSONL projection); not the app-server protocol, which is read only to explain what the projection omits",
+ "source": {
+  "repository": "openai/codex",
+  "tag": "rust-v0.160.1",
+  "commit": "d27764b82f7118f674371e6d6e76271d9d606edb",
+  "files": {
+   "codex-rs/exec/src/exec_events.rs": "06565c097b28d3bf2ad592943cc30c776b45e236",
+   "codex-rs/exec/src/event_processor_with_jsonl_output.rs": "73e0c9d911c82aae67c44e6b1a4ce54c7092b6be",
+   "codex-rs/exec/tests/event_processor_with_json_output.rs": "15a0015aa44fdeaec5d5dd0eaaaa7a49007fc1cf",
+   "codex-rs/app-server-protocol/src/protocol/v2/item.rs": "04f68a3351c765d6c2be8d492b1a3cded43a22bb",
+   "sdk/typescript/src/items.ts": "8fd3b2c7ff5b47da5f64b16828e03c75c5e60961",
+   "sdk/typescript/src/events.ts": "f6ad902779bee05ab0fb9b9cc6a2bca59d52c136"
+  },
+  "method": "reviewed reading of the pinned files (git blob ids above); exec_events.rs declares the serialized types and enum values, the processor states what is emitted, transformed or discarded, and its tests give concrete lifecycles. No Rust parsing or pattern extraction: a refresh re-reads the files when their blob ids change (VendorStreamInventoryTest, -Dcodex.checkout)",
+  "secondary_declaration": "the TypeScript SDK (sdk/typescript/src/items.ts, events.ts) declares an older subset: no collab_tool_call, no web_search action or results, no declined command status and no in_progress patch status; it is not the authority for this inventory"
+ },
+ "families": [
+  {
+   "variant": "thread.started",
+   "emitted": "always",
+   "lifecycle": "first event; once per exec process (also on resume)",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "event discriminator",
+     "availability": "always",
+     "values": [
+      "thread.started"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadEvent"
+    },
+    {
+     "path": "thread_id",
+     "type": "string",
+     "meaning": "the thread (session) id; usable to resume the thread",
+     "availability": "always",
+     "identity": "native session id",
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadStartedEvent"
+    }
+   ],
+   "vendor_tests": [
+    "session_configured_produces_thread_started_event"
+   ],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "codex.stream.fallback->source_record",
+    "note": "retained whole; thread_id becomes session_uid of every later event (codex.stream.thread_started->session)"
+   }
+  },
+  {
+   "variant": "turn.started",
+   "emitted": "always",
+   "lifecycle": "when a prompt is sent; one per turn",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "event discriminator",
+     "availability": "always",
+     "values": [
+      "turn.started"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#TurnStartedEvent"
+    }
+   ],
+   "vendor_tests": [
+    "turn_started_emits_turn_started_event"
+   ],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "codex.stream.fallback->source_record",
+    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+   }
+  },
+  {
+   "variant": "turn.completed",
+   "emitted": "conditional",
+   "condition": "only when the turn status is Completed",
+   "lifecycle": "terminal event of a completed turn",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "event discriminator",
+     "availability": "always",
+     "values": [
+      "turn.completed"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#TurnCompletedEvent"
+    },
+    {
+     "path": "usage",
+     "type": "object",
+     "meaning": "token usage copied from the last ThreadTokenUsageUpdated total: the thread's cumulative total, not the turn's own usage; all zeros (Usage::default) when no usage notification arrived",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#usage_from_last_total"
+    },
+    {
+     "path": "usage.input_tokens",
+     "type": "integer",
+     "meaning": "cumulative input tokens of the thread",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#Usage"
+    },
+    {
+     "path": "usage.cached_input_tokens",
+     "type": "integer",
+     "meaning": "cumulative cached input tokens",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#Usage"
+    },
+    {
+     "path": "usage.cache_write_input_tokens",
+     "type": "integer",
+     "meaning": "cumulative input tokens written to the prompt cache (serde default 0 when absent on input)",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#Usage"
+    },
+    {
+     "path": "usage.output_tokens",
+     "type": "integer",
+     "meaning": "cumulative output tokens",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#Usage"
+    },
+    {
+     "path": "usage.reasoning_output_tokens",
+     "type": "integer",
+     "meaning": "cumulative reasoning output tokens",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#Usage"
+    }
+   ],
+   "vendor_tests": [
+    "token_usage_update_is_emitted_on_turn_completion",
+    "turn_completion_reconciles_started_items_from_turn_items"
+   ],
+   "journal": {
+    "behavior": "normalized",
+    "rule": "codex.stream.turn_completed->prompt_turn.completed",
+    "note": "usage observation with scope turn and status final; the vendor value is the thread's cumulative total and zeros when unreported (see gaps)"
+   }
+  },
+  {
+   "variant": "turn.failed",
+   "emitted": "conditional",
+   "condition": "only when the turn status is Failed",
+   "lifecycle": "terminal event of a failed turn",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "event discriminator",
+     "availability": "always",
+     "values": [
+      "turn.failed"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#TurnFailedEvent"
+    },
+    {
+     "path": "error",
+     "type": "object",
+     "meaning": "the turn's error",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#TurnFailedEvent"
+    },
+    {
+     "path": "error.message",
+     "type": "string",
+     "meaning": "structured turn error message (with additional details appended in parentheses), else the last critical error, else 'turn failed'",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#collect_thread_events TurnStatus::Failed"
+    }
+   ],
+   "vendor_tests": [
+    "turn_failure_prefers_structured_error_message",
+    "failed_turn_clears_stale_final_message"
+   ],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "codex.stream.fallback->source_record",
+    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+   }
+  },
+  {
+   "variant": "error",
+   "emitted": "conditional",
+   "condition": "on a server error notification",
+   "lifecycle": "fatal stream error",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "event discriminator",
+     "availability": "always",
+     "values": [
+      "error"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadErrorEvent"
+    },
+    {
+     "path": "message",
+     "type": "string",
+     "meaning": "error message with additional details appended; also emitted when an event cannot be serialized",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#collect_thread_events ServerNotification::Error, emit"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "codex.stream.fallback->source_record",
+    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+   }
+  },
+  {
+   "variant": "item.completed/agent_message",
+   "emitted": "conditional",
+   "condition": "when the agent produces a message",
+   "lifecycle": "completion only; a started agent message is not emitted; the id is assigned at completion",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "event discriminator (ThreadEvent, serde tag)",
+     "availability": "always",
+     "values": [
+      "item.completed"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadEvent"
+    },
+    {
+     "path": "item",
+     "type": "object",
+     "meaning": "the ThreadItem: id plus the flattened family payload",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#ItemStartedEvent/ItemUpdatedEvent/ItemCompletedEvent"
+    },
+    {
+     "path": "item.id",
+     "type": "string",
+     "meaning": "stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id",
+     "availability": "always",
+     "identity": "stream-local, per exec process",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#next_item_id, started_item_id, completed_item_id"
+    },
+    {
+     "path": "item.type",
+     "type": "string",
+     "meaning": "item family discriminator (ThreadItemDetails, serde tag, snake_case)",
+     "availability": "always",
+     "values": [
+      "agent_message"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadItemDetails"
+    },
+    {
+     "path": "item.text",
+     "type": "string",
+     "meaning": "the agent's response text, or a JSON string when structured output was requested",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#AgentMessageItem"
+    }
+   ],
+   "vendor_tests": [
+    "agent_message_item_updates_final_message",
+    "agent_message_item_started_is_ignored",
+    "unsupported_items_do_not_consume_synthetic_ids"
+   ],
+   "journal": {
+    "behavior": "normalized",
+    "rule": "codex.stream.agent_message->model_response"
+   }
+  },
+  {
+   "variant": "item.completed/reasoning",
+   "emitted": "conditional",
+   "condition": "when the model reports a non-empty reasoning summary",
+   "lifecycle": "completion only; omitted when the summary is empty",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "event discriminator (ThreadEvent, serde tag)",
+     "availability": "always",
+     "values": [
+      "item.completed"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadEvent"
+    },
+    {
+     "path": "item",
+     "type": "object",
+     "meaning": "the ThreadItem: id plus the flattened family payload",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#ItemStartedEvent/ItemUpdatedEvent/ItemCompletedEvent"
+    },
+    {
+     "path": "item.id",
+     "type": "string",
+     "meaning": "stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id",
+     "availability": "always",
+     "identity": "stream-local, per exec process",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#next_item_id, started_item_id, completed_item_id"
+    },
+    {
+     "path": "item.type",
+     "type": "string",
+     "meaning": "item family discriminator (ThreadItemDetails, serde tag, snake_case)",
+     "availability": "always",
+     "values": [
+      "reasoning"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadItemDetails"
+    },
+    {
+     "path": "item.text",
+     "type": "string",
+     "meaning": "the reasoning summary parts joined with newlines; raw reasoning content is not emitted",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#map_item_with_id Reasoning"
+    }
+   ],
+   "vendor_tests": [
+    "empty_reasoning_items_are_ignored",
+    "reasoning_items_emit_summary_not_raw_content",
+    "reasoning_item_completed_uses_synthetic_id"
+   ],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "codex.stream.fallback->source_record",
+    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+   }
+  },
+  {
+   "variant": "item.started/command_execution",
+   "emitted": "conditional",
+   "condition": "when the agent runs a command",
+   "lifecycle": "when the command is spawned",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "event discriminator (ThreadEvent, serde tag)",
+     "availability": "always",
+     "values": [
+      "item.started"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadEvent"
+    },
+    {
+     "path": "item",
+     "type": "object",
+     "meaning": "the ThreadItem: id plus the flattened family payload",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#ItemStartedEvent/ItemUpdatedEvent/ItemCompletedEvent"
+    },
+    {
+     "path": "item.id",
+     "type": "string",
+     "meaning": "stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id",
+     "availability": "always",
+     "identity": "stream-local, per exec process",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#next_item_id, started_item_id, completed_item_id"
+    },
+    {
+     "path": "item.type",
+     "type": "string",
+     "meaning": "item family discriminator (ThreadItemDetails, serde tag, snake_case)",
+     "availability": "always",
+     "values": [
+      "command_execution"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadItemDetails"
+    },
+    {
+     "path": "item.command",
+     "type": "string",
+     "meaning": "the command line as one string",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#CommandExecutionItem"
+    },
+    {
+     "path": "item.aggregated_output",
+     "type": "string",
+     "meaning": "combined output; empty string until output exists",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#map_item_with_id CommandExecution (unwrap_or_default)"
+    },
+    {
+     "path": "item.exit_code",
+     "type": "integer|null",
+     "meaning": "process exit code; null until the process exits or when it never ran",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#CommandExecutionItem"
+    },
+    {
+     "path": "item.status",
+     "type": "string",
+     "meaning": "command lifecycle status",
+     "availability": "always",
+     "values": [
+      "in_progress",
+      "completed",
+      "failed",
+      "declined"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#CommandExecutionStatus"
+    }
+   ],
+   "vendor_tests": [
+    "command_execution_started_and_completed_translate_to_thread_events"
+   ],
+   "journal": {
+    "behavior": "normalized",
+    "rule": "codex.stream.command_execution->tool_call.operation",
+    "note": "a tool_call carrying one observed operation (uid = stream-local item id, reported_state, exit_code, stdout); command text retained in data only; declined is kept as reported_state with status Unknown"
+   }
+  },
+  {
+   "variant": "item.completed/command_execution",
+   "emitted": "conditional",
+   "condition": "when the agent runs a command",
+   "lifecycle": "when the process exits, or at turn end for an item left open (reconciliation)",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "event discriminator (ThreadEvent, serde tag)",
+     "availability": "always",
+     "values": [
+      "item.completed"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadEvent"
+    },
+    {
+     "path": "item",
+     "type": "object",
+     "meaning": "the ThreadItem: id plus the flattened family payload",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#ItemStartedEvent/ItemUpdatedEvent/ItemCompletedEvent"
+    },
+    {
+     "path": "item.id",
+     "type": "string",
+     "meaning": "stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id",
+     "availability": "always",
+     "identity": "stream-local, per exec process",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#next_item_id, started_item_id, completed_item_id"
+    },
+    {
+     "path": "item.type",
+     "type": "string",
+     "meaning": "item family discriminator (ThreadItemDetails, serde tag, snake_case)",
+     "availability": "always",
+     "values": [
+      "command_execution"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadItemDetails"
+    },
+    {
+     "path": "item.command",
+     "type": "string",
+     "meaning": "the command line as one string",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#CommandExecutionItem"
+    },
+    {
+     "path": "item.aggregated_output",
+     "type": "string",
+     "meaning": "combined output; empty string until output exists",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#map_item_with_id CommandExecution (unwrap_or_default)"
+    },
+    {
+     "path": "item.exit_code",
+     "type": "integer|null",
+     "meaning": "process exit code; null until the process exits or when it never ran",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#CommandExecutionItem"
+    },
+    {
+     "path": "item.status",
+     "type": "string",
+     "meaning": "command lifecycle status",
+     "availability": "always",
+     "values": [
+      "in_progress",
+      "completed",
+      "failed",
+      "declined"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#CommandExecutionStatus"
+    }
+   ],
+   "vendor_tests": [
+    "command_execution_started_and_completed_translate_to_thread_events",
+    "turn_completion_reconciles_started_items_from_turn_items"
+   ],
+   "journal": {
+    "behavior": "normalized",
+    "rule": "codex.stream.command_execution->tool_call.operation",
+    "note": "a tool_call carrying one observed operation (uid = stream-local item id, reported_state, exit_code, stdout); command text retained in data only; declined is kept as reported_state with status Unknown"
+   }
+  },
+  {
+   "variant": "item.completed/file_change",
+   "emitted": "conditional",
+   "condition": "when the agent applies a patch",
+   "lifecycle": "emitted once the patch succeeds or fails",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "event discriminator (ThreadEvent, serde tag)",
+     "availability": "always",
+     "values": [
+      "item.completed"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadEvent"
+    },
+    {
+     "path": "item",
+     "type": "object",
+     "meaning": "the ThreadItem: id plus the flattened family payload",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#ItemStartedEvent/ItemUpdatedEvent/ItemCompletedEvent"
+    },
+    {
+     "path": "item.id",
+     "type": "string",
+     "meaning": "stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id",
+     "availability": "always",
+     "identity": "stream-local, per exec process",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#next_item_id, started_item_id, completed_item_id"
+    },
+    {
+     "path": "item.type",
+     "type": "string",
+     "meaning": "item family discriminator (ThreadItemDetails, serde tag, snake_case)",
+     "availability": "always",
+     "values": [
+      "file_change"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadItemDetails"
+    },
+    {
+     "path": "item.changes",
+     "type": "array",
+     "meaning": "changed files",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#FileChangeItem"
+    },
+    {
+     "path": "item.changes[].path",
+     "type": "string",
+     "meaning": "changed file path",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#FileUpdateChange"
+    },
+    {
+     "path": "item.changes[].kind",
+     "type": "string",
+     "meaning": "change kind; the patch contents are not emitted",
+     "availability": "always",
+     "values": [
+      "add",
+      "delete",
+      "update"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#PatchChangeKind"
+    },
+    {
+     "path": "item.status",
+     "type": "string",
+     "meaning": "patch status; a declined patch is reported as failed",
+     "availability": "always",
+     "values": [
+      "in_progress",
+      "completed",
+      "failed"
+     ],
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#map_item_with_id FileChange"
+    }
+   ],
+   "vendor_tests": [
+    "file_change_completion_maps_change_kinds",
+    "file_change_declined_maps_to_failed_status"
+   ],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "codex.stream.fallback->source_record",
+    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+   }
+  },
+  {
+   "variant": "item.started/file_change",
+   "emitted": "conditional",
+   "condition": "only if a started file-change notification occurs (unconfirmed)",
+   "lifecycle": "not documented: the exec type comment says completed only, but map_started_item would project a started file change if one is notified",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "event discriminator (ThreadEvent, serde tag)",
+     "availability": "always",
+     "values": [
+      "item.started"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadEvent"
+    },
+    {
+     "path": "item",
+     "type": "object",
+     "meaning": "the ThreadItem: id plus the flattened family payload",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#ItemStartedEvent/ItemUpdatedEvent/ItemCompletedEvent"
+    },
+    {
+     "path": "item.id",
+     "type": "string",
+     "meaning": "stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id",
+     "availability": "always",
+     "identity": "stream-local, per exec process",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#next_item_id, started_item_id, completed_item_id"
+    },
+    {
+     "path": "item.type",
+     "type": "string",
+     "meaning": "item family discriminator (ThreadItemDetails, serde tag, snake_case)",
+     "availability": "always",
+     "values": [
+      "file_change"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadItemDetails"
+    },
+    {
+     "path": "item.changes",
+     "type": "array",
+     "meaning": "changed files",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#FileChangeItem"
+    },
+    {
+     "path": "item.changes[].path",
+     "type": "string",
+     "meaning": "changed file path",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#FileUpdateChange"
+    },
+    {
+     "path": "item.changes[].kind",
+     "type": "string",
+     "meaning": "change kind; the patch contents are not emitted",
+     "availability": "always",
+     "values": [
+      "add",
+      "delete",
+      "update"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#PatchChangeKind"
+    },
+    {
+     "path": "item.status",
+     "type": "string",
+     "meaning": "patch status; a declined patch is reported as failed",
+     "availability": "always",
+     "values": [
+      "in_progress",
+      "completed",
+      "failed"
+     ],
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#map_item_with_id FileChange"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "codex.stream.fallback->source_record",
+    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+   }
+  },
+  {
+   "variant": "item.started/mcp_tool_call",
+   "emitted": "conditional",
+   "condition": "when an MCP tool is called",
+   "lifecycle": "when the invocation is dispatched",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "event discriminator (ThreadEvent, serde tag)",
+     "availability": "always",
+     "values": [
+      "item.started"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadEvent"
+    },
+    {
+     "path": "item",
+     "type": "object",
+     "meaning": "the ThreadItem: id plus the flattened family payload",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#ItemStartedEvent/ItemUpdatedEvent/ItemCompletedEvent"
+    },
+    {
+     "path": "item.id",
+     "type": "string",
+     "meaning": "stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id",
+     "availability": "always",
+     "identity": "stream-local, per exec process",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#next_item_id, started_item_id, completed_item_id"
+    },
+    {
+     "path": "item.type",
+     "type": "string",
+     "meaning": "item family discriminator (ThreadItemDetails, serde tag, snake_case)",
+     "availability": "always",
+     "values": [
+      "mcp_tool_call"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadItemDetails"
+    },
+    {
+     "path": "item.server",
+     "type": "string",
+     "meaning": "MCP server name",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallItem"
+    },
+    {
+     "path": "item.tool",
+     "type": "string",
+     "meaning": "MCP tool name",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallItem"
+    },
+    {
+     "path": "item.arguments",
+     "type": "json",
+     "meaning": "structured tool arguments (null when none)",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallItem"
+    },
+    {
+     "path": "item.result",
+     "type": "object|null",
+     "meaning": "result once completed, else null",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallItem"
+    },
+    {
+     "path": "item.result.content",
+     "type": "array",
+     "meaning": "MCP content blocks returned to the model",
+     "availability": "conditional",
+     "condition": "when result is present",
+     "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallItemResult"
+    },
+    {
+     "path": "item.result._meta",
+     "type": "json",
+     "meaning": "MCP result metadata",
+     "availability": "conditional",
+     "condition": "when the server returned _meta",
+     "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallItemResult"
+    },
+    {
+     "path": "item.result.structured_content",
+     "type": "json|null",
+     "meaning": "MCP structured result",
+     "availability": "conditional",
+     "condition": "when result is present",
+     "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallItemResult"
+    },
+    {
+     "path": "item.error",
+     "type": "object|null",
+     "meaning": "error once failed, else null",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallItem"
+    },
+    {
+     "path": "item.error.message",
+     "type": "string",
+     "meaning": "failure message",
+     "availability": "conditional",
+     "condition": "when error is present",
+     "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallItemError"
+    },
+    {
+     "path": "item.status",
+     "type": "string",
+     "meaning": "call status",
+     "availability": "always",
+     "values": [
+      "in_progress",
+      "completed",
+      "failed"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallStatus"
+    }
+   ],
+   "vendor_tests": [
+    "mcp_tool_call_begin_and_end_emit_item_events",
+    "mcp_tool_call_defaults_arguments_and_preserves_structured_content"
+   ],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "codex.stream.fallback->source_record",
+    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+   }
+  },
+  {
+   "variant": "item.completed/mcp_tool_call",
+   "emitted": "conditional",
+   "condition": "when an MCP tool is called",
+   "lifecycle": "when the MCP server reports success or failure",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "event discriminator (ThreadEvent, serde tag)",
+     "availability": "always",
+     "values": [
+      "item.completed"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadEvent"
+    },
+    {
+     "path": "item",
+     "type": "object",
+     "meaning": "the ThreadItem: id plus the flattened family payload",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#ItemStartedEvent/ItemUpdatedEvent/ItemCompletedEvent"
+    },
+    {
+     "path": "item.id",
+     "type": "string",
+     "meaning": "stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id",
+     "availability": "always",
+     "identity": "stream-local, per exec process",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#next_item_id, started_item_id, completed_item_id"
+    },
+    {
+     "path": "item.type",
+     "type": "string",
+     "meaning": "item family discriminator (ThreadItemDetails, serde tag, snake_case)",
+     "availability": "always",
+     "values": [
+      "mcp_tool_call"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadItemDetails"
+    },
+    {
+     "path": "item.server",
+     "type": "string",
+     "meaning": "MCP server name",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallItem"
+    },
+    {
+     "path": "item.tool",
+     "type": "string",
+     "meaning": "MCP tool name",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallItem"
+    },
+    {
+     "path": "item.arguments",
+     "type": "json",
+     "meaning": "structured tool arguments (null when none)",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallItem"
+    },
+    {
+     "path": "item.result",
+     "type": "object|null",
+     "meaning": "result once completed, else null",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallItem"
+    },
+    {
+     "path": "item.result.content",
+     "type": "array",
+     "meaning": "MCP content blocks returned to the model",
+     "availability": "conditional",
+     "condition": "when result is present",
+     "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallItemResult"
+    },
+    {
+     "path": "item.result._meta",
+     "type": "json",
+     "meaning": "MCP result metadata",
+     "availability": "conditional",
+     "condition": "when the server returned _meta",
+     "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallItemResult"
+    },
+    {
+     "path": "item.result.structured_content",
+     "type": "json|null",
+     "meaning": "MCP structured result",
+     "availability": "conditional",
+     "condition": "when result is present",
+     "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallItemResult"
+    },
+    {
+     "path": "item.error",
+     "type": "object|null",
+     "meaning": "error once failed, else null",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallItem"
+    },
+    {
+     "path": "item.error.message",
+     "type": "string",
+     "meaning": "failure message",
+     "availability": "conditional",
+     "condition": "when error is present",
+     "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallItemError"
+    },
+    {
+     "path": "item.status",
+     "type": "string",
+     "meaning": "call status",
+     "availability": "always",
+     "values": [
+      "in_progress",
+      "completed",
+      "failed"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallStatus"
+    }
+   ],
+   "vendor_tests": [
+    "mcp_tool_call_begin_and_end_emit_item_events",
+    "mcp_tool_call_failure_sets_failed_status",
+    "mcp_tool_call_defaults_arguments_and_preserves_structured_content"
+   ],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "codex.stream.fallback->source_record",
+    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+   }
+  },
+  {
+   "variant": "item.started/collab_tool_call",
+   "emitted": "conditional",
+   "condition": "when multi-agent collaboration is used",
+   "lifecycle": "when the collab tool is invoked",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "event discriminator (ThreadEvent, serde tag)",
+     "availability": "always",
+     "values": [
+      "item.started"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadEvent"
+    },
+    {
+     "path": "item",
+     "type": "object",
+     "meaning": "the ThreadItem: id plus the flattened family payload",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#ItemStartedEvent/ItemUpdatedEvent/ItemCompletedEvent"
+    },
+    {
+     "path": "item.id",
+     "type": "string",
+     "meaning": "stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id",
+     "availability": "always",
+     "identity": "stream-local, per exec process",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#next_item_id, started_item_id, completed_item_id"
+    },
+    {
+     "path": "item.type",
+     "type": "string",
+     "meaning": "item family discriminator (ThreadItemDetails, serde tag, snake_case)",
+     "availability": "always",
+     "values": [
+      "collab_tool_call"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadItemDetails"
+    },
+    {
+     "path": "item.tool",
+     "type": "string",
+     "meaning": "collaboration operation; send_message, followup_task, interrupt_agent and list_agents are suppressed and resume_agent is reported as wait",
+     "availability": "always",
+     "values": [
+      "spawn_agent",
+      "send_input",
+      "wait",
+      "close_agent"
+     ],
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#map_item_with_id CollabAgentToolCall"
+    },
+    {
+     "path": "item.sender_thread_id",
+     "type": "string",
+     "meaning": "thread that invoked the operation",
+     "availability": "always",
+     "identity": "native thread id",
+     "symbol": "codex-rs/exec/src/exec_events.rs#CollabToolCallItem"
+    },
+    {
+     "path": "item.receiver_thread_ids",
+     "type": "array",
+     "meaning": "threads the operation targets (spawned agents once known)",
+     "availability": "always",
+     "identity": "native thread ids",
+     "symbol": "codex-rs/exec/src/exec_events.rs#CollabToolCallItem"
+    },
+    {
+     "path": "item.prompt",
+     "type": "string|null",
+     "meaning": "prompt sent to the agent",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#CollabToolCallItem"
+    },
+    {
+     "path": "item.agents_states",
+     "type": "object",
+     "meaning": "last known state per receiver thread id: {status, message}",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#CollabAgentState"
+    },
+    {
+     "path": "item.status",
+     "type": "string",
+     "meaning": "call status; an interrupted call suppresses the item",
+     "availability": "always",
+     "values": [
+      "in_progress",
+      "completed",
+      "failed"
+     ],
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#map_item_with_id CollabAgentToolCall"
+    }
+   ],
+   "vendor_tests": [
+    "collab_spawn_begin_and_end_emit_item_events"
+   ],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "codex.stream.fallback->source_record",
+    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+   }
+  },
+  {
+   "variant": "item.completed/collab_tool_call",
+   "emitted": "conditional",
+   "condition": "when multi-agent collaboration is used",
+   "lifecycle": "when the collab tool reports success or failure",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "event discriminator (ThreadEvent, serde tag)",
+     "availability": "always",
+     "values": [
+      "item.completed"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadEvent"
+    },
+    {
+     "path": "item",
+     "type": "object",
+     "meaning": "the ThreadItem: id plus the flattened family payload",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#ItemStartedEvent/ItemUpdatedEvent/ItemCompletedEvent"
+    },
+    {
+     "path": "item.id",
+     "type": "string",
+     "meaning": "stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id",
+     "availability": "always",
+     "identity": "stream-local, per exec process",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#next_item_id, started_item_id, completed_item_id"
+    },
+    {
+     "path": "item.type",
+     "type": "string",
+     "meaning": "item family discriminator (ThreadItemDetails, serde tag, snake_case)",
+     "availability": "always",
+     "values": [
+      "collab_tool_call"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadItemDetails"
+    },
+    {
+     "path": "item.tool",
+     "type": "string",
+     "meaning": "collaboration operation; send_message, followup_task, interrupt_agent and list_agents are suppressed and resume_agent is reported as wait",
+     "availability": "always",
+     "values": [
+      "spawn_agent",
+      "send_input",
+      "wait",
+      "close_agent"
+     ],
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#map_item_with_id CollabAgentToolCall"
+    },
+    {
+     "path": "item.sender_thread_id",
+     "type": "string",
+     "meaning": "thread that invoked the operation",
+     "availability": "always",
+     "identity": "native thread id",
+     "symbol": "codex-rs/exec/src/exec_events.rs#CollabToolCallItem"
+    },
+    {
+     "path": "item.receiver_thread_ids",
+     "type": "array",
+     "meaning": "threads the operation targets (spawned agents once known)",
+     "availability": "always",
+     "identity": "native thread ids",
+     "symbol": "codex-rs/exec/src/exec_events.rs#CollabToolCallItem"
+    },
+    {
+     "path": "item.prompt",
+     "type": "string|null",
+     "meaning": "prompt sent to the agent",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#CollabToolCallItem"
+    },
+    {
+     "path": "item.agents_states",
+     "type": "object",
+     "meaning": "last known state per receiver thread id: {status, message}",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#CollabAgentState"
+    },
+    {
+     "path": "item.status",
+     "type": "string",
+     "meaning": "call status; an interrupted call suppresses the item",
+     "availability": "always",
+     "values": [
+      "in_progress",
+      "completed",
+      "failed"
+     ],
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#map_item_with_id CollabAgentToolCall"
+    }
+   ],
+   "vendor_tests": [
+    "collab_spawn_begin_and_end_emit_item_events"
+   ],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "codex.stream.fallback->source_record",
+    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+   }
+  },
+  {
+   "variant": "item.started/web_search",
+   "emitted": "conditional",
+   "condition": "when web search is enabled and used",
+   "lifecycle": "when the search is kicked off (query empty, action other)",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "event discriminator (ThreadEvent, serde tag)",
+     "availability": "always",
+     "values": [
+      "item.started"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadEvent"
+    },
+    {
+     "path": "item",
+     "type": "object",
+     "meaning": "the ThreadItem: id plus the flattened family payload",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#ItemStartedEvent/ItemUpdatedEvent/ItemCompletedEvent"
+    },
+    {
+     "path": "item.id",
+     "type": "string",
+     "meaning": "stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id",
+     "availability": "always",
+     "identity": "stream-local, per exec process",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#next_item_id, started_item_id, completed_item_id"
+    },
+    {
+     "path": "item.type",
+     "type": "string",
+     "meaning": "item family discriminator (ThreadItemDetails, serde tag, snake_case)",
+     "availability": "always",
+     "values": [
+      "web_search"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadItemDetails"
+    },
+    {
+     "path": "item.query",
+     "type": "string",
+     "meaning": "search query (empty at start)",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#WebSearchItem"
+    },
+    {
+     "path": "item.action",
+     "type": "object",
+     "meaning": "search action",
+     "availability": "always",
+     "values": [
+      "search",
+      "open_page",
+      "find_in_page",
+      "other"
+     ],
+     "symbol": "codex-rs/protocol/src/models.rs#WebSearchAction"
+    },
+    {
+     "path": "item.results",
+     "type": "array",
+     "meaning": "structured results",
+     "availability": "conditional",
+     "condition": "when results are available",
+     "symbol": "codex-rs/exec/src/exec_events.rs#WebSearchItem"
+    }
+   ],
+   "vendor_tests": [
+    "web_search_start_and_completion_reuse_item_id"
+   ],
+   "journal": {
+    "behavior": "opaque",
+    "rule": "common.opaque->source_record",
+    "note": "the duplicate id member makes the reader refuse to parse the record; its bytes are retained verbatim, no field is readable (defect to resolve)"
+   },
+   "wire_note": "the line very likely carries two 'id' members: the stream-local item id, then the search item's own id (WebSearchItem flattens an id field beside ThreadItem.id and emit() serializes with serde_json::to_string); inferred from the vendor types, the vendor tests compare deserialized values and cannot show it; needs live confirmation"
+  },
+  {
+   "variant": "item.completed/web_search",
+   "emitted": "conditional",
+   "condition": "when web search is enabled and used",
+   "lifecycle": "when results are returned",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "event discriminator (ThreadEvent, serde tag)",
+     "availability": "always",
+     "values": [
+      "item.completed"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadEvent"
+    },
+    {
+     "path": "item",
+     "type": "object",
+     "meaning": "the ThreadItem: id plus the flattened family payload",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#ItemStartedEvent/ItemUpdatedEvent/ItemCompletedEvent"
+    },
+    {
+     "path": "item.id",
+     "type": "string",
+     "meaning": "stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id",
+     "availability": "always",
+     "identity": "stream-local, per exec process",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#next_item_id, started_item_id, completed_item_id"
+    },
+    {
+     "path": "item.type",
+     "type": "string",
+     "meaning": "item family discriminator (ThreadItemDetails, serde tag, snake_case)",
+     "availability": "always",
+     "values": [
+      "web_search"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadItemDetails"
+    },
+    {
+     "path": "item.query",
+     "type": "string",
+     "meaning": "search query (empty at start)",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#WebSearchItem"
+    },
+    {
+     "path": "item.action",
+     "type": "object",
+     "meaning": "search action",
+     "availability": "always",
+     "values": [
+      "search",
+      "open_page",
+      "find_in_page",
+      "other"
+     ],
+     "symbol": "codex-rs/protocol/src/models.rs#WebSearchAction"
+    },
+    {
+     "path": "item.results",
+     "type": "array",
+     "meaning": "structured results",
+     "availability": "conditional",
+     "condition": "when results are available",
+     "symbol": "codex-rs/exec/src/exec_events.rs#WebSearchItem"
+    }
+   ],
+   "vendor_tests": [
+    "web_search_completion_preserves_query_and_action",
+    "web_search_page_actions_and_results_survive_json_output",
+    "web_search_start_and_completion_reuse_item_id"
+   ],
+   "journal": {
+    "behavior": "opaque",
+    "rule": "common.opaque->source_record",
+    "note": "the duplicate id member makes the reader refuse to parse the record; its bytes are retained verbatim, no field is readable (defect to resolve)"
+   },
+   "wire_note": "the line very likely carries two 'id' members: the stream-local item id, then the search item's own id (WebSearchItem flattens an id field beside ThreadItem.id and emit() serializes with serde_json::to_string); inferred from the vendor types, the vendor tests compare deserialized values and cannot show it; needs live confirmation"
+  },
+  {
+   "variant": "item.started/todo_list",
+   "emitted": "conditional",
+   "condition": "when the agent issues a plan",
+   "lifecycle": "first plan update of a turn",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "event discriminator (ThreadEvent, serde tag)",
+     "availability": "always",
+     "values": [
+      "item.started"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadEvent"
+    },
+    {
+     "path": "item",
+     "type": "object",
+     "meaning": "the ThreadItem: id plus the flattened family payload",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#ItemStartedEvent/ItemUpdatedEvent/ItemCompletedEvent"
+    },
+    {
+     "path": "item.id",
+     "type": "string",
+     "meaning": "stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id",
+     "availability": "always",
+     "identity": "stream-local, per exec process",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#next_item_id, started_item_id, completed_item_id"
+    },
+    {
+     "path": "item.type",
+     "type": "string",
+     "meaning": "item family discriminator (ThreadItemDetails, serde tag, snake_case)",
+     "availability": "always",
+     "values": [
+      "todo_list"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadItemDetails"
+    },
+    {
+     "path": "item.items",
+     "type": "array",
+     "meaning": "the agent's plan steps",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#TodoListItem"
+    },
+    {
+     "path": "item.items[].text",
+     "type": "string",
+     "meaning": "step text",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#TodoItem"
+    },
+    {
+     "path": "item.items[].completed",
+     "type": "boolean",
+     "meaning": "whether the step is completed",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#TodoItem"
+    }
+   ],
+   "vendor_tests": [
+    "plan_update_emits_started_then_updated_then_completed"
+   ],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "codex.stream.fallback->source_record",
+    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+   }
+  },
+  {
+   "variant": "item.updated/todo_list",
+   "emitted": "conditional",
+   "condition": "when the plan changes",
+   "lifecycle": "each later plan update (same id)",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "event discriminator (ThreadEvent, serde tag)",
+     "availability": "always",
+     "values": [
+      "item.updated"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadEvent"
+    },
+    {
+     "path": "item",
+     "type": "object",
+     "meaning": "the ThreadItem: id plus the flattened family payload",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#ItemStartedEvent/ItemUpdatedEvent/ItemCompletedEvent"
+    },
+    {
+     "path": "item.id",
+     "type": "string",
+     "meaning": "stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id",
+     "availability": "always",
+     "identity": "stream-local, per exec process",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#next_item_id, started_item_id, completed_item_id"
+    },
+    {
+     "path": "item.type",
+     "type": "string",
+     "meaning": "item family discriminator (ThreadItemDetails, serde tag, snake_case)",
+     "availability": "always",
+     "values": [
+      "todo_list"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadItemDetails"
+    },
+    {
+     "path": "item.items",
+     "type": "array",
+     "meaning": "the agent's plan steps",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#TodoListItem"
+    },
+    {
+     "path": "item.items[].text",
+     "type": "string",
+     "meaning": "step text",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#TodoItem"
+    },
+    {
+     "path": "item.items[].completed",
+     "type": "boolean",
+     "meaning": "whether the step is completed",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#TodoItem"
+    }
+   ],
+   "vendor_tests": [
+    "plan_update_emits_started_then_updated_then_completed"
+   ],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "codex.stream.fallback->source_record",
+    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+   }
+  },
+  {
+   "variant": "item.completed/todo_list",
+   "emitted": "conditional",
+   "condition": "when a plan was issued in the turn",
+   "lifecycle": "at turn completion (same id)",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "event discriminator (ThreadEvent, serde tag)",
+     "availability": "always",
+     "values": [
+      "item.completed"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadEvent"
+    },
+    {
+     "path": "item",
+     "type": "object",
+     "meaning": "the ThreadItem: id plus the flattened family payload",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#ItemStartedEvent/ItemUpdatedEvent/ItemCompletedEvent"
+    },
+    {
+     "path": "item.id",
+     "type": "string",
+     "meaning": "stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id",
+     "availability": "always",
+     "identity": "stream-local, per exec process",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#next_item_id, started_item_id, completed_item_id"
+    },
+    {
+     "path": "item.type",
+     "type": "string",
+     "meaning": "item family discriminator (ThreadItemDetails, serde tag, snake_case)",
+     "availability": "always",
+     "values": [
+      "todo_list"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadItemDetails"
+    },
+    {
+     "path": "item.items",
+     "type": "array",
+     "meaning": "the agent's plan steps",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#TodoListItem"
+    },
+    {
+     "path": "item.items[].text",
+     "type": "string",
+     "meaning": "step text",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#TodoItem"
+    },
+    {
+     "path": "item.items[].completed",
+     "type": "boolean",
+     "meaning": "whether the step is completed",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#TodoItem"
+    }
+   ],
+   "vendor_tests": [
+    "plan_update_emits_started_then_updated_then_completed",
+    "plan_update_after_completion_starts_new_todo_list_with_new_id"
+   ],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "codex.stream.fallback->source_record",
+    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+   }
+  },
+  {
+   "variant": "item.completed/error",
+   "emitted": "conditional",
+   "condition": "on a non-fatal warning",
+   "lifecycle": "completion only: warnings, configuration warnings, deprecation notices, model reroutes",
+   "fields": [
+    {
+     "path": "type",
+     "type": "string",
+     "meaning": "event discriminator (ThreadEvent, serde tag)",
+     "availability": "always",
+     "values": [
+      "item.completed"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadEvent"
+    },
+    {
+     "path": "item",
+     "type": "object",
+     "meaning": "the ThreadItem: id plus the flattened family payload",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#ItemStartedEvent/ItemUpdatedEvent/ItemCompletedEvent"
+    },
+    {
+     "path": "item.id",
+     "type": "string",
+     "meaning": "stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id",
+     "availability": "always",
+     "identity": "stream-local, per exec process",
+     "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#next_item_id, started_item_id, completed_item_id"
+    },
+    {
+     "path": "item.type",
+     "type": "string",
+     "meaning": "item family discriminator (ThreadItemDetails, serde tag, snake_case)",
+     "availability": "always",
+     "values": [
+      "error"
+     ],
+     "symbol": "codex-rs/exec/src/exec_events.rs#ThreadItemDetails"
+    },
+    {
+     "path": "item.message",
+     "type": "string",
+     "meaning": "the non-fatal message (a reroute names both models in this text)",
+     "availability": "always",
+     "symbol": "codex-rs/exec/src/exec_events.rs#ErrorItem"
+    }
+   ],
+   "vendor_tests": [
+    "warning_event_produces_error_item",
+    "model_reroute_surfaces_as_error_item"
+   ],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "codex.stream.fallback->source_record",
+    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+   }
+  }
+ ],
+ "omitted_by_projection": [
+  {
+   "what": "original item id (app-server item id; for tools the model-facing call id)",
+   "applies_to": "every item family",
+   "consequence": "items cannot be linked to the model's tool-call request or to a native session record; only the stream-local item_N id survives (web_search alone also carries its own search id)",
+   "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#map_item_with_id (make_id)"
+  },
+  {
+   "what": "event timestamps (started_at_ms, completed_at_ms)",
+   "applies_to": "every item event",
+   "consequence": "no source time; Journal records the fallback time basis",
+   "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#collect_thread_events"
+  },
+  {
+   "what": "turn id",
+   "applies_to": "turn.started, turn.completed, turn.failed",
+   "consequence": "turns are identified only by position",
+   "symbol": "codex-rs/exec/src/exec_events.rs#TurnStartedEvent"
+  },
+  {
+   "what": "user prompt (UserMessage items) and hook prompts",
+   "applies_to": "user-submission, injected-context",
+   "consequence": "the prompt and injected context are not in the exec stream",
+   "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#map_item_with_id (_ => None)"
+  },
+  {
+   "what": "session configuration beyond thread_id (model, cwd, sandbox and approval policy, provider)",
+   "applies_to": "thread.started",
+   "consequence": "model identity and launch settings are not in the exec stream; a model reroute appears only inside an error item's text",
+   "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#print_config_summary, thread_started_event"
+  },
+  {
+   "what": "per-update token usage, per-turn last usage, cost",
+   "applies_to": "turn.completed",
+   "consequence": "only the thread's cumulative total at turn end; no cost",
+   "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#usage_from_last_total"
+  },
+  {
+   "what": "agent message phase, memory citation, delivery, questions; started agent messages",
+   "applies_to": "agent_message",
+   "consequence": "only the final text",
+   "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#map_item_with_id AgentMessage, map_started_item"
+  },
+  {
+   "what": "raw reasoning content, summary part boundaries, empty summaries",
+   "applies_to": "reasoning",
+   "consequence": "summary text only, joined with newlines",
+   "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#map_item_with_id Reasoning"
+  },
+  {
+   "what": "command cwd, process id, source, parsed command actions, duration, plugin id, script path",
+   "applies_to": "command_execution",
+   "consequence": "no structured invocation arguments beyond the command string, no duration",
+   "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#map_item_with_id CommandExecution"
+  },
+  {
+   "what": "patch contents (diff) and update move paths; declined status",
+   "applies_to": "file_change",
+   "consequence": "paths and kinds only; declined reported as failed",
+   "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#map_item_with_id FileChange"
+  },
+  {
+   "what": "MCP app context, app resource uri, app ui, plugin id, read-only hint, duration",
+   "applies_to": "mcp_tool_call",
+   "consequence": "no duration or app metadata",
+   "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#map_item_with_id McpToolCall"
+  },
+  {
+   "what": "collab model and reasoning effort; send_message, followup_task, interrupt_agent and list_agents operations; interrupted calls; resume_agent distinguished from wait",
+   "applies_to": "collab_tool_call",
+   "consequence": "some collaboration operations are never reported",
+   "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#map_item_with_id CollabAgentToolCall"
+  },
+  {
+   "what": "child-thread activity (sub-agent items, SubAgentActivity)",
+   "applies_to": "child runs",
+   "consequence": "the spawn relationship is reported (collab_tool_call), the child's own work is not",
+   "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#map_item_with_id (_ => None)"
+  },
+  {
+   "what": "dynamic tool calls, function call outputs, plans, image view, sleep, image generation, review mode, context compaction",
+   "applies_to": "item kinds without an exec projection",
+   "consequence": "these activities do not appear in the exec stream",
+   "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#map_item_with_id (_ => None)"
+  },
+  {
+   "what": "hook started/completed, model verification, turn diff updates",
+   "applies_to": "notifications",
+   "consequence": "not reported",
+   "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#collect_thread_events"
+  },
+  {
+   "what": "an interrupted turn's terminal event",
+   "applies_to": "turn lifecycle",
+   "consequence": "an interrupted turn ends with no turn.completed or turn.failed",
+   "symbol": "codex-rs/exec/src/event_processor_with_jsonl_output.rs#collect_thread_events TurnStatus::Interrupted"
+  }
+ ]
+}

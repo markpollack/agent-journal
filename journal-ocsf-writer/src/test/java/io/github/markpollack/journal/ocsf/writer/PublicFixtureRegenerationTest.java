@@ -21,6 +21,8 @@ import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.INTERR
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.PAIR;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CANCELLED;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CODEX;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX_FAMILIES;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX_TURN_FAILED;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CODEX_CANCELLED;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_DENIAL;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_FEATURES;
@@ -54,6 +56,8 @@ class PublicFixtureRegenerationTest {
         write(LIVE_CODEX, List.of(codexStream()), List.of("stream.jsonl"));
         writeCancelled(LIVE_CANCELLED, claudeStreamStdout());
         writeCancelled(LIVE_CODEX_CANCELLED, codexStream());
+        write(CODEX_FAMILIES, List.of(codexStream()), List.of("stream.jsonl"));
+        write(CODEX_TURN_FAILED, List.of(codexStream()), List.of("stream.jsonl"));
     }
 
     /**

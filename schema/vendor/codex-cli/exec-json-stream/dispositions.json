@@ -1,380 +1,1357 @@
 {
-  "kind": "agent-journal/field-dispositions",
-  "version": "0.1",
-  "reviewed": "2026-10-21 (ACCEPT-1)",
-  "profile": "codex_stream",
-  "compatibility_entries": ["codex-cli/exec-json-stream/0.160.1"],
-  "specification": "schema/vendor/codex-cli/exec-json-stream/0.160.1.json",
-  "contract": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
-  "contract_file": "codex-cli-0.160.1-exec-stream",
-  "evidence_fixtures": [
-    "syn-codex-exec-stream",
-    "codex-live-0.160.1-commands"
-  ],
-  "rule_of_coverage": "see claude-code/stream-json/dispositions.json; the same FieldDispositionTest applies",
-  "entries": [
-    {
-      "variant": "*",
-      "path": "type",
-      "disposition": "normalized",
-      "destination": [
-        "*.class_uid",
-        "*.unmapped",
-        "source_record.record_type"
-      ],
-      "rule": "record_discriminator",
-      "evidence": {
-        "property": "whole_record.class"
-      },
-      "tests": [
-        "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
-      ],
-      "note": "the record discriminator (with item.type) selects the rule and class"
-    },
-    {
-      "variant": "*",
-      "path": "item",
-      "subtree": true,
-      "disposition": "retained",
-      "evidence": {
-        "property": "whole_record.coverage"
-      },
-      "tests": [
-        "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
-      ],
-      "note": "subtree default for item members not named below: whole record in data (and the whole item in tool_operation.data / content block data)"
-    },
-    {
-      "variant": "*",
-      "path": "item.type",
-      "disposition": "normalized",
-      "destination": [
-        "*.class_uid",
-        "source_record.record_type"
-      ],
-      "rule": "record_discriminator",
-      "evidence": {
-        "property": "whole_record.class"
-      },
-      "tests": [
-        "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
-      ]
-    },
-    {
-      "variant": "thread.started",
-      "path": "thread_id",
-      "disposition": "normalized",
-      "destination": [
-        "*.session_uid",
-        "declaration:session.session_uid"
-      ],
-      "rule": "codex.stream.fallback->source_record",
-      "evidence": {
-        "property": "identity.values"
-      },
-      "tests": [
-        "CodexStreamMapperTest#theThreadIdBecomesTheSessionOfEveryLaterEvent"
-      ],
-      "note": "the stream states its session identity once; the record is retained whole and every later event carries the thread id as session_uid (rule codex.stream.thread_started->session, recorded on the fallback rule)"
-    },
-    {
-      "variant": "item.completed/agent_message",
-      "path": "item.id",
-      "disposition": "normalized",
-      "destination": [
-        "model_response.response_uid"
-      ],
-      "rule": "codex.stream.agent_message->model_response",
-      "evidence": {
-        "property": "response.values"
-      },
-      "tests": [
-        "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
-      ],
-      "note": "a stream-scoped item id; it does not occur in the native session file (R13-08)"
-    },
-    {
-      "variant": "item.completed/agent_message",
-      "path": "item.text",
-      "disposition": "normalized",
-      "destination": [
-        "model_response.content_blocks[].text",
-        "model_response.content_blocks[].data"
-      ],
-      "rule": "codex.stream.agent_message->model_response",
-      "evidence": {
-        "property": "response.values"
-      },
-      "tests": [
-        "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
-      ]
-    },
-    {
-      "variant": "item.started/command_execution",
-      "path": "item.id",
-      "disposition": "normalized",
-      "destination": [
-        "tool_call.tool_operation.uid"
-      ],
-      "rule": "codex.stream.command_execution->tool_call.operation",
-      "evidence": {
-        "property": "operation.values"
-      },
-      "tests": [
-        "CodexExecStreamTest#aDroppedStartOrASwappedIdentityIsAPopulationDefect"
-      ],
-      "note": "one operation identity across its start and completion observations; unattributed: the stream reports no call id"
-    },
-    {
-      "variant": "item.completed/command_execution",
-      "path": "item.id",
-      "disposition": "normalized",
-      "destination": [
-        "tool_call.tool_operation.uid"
-      ],
-      "rule": "codex.stream.command_execution->tool_call.operation",
-      "evidence": {
-        "property": "operation.values"
-      },
-      "tests": [
-        "CodexExecStreamTest#aDroppedStartOrASwappedIdentityIsAPopulationDefect"
-      ]
-    },
-    {
-      "variant": "item.started/command_execution",
-      "path": "item.status",
-      "disposition": "normalized",
-      "destination": [
-        "tool_call.tool_operation.reported_state",
-        "tool_call.status_id"
-      ],
-      "rule": "codex.stream.command_execution->tool_call.operation",
-      "evidence": {
-        "property": "operation.values"
-      },
-      "tests": [
-        "CodexExecStreamTest#aDroppedStartOrASwappedIdentityIsAPopulationDefect"
-      ],
-      "note": "in_progress at start: status Unknown with the reported basis, never success"
-    },
-    {
-      "variant": "item.completed/command_execution",
-      "path": "item.status",
-      "disposition": "normalized",
-      "destination": [
-        "tool_call.tool_operation.reported_state",
-        "tool_call.status_id"
-      ],
-      "rule": "codex.stream.command_execution->tool_call.operation",
-      "evidence": {
-        "property": "operation.values"
-      },
-      "tests": [
-        "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
-      ]
-    },
-    {
-      "variant": "item.started/command_execution",
-      "path": "item.exit_code",
-      "disposition": "normalized",
-      "destination": [
-        "tool_call.tool_operation.exit_code"
-      ],
-      "rule": "codex.stream.command_execution->tool_call.operation",
-      "evidence": {
-        "property": "operation.values"
-      },
-      "tests": [
-        "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
-      ],
-      "note": "null at start: absent on the operation (absence is not zero)"
-    },
-    {
-      "variant": "item.completed/command_execution",
-      "path": "item.exit_code",
-      "disposition": "normalized",
-      "destination": [
-        "tool_call.tool_operation.exit_code"
-      ],
-      "rule": "codex.stream.command_execution->tool_call.operation",
-      "evidence": {
-        "property": "operation.values"
-      },
-      "tests": [
-        "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
-      ]
-    },
-    {
-      "variant": "item.started/command_execution",
-      "path": "item.aggregated_output",
-      "disposition": "normalized",
-      "destination": [
-        "tool_call.tool_operation.stdout"
-      ],
-      "rule": "codex.stream.command_execution->tool_call.operation",
-      "evidence": {
-        "property": "operation.values"
-      },
-      "tests": [
-        "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
-      ],
-      "note": "the vendor's aggregated output (stdout and stderr combined by the CLI); stored as stdout with that meaning stated in the contract"
-    },
-    {
-      "variant": "item.completed/command_execution",
-      "path": "item.aggregated_output",
-      "disposition": "normalized",
-      "destination": [
-        "tool_call.tool_operation.stdout"
-      ],
-      "rule": "codex.stream.command_execution->tool_call.operation",
-      "evidence": {
-        "property": "operation.values"
-      },
-      "tests": [
-        "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
-      ]
-    },
-    {
-      "variant": "item.started/command_execution",
-      "path": "item.command",
-      "disposition": "retained",
-      "evidence": {
-        "property": "whole_record.coverage"
-      },
-      "tests": [
-        "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
-      ],
-      "note": "the command line as one string, kept in tool_operation.data and the whole record; not split into argv (the stream gives no argv)"
-    },
-    {
-      "variant": "item.completed/command_execution",
-      "path": "item.command",
-      "disposition": "retained",
-      "evidence": {
-        "property": "whole_record.coverage"
-      },
-      "tests": [
-        "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
-      ]
-    },
-    {
-      "variant": "turn.completed",
-      "path": "usage",
-      "subtree": true,
-      "disposition": "retained",
-      "evidence": {
-        "property": "whole_record.coverage"
-      },
-      "tests": [
-        "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
-      ],
-      "note": "subtree default: the usage object is kept whole in the record and in usage_observation.data; the five components below are normalized"
-    },
-    {
-      "variant": "turn.completed",
-      "path": "usage.input_tokens",
-      "disposition": "normalized",
-      "destination": [
-        "prompt_turn.usage_observations[].input_tokens"
-      ],
-      "rule": "codex.stream.turn_completed->prompt_turn.completed",
-      "evidence": {
-        "property": "usage.values"
-      },
-      "tests": [
-        "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
-      ],
-      "note": "turn-scope final usage once; a 2^53+1 integer is preserved exactly on the fixture"
-    },
-    {
-      "variant": "turn.completed",
-      "path": "usage.output_tokens",
-      "disposition": "normalized",
-      "destination": [
-        "prompt_turn.usage_observations[].output_tokens"
-      ],
-      "rule": "codex.stream.turn_completed->prompt_turn.completed",
-      "evidence": {
-        "property": "usage.values"
-      },
-      "tests": [
-        "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
-      ]
-    },
-    {
-      "variant": "turn.completed",
-      "path": "usage.cached_input_tokens",
-      "disposition": "normalized",
-      "destination": [
-        "prompt_turn.usage_observations[].cache_read_tokens"
-      ],
-      "rule": "codex.stream.turn_completed->prompt_turn.completed",
-      "evidence": {
-        "property": "usage.values"
-      },
-      "tests": [
-        "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
-      ]
-    },
-    {
-      "variant": "turn.completed",
-      "path": "usage.cache_write_input_tokens",
-      "disposition": "normalized",
-      "destination": [
-        "prompt_turn.usage_observations[].cache_write_tokens"
-      ],
-      "rule": "codex.stream.turn_completed->prompt_turn.completed",
-      "evidence": {
-        "property": "usage.values"
-      },
-      "tests": [
-        "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
-      ]
-    },
-    {
-      "variant": "turn.completed",
-      "path": "usage.reasoning_output_tokens",
-      "disposition": "normalized",
-      "destination": [
-        "prompt_turn.usage_observations[].reasoning_tokens"
-      ],
-      "rule": "codex.stream.turn_completed->prompt_turn.completed",
-      "evidence": {
-        "property": "usage.values"
-      },
-      "tests": [
-        "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
-      ]
-    },
-    {
-      "variant": "turn.started",
-      "path": "type",
-      "disposition": "normalized",
-      "destination": [
-        "source_record.record_type"
-      ],
-      "rule": "codex.stream.fallback->source_record",
-      "evidence": {
-        "property": "whole_record.class"
-      },
-      "tests": [
-        "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
-      ],
-      "note": "turn start without a turn id: retained whole (no turn identity to normalize; prompt_turn Started is not emitted because the stream names no turn)"
-    },
-    {
-      "variant": "synthetic.unknown_event",
-      "path": "*",
-      "subtree": true,
-      "disposition": "retained",
-      "evidence": {
-        "property": "whole_record.coverage"
-      },
-      "tests": [
-        "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
-      ],
-      "note": "LABELLED SYNTHETIC unknown top-level event of the fixture: retained whole under the fallback rule; stands for any event type the contract does not know"
-    }
-  ]
+ "kind": "agent-journal/field-dispositions",
+ "version": "0.1",
+ "reviewed": "2026-10-21 (ACCEPT-1)",
+ "profile": "codex_stream",
+ "compatibility_entries": [
+  "codex-cli/exec-json-stream/0.160.1"
+ ],
+ "specification": "schema/vendor/codex-cli/exec-json-stream/0.160.1.json",
+ "contract": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
+ "contract_file": "codex-cli-0.160.1-exec-stream",
+ "evidence_fixtures": [
+  "codex-live-0.160.1-commands",
+  "syn-codex-exec-families-0.160.1",
+  "syn-codex-exec-stream",
+  "syn-codex-exec-turn-failed-0.160.1"
+ ],
+ "rule_of_coverage": "see claude-code/stream-json/dispositions.json; the same FieldDispositionTest applies",
+ "entries": [
+  {
+   "variant": "*",
+   "path": "type",
+   "disposition": "normalized",
+   "destination": [
+    "*.class_uid",
+    "*.unmapped",
+    "source_record.record_type"
+   ],
+   "rule": "record_discriminator",
+   "evidence": {
+    "property": "whole_record.class"
+   },
+   "tests": [
+    "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
+   ],
+   "note": "the record discriminator (with item.type) selects the rule and class"
+  },
+  {
+   "variant": "*",
+   "path": "item",
+   "subtree": true,
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
+   ],
+   "note": "subtree default for item members not named below: whole record in data (and the whole item in tool_operation.data / content block data)"
+  },
+  {
+   "variant": "*",
+   "path": "item.type",
+   "disposition": "normalized",
+   "destination": [
+    "*.class_uid",
+    "source_record.record_type"
+   ],
+   "rule": "record_discriminator",
+   "evidence": {
+    "property": "whole_record.class"
+   },
+   "tests": [
+    "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
+   ]
+  },
+  {
+   "variant": "thread.started",
+   "path": "thread_id",
+   "disposition": "normalized",
+   "destination": [
+    "*.session_uid",
+    "declaration:session.session_uid"
+   ],
+   "rule": "codex.stream.fallback->source_record",
+   "evidence": {
+    "property": "identity.values"
+   },
+   "tests": [
+    "CodexStreamMapperTest#theThreadIdBecomesTheSessionOfEveryLaterEvent"
+   ],
+   "note": "the stream states its session identity once; the record is retained whole and every later event carries the thread id as session_uid (rule codex.stream.thread_started->session, recorded on the fallback rule)"
+  },
+  {
+   "variant": "item.completed/agent_message",
+   "path": "item.id",
+   "disposition": "normalized",
+   "destination": [
+    "model_response.response_uid"
+   ],
+   "rule": "codex.stream.agent_message->model_response",
+   "evidence": {
+    "property": "response.values"
+   },
+   "tests": [
+    "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
+   ],
+   "note": "a stream-scoped item id; it does not occur in the native session file (R13-08)"
+  },
+  {
+   "variant": "item.completed/agent_message",
+   "path": "item.text",
+   "disposition": "normalized",
+   "destination": [
+    "model_response.content_blocks[].text",
+    "model_response.content_blocks[].data"
+   ],
+   "rule": "codex.stream.agent_message->model_response",
+   "evidence": {
+    "property": "response.values"
+   },
+   "tests": [
+    "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
+   ]
+  },
+  {
+   "variant": "item.started/command_execution",
+   "path": "item.id",
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_operation.uid"
+   ],
+   "rule": "codex.stream.command_execution->tool_call.operation",
+   "evidence": {
+    "property": "operation.values"
+   },
+   "tests": [
+    "CodexExecStreamTest#aDroppedStartOrASwappedIdentityIsAPopulationDefect"
+   ],
+   "note": "one operation identity across its start and completion observations; unattributed: the stream reports no call id"
+  },
+  {
+   "variant": "item.completed/command_execution",
+   "path": "item.id",
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_operation.uid"
+   ],
+   "rule": "codex.stream.command_execution->tool_call.operation",
+   "evidence": {
+    "property": "operation.values"
+   },
+   "tests": [
+    "CodexExecStreamTest#aDroppedStartOrASwappedIdentityIsAPopulationDefect"
+   ]
+  },
+  {
+   "variant": "item.started/command_execution",
+   "path": "item.status",
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_operation.reported_state",
+    "tool_call.status_id"
+   ],
+   "rule": "codex.stream.command_execution->tool_call.operation",
+   "evidence": {
+    "property": "operation.values"
+   },
+   "tests": [
+    "CodexExecStreamTest#aDroppedStartOrASwappedIdentityIsAPopulationDefect"
+   ],
+   "note": "in_progress at start: status Unknown with the reported basis, never success"
+  },
+  {
+   "variant": "item.completed/command_execution",
+   "path": "item.status",
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_operation.reported_state",
+    "tool_call.status_id"
+   ],
+   "rule": "codex.stream.command_execution->tool_call.operation",
+   "evidence": {
+    "property": "operation.values"
+   },
+   "tests": [
+    "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
+   ]
+  },
+  {
+   "variant": "item.started/command_execution",
+   "path": "item.exit_code",
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_operation.exit_code"
+   ],
+   "rule": "codex.stream.command_execution->tool_call.operation",
+   "evidence": {
+    "property": "operation.values"
+   },
+   "tests": [
+    "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
+   ],
+   "note": "null at start: absent on the operation (absence is not zero)"
+  },
+  {
+   "variant": "item.completed/command_execution",
+   "path": "item.exit_code",
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_operation.exit_code"
+   ],
+   "rule": "codex.stream.command_execution->tool_call.operation",
+   "evidence": {
+    "property": "operation.values"
+   },
+   "tests": [
+    "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
+   ]
+  },
+  {
+   "variant": "item.started/command_execution",
+   "path": "item.aggregated_output",
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_operation.stdout"
+   ],
+   "rule": "codex.stream.command_execution->tool_call.operation",
+   "evidence": {
+    "property": "operation.values"
+   },
+   "tests": [
+    "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
+   ],
+   "note": "the vendor's aggregated output (stdout and stderr combined by the CLI); stored as stdout with that meaning stated in the contract"
+  },
+  {
+   "variant": "item.completed/command_execution",
+   "path": "item.aggregated_output",
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_operation.stdout"
+   ],
+   "rule": "codex.stream.command_execution->tool_call.operation",
+   "evidence": {
+    "property": "operation.values"
+   },
+   "tests": [
+    "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
+   ]
+  },
+  {
+   "variant": "item.started/command_execution",
+   "path": "item.command",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
+   ],
+   "note": "the command line as one string, kept in tool_operation.data and the whole record; not split into argv (the stream gives no argv)"
+  },
+  {
+   "variant": "item.completed/command_execution",
+   "path": "item.command",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
+   ]
+  },
+  {
+   "variant": "turn.completed",
+   "path": "usage",
+   "subtree": true,
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
+   ],
+   "note": "subtree default: the usage object is kept whole in the record and in usage_observation.data; the five components below are normalized"
+  },
+  {
+   "variant": "turn.completed",
+   "path": "usage.input_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.usage_observations[].input_tokens"
+   ],
+   "rule": "codex.stream.turn_completed->prompt_turn.completed",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
+   ],
+   "note": "turn-scope final usage once; a 2^53+1 integer is preserved exactly on the fixture"
+  },
+  {
+   "variant": "turn.completed",
+   "path": "usage.output_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.usage_observations[].output_tokens"
+   ],
+   "rule": "codex.stream.turn_completed->prompt_turn.completed",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
+   ]
+  },
+  {
+   "variant": "turn.completed",
+   "path": "usage.cached_input_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.usage_observations[].cache_read_tokens"
+   ],
+   "rule": "codex.stream.turn_completed->prompt_turn.completed",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
+   ]
+  },
+  {
+   "variant": "turn.completed",
+   "path": "usage.cache_write_input_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.usage_observations[].cache_write_tokens"
+   ],
+   "rule": "codex.stream.turn_completed->prompt_turn.completed",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
+   ]
+  },
+  {
+   "variant": "turn.completed",
+   "path": "usage.reasoning_output_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.usage_observations[].reasoning_tokens"
+   ],
+   "rule": "codex.stream.turn_completed->prompt_turn.completed",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
+   ]
+  },
+  {
+   "variant": "turn.started",
+   "path": "type",
+   "disposition": "normalized",
+   "destination": [
+    "source_record.record_type"
+   ],
+   "rule": "codex.stream.fallback->source_record",
+   "evidence": {
+    "property": "whole_record.class"
+   },
+   "tests": [
+    "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
+   ],
+   "note": "turn start without a turn id: retained whole (no turn identity to normalize; prompt_turn Started is not emitted because the stream names no turn)"
+  },
+  {
+   "variant": "synthetic.unknown_event",
+   "path": "*",
+   "subtree": true,
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
+   ],
+   "note": "LABELLED SYNTHETIC unknown top-level event of the fixture: retained whole under the fallback rule; stands for any event type the contract does not know"
+  },
+  {
+   "variant": "turn.failed",
+   "path": "error.message",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): structured turn error message (with additional details appended in parentheses), else the last critical error, else 'turn failed'; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "error",
+   "path": "message",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): error message with additional details appended; also emitted when an event cannot be serialized; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/reasoning",
+   "path": "item.id",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/reasoning",
+   "path": "item.text",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): the reasoning summary parts joined with newlines; raw reasoning content is not emitted; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/file_change",
+   "path": "item.id",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/file_change",
+   "path": "item.changes[].path",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): changed file path; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/file_change",
+   "path": "item.changes[].kind",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): change kind; the patch contents are not emitted; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/file_change",
+   "path": "item.status",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): patch status; a declined patch is reported as failed; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/file_change",
+   "path": "item.id",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/file_change",
+   "path": "item.changes[].path",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): changed file path; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/file_change",
+   "path": "item.changes[].kind",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): change kind; the patch contents are not emitted; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/file_change",
+   "path": "item.status",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): patch status; a declined patch is reported as failed; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/mcp_tool_call",
+   "path": "item.id",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/mcp_tool_call",
+   "path": "item.server",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): MCP server name; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/mcp_tool_call",
+   "path": "item.tool",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): MCP tool name; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/mcp_tool_call",
+   "path": "item.arguments",
+   "subtree": true,
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): structured tool arguments (null when none); retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/mcp_tool_call",
+   "path": "item.result.content",
+   "subtree": true,
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): MCP content blocks returned to the model; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/mcp_tool_call",
+   "path": "item.result._meta",
+   "subtree": true,
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): MCP result metadata; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/mcp_tool_call",
+   "path": "item.result.structured_content",
+   "subtree": true,
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): MCP structured result; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/mcp_tool_call",
+   "path": "item.error.message",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): failure message; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/mcp_tool_call",
+   "path": "item.status",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): call status; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/mcp_tool_call",
+   "path": "item.id",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/mcp_tool_call",
+   "path": "item.server",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): MCP server name; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/mcp_tool_call",
+   "path": "item.tool",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): MCP tool name; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/mcp_tool_call",
+   "path": "item.arguments",
+   "subtree": true,
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): structured tool arguments (null when none); retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/mcp_tool_call",
+   "path": "item.result.content",
+   "subtree": true,
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): MCP content blocks returned to the model; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/mcp_tool_call",
+   "path": "item.result._meta",
+   "subtree": true,
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): MCP result metadata; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/mcp_tool_call",
+   "path": "item.result.structured_content",
+   "subtree": true,
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): MCP structured result; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/mcp_tool_call",
+   "path": "item.error.message",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): failure message; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/mcp_tool_call",
+   "path": "item.status",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): call status; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/collab_tool_call",
+   "path": "item.id",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/collab_tool_call",
+   "path": "item.tool",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): collaboration operation; send_message, followup_task, interrupt_agent and list_agents are suppressed and resume_agent is reported as wait; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/collab_tool_call",
+   "path": "item.sender_thread_id",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): thread that invoked the operation; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/collab_tool_call",
+   "path": "item.receiver_thread_ids",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): threads the operation targets (spawned agents once known); retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/collab_tool_call",
+   "path": "item.prompt",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): prompt sent to the agent; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/collab_tool_call",
+   "path": "item.agents_states",
+   "subtree": true,
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): last known state per receiver thread id: {status, message}; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/collab_tool_call",
+   "path": "item.status",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): call status; an interrupted call suppresses the item; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/collab_tool_call",
+   "path": "item.id",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/collab_tool_call",
+   "path": "item.tool",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): collaboration operation; send_message, followup_task, interrupt_agent and list_agents are suppressed and resume_agent is reported as wait; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/collab_tool_call",
+   "path": "item.sender_thread_id",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): thread that invoked the operation; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/collab_tool_call",
+   "path": "item.receiver_thread_ids",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): threads the operation targets (spawned agents once known); retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/collab_tool_call",
+   "path": "item.prompt",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): prompt sent to the agent; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/collab_tool_call",
+   "path": "item.agents_states",
+   "subtree": true,
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): last known state per receiver thread id: {status, message}; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/collab_tool_call",
+   "path": "item.status",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): call status; an interrupted call suppresses the item; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/web_search",
+   "path": "item.id",
+   "disposition": "unresolved",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs); the record is not parsed: the duplicate id member makes the reader refuse to parse the record; its bytes are retained verbatim, no field is readable (defect to resolve); open question: accept duplicate members or retain opaque",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/web_search",
+   "path": "item.query",
+   "disposition": "unresolved",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs); the record is not parsed: the duplicate id member makes the reader refuse to parse the record; its bytes are retained verbatim, no field is readable (defect to resolve); open question: accept duplicate members or retain opaque",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/web_search",
+   "path": "item.action",
+   "disposition": "unresolved",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs); the record is not parsed: the duplicate id member makes the reader refuse to parse the record; its bytes are retained verbatim, no field is readable (defect to resolve); open question: accept duplicate members or retain opaque",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/web_search",
+   "path": "item.results",
+   "subtree": true,
+   "disposition": "unresolved",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs); the record is not parsed: the duplicate id member makes the reader refuse to parse the record; its bytes are retained verbatim, no field is readable (defect to resolve); open question: accept duplicate members or retain opaque",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/web_search",
+   "path": "item.id",
+   "disposition": "unresolved",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs); the record is not parsed: the duplicate id member makes the reader refuse to parse the record; its bytes are retained verbatim, no field is readable (defect to resolve); open question: accept duplicate members or retain opaque",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/web_search",
+   "path": "item.query",
+   "disposition": "unresolved",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs); the record is not parsed: the duplicate id member makes the reader refuse to parse the record; its bytes are retained verbatim, no field is readable (defect to resolve); open question: accept duplicate members or retain opaque",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/web_search",
+   "path": "item.action",
+   "disposition": "unresolved",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs); the record is not parsed: the duplicate id member makes the reader refuse to parse the record; its bytes are retained verbatim, no field is readable (defect to resolve); open question: accept duplicate members or retain opaque",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/web_search",
+   "path": "item.results",
+   "subtree": true,
+   "disposition": "unresolved",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs); the record is not parsed: the duplicate id member makes the reader refuse to parse the record; its bytes are retained verbatim, no field is readable (defect to resolve); open question: accept duplicate members or retain opaque",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/todo_list",
+   "path": "item.id",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/todo_list",
+   "path": "item.items[].text",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): step text; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.started/todo_list",
+   "path": "item.items[].completed",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): whether the step is completed; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.updated/todo_list",
+   "path": "item.id",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.updated/todo_list",
+   "path": "item.items[].text",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): step text; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.updated/todo_list",
+   "path": "item.items[].completed",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): whether the step is completed; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/todo_list",
+   "path": "item.id",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/todo_list",
+   "path": "item.items[].text",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): step text; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/todo_list",
+   "path": "item.items[].completed",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): whether the step is completed; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/error",
+   "path": "item.id",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "item.completed/error",
+   "path": "item.message",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): the non-fatal message (a reroute names both models in this text); retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  },
+  {
+   "variant": "turn.failed",
+   "path": "error",
+   "disposition": "retained",
+   "destination": [],
+   "rule": null,
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "note": "vendor-declared (Codex 0.160.1 exec_events.rs TurnFailedEvent): the turn's error object; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "vendor_declared": true
+  }
+ ],
+ "vendor_inventory": "0.160.1-vendor-inventory.json"
 }

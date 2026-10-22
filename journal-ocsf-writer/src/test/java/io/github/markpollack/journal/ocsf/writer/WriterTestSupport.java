@@ -37,6 +37,9 @@ final class WriterTestSupport {
     static final String LIVE_CANCELLED = "claude-live-2.1.304-cancelled";
     static final String LIVE_CODEX = "codex-live-0.160.1-commands";
     static final String LIVE_CODEX_CANCELLED = "codex-live-0.160.1-cancelled";
+    /** Labelled synthetic Codex 0.160.1 exec streams derived from the vendor's exec types and processor tests (FND-1). */
+    static final String CODEX_FAMILIES = "syn-codex-exec-families-0.160.1";
+    static final String CODEX_TURN_FAILED = "syn-codex-exec-turn-failed-0.160.1";
     static final String SPAWN = "toolu_01BnEuCUmZ2Vu1LpADzksmrJ";
 
     private WriterTestSupport() {

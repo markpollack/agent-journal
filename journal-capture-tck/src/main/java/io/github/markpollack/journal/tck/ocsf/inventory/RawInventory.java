@@ -47,7 +47,11 @@ public final class RawInventory {
                 case "claude_transcript" -> new ProfileRules(profile,
                         Set.of("message.content[].input", "toolUseResult", "wireToolInputs", "shape.tools[].input_schema", "attachment.tools[].schema"),
                         Set.of("modelUsage"));
-                case "codex_stream" -> new ProfileRules(profile, Set.of(), Set.of());
+                // MCP tool arguments, MCP result content, structured content and _meta, and web-search results are tool
+                // data; collab agents_states is keyed by thread id (codex-rs/exec/src/exec_events.rs at rust-v0.160.1)
+                case "codex_stream" -> new ProfileRules(profile,
+                        Set.of("item.arguments", "item.result.content", "item.result.structured_content", "item.result._meta", "item.results"),
+                        Set.of("item.agents_states"));
                 case "codex_rollout" -> new ProfileRules(profile, Set.of("payload.output"), Set.of());
                 default -> new ProfileRules(profile == null ? "(unknown)" : profile, Set.of(), Set.of());
             };
