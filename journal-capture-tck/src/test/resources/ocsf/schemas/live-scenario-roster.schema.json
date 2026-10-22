@@ -1,0 +1,148 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "urn:agent-journal:live-scenario-roster:0.1",
+ "title": "Shared live scenario roster",
+ "type": "object",
+ "required": [
+  "kind",
+  "version",
+  "behaviors",
+  "applicability"
+ ],
+ "properties": {
+  "kind": {
+   "const": "agent-journal/live-scenario-roster"
+  },
+  "version": {
+   "const": "0.1"
+  },
+  "behaviors": {
+   "type": "array",
+   "minItems": 10,
+   "items": {
+    "type": "object",
+    "required": [
+     "id",
+     "name",
+     "native_observation",
+     "journal_assertion"
+    ],
+    "properties": {
+     "id": {
+      "enum": [
+       "LIVE-01",
+       "LIVE-02",
+       "LIVE-03",
+       "LIVE-04",
+       "LIVE-05",
+       "LIVE-06",
+       "LIVE-07",
+       "LIVE-08",
+       "LIVE-09",
+       "LIVE-10"
+      ]
+     },
+     "name": {
+      "type": "string",
+      "minLength": 1
+     },
+     "native_observation": {
+      "type": "string",
+      "minLength": 1
+     },
+     "journal_assertion": {
+      "type": "string",
+      "minLength": 1
+     }
+    }
+   }
+  },
+  "applicability": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "route",
+     "applicable",
+     "conditional",
+     "not_applicable",
+     "basis"
+    ],
+    "properties": {
+     "route": {
+      "type": "string",
+      "minLength": 1
+     },
+     "applicable": {
+      "type": "array",
+      "items": {
+       "enum": [
+        "LIVE-01",
+        "LIVE-02",
+        "LIVE-03",
+        "LIVE-04",
+        "LIVE-05",
+        "LIVE-06",
+        "LIVE-07",
+        "LIVE-08",
+        "LIVE-09",
+        "LIVE-10"
+       ]
+      }
+     },
+     "conditional": {
+      "type": "array",
+      "items": {
+       "enum": [
+        "LIVE-01",
+        "LIVE-02",
+        "LIVE-03",
+        "LIVE-04",
+        "LIVE-05",
+        "LIVE-06",
+        "LIVE-07",
+        "LIVE-08",
+        "LIVE-09",
+        "LIVE-10"
+       ]
+      }
+     },
+     "basis": {
+      "type": "string",
+      "minLength": 1
+     },
+     "not_applicable": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "required": [
+        "behavior",
+        "basis"
+       ],
+       "properties": {
+        "behavior": {
+         "enum": [
+          "LIVE-01",
+          "LIVE-02",
+          "LIVE-03",
+          "LIVE-04",
+          "LIVE-05",
+          "LIVE-06",
+          "LIVE-07",
+          "LIVE-08",
+          "LIVE-09",
+          "LIVE-10"
+         ]
+        },
+        "basis": {
+         "type": "string",
+         "minLength": 1
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ }
+}

@@ -45,6 +45,14 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
+        <!-- test scope only: validates the coverage bookkeeping documents (vendor inventories, scenario roster and
+             results, foundation pins and inventory) against their JSON Schemas (draft 2020-12); never on the capture path -->
+        <dependency>
+            <groupId>com.networknt</groupId>
+            <artifactId>json-schema-validator</artifactId>
+            <version>1.5.7</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>io.github.markpollack</groupId>
             <artifactId>agent-judge-ai-core</artifactId>

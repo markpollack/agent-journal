@@ -1,0 +1,165 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "urn:agent-journal:live-scenario-results:0.1",
+ "title": "Attempts against the live scenario roster",
+ "type": "object",
+ "required": [
+  "kind",
+  "version",
+  "attempts"
+ ],
+ "properties": {
+  "kind": {
+   "const": "agent-journal/live-scenario-results"
+  },
+  "version": {
+   "const": "0.1"
+  },
+  "attempts": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "id",
+     "route",
+     "cli_version",
+     "evidence_class",
+     "provenance",
+     "behaviors"
+    ],
+    "properties": {
+     "id": {
+      "type": "string",
+      "minLength": 1
+     },
+     "route": {
+      "type": "string",
+      "minLength": 1
+     },
+     "cli_version": {
+      "type": "string",
+      "minLength": 1
+     },
+     "evidence_class": {
+      "enum": [
+       "live",
+       "replay",
+       "synthetic"
+      ]
+     },
+     "fixture": {
+      "type": "string",
+      "minLength": 1
+     },
+     "provenance": {
+      "type": "string",
+      "minLength": 1
+     },
+     "behaviors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+       "type": "object",
+       "required": [
+        "behavior",
+        "status"
+       ],
+       "properties": {
+        "behavior": {
+         "enum": [
+          "LIVE-01",
+          "LIVE-02",
+          "LIVE-03",
+          "LIVE-04",
+          "LIVE-05",
+          "LIVE-06",
+          "LIVE-07",
+          "LIVE-08",
+          "LIVE-09",
+          "LIVE-10"
+         ]
+        },
+        "status": {
+         "enum": [
+          "observed",
+          "attempted-not-triggered",
+          "not-run",
+          "blocked"
+         ]
+        },
+        "predicates": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "required": [
+           "scenario",
+           "min"
+          ],
+          "properties": {
+           "scenario": {
+            "type": "string",
+            "minLength": 1
+           },
+           "min": {
+            "type": "integer",
+            "minimum": 1
+           }
+          }
+         }
+        },
+        "assertions": {
+         "type": "array",
+         "items": {
+          "type": "string",
+          "minLength": 1
+         }
+        },
+        "note": {
+         "type": "string"
+        }
+       },
+       "allOf": [
+        {
+         "if": {
+          "properties": {
+           "status": {
+            "enum": [
+             "observed",
+             "attempted-not-triggered"
+            ]
+           }
+          }
+         },
+         "then": {
+          "required": [
+           "predicates"
+          ],
+          "properties": {
+           "predicates": {
+            "minItems": 1
+           }
+          }
+         }
+        },
+        {
+         "if": {
+          "properties": {
+           "status": {
+            "const": "blocked"
+           }
+          }
+         },
+         "then": {
+          "required": [
+           "note"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    }
+   }
+  }
+ }
+}

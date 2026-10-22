@@ -1,0 +1,96 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "urn:agent-journal:foundation-inventory:0.1",
+ "title": "Ledger-row denominator of the foundation comparison",
+ "type": "object",
+ "required": [
+  "kind",
+  "version",
+  "sources",
+  "rows"
+ ],
+ "properties": {
+  "kind": {
+   "const": "agent-journal/foundation-inventory"
+  },
+  "version": {
+   "const": "0.1"
+  },
+  "sources": {
+   "type": "array",
+   "items": {
+    "type": "string",
+    "minLength": 1
+   }
+  },
+  "rows": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "evidence",
+     "summary",
+     "in_scope"
+    ],
+    "properties": {
+     "evidence": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+:[A-Za-z0-9-]+$"
+     },
+     "summary": {
+      "type": "string",
+      "minLength": 1
+     },
+     "in_scope": {
+      "type": "boolean"
+     },
+     "concept": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "new_concept": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "exclusion": {
+      "oneOf": [
+       {
+        "type": "null"
+       },
+       {
+        "type": "object",
+        "required": [
+         "kind",
+         "reason"
+        ],
+        "properties": {
+         "kind": {
+          "enum": [
+           "analysis-only",
+           "backend-retention",
+           "integration-mechanics",
+           "pricing-calculation",
+           "evaluation-linkage",
+           "privacy-policy",
+           "version-pin-only",
+           "historical-claim-about-journal-1x",
+           "other"
+          ]
+         },
+         "reason": {
+          "type": "string",
+          "minLength": 1
+         }
+        }
+       }
+      ]
+     }
+    }
+   }
+  }
+ }
+}

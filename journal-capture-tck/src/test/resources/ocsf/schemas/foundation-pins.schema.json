@@ -1,0 +1,190 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "urn:agent-journal:foundation-pins:0.1",
+ "title": "Foundation, integration and evidence-source pins of the mapping catalog",
+ "type": "object",
+ "required": [
+  "kind",
+  "version",
+  "foundations",
+  "integrations",
+  "evidence_sources",
+  "unresolved"
+ ],
+ "properties": {
+  "kind": {
+   "const": "agent-journal/foundation-pins"
+  },
+  "version": {
+   "const": "0.1"
+  },
+  "foundations": {
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "type": "object",
+    "required": [
+     "id",
+     "family",
+     "name",
+     "kind",
+     "repository"
+    ],
+    "properties": {
+     "id": {
+      "type": "string",
+      "minLength": 1
+     },
+     "family": {
+      "enum": [
+       "spring_ai",
+       "acp",
+       "otel_genai",
+       "openinference",
+       "weave"
+      ]
+     },
+     "name": {
+      "type": "string",
+      "minLength": 1
+     },
+     "kind": {
+      "enum": [
+       "release",
+       "development",
+       "specification"
+      ]
+     },
+     "repository": {
+      "type": "string",
+      "minLength": 1
+     },
+     "revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+     },
+     "commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+     },
+     "tag_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+     }
+    },
+    "anyOf": [
+     {
+      "required": [
+       "revision"
+      ]
+     },
+     {
+      "required": [
+       "commit"
+      ]
+     },
+     {
+      "required": [
+       "tag_commit"
+      ]
+     }
+    ]
+   }
+  },
+  "integrations": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "id",
+     "name",
+     "evidence_class",
+     "readback_status",
+     "current"
+    ],
+    "properties": {
+     "id": {
+      "type": "string",
+      "minLength": 1
+     },
+     "name": {
+      "type": "string",
+      "minLength": 1
+     },
+     "evidence_class": {
+      "enum": [
+       "specification-only",
+       "source-verified",
+       "replay-observed",
+       "live-observed",
+       "persisted-readback",
+       "blocked"
+      ]
+     },
+     "readback_status": {
+      "type": "string",
+      "minLength": 1
+     },
+     "current": {
+      "type": "boolean"
+     },
+     "derived_from": {
+      "type": "string",
+      "minLength": 1
+     }
+    },
+    "allOf": [
+     {
+      "if": {
+       "properties": {
+        "current": {
+         "const": true
+        }
+       }
+      },
+      "then": {
+       "required": [
+        "derived_from"
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "evidence_sources": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "prefix",
+     "kind"
+    ],
+    "properties": {
+     "prefix": {
+      "type": "string",
+      "minLength": 1
+     },
+     "kind": {
+      "type": "string",
+      "minLength": 1
+     },
+     "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+     },
+     "rows": {
+      "type": "integer",
+      "minimum": 0
+     }
+    }
+   }
+  },
+  "unresolved": {
+   "type": "array",
+   "items": {
+    "type": "string",
+    "minLength": 1
+   }
+  }
+ }
+}

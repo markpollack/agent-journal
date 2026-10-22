@@ -1,0 +1,305 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "urn:agent-journal:vendor-stream-inventory:0.1",
+ "title": "Pinned vendor capability inventory of a CLI stream",
+ "type": "object",
+ "required": [
+  "kind",
+  "version",
+  "cli",
+  "cli_version",
+  "profile",
+  "compatibility_entry",
+  "surface",
+  "source",
+  "families",
+  "omitted_by_projection"
+ ],
+ "properties": {
+  "kind": {
+   "const": "agent-journal/vendor-stream-inventory"
+  },
+  "version": {
+   "const": "0.1"
+  },
+  "cli": {
+   "type": "string",
+   "minLength": 1
+  },
+  "cli_version": {
+   "type": "string",
+   "minLength": 1
+  },
+  "profile": {
+   "type": "string",
+   "minLength": 1
+  },
+  "compatibility_entry": {
+   "type": "string",
+   "minLength": 1
+  },
+  "surface": {
+   "type": "string",
+   "minLength": 1
+  },
+  "source": {
+   "type": "object",
+   "required": [
+    "files",
+    "method"
+   ],
+   "properties": {
+    "commit": {
+     "type": "string",
+     "pattern": "^[0-9a-f]{40}$"
+    },
+    "package": {
+     "type": "string",
+     "minLength": 1
+    },
+    "version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "files": {
+     "type": "object",
+     "minProperties": 1,
+     "additionalProperties": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{40}|[0-9a-f]{64})$"
+     }
+    },
+    "method": {
+     "type": "string",
+     "minLength": 1
+    }
+   },
+   "anyOf": [
+    {
+     "required": [
+      "commit"
+     ]
+    },
+    {
+     "required": [
+      "package",
+      "version"
+     ]
+    }
+   ]
+  },
+  "families": {
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "type": "object",
+    "required": [
+     "variant",
+     "emitted",
+     "lifecycle",
+     "fields",
+     "vendor_tests",
+     "journal"
+    ],
+    "properties": {
+     "variant": {
+      "type": "string",
+      "minLength": 1
+     },
+     "emitted": {
+      "enum": [
+       "always",
+       "conditional"
+      ]
+     },
+     "condition": {
+      "type": "string",
+      "minLength": 1
+     },
+     "lifecycle": {
+      "type": "string",
+      "minLength": 1
+     },
+     "fields": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+       "type": "object",
+       "required": [
+        "path",
+        "type",
+        "meaning",
+        "availability",
+        "symbol"
+       ],
+       "properties": {
+        "path": {
+         "type": "string",
+         "minLength": 1
+        },
+        "type": {
+         "type": "string",
+         "minLength": 1
+        },
+        "meaning": {
+         "type": "string",
+         "minLength": 1
+        },
+        "availability": {
+         "enum": [
+          "always",
+          "conditional"
+         ]
+        },
+        "condition": {
+         "type": "string",
+         "minLength": 1
+        },
+        "values": {
+         "type": "array",
+         "items": {
+          "type": "string"
+         }
+        },
+        "identity": {
+         "type": "string"
+        },
+        "symbol": {
+         "type": "string",
+         "minLength": 1
+        }
+       },
+       "allOf": [
+        {
+         "if": {
+          "properties": {
+           "availability": {
+            "const": "conditional"
+           }
+          }
+         },
+         "then": {
+          "required": [
+           "condition"
+          ]
+         }
+        }
+       ]
+      }
+     },
+     "vendor_tests": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "wire_note": {
+      "type": "string",
+      "minLength": 1
+     },
+     "journal": {
+      "type": "object",
+      "required": [
+       "behavior",
+       "rule"
+      ],
+      "properties": {
+       "behavior": {
+        "enum": [
+         "normalized",
+         "retained-only",
+         "opaque"
+        ]
+       },
+       "rule": {
+        "type": "string",
+        "minLength": 1
+       },
+       "also_rules": {
+        "type": "array",
+        "items": {
+         "type": "string",
+         "minLength": 1
+        }
+       },
+       "note": {
+        "type": "string"
+       }
+      }
+     }
+    },
+    "allOf": [
+     {
+      "if": {
+       "properties": {
+        "emitted": {
+         "const": "conditional"
+        }
+       }
+      },
+      "then": {
+       "required": [
+        "condition"
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "omitted_by_projection": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "what",
+     "applies_to",
+     "consequence",
+     "symbol"
+    ],
+    "properties": {
+     "what": {
+      "type": "string",
+      "minLength": 1
+     },
+     "applies_to": {
+      "type": "string",
+      "minLength": 1
+     },
+     "consequence": {
+      "type": "string",
+      "minLength": 1
+     },
+     "symbol": {
+      "type": "string",
+      "minLength": 1
+     }
+    }
+   }
+  },
+  "reviewed_undeclared": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "variant",
+     "path",
+     "note"
+    ],
+    "properties": {
+     "variant": {
+      "type": "string",
+      "minLength": 1
+     },
+     "path": {
+      "type": "string",
+      "minLength": 1
+     },
+     "note": {
+      "type": "string",
+      "minLength": 1
+     }
+    }
+   }
+  }
+ }
+}
