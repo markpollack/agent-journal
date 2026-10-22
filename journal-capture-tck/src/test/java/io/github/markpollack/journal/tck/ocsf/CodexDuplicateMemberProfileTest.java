@@ -49,4 +49,23 @@ class CodexDuplicateMemberProfileTest {
         assertThat(w.repeated().get(0).path()).isEqualTo("item.id");
         assertThat(w.repeated().get(0).values()).containsExactly(new Json.JString("item_1"), new Json.JString("search-1"));
     }
+
+    /** SYNTHETIC (review finding): a normal nested item.id plus two root members literally named "item.id"; and the root pair alone. */
+    static final List<String> DOTTED_ROOT_LITERALS = List.of(
+            "{\"type\":\"item.started\",\"item\":{\"id\":\"item_1\",\"type\":\"web_search\",\"query\":\"\",\"action\":{\"type\":\"other\"}},\"item.id\":\"a\",\"item.id\":\"b\"}",
+            "{\"type\":\"item.started\",\"item\":{\"type\":\"web_search\",\"query\":\"\",\"action\":{\"type\":\"other\"}},\"item.id\":\"a\",\"item.id\":\"b\"}");
+
+    /**
+     * A root member literally named {@code item.id} is the location {@code /item.id}, not the search item's
+     * {@code /item/id}: a repeat of it is not the declared form, whether or not the item also carries its own id.
+     */
+    @Test
+    void rootMembersLiterallyNamedItemIdAreNotTheDeclaredForm() {
+        NativeArtifact art = NativeArtifact.ofBytes(Path.of("stream.jsonl"), (String.join("\n", DOTTED_ROOT_LITERALS) + "\n").getBytes(StandardCharsets.UTF_8));
+        ExpectedFacts f = SourceProfile.forName("codex_stream").expected(art,
+                new Json.JObject(Map.of("artifact", new Json.JString("stream.jsonl"), "profile", new Json.JString("codex_stream"))), null);
+        assertThat(f.requests).as("no tool fact from a root member that only looks like item.id").isEmpty();
+        assertThat(f.owned).containsExactly(1, 2);
+        assertThat(f.normalized).isEmpty();
+    }
 }
