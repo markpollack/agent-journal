@@ -5,7 +5,7 @@
   "attributes": {
     "cli_agent": {
       "caption": "CLI Agent",
-      "description": "The agentic CLI that produced the observed execution, as a cli_agent object extending the core ai_agent.",
+      "description": "The agentic CLI that produced the observed execution, as this extension's cli_agent object.",
       "type": "cli_agent"
     },
     "journal": {

@@ -233,7 +233,7 @@ public final class CliCapture {
             }
         }
         RunDescriptor run = new RunDescriptor(launch.runUid(), 0, null, captureStart,
-                new RunDescriptor.Cli(launch.cli().product, version, launch.cli().vendor, 1, "Native", versionBasis), settings, null);
+                new RunDescriptor.Cli(launch.cli().product, version, launch.cli().vendor, versionBasis), settings, null);
 
         OcsfRunWriter.State state;
         Jv.Obj processOutcome;

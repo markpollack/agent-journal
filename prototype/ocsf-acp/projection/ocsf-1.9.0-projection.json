@@ -6,7 +6,7 @@
  },
  "extension": {
   "name": "agentic_cli",
-  "version": "0.3.0-prototype"
+  "version": "0.4.0-prototype"
  },
  "purpose": "Comparison inventory only: for each attribute our extension defines, the upstream attribute it means, if any, and the verdict. It does not reshape the extension; our attributes and names are kept.",
  "evidence_class": "source-verified",
@@ -36,9 +36,9 @@
  },
  "inheritance": {
   "cli_agent": {
-   "extends": "ai_agent",
+   "extends": null,
    "upstream_file": "objects/ai_agent.json",
-   "treatment": "cli_agent declares product (added) and instance_uid (override); the other attributes are inherited from ai_agent unchanged and map to themselves. Rows carry inherited_from."
+   "treatment": "since extension 0.4.0-prototype cli_agent is the extension's own object and does not extend ai_agent (Owner decision 2026-10-22); its declared name, version, uid and instance_uid correspond to ai_agent attributes and are rowed as such; ai_model, charter, uid_numeric and the framework type enum are no longer part of the model"
   },
   "classes": {
    "extends": "base_event",
@@ -775,26 +775,8 @@
    "upstream": "ai_agent.instance_uid",
    "upstream_file": "objects/ai_agent.json",
    "verdict": "maps",
-   "caveat": "Declared override of the inherited attribute (native session id); how the value was obtained is not carried.",
+   "caveat": "Declared by the extension; corresponds to ai_agent.instance_uid (native session id); how the value was obtained is not carried.",
    "inherited_from": null
-  },
-  {
-   "ours": "cli_agent.ai_model",
-   "ours_kind": "object",
-   "upstream": "ai_agent.ai_model",
-   "upstream_file": "objects/ai_agent.json",
-   "verdict": "maps",
-   "caveat": "Inherited from ai_agent and unchanged; the writer records the reported model in model_ref instead, because ai_model requires a provider organization.",
-   "inherited_from": "ai_agent"
-  },
-  {
-   "ours": "cli_agent.charter",
-   "ours_kind": "object",
-   "upstream": "ai_agent.charter",
-   "upstream_file": "objects/ai_agent.json",
-   "verdict": "maps",
-   "caveat": "Inherited from ai_agent and unchanged; not populated by the writer.",
-   "inherited_from": "ai_agent"
   },
   {
    "ours": "cli_agent.name",
@@ -802,26 +784,8 @@
    "upstream": "ai_agent.name",
    "upstream_file": "objects/ai_agent.json",
    "verdict": "maps",
-   "caveat": "Inherited from ai_agent and unchanged; holds the CLI product name.",
-   "inherited_from": "ai_agent"
-  },
-  {
-   "ours": "cli_agent.type",
-   "ours_kind": "object",
-   "upstream": "ai_agent.type",
-   "upstream_file": "objects/ai_agent.json",
-   "verdict": "maps",
-   "caveat": "Inherited from ai_agent and unchanged; caption sibling of type_id.",
-   "inherited_from": "ai_agent"
-  },
-  {
-   "ours": "cli_agent.type_id",
-   "ours_kind": "object",
-   "upstream": "ai_agent.type_id",
-   "upstream_file": "objects/ai_agent.json",
-   "verdict": "maps",
-   "caveat": "Inherited from ai_agent and unchanged; the framework enum (Native, LangChain, AutoGen, CrewAI) names no agent CLI, so a CLI is Native or Other.",
-   "inherited_from": "ai_agent"
+   "caveat": "Declared by the extension (0.4.0); corresponds to ai_agent.name and holds the CLI product name.",
+   "inherited_from": null
   },
   {
    "ours": "cli_agent.uid",
@@ -829,17 +793,8 @@
    "upstream": "ai_agent.uid",
    "upstream_file": "objects/ai_agent.json",
    "verdict": "maps",
-   "caveat": "Inherited from ai_agent and unchanged; set only when a source reports a stable logical agent identity.",
-   "inherited_from": "ai_agent"
-  },
-  {
-   "ours": "cli_agent.uid_numeric",
-   "ours_kind": "object",
-   "upstream": "ai_agent.uid_numeric",
-   "upstream_file": "objects/_entity.json",
-   "verdict": "maps",
-   "caveat": "Inherited from the base entity through ai_agent; not populated by the writer.",
-   "inherited_from": "ai_agent"
+   "caveat": "Declared by the extension (0.4.0); corresponds to ai_agent.uid; set only when a source reports a stable logical agent identity.",
+   "inherited_from": null
   },
   {
    "ours": "cli_agent.version",
@@ -847,8 +802,8 @@
    "upstream": "ai_agent.version",
    "upstream_file": "objects/ai_agent.json",
    "verdict": "maps",
-   "caveat": "Inherited from ai_agent and unchanged; holds the CLI version.",
-   "inherited_from": "ai_agent"
+   "caveat": "Declared by the extension (0.4.0); corresponds to ai_agent.version and holds the CLI version.",
+   "inherited_from": null
   },
   {
    "ours": "content_block.block_index",

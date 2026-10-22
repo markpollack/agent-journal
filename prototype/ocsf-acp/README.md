@@ -19,7 +19,7 @@ What it contains:
 
 - `extension/agentic_cli/` — an OCSF extension authored in OCSF's own definition format: one
   category (`agent_execution`), four event classes (`prompt_turn`, `model_response`, `tool_call`,
-  `source_record`), a `cli_agent` object extending the core `ai_agent`, and the supporting objects
+  `source_record`), the extension's own `cli_agent` object (since 0.4.0-prototype it does not extend the core `ai_agent`), and the supporting objects
   (`source_ref`, `content_block`, `tool_result`, `operation`, `attribution`, `permission_decision`,
   `usage_observation`, `cost_observation`, `model_ref`, `journal_provenance`). The extension uid 901
   is a provisional, unregistered prototype assignment.

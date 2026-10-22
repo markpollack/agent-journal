@@ -207,7 +207,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
     private Jv.Obj runDeclaration(String coreRunUid, Jv parent, Jv sourceScope) {
         Jv.Obj r = new Jv.Obj().put("run_uid", coreRunUid).put("invocation_index", run.invocationIndex()).put("capture_start", run.captureStart().toString());
         r.put("cli", new Jv.Obj().put("name", run.cli().name()).put("version", run.cli().version()).put("vendor_name", run.cli().vendorName())
-                .put("type_id", run.cli().typeId()).put("type", run.cli().type()).put("product", run.cli().product())
+                .put("product", run.cli().product())
                 .put("version_basis", run.cli().version() != null ? run.cli().declaredVersionBasis() : "not known at launch; a cli_version declaration follows if the selected stream reports it; no version command is run"));
         if (run.launchSettings() != null) {
             r.put("launch_settings", run.launchSettings());
@@ -748,7 +748,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         runObj.put("session_uid", sessionUid == null ? Jv.Null.INSTANCE : new Jv.Str(sessionUid));
         runObj.put("capture_start", run.captureStart().toString());
         runObj.put("cli", new Jv.Obj().put("name", run.cli().name()).put("version", cliVersion()).put("vendor_name", run.cli().vendorName())
-                .put("type_id", run.cli().typeId()).put("type", run.cli().type()).put("version_basis", cliVersionBasis()));
+                .put("version_basis", cliVersionBasis()));
         if (run.launchSettings() != null) {
             runObj.put("launch_settings", run.launchSettings());
         }
@@ -786,7 +786,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
                 .put("extension_source", new Jv.Obj(extensionSource)));
 
         Jv.Obj shared = new Jv.Obj();
-        Jv.Obj agent = new Jv.Obj().put("name", run.cli().name()).put("version", cliVersion()).put("type_id", run.cli().typeId()).put("type", run.cli().type());
+        Jv.Obj agent = new Jv.Obj().put("name", run.cli().name()).put("version", cliVersion());
         if (sessionUid != null) {
             agent.put("instance_uid", sessionUid);
         }

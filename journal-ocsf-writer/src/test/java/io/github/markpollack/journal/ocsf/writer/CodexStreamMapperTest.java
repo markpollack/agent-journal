@@ -155,7 +155,7 @@ class CodexStreamMapperTest {
     void theThreadIdBecomesTheSessionOfEveryLaterEvent(@TempDir Path work) {
         Path core = work.resolve("core");
         RunDescriptor noSession = new RunDescriptor("codex-no-session-at-launch", 0, null, java.time.Instant.parse("2026-10-21T12:00:00Z"),
-                new RunDescriptor.Cli("Codex CLI", "0.160.1", "OpenAI", 1, "Native"), null, new Jv.Obj().put("label", "LABELLED SYNTHETIC: the session is not known at launch"));
+                new RunDescriptor.Cli("Codex CLI", "0.160.1", "OpenAI"), null, new Jv.Obj().put("label", "LABELLED SYNTHETIC: the session is not known at launch"));
         try (OcsfRunWriter w = OcsfRunWriter.open(core, noSession, SchemaPin.bundled(), options())) {
             Replay.feedRecords(w.source(codexStream()), nativeOf(CODEX_STREAM, "stream.jsonl"), options().clock());
             w.complete();

@@ -23,7 +23,7 @@ import java.util.TreeMap;
  * present-or-required attributes; profile-only attributes of profiles the events do not enable are omitted; every
  * object a kept attribute refers to is included (fixpoint), so the closure is reference-complete; the scalar types
  * used are listed. {@code FULL_REACHED}: every attribute of the written classes and of every object reachable from
- * them (the compiler's closure through metadata/product/ai_agent). The package embeds {@code WRITTEN} and records
+ * them (the compiler's closure through metadata/product). The package embeds {@code WRITTEN} and records
  * both sizes; the whole compiled schema is referenced by hash only.
  */
 public final class DefinitionClosure {

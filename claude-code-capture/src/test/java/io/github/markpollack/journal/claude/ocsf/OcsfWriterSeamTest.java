@@ -87,7 +87,7 @@ class OcsfWriterSeamTest {
         }
         Path core = work.resolve("core");
         RunDescriptor run = new RunDescriptor("seam-foreground-subagent", 0, null, Instant.parse("2026-10-14T18:08:46Z"),
-                new RunDescriptor.Cli("Claude Code", "2.1.299", "Anthropic", 1, "Native"), null, null);
+                new RunDescriptor.Cli("Claude Code", "2.1.299", "Anthropic"), null, null);
         Clock clock = Clock.systemUTC();
         PhaseCapture capture;
         int seenBeforeEnd;

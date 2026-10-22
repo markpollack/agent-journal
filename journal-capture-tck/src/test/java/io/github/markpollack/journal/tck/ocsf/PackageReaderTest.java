@@ -45,7 +45,7 @@ class PackageReaderTest {
         assertThat(fromEvents.standalone()).as("read from the file's declarations; run.json is ancillary").isTrue();
         assertThat(fromEvents.manifest.packageState()).isEqualTo("COMPLETED");
         assertThat(fromEvents.manifest.extensionUid()).isEqualTo(901);
-        assertThat(fromEvents.manifest.extensionVersion()).isEqualTo("0.3.0-prototype");
+        assertThat(fromEvents.manifest.extensionVersion()).isEqualTo("0.4.0-prototype");
         assertThat(fromEvents.manifest.contracts()).containsKey("codex-cli/rollout/0.160.1/0.2.0-prototype");
     }
 
@@ -72,6 +72,21 @@ class PackageReaderTest {
         assertThat(d.diagnosticsWithCode("NO_MANIFEST")).hasSize(1);
         assertThat(d.rawLines).hasSize(39);
         assertThat(d.events).isEmpty();
+    }
+
+    /** A package written before cli_agent stopped extending ai_agent (extension 0.4.0) reads and judges from its own embedded definitions. */
+    @Test
+    void aPackageWrittenWithExtension030StillReadsFromItsOwnDefinitions(@TempDir Path work) {
+        Path historical = copyHistorical("extension-0.3.0-prototype", OcsfFixtures.LIVE_CODEX, work);
+        OcsfPackage p = open(historical);
+        assertThat(p.refused()).isFalse();
+        assertThat(p.manifest.extensionVersion()).isEqualTo("0.3.0-prototype");
+        assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
+        OracleReport report = OcsfFixtures.verify(historical);
+        assertThat(report.defects()).isEmpty();
+        assertThat(report.missingRequired()).isEmpty();
+        Path current = copy(OcsfFixtures.LIVE_CODEX, work.resolve("current"));
+        assertThat(open(current).manifest.extensionVersion()).isEqualTo("0.4.0-prototype");
     }
 
     @Test

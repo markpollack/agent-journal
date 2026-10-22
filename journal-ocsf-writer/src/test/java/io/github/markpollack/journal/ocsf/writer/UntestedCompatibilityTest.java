@@ -164,7 +164,7 @@ class UntestedCompatibilityTest {
     void aDiscoveredVersionCarriesItsBasis(@TempDir Path work) throws Exception {
         Path core = work.resolve("core");
         RunDescriptor spec = new RunDescriptor("discovered-basis", 0, null, Instant.parse("2026-10-21T12:00:00Z"),
-                new RunDescriptor.Cli("Codex CLI", "0.160.1", "OpenAI", 1, "Native", "discovered once per run by `codex --version` (documented adapter path; the exec --json stream reports no version)"),
+                new RunDescriptor.Cli("Codex CLI", "0.160.1", "OpenAI", "discovered once per run by `codex --version` (documented adapter path; the exec --json stream reports no version)"),
                 null, new Jv.Obj().put("label", "LABELLED SYNTHETIC: version basis test"));
         try (OcsfRunWriter w = OcsfRunWriter.open(core, spec, SchemaPin.bundled(), options())) {
             Replay.feedBytes(w.source(WriterTestSupport.codexStream()), nativeOf(WriterTestSupport.CODEX_STREAM, "stream.jsonl"), 1024, options().clock());

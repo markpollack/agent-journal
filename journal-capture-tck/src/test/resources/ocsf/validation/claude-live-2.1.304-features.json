@@ -4,9 +4,9 @@
  "fixture": "claude-live-2.1.304-features",
  "core": "main",
  "events_jsonl": "fixtures/claude-live-2.1.304-features/package/events.jsonl",
- "events_jsonl_sha256": "b3e6c5914adebf011eec80a6b796e4f5807cf716a5dd9989903665806be24caf",
+ "events_jsonl_sha256": "448802c20f30a644c6940d100c27bca95075f76634fd8c2640248d0e24c324c5",
  "execution_records": 53,
- "declarations_skipped": 47,
+ "declarations_skipped": 44,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
  "toolkit": {
   "name": "ocsf-toolkit",
@@ -14,7 +14,7 @@
   "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
   "exit_code": 0
  },
- "compiled_schema_sha256": "ec1b99bc2922651417949dbf6168664496a412a9b55951420a515519baeae78e",
+ "compiled_schema_sha256": "01cac1620fa5b6a5c70f4c13f796604f010e6caf39cb43667a1cc4e2b2a814c6",
  "result": {
   "event_files_processed": 53,
   "error_events": 0,
