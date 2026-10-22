@@ -37,11 +37,21 @@ import java.util.Set;
  * {@code incomplete_run_outcomes} must report exactly that outcome (UNSUPPORTED: a complete capture is not claimed);
  * it then counts as evidence, and any other outcome is a defect.
  *
+ * <p>Every outcome of an owed result is judged explicitly ({@link #judge}). VERIFIED establishes the obligation only
+ * when it states how many occurrences it covers and that covers the owner's native population of the property's
+ * declared trigger ({@code property_triggers}); REPRESENTATION_DIFFERS only on a property the catalog declares
+ * representation-only ({@code representation_properties}); NOT_APPLICABLE only when the owner's own native records
+ * hold zero occurrences of the trigger, counted by the oracle's source profile within the owner's split scope from the
+ * frozen expected sources, never from the candidate or from which checks survived. A good sibling property or another
+ * owner's result never stands in for an obligation.
+ *
  * <p>Precedence: a DEFECTIVE result anywhere makes the state {@code defective}; otherwise any owed result absent from
- * the report makes it {@code blocked} and names each missing {@code property [owner]}; otherwise UNSUPPORTED or
- * UNRESOLVED makes it {@code unresolved}. Only then can it be {@code verified} (an exercised scenario with VERIFIED
- * results), {@code retained-only} (retention evidence held), {@code unexercised} (every owed result present but no
- * occurrence) or {@code unavailable-at-source}. A missing result is never read as "no occurrence".
+ * the report, or not established (an unjustified NOT_APPLICABLE, an uncounted or short occurrence count), makes it
+ * {@code blocked} and names each {@code property [owner]}; otherwise UNSUPPORTED, UNRESOLVED or an undeclared
+ * representation difference makes it {@code unresolved}. Only then can it be {@code verified} (an exercised scenario
+ * with established results), {@code retained-only} (retention evidence held), {@code unexercised} (every owed result
+ * established or justifiably absent but no occurrence, with each zero-occurrence basis stated) or
+ * {@code unavailable-at-source}. A missing result is never read as "no occurrence".
  */
 final class CatalogCoverage {
 
@@ -136,50 +146,178 @@ final class CatalogCoverage {
         return out;
     }
 
+    /** What an owed result establishes for its obligation. */
+    enum Verdict {
+        /** VERIFIED covering the owner's native occurrences, a declared representation difference, or the honest incomplete-run outcome. */
+        ESTABLISHED,
+        /** NOT_APPLICABLE, and the owner's native records hold zero occurrences of the property's trigger. */
+        ABSENT,
+        /** No result for an owed property and owner. */
+        MISSING,
+        /** NOT_APPLICABLE against native occurrences or without a declared trigger; an occurrence count not stated or short. */
+        NOT_ESTABLISHED,
+        /** UNSUPPORTED, UNRESOLVED, or a representation difference on a property not declared representation-only. */
+        UNRESOLVED,
+        /** A DEFECTIVE result, or another outcome where the frozen incomplete run owes its honest one. */
+        DEFECTIVE
+    }
+
+    /**
+     * One owed result as judged: the result (absent when missing), the property's declared trigger, how many native
+     * occurrences of it the owner holds, the verdict and its reason.
+     */
+    record Judged(String property, String owner, String scenario, Check result, String trigger, Integer nativeOccurrences, Verdict verdict, String reason) {
+        String key() {
+            return property + " [" + owner + "]";
+        }
+    }
+
+    /** The state of one concept on one recording and every judged obligation behind it. */
+    record Assessment(String state, List<Judged> obligations) {
+    }
+
     /** The state of one concept on one fixture; see the class comment for the precedence. */
     static String state(Json catalog, Json entry, MappingCatalogTest.Route route, Path fixture, OracleReport report) {
+        return assess(catalog, entry, route, fixture, report).state();
+    }
+
+    /** The declared trigger scenario of a property ({@code property_triggers}), or {@code null}. */
+    static String trigger(Json catalog, String property) {
+        Json t = catalog.member("property_triggers");
+        return t == null ? null : SchemaCatalog.text(t, property);
+    }
+
+    /** Whether the catalog declares the property representation-only ({@code representation_properties}). */
+    static boolean representationOnly(Json catalog, String property) {
+        Json r = catalog.member("representation_properties");
+        if (r == null) {
+            return false;
+        }
+        for (Json p : r.member("properties").elements()) {
+            if (property.equals(p.text())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Judges one owed result; every outcome is handled explicitly. */
+    static Judged judge(Json catalog, Obligation ob, Check c, String honest, String trigger, Integer nativeOccurrences) {
+        if (c.outcome() == Outcome.DEFECTIVE) {
+            return judged(ob, c, trigger, nativeOccurrences, Verdict.DEFECTIVE, c.detail());
+        }
+        if (honest != null) {
+            return honest.equals(c.outcome().name())
+                    ? judged(ob, c, trigger, nativeOccurrences, Verdict.ESTABLISHED, "the frozen run is incomplete; " + honest + " is its honest outcome")
+                    : judged(ob, c, trigger, nativeOccurrences, Verdict.DEFECTIVE, "the frozen run is incomplete; expected " + honest);
+        }
+        return switch (c.outcome()) {
+            case VERIFIED -> covered(ob, c, trigger, nativeOccurrences);
+            case REPRESENTATION_DIFFERS -> representationOnly(catalog, ob.property()) ? covered(ob, c, trigger, nativeOccurrences)
+                    : judged(ob, c, trigger, nativeOccurrences, Verdict.UNRESOLVED, "REPRESENTATION_DIFFERS is not a declared non-semantic difference of " + ob.property());
+            case NOT_APPLICABLE -> {
+                if (trigger == null) {
+                    yield judged(ob, c, null, null, Verdict.NOT_ESTABLISHED, "NOT_APPLICABLE without a declared trigger to establish the absence");
+                }
+                if (nativeOccurrences == null) {
+                    yield judged(ob, c, trigger, null, Verdict.NOT_ESTABLISHED, "NOT_APPLICABLE, but the owner's occurrences of " + trigger + " cannot be counted");
+                }
+                yield nativeOccurrences == 0 ? judged(ob, c, trigger, 0, Verdict.ABSENT, "0 native occurrence(s) of " + trigger)
+                        : judged(ob, c, trigger, nativeOccurrences, Verdict.NOT_ESTABLISHED, "NOT_APPLICABLE, but the owner's native records hold " + nativeOccurrences + " occurrence(s) of " + trigger);
+            }
+            case UNSUPPORTED, UNRESOLVED -> judged(ob, c, trigger, nativeOccurrences, Verdict.UNRESOLVED, c.outcome().name());
+            case DEFECTIVE -> judged(ob, c, trigger, nativeOccurrences, Verdict.DEFECTIVE, c.detail());
+        };
+    }
+
+    /** A VERIFIED (or allowed representation-differing) result covers the owner's native occurrences of its trigger. */
+    private static Judged covered(Obligation ob, Check c, String trigger, Integer nativeOccurrences) {
+        if (trigger == null) {
+            return judged(ob, c, null, null, Verdict.ESTABLISHED, c.outcome().name());
+        }
+        if (nativeOccurrences == null) {
+            return judged(ob, c, trigger, null, Verdict.NOT_ESTABLISHED, "the owner's occurrences of " + trigger + " cannot be counted");
+        }
+        if (c.occurrences() == null) {
+            return judged(ob, c, trigger, nativeOccurrences, Verdict.NOT_ESTABLISHED,
+                    c.outcome() + " states no occurrence count; " + nativeOccurrences + " native occurrence(s) of " + trigger + " are owed");
+        }
+        if (c.occurrences() < nativeOccurrences) {
+            return judged(ob, c, trigger, nativeOccurrences, Verdict.NOT_ESTABLISHED,
+                    c.outcome() + " establishes " + c.occurrences() + " of " + nativeOccurrences + " native occurrence(s) of " + trigger);
+        }
+        return judged(ob, c, trigger, nativeOccurrences, Verdict.ESTABLISHED, c.occurrences() + " of " + nativeOccurrences + " native occurrence(s) of " + trigger);
+    }
+
+    private static Judged judged(Obligation ob, Check c, String trigger, Integer nativeOccurrences, Verdict verdict, String reason) {
+        return new Judged(ob.property(), ob.owner(), ob.scenario(), c, trigger, nativeOccurrences, verdict, reason);
+    }
+
+    /** The state of one concept on one fixture with every judged obligation; see the class comment. */
+    static Assessment assess(Json catalog, Json entry, MappingCatalogTest.Route route, Path fixture, OracleReport report) {
         Path natives = OcsfFixtures.natives(fixture);
         ExpectedSources expected = ExpectedSources.beside(natives);
         if (expected == null) {
-            return "unresolved (no frozen expected-source manifest: the owed population is unknown)";
+            return new Assessment("unresolved (no frozen expected-source manifest: the owed population is unknown)", List.of());
         }
         String disposition = SchemaCatalog.text(entry, "disposition");
         if ("pending".equals(disposition)) {
-            return "unresolved (pending concept: no destination, mapping or independent check yet)";
+            return new Assessment("unresolved (pending concept: no destination, mapping or independent check yet)", List.of());
         }
         List<Obligation> owed = obligations(catalog, entry, route, expected, report);
-        List<String> missing = new ArrayList<>();
-        List<String> unresolved = new ArrayList<>();
+        List<Judged> judged = new ArrayList<>();
         boolean exercised = false;
         Map<String, Integer> occurrences = new LinkedHashMap<>();
+        Map<String, Integer> owned = new LinkedHashMap<>();
         for (Obligation ob : owed) {
+            String trigger = trigger(catalog, ob.property());
+            Integer n = trigger == null ? null : owned.computeIfAbsent(trigger + " " + ob.owner(), k -> ownerOccurrences(trigger, ob.owner(), route, natives, expected));
             if (ob.results().isEmpty()) {
-                missing.add(ob.key());
+                judged.add(new Judged(ob.property(), ob.owner(), ob.scenario(), null, trigger, n, Verdict.MISSING, "no result in the report"));
                 continue;
             }
             String honest = expected.complete() ? null : incompleteRunOutcome(catalog, ob.property());
             for (Check c : ob.results()) {
-                if (c.outcome() == Outcome.DEFECTIVE) {
-                    return "defective: " + c;
-                }
-                if (honest != null) {
-                    if (!honest.equals(c.outcome().name())) {
-                        return "defective: " + c + " (the frozen run is incomplete; expected " + honest + ")";
-                    }
+                Judged j = judge(catalog, ob, c, honest, trigger, n);
+                judged.add(j);
+                if (j.verdict() == Verdict.ESTABLISHED) {
                     exercised |= ob.scenario() == null || occurrences.computeIfAbsent(ob.scenario(), s -> occurrences(s, route, natives, expected)) > 0;
-                    continue;
-                }
-                if (c.outcome() == Outcome.UNSUPPORTED || c.outcome() == Outcome.UNRESOLVED) {
-                    unresolved.add(ob.key() + " " + c.outcome());
-                }
-                if (c.outcome() == Outcome.VERIFIED || c.outcome() == Outcome.REPRESENTATION_DIFFERS) {
-                    int n = ob.scenario() == null ? 1 : occurrences.computeIfAbsent(ob.scenario(), s -> occurrences(s, route, natives, expected));
-                    exercised |= n > 0;
                 }
             }
         }
-        if (!missing.isEmpty()) {
-            return "blocked (missing: " + String.join(", ", missing) + ")";
+        return new Assessment(state(entry, route, natives, expected, disposition, owed, judged, exercised), judged);
+    }
+
+    private static String state(Json entry, MappingCatalogTest.Route route, Path natives, ExpectedSources expected, String disposition, List<Obligation> owed,
+            List<Judged> judged, boolean exercised) {
+        for (Judged j : judged) {
+            if (j.verdict() == Verdict.DEFECTIVE) {
+                return "defective: " + j.result() + (j.reason().startsWith("the frozen run is incomplete") ? " (" + j.reason() + ")" : "");
+            }
+        }
+        List<String> missing = new ArrayList<>();
+        List<String> notEstablished = new ArrayList<>();
+        List<String> unresolved = new ArrayList<>();
+        List<String> absent = new ArrayList<>();
+        for (Judged j : judged) {
+            switch (j.verdict()) {
+                case MISSING -> missing.add(j.key());
+                case NOT_ESTABLISHED -> notEstablished.add(j.key() + ": " + j.reason());
+                case UNRESOLVED -> unresolved.add(j.key() + " " + j.reason());
+                case ABSENT -> absent.add(j.key() + ": " + j.reason());
+                case ESTABLISHED, DEFECTIVE -> {
+                }
+            }
+        }
+        if (!missing.isEmpty() || !notEstablished.isEmpty()) {
+            List<String> parts = new ArrayList<>();
+            if (!missing.isEmpty()) {
+                parts.add("missing: " + String.join(", ", missing));
+            }
+            if (!notEstablished.isEmpty()) {
+                parts.add("not established: " + String.join("; ", notEstablished));
+            }
+            return "blocked (" + String.join("; ", parts) + ")";
         }
         if (!unresolved.isEmpty()) {
             return "unresolved (" + String.join(", ", unresolved) + ")";
@@ -193,8 +331,12 @@ final class CatalogCoverage {
             }
             Set<String> scenarios = new LinkedHashSet<>();
             owed.forEach(o -> scenarios.add(o.scenario() == null ? "the checked properties" : o.scenario()));
-            return "unexercised (no occurrence of " + String.join(", ", scenarios) + ")";
+            return "unexercised (no occurrence of " + String.join(", ", scenarios) + (absent.isEmpty() ? "" : "; " + String.join("; ", absent)) + ")";
         }
+        return claimState(entry, route, natives, expected, disposition);
+    }
+
+    private static String claimState(Json entry, MappingCatalogTest.Route route, Path natives, ExpectedSources expected, String disposition) {
         List<Json> claims = new ArrayList<>();
         for (Json n : entry.member("native_evidence").elements()) {
             if (route.entry().equals(SchemaCatalog.text(n, "route"))) {
@@ -296,6 +438,78 @@ final class CatalogCoverage {
                         n += blocks(r.json(), scenario.substring("block:".length()), false);
                     }
                 }
+            }
+        }
+        return n;
+    }
+
+    /**
+     * How often a trigger occurs in one owner's own native records: {@code run:} triggers from the frozen manifest; any
+     * other trigger by the route's oracle profile within the owner's split scope, built from the frozen expected
+     * sources alone (the root core of a split artifact owns the records whose owner path is null, a child core those
+     * naming its spawn id). {@code null} when it cannot be counted (a native artifact missing, or an inventory path
+     * scenario on a split artifact).
+     */
+    static Integer ownerOccurrences(String trigger, String owner, MappingCatalogTest.Route route, Path natives, ExpectedSources expected) {
+        if ("run:children".equals(trigger) || "run:incomplete".equals(trigger)) {
+            return occurrences(trigger, route, natives, expected);
+        }
+        String core = owner.contains("/") ? owner.substring(0, owner.indexOf('/')) : owner;
+        String onlyArtifact = owner.contains("/") ? owner.substring(owner.indexOf('/') + 1) : null;
+        String profileName = PROFILE_NAMES.get(route.profile());
+        int n = 0;
+        for (ExpectedSources.Source s : expected.sources()) {
+            if (!profileName.equals(s.profile()) || onlyArtifact != null && !onlyArtifact.equals(s.artifact())) {
+                continue;
+            }
+            Json scope = null;
+            boolean ownsArtifact = !core.startsWith("child:");
+            for (ExpectedSources.Child c : expected.children()) {
+                if (!c.artifact().equals(s.artifact())) {
+                    continue;
+                }
+                boolean mine = core.equals("child:" + c.spawnToolCallUid());
+                if ("main".equals(core) || mine) {
+                    scope = new Json.JObject(Map.of("artifact", new Json.JString(s.artifact()), "owner_path", new Json.JString(c.ownerPath()),
+                            "owner_value", mine ? new Json.JString(c.spawnToolCallUid()) : Json.JNull.INSTANCE));
+                    ownsArtifact |= mine;
+                }
+            }
+            if (!ownsArtifact) {
+                continue;
+            }
+            Path file = natives.resolve(s.artifact());
+            if (!Files.isRegularFile(file)) {
+                return null;
+            }
+            NativeArtifact art = NativeArtifact.read(file);
+            ExpectedFacts f = SourceProfile.forName(profileName).expected(art,
+                    new Json.JObject(Map.of("artifact", new Json.JString(s.artifact()), "profile", new Json.JString(profileName))), scope);
+            if (trigger.startsWith("facts:")) {
+                n += facts(f, trigger.substring("facts:".length()));
+            }
+            else if ("records:opaque".equals(trigger)) {
+                for (NativeArtifact.Record r : art.records()) {
+                    n += !r.parsed() && f.owned.contains(r.index()) ? 1 : 0;
+                }
+            }
+            else if (trigger.startsWith("block:")) {
+                for (NativeArtifact.Record r : art.records()) {
+                    n += r.parsed() && f.owned.contains(r.index()) ? blocks(r.json(), trigger.substring("block:".length()), false) : 0;
+                }
+            }
+            else if (scope == null && trigger.startsWith("path:")) {
+                n += pathOccurrences(RawInventory.inventory(art, s.artifact(), profileName), trigger.substring("path:".length()));
+            }
+            else if (trigger.startsWith("value:")) {
+                String[] pv = trigger.substring("value:".length()).split("=", 2);
+                for (NativeArtifact.Record r : art.records()) {
+                    Json v = r.parsed() && f.owned.contains(r.index()) ? r.json().path(pv[0].split("\\.")) : null;
+                    n += v != null && !v.isNull() && pv[1].equals(v.scalarText()) ? 1 : 0;
+                }
+            }
+            else {
+                return null;
             }
         }
         return n;

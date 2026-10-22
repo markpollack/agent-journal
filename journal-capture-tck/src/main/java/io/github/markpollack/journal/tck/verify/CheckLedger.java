@@ -20,7 +20,12 @@ public final class CheckLedger implements Iterable<Check> {
     private final List<Check> checks = new ArrayList<>();
 
     public Check add(Check.Category category, String property, String owner, Check.Outcome outcome, String detail) {
-        Check check = new Check(category, property, owner, outcome, detail);
+        return add(category, property, owner, outcome, detail, null);
+    }
+
+    /** A check that states how many native occurrences of its property's trigger it establishes for the owner. */
+    public Check add(Check.Category category, String property, String owner, Check.Outcome outcome, String detail, Integer occurrences) {
+        Check check = new Check(category, property, owner, outcome, detail, occurrences);
         checks.add(check);
         return check;
     }
@@ -93,7 +98,7 @@ public final class CheckLedger implements Iterable<Check> {
         return summary;
     }
 
-    /** Every check as a plain map (category, property, owner, outcome, detail), for writing as JSON. */
+    /** Every check as a plain map (category, property, owner, outcome, detail and, when counted, occurrences), for writing as JSON. */
     public List<Map<String, Object>> rows() {
         List<Map<String, Object>> rows = new ArrayList<>();
         for (Check c : checks) {
@@ -103,6 +108,9 @@ public final class CheckLedger implements Iterable<Check> {
             row.put("owner", c.owner());
             row.put("outcome", c.outcome().name());
             row.put("detail", c.detail());
+            if (c.occurrences() != null) {
+                row.put("occurrences", c.occurrences());
+            }
             rows.add(row);
         }
         return rows;

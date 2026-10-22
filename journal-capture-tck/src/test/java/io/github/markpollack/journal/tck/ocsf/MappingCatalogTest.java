@@ -118,6 +118,7 @@ class MappingCatalogTest {
         reported.forEach(c -> reportedProperties.add(c.property()));
         Set<String> semanticOperations = semanticOperations();
         List<String> problems = new ArrayList<>(scopeProblems(catalog, reported));
+        problems.addAll(applicabilityProblems(catalog, reportedProperties));
         Set<String> ids = new TreeSet<>();
         for (Json e : entries) {
             String id = SchemaCatalog.text(e, "id");
@@ -268,6 +269,37 @@ class MappingCatalogTest {
         return problems;
     }
 
+    /**
+     * The applicability declarations resolve: every declared trigger is a known native scenario for a property the
+     * oracle reported in this run, and every representation-only property is one it reported. A property that reported
+     * NOT_APPLICABLE on a committed fixture and is owed by some concept needs a trigger, or its absence is never
+     * established (the coverage summary then blocks it).
+     */
+    static List<String> applicabilityProblems(Json catalog, Set<String> reportedProperties) {
+        List<String> problems = new ArrayList<>();
+        Json triggers = catalog.member("property_triggers");
+        if (triggers == null) {
+            return List.of("no property_triggers declared");
+        }
+        for (Map.Entry<String, Json> t : ((Json.JObject) triggers).members().entrySet()) {
+            if ("meaning".equals(t.getKey())) {
+                continue;
+            }
+            if (!reportedProperties.contains(t.getKey())) {
+                problems.add("property_triggers names " + t.getKey() + ", which the oracle did not report in this run");
+            }
+            if (!CatalogCoverage.knownScenario(t.getValue().text())) {
+                problems.add("property_triggers: " + t.getKey() + " -> " + t.getValue().text() + " is not a known native scenario");
+            }
+        }
+        for (Json p : catalog.path("representation_properties", "properties").elements()) {
+            if (!reportedProperties.contains(p.text())) {
+                problems.add("representation_properties names " + p.text() + ", which the oracle did not report in this run");
+            }
+        }
+        return problems;
+    }
+
     @Test
     void theCommonConceptMatrixIsDerivedFromTheEntriesAndThisRunsOracleResultsWithStatesKeptSeparate(@TempDir Path work) throws IOException {
         Json catalog = catalogDocument();
@@ -281,6 +313,7 @@ class MappingCatalogTest {
         List<Map<String, Object>> rows = new ArrayList<>();
         Map<String, Map<String, Integer>> totals = new TreeMap<>();
         List<String> failures = new ArrayList<>();
+        List<Map<String, Object>> evidence = new ArrayList<>();
         for (Json e : catalog.member("concepts").elements()) {
             String id = SchemaCatalog.text(e, "id");
             Map<String, Object> row = new LinkedHashMap<>();
@@ -291,7 +324,9 @@ class MappingCatalogTest {
             for (Column col : COLUMNS) {
                 Map<String, String> perRecording = new LinkedHashMap<>();
                 for (Route r : recordings(col.entry())) {
-                    perRecording.put(r.fixture(), CatalogCoverage.state(catalog, e, r, fixtures.get(r), reports.get(r)));
+                    CatalogCoverage.Assessment a = CatalogCoverage.assess(catalog, e, r, fixtures.get(r), reports.get(r));
+                    perRecording.put(r.fixture(), a.state());
+                    evidence.add(evidenceRow(id, r, fixtures.get(r), a));
                 }
                 String state = combine(perRecording);
                 if (state.startsWith("defective") || state.startsWith("blocked")) {
@@ -325,10 +360,85 @@ class MappingCatalogTest {
         doc.put("rows", rows);
         doc.put("totals", totals);
         Files.writeString(out.resolve("cli-coverage.json"), PRETTY.writeValueAsString(doc) + "\n", StandardCharsets.UTF_8);
+        Map<String, Object> ev = new LinkedHashMap<>();
+        ev.put("kind", "agent-journal/coverage-evidence");
+        ev.put("format_version", "0.1");
+        ev.put("executed_by", "MappingCatalogTest#theCommonConceptMatrixIsDerivedFromTheEntriesAndThisRunsOracleResultsWithStatesKeptSeparate (journal-capture-tck, this build)");
+        ev.put("source_tree", sourceTree());
+        ev.put("catalog_version", SchemaCatalog.text(catalog, "version"));
+        ev.put("meaning", "one row per concept and committed recording: every owed obligation (property, owner) with the oracle result, the property's declared trigger, the owner's native occurrences of it, the verdict and its reason; the native artifacts are identified by the frozen expected-source hashes");
+        ev.put("rows", evidence);
+        Files.writeString(out.resolve("coverage-evidence.json"), PRETTY.writeValueAsString(ev) + "\n", StandardCharsets.UTF_8);
         assertThat(failures).isEmpty();
         Set<String> seen = new TreeSet<>();
         totals.values().forEach(m -> seen.addAll(m.keySet()));
         assertThat(seen).contains("verified", "retained-only", "unavailable-at-source", "unexercised");
+    }
+
+    /** One concept on one recording: the state and every judged obligation, with the frozen native artifact hashes. */
+    static Map<String, Object> evidenceRow(String concept, Route r, Path fixture, CatalogCoverage.Assessment a) {
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put("concept", concept);
+        row.put("route", r.entry());
+        row.put("profile", r.profile());
+        row.put("fixture", r.fixture());
+        row.put("label", r.label());
+        ExpectedSources expected = ExpectedSources.beside(OcsfFixtures.natives(fixture));
+        List<Map<String, Object>> natives = new ArrayList<>();
+        if (expected != null) {
+            for (ExpectedSources.Source s : expected.sources()) {
+                Map<String, Object> n = new LinkedHashMap<>();
+                n.put("artifact", s.artifact());
+                n.put("profile", s.profile());
+                n.put("sha256", s.sha256());
+                natives.add(n);
+            }
+        }
+        row.put("native", natives);
+        row.put("state", a.state());
+        List<Map<String, Object>> obligations = new ArrayList<>();
+        for (CatalogCoverage.Judged j : a.obligations()) {
+            Map<String, Object> o = new LinkedHashMap<>();
+            o.put("property", j.property());
+            o.put("owner", j.owner());
+            o.put("scenario", j.scenario());
+            o.put("outcome", j.result() == null ? null : j.result().outcome().name());
+            o.put("detail", j.result() == null ? null : j.result().detail());
+            o.put("reported_occurrences", j.result() == null ? null : j.result().occurrences());
+            o.put("trigger", j.trigger());
+            o.put("native_occurrences", j.nativeOccurrences());
+            o.put("verdict", j.verdict().name());
+            o.put("reason", j.reason());
+            obligations.add(o);
+        }
+        row.put("obligations", obligations);
+        return row;
+    }
+
+    /** The project source revision this build ran on and whether its tree had uncommitted changes, when git can say. */
+    static Map<String, Object> sourceTree() {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("revision", git("rev-parse", "HEAD"));
+        String status = git("status", "--porcelain");
+        m.put("uncommitted_changes", status == null ? null : !status.isBlank());
+        return m;
+    }
+
+    private static String git(String... args) {
+        List<String> command = new ArrayList<>(List.of("git", "-C", PROJECT.toString()));
+        command.addAll(List.of(args));
+        try {
+            Process p = new ProcessBuilder(command).redirectErrorStream(true).start();
+            String out = new String(p.getInputStream().readAllBytes(), StandardCharsets.UTF_8).strip();
+            return p.waitFor() == 0 ? out : null;
+        }
+        catch (IOException e) {
+            return null;
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
+        }
     }
 
     /**
@@ -408,7 +518,9 @@ class MappingCatalogTest {
         md.append("Generated by `MappingCatalogTest` with `CatalogCoverage` from the reviewed catalog entries and the independent oracle's results on every committed recording of each route, in the same test run. ")
                 .append("Each concept owes its listed oracle properties for every owner the frozen expected sources establish (root and child cores, at the property's declared scope), with an occurrence of its native scenario. ")
                 .append("States: verified; retained-only (retention evidence held); unavailable-at-source (a route-scoped absence claim that holds on the route's recordings); unexercised (every owed result present, no occurrence); ")
-                .append("unresolved (an UNSUPPORTED/UNRESOLVED result, or no independent check or established availability for the route). A defect or a missing owed result fails the generating test. ")
+                .append("unresolved (an UNSUPPORTED/UNRESOLVED result, an undeclared representation difference, or no independent check or established availability for the route). A defect or a missing or unestablished owed result fails the generating test. ")
+                .append("A NOT_APPLICABLE result counts only where the owner's own native records hold zero occurrences of the property's declared trigger; a VERIFIED result must state and cover the owner's native occurrences. ")
+                .append("Every judged obligation, with the frozen native hashes, is in `coverage-evidence.json`. ")
                 .append("A finite corpus: a state describes the named recordings, not every version, route or future behavior. Do not edit; regenerate.\n\n");
         md.append("| Concept | Disposition |");
         COLUMNS.forEach(c -> md.append(' ').append(c.label()).append(" |"));

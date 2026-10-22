@@ -21,6 +21,11 @@ public abstract class CheckReport {
         return checks.add(category, property, owner, outcome, detail);
     }
 
+    /** A check that counts the native occurrences it establishes ({@link Check#occurrences()}). */
+    public Check add(Check.Category category, String property, String owner, Check.Outcome outcome, String detail, Integer occurrences) {
+        return checks.add(category, property, owner, outcome, detail, occurrences);
+    }
+
     public List<Check> checks() {
         return checks.checks();
     }

@@ -147,6 +147,23 @@ class MappingCatalogSummaryTest {
         OracleReport shortOne = as(run.report(), MAIN, "request.values", Outcome.VERIFIED, "1 occurrence(s) exact");
         assertThat(summary("tool-request-identity-and-arguments", CHILD_ROUTE, run, shortOne)).doesNotStartWith("verified")
                 .contains("request.values [" + MAIN + "]");
+        // the same result stating its count structurally: one of the root core's native requests is not covered
+        int owned = CatalogCoverage.ownerOccurrences("facts:requests", MAIN, CHILD_ROUTE, OcsfFixtures.natives(run.fixture()), ExpectedSources.beside(OcsfFixtures.natives(run.fixture())));
+        assertThat(run.report().check("request.values", MAIN).occurrences()).isEqualTo(owned);
+        OracleReport counted = run.report().replaced(c -> is(c, MAIN, "request.values"),
+                c -> new Check(c.category(), c.property(), c.owner(), Outcome.VERIFIED, (owned - 1) + " occurrence(s) exact", owned - 1));
+        assertThat(summary("tool-request-identity-and-arguments", CHILD_ROUTE, run, counted)).startsWith("blocked")
+                .contains("request.values [" + MAIN + "]: VERIFIED establishes " + (owned - 1) + " of " + owned + " native occurrence(s) of facts:requests")
+                .doesNotContain("[" + CHILD + "]");
+    }
+
+    @Test
+    void aResultOwnerNotApplicableDerivedFromTheCandidateIsRejectedAgainstTheNativeResults(@TempDir Path work) {
+        Run run = run(CHILD_ROUTE, work);
+        // result.owner reports NOT_APPLICABLE when the candidate emits no result event: its absence is the candidate's, not the source's
+        OracleReport na = as(run.report(), CHILD, "result.owner", Outcome.NOT_APPLICABLE, "0 result(s) owned by the id of their own record");
+        assertThat(summary("tool-result-ownership-and-content", CHILD_ROUTE, run, na)).startsWith("blocked")
+                .contains("result.owner [" + CHILD + "]: NOT_APPLICABLE, but the owner's native records hold");
     }
 
     @Test

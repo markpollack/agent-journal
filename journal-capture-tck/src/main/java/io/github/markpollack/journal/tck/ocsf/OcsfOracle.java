@@ -354,7 +354,8 @@ public final class OcsfOracle {
             }
         }
         report.add(Category.COMPLETENESS, "package.children", label, problems.isEmpty() ? (expected.children().isEmpty() ? Outcome.NOT_APPLICABLE : Outcome.VERIFIED) : Outcome.DEFECTIVE,
-                problems.isEmpty() ? expected.children().size() + " expected split core(s), each linked with its declared owner scope" : String.join("; ", problems));
+                problems.isEmpty() ? expected.children().size() + " expected split core(s), each linked with its declared owner scope" : String.join("; ", problems),
+                problems.isEmpty() ? expected.children().size() : null);
     }
 
     /** The supplied native artifact must be the frozen one; otherwise the comparison proves nothing and is unresolved. */
@@ -849,7 +850,7 @@ public final class OcsfOracle {
         }
         report.add(Category.PRESERVATION, "whole_record.bytes", owner, opaqueOwned == 0 ? Outcome.NOT_APPLICABLE : bytesProblems.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
                 opaqueOwned == 0 ? "no opaque record; byte equality is not promised for parsed records (structure/value and representation are judged instead)"
-                        : bytesProblems.isEmpty() ? opaqueVerified + " opaque record(s) byte-equal" : String.join("; ", bytesProblems));
+                        : bytesProblems.isEmpty() ? opaqueVerified + " opaque record(s) byte-equal" : String.join("; ", bytesProblems), opaqueOwned == 0 ? 0 : opaqueVerified);
         report.add(Category.PRESERVATION, "whole_record.framing", owner, framing.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
                 framing.isEmpty() ? "record_bytes and line_ending match the artifact for every retained record" : String.join("; ", framing));
     }
@@ -904,16 +905,17 @@ public final class OcsfOracle {
         List<String> problems = population(expected, actual);
         Outcome outcome = problems.isEmpty() ? (expected.isEmpty() ? Outcome.NOT_APPLICABLE : Outcome.VERIFIED) : Outcome.DEFECTIVE;
         report.add(Category.NORMALIZATION, property, owner, outcome,
-                problems.isEmpty() ? expected.size() + " expected, " + actual.size() + " observed" : String.join("; ", problems) + " (expected " + expected.size() + ", observed " + actual.size() + ")");
+                problems.isEmpty() ? expected.size() + " expected, " + actual.size() + " observed" : String.join("; ", problems) + " (expected " + expected.size() + ", observed " + actual.size() + ")",
+                problems.isEmpty() ? expected.size() : null);
     }
 
     private void valueCheck(String property, String owner, int examined, List<String> problems, List<String> representation) {
         if (examined == 0) {
-            report.add(Category.NORMALIZATION, property, owner, Outcome.NOT_APPLICABLE, "no occurrence");
+            report.add(Category.NORMALIZATION, property, owner, Outcome.NOT_APPLICABLE, "no occurrence", 0);
             return;
         }
         report.add(Category.NORMALIZATION, property, owner, problems.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
-                problems.isEmpty() ? examined + " occurrence(s) exact" : String.join("; ", problems));
+                problems.isEmpty() ? examined + " occurrence(s) exact" : String.join("; ", problems), examined);
         if (representation != null) {
             report.add(Category.NORMALIZATION, property.replace(".values", ".representation"), owner,
                     representation.isEmpty() ? Outcome.VERIFIED : Outcome.REPRESENTATION_DIFFERS,
@@ -1030,7 +1032,7 @@ public final class OcsfOracle {
             }
         }
         report.add(Category.NORMALIZATION, "result.owner", owner, resultEvents == 0 ? Outcome.NOT_APPLICABLE : ownership.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
-                ownership.isEmpty() ? resultEvents + " result(s) owned by the id of their own record" : String.join("; ", ownership));
+                ownership.isEmpty() ? resultEvents + " result(s) owned by the id of their own record" : String.join("; ", ownership), resultEvents);
         List<String> problems = new ArrayList<>();
         List<String> representation = new ArrayList<>();
         int examined = 0;

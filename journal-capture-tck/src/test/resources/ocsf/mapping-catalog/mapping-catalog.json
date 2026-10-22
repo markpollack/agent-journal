@@ -20,6 +20,41 @@
   "package.state": "UNSUPPORTED",
   "acquisition.complete": "UNSUPPORTED"
  },
+ "property_triggers": {
+  "meaning": "the native scenario whose occurrences make a property applicable to an owner. A NOT_APPLICABLE result is accepted only when the owner's own native records (the frozen expected sources, read by the oracle's source profile within the owner's split scope) hold zero occurrences of the trigger; a VERIFIED result must state how many occurrences it establishes and cover the owner's native population. A property without a declared trigger cannot be answered NOT_APPLICABLE for an applicable obligation.",
+  "population.requests": "facts:requests",
+  "request.values": "facts:requests",
+  "population.results": "facts:results",
+  "result.values": "facts:results",
+  "result.owner": "facts:results",
+  "population.responses": "facts:responses",
+  "response.values": "facts:responses",
+  "population.prompts": "facts:prompts",
+  "prompt.values": "facts:prompts",
+  "population.usage": "facts:usage",
+  "usage.values": "facts:usage",
+  "population.cost": "facts:cost",
+  "cost.values": "facts:cost",
+  "population.decisions": "facts:decisions",
+  "decision.values": "facts:decisions",
+  "population.operations": "facts:operations",
+  "operation.values": "facts:operations",
+  "population.turn_completed": "facts:turn_completed",
+  "turn.values": "facts:turn_completed",
+  "population.turn_started": "facts:turn_started",
+  "turn_started.values": "facts:turn_started",
+  "population.contexts": "facts:contexts",
+  "context.values": "facts:contexts",
+  "package.children": "run:children",
+  "whole_record.bytes": "records:opaque"
+ },
+ "representation_properties": {
+  "meaning": "properties whose REPRESENTATION_DIFFERS outcome is a declared non-semantic difference (equal values spelled differently, such as 1 and 1.0); on any other property that outcome does not establish the obligation",
+  "properties": [
+   "whole_record.representation",
+   "reconstruction.representation"
+  ]
+ },
  "scenarios": "oracle items and route-scoped availability claims name a native scenario (CatalogCoverage#occurrences): run:incomplete, run:children, facts:<family>, path:<inventory path>, value:<path>=<text>, block:<type>|media|unknown, records:opaque",
  "concepts": [
   {

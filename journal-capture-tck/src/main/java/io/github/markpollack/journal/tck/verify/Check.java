@@ -10,8 +10,16 @@ package io.github.markpollack.journal.tck.verify;
  * @param owner {@code main}, or {@code child:<spawn tool-use id>}
  * @param outcome the outcome
  * @param detail counts, ids, paths, line numbers and kinds; never message content
+ * @param occurrences how many native occurrences of the property's trigger the result establishes for its owner, for
+ *        the checks that count them (populations, values, children, opaque bytes); {@code null} when the check does not
+ *        count occurrences. The coverage summary compares it with the native population it derives independently.
  */
-public record Check(Category category, String property, String owner, Outcome outcome, String detail) {
+public record Check(Category category, String property, String owner, Outcome outcome, String detail, Integer occurrences) {
+
+    /** A check that does not count occurrences. */
+    public Check(Category category, String property, String owner, Outcome outcome, String detail) {
+        this(category, property, owner, outcome, detail, null);
+    }
 
     /** The four results DESIGN keeps apart. */
     public enum Category {
