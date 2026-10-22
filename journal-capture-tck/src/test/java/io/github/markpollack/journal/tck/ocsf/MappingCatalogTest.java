@@ -52,16 +52,19 @@ class MappingCatalogTest {
     static final List<Path> TEST_SOURCES = List.of(PROJECT.resolve("journal-capture-tck/src/test/java"), PROJECT.resolve("journal-ocsf-writer/src/test/java"));
     static final Set<String> VIEWS = Set.of("submissions", "responses", "usage", "associations", "tool_exchanges", "settings_context");
 
-    /** The CLI stream routes the matrix is computed for: catalog cli label, oracle profile class, committed fixture, fixture artifact. */
-    record Route(String cli, String profile, String fixture, String artifact, String label) {
+    /**
+     * The CLI stream routes the matrix is computed for: catalog cli label, oracle profile class, committed fixture,
+     * fixture artifact, and the compatibility entry (CLI, profile, version and launch route) the fixture was recorded on.
+     */
+    record Route(String cli, String profile, String fixture, String artifact, String label, String entry) {
     }
 
     static final List<Route> ROUTES = List.of(
-            new Route("claude", "ClaudeStreamProfile", OcsfFixtures.CHILD, "stream.jsonl", "Claude Code stream 2.1.299 sdk (sanitized real fixture)"),
-            new Route("claude", "ClaudeStreamProfile", OcsfFixtures.LIVE_FEATURES, "stream.jsonl", "Claude Code stream 2.1.304 stdout (sanitized live feature recording)"),
-            new Route("claude", "ClaudeStreamProfile", OcsfFixtures.LIVE_DENIAL, "stream.jsonl", "Claude Code stream 2.1.304 stdout (sanitized live denial recording)"),
-            new Route("codex", "CodexStreamProfile", OcsfFixtures.CODEX_STREAM, "stream.jsonl", "Codex CLI exec stream 0.160.1 (labelled synthetic fixture)"),
-            new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording)"));
+            new Route("claude", "ClaudeStreamProfile", OcsfFixtures.CHILD, "stream.jsonl", "Claude Code stream 2.1.299 sdk (sanitized real fixture)", "claude-code/stream-json/2.1.299-sdk"),
+            new Route("claude", "ClaudeStreamProfile", OcsfFixtures.LIVE_FEATURES, "stream.jsonl", "Claude Code stream 2.1.304 stdout (sanitized live feature recording)", "claude-code/stream-json/2.1.304-stdout"),
+            new Route("claude", "ClaudeStreamProfile", OcsfFixtures.LIVE_DENIAL, "stream.jsonl", "Claude Code stream 2.1.304 stdout (sanitized live denial recording)", "claude-code/stream-json/2.1.304-stdout"),
+            new Route("codex", "CodexStreamProfile", OcsfFixtures.CODEX_STREAM, "stream.jsonl", "Codex CLI exec stream 0.160.1 (labelled synthetic fixture)", "codex-cli/exec-json-stream/0.160.1"),
+            new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording)", "codex-cli/exec-json-stream/0.160.1"));
 
     @Test
     void everyCatalogReferenceResolvesInJava(@TempDir Path work) throws IOException {
@@ -248,6 +251,19 @@ class MappingCatalogTest {
             return "verified";
         }
         return occurrence ? "verified" : "unexercised (no occurrence on the fixture)";
+    }
+
+    /**
+     * The summary of one concept on one route's committed fixture ({@code fixture}: the copied fixture directory, whose
+     * {@code native/} holds the frozen expected sources). Delegates to {@link #state}.
+     */
+    static String summarize(Json entry, Route route, Path fixture, OracleReport report) {
+        return state(entry, route, report);
+    }
+
+    /** The catalog's concept entries. */
+    static List<Json> catalog() {
+        return NeutralJson.readDocument(Path.of(MappingCatalogTest.class.getResource("/ocsf/mapping-catalog/mapping-catalog.json").getPath().replace("%20", " "))).elements();
     }
 
     // ---- inputs ------------------------------------------------------------------------------------------------------
