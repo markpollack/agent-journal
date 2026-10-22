@@ -244,7 +244,7 @@ final class CatalogCoverage {
         }
         return Set.of("run:incomplete", "run:children", "facts:requests", "facts:results", "facts:results.structured", "facts:results.error",
                 "facts:responses", "facts:prompts", "facts:usage", "facts:usage.reasoning", "facts:cost", "facts:decisions", "facts:operations", "facts:turn_completed",
-                "facts:turn_started", "facts:contexts", "records:opaque").contains(name);
+                "facts:turn_started", "facts:contexts", "facts:open_requests", "facts:open_operations", "facts:results.failed", "records:opaque").contains(name);
     }
 
     /**
@@ -308,6 +308,13 @@ final class CatalogCoverage {
             case "cost" -> f.costs.size();
             case "usage" -> f.usages.size();
             case "usage.reasoning" -> (int) f.usages.stream().filter(u -> u.components().containsKey("reasoning_tokens")).count();
+            // a request whose id no result names, and an operation never reported in a terminal state: work open at the end
+            case "open_requests" -> (int) f.requests.stream().filter(q -> f.results.stream().noneMatch(r -> q.id() != null && q.id().equals(r.id()))).count();
+            case "open_operations" -> (int) f.operations.stream().map(ExpectedFacts.Operation::uid).distinct()
+                    .filter(u -> f.operations.stream().noneMatch(o -> u != null && u.equals(o.uid()) && o.statusId() != 0)).count();
+            // a failed tool result or operation: an error flag reported true, or a non-zero exit code
+            case "results.failed" -> (int) (f.results.stream().filter(r -> r.isError() instanceof Json.JBool b && b.value()).count()
+                    + f.operations.stream().filter(o -> o.exitCode() instanceof Json.JNumber n && n.value().signum() != 0).count());
             default -> f.counts().get(family);
         };
     }

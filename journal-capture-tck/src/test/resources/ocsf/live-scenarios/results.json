@@ -1,0 +1,326 @@
+{
+ "kind": "agent-journal/live-scenario-results",
+ "version": "0.1",
+ "meaning": "Attempts against the roster, appended after each run: reused live recordings, new live runs (promoted to sanitized fixtures), replay and labelled synthetic cases, each with per-behavior status (observed, attempted-not-triggered, not-run, blocked) and raw predicates the Java check evaluates on the committed native recording. Only an attempt of evidence class live can make a behavior live-observed.",
+ "attempts": [
+  {
+   "id": "accept1-claude-features-1",
+   "route": "claude-code/stream-json/2.1.304-stdout",
+   "cli_version": "2.1.304",
+   "evidence_class": "live",
+   "fixture": "claude-live-2.1.304-features",
+   "provenance": "ACCEPT-1 live run 2026-10-21 (reused; sanitized fixture)",
+   "behaviors": [
+    {
+     "behavior": "LIVE-01",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:responses",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "LiveFixtureFeaturesTest#theClaudeFeatureRecordingExhibitsToolsChildrenFailureUsageAndRetainedFamilies"
+     ],
+     "note": "the main prompt is not echoed by the stream; the sub-agent's prompt is"
+    },
+    {
+     "behavior": "LIVE-02",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:requests",
+       "min": 1
+      },
+      {
+       "scenario": "facts:results",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "LiveFixtureFeaturesTest#theClaudeFeatureRecordingExhibitsToolsChildrenFailureUsageAndRetainedFamilies"
+     ]
+    },
+    {
+     "behavior": "LIVE-03",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:requests",
+       "min": 2
+      }
+     ],
+     "assertions": [
+      "LiveFixtureFeaturesTest#theClaudeFeatureRecordingExhibitsToolsChildrenFailureUsageAndRetainedFamilies"
+     ],
+     "note": "repeated tools with distinct ids; parallel overlap not claimed"
+    },
+    {
+     "behavior": "LIVE-04",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:results.failed",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "LiveFixtureFeaturesTest#theClaudeFeatureRecordingExhibitsToolsChildrenFailureUsageAndRetainedFamilies"
+     ]
+    },
+    {
+     "behavior": "LIVE-07",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "run:children",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "LiveFixtureFeaturesTest#theSubAgentPromptIsTheChildScopesVendorReportedPrompt"
+     ]
+    },
+    {
+     "behavior": "LIVE-09",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:usage",
+       "min": 1
+      },
+      {
+       "scenario": "facts:cost",
+       "min": 1
+      },
+      {
+       "scenario": "block:thinking",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "LiveFixtureFeaturesTest#theClaudeFeatureRecordingExhibitsToolsChildrenFailureUsageAndRetainedFamilies"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "accept1-claude-denial-1",
+   "route": "claude-code/stream-json/2.1.304-stdout",
+   "cli_version": "2.1.304",
+   "evidence_class": "live",
+   "fixture": "claude-live-2.1.304-denial",
+   "provenance": "ACCEPT-1 live run 2026-10-21 (reused; sanitized fixture)",
+   "behaviors": [
+    {
+     "behavior": "LIVE-05",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:decisions",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "LiveFixtureFeaturesTest#theDenialRecordingExhibitsAnObservedRejectionAtBothScopes"
+     ],
+     "note": "print-route denial under --permission-mode default; the interactive prompt route is a separate mode, not exercised"
+    }
+   ]
+  },
+  {
+   "id": "accept1-claude-cancel-1",
+   "route": "claude-code/stream-json/2.1.304-stdout",
+   "cli_version": "2.1.304",
+   "evidence_class": "live",
+   "fixture": "claude-live-2.1.304-cancelled",
+   "provenance": "ACCEPT-1 live run 2026-10-21 (reused; sanitized fixture)",
+   "behaviors": [
+    {
+     "behavior": "LIVE-08",
+     "status": "attempted-not-triggered",
+     "predicates": [
+      {
+       "scenario": "facts:open_requests",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "LiveFixtureFeaturesTest#theCancelledRecordingsAreHonestInterruptedPrefixes"
+     ],
+     "note": "the cancellation is honest (frozen incomplete, package INTERRUPTED) but every tool request already had its result at the cut: interruption with work open was not triggered"
+    }
+   ]
+  },
+  {
+   "id": "accept1-codex-commands-1",
+   "route": "codex-cli/exec-json-stream/0.160.1",
+   "cli_version": "0.160.1",
+   "evidence_class": "live",
+   "fixture": "codex-live-0.160.1-commands",
+   "provenance": "ACCEPT-1 live run 2026-10-21 (reused; sanitized fixture)",
+   "behaviors": [
+    {
+     "behavior": "LIVE-01",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:responses",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "LiveFixtureFeaturesTest#theCodexRecordingExhibitsOperationsFailureRepetitionAndUsage"
+     ],
+     "note": "the exec stream does not echo the prompt (user messages are not projected)"
+    },
+    {
+     "behavior": "LIVE-02",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:operations",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "LiveFixtureFeaturesTest#theCodexRecordingExhibitsOperationsFailureRepetitionAndUsage"
+     ],
+     "note": "commands only; no file change, read tool or MCP in this run"
+    },
+    {
+     "behavior": "LIVE-03",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:operations",
+       "min": 4
+      }
+     ],
+     "assertions": [
+      "LiveFixtureFeaturesTest#theCodexRecordingExhibitsOperationsFailureRepetitionAndUsage"
+     ],
+     "note": "repeated commands with distinct stream-local ids; no overlap evidence"
+    },
+    {
+     "behavior": "LIVE-04",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:results.failed",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "LiveFixtureFeaturesTest#theCodexRecordingExhibitsOperationsFailureRepetitionAndUsage"
+     ]
+    },
+    {
+     "behavior": "LIVE-09",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:usage",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "LiveFixtureFeaturesTest#theCodexRecordingExhibitsOperationsFailureRepetitionAndUsage"
+     ],
+     "note": "usage at turn end (the thread's cumulative total); no reasoning summary item in this run; no cost on this route"
+    }
+   ]
+  },
+  {
+   "id": "accept1-codex-cancel-1",
+   "route": "codex-cli/exec-json-stream/0.160.1",
+   "cli_version": "0.160.1",
+   "evidence_class": "live",
+   "fixture": "codex-live-0.160.1-cancelled",
+   "provenance": "ACCEPT-1 live run 2026-10-21 (reused; sanitized fixture)",
+   "behaviors": [
+    {
+     "behavior": "LIVE-08",
+     "status": "attempted-not-triggered",
+     "predicates": [
+      {
+       "scenario": "facts:open_operations",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "LiveFixtureFeaturesTest#theCancelledRecordingsAreHonestInterruptedPrefixes"
+     ],
+     "note": "the cancellation is honest (frozen incomplete) but both commands had completed at the cut: interruption with work open was not triggered"
+    }
+   ]
+  },
+  {
+   "id": "fnd1-codex-families-synthetic",
+   "route": "codex-cli/exec-json-stream/0.160.1",
+   "cli_version": "0.160.1",
+   "evidence_class": "synthetic",
+   "fixture": "syn-codex-exec-families-0.160.1",
+   "provenance": "labelled synthetic stream derived from the vendor's exec types and processor tests (FND-1); not live",
+   "behaviors": [
+    {
+     "behavior": "LIVE-06",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "value:item.type=mcp_tool_call",
+       "min": 4
+      }
+     ],
+     "assertions": [
+      "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+     ],
+     "note": "synthetic: shows Journal retains MCP records whole; no live MCP run"
+    },
+    {
+     "behavior": "LIVE-07",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "value:item.type=collab_tool_call",
+       "min": 2
+      }
+     ],
+     "assertions": [
+      "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+     ],
+     "note": "synthetic collab spawn; retained only"
+    },
+    {
+     "behavior": "LIVE-05",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "value:item.status=declined",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+     ],
+     "note": "synthetic declined command"
+    },
+    {
+     "behavior": "LIVE-09",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "value:item.type=reasoning",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+     ],
+     "note": "synthetic reasoning summary; retained only"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,111 @@
+{
+ "kind": "agent-journal/live-scenario-roster",
+ "version": "0.1",
+ "reviewed": "2026-10-22",
+ "meaning": "The shared behavior roster of the vendor coverage and live validation procedure: what a deliberate scenario must make the CLI do, the native observation that proves it happened and the Journal assertion that checks the persisted output. Applicability is per compatibility entry, with a basis; a not-applicable decision needs a version- and route-specific source basis.",
+ "behaviors": [
+  {
+   "id": "LIVE-01",
+   "name": "Normal response and prompt handling",
+   "native_observation": "an answer record; the prompt echo where the source reports one",
+   "journal_assertion": "ordered content and source-reported identity preserved; caller-supplied prompt provenance distinguished from vendor content"
+  },
+  {
+   "id": "LIVE-02",
+   "name": "Ordinary built-in tools: execute a command, read and write/edit a file",
+   "native_observation": "vendor tool activity records (requests and results, or reported operations)",
+   "journal_assertion": "names/arguments or command, result/output, call or item identity, status and exit code preserved"
+  },
+  {
+   "id": "LIVE-03",
+   "name": "Repeated or parallel tool activity, identical results",
+   "native_observation": "two or more tool activities with distinct native owners; overlap evidence before any parallel claim",
+   "journal_assertion": "distinct owners kept; no result satisfies another owner by equal text"
+  },
+  {
+   "id": "LIVE-04",
+   "name": "Tool failure and recovery",
+   "native_observation": "a failed tool result or non-zero exit followed by further activity",
+   "journal_assertion": "failure preserved and distinguished from a failed capture"
+  },
+  {
+   "id": "LIVE-05",
+   "name": "Permission rejection",
+   "native_observation": "a reported decision or rejection, with its attribution",
+   "journal_assertion": "run-scope evidence kept distinct from a named tool-call decision"
+  },
+  {
+   "id": "LIVE-06",
+   "name": "MCP or external tool with structured arguments and result",
+   "native_observation": "an MCP invocation and completion with structured payloads (and an error variant where obtainable)",
+   "journal_assertion": "exact structured payloads and metadata preserved; normalized only where a mapping exists"
+  },
+  {
+   "id": "LIVE-07",
+   "name": "Child-agent spawn and completion",
+   "native_observation": "spawn or coordination ids, and child activity where the source carries it",
+   "journal_assertion": "links and owner scopes checked; a spawn notification is not child interior content"
+  },
+  {
+   "id": "LIVE-08",
+   "name": "Controlled interruption with work open",
+   "native_observation": "an incomplete frozen run with a tool request or operation open at the cut",
+   "journal_assertion": "prefix preserved; honest incomplete state; process cleanup evidence retained"
+  },
+  {
+   "id": "LIVE-09",
+   "name": "Usage, reasoning and reported cost",
+   "native_observation": "usage fields at their reported scope; reasoning content or counts; reported cost where the source has it",
+   "journal_assertion": "scope and finality kept; absent cost is not zero; repeats do not become several final totals"
+  },
+  {
+   "id": "LIVE-10",
+   "name": "Rich, unknown and structured-value edge cases",
+   "native_observation": "media, redacted or unknown blocks, null/empty/number edge values",
+   "journal_assertion": "exact retention; live and synthetic parts stated separately"
+  }
+ ],
+ "applicability": [
+  {
+   "route": "claude-code/stream-json/2.1.304-stdout",
+   "applicable": [
+    "LIVE-01",
+    "LIVE-02",
+    "LIVE-03",
+    "LIVE-04",
+    "LIVE-05",
+    "LIVE-06",
+    "LIVE-07",
+    "LIVE-08",
+    "LIVE-09",
+    "LIVE-10"
+   ],
+   "conditional": [],
+   "not_applicable": [],
+   "basis": "the stream-json surface carries assistant/user/result/system records with content blocks, tool_use/tool_result, permission denials, sub-agent records (parent_tool_use_id), usage and cost (vendor inventory pending: Agent SDK types)"
+  },
+  {
+   "route": "codex-cli/exec-json-stream/0.160.1",
+   "applicable": [
+    "LIVE-01",
+    "LIVE-02",
+    "LIVE-03",
+    "LIVE-04",
+    "LIVE-06",
+    "LIVE-08",
+    "LIVE-09"
+   ],
+   "conditional": [
+    "LIVE-05",
+    "LIVE-07"
+   ],
+   "not_applicable": [
+    {
+     "behavior": "LIVE-10",
+     "basis": "0.160.1 exec projection has no media, redacted or unknown content families (image view and image generation items are not projected; 0.160.1-vendor-inventory.json omitted_by_projection); structured-value edge cases remain testable synthetically"
+    }
+   ],
+   "basis": "0.160.1-vendor-inventory.json: commands, file changes, MCP, web search, todo lists, reasoning summaries and agent messages are declared; LIVE-05 only as a declined command status (approval requests are not projected); LIVE-07 only as collab tool calls, which need the multi-agent feature; no cost (LIVE-09 covers usage and reasoning only)"
+  }
+ ]
+}
