@@ -41,7 +41,7 @@ Rule: RULE-3. Tests: none yet. Status: not implemented.
 
 ### UC1-AC6: Declare every selected source
 
-When a run is recorded, `run.json` shall declare each selected source with its kind, artifact identity, record count and content hash.
+When a run is recorded, the event file's source declarations shall declare each selected source with its kind, artifact identity, record count and content hash; `run.json` may mirror them as an ancillary index.
 Rule: RULE-21. Tests: `OcsfOracleMutationTest#sourceInventoryHashIsChecked`, `FullOneReviewRegressionTest#omittingAnEntireSourceIsADefectOnEveryObligationOfThatSource`.
 
 ### UC1-AC7: Do not credit the archive to preservation
@@ -69,7 +69,7 @@ Rule: RULE-9. Tests: `LiveCaptureSeamTest` (the version is declared after the se
 ### UC2-AC4: State the selected compatibility entry and its applicability
 
 When a run is recorded, the event file's declarations shall name the compatibility entry applied to each source with its source-description revision, mapping contract and mapper identity, and whether the recorded CLI version is within that entry's tested range.
-Rule: RULE-10. Tests: `PinsTest#mappingContractsDeclareEveryRuleTheMappersExecute`, `VendorSpecificationsTest`. Status: contracts are named in `run.json`; the entry, its range and the applicability status are not yet written.
+Rule: RULE-10. Tests: `PinsTest#mappingContractsDeclareEveryRuleTheMappersExecute`, `VendorSpecificationsTest`. Status: implemented (`101f8ff`, exact entries since `4e11243`): each source's `compatibility` declaration names the entry, its range and the status (tested, in_range, no_match, version_unknown).
 
 ### UC2-AC5: Retain and flag an untested version
 
@@ -279,3 +279,8 @@ UC3-AC15 and UC5-AC11 to UC5-AC13. No criterion was removed; `RequirementsRoster
 per-use-case counts 7, 6, 15, 8 and 13.
 
 2026-10-21, two-CLI streaming acceptance (ACCEPT-1): UC5-AC13 renamed in wording only ("mapping catalog" for "crosswalk") and marked implemented; no criterion added or removed.
+
+2026-10-22, foundation comparison (FND-1): UC1-AC6 now names the event file's source declarations as the declaring
+records (`run.json` mirrors them), matching the standalone layout in force since `f4e68f8`; UC2-AC4's status line
+updated to the implemented compatibility declaration; UC5-AC13's status records the repaired coverage summary. No
+criterion added or removed.

@@ -23,7 +23,7 @@ Tests: no production recorder exercises this selection yet; `PrefixReplayTest`, 
 
 ### RULE-2
 **MUST** import a native session file as the selected input only when it is the only data source the CLI offers.
-**Reason:** Session-only CLIs have no other evidence; a streaming CLI does, and two inputs for one run create a reconciliation problem the recorder should not own.
+**Reason:** Session-only CLIs have no other evidence; a streaming CLI does, and two inputs for one run create a reconciliation problem the recorder should not own. This rule governs automatic live-capture source selection; an explicitly requested offline import of a saved native session is a separate mode with its own source provenance and separate output, never a supplement to a stream.
 Tests: the writer accepts a native session file through the same entry point (`WriterLifecycleTest`); no test yet checks the selection rule itself.
 
 ### RULE-3
@@ -188,14 +188,14 @@ Tests: `RequirementsRosterTest`, `NativeRequirementTest`, `RequirementsEvidenceT
 **Reason:** Two tested endpoints do not prove every intermediate release and nothing proves a future one; a no-match input is evidence to keep and a gap to report, not a reason to guess a mapper. Any partial untested normalization or strict mode is a separate tested proposal.
 
 ### RULE-34
-**MUST** give every meaningful acquired field exactly one disposition: normalized into a portable field, retained in vendor residual or fallback data, omitted under a reviewed and tested redundancy or noise rule, or unresolved with retention.
+**MUST** give every meaningful acquired field exactly one disposition: normalized into a portable field, retained in vendor residual or fallback data, omitted under a reviewed and tested redundancy or noise rule, or unresolved with retention; and **MUST** give every field the pinned vendor inventory declares for a supported route a family-specific disposition, whether or not a recording has carried it (unexercised until one does).
 **Reason:** A field whose fate is unknown is a field that may have been lost; unknown semantics justify retention, never silent omission. Arbitrary user and tool data keys are dispositioned apart from the vendor envelope.
-Tests: `InventoryDriftTest` (observed paths and presence); dispositions per field are not yet recorded.
+Tests: `FieldDispositionTest` (every observed field; vendor-declared entries kept as unexercised), `VendorStreamInventoryTest` (every declared field dispositioned per family, every observed field declared, replay behavior as the inventory states), `InventoryDriftTest` (observed paths and presence).
 
 ### RULE-35
 **MUST** derive common-model comparison matrices from reviewed structured mapping-catalog entries (the mapping catalog, formerly called the crosswalk, is the table of how each vendor's fields correspond to Journal's common concepts), each naming its source description and version range, record variant and field paths, canonical concept and destination, ownership and scope, mapper rule and independent test, with verified, retained-only, unavailable-at-source, unexercised and unresolved states kept separate, and MUST NOT discover a correspondence by matching equal field values.
 **Reason:** Equal values and overlapping shapes do not establish equal meaning; human review proposes a correspondence and fixed Java checks challenge it with counterexamples. The matrix is a calculation over accepted entries, not a rediscovery.
-Tests: `MappingCatalogTest` (reference validity in Java and the derived common-concept matrix); the catalog's earlier Python reference checker is historical tooling.
+Tests: `MappingCatalogTest` (reference validity in Java and the derived CLI coverage table), `CatalogCoverage` and `MappingCatalogSummaryTest` (owed results from frozen populations), `FoundationComparisonTest` (foundation, preservation and projection tables from the same catalog); the catalog's earlier Python reference checker is historical tooling.
 
 ### RULE-36
 **MUST** establish every required property, every applicable owner and every scenario a criterion names before reporting that criterion as passed, treating a configured check that is missing from the evidence as an error, an observed wrong value as a failure, and an unexercised trigger or insufficient evidence as not assessed.
@@ -218,3 +218,8 @@ cannot be the only home of a fact; RULE-28 names the distinct evidence classes. 
 RULE-37. No rule was removed; `RequirementsRosterTest` pins 37 rules.
 
 2026-10-21, two-CLI streaming acceptance (ACCEPT-1): terminology only, no obligation changed: "mapping catalog" replaces "crosswalk" in RULE-35 (the Owner's clearer name for the table of vendor-field to common-concept correspondences); RULE-35's Tests: line now names the Java check.
+
+2026-10-22, foundation comparison (FND-1): RULE-2 clarified (automatic live-capture selection; explicit offline import
+is a separate mode), no obligation changed; RULE-34 extended to every field the pinned vendor inventory declares for a
+supported route, observed or not, with its tests named; RULE-35's Tests: line names the repaired coverage summary and
+the foundation comparison. No rule added or removed; `RequirementsRosterTest` pins 37 rules.
