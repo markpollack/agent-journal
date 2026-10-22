@@ -264,18 +264,22 @@ final class Compatibility {
                 .put("normalizes", s.normalizes() && s.status() != Status.NOT_VERSION_SCOPED && s.status() != Status.VERSION_UNKNOWN ? "yes" : s.status() == Status.VERSION_UNKNOWN
                         ? "provisionally, under the profile's mapper, until the version is known" : "no");
         if (s.entry() != null) {
-            Entry e = s.entry();
-            d.put("entry_id", e.id()).put("min_version", e.minVersion()).put("max_version", e.maxVersion()).put("source_specification", e.sourceSpecification())
-                    .put("schema", e.schema()).put("mapper", e.mapper()).put("contract", e.contract()).put("tested", new Jv.Arr(e.tested()));
-            if (e.note() != null) {
-                d.put("note", e.note());
-            }
-            if (e.isRetired()) {
-                d.put("retired", e.retired());
-            }
+            describe(d, s.entry());
         }
         d.put("schema_sha256_in_use", schemaSha256);
         return d;
+    }
+
+    /** The selected entry's own facts: identity, range, specification, schema, mapper, contract, tested evidence, note and retirement. */
+    private static void describe(Jv.Obj d, Entry e) {
+        d.put("entry_id", e.id()).put("min_version", e.minVersion()).put("max_version", e.maxVersion()).put("source_specification", e.sourceSpecification())
+                .put("schema", e.schema()).put("mapper", e.mapper()).put("contract", e.contract()).put("tested", new Jv.Arr(e.tested()));
+        if (e.note() != null) {
+            d.put("note", e.note());
+        }
+        if (e.isRetired()) {
+            d.put("retired", e.retired());
+        }
     }
 
     /** Numeric comparison per dot-separated component; a non-numeric component compares as text; a missing component is 0. */
