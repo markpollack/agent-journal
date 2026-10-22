@@ -1,0 +1,34 @@
+{
+ "kind": "agent-journal/expected-sources",
+ "version": "0.1",
+ "run_uid": "codex-live-0.160.1-interrupt-open",
+ "complete": false,
+ "frozen": {
+  "at": "after sanitization, before any package was written or judged",
+  "by": "sha256, bytes and line count of the sanitized stream; split cores from its distinct non-null parent_tool_use_id values",
+  "basis": "SANITIZED REAL LIVE RECORDING: the live frozen manifest recorded sha256 8a952d610a1d49b556c40d8b960f1b36bccf49261c50664cdc99e08c5f3bac44 over 434 bytes; values were replaced as provenance.json lists, no record added or removed",
+  "live_process": {
+   "pid": 1395044,
+   "started": "2026-10-22T18:12:45.042159350Z",
+   "ended": "2026-10-22T18:13:10.103511915Z",
+   "how": "cancelled",
+   "exit_code": 0,
+   "exit_meaning": "0: the CLI reported success",
+   "cancel_reason": "deliberate cancellation after 25000 ms",
+   "stdout": "closed: EOF reached",
+   "stderr_bytes": 39,
+   "meaning": "the CLI process outcome; distinct from storage finalization (recording.state) and acquisition extent (acquisition.status): EOF never implies success"
+  }
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "profile": "codex_stream",
+   "sha256": "5d66a05d79f5a0d0982908795fcc760301c7b9d6ddf5b3074dfe3ce1f15a47e9",
+   "bytes": 434,
+   "records": 4,
+   "required": true
+  }
+ ],
+ "children": []
+}

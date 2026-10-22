@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"00000000-0000-4000-8000-0000000fa107"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll run the command and check whether it succeeds.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"It failed because the current directory is on a read-only filesystem."}}
+{"type":"turn.completed","usage":{"input_tokens":30335,"cached_input_tokens":27264,"cache_write_input_tokens":0,"output_tokens":71,"reasoning_output_tokens":0}}

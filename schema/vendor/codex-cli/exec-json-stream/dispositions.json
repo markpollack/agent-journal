@@ -10,7 +10,15 @@
  "contract": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
  "contract_file": "codex-cli-0.160.1-exec-stream",
  "evidence_fixtures": [
+  "codex-live-0.160.1-collab-wait",
   "codex-live-0.160.1-commands",
+  "codex-live-0.160.1-file-change",
+  "codex-live-0.160.1-interrupt-open",
+  "codex-live-0.160.1-mcp",
+  "codex-live-0.160.1-plan",
+  "codex-live-0.160.1-reasoning",
+  "codex-live-0.160.1-sandbox-refusal",
+  "codex-live-0.160.1-web-search",
   "syn-codex-exec-families-0.160.1",
   "syn-codex-exec-stream",
   "syn-codex-exec-turn-failed-0.160.1"

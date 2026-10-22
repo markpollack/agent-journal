@@ -605,8 +605,8 @@
   {
    "variant": "item.started/file_change",
    "emitted": "conditional",
-   "condition": "only if a started file-change notification occurs (unconfirmed)",
-   "lifecycle": "not documented: the exec type comment says completed only, but map_started_item would project a started file change if one is notified",
+   "condition": "when the agent applies a patch (observed live)",
+   "lifecycle": "the exec type comment says completed only, but map_started_item projects a started file change when one is notified, and a live 0.160.1 run emitted one (codex-live-0.160.1-file-change)",
    "fields": [
     {
      "path": "type",
@@ -785,7 +785,7 @@
     {
      "path": "item.error",
      "type": "object|null",
-     "meaning": "error once failed, else null",
+     "meaning": "error when the call itself failed, else null; a tool result with isError is reported as status failed with result content and error null (observed live)",
      "availability": "always",
      "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallItem"
     },
@@ -916,7 +916,7 @@
     {
      "path": "item.error",
      "type": "object|null",
-     "meaning": "error once failed, else null",
+     "meaning": "error when the call itself failed, else null; a tool result with isError is reported as status failed with result content and error null (observed live)",
      "availability": "always",
      "symbol": "codex-rs/exec/src/exec_events.rs#McpToolCallItem"
     },

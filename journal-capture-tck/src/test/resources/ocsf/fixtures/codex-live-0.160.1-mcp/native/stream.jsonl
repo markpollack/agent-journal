@@ -1,0 +1,9 @@
+{"type":"thread.started","thread_id":"00000000-0000-4000-8000-0000000fa102"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll call the two fnd1 tools in order, then report their results in one sentence."}}
+{"type":"item.started","item":{"id":"item_1","type":"mcp_tool_call","server":"fnd1","tool":"echo_record","arguments":{"text":"fnd-1","n":7},"result":null,"error":null,"status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item_1","type":"mcp_tool_call","server":"fnd1","tool":"echo_record","arguments":{"text":"fnd-1","n":7},"result":{"content":[{"type":"text","text":"{\"echo\": \"fnd-1\", \"n\": 7, \"ok\": true}"}],"structured_content":{"echo":"fnd-1","n":7,"ok":true}},"error":null,"status":"completed"}}
+{"type":"item.started","item":{"id":"item_2","type":"mcp_tool_call","server":"fnd1","tool":"always_fails","arguments":{},"result":null,"error":null,"status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item_2","type":"mcp_tool_call","server":"fnd1","tool":"always_fails","arguments":{},"result":{"content":[{"type":"text","text":"always_fails: deliberate test failure"}],"structured_content":null},"error":null,"status":"failed"}}
+{"type":"item.completed","item":{"id":"item_3","type":"agent_message","text":"`echo_record` returned `{\"echo\":\"fnd-1\",\"n\":7,\"ok\":true}`, and `always_fails` returned the error `always_fails: deliberate test failure`."}}
+{"type":"turn.completed","usage":{"input_tokens":63434,"cached_input_tokens":52352,"cache_write_input_tokens":0,"output_tokens":164,"reasoning_output_tokens":0}}

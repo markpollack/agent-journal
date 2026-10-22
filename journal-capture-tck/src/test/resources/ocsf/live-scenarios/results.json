@@ -321,6 +321,224 @@
      "note": "synthetic reasoning summary; retained only"
     }
    ]
+  },
+  {
+   "id": "fnd1-codex-file-change-1",
+   "route": "codex-cli/exec-json-stream/0.160.1",
+   "cli_version": "0.160.1",
+   "evidence_class": "live",
+   "fixture": "codex-live-0.160.1-file-change",
+   "provenance": "FND-1 live campaign 2026-10-22 (sanitized fixture; private run under the steward's fnd-1-live evidence)",
+   "behaviors": [
+    {
+     "behavior": "LIVE-02",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "value:item.type=file_change",
+       "min": 2
+      },
+      {
+       "scenario": "facts:operations",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+     ],
+     "note": "a patch edit (file_change started and completed: path and kind, no patch contents) and a read command; file_change is retained only"
+    }
+   ]
+  },
+  {
+   "id": "fnd1-codex-mcp-1",
+   "route": "codex-cli/exec-json-stream/0.160.1",
+   "cli_version": "0.160.1",
+   "evidence_class": "live",
+   "fixture": "codex-live-0.160.1-mcp",
+   "provenance": "FND-1 live campaign 2026-10-22 (sanitized fixture; private run under the steward's fnd-1-live evidence)",
+   "behaviors": [
+    {
+     "behavior": "LIVE-06",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "value:item.type=mcp_tool_call",
+       "min": 4
+      }
+     ],
+     "assertions": [
+      "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+     ],
+     "note": "local deterministic stdio MCP test server: structured arguments and structured_content preserved in the retained records; not normalized"
+    },
+    {
+     "behavior": "LIVE-04",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "value:item.status=failed",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+     ],
+     "note": "the always_fails tool (isError) is reported as status failed with result content and error null; the error.message variant was not triggered"
+    }
+   ]
+  },
+  {
+   "id": "fnd1-codex-reasoning-1",
+   "route": "codex-cli/exec-json-stream/0.160.1",
+   "cli_version": "0.160.1",
+   "evidence_class": "live",
+   "fixture": "codex-live-0.160.1-reasoning",
+   "provenance": "FND-1 live campaign 2026-10-22 (sanitized fixture; private run under the steward's fnd-1-live evidence)",
+   "behaviors": [
+    {
+     "behavior": "LIVE-09",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "value:item.type=reasoning",
+       "min": 1
+      },
+      {
+       "scenario": "facts:usage.reasoning",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+     ],
+     "note": "reasoning summary with model_reasoning_summary=detailed (retained only); reasoning token count normalized from turn.completed; no plan item (the plan tool was not enabled)"
+    }
+   ]
+  },
+  {
+   "id": "fnd1-codex-plan-2",
+   "route": "codex-cli/exec-json-stream/0.160.1",
+   "cli_version": "0.160.1",
+   "evidence_class": "live",
+   "fixture": "codex-live-0.160.1-plan",
+   "provenance": "FND-1 live campaign 2026-10-22 (sanitized fixture; private run under the steward's fnd-1-live evidence)",
+   "behaviors": [
+    {
+     "behavior": "LIVE-02",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "value:item.type=todo_list",
+       "min": 5
+      }
+     ],
+     "assertions": [
+      "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+     ],
+     "note": "plan tool (update_plan, enabled with tools.update_plan.enabled=true): todo_list started, updated three times, completed at turn end under one item id; retained only"
+    }
+   ]
+  },
+  {
+   "id": "fnd1-codex-web-search-1",
+   "route": "codex-cli/exec-json-stream/0.160.1",
+   "cli_version": "0.160.1",
+   "evidence_class": "live",
+   "fixture": "codex-live-0.160.1-web-search",
+   "provenance": "FND-1 live campaign 2026-10-22 (sanitized fixture; private run under the steward's fnd-1-live evidence)",
+   "behaviors": [
+    {
+     "behavior": "LIVE-02",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "records:opaque",
+       "min": 2
+      }
+     ],
+     "assertions": [
+      "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+     ],
+     "note": "web search started and completed: both lines carry two id members, so the reader keeps them only as opaque bytes (defect); results' third-party content replaced in the fixture"
+    }
+   ]
+  },
+  {
+   "id": "fnd1-codex-collab-1",
+   "route": "codex-cli/exec-json-stream/0.160.1",
+   "cli_version": "0.160.1",
+   "evidence_class": "live",
+   "fixture": "codex-live-0.160.1-collab-wait",
+   "provenance": "FND-1 live campaign 2026-10-22 (sanitized fixture; private run under the steward's fnd-1-live evidence)",
+   "behaviors": [
+    {
+     "behavior": "LIVE-07",
+     "status": "attempted-not-triggered",
+     "predicates": [
+      {
+       "scenario": "value:item.tool=spawn_agent",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+     ],
+     "note": "a child agent did run, but the stream carried only a collab wait without receivers: the spawn is not projected on this run, so the stream cannot link the child"
+    }
+   ]
+  },
+  {
+   "id": "fnd1-codex-interrupt-open-1",
+   "route": "codex-cli/exec-json-stream/0.160.1",
+   "cli_version": "0.160.1",
+   "evidence_class": "live",
+   "fixture": "codex-live-0.160.1-interrupt-open",
+   "provenance": "FND-1 live campaign 2026-10-22 (sanitized fixture; private run under the steward's fnd-1-live evidence)",
+   "behaviors": [
+    {
+     "behavior": "LIVE-08",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "run:incomplete",
+       "min": 1
+      },
+      {
+       "scenario": "facts:open_operations",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+     ],
+     "note": "cancelled after 25 s while sleep 40 was running: item.started without completion; frozen incomplete; storage INTERRUPTED; no process left behind"
+    }
+   ]
+  },
+  {
+   "id": "fnd1-codex-sandbox-refusal-1",
+   "route": "codex-cli/exec-json-stream/0.160.1",
+   "cli_version": "0.160.1",
+   "evidence_class": "live",
+   "fixture": "codex-live-0.160.1-sandbox-refusal",
+   "provenance": "FND-1 live campaign 2026-10-22 (sanitized fixture; private run under the steward's fnd-1-live evidence)",
+   "behaviors": [
+    {
+     "behavior": "LIVE-05",
+     "status": "attempted-not-triggered",
+     "predicates": [
+      {
+       "scenario": "value:item.status=declined",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+     ],
+     "note": "read-only sandbox: the failed write left no command_execution item at all (no declined status, no approval request); the stream shows only agent messages"
+    }
+   ]
   }
  ]
 }

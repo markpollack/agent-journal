@@ -1,0 +1,46 @@
+{
+ "kind": "agent-journal/fixture-provenance",
+ "fixture": "codex-live-0.160.1-reasoning",
+ "origin": "SANITIZED REAL LIVE RECORDING (not synthetic)",
+ "evidence_class": "recorded replay of a live stream; the live capture itself (unsanitized) is private steward evidence (FND-1 live campaign, 2026-10-22)",
+ "cli": "Codex CLI",
+ "cli_version": "0.160.1",
+ "cli_version_basis": "discovered once per run by the documented adapter path `codex --version` before launch, because the exec --json stream reports no version; the native session file was not consulted",
+ "mode_and_route": "CliCapture launch (opt-in integration): raw stdout, independent byte copy, flush per record",
+ "capture_command": [
+  "codex",
+  "exec",
+  "--json",
+  "--skip-git-repo-check",
+  "-s",
+  "workspace-write",
+  "-C",
+  "/work",
+  "-c",
+  "model_reasoning_summary=\"detailed\"",
+  "Before doing anything, write a 3-step plan with your plan tool (update_plan) and keep it updated, marking each step completed as you finish it. The task: (1) create a file count.txt containing the numbers 1, 2 and 3, one per line; (2) show it with `cat count.txt`; (3) report its line count using `wc -l count.txt`. End with one short sentence."
+ ],
+ "scenario": "LIVE-09 reasoning summary (model_reasoning_summary=detailed); the plan tool was not enabled and no plan item appeared",
+ "live_run": "s3-reasoning-todo-1",
+ "live_process": {
+  "pid": 1382872,
+  "started": "2026-10-22T18:08:12.484992368Z",
+  "ended": "2026-10-22T18:08:34.404143013Z",
+  "how": "exited",
+  "exit_code": 0,
+  "exit_meaning": "0: the CLI reported success",
+  "stdout": "closed: EOF reached",
+  "stderr_bytes": 39,
+  "meaning": "the CLI process outcome; distinct from storage finalization (recording.state) and acquisition extent (acquisition.status): EOF never implies success"
+ },
+ "original_sha256": "2f108ff128b45b4448fe0749304765c84a8e82145b9ee38e28cf9f3bda77310f",
+ "original_bytes": 3034,
+ "sanitized_sha256": "85cdb8e590a570499c80c6542fca2472f9a6caba1f053bdc5ecb7f66cb099fa2",
+ "sanitized_bytes": 3034,
+ "records": 15,
+ "sanitization": [
+  "original thread id -> stand-in, wherever it occurs",
+  "task directory path -> /work"
+ ],
+ "privacy_review": "local paths, home directory, session/thread ids, record uuids, user configuration names (agents, skills, plugins, commands, MCP servers), memory and socket paths and account rate-limit numbers replaced; tool ids, message ids, request ids and model names kept (opaque); prompt text is the deliberate synthetic task; reviewed FND-1 live campaign, 2026-10-22; web_search result urls/contents replaced; thread id replaced wherever it occurs"
+}

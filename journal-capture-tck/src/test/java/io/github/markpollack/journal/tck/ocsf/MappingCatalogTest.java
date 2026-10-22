@@ -83,7 +83,15 @@ class MappingCatalogTest {
             new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording)", "codex-cli/exec-json-stream/0.160.1"),
             new Route("claude", "ClaudeStreamProfile", OcsfFixtures.LIVE_CANCELLED, "stream.jsonl", "Claude Code stream 2.1.304 stdout (sanitized live cancelled recording)", "claude-code/stream-json/2.1.304-stdout"),
             new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX_CANCELLED, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live cancelled recording)", "codex-cli/exec-json-stream/0.160.1"),
-            new Route("claude", "ClaudeStreamProfile", OcsfFixtures.INTERRUPTED, "stream.jsonl", "Claude Code stream 2.1.299 sdk (interrupted prefix of the real fixture)", "claude-code/stream-json/2.1.299-sdk"));
+            new Route("claude", "ClaudeStreamProfile", OcsfFixtures.INTERRUPTED, "stream.jsonl", "Claude Code stream 2.1.299 sdk (interrupted prefix of the real fixture)", "claude-code/stream-json/2.1.299-sdk"),
+            new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX_FILE_CHANGE, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording: file change)", "codex-cli/exec-json-stream/0.160.1"),
+            new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX_MCP, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording: MCP calls)", "codex-cli/exec-json-stream/0.160.1"),
+            new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX_REASONING, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording: reasoning summary)", "codex-cli/exec-json-stream/0.160.1"),
+            new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX_PLAN, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording: plan updates)", "codex-cli/exec-json-stream/0.160.1"),
+            new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX_WEB_SEARCH, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording: web search)", "codex-cli/exec-json-stream/0.160.1"),
+            new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX_COLLAB_WAIT, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording: collab wait)", "codex-cli/exec-json-stream/0.160.1"),
+            new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX_INTERRUPT_OPEN, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording: cancelled with a command open)", "codex-cli/exec-json-stream/0.160.1"),
+            new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX_SANDBOX_REFUSAL, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording: sandbox refusal)", "codex-cli/exec-json-stream/0.160.1"));
 
     /** A coverage-table column: one admitted CLI/version/profile/route, or the historical sdk route, labelled so. */
     record Column(String entry, String label, String support) {

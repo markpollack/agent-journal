@@ -1,0 +1,47 @@
+{
+ "kind": "agent-journal/fixture-provenance",
+ "fixture": "codex-live-0.160.1-web-search",
+ "origin": "SANITIZED REAL LIVE RECORDING (not synthetic)",
+ "evidence_class": "recorded replay of a live stream; the live capture itself (unsanitized) is private steward evidence (FND-1 live campaign, 2026-10-22)",
+ "cli": "Codex CLI",
+ "cli_version": "0.160.1",
+ "cli_version_basis": "discovered once per run by the documented adapter path `codex --version` before launch, because the exec --json stream reports no version; the native session file was not consulted",
+ "mode_and_route": "CliCapture launch (opt-in integration): raw stdout, independent byte copy, flush per record",
+ "capture_command": [
+  "codex",
+  "exec",
+  "--json",
+  "--skip-git-repo-check",
+  "-s",
+  "read-only",
+  "-C",
+  "/work",
+  "-c",
+  "web_search=\"live\"",
+  "Use your web search tool once to search for: example.com IANA reserved domain. Report the title of the most relevant result in one sentence. Do not run any shell commands."
+ ],
+ "scenario": "web search (-c web_search=live) started and completed",
+ "live_run": "s5-web-search-1",
+ "live_process": {
+  "pid": 1390134,
+  "started": "2026-10-22T18:10:44.552904623Z",
+  "ended": "2026-10-22T18:10:52.437442080Z",
+  "how": "exited",
+  "exit_code": 0,
+  "exit_meaning": "0: the CLI reported success",
+  "stdout": "closed: EOF reached",
+  "stderr_bytes": 39,
+  "meaning": "the CLI process outcome; distinct from storage finalization (recording.state) and acquisition extent (acquisition.status): EOF never implies success"
+ },
+ "original_sha256": "b6b1ee7e8edbc096dc3bd77d697b57c9e85c0382aae1b55080c272895ac1050d",
+ "original_bytes": 13142,
+ "sanitized_sha256": "bf2b9309998c1cbe16f3030c6230e371fca312c1e6f189b56e97056761722e0c",
+ "sanitized_bytes": 10303,
+ "records": 7,
+ "sanitization": [
+  "original thread id -> stand-in, wherever it occurs",
+  "web_search results: urls and contents (third-party material) -> labelled stand-ins; element count and members kept",
+  "task directory path -> /work"
+ ],
+ "privacy_review": "local paths, home directory, session/thread ids, record uuids, user configuration names (agents, skills, plugins, commands, MCP servers), memory and socket paths and account rate-limit numbers replaced; tool ids, message ids, request ids and model names kept (opaque); prompt text is the deliberate synthetic task; reviewed FND-1 live campaign, 2026-10-22; web_search result urls/contents replaced; thread id replaced wherever it occurs"
+}

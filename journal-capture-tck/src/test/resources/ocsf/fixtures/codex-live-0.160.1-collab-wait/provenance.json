@@ -1,0 +1,46 @@
+{
+ "kind": "agent-journal/fixture-provenance",
+ "fixture": "codex-live-0.160.1-collab-wait",
+ "origin": "SANITIZED REAL LIVE RECORDING (not synthetic)",
+ "evidence_class": "recorded replay of a live stream; the live capture itself (unsanitized) is private steward evidence (FND-1 live campaign, 2026-10-22)",
+ "cli": "Codex CLI",
+ "cli_version": "0.160.1",
+ "cli_version_basis": "discovered once per run by the documented adapter path `codex --version` before launch, because the exec --json stream reports no version; the native session file was not consulted",
+ "mode_and_route": "CliCapture launch (opt-in integration): raw stdout, independent byte copy, flush per record",
+ "capture_command": [
+  "codex",
+  "exec",
+  "--json",
+  "--skip-git-repo-check",
+  "-s",
+  "read-only",
+  "-C",
+  "/work",
+  "--enable",
+  "multi_agent",
+  "Spawn exactly one sub-agent with your agent-spawning tool and ask it to reply with exactly the word pong and nothing else. Wait for it to finish, then report its answer in one sentence. Do not run any shell commands yourself."
+ ],
+ "scenario": "LIVE-07 multi-agent request: a child ran; the stream carries only a collab wait (spawn not projected)",
+ "live_run": "s6-collab-1",
+ "live_process": {
+  "pid": 1391373,
+  "started": "2026-10-22T18:11:01.470519520Z",
+  "ended": "2026-10-22T18:11:11.765340508Z",
+  "how": "exited",
+  "exit_code": 0,
+  "exit_meaning": "0: the CLI reported success",
+  "stdout": "closed: EOF reached",
+  "stderr_bytes": 39,
+  "meaning": "the CLI process outcome; distinct from storage finalization (recording.state) and acquisition extent (acquisition.status): EOF never implies success"
+ },
+ "original_sha256": "95c7ba7451bb71215503b5e0e9d92735c4d94a4cd6e660ac5a523a22f33b5342",
+ "original_bytes": 976,
+ "sanitized_sha256": "e7e7cace03795649978ed22fcad21a3473a8d30cf94d85240a92cdcdf8eb8725",
+ "sanitized_bytes": 976,
+ "records": 7,
+ "sanitization": [
+  "original thread id -> stand-in, wherever it occurs",
+  "task directory path -> /work"
+ ],
+ "privacy_review": "local paths, home directory, session/thread ids, record uuids, user configuration names (agents, skills, plugins, commands, MCP servers), memory and socket paths and account rate-limit numbers replaced; tool ids, message ids, request ids and model names kept (opaque); prompt text is the deliberate synthetic task; reviewed FND-1 live campaign, 2026-10-22; web_search result urls/contents replaced; thread id replaced wherever it occurs"
+}

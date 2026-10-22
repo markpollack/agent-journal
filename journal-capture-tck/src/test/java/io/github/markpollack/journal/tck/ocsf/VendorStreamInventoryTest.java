@@ -65,7 +65,7 @@ class VendorStreamInventoryTest {
 
     static final List<Profile> PROFILES = List.of(
             new Profile("codex_stream", "schema/vendor/codex-cli/exec-json-stream/0.160.1-vendor-inventory.json", "codex.checkout",
-                    List.of(OcsfFixtures.LIVE_CODEX, OcsfFixtures.LIVE_CODEX_CANCELLED),
+                    List.of(OcsfFixtures.LIVE_CODEX, OcsfFixtures.LIVE_CODEX_CANCELLED, OcsfFixtures.LIVE_CODEX_FILE_CHANGE, OcsfFixtures.LIVE_CODEX_MCP, OcsfFixtures.LIVE_CODEX_REASONING, OcsfFixtures.LIVE_CODEX_PLAN, OcsfFixtures.LIVE_CODEX_WEB_SEARCH, OcsfFixtures.LIVE_CODEX_COLLAB_WAIT, OcsfFixtures.LIVE_CODEX_INTERRUPT_OPEN, OcsfFixtures.LIVE_CODEX_SANDBOX_REFUSAL),
                     List.of(OcsfFixtures.CODEX_STREAM, OcsfFixtures.CODEX_FAMILIES, OcsfFixtures.CODEX_TURN_FAILED)));
 
     static JsonNode inventory(Profile p) {

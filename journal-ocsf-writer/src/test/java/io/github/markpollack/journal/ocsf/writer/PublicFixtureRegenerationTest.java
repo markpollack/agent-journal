@@ -23,6 +23,14 @@ import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_C
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CODEX;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX_FAMILIES;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX_TURN_FAILED;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CODEX_FILE_CHANGE;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CODEX_MCP;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CODEX_REASONING;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CODEX_PLAN;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CODEX_WEB_SEARCH;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CODEX_COLLAB_WAIT;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CODEX_INTERRUPT_OPEN;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CODEX_SANDBOX_REFUSAL;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CODEX_CANCELLED;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_DENIAL;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_FEATURES;
@@ -58,6 +66,14 @@ class PublicFixtureRegenerationTest {
         writeCancelled(LIVE_CODEX_CANCELLED, codexStream());
         write(CODEX_FAMILIES, List.of(codexStream()), List.of("stream.jsonl"));
         write(CODEX_TURN_FAILED, List.of(codexStream()), List.of("stream.jsonl"));
+        write(LIVE_CODEX_FILE_CHANGE, List.of(codexStream()), List.of("stream.jsonl"));
+        write(LIVE_CODEX_MCP, List.of(codexStream()), List.of("stream.jsonl"));
+        write(LIVE_CODEX_REASONING, List.of(codexStream()), List.of("stream.jsonl"));
+        write(LIVE_CODEX_PLAN, List.of(codexStream()), List.of("stream.jsonl"));
+        write(LIVE_CODEX_WEB_SEARCH, List.of(codexStream()), List.of("stream.jsonl"));
+        write(LIVE_CODEX_COLLAB_WAIT, List.of(codexStream()), List.of("stream.jsonl"));
+        writeCancelled(LIVE_CODEX_INTERRUPT_OPEN, codexStream());
+        write(LIVE_CODEX_SANDBOX_REFUSAL, List.of(codexStream()), List.of("stream.jsonl"));
     }
 
     /**

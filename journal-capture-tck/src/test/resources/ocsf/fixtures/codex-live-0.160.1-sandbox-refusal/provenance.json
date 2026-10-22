@@ -1,0 +1,44 @@
+{
+ "kind": "agent-journal/fixture-provenance",
+ "fixture": "codex-live-0.160.1-sandbox-refusal",
+ "origin": "SANITIZED REAL LIVE RECORDING (not synthetic)",
+ "evidence_class": "recorded replay of a live stream; the live capture itself (unsanitized) is private steward evidence (FND-1 live campaign, 2026-10-22)",
+ "cli": "Codex CLI",
+ "cli_version": "0.160.1",
+ "cli_version_basis": "discovered once per run by the documented adapter path `codex --version` before launch, because the exec --json stream reports no version; the native session file was not consulted",
+ "mode_and_route": "CliCapture launch (opt-in integration): raw stdout, independent byte copy, flush per record",
+ "capture_command": [
+  "codex",
+  "exec",
+  "--json",
+  "--skip-git-repo-check",
+  "-s",
+  "read-only",
+  "-C",
+  "/work",
+  "Create a file named created.txt in the current directory containing the word hello by running the shell command `printf hello > created.txt`. Then report in one sentence whether it worked."
+ ],
+ "scenario": "LIVE-05 attempt: read-only sandbox, asked to create a file; the failed write left no command_execution item on the stream (no declined status, no approval request)",
+ "live_run": "s4-decline-1",
+ "live_process": {
+  "pid": 1388247,
+  "started": "2026-10-22T18:09:45.541049157Z",
+  "ended": "2026-10-22T18:09:53.117312590Z",
+  "how": "exited",
+  "exit_code": 0,
+  "exit_meaning": "0: the CLI reported success",
+  "stdout": "closed: EOF reached",
+  "stderr_bytes": 39,
+  "meaning": "the CLI process outcome; distinct from storage finalization (recording.state) and acquisition extent (acquisition.status): EOF never implies success"
+ },
+ "original_sha256": "e274f6953729a446608620dbd92d7382a7128f292e04a613cbcf73b79cca4cd2",
+ "original_bytes": 550,
+ "sanitized_sha256": "3fa8f5ac185cec5260460f42711dcb5c7e0d959ad66a03ec751c79d76049aa36",
+ "sanitized_bytes": 550,
+ "records": 5,
+ "sanitization": [
+  "original thread id -> stand-in, wherever it occurs",
+  "task directory path -> /work"
+ ],
+ "privacy_review": "local paths, home directory, session/thread ids, record uuids, user configuration names (agents, skills, plugins, commands, MCP servers), memory and socket paths and account rate-limit numbers replaced; tool ids, message ids, request ids and model names kept (opaque); prompt text is the deliberate synthetic task; reviewed FND-1 live campaign, 2026-10-22; web_search result urls/contents replaced; thread id replaced wherever it occurs"
+}

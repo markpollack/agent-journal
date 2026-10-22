@@ -1,0 +1,32 @@
+{
+ "run_uid": "codex-live-0.160.1-collab-wait",
+ "invocation_index": 0,
+ "capture_start": "2026-10-22T18:11:01.323375873Z",
+ "cli": {
+  "name": "Codex CLI",
+  "vendor_name": "OpenAI",
+  "version": "0.160.1",
+  "version_basis": "declared from the live run, where it was discovered once per run by the documented adapter path `codex --version` before launch, because the exec --json stream reports no version; the native session file was not consulted"
+ },
+ "launch_settings": {
+  "command": "replay of the sanitized live stream (original: codex exec --json --skip-git-repo-check -s read-only ...)",
+  "cwd": "/work",
+  "route": "stdout",
+  "model_requested": null,
+  "allowed_tools": null,
+  "original_route": "LIVE: CliCapture launch, raw stdout, independent byte copy"
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "kind": 1,
+   "profile": "codex_stream",
+   "route": "stdout",
+   "path": "<fixture>/native/codex-live-0.160.1-collab-wait/stream.jsonl"
+  }
+ ],
+ "synthetic": {
+  "label": "SANITIZED REAL LIVE RECORDING (Codex CLI 0.160.1, LIVE-07 multi-agent request: a child ran; the stream carries only a collab wait (spawn not projected)), replayed through the writer to produce this package; the live package itself is private steward evidence",
+  "derived_from": "live run s6-collab-1 (FND-1 live campaign, 2026-10-22)"
+ }
+}

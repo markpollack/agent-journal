@@ -230,7 +230,9 @@ class LiveFixtureFeaturesTest {
                     assertThat(prov.member("capture_command").elements()).isNotEmpty();
                     assertThat(SchemaCatalog.text(prov, "cli_version")).isNotBlank();
                     assertThat(Files.readString(dir.resolve("native").resolve("stream.jsonl"))).doesNotContain("/home/mark").doesNotContain("/tmp/claude-1000");
+                    assertThat(Files.readString(dir.resolve("provenance.json"))).as(name + " provenance").doesNotContain("/home/mark").doesNotContain("/tmp/claude-1000").doesNotContain("-home-mark");
                 }
+                assertThat(Files.readString(dir.resolve("spec.json"))).as(name + " spec").doesNotContain("/home/mark").doesNotContain("/tmp/claude-1000").doesNotContain("-home-mark");
             }
         }
         assertThat(seen).contains(LIVE_FEATURES, LIVE_DENIAL, LIVE_CANCELLED, LIVE_CODEX, LIVE_CODEX_CANCELLED);

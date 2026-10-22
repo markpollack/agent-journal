@@ -1,0 +1,26 @@
+{
+ "kind": "agent-journal/upstream-validation-summary",
+ "version": "0.1",
+ "fixture": "codex-live-0.160.1-file-change",
+ "core": "main",
+ "events_jsonl": "fixtures/codex-live-0.160.1-file-change/package/events.jsonl",
+ "events_jsonl_sha256": "65f6cf030c81e41715df76d52d5929f629926385026dd5574f43933574d6a818",
+ "execution_records": 11,
+ "declarations_skipped": 38,
+ "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
+ "toolkit": {
+  "name": "ocsf-toolkit",
+  "release": "v0.9.0",
+  "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
+  "exit_code": 0
+ },
+ "compiled_schema_sha256": "01cac1620fa5b6a5c70f4c13f796604f010e6caf39cb43667a1cc4e2b2a814c6",
+ "result": {
+  "event_files_processed": 11,
+  "error_events": 0,
+  "warning_only_events": 0,
+  "issues_reported": 0
+ },
+ "findings": {},
+ "note": "warning-only findings are the toolkit's enum-sibling notice on tool_kind 'other' (a known v0.9.0 limit recorded in the lock); any error event fails UC5-AC11 for this core"
+}

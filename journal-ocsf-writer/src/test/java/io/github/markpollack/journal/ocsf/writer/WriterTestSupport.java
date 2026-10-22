@@ -40,6 +40,16 @@ final class WriterTestSupport {
     /** Labelled synthetic Codex 0.160.1 exec streams derived from the vendor's exec types and processor tests (FND-1). */
     static final String CODEX_FAMILIES = "syn-codex-exec-families-0.160.1";
     static final String CODEX_TURN_FAILED = "syn-codex-exec-turn-failed-0.160.1";
+
+    /** Sanitized live Codex CLI 0.160.1 recordings of the FND-1 live campaign (2026-10-22), replayed through the writer. */
+    static final String LIVE_CODEX_FILE_CHANGE = "codex-live-0.160.1-file-change";
+    static final String LIVE_CODEX_MCP = "codex-live-0.160.1-mcp";
+    static final String LIVE_CODEX_REASONING = "codex-live-0.160.1-reasoning";
+    static final String LIVE_CODEX_PLAN = "codex-live-0.160.1-plan";
+    static final String LIVE_CODEX_WEB_SEARCH = "codex-live-0.160.1-web-search";
+    static final String LIVE_CODEX_COLLAB_WAIT = "codex-live-0.160.1-collab-wait";
+    static final String LIVE_CODEX_INTERRUPT_OPEN = "codex-live-0.160.1-interrupt-open";
+    static final String LIVE_CODEX_SANDBOX_REFUSAL = "codex-live-0.160.1-sandbox-refusal";
     static final String SPAWN = "toolu_01BnEuCUmZ2Vu1LpADzksmrJ";
 
     private WriterTestSupport() {

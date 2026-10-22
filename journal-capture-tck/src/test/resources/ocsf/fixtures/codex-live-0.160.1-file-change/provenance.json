@@ -1,0 +1,44 @@
+{
+ "kind": "agent-journal/fixture-provenance",
+ "fixture": "codex-live-0.160.1-file-change",
+ "origin": "SANITIZED REAL LIVE RECORDING (not synthetic)",
+ "evidence_class": "recorded replay of a live stream; the live capture itself (unsanitized) is private steward evidence (FND-1 live campaign, 2026-10-22)",
+ "cli": "Codex CLI",
+ "cli_version": "0.160.1",
+ "cli_version_basis": "discovered once per run by the documented adapter path `codex --version` before launch, because the exec --json stream reports no version; the native session file was not consulted",
+ "mode_and_route": "CliCapture launch (opt-in integration): raw stdout, independent byte copy, flush per record",
+ "capture_command": [
+  "codex",
+  "exec",
+  "--json",
+  "--skip-git-repo-check",
+  "-s",
+  "workspace-write",
+  "-C",
+  "/work",
+  "The current directory contains notes.txt. Using your file patch/edit tool (apply_patch), not a shell redirect, append one new line with the text gamma at the end of notes.txt. Then run the shell command `cat notes.txt` to show the file. Finish with one short sentence."
+ ],
+ "scenario": "LIVE-02 file edit through a patch (file_change) and a read command",
+ "live_run": "s1-file-edit-1",
+ "live_process": {
+  "pid": 1379346,
+  "started": "2026-10-22T18:07:26.182791465Z",
+  "ended": "2026-10-22T18:07:39.652975094Z",
+  "how": "exited",
+  "exit_code": 0,
+  "exit_meaning": "0: the CLI reported success",
+  "stdout": "closed: EOF reached",
+  "stderr_bytes": 39,
+  "meaning": "the CLI process outcome; distinct from storage finalization (recording.state) and acquisition extent (acquisition.status): EOF never implies success"
+ },
+ "original_sha256": "45d82b7c900d1ae4b61422a4b1bc9b13fc81bde8000250eea1e4703a72f68e3b",
+ "original_bytes": 2080,
+ "sanitized_sha256": "3904a14c63d76a117279bddcca607a51dab572b9e6c5d443702174f2d8f5a7d8",
+ "sanitized_bytes": 1699,
+ "records": 11,
+ "sanitization": [
+  "original thread id -> stand-in, wherever it occurs",
+  "task directory path -> /work"
+ ],
+ "privacy_review": "local paths, home directory, session/thread ids, record uuids, user configuration names (agents, skills, plugins, commands, MCP servers), memory and socket paths and account rate-limit numbers replaced; tool ids, message ids, request ids and model names kept (opaque); prompt text is the deliberate synthetic task; reviewed FND-1 live campaign, 2026-10-22; web_search result urls/contents replaced; thread id replaced wherever it occurs"
+}

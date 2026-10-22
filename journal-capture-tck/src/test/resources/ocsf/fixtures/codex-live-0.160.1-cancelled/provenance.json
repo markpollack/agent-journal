@@ -15,7 +15,7 @@
   "-s",
   "workspace-write",
   "-C",
-  "/tmp/claude-1000/-home-mark-projects-agent-journal-steward/6d58e999-f31a-4208-89d9-e2222ab6ee14/scratchpad/live/codex-cancel-1/task",
+  "/work",
   "Count from 1 to 30. For each number N, run the shell command `sleep 1; echo N` (with the actual number) as its own separate command and report its output before moving to the next number. Do not combine numbers into one command."
  ],
  "scenario": "thirty separate sleep-and-echo commands; the capture cancelled the CLI deliberately after 8 records (SIGTERM via the process handle; codex exited 0 on the signal); acquisition interrupted, recording INTERRUPTED",
@@ -39,5 +39,8 @@
  "sanitization": [
   "thread_id -> stand-in"
  ],
- "privacy_review": "local paths, home directory, session/thread ids, record uuids, user configuration names (agents, skills, plugins, commands, MCP servers), memory and socket paths and account rate-limit numbers replaced; tool ids, message ids, request ids and model names kept (opaque); prompt text is the deliberate synthetic task; reviewed 2026-10-21"
+ "privacy_review": "local paths, home directory, session/thread ids, record uuids, user configuration names (agents, skills, plugins, commands, MCP servers), memory and socket paths and account rate-limit numbers replaced; tool ids, message ids, request ids and model names kept (opaque); prompt text is the deliberate synthetic task; reviewed 2026-10-21",
+ "privacy_corrections": [
+  "2026-10-22 (FND-1): the -C argument of capture_command named a local scratch path (user name and session id); replaced by /work"
+ ]
 }
