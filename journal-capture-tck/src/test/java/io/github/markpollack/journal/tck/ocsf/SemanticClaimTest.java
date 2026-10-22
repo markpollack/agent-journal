@@ -39,6 +39,9 @@ class SemanticClaimTest {
     static Json decisions;
     static Json references;
     static SemanticClaims.Context ctx;
+    /** The committed data with one claim approved by a test-local decision: the approval mechanics are controlled apart from which claims are approved today. */
+    static Json approvedCatalog;
+    static Json approvedDecisions;
 
     @BeforeAll
     static void load(@TempDir Path work) throws IOException {
@@ -49,7 +52,22 @@ class SemanticClaimTest {
         Set<String> reported = new TreeSet<>();
         MappingCatalogTest.reportedChecks(work).forEach(c -> reported.add(c.property()));
         ctx = new SemanticClaims.Context(FieldDispositionTest.schema(work), reported, MappingCatalogTest.compatibilityEntries(), MappingCatalogTest.contractsByUid().keySet());
+        Json k = claim(APPROVED);
+        Map<String, Json> control = new LinkedHashMap<>();
+        control.put("id", new Json.JString(CONTROL_DECISION));
+        control.put("date", new Json.JString("2026-10-22"));
+        control.put("approver", new Json.JString("Project Owner (markpollack)"));
+        control.put("summary", new Json.JString("TEST CONTROL: approves one claim so the approval checks can be exercised"));
+        control.put("record", new Json.JString("none: a test-local decision, never committed"));
+        control.put("approves", new Json.JArray(List.of(new Json.JObject(Map.of("claim", new Json.JString(APPROVED), "revision", k.member("revision"), "digest", k.member("digest"))))));
+        List<Json> ds = new ArrayList<>(decisions.member("decisions").elements());
+        ds.add(new Json.JObject(control));
+        approvedDecisions = with(decisions, "decisions", new Json.JArray(ds));
+        approvedCatalog = claimChanged(catalog, APPROVED, c -> with(c, "approval", new Json.JObject(Map.of("status", new Json.JString("approved"), "revision", c.member("revision"),
+                "digest", c.member("digest"), "approver", new Json.JString("Project Owner (markpollack)"), "decision", new Json.JString(CONTROL_DECISION)))));
     }
+
+    static final String CONTROL_DECISION = "OWNER-2026-10-22-TEST-CONTROL";
 
     static List<String> problems(Json cat, Map<String, Json> exs, Json dec) {
         return SemanticClaims.problems(cat, exs, dec, references, ctx);
@@ -86,7 +104,11 @@ class SemanticClaimTest {
     }
 
     static Json claim(String id) {
-        for (SemanticClaims.Claim c : SemanticClaims.claims(catalog)) {
+        return claimIn(catalog, id);
+    }
+
+    static Json claimIn(Json cat, String id) {
+        for (SemanticClaims.Claim c : SemanticClaims.claims(cat)) {
             if (id.equals(c.id())) {
                 return c.json();
             }
@@ -95,6 +117,8 @@ class SemanticClaimTest {
     }
 
     static final String APPROVED = "claude.stream.child-scope-prompt";
+    /** The current revision of {@link #APPROVED} in the committed catalog. */
+    static final int REV = 2;
     static final String PROPOSED = "codex.exec-stream.mcp-tool-call";
 
     // ---- the committed data -----------------------------------------------------------------------------------------
@@ -126,27 +150,27 @@ class SemanticClaimTest {
     @Test
     void aChangedMeaningUnderAnOldApprovalIsRefused() {
         // the statement changes without a new revision: the stored digest no longer matches the meaning
-        Json altered = claimChanged(catalog, APPROVED, k -> with(k, "statement", new Json.JString(SchemaCatalog.text(k, "statement") + " A main-thread prompt is inferred from the first child prompt.")));
-        assertThat(problems(altered, examples, decisions)).anyMatch(p -> p.startsWith(APPROVED + " r1: digest") && p.contains("needs a new revision"));
+        Json altered = claimChanged(approvedCatalog, APPROVED, k -> with(k, "statement", new Json.JString(SchemaCatalog.text(k, "statement") + " A main-thread prompt is inferred from the first child prompt.")));
+        assertThat(problems(altered, examples, approvedDecisions)).anyMatch(p -> p.startsWith(APPROVED + " r" + REV + ": digest") && p.contains("needs a new revision"));
         // properly revised and re-digested, but still carrying the old approval: refused as stale
-        Json revised = claimChanged(altered, APPROVED, k -> with(with(k, "revision", new Json.JNumber("2")), "digest", new Json.JString(SemanticClaims.digest(k, examples))));
-        assertThat(problems(revised, examples, decisions)).anyMatch(p -> p.startsWith(APPROVED + " r2: stale approval refused"))
+        Json revised = claimChanged(altered, APPROVED, k -> with(with(k, "revision", new Json.JNumber(Integer.toString(REV + 1))), "digest", new Json.JString(SemanticClaims.digest(k, examples))));
+        assertThat(problems(revised, examples, approvedDecisions)).anyMatch(p -> p.startsWith(APPROVED + " r" + (REV + 1) + ": stale approval refused"))
                 .noneMatch(p -> p.contains(": digest "));
         // and a changed normative example (an expected value) changes the meaning too
         Map<String, Json> exs = new TreeMap<>(examples);
         Json ex = exs.get("claude-child-scope-prompt-live");
         Json first = ex.member("expected").elements().get(0);
         exs.put("claude-child-scope-prompt-live", with(ex, "expected", new Json.JArray(List.of(with(first, "values", with(first.member("values"), "/session_uid", new Json.JString("another-session")))))));
-        assertThat(problems(catalog, exs, decisions)).anyMatch(p -> p.startsWith(APPROVED + " r1: digest"));
+        assertThat(problems(approvedCatalog, exs, approvedDecisions)).anyMatch(p -> p.startsWith(APPROVED + " r" + REV + ": digest"));
     }
 
     @Test
     void addedEvidenceAndChecksLeaveTheDigestAndTheApprovalValid() {
         Json k = claim(APPROVED);
-        Json more = claimChanged(catalog, APPROVED, c -> with(with(c, "evidence", new Json.JArray(List.of(c.member("evidence").elements().get(0), c.member("evidence").elements().get(1),
+        Json more = claimChanged(approvedCatalog, APPROVED, c -> with(with(c, "evidence", new Json.JArray(List.of(c.member("evidence").elements().get(0), c.member("evidence").elements().get(1),
                 new Json.JString("ocsf-1.9.0-unmapped")))), "checks", new Json.JArray(List.of(c.member("checks").elements().get(0), new Json.JString("junit:MappingCatalogTest#everyCatalogReferenceResolvesInJava")))));
         assertThat(SemanticClaims.digest(claim(APPROVED), examples)).isEqualTo(SchemaCatalog.text(k, "digest"));
-        assertThat(problems(more, examples, decisions)).isEmpty();
+        assertThat(problems(more, examples, approvedDecisions)).isEmpty();
     }
 
     // ---- RULE-39 / UC5-AC19: links -----------------------------------------------------------------------------------
@@ -168,7 +192,7 @@ class SemanticClaimTest {
         Map<String, Json> exs = new TreeMap<>(examples);
         Json ex = exs.get("codex-mcp-tool-call-live");
         exs.put("codex-mcp-tool-call-live", with(ex, "native", with(ex.member("native"), "sha256", new Json.JString("0".repeat(64)))));
-        assertThat(problems(catalog, exs, decisions)).anyMatch(p -> p.startsWith(id + " r1: digest"));
+        assertThat(problems(catalog, exs, decisions)).anyMatch(p -> p.startsWith(id + " r2: digest"));
     }
 
     // ---- RULE-38 / UC5-AC21: approval is a recorded decision, never a test result -------------------------------------
@@ -179,15 +203,15 @@ class SemanticClaimTest {
                 "digest", k.member("digest"), "approver", new Json.JString("Project Owner (markpollack)"), "decision", new Json.JString("OWNER-2026-10-22-NOT-RECORDED")))));
         assertThat(problems(unrecorded, examples, decisions)).anyMatch(p -> p.contains("OWNER-2026-10-22-NOT-RECORDED is not a recorded Owner decision"));
         // a real decision that approves a different claim does not approve this one
-        Json borrowed = claimChanged(catalog, PROPOSED, k -> with(k, "approval", with(claim(APPROVED).member("approval"), "digest", k.member("digest"))));
-        assertThat(problems(borrowed, examples, decisions)).anyMatch(p -> p.contains("does not approve this revision and digest"));
+        Json borrowed = claimChanged(approvedCatalog, PROPOSED, k -> with(k, "approval", with(with(claimIn(approvedCatalog, APPROVED).member("approval"), "digest", k.member("digest")), "revision", k.member("revision"))));
+        assertThat(problems(borrowed, examples, approvedDecisions)).anyMatch(p -> p.contains("does not approve this revision and digest"));
         // a decision whose listed digest differs (it approved another wording)
         List<Json> ds = new ArrayList<>();
-        for (Json d : decisions.member("decisions").elements()) {
+        for (Json d : approvedDecisions.member("decisions").elements()) {
             Json x = d.member("approves").elements().get(0);
             ds.add(with(d, "approves", new Json.JArray(List.of(with(x, "digest", new Json.JString("sha256:" + "1".repeat(64)))))));
         }
-        assertThat(problems(catalog, examples, with(decisions, "decisions", new Json.JArray(ds)))).anyMatch(p -> p.startsWith(APPROVED + " r1: decision") && p.contains("does not approve"));
+        assertThat(problems(approvedCatalog, examples, with(approvedDecisions, "decisions", new Json.JArray(ds)))).anyMatch(p -> p.startsWith(APPROVED + " r" + REV + ": decision") && p.contains("does not approve"));
     }
 
     @Test
@@ -205,10 +229,29 @@ class SemanticClaimTest {
         }
     }
 
+    /**
+     * A revision awaiting binding names the earlier approved revision it changes and the delta, as evidence for the
+     * reviewer; the anchor must be a recorded decision of exactly that earlier revision and digest, and it approves
+     * nothing: the claim stays proposed.
+     */
+    @Test
+    void aPreviousApprovalAnchorMustBeTheRecordedDecisionOfAnEarlierRevisionAndApprovesNothing() {
+        List<SemanticClaims.Claim> anchored = SemanticClaims.claims(catalog).stream().filter(c -> c.json().path("approval", "previous") != null).toList();
+        assertThat(anchored).extracting(SemanticClaims.Claim::id).contains(APPROVED, "codex.exec-stream.thread-usage", "codex.exec-stream.web-search-duplicate-id");
+        assertThat(anchored).allMatch(c -> "proposed".equals(c.status()));
+        assertThat(SemanticClaims.support(anchored.get(0), true, true)).startsWith("candidate verified");
+        Json wrongDigest = claimChanged(catalog, APPROVED, k -> with(k, "approval", with(k.member("approval"), "previous",
+                with(k.path("approval", "previous"), "digest", new Json.JString("sha256:" + "2".repeat(64))))));
+        assertThat(problems(wrongDigest, examples, decisions)).anyMatch(p -> p.startsWith(APPROVED + " r" + REV + ": previous approval r1"));
+        Json notEarlier = claimChanged(catalog, APPROVED, k -> with(k, "approval", with(k.member("approval"), "previous",
+                with(k.path("approval", "previous"), "revision", new Json.JNumber(Integer.toString(REV))))));
+        assertThat(problems(notEarlier, examples, decisions)).anyMatch(p -> p.contains("previous approval r" + REV));
+    }
+
     @Test
     void aProposedClaimWithPassingChecksIsACandidateNotApprovedSupport() {
         SemanticClaims.Claim proposed = SemanticClaims.claims(catalog).stream().filter(c -> PROPOSED.equals(c.id())).findFirst().orElseThrow();
-        SemanticClaims.Claim approved = SemanticClaims.claims(catalog).stream().filter(c -> APPROVED.equals(c.id())).findFirst().orElseThrow();
+        SemanticClaims.Claim approved = SemanticClaims.claims(approvedCatalog).stream().filter(c -> APPROVED.equals(c.id())).findFirst().orElseThrow();
         assertThat(SemanticClaims.support(proposed, true, true)).startsWith("candidate verified").contains("not approved support");
         assertThat(SemanticClaims.support(approved, true, true)).isEqualTo("approved, verified");
         assertThat(SemanticClaims.support(approved, false, true)).isEqualTo("approved, not verified");

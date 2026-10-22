@@ -2,7 +2,7 @@
   "uid": 2,
   "caption": "Model Response",
   "category": "agent_execution",
-  "description": "One source record reporting content of a model response. A response with several records yields several events sharing response_uid; assembly is a query, not a stored claim.",
+  "description": "One source record reporting content of a model response. A response with several records yields several events sharing response_uid; assembly is a query, not a stored claim. When the source reports only its own content items (item_uid), the response they belong to is not identified: two items are not two model invocations, nor one.",
   "name": "model_response",
   "extends": "base_event",
   "attributes": {
@@ -15,6 +15,10 @@
         "2": {
           "caption": "Completed",
           "description": "The record reports a terminal state for the response."
+        },
+        "3": {
+          "caption": "Item completed",
+          "description": "The source reports a completed content item of a model response (for example a Codex exec agent message or reasoning item). The response it belongs to, and that response's own state, are not reported."
         }
       }
     },
@@ -41,7 +45,20 @@
     },
     "response_uid": {
       "group": "primary",
-      "requirement": "required"
+      "requirement": "optional"
+    },
+    "item_uid": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "identity_basis_id": {
+      "description": "What kind of identifier item_uid is, when a declared rule states it.",
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "identity_basis": {
+      "group": "primary",
+      "requirement": "optional"
     },
     "model_ref": {
       "group": "primary",

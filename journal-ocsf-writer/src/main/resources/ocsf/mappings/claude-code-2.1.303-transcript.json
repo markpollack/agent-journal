@@ -1,10 +1,13 @@
 {
-  "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+  "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
   "applies_to": {
     "product": "Claude Code",
     "version": "2.1.303",
     "source_kind": "Saved session file (~/.claude/projects/<cwd>/<session>.jsonl)",
-    "compatibility_entries": ["claude-code/session-transcript/2.1.299-session-file", "claude-code/session-transcript/2.1.303-session-file"],
+    "compatibility_entries": [
+      "claude-code/session-transcript/2.1.299-session-file",
+      "claude-code/session-transcript/2.1.303-session-file"
+    ],
     "selection": "route native_session_file; experimental combined-source evidence only"
   },
   "executor": "journal-ocsf-writer ClaudeTranscriptMapper (direct Java); one record at a time; state: artifact time fallback only",
@@ -53,7 +56,7 @@
       "target": "agentic_cli/model_response",
       "activity": "2 Completed when message.stop_reason is non-null, else 1 Partial (rule claude.transcript.activity.v1)",
       "owner": "response_uid = message.id (every message id, not one admitted response)",
-      "usage": "message.usage -> scope 2 Model response, status 2 Final when stop_reason non-null (rule claude.transcript.usage_status.v1); the transcript repeats the message's usage on every block record, so one response yields several equal Final observations that the view counts once",
+      "usage": "message.usage -> scope 2 Model response, status 2 Final when stop_reason non-null (rule claude.transcript.usage_status.v1); the transcript repeats the message's usage on every block record, so one response yields several equal Final observations that the view counts once; aggregation 1 Scope total (anthropic.usage.per_message.v1); canonical tranches (anthropic.usage.tranches.v1, prompt-caching definitions: input_tokens are the tokens neither read from nor used to create a cache): uncached_input_tokens = input_tokens, cache_read_tokens = cache_read_input_tokens, cache_write_tokens = cache_creation_input_tokens, cache_write_tiers = the cache_creation members (parts of cache_creation_input_tokens), output_tokens, reasoning_tokens = output_tokens_details.thinking_tokens with reasoning_relation 1 Part of output (anthropic.usage.thinking_in_output.v1); every component Reported in components[] with its RFC 6901 pointer; absent members stay absent",
       "residual": "whole record in data"
     },
     {
@@ -105,7 +108,7 @@
       },
       "target": "agentic_cli/session_context",
       "activity": "3 Accounting reported",
-      "usage": "modelUsage[m] -> usage_observation scope 5 Session status 2 Final (rule claude.transcript.cost_state.v1: cumulative per-model session usage written after the turn)",
+      "usage": "modelUsage[m] -> usage_observation scope 5 Session status 2 Final (rule claude.transcript.cost_state.v1: cumulative per-model session usage written after the turn); canonical tranches from Claude Code ModelUsage: uncached_input_tokens = inputTokens, cache_read_tokens = cacheReadInputTokens, cache_write_tokens = cacheCreationInputTokens, output_tokens = outputTokens, reasoning_tokens = thinkingTokens with reasoning_relation 1 Part of output (claude.model_usage.thinking_in_output.v1: documented as already counted inside outputTokens); aggregation 2 Cumulative snapshot (claude.model_usage.cumulative.v1)",
       "cost": "totalCostUSD -> cost_observation total_cost, currency USD, scope 5 Session",
       "residual": "whole record in data (durations, lines added/removed, hasUnknownModelCost)"
     },

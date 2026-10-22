@@ -1,165 +1,193 @@
 {
- "$schema": "https://json-schema.org/draft/2020-12/schema",
- "$id": "urn:agent-journal:semantic-example:0.1",
- "title": "Reviewed semantic example (ocsf/mapping-catalog/examples/*.json)",
- "type": "object",
- "required": [
-  "kind",
-  "format_version",
-  "id",
-  "concept",
-  "description",
-  "authored_from",
-  "native",
-  "expected"
- ],
- "properties": {
-  "kind": {
-   "const": "agent-journal/semantic-example"
-  },
-  "format_version": {
-   "const": "0.1"
-  },
-  "id": {
-   "type": "string"
-  },
-  "concept": {
-   "type": "string"
-  },
-  "description": {
-   "type": "string",
-   "minLength": 40
-  },
-  "authored_from": {
-   "type": "array",
-   "minItems": 1,
-   "items": {
-    "type": "string"
-   }
-  },
-  "native": {
-   "type": "object",
-   "required": [
-    "evidence_kind",
-    "profile",
-    "compatibility_entry",
-    "artifact"
-   ],
-   "properties": {
-    "evidence_kind": {
-     "enum": [
-      "live",
-      "replay",
-      "synthetic"
-     ]
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:agent-journal:semantic-example:0.1",
+  "title": "Reviewed semantic example (ocsf/mapping-catalog/examples/*.json)",
+  "type": "object",
+  "required": [
+    "kind",
+    "format_version",
+    "id",
+    "concept",
+    "description",
+    "authored_from",
+    "native",
+    "expected"
+  ],
+  "properties": {
+    "kind": {
+      "const": "agent-journal/semantic-example"
     },
-    "profile": {
-     "type": "string"
+    "format_version": {
+      "const": "0.1"
     },
-    "compatibility_entry": {
-     "type": "string"
-    },
-    "artifact": {
-     "type": "string"
-    },
-    "fixture": {
-     "type": "string"
-    },
-    "sha256": {
-     "type": "string",
-     "pattern": "^[0-9a-f]{64}$"
-    },
-    "run_spec_fixture": {
-     "type": "string"
-    },
-    "lines": {
-     "type": "array",
-     "minItems": 1,
-     "items": {
-      "type": "string"
-     }
-    }
-   },
-   "oneOf": [
-    {
-     "required": [
-      "fixture",
-      "sha256"
-     ]
-    },
-    {
-     "required": [
-      "lines",
-      "run_spec_fixture"
-     ]
-    }
-   ]
-  },
-  "expected": {
-   "type": "array",
-   "minItems": 1,
-   "items": {
-    "$ref": "#/$defs/event"
-   }
-  },
-  "counterexamples": {
-   "type": "array",
-   "items": {
-    "allOf": [
-     {
-      "$ref": "#/$defs/event"
-     },
-     {
-      "required": [
-       "id",
-       "why"
-      ]
-     }
-    ]
-   }
-  }
- },
- "$defs": {
-  "event": {
-   "type": "object",
-   "required": [
-    "record",
-    "class",
-    "activity_id",
-    "values"
-   ],
-   "properties": {
     "id": {
-     "type": "string"
+      "type": "string"
     },
-    "why": {
-     "type": "string"
+    "concept": {
+      "type": "string"
     },
-    "record": {
-     "type": "integer",
-     "minimum": 1
-    },
-    "class": {
-     "type": "string"
-    },
-    "activity_id": {
-     "type": "integer"
-    },
-    "values": {
-     "type": "object",
-     "minProperties": 1,
-     "propertyNames": {
-      "pattern": "^/"
-     }
-    },
-    "absent": {
-     "type": "array",
-     "items": {
+    "description": {
       "type": "string",
-      "pattern": "^/"
-     }
+      "minLength": 40
+    },
+    "authored_from": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "native": {
+      "type": "object",
+      "required": [
+        "evidence_kind",
+        "profile",
+        "compatibility_entry",
+        "artifact"
+      ],
+      "properties": {
+        "evidence_kind": {
+          "enum": [
+            "live",
+            "replay",
+            "synthetic"
+          ]
+        },
+        "profile": {
+          "type": "string"
+        },
+        "compatibility_entry": {
+          "type": "string"
+        },
+        "artifact": {
+          "type": "string"
+        },
+        "fixture": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "run_spec_fixture": {
+          "type": "string"
+        },
+        "lines": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "fixture",
+            "sha256"
+          ]
+        },
+        {
+          "required": [
+            "lines",
+            "run_spec_fixture"
+          ]
+        }
+      ]
+    },
+    "expected": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/event"
+      }
+    },
+    "counterexamples": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/event"
+          },
+          {
+            "required": [
+              "id",
+              "why"
+            ]
+          }
+        ]
+      }
+    },
+    "absent_events": {
+      "description": "Events the native input does not establish, for example no model request for a started invocation or no request at all for a completed-only item: neither the writer nor the profile may state one. Normative (inside the claim digest) when present.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "record",
+          "class",
+          "activity_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "record": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "class": {
+            "type": "string"
+          },
+          "activity_id": {
+            "type": "integer"
+          },
+          "why": {
+            "type": "string"
+          }
+        }
+      }
     }
-   }
+  },
+  "$defs": {
+    "event": {
+      "type": "object",
+      "required": [
+        "record",
+        "class",
+        "activity_id",
+        "values"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "why": {
+          "type": "string"
+        },
+        "record": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "class": {
+          "type": "string"
+        },
+        "activity_id": {
+          "type": "integer"
+        },
+        "values": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "pattern": "^/"
+          }
+        },
+        "absent": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^/"
+          }
+        }
+      }
+    }
   }
- }
 }

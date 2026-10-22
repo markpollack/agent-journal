@@ -1,0 +1,86 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "codex-reasoning-and-answer-live",
+  "concept": "reasoning-blocks-and-signature",
+  "description": "A Codex CLI 0.160.1 reasoning summary (record 3, item_0) followed by an agent message (record 4, item_1), live recording. Both are completed content items with their own stream-local ids, in source order; the stream reports neither the model response nor the invocation either belongs to. They are not two known model invocations, and not one inferred invocation: no response id is written on either.",
+  "authored_from": [
+    "codex-exec-0.160.1-emitter-items",
+    "codex-exec-0.160.1-types"
+  ],
+  "native": {
+    "evidence_kind": "live",
+    "profile": "codex_stream",
+    "compatibility_entry": "codex-cli/exec-json-stream/0.160.1",
+    "fixture": "codex-live-0.160.1-reasoning",
+    "artifact": "stream.jsonl",
+    "sha256": "85cdb8e590a570499c80c6542fca2472f9a6caba1f053bdc5ecb7f66cb099fa2"
+  },
+  "expected": [
+    {
+      "record": 3,
+      "class": "model_response",
+      "activity_id": 3,
+      "values": {
+        "/item_uid": "item_0",
+        "/identity_basis_id": 2,
+        "/content_blocks/0/reasoning_form_id": 2,
+        "/source_ref/record_index": 3
+      },
+      "absent": [
+        "/response_uid"
+      ]
+    },
+    {
+      "record": 4,
+      "class": "model_response",
+      "activity_id": 3,
+      "values": {
+        "/item_uid": "item_1",
+        "/identity_basis_id": 2,
+        "/content_blocks/0/block_kind_id": 1,
+        "/source_ref/record_index": 4
+      },
+      "absent": [
+        "/response_uid",
+        "/content_blocks/0/reasoning_form_id"
+      ]
+    }
+  ],
+  "absent_events": [
+    {
+      "record": 3,
+      "class": "model_response",
+      "activity_id": 2,
+      "why": "no model response completion is reported"
+    },
+    {
+      "record": 4,
+      "class": "model_response",
+      "activity_id": 2,
+      "why": "no model response completion is reported"
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "one-inferred-response",
+      "record": 4,
+      "class": "model_response",
+      "activity_id": 3,
+      "values": {
+        "/response_uid": "item_0"
+      },
+      "why": "Placing the answer in the reasoning item's response infers a relation the stream does not report."
+    },
+    {
+      "id": "two-counted-responses",
+      "record": 3,
+      "class": "model_response",
+      "activity_id": 3,
+      "values": {
+        "/response_uid": "item_0"
+      },
+      "why": "Giving each item its own response identity would count two model invocations from two content observations."
+    }
+  ]
+}

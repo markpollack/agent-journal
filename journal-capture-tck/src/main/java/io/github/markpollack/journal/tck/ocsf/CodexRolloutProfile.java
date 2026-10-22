@@ -63,11 +63,10 @@ final class CodexRolloutProfile implements SourceProfile {
             if ("token_usage_record".equals(type)) {
                 f.normalized.add(r.index());
                 f.contexts.add(new ExpectedFacts.Context(r.index(), 3, "token_usage_record", SourceProfile.text(p, "turn_id"), Map.of(), null, null));
-                String[] pairs = {"input_tokens", "input_tokens", "output_tokens", "output_tokens", "cached_input_tokens", "cache_read_tokens",
-                        "cache_write_input_tokens", "cache_write_tokens", "reasoning_output_tokens", "reasoning_tokens", "total_tokens", "reported_total_tokens"};
-                f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 2, 2, SourceProfile.components(p.member("usage"), pairs), null));
-                f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 3, 1, SourceProfile.components(p.member("turn_token_usage"), pairs), null));
-                f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 5, 1, SourceProfile.components(p.member("thread_token_usage"), pairs), null));
+                // experimental route: the tranches as on the exec stream, no aggregation stated
+                f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 2, 2, TrancheReading.codex(p.member("usage"), ""), null, null, null, null));
+                f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 3, 1, TrancheReading.codex(p.member("turn_token_usage"), ""), null, null, null, null));
+                f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 5, 1, TrancheReading.codex(p.member("thread_token_usage"), ""), null, null, null, null));
                 continue;
             }
             if ("event_msg".equals(type) && "task_started".equals(pt)) {
@@ -154,10 +153,7 @@ final class CodexRolloutProfile implements SourceProfile {
                 for (int i = 0; i < tokenCounts.size(); i++) {
                     NativeArtifact.Record tc = tokenCounts.get(i);
                     Json total = tc.json().path("payload", "info", "total_token_usage");
-                    Map<String, Json> c = SourceProfile.components(total, "input_tokens", "input_tokens", "output_tokens", "output_tokens",
-                            "cached_input_tokens", "cache_read_tokens", "cache_write_input_tokens", "cache_write_tokens",
-                            "reasoning_output_tokens", "reasoning_tokens", "total_tokens", "reported_total_tokens");
-                    f.usages.add(new ExpectedFacts.Usage(r.index(), tc.index(), 3, i == tokenCounts.size() - 1 ? 2 : 1, c, null));
+                    f.usages.add(new ExpectedFacts.Usage(r.index(), tc.index(), 3, i == tokenCounts.size() - 1 ? 2 : 1, TrancheReading.codex(total, "/total_token_usage"), null, null, null, null));
                 }
                 tokenCounts.clear();
                 f.completed.add(new ExpectedFacts.TurnCompleted(r.index(), 0, null));

@@ -8,22 +8,27 @@ import java.util.Set;
 
 /**
  * Codex CLI {@code exec --json} live output, read from the pinned interface (codex-rs/exec/src/exec_events.rs and
- * event_processor_with_jsonl_output.rs at rust-v0.160.1 d27764b), never from the writer's mapper. The SEM-1 candidate
- * readings, proposed for the Project Owner's semantic approval:
+ * event_processor_with_jsonl_output.rs at rust-v0.160.1 d27764b), never from the writer's mapper. The readings follow
+ * the delegated SEM-1 decisions (2026-10-22); their revised claims await the managing reviewer's binding:
  *
  * <ul>
- * <li>Every {@code item.id} is the processor's own stream-local id (identity basis 2), not a model-facing call id.</li>
- * <li>Agent messages are responses; a reasoning item is a response whose one block is a reasoning summary (form 2).</li>
+ * <li>Every {@code item.id} is the processor's own stream-local id (identity basis 2), unique within this artifact of
+ * one invocation; not a model-facing call id or a provider's response id.</li>
+ * <li>Agent messages and reasoning items are completed content items (activity 3, the item id as {@code item_uid});
+ * the model response they belong to is not reported, so no response id is expected. A reasoning item's one block is
+ * a reasoning summary (form 2).</li>
  * <li>A command execution is a standalone operation (unattributed) with its command string; completed, failed and
  * declined (status 99) are its reported states.</li>
- * <li>MCP, web search, collaboration and file-change items are tool calls: {@code item.started} is the request and
- * {@code item.completed} the result. The tool name is {@code item.tool} where the item reports one (MCP, collaboration),
- * otherwise the item type. A completed or failed status is the reported outcome.</li>
- * <li>{@code turn.completed} reports the thread's cumulative usage (scope 5, final for the run); a non-zero component
- * shows it was measured, all-zero components may be the emitter's default.</li>
- * <li>A web_search line repeats {@code item.id} (the exec item id, then the search item's own id). It is not one JSON
- * object under strict parsing, so it is retained verbatim, not normalized; its request or result is read from the
- * first id only in exactly that form.</li>
+ * <li>MCP, web search, collaboration and file-change items are tool activities: {@code item.started} reports a started
+ * invocation (activity 4, not the model's request), {@code item.completed} its result. The item type is the family; a
+ * tool name only where the item reports one ({@code item.tool} of MCP and collaboration items). The kind follows the
+ * family (web search 5, file change 2), never a name: an MCP tool is 99 Other whatever it is called, as no reviewed
+ * namespace binding exists, and a collaboration item is 99.</li>
+ * <li>{@code turn.completed} reports the thread's cumulative usage (scope 5, final for the run, a cumulative snapshot)
+ * in canonical tranches; a non-zero component shows it was measured, all-zero components may be the emitter's default.</li>
+ * <li>A web_search line repeats the item's {@code id} (the exec item id, then the search item's own id). It is not one
+ * JSON object under strict parsing, so it is retained verbatim, not normalized; its activity is read from the first id
+ * only in exactly that form.</li>
  * </ul>
  * The stream carries no timestamps.
  */
@@ -82,7 +87,7 @@ final class CodexStreamProfile implements SourceProfile {
         }
         if (!started && ("agent_message".equals(itemType) || "reasoning".equals(itemType))) {
             f.responses.add(new ExpectedFacts.Response(index, SourceProfile.text(item, "id"),
-                    item.member("text") == null ? List.of() : List.of(item.member("text")), null, true, null, "reasoning".equals(itemType) ? 2 : null));
+                    item.member("text") == null ? List.of() : List.of(item.member("text")), null, true, null, "reasoning".equals(itemType) ? 2 : null, STREAM_LOCAL));
             return true;
         }
         return false;
@@ -98,20 +103,26 @@ final class CodexStreamProfile implements SourceProfile {
     }
 
     private static boolean turn(ExpectedFacts f, int index, Json o) {
-        f.usages.add(new ExpectedFacts.Usage(index, index, 5, 2, SourceProfile.components(o.member("usage"),
-                "input_tokens", "input_tokens", "output_tokens", "output_tokens", "cached_input_tokens", "cache_read_tokens",
-                "cache_write_input_tokens", "cache_write_tokens", "reasoning_output_tokens", "reasoning_tokens"), null, null, measurement(o.member("usage"))));
+        f.usages.add(new ExpectedFacts.Usage(index, index, 5, 2, TrancheReading.codex(o.member("usage"), ""), null, null, measurement(o.member("usage")), 2));
         f.completed.add(new ExpectedFacts.TurnCompleted(index, 0, null));
         return true;
     }
 
-    /** The request a started tool item reports: the reported tool name or the item type, an MCP call's arguments, a search's action. */
+    /**
+     * The started invocation a tool item reports: the tool name only where the item reports one, an MCP call's arguments,
+     * a search's action, the item type as the family and the kind by family (an MCP or collaboration tool is 99).
+     */
     private static ExpectedFacts.Request request(int index, String itemType, Json item) {
         boolean mcp = "mcp_tool_call".equals(itemType);
-        String name = mcp || "collab_tool_call".equals(itemType) ? SourceProfile.text(item, "tool") : itemType;
+        String name = mcp || "collab_tool_call".equals(itemType) ? SourceProfile.text(item, "tool") : null;
         Json arguments = mcp ? item.member("arguments") : "web_search".equals(itemType) ? item.member("action") : null;
+        int kind = switch (itemType) {
+            case "web_search" -> 5;
+            case "file_change" -> 2;
+            default -> 99;
+        };
         return new ExpectedFacts.Request(index, SourceProfile.text(item, "id"), name, arguments, null, SourceProfile.text(item, "status"),
-                mcp ? SourceProfile.text(item, "server") : null, STREAM_LOCAL);
+                mcp ? SourceProfile.text(item, "server") : null, STREAM_LOCAL, 4, itemType, kind);
     }
 
     /** The result a completed tool item reports: MCP result content and structured content, search results; the outcome its status reports. */
@@ -127,7 +138,7 @@ final class CodexStreamProfile implements SourceProfile {
         }
         String state = SourceProfile.text(item, "status");
         Json isError = "completed".equals(state) ? new Json.JBool(false) : "failed".equals(state) ? new Json.JBool(true) : null;
-        return new ExpectedFacts.Result(index, SourceProfile.text(item, "id"), content, isError, structured, null, state, STREAM_LOCAL);
+        return new ExpectedFacts.Result(index, SourceProfile.text(item, "id"), content, isError, structured, null, state, STREAM_LOCAL, itemType);
     }
 
     /** All-zero components may be the emitter's Usage::default(); a non-zero one shows an update was measured. */

@@ -6,7 +6,7 @@ import java.util.Map;
 import static io.github.markpollack.journal.ocsf.writer.MapperSupport.text;
 
 /**
- * How the Codex exec-stream contract (0.3.0-prototype) reads one item: which rule applies, the tool name and
+ * How the Codex exec-stream contract (0.4.0-prototype) reads one item: which rule applies, the tool name and
  * arguments an item reports, its result content and outcome, the usage measurement status and the one repeated-member
  * form it interprets. Read from the pinned interface (codex-rs/exec at rust-v0.160.1); {@link CodexStreamMapper}
  * emits the events.
@@ -43,9 +43,9 @@ final class CodexItems {
         return "turn.completed".equals(type) ? Kind.TURN : Kind.OTHER;
     }
 
-    /** The reported tool name (MCP and collaboration {@code item.tool}), else the item type that names the family. */
+    /** The tool name the item reports (MCP and collaboration {@code item.tool}), else {@code null}: a family such as file_change is not a name. */
     static String toolName(String itype, Jv it) {
-        return "mcp_tool_call".equals(itype) || "collab_tool_call".equals(itype) ? text(it, "tool") : itype;
+        return "mcp_tool_call".equals(itype) || "collab_tool_call".equals(itype) ? text(it, "tool") : null;
     }
 
     /** The arguments an item reports: an MCP call's arguments, a web search's action; the other families report none. */

@@ -15,6 +15,7 @@ import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -115,6 +116,15 @@ final class SemanticClaims {
                     counters.add(new Json.JObject(cm));
                 }
                 e.put("counterexamples", new Json.JArray(counters));
+                if (ex.member("absent_events") != null) {
+                    List<Json> absent = new ArrayList<>();
+                    for (Json a : ex.member("absent_events").elements()) {
+                        Map<String, Json> am = new LinkedHashMap<>(((Json.JObject) a).members());
+                        am.remove("why");
+                        absent.add(new Json.JObject(am));
+                    }
+                    e.put("absent_events", new Json.JArray(absent));
+                }
             }
             exs.add(new Json.JObject(e));
         }
@@ -288,6 +298,18 @@ final class SemanticClaims {
         String status = c.status();
         if ("superseded".equals(status) && !ids.contains(SchemaCatalog.text(a, "superseded_by"))) {
             problems.add(at + ": superseded by " + SchemaCatalog.text(a, "superseded_by") + ", which is not a claim");
+        }
+        Json previous = a.member("previous");
+        if (previous != null) {
+            // the anchor of a revision awaiting binding: a recorded decision that approved exactly the earlier revision and digest
+            Json earlier = decisions.get(SchemaCatalog.text(previous, "decision"));
+            boolean anchored = earlier != null && Event.integer(previous.member("revision")) != null && Event.integer(previous.member("revision")) < c.revision()
+                    && earlier.member("approves").elements().stream().anyMatch(x -> c.id().equals(SchemaCatalog.text(x, "claim"))
+                            && Objects.equals(Event.integer(x.member("revision")), Event.integer(previous.member("revision"))) && Objects.equals(SchemaCatalog.text(x, "digest"), SchemaCatalog.text(previous, "digest")));
+            if (!anchored) {
+                problems.add(at + ": previous approval r" + Event.integer(previous.member("revision")) + " " + SchemaCatalog.text(previous, "digest") + " is not one decision "
+                        + SchemaCatalog.text(previous, "decision") + " recorded for an earlier revision");
+            }
         }
         if (!"approved".equals(status)) {
             return problems;

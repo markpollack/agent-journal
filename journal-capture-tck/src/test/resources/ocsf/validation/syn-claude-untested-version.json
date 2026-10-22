@@ -4,9 +4,9 @@
  "fixture": "syn-claude-untested-version",
  "core": "main",
  "events_jsonl": "fixtures/syn-claude-untested-version/package/events.jsonl",
- "events_jsonl_sha256": "549c9b98bfd65e532b9b5603ea84f3a8e13c80a046bc5068a6050528b18eb9d1",
+ "events_jsonl_sha256": "97f1045b22681b373c2b39cedc3d615f9206f7ca57b57747e46667449c802379",
  "execution_records": 27,
- "declarations_skipped": 34,
+ "declarations_skipped": 36,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
  "toolkit": {
   "name": "ocsf-toolkit",
@@ -14,7 +14,7 @@
   "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
   "exit_code": 0
  },
- "compiled_schema_sha256": "b3393cac32fe5847aaf6cf5fc12dede0819efc9f82ef18a76ff2583901079fe1",
+ "compiled_schema_sha256": "70aa97c9e4cb3bf2e26e2fadffc9b4010e5bb2325ce8a993946be091a311f35e",
  "result": {
   "event_files_processed": 27,
   "error_events": 0,

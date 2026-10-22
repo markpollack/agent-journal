@@ -1,12 +1,16 @@
 {
-  "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+  "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
   "applies_to": {
     "product": "Claude Code",
     "version": "2.1.303",
     "launch": "-p --output-format stream-json; routes sdk (claude-code-sdk rawJson lines) and stdout (raw standard output, C3 and ACCEPT-1)",
     "source_kind": "Live output",
     "versions": "selected through one of three exact compatibility entries (2.1.299 sdk, 2.1.303 sdk, 2.1.304 stdout); no other version or route selects this contract; the compatibility declaration of each source states the selection and its status",
-    "compatibility_entries": ["claude-code/stream-json/2.1.299-sdk", "claude-code/stream-json/2.1.303-sdk", "claude-code/stream-json/2.1.304-stdout"]
+    "compatibility_entries": [
+      "claude-code/stream-json/2.1.299-sdk",
+      "claude-code/stream-json/2.1.303-sdk",
+      "claude-code/stream-json/2.1.304-stdout"
+    ]
   },
   "executor": "journal-ocsf-writer ClaudeStreamMapper (direct Java over the lexically exact Jv tree); one record at a time; state: artifact time fallback only",
   "record_discriminator": "type, then subtype",
@@ -55,7 +59,7 @@
       "cardinality": "one event per record",
       "activity": "1 Partial when message.stop_reason is null, 2 Completed otherwise (rule claude.stream.activity.v1)",
       "owner": "response_uid = message.id",
-      "usage": "message.usage -> usage_observation scope 2 Model response, status 1 Provisional while stop_reason is null (rule claude.stream.usage_status.v1)",
+      "usage": "message.usage -> usage_observation scope 2 Model response, status 1 Provisional while stop_reason is null (rule claude.stream.usage_status.v1); aggregation 1 Scope total (anthropic.usage.per_message.v1: message.usage is the usage of that one API message); canonical tranches (anthropic.usage.tranches.v1, prompt-caching definitions: input_tokens are the tokens neither read from nor used to create a cache): uncached_input_tokens = input_tokens, cache_read_tokens = cache_read_input_tokens, cache_write_tokens = cache_creation_input_tokens, cache_write_tiers = the cache_creation members (parts of cache_creation_input_tokens), output_tokens, reasoning_tokens = output_tokens_details.thinking_tokens with reasoning_relation 1 Part of output (anthropic.usage.thinking_in_output.v1); every component Reported in components[] with its RFC 6901 pointer; absent members stay absent",
       "residual": "whole record in data"
     },
     {
@@ -89,7 +93,7 @@
       },
       "target": "agentic_cli/prompt_turn",
       "activity": "2 Turn completed",
-      "usage": "usage -> scope 4 Run status 2 Final (rule claude.stream.result_usage.v1); modelUsage[m] -> scope 6 Model status 2 Final with model_ref{name=m, provider_kind=provider, provider_basis 1 Reported}",
+      "usage": "usage -> scope 4 Run status 2 Final (rule claude.stream.result_usage.v1), canonical tranches (anthropic.usage.tranches.v1, prompt-caching definitions: input_tokens are the tokens neither read from nor used to create a cache): uncached_input_tokens = input_tokens, cache_read_tokens = cache_read_input_tokens, cache_write_tokens = cache_creation_input_tokens, cache_write_tiers = the cache_creation members (parts of cache_creation_input_tokens), output_tokens, reasoning_tokens = output_tokens_details.thinking_tokens with reasoning_relation 1 Part of output (anthropic.usage.thinking_in_output.v1); every component Reported in components[] with its RFC 6901 pointer; absent members stay absent; no aggregation is stated (whether it covers the run sub-agents is not established); modelUsage[m] -> scope 6 Model status 2 Final with model_ref{name=m, provider_kind=provider, provider_basis 1 Reported}, canonical tranches from Claude Code ModelUsage: uncached_input_tokens = inputTokens, cache_read_tokens = cacheReadInputTokens, cache_write_tokens = cacheCreationInputTokens, output_tokens = outputTokens, reasoning_tokens = thinkingTokens with reasoning_relation 1 Part of output (claude.model_usage.thinking_in_output.v1: documented as already counted inside outputTokens); aggregation 2 Cumulative snapshot (claude.model_usage.cumulative.v1)",
       "cost": "total_cost_usd -> cost_observation total_cost, currency USD, scope 4 Run, cost_basis = modelUsage[*].costBasis when single model",
       "permission": "permission_denials[] -> permission_decisions at scope 4 Run; attribution 1 Unique method 1 Reported identifier with candidates [tool_use_id] when the entry names tool_use_id (observed on 2.1.304), else 3 Unattributed method 2 (none when empty)",
       "status": "status_id 1 when subtype == success and is_error == false, else 2 (Reported)",

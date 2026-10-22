@@ -2,7 +2,7 @@
   "uid": 3,
   "caption": "Tool Call",
   "category": "agent_execution",
-  "description": "An ACP tool call lifecycle observation: the request, an observed result, or a separately reported operation within the call. Request state, permission decision, execution state and result stay distinct attributes.",
+  "description": "An ACP tool call lifecycle observation, at the stage the source reports: the model's request, a started invocation, an observed result, or a separately reported operation. Request state, permission decision, execution state and result stay distinct attributes; a later stage is never taken as evidence of an earlier one.",
   "name": "tool_call",
   "extends": "base_event",
   "attributes": {
@@ -10,7 +10,7 @@
       "enum": {
         "1": {
           "caption": "Requested",
-          "description": "A tool request was observed."
+          "description": "A tool request was observed: the model's own request for a tool, as the source reports it (for example a tool_use block)."
         },
         "2": {
           "caption": "Result observed",
@@ -19,6 +19,10 @@
         "3": {
           "caption": "Operation observed",
           "description": "A separately reported operation of a tool call was observed."
+        },
+        "4": {
+          "caption": "Started",
+          "description": "The source reports that a tool invocation started (for example dispatched or in progress). It is not an observation of the model's original request: the arguments are the invocation's as reported, and no model response owner, model call identifier or permission decision follows from it."
         }
       }
     },
@@ -63,6 +67,10 @@
     "tool_name": {
       "group": "primary",
       "requirement": "recommended"
+    },
+    "tool_family": {
+      "group": "primary",
+      "requirement": "optional"
     },
     "tool_namespace": {
       "group": "primary",

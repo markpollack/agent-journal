@@ -7,7 +7,7 @@
   "codex-cli/exec-json-stream/0.160.1"
  ],
  "specification": "schema/vendor/codex-cli/exec-json-stream/0.160.1.json",
- "contract": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+ "contract": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
  "contract_file": "codex-cli-0.160.1-exec-stream",
  "evidence_fixtures": [
   "codex-live-0.160.1-collab-wait",
@@ -62,7 +62,8 @@
    "disposition": "normalized",
    "destination": [
     "*.class_uid",
-    "source_record.record_type"
+    "source_record.record_type",
+    "tool_call.tool_family"
    ],
    "rule": "record_discriminator",
    "evidence": {
@@ -94,7 +95,7 @@
    "path": "item.id",
    "disposition": "normalized",
    "destination": [
-    "model_response.response_uid"
+    "model_response.item_uid"
    ],
    "rule": "codex.stream.agent_message->model_response",
    "evidence": {
@@ -103,7 +104,7 @@
    "tests": [
     "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
    ],
-   "note": "a stream-scoped item id; it does not occur in the native session file (R13-08)"
+   "note": "a stream-local content-item id (identity basis 2), not a provider response id; it does not occur in the native session file (R13-08)"
   },
   {
    "variant": "item.completed/agent_message",
@@ -297,7 +298,7 @@
    "path": "usage.input_tokens",
    "disposition": "normalized",
    "destination": [
-    "prompt_turn.usage_observations[].input_tokens"
+    "prompt_turn.usage_observations[].uncached_input_tokens"
    ],
    "rule": "codex.stream.turn_completed->prompt_turn.completed",
    "evidence": {
@@ -306,7 +307,7 @@
    "tests": [
     "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
    ],
-   "note": "turn-scope final usage once; a 2^53+1 integer is preserved exactly on the fixture"
+   "note": "0.6.0-prototype: an operand of the derived uncached tranche, uncached_input_tokens = input_tokens - cached_input_tokens when cache_write_input_tokens is reported 0 (codex.usage.uncached_input.v1; otherwise unavailable); the reported value itself stays in usage_observation.data; a 2^53+1 integer is preserved exactly on the fixture"
   },
   {
    "variant": "turn.completed",
@@ -432,7 +433,7 @@
    "path": "item.id",
    "disposition": "normalized",
    "destination": [
-    "model_response.response_uid"
+    "model_response.item_uid"
    ],
    "rule": "codex.stream.reasoning->model_response",
    "evidence": {
@@ -441,7 +442,7 @@
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "stream-local item id",
+   "note": "a stream-local content-item id (identity basis 2), not a provider response id; it does not occur in the native session file (R13-08)",
    "vendor_declared": true
   },
   {

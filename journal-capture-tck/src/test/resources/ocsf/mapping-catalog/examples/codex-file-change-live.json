@@ -3,7 +3,7 @@
   "format_version": "0.1",
   "id": "codex-file-change-live",
   "concept": "tool-request-identity-and-arguments",
-  "description": "A Codex CLI 0.160.1 file change (live recording): item.started and item.completed of one stream-local item. The stream names no tool, only the item type, so the tool name is the family name file_change and the kind is edit by the contract's table; the changed paths and kinds stay in the retained record (no arguments are claimed); completed is the reported outcome (the processor reports a declined patch as failed).",
+  "description": "A Codex CLI 0.160.1 file change (live recording): item.started and item.completed of one stream-local item. The stream names no tool, only the item family, so tool_name is absent and tool_family is file_change; the kind is 2 edit by the family table, not by a guessed underlying tool. item.started is an execution observation (activity 4), not the model's request or its arguments; the changed paths and kinds stay in the retained record; completed is the reported outcome (the processor reports a declined patch as failed).",
   "authored_from": [
     "codex-exec-0.160.1-emitter-items",
     "codex-exec-0.160.1-types"
@@ -20,11 +20,11 @@
     {
       "record": 6,
       "class": "tool_call",
-      "activity_id": 1,
+      "activity_id": 4,
       "values": {
         "/tool_call_uid": "item_2",
         "/identity_basis_id": 2,
-        "/tool_name": "file_change",
+        "/tool_family": "file_change",
         "/tool_kind_id": 2,
         "/reported_state": "in_progress",
         "/data/item/changes": [
@@ -35,6 +35,7 @@
         ]
       },
       "absent": [
+        "/tool_name",
         "/arguments",
         "/tool_namespace"
       ]
@@ -46,11 +47,20 @@
       "values": {
         "/tool_call_uid": "item_2",
         "/status_id": 1,
-        "/status_basis_id": 1
+        "/status_basis_id": 1,
+        "/tool_family": "file_change"
       },
       "absent": [
         "/tool_result"
       ]
+    }
+  ],
+  "absent_events": [
+    {
+      "record": 6,
+      "class": "tool_call",
+      "activity_id": 1,
+      "why": "the stream reports the patch application as started; the model request is not observed"
     }
   ],
   "counterexamples": [
@@ -58,11 +68,31 @@
       "id": "invented-tool-name",
       "record": 6,
       "class": "tool_call",
-      "activity_id": 1,
+      "activity_id": 4,
       "values": {
         "/tool_name": "apply_patch"
       },
       "why": "The model-facing tool is not reported on this route; naming it would be a guess."
+    },
+    {
+      "id": "family-as-name",
+      "record": 6,
+      "class": "tool_call",
+      "activity_id": 4,
+      "values": {
+        "/tool_name": "file_change"
+      },
+      "why": "file_change is the item family, not a tool name the source reports."
+    },
+    {
+      "id": "model-request-observed",
+      "record": 6,
+      "class": "tool_call",
+      "activity_id": 1,
+      "values": {
+        "/tool_call_uid": "item_2"
+      },
+      "why": "A file-change report is an execution observation, not the model's request."
     }
   ]
 }

@@ -152,6 +152,33 @@
     },
     "superseded_by": {
      "type": "string"
+    },
+    "previous": {
+     "description": "The earlier revision of this claim that a recorded decision approved, and what changed since; evidence for the reviewer binding this revision, never an approval of it (outside the digest).",
+     "type": "object",
+     "required": [
+      "revision",
+      "digest",
+      "decision",
+      "delta"
+     ],
+     "additionalProperties": false,
+     "properties": {
+      "revision": {
+       "type": "integer",
+       "minimum": 1
+      },
+      "digest": {
+       "type": "string",
+       "pattern": "^sha256:[0-9a-f]{64}$"
+      },
+      "decision": {
+       "type": "string"
+      },
+      "delta": {
+       "type": "string"
+      }
+     }
     }
    },
    "allOf": [

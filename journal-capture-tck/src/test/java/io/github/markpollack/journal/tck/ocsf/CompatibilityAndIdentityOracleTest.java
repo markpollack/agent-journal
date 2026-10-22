@@ -103,7 +103,7 @@ class CompatibilityAndIdentityOracleTest {
         editCompatibility(unknownVersion, c -> c.members().put("status", str("version_unknown")));
         OracleReport vu = verify(unknownVersion);
         assertThat(vu.outcome("source.compatibility", MAIN)).isEqualTo(Outcome.UNRESOLVED);
-        assertThat(vu.check("source.compatibility", MAIN).detail()).contains("the version was never known for this source").contains("mapped provisionally under the profile's contract claude-code/stream-json/2.1.303/0.2.0-prototype");
+        assertThat(vu.check("source.compatibility", MAIN).detail()).contains("the version was never known for this source").contains("mapped provisionally under the profile's contract claude-code/stream-json/2.1.303/0.3.0-prototype");
         OcsfPackage vup = open(unknownVersion);
         assertThat(vup.diagnosticsWithCode("COMPATIBILITY_VERSION_UNKNOWN")).hasSize(1);
         assertThat(vup.diagnosticsWithCode("CONTRACT_APPLICABILITY")).as("without a selection the contract's own single version is compared again (2.1.303 vs 2.1.299)").hasSize(1);
@@ -197,7 +197,7 @@ class CompatibilityAndIdentityOracleTest {
         OcsfFixtures.editEvents(pkg(fixture), events -> obj(OcsfFixtures.at(events, "model_response", 1, 4).member("journal")).members().put("contract_uid", str("common/opaque-text/0.2.0-prototype")));
         OracleReport r = verify(fixture);
         assertThat(r.outcome("source.compatibility", MAIN)).isEqualTo(Outcome.DEFECTIVE);
-        assertThat(r.check("source.compatibility", MAIN).detail()).contains("1 normalized event(s) carry a contract other than the source's declared claude-code/stream-json/2.1.303/0.2.0-prototype");
+        assertThat(r.check("source.compatibility", MAIN).detail()).contains("1 normalized event(s) carry a contract other than the source's declared claude-code/stream-json/2.1.303/0.3.0-prototype");
     }
 
     @Test

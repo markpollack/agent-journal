@@ -1,0 +1,32 @@
+{
+ "run_uid": "codex-live-0.160.1-mcp",
+ "invocation_index": 0,
+ "capture_start": "2026-10-22T18:07:50.591622618Z",
+ "cli": {
+  "name": "Codex CLI",
+  "vendor_name": "OpenAI",
+  "version": "0.160.1",
+  "version_basis": "declared from the live run, where it was discovered once per run by the documented adapter path `codex --version` before launch, because the exec --json stream reports no version; the native session file was not consulted"
+ },
+ "launch_settings": {
+  "command": "replay of the sanitized live stream (original: codex exec --json --skip-git-repo-check -s workspace-write ...)",
+  "cwd": "/work",
+  "route": "stdout",
+  "model_requested": null,
+  "allowed_tools": null,
+  "original_route": "LIVE: CliCapture launch, raw stdout, independent byte copy"
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "kind": 1,
+   "profile": "codex_stream",
+   "route": "stdout",
+   "path": "<fixture>/native/codex-live-0.160.1-mcp/stream.jsonl"
+  }
+ ],
+ "synthetic": {
+  "label": "SANITIZED REAL LIVE RECORDING (Codex CLI 0.160.1, LIVE-06 two calls to a local deterministic stdio MCP test server (echo_record with structured result; always_fails returning isError)), replayed through the writer to produce this package; the live package itself is private steward evidence",
+  "derived_from": "live run s2-mcp-1 (FND-1 live campaign, 2026-10-22)"
+ }
+}

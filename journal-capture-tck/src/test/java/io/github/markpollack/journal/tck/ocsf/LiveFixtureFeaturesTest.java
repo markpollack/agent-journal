@@ -197,14 +197,20 @@ class LiveFixtureFeaturesTest {
         assertThat(report.check("population.operations", MAIN).detail()).isEqualTo("8 expected, 8 observed");
         Event turn = p.events("prompt_turn", 2).get(0);
         Json usage = turn.elements("usage_observations").get(0);
-        assertThat(usage.member("input_tokens").scalarText()).isEqualTo("79261");
+        // the reported inclusive input 79261 less the 74880 cached (cache writes 0) is the uncached tranche, derived exactly
+        assertThat(usage.member("uncached_input_tokens").scalarText()).isEqualTo("4381");
+        assertThat(usage.member("cache_read_tokens").scalarText()).isEqualTo("74880");
+        assertThat(usage.member("aggregation").text()).isEqualTo("Cumulative snapshot");
+        assertThat(usage.path("data", "input_tokens").scalarText()).as("the native inclusive value stays in data").isEqualTo("79261");
         assertThat(usage.member("reasoning_tokens").scalarText()).isEqualTo("18");
         // the thread's cumulative usage at turn completion (SEM-1 candidate reading of contract 0.3.0; pending Owner approval)
         assertThat(usage.member("scope").text()).isEqualTo("Session");
         assertThat(usage.member("measurement_status").text()).isEqualTo("Measured");
         assertThat(turn.get("cost_observation")).as("the exec stream reports no cost; none is invented").isNull();
         assertThat(report.outcome("identity.values", MAIN)).isEqualTo(Outcome.VERIFIED);
-        assertThat(p.events("model_response", 2)).hasSize(2);
+        // two completed content items; the stream names no model response, so none carries a response id
+        assertThat(p.events("model_response", 3)).hasSize(2).allSatisfy(e -> assertThat(e.get("response_uid")).isNull());
+        assertThat(p.events("model_response", 2)).isEmpty();
     }
 
     /** Every committed fixture states its evidence class in its spec label, and every live-derived one carries a provenance manifest. */

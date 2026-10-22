@@ -1,0 +1,82 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "codex-collab-wait-live",
+  "concept": "tool-request-identity-and-arguments",
+  "description": "A Codex CLI 0.160.1 collaboration item (live recording) labelled wait. The label is the tool name the stream supplies; the pinned emitter writes it for both ResumeAgent and Wait, so no unique underlying action is inferred. The family is collab_tool_call, the kind 99; the empty receiver list stays in the retained record and no child run is linked.",
+  "authored_from": [
+    "codex-exec-0.160.1-emitter-collab",
+    "codex-exec-0.160.1-types"
+  ],
+  "native": {
+    "evidence_kind": "live",
+    "profile": "codex_stream",
+    "compatibility_entry": "codex-cli/exec-json-stream/0.160.1",
+    "fixture": "codex-live-0.160.1-collab-wait",
+    "artifact": "stream.jsonl",
+    "sha256": "e7e7cace03795649978ed22fcad21a3473a8d30cf94d85240a92cdcdf8eb8725"
+  },
+  "expected": [
+    {
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 4,
+      "values": {
+        "/tool_call_uid": "item_1",
+        "/identity_basis_id": 2,
+        "/tool_name": "wait",
+        "/tool_family": "collab_tool_call",
+        "/tool_kind_id": 99,
+        "/reported_state": "in_progress",
+        "/data/item/receiver_thread_ids": []
+      },
+      "absent": [
+        "/arguments",
+        "/tool_namespace"
+      ]
+    },
+    {
+      "record": 5,
+      "class": "tool_call",
+      "activity_id": 2,
+      "values": {
+        "/tool_call_uid": "item_1",
+        "/tool_family": "collab_tool_call",
+        "/status_id": 1
+      },
+      "absent": [
+        "/tool_result"
+      ]
+    }
+  ],
+  "absent_events": [
+    {
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 1,
+      "why": "the model request is not observed on this route"
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "inferred-underlying-action",
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 4,
+      "values": {
+        "/tool_name": "resume_agent"
+      },
+      "why": "The emitter maps ResumeAgent and Wait to one label; choosing one would be a guess."
+    },
+    {
+      "id": "model-request-observed",
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 1,
+      "values": {
+        "/tool_call_uid": "item_1"
+      },
+      "why": "item.started reports a started collaboration step, not the model's request."
+    }
+  ]
+}

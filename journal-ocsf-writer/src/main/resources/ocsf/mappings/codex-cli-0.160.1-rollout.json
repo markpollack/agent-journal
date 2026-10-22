@@ -1,11 +1,13 @@
 {
-  "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+  "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
   "applies_to": {
     "product": "Codex CLI",
     "version": "0.160.1",
     "launch": "codex exec --json (rollout file is the saved session; the exec stream is a separate live-output contract)",
     "source_kind": "Saved session file",
-    "compatibility_entries": ["codex-cli/rollout/0.160.1"],
+    "compatibility_entries": [
+      "codex-cli/rollout/0.160.1"
+    ],
     "selection": "route native_session_file; experimental combined-source evidence only"
   },
   "executor": "journal-ocsf-writer CodexRolloutMapper (direct Java); one record at a time; state: turn in force, custom_tool_calls seen, token_counts of the current turn, artifact time fallback",
@@ -185,7 +187,7 @@
       "target": "agentic_cli/session_context",
       "activity": "3 Accounting reported",
       "owner": "response_uid = payload.response_id; turn_uid = payload.turn_id",
-      "usage": "payload.usage -> scope 2 Model response status 2 Final (the cited response's own usage, reported once); payload.turn_token_usage -> scope 3 Prompt turn status 1 Provisional (cumulative so far); payload.thread_token_usage -> scope 5 Session status 1 Provisional (cumulative so far) (rule codex.rollout.token_usage_record.v1)",
+      "usage": "payload.usage -> scope 2 Model response status 2 Final (the cited response's own usage, reported once); payload.turn_token_usage -> scope 3 Prompt turn status 1 Provisional (cumulative so far); payload.thread_token_usage -> scope 5 Session status 1 Provisional (cumulative so far) (rule codex.rollout.token_usage_record.v1); canonical tranches from each TokenUsage as on the exec stream (codex.usage.uncached_input.v1: uncached = input_tokens - cached_input_tokens only with cache_write_input_tokens reported 0, else unavailable; cache reads, cache writes, output, reasoning Part of output by codex.usage.reasoning_in_output.v1, reported_total_tokens = total_tokens); no aggregation is stated on this experimental route",
       "residual": "whole record in data"
     },
     {
@@ -196,7 +198,7 @@
       },
       "target": "agentic_cli/prompt_turn",
       "activity": "2 Turn completed",
-      "usage": "every event_msg token_count in the same turn before task_complete -> usage_observation scope 3 Prompt turn from info.total_token_usage; the last one is status 2 Final (rule codex.rollout.token_count.v1), earlier ones 1 Provisional; each cites its own record",
+      "usage": "every event_msg token_count in the same turn before task_complete -> usage_observation scope 3 Prompt turn from info.total_token_usage; the last one is status 2 Final (rule codex.rollout.token_count.v1), earlier ones 1 Provisional; each cites its own record; canonical tranches from each TokenUsage as on the exec stream (codex.usage.uncached_input.v1: uncached = input_tokens - cached_input_tokens only with cache_write_input_tokens reported 0, else unavailable; cache reads, cache writes, output, reasoning Part of output by codex.usage.reasoning_in_output.v1, reported_total_tokens = total_tokens); no aggregation is stated on this experimental route (pointers under /total_token_usage)",
       "cost": "none: the rollout reports no monetary cost",
       "status": "0 Unknown with basis 3: task_complete carries no status and no error field"
     },

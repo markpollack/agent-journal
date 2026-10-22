@@ -7,7 +7,8 @@
   "authored_from": [
     "codex-exec-0.160.1-emitter-usage",
     "codex-app-server-0.160.1-thread-token-usage",
-    "codex-protocol-0.160.1-token-usage-info"
+    "codex-protocol-0.160.1-token-usage-info",
+    "codex-protocol-0.160.1-token-usage-arithmetic"
   ],
   "native": {
     "evidence_kind": "synthetic",
@@ -30,13 +31,15 @@
       "values": {
         "/usage_observations/0/scope_id": 5,
         "/usage_observations/0/usage_status_id": 2,
+        "/usage_observations/0/aggregation_id": 2,
         "/usage_observations/0/measurement_status_id": 1,
-        "/usage_observations/0/input_tokens": 2500,
+        "/usage_observations/0/uncached_input_tokens": 500,
         "/usage_observations/0/cache_read_tokens": 2000,
         "/usage_observations/0/output_tokens": 40
       },
       "absent": [
-        "/usage_observations/1"
+        "/usage_observations/1",
+        "/usage_observations/0/input_tokens"
       ]
     }
   ],
@@ -49,17 +52,17 @@
       "values": {
         "/usage_observations/0/scope_id": 3
       },
-      "why": "Would state that this turn used 2500 input tokens; it used 1500. Equal components, different meaning."
+      "why": "Would state that this turn used 500 uncached input tokens; the thread did, over both runs. Equal components, different meaning."
     },
     {
-      "id": "computed-turn-delta",
+      "id": "scope-total-of-this-run",
       "record": 4,
       "class": "prompt_turn",
       "activity_id": 2,
       "values": {
-        "/usage_observations/0/input_tokens": 1500
+        "/usage_observations/0/aggregation_id": 1
       },
-      "why": "A per-turn delta needs the previous run's total; the writer records what the source reported and never computes deltas or cross-run sums."
+      "why": "The snapshot includes the earlier run of the resumed thread; it is not this run's consumption, which needs session-resume linkage."
     }
   ]
 }

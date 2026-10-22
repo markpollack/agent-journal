@@ -1,11 +1,11 @@
 {
-  "uid": "agent-journal/semantic-contract/0.2.0-prototype",
+  "uid": "agent-journal/semantic-contract/0.3.0-prototype",
   "non_production": true,
   "operations_implementation": {
     "library": "journal-capture-tck",
     "package": "io.github.markpollack.journal.tck.ocsf",
     "operations_version": "0.2",
-    "note": "Each declaration names a SemanticOperation implemented in Java and the schema paths it reads. Paths are validated against the embedded definition closure when the package is opened. Prose explains; the operation name and targets are the testable specification. Version 0.2 adds SETTINGS_AND_CONTEXT and the Session scope owner (session_uid) in usage selection."
+    "note": "Each declaration names a SemanticOperation implemented in Java and the schema paths it reads. Paths are validated against the embedded definition closure when the package is opened. Prose explains; the operation name and targets are the testable specification. Version 0.2 adds SETTINGS_AND_CONTEXT and the Session scope owner (session_uid) in usage selection. Version 0.3 (extension 0.6.0-prototype) reads uncached_input_tokens instead of input_tokens among the usage components, and the Codex exec stream no longer reports response identities: its content items carry item_uid, so its response assembly is UNKNOWN rather than a stream-local guess."
   },
   "declarations": [
     {
@@ -25,7 +25,7 @@
       "classifiers": [
         {
           "rule": "codex.user_role_context.v1",
-          "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
           "target": "prompt_turn.content_blocks[].text",
           "first_block_starts_with": "<environment_context>",
           "label": "environment_context",
@@ -52,28 +52,28 @@
       "identity": "(run_uid, response_uid) when identity_scope is run (the source reports a stable response id); (run_uid, artifact, response_uid) when identity_scope is artifact (ids are scoped to one artifact, for example Codex stream item ids). A missing response_uid is unresolved, never guessed.",
       "update_semantics": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
           "mode": "APPEND_BLOCKS",
           "identity_scope": "run",
           "basis": "each stream record carries one further content block of the same message id; the Completed record ends the sequence"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
           "mode": "APPEND_BLOCKS",
           "identity_scope": "run",
           "basis": "each transcript record carries one further content block of the same message id"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
           "mode": "SNAPSHOT",
           "identity_scope": "run",
           "basis": "item_completed AgentMessage and response_item message repeat the full message with one id; snapshots must agree"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
-          "mode": "SNAPSHOT",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
+          "mode": "UNKNOWN",
           "identity_scope": "artifact",
-          "basis": "item ids are stream-scoped and do not occur in the rollout (R13-08)"
+          "basis": "the exec stream reports completed content items (item_uid, stream-local), not response identities; which items belong to one model response is not reported, so no assembly is possible"
         },
         {
           "contract_uid": "antigravity/stream-json/1.4.2/0.2.0-prototype",
@@ -96,7 +96,7 @@
         "record": "*.usage_observations[].source_ref.record_index",
         "model": "*.usage_observations[].model_ref.name",
         "components": [
-          "*.usage_observations[].input_tokens",
+          "*.usage_observations[].uncached_input_tokens",
           "*.usage_observations[].output_tokens",
           "*.usage_observations[].cache_read_tokens",
           "*.usage_observations[].cache_write_tokens",

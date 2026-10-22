@@ -220,16 +220,13 @@ final class CodexRolloutMapper implements SourceMapper {
             Jv.Obj ev = ctx.event("session_context", 3, r, t, CONTRACT, "codex.rollout.token_usage_record->session_context.accounting", ts, null, true, null);
             Jv.Arr obs = new Jv.Arr();
             Jv.Obj resp = MapperSupport.usage(2, 2, "codex.rollout.token_usage_record.v1: usage is the cited response's own usage, reported once", ctx.sourceRef(r, null, ts, false), null, p.member("usage"));
-            MapperSupport.components(resp, p.member("usage"), "input_tokens", "input_tokens", "output_tokens", "output_tokens", "cached_input_tokens", "cache_read_tokens",
-                    "cache_write_input_tokens", "cache_write_tokens", "reasoning_output_tokens", "reasoning_tokens", "total_tokens", "reported_total_tokens");
+            UsageTranches.codex(resp, p.member("usage"), "");
             obs.add(resp);
             Jv.Obj turn = MapperSupport.usage(3, 1, "codex.rollout.token_usage_record.v1: turn_token_usage is cumulative so far in the turn; the turn's final is the last token_count before task_complete", ctx.sourceRef(r, null, ts, false), null, p.member("turn_token_usage"));
-            MapperSupport.components(turn, p.member("turn_token_usage"), "input_tokens", "input_tokens", "output_tokens", "output_tokens", "cached_input_tokens", "cache_read_tokens",
-                    "cache_write_input_tokens", "cache_write_tokens", "reasoning_output_tokens", "reasoning_tokens", "total_tokens", "reported_total_tokens");
+            UsageTranches.codex(turn, p.member("turn_token_usage"), "");
             obs.add(turn);
             Jv.Obj thread = MapperSupport.usage(5, 1, "codex.rollout.token_usage_record.v1: thread_token_usage is cumulative so far in the thread (session)", ctx.sourceRef(r, null, ts, false), null, p.member("thread_token_usage"));
-            MapperSupport.components(thread, p.member("thread_token_usage"), "input_tokens", "input_tokens", "output_tokens", "output_tokens", "cached_input_tokens", "cache_read_tokens",
-                    "cache_write_input_tokens", "cache_write_tokens", "reasoning_output_tokens", "reasoning_tokens", "total_tokens", "reported_total_tokens");
+            UsageTranches.codex(thread, p.member("thread_token_usage"), "");
             obs.add(thread);
             ev.put("session_uid", text(p, "session_id") != null ? text(p, "session_id") : session).put("turn_uid", text(p, "turn_id")).put("response_uid", text(p, "response_id"))
                     .put("context_kind", "token_usage_record").put("usage_observations", obs).put("basis", "codex.rollout.token_usage_record.v1").put("data", o);
@@ -254,8 +251,7 @@ final class CodexRolloutMapper implements SourceMapper {
                 boolean last = i == tokenCounts.size() - 1;
                 Jv.Obj ob = MapperSupport.usage(3, last ? 2 : 1, "codex.rollout.token_count.v1: " + (last ? "last cumulative token_count before task_complete" : "superseded by a later token_count in the same turn"),
                         ctx.sourceRef(tc, null, text(tc.json(), "timestamp"), false), null, info);
-                MapperSupport.components(ob, total, "input_tokens", "input_tokens", "output_tokens", "output_tokens", "cached_input_tokens", "cache_read_tokens",
-                        "cache_write_input_tokens", "cache_write_tokens", "reasoning_output_tokens", "reasoning_tokens", "total_tokens", "reported_total_tokens");
+                UsageTranches.codex(ob, total, "/total_token_usage");
                 obs.add(ob);
             }
             tokenCounts.clear();

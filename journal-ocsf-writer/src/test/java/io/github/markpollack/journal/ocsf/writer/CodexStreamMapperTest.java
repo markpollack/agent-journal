@@ -48,11 +48,12 @@ class CodexStreamMapperTest {
         assertThat(events.get(0).member("class_name").text()).isEqualTo("Source Record");
         assertThat(events.get(0).member("record_type").text()).isEqualTo("thread.started");
         assertThat(events.get(1).member("record_type").text()).isEqualTo("turn.started");
-        // 3 agent_message: a Completed response with the stream-scoped item id and one text block
+        // 3 agent_message: a completed content item (activity 3) under its stream-local item id, one text block, its response unidentified
         Jv first = events.get(2);
         assertThat(first.member("class_name").text()).isEqualTo("Model Response");
-        assertThat(((Jv.Num) first.member("activity_id")).value().intValue()).isEqualTo(2);
-        assertThat(first.member("response_uid").text()).isEqualTo("item_0");
+        assertThat(((Jv.Num) first.member("activity_id")).value().intValue()).isEqualTo(3);
+        assertThat(first.member("item_uid").text()).isEqualTo("item_0");
+        assertThat(first.member("response_uid")).isNull();
         assertThat(first.member("content_blocks").elements()).hasSize(1);
         assertThat(first.member("content_blocks").elements().get(0).member("text").text()).isEqualTo("SYNTHETIC: I will run three commands.\n");
         assertThat(first.member("content_blocks").elements().get(0).member("block_type").text()).isEqualTo("agent_message.text");
@@ -73,17 +74,22 @@ class CodexStreamMapperTest {
         assertThat(events.get(9).member("record_type").text()).isEqualTo("synthetic.unknown_event");
         assertThat(events.get(9).path("journal", "rule_uid").text()).isEqualTo("codex.stream.fallback->source_record");
         // 11 second agent message, 12 turn.completed with the exact usage spelled as the source spelled it
-        assertThat(events.get(10).member("response_uid").text()).isEqualTo("item_5");
+        assertThat(events.get(10).member("item_uid").text()).isEqualTo("item_5");
         Jv turn = events.get(11);
         assertThat(turn.member("class_name").text()).isEqualTo("Prompt Turn");
         assertThat(((Jv.Num) turn.member("activity_id")).value().intValue()).isEqualTo(2);
         assertThat(turn.member("turn_uid")).as("the stream names no turn id").isNull();
         Jv usage = turn.member("usage_observations").elements().get(0);
-        assertThat(Jv.write(usage.member("input_tokens"))).isEqualTo("9007199254740993");
+        // 2^53+1 inclusive input less 24576 cached (cache writes 0) is the exact uncached tranche; the reported value stays in data
+        assertThat(Jv.write(usage.member("uncached_input_tokens"))).isEqualTo("9007199254716417");
+        assertThat(Jv.write(usage.path("data", "input_tokens"))).isEqualTo("9007199254740993");
+        assertThat(usage.member("input_tokens")).isNull();
         assertThat(Jv.write(usage.member("cache_read_tokens"))).isEqualTo("24576");
         assertThat(Jv.write(usage.member("cache_write_tokens"))).isEqualTo("0");
         assertThat(Jv.write(usage.member("output_tokens"))).isEqualTo("143");
         assertThat(Jv.write(usage.member("reasoning_tokens"))).isEqualTo("7");
+        assertThat(usage.member("reasoning_relation").text()).isEqualTo("Part of output");
+        assertThat(usage.member("aggregation").text()).isEqualTo("Cumulative snapshot");
         assertThat(usage.member("reported_total_tokens")).as("the stream reports no total; none is derived").isNull();
         // the thread's cumulative usage at turn completion, session scope, final for the run (SEM-1 candidate, pending Owner approval)
         assertThat(((Jv.Num) usage.member("scope_id")).value().intValue()).isEqualTo(5);
@@ -140,7 +146,7 @@ class CodexStreamMapperTest {
         List<String> lines = WriterTestSupport.eventLines(core.resolve("events.jsonl"));
         assertThat(lines).hasSize(3);
         Jv noText = Jv.parse(lines.get(0));
-        assertThat(noText.member("response_uid").text()).isEqualTo("item_x");
+        assertThat(noText.member("item_uid").text()).isEqualTo("item_x");
         assertThat(noText.member("content_blocks").elements()).as("no text at source: no block, not a null block").isEmpty();
         Jv opaque = Jv.parse(lines.get(1));
         assertThat(opaque.member("class_name").text()).isEqualTo("Source Record");
@@ -229,5 +235,38 @@ class CodexStreamMapperTest {
         io.github.markpollack.journal.tck.ocsf.OcsfPackage p = WriterTestSupport.open(core);
         assertThat(p.manifest.sessionUid()).isEqualTo("00000000-0000-4000-8000-0000000c0de5");
         assertThat(p.declarations.lineOf("session:00000000-0000-4000-8000-0000000c0de5")).isNotNull();
+    }
+
+    /**
+     * The exec processor mints item_0, item_1, ... afresh in every stream: two invocations of one run that both report
+     * item_0 report two different items. Each event states the id's stream-local basis, and the id is unique only with
+     * its invocation and artifact (journal.run_uid, journal.invocation_index, source_ref.artifact); neither invocation's
+     * item is written as a response identity.
+     */
+    @Test
+    void equalItemIdsOfTwoInvocationsAreTwoItemsOfTheirOwnNamespaces(@TempDir Path work) {
+        String line = "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"agent_message\",\"text\":\"SYNTHETIC\"}}";
+        List<String> namespaces = new ArrayList<>();
+        for (int invocation = 0; invocation < 2; invocation++) {
+            RunDescriptor d = run(CODEX_STREAM);
+            RunDescriptor r = new RunDescriptor(d.runUid(), invocation, d.sessionUid(), d.captureStart(), d.cli(), d.launchSettings(), d.synthetic());
+            Path core = work.resolve("invocation-" + invocation);
+            try (OcsfRunWriter w = OcsfRunWriter.open(core, r, SchemaPin.bundled(), options())) {
+                SourceInput in = w.source(codexStream());
+                in.record(line.getBytes(StandardCharsets.UTF_8), "LF", options().clock().instant());
+                in.end(SourceInput.End.EOF, options().clock().instant());
+                w.complete();
+            }
+            List<Jv> events = new ArrayList<>();
+            for (String l : WriterTestSupport.eventLines(core.resolve("events.jsonl"))) {
+                events.add(Jv.parse(l));
+            }
+            Jv e = events.get(0);
+            assertThat(e.member("item_uid").text()).isEqualTo("item_0");
+            assertThat(e.member("identity_basis").text()).isEqualTo("Stream-local item identifier");
+            assertThat(e.member("response_uid")).as("a stream item is not a response identity").isNull();
+            namespaces.add(e.path("journal", "run_uid").text() + "/" + Jv.write(e.path("journal", "invocation_index")) + "/" + e.path("source_ref", "artifact").text() + "/" + e.member("item_uid").text());
+        }
+        assertThat(namespaces).doesNotHaveDuplicates().hasSize(2);
     }
 }

@@ -3,11 +3,13 @@
   "format_version": "0.1",
   "id": "codex-thread-usage-live-mcp",
   "concept": "usage-scope-finality-and-repeats",
-  "description": "The usage a Codex CLI 0.160.1 exec --json stream reports on turn.completed is the thread's cumulative token usage as of that turn's completion (ThreadTokenUsage.total), not a per-turn measurement. Authored from the pinned emitter and protocol types, independently of the writer's mapper and the oracle's profile; the numbers are the live recording's own.",
+  "description": "The usage a Codex CLI 0.160.1 exec --json stream reports on turn.completed is the thread's cumulative token usage as of that turn's completion (ThreadTokenUsage.total): a cumulative snapshot at session scope, not a per-turn measurement. In canonical tranches (0.6.0-prototype): input_tokens 63434 includes the 52352 cached tokens (TokenUsage::non_cached_input) and cache writes are reported 0, so the uncached tranche is 63434 - 52352 = 11082, derived; cache reads 52352 and writes 0 are copied; output 164 includes the 0 reasoning tokens. Authored from the pinned emitter and protocol, independently of the writer's mapper and the oracle's profile; the numbers are the live recording's own.",
   "authored_from": [
     "codex-exec-0.160.1-emitter-usage",
     "codex-app-server-0.160.1-thread-token-usage",
-    "codex-protocol-0.160.1-token-usage-info"
+    "codex-protocol-0.160.1-token-usage-info",
+    "codex-protocol-0.160.1-token-usage-arithmetic",
+    "codex-api-0.160.1-responses-usage"
   ],
   "native": {
     "evidence_kind": "live",
@@ -25,13 +27,42 @@
       "values": {
         "/usage_observations/0/scope_id": 5,
         "/usage_observations/0/usage_status_id": 2,
+        "/usage_observations/0/aggregation_id": 2,
         "/usage_observations/0/measurement_status_id": 1,
         "/usage_observations/0/source_ref/record_index": 9,
-        "/usage_observations/0/input_tokens": 63434,
+        "/usage_observations/0/uncached_input_tokens": 11082,
         "/usage_observations/0/cache_read_tokens": 52352,
         "/usage_observations/0/cache_write_tokens": 0,
         "/usage_observations/0/output_tokens": 164,
         "/usage_observations/0/reasoning_tokens": 0,
+        "/usage_observations/0/reasoning_relation_id": 1,
+        "/usage_observations/0/components/0/name": "uncached_input_tokens",
+        "/usage_observations/0/components/0/component_basis_id": 2,
+        "/usage_observations/0/components/0/native_pointers": [
+          "/input_tokens",
+          "/cached_input_tokens",
+          "/cache_write_input_tokens"
+        ],
+        "/usage_observations/0/components/1/name": "cache_read_tokens",
+        "/usage_observations/0/components/1/component_basis_id": 1,
+        "/usage_observations/0/components/1/native_pointers": [
+          "/cached_input_tokens"
+        ],
+        "/usage_observations/0/components/2/name": "cache_write_tokens",
+        "/usage_observations/0/components/2/component_basis_id": 1,
+        "/usage_observations/0/components/2/native_pointers": [
+          "/cache_write_input_tokens"
+        ],
+        "/usage_observations/0/components/3/name": "output_tokens",
+        "/usage_observations/0/components/3/component_basis_id": 1,
+        "/usage_observations/0/components/3/native_pointers": [
+          "/output_tokens"
+        ],
+        "/usage_observations/0/components/4/name": "reasoning_tokens",
+        "/usage_observations/0/components/4/component_basis_id": 1,
+        "/usage_observations/0/components/4/native_pointers": [
+          "/reasoning_output_tokens"
+        ],
         "/usage_observations/0/data": {
           "input_tokens": 63434,
           "cached_input_tokens": 52352,
@@ -42,6 +73,8 @@
       },
       "absent": [
         "/usage_observations/0/reported_total_tokens",
+        "/usage_observations/0/input_tokens",
+        "/usage_observations/0/cache_write_tiers",
         "/usage_observations/1"
       ]
     }
@@ -56,6 +89,36 @@
         "/usage_observations/0/scope_id": 3
       },
       "why": "Turn completion is when the emitter writes the thread's cumulative total; it is not evidence that the measurement covers only this turn. The components are equal under both readings; the scope is the meaning."
+    },
+    {
+      "id": "inclusive-input-as-uncached",
+      "record": 9,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/uncached_input_tokens": 63434
+      },
+      "why": "Codex input_tokens includes the cached tokens; copying it as the uncached tranche would price 52352 cache reads twice, once at the input rate."
+    },
+    {
+      "id": "scope-total-aggregation",
+      "record": 9,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/aggregation_id": 1
+      },
+      "why": "A running total of the thread is not the consumption of one unit; two snapshots overlap and are never summed."
+    },
+    {
+      "id": "reasoning-separate-from-output",
+      "record": 9,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/reasoning_relation_id": 2
+      },
+      "why": "reasoning_output_tokens is the Responses API breakdown of output_tokens; stating it separate would invite adding it to output."
     }
   ]
 }

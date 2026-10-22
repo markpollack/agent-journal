@@ -43,7 +43,7 @@ class PinsTest {
     @Test
     void semanticContractBytesAreIdenticalInWriterAndReader() throws Exception {
         byte[] writer = resource(Pins.SEMANTIC_CONTRACT_RESOURCE);
-        byte[] reader = Files.readAllBytes(PROJECT.resolve("journal-capture-tck/src/main/resources/ocsf/semantic-contract-0.2.0-prototype.json"));
+        byte[] reader = Files.readAllBytes(PROJECT.resolve("journal-capture-tck/src/main/resources/ocsf/semantic-contract-0.3.0-prototype.json"));
         assertThat(writer).isEqualTo(reader);
         assertThat(io.github.markpollack.journal.tck.ocsf.SemanticOperation.VERSION).isEqualTo(Pins.SEMANTIC_OPERATIONS_VERSION);
         assertThat(io.github.markpollack.journal.tck.ocsf.PackageReader.READER_CONTRACT_VERSION).isEqualTo(Pins.READER_CONTRACT_VERSION);
@@ -69,8 +69,8 @@ class PinsTest {
     void mappingContractsDeclareEveryRuleTheMappersExecute() throws Exception {
         MappingContracts c = new MappingContracts();
         for (String name : List.of(ClaudeStreamMapper.CONTRACT, ClaudeTranscriptMapper.CONTRACT, CodexRolloutMapper.CONTRACT, CodexStreamMapper.CONTRACT, OpaqueTextMapper.CONTRACT)) {
-            // the Codex exec-stream contract is the SEM-1 candidate (0.3.0); the others are unchanged
-            assertThat(c.uid(name)).endsWith(CodexStreamMapper.CONTRACT.equals(name) ? "/0.3.0-prototype" : "/0.2.0-prototype");
+            // SEM-CLOSE: the Codex exec-stream contract is 0.4.0 and the Claude and rollout contracts 0.3.0 (canonical usage tranches); opaque text is unchanged
+            assertThat(c.uid(name)).endsWith(CodexStreamMapper.CONTRACT.equals(name) ? "/0.4.0-prototype" : OpaqueTextMapper.CONTRACT.equals(name) ? "/0.2.0-prototype" : "/0.3.0-prototype");
             c.rule(name, "common.opaque->source_record");
             c.rule(name, "common.mapper_exception->source_record");
         }

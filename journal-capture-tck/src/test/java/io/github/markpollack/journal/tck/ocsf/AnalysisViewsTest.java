@@ -99,7 +99,7 @@ class AnalysisViewsTest {
         assertThat(groups).as("turn-0001, turn-0002, the msg_a_3 response scope and the session scope from token_usage_record").hasSize(4);
         Json turn1 = groups.get(0);
         assertThat(turn1.member("owner").text()).isEqualTo("turn-0001-synthetic");
-        assertThat(turn1.path("applicable_final", "input_tokens").scalarText()).as("the last cumulative token_count, not the sum 1000+2100").isEqualTo("2100");
+        assertThat(turn1.path("applicable_final", "uncached_input_tokens").scalarText()).as("the uncached tranche of the last cumulative token_count (2100 - 1500 cached), not a sum").isEqualTo("600");
         assertThat(turn1.member("provisional_observations").scalarText()).isEqualTo("1");
         assertThat(turn1.member("final_observations").scalarText()).isEqualTo("1");
         assertThat(u.member("aggregation").text()).startsWith("none");
@@ -113,11 +113,11 @@ class AnalysisViewsTest {
         Json repeated = AnalysisViews.usage(open(fixture)).member("groups").elements().get(0);
         assertThat(repeated.member("final_observations").scalarText()).isEqualTo("2");
         assertThat(repeated.member("repeated_final_observations").scalarText()).isEqualTo("1");
-        assertThat(repeated.path("applicable_final", "input_tokens").scalarText()).isEqualTo("2100");
+        assertThat(repeated.path("applicable_final", "uncached_input_tokens").scalarText()).isEqualTo("600");
         editEvents(pkg(fixture), events -> {
             Json turn = at(events, "prompt_turn", 2, 17);
             List<Json> obs = turn.member("usage_observations").elements();
-            obj(obs.get(obs.size() - 1)).members().put("input_tokens", num("2101"));
+            obj(obs.get(obs.size() - 1)).members().put("uncached_input_tokens", num("601"));
         });
         Json conflict = AnalysisViews.usage(open(fixture)).member("groups").elements().get(0);
         assertThat(conflict.member("conflict")).isEqualTo(new Json.JBool(true));

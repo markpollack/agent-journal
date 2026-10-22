@@ -6,6 +6,7 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
 /**
@@ -70,6 +71,34 @@ final class MappingContracts {
 
     String toolKindRule(String name) {
         return contract(name).path("tool_kind_table", "rule").text();
+    }
+
+    /** A tool kind with the declared rule that assigned it. */
+    record Kind(int id, String rule) {
+    }
+
+    /**
+     * The kind of a tool activity from the source's own family ({@code family_kind_table}); a family the contract binds
+     * by namespace ({@code namespace_kind_bindings}, for example MCP) takes a kind only from a reviewed binding of its
+     * exact namespace and tool name, otherwise the binding table's default. A bare tool name never selects a kind here.
+     */
+    Kind familyKind(String name, String family, String namespace, String toolName) {
+        Jv c = contract(name);
+        Jv ns = c.member("namespace_kind_bindings");
+        if (ns != null && family != null && family.equals(ns.member("family").text())) {
+            for (Jv b : ns.member("bindings").elements()) {
+                if (Objects.equals(b.member("namespace").text(), namespace) && Objects.equals(b.member("tool").text(), toolName)) {
+                    return new Kind((int) ((Jv.Num) b.member("kind")).value().longValueExact(), ns.member("rule").text());
+                }
+            }
+            return new Kind((int) ((Jv.Num) ns.member("default")).value().longValueExact(), ns.member("rule").text());
+        }
+        Jv t = c.member("family_kind_table");
+        Jv v = family == null ? null : t.path("map", family);
+        if (v == null) {
+            v = t.member("default");
+        }
+        return new Kind((int) ((Jv.Num) v).value().longValueExact(), t.member("rule").text());
     }
 
     int blockKind(String name, String blockType) {

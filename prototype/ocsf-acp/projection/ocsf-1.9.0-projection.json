@@ -6,7 +6,7 @@
  },
  "extension": {
   "name": "agentic_cli",
-  "version": "0.5.0-prototype"
+  "version": "0.6.0-prototype"
  },
  "purpose": "Comparison inventory only: for each attribute our extension defines, the upstream attribute it means, if any, and the verdict. It does not reshape the extension; our attributes and names are kept.",
  "evidence_class": "source-verified",
@@ -265,6 +265,30 @@
    "caveat": "No per-response identifier at 1.9.0: message_context.uid identifies a session or conversation and api.request.uid a request, not the provider's response id."
   },
   {
+   "ours": "model_response.item_uid",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream identifier of a source content item (a stream-local item, not a response) at 1.9.0."
+  },
+  {
+   "ours": "model_response.identity_basis_id",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream statement of what kind of identifier a content item id is."
+  },
+  {
+   "ours": "model_response.identity_basis",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of identity_basis_id, which has no counterpart."
+  },
+  {
    "ours": "model_response.model_ref",
    "ours_kind": "class",
    "upstream": "ai_operation.ai_model",
@@ -407,6 +431,14 @@
    "upstream_file": null,
    "verdict": "no_counterpart",
    "caveat": "No tool identity at 1.9.0; the development head's ai_capability.name is unreleased and generalizes tools with resources and prompt templates."
+  },
+  {
+   "ours": "tool_call.tool_family",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream source family or item type of a tool activity at 1.9.0 (the development head's ai_capability is unreleased)."
   },
   {
    "ours": "tool_call.tool_namespace",
@@ -1486,6 +1518,22 @@
    "caveat": "Caption sibling of usage_status_id, which has no counterpart."
   },
   {
+   "ours": "usage_observation.aggregation_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Upstream counts carry no aggregation facet (scope total versus cumulative snapshot)."
+  },
+  {
+   "ours": "usage_observation.aggregation",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of aggregation_id, which has no counterpart."
+  },
+  {
    "ours": "usage_observation.measurement_status_id",
    "ours_kind": "object",
    "upstream": null,
@@ -1500,6 +1548,14 @@
    "upstream_file": null,
    "verdict": "no_counterpart",
    "caveat": "Caption sibling of measurement_status_id, which has no counterpart."
+  },
+  {
+   "ours": "usage_observation.components",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Upstream counts carry no per-component statement of reported, derived or unavailable."
   },
   {
    "ours": "usage_observation.basis",
@@ -1526,12 +1582,12 @@
    "caveat": "Upstream model is per event; a per-observation model reference is lost, and ai_model requires a provider organization."
   },
   {
-   "ours": "usage_observation.input_tokens",
+   "ours": "usage_observation.uncached_input_tokens",
    "ours_kind": "object",
-   "upstream": "message_context.prompt_tokens",
-   "upstream_file": "objects/message_context.json",
-   "verdict": "maps_with_loss",
-   "caveat": "integer_t versus our long_t; scope and provisional or final status are lost, and whether cached input is included is unspecified upstream."
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream home for the uncached tranche at 1.9.0: message_context.prompt_tokens counts the whole prompt, with no partition into uncached input, cache reads and cache writes; their sum is a consumer derivation where the source establishes it."
   },
   {
    "ours": "usage_observation.output_tokens",
@@ -1558,12 +1614,36 @@
    "caveat": "No upstream cache-write token count at 1.9.0."
   },
   {
+   "ours": "usage_observation.cache_write_tiers",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream cache-write tier breakdown at 1.9.0."
+  },
+  {
    "ours": "usage_observation.reasoning_tokens",
    "ours_kind": "object",
    "upstream": null,
    "upstream_file": null,
    "verdict": "no_counterpart",
    "caveat": "No upstream reasoning token count at 1.9.0."
+  },
+  {
+   "ours": "usage_observation.reasoning_relation_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream statement whether reasoning tokens are part of output tokens."
+  },
+  {
+   "ours": "usage_observation.reasoning_relation",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of reasoning_relation_id, which has no counterpart."
   },
   {
    "ours": "usage_observation.reported_total_tokens",
@@ -1823,6 +1903,70 @@
    "verdict": "maps",
    "caveat": "The writer uses it for the mapping rule id, which is Journal provenance rather than unmapped source data.",
    "envelope": true
+  },
+  {
+   "ours": "cache_write_tier.tier",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream cache-write tier at 1.9.0."
+  },
+  {
+   "ours": "cache_write_tier.token_count",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream cache-write tier at 1.9.0."
+  },
+  {
+   "ours": "cache_write_tier.native_pointers",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream pointer to the native member a value came from; metadata.original_event_uid names a whole record."
+  },
+  {
+   "ours": "usage_component.name",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream per-component basis object."
+  },
+  {
+   "ours": "usage_component.component_basis_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream per-component basis (reported, derived, unavailable)."
+  },
+  {
+   "ours": "usage_component.component_basis",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of component_basis_id, which has no counterpart."
+  },
+  {
+   "ours": "usage_component.native_pointers",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream pointer to the native members a value came from."
+  },
+  {
+   "ours": "usage_component.derivation",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream record of the rule and arithmetic that derived a value."
   }
  ]
 }

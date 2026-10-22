@@ -3,7 +3,7 @@
   "format_version": "0.1",
   "id": "codex-reasoning-summary-live",
   "concept": "reasoning-blocks-and-signature",
-  "description": "A Codex CLI 0.160.1 reasoning item (live recording). The pinned processor builds its text from the reasoning item's summary parts joined by newlines and drops the raw reasoning content (ThreadItem::Reasoning { summary, .. }); exec_events.rs documents ReasoningItem as the agent's reasoning summary. It is one Thought block whose form is a summary, not the model's full reasoning; no signature is reported.",
+  "description": "A Codex CLI 0.160.1 reasoning item (live recording). The pinned processor builds its text from the reasoning item's summary parts joined by newlines and drops the raw reasoning content (ThreadItem::Reasoning { summary, .. }); exec_events.rs documents ReasoningItem as the agent's reasoning summary. It is one Thought block whose form is a summary, not full or redacted reasoning; no signature is reported. The item is a completed content item (activity 3) under its stream-local item_uid; which model response it belongs to is not reported, so no response id is written.",
   "authored_from": [
     "codex-exec-0.160.1-emitter-items",
     "codex-exec-0.160.1-types"
@@ -20,17 +20,27 @@
     {
       "record": 3,
       "class": "model_response",
-      "activity_id": 2,
+      "activity_id": 3,
       "values": {
-        "/response_uid": "item_0",
+        "/item_uid": "item_0",
+        "/identity_basis_id": 2,
         "/content_blocks/0/block_kind_id": 2,
         "/content_blocks/0/reasoning_form_id": 2,
         "/content_blocks/0/text": "**Planning next steps**\n\nI need to ensure I comply with the closest approach since no tool is available. It’s essential to lay out my initial thoughts clearly, even if that wasn’t done before. So, I’ll create a concise three-step plan. I’ll detail each step through commentary, keeping commands separate as I update progress. This structure should help ensure clarity as I move forward with the task!",
         "/content_blocks/0/data": "**Planning next steps**\n\nI need to ensure I comply with the closest approach since no tool is available. It’s essential to lay out my initial thoughts clearly, even if that wasn’t done before. So, I’ll create a concise three-step plan. I’ll detail each step through commentary, keeping commands separate as I update progress. This structure should help ensure clarity as I move forward with the task!"
       },
       "absent": [
+        "/response_uid",
         "/content_blocks/1"
       ]
+    }
+  ],
+  "absent_events": [
+    {
+      "record": 3,
+      "class": "model_response",
+      "activity_id": 2,
+      "why": "the stream reports a completed item, not a completed model response"
     }
   ],
   "counterexamples": [
@@ -38,11 +48,31 @@
       "id": "full-reasoning",
       "record": 3,
       "class": "model_response",
-      "activity_id": 2,
+      "activity_id": 3,
       "values": {
         "/content_blocks/0/reasoning_form_id": 1
       },
       "why": "The emitter discards raw reasoning content; the text is the summary only."
+    },
+    {
+      "id": "item-as-response-id",
+      "record": 3,
+      "class": "model_response",
+      "activity_id": 3,
+      "values": {
+        "/response_uid": "item_0"
+      },
+      "why": "item_0 is the exec processor's stream-local item id; presenting it as a response identity would fabricate one."
+    },
+    {
+      "id": "response-completed",
+      "record": 3,
+      "class": "model_response",
+      "activity_id": 2,
+      "values": {
+        "/item_uid": "item_0"
+      },
+      "why": "A completed reasoning item is not evidence that its model response completed."
     }
   ]
 }

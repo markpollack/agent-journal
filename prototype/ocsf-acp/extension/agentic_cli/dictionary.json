@@ -40,7 +40,7 @@
     },
     "response_uid": {
       "caption": "Model Response ID",
-      "description": "The native identifier of the model response (for example the Anthropic message id).",
+      "description": "The model provider's identifier of the model response (for example the Anthropic message id), when the source reports one. Never a source-local item identifier, and absent when no response identifier is reported.",
       "type": "string_t"
     },
     "tool_call_uid": {
@@ -50,7 +50,7 @@
     },
     "tool_name": {
       "caption": "Tool Name",
-      "description": "The exact tool name as reported by the CLI. Never normalized.",
+      "description": "The exact tool name as the source reports it. Never normalized, and absent when the source reports no name: a family or item type (tool_family) is not a name.",
       "type": "string_t"
     },
     "tool_kind_id": {
@@ -101,7 +101,7 @@
     },
     "tool_kind_basis": {
       "caption": "Tool Kind Basis",
-      "description": "The mapping rule that assigned tool_kind_id (for example a name-to-kind table id). Shell command parsing is not a permitted basis.",
+      "description": "The declared mapping rule that assigned tool_kind_id: a table over tool names the source reports for its own tools, a table over source families, or a reviewed namespace binding. A name under another namespace (for example an MCP tool named like a built-in tool) never takes the built-in's kind. Shell command parsing is not a permitted basis.",
       "type": "string_t"
     },
     "arguments": {
@@ -355,29 +355,24 @@
       "description": "Caption sibling of usage_status_id.",
       "type": "string_t"
     },
-    "input_tokens": {
-      "caption": "Input Tokens",
-      "description": "Reported input tokens.",
-      "type": "long_t"
-    },
     "output_tokens": {
       "caption": "Output Tokens",
-      "description": "Reported output tokens.",
+      "description": "Output tokens as the source reports them. When reasoning_relation_id is 1, reasoning_tokens are part of this count, never in addition to it.",
       "type": "long_t"
     },
     "cache_read_tokens": {
       "caption": "Cache Read Tokens",
-      "description": "Reported cache-read input tokens.",
+      "description": "Input tokens read from a prompt cache. Disjoint from uncached_input_tokens and cache_write_tokens.",
       "type": "long_t"
     },
     "cache_write_tokens": {
       "caption": "Cache Write Tokens",
-      "description": "Reported cache-creation/write input tokens.",
+      "description": "Input tokens written to a prompt cache, every retention or pricing tier together. Disjoint from uncached_input_tokens and cache_read_tokens; cache_write_tiers breaks it down without adding to it.",
       "type": "long_t"
     },
     "reasoning_tokens": {
       "caption": "Reasoning Tokens",
-      "description": "Reported reasoning/thinking tokens.",
+      "description": "Reasoning or thinking output tokens as the source reports them. reasoning_relation_id states whether they are part of output_tokens; absent there, the relation is not established and they must not be added to or subtracted from output_tokens.",
       "type": "long_t"
     },
     "reported_total_tokens": {
@@ -722,7 +717,7 @@
     },
     "identity_basis_id": {
       "caption": "Identity Basis ID",
-      "description": "What kind of identifier the source reported as this fact's identity: tool_call_uid on a tool_call event, uid on an operation. A stream-local item identifier is not the identifier the model used for the call and cannot be joined with one.",
+      "description": "What kind of identifier the source reported as this fact's identity: tool_call_uid on a tool_call event, uid on an operation, item_uid on a model_response. A stream-local item identifier is not the identifier the model used for the call or the provider's response identifier, and cannot be joined with one.",
       "type": "integer_t",
       "sibling": "identity_basis",
       "enum": {
@@ -735,7 +730,7 @@
         },
         "2": {
           "caption": "Stream-local item identifier",
-          "description": "An identifier the CLI's output stream assigns to its own items; unique within that stream only; the model-facing call identifier is not reported."
+          "description": "An identifier the CLI's output stream assigns to its own items. It is unique only within one source artifact of one Journal invocation (journal.run_uid, journal.invocation_index, source_ref.artifact): an equal value in another invocation is another item. The model-facing call or response identifier is not reported."
         },
         "99": {
           "caption": "Other"
@@ -793,6 +788,10 @@
           "caption": "Summary",
           "description": "A summary of the model's reasoning, not its full text."
         },
+        "3": {
+          "caption": "Redacted",
+          "description": "The source reports that reasoning occurred but withholds its text (for example encrypted or redacted reasoning)."
+        },
         "99": {
           "caption": "Other"
         }
@@ -801,6 +800,125 @@
     "reasoning_form": {
       "caption": "Reasoning Form",
       "description": "Caption sibling of reasoning_form_id.",
+      "type": "string_t"
+    },
+    "uncached_input_tokens": {
+      "caption": "Uncached Input Tokens",
+      "description": "Ordinary input tokens: input neither read from nor written to a prompt cache. Disjoint from cache_read_tokens and cache_write_tokens. Present only when the source reports this component or a declared rule derives it exactly from components whose arithmetic the source establishes (components[] names which); otherwise absent and, when the source's components cannot establish it, listed as unavailable. Replaces input_tokens of 0.5.0-prototype and earlier, whose meaning followed each vendor.",
+      "type": "long_t"
+    },
+    "cache_write_tiers": {
+      "caption": "Cache Write Tiers",
+      "description": "The source-reported breakdown of cache_write_tokens by retention or pricing tier. Each tier's count is a part of cache_write_tokens, never additional usage.",
+      "type": "cache_write_tier",
+      "is_array": true
+    },
+    "tier": {
+      "caption": "Tier",
+      "description": "A tier exactly as the source names it (for example the member ephemeral_1h_input_tokens of Claude's cache_creation).",
+      "type": "string_t"
+    },
+    "token_count": {
+      "caption": "Token Count",
+      "description": "A number of tokens.",
+      "type": "long_t"
+    },
+    "aggregation_id": {
+      "caption": "Aggregation ID",
+      "description": "How the observation's components accumulate, independently of its scope (scope_id) and finality (usage_status_id).",
+      "type": "integer_t",
+      "sibling": "aggregation",
+      "enum": {
+        "0": {
+          "caption": "Unknown"
+        },
+        "1": {
+          "caption": "Scope total",
+          "description": "The consumption of exactly the observation's scope unit (for example one model response); observations of distinct units of that scope are disjoint."
+        },
+        "2": {
+          "caption": "Cumulative snapshot",
+          "description": "A running total of the scope unit from its start up to the point of observation. It may include consumption before this capture began and is not the unit's completed total; two snapshots of one unit overlap and are never summed."
+        }
+      }
+    },
+    "aggregation": {
+      "caption": "Aggregation",
+      "description": "Caption sibling of aggregation_id.",
+      "type": "string_t"
+    },
+    "reasoning_relation_id": {
+      "caption": "Reasoning Relation ID",
+      "description": "Whether reasoning_tokens are part of output_tokens, as the source's own arithmetic establishes. Absent when no declared rule establishes it.",
+      "type": "integer_t",
+      "sibling": "reasoning_relation",
+      "enum": {
+        "0": {
+          "caption": "Unknown"
+        },
+        "1": {
+          "caption": "Part of output",
+          "description": "reasoning_tokens are a subset of output_tokens: never another additive count or charge."
+        },
+        "2": {
+          "caption": "Separate from output",
+          "description": "reasoning_tokens are not counted in output_tokens."
+        }
+      }
+    },
+    "reasoning_relation": {
+      "caption": "Reasoning Relation",
+      "description": "Caption sibling of reasoning_relation_id.",
+      "type": "string_t"
+    },
+    "components": {
+      "caption": "Components",
+      "description": "For each canonical usage component this observation states or cannot state: whether its value was copied from a reported native member, derived by a declared rule from named native members, or is unavailable from what the source reported. The native values themselves stay in data.",
+      "type": "usage_component",
+      "is_array": true
+    },
+    "component_basis_id": {
+      "caption": "Component Basis ID",
+      "description": "How a canonical usage component was established.",
+      "type": "integer_t",
+      "sibling": "component_basis",
+      "enum": {
+        "0": {
+          "caption": "Unknown"
+        },
+        "1": {
+          "caption": "Reported",
+          "description": "Copied exactly from the one native member named."
+        },
+        "2": {
+          "caption": "Derived",
+          "description": "Computed exactly from the native members named, by the declared rule in derivation, whose arithmetic the source establishes."
+        },
+        "3": {
+          "caption": "Unavailable",
+          "description": "The source reports related members, but they do not establish this component (derivation states why); the component is absent, never zero."
+        }
+      }
+    },
+    "component_basis": {
+      "caption": "Component Basis",
+      "description": "Caption sibling of component_basis_id.",
+      "type": "string_t"
+    },
+    "native_pointers": {
+      "caption": "Native Pointers",
+      "description": "RFC 6901 JSON Pointers into the observation's data naming the native members a value was copied or derived from.",
+      "type": "string_t",
+      "is_array": true
+    },
+    "item_uid": {
+      "caption": "Item ID",
+      "description": "The source's own identifier of the content item an event observes (for example a Codex exec item id), unique only within the namespace identity_basis_id states. Not a model response identifier: one item is not one model invocation.",
+      "type": "string_t"
+    },
+    "tool_family": {
+      "caption": "Tool Family",
+      "description": "The source's own family or item type of a tool activity, exactly as reported (for example the Codex exec item types mcp_tool_call, web_search, collab_tool_call and file_change). Not a tool name.",
       "type": "string_t"
     }
   }

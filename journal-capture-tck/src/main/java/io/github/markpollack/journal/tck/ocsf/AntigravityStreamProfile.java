@@ -43,8 +43,9 @@ final class AntigravityStreamProfile implements SourceProfile {
                 else if ("agent_response".equals(stepType)) {
                     f.normalized.add(r.index());
                     f.responses.add(new ExpectedFacts.Response(r.index(), uid, null, null, "DONE".equals(state), null));
+                    // Antigravity's input inclusion basis is not established: no uncached tranche is expected (no admitted route)
                     f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 2, 0, SourceProfile.components(s.member("usage"),
-                            "input_tokens", "input_tokens", "output_tokens", "output_tokens", "cache_read_tokens", "cache_read_tokens",
+                            "output_tokens", "output_tokens", "cache_read_tokens", "cache_read_tokens",
                             "thinking_tokens", "reasoning_tokens", "total_tokens", "reported_total_tokens"), null));
                 }
                 else if ("tool".equals(stepType)) {
@@ -69,7 +70,7 @@ final class AntigravityStreamProfile implements SourceProfile {
                 Json res = o.member("result");
                 f.completed.add(new ExpectedFacts.TurnCompleted(r.index(), "SUCCESS".equals(SourceProfile.text(res, "status")) ? 1 : 2, null));
                 f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 4, 2, SourceProfile.components(res.member("usage"),
-                        "input_tokens", "input_tokens", "output_tokens", "output_tokens", "cache_read_tokens", "cache_read_tokens",
+                        "output_tokens", "output_tokens", "cache_read_tokens", "cache_read_tokens",
                         "thinking_tokens", "reasoning_tokens", "total_tokens", "reported_total_tokens"), null));
                 for (Json d : res.member("denied_actions") == null ? List.<Json>of() : res.member("denied_actions").elements()) {
                     String target = "command".equals(SourceProfile.text(d, "action")) ? "run_command" : null;

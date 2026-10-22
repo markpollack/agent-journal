@@ -1,0 +1,52 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "usage-equivalent-codex-synthetic",
+  "concept": "usage-components-and-cache",
+  "description": "LABELLED SYNTHETIC, the decision's equal-scope example: Codex reports inclusive input 1000, cached input 800, cache writes 0. The canonical tranches are uncached 200 (1000 - 800, derived), cache reads 800, cache writes 0, the same as usage-equivalent-claude-synthetic's reported 200 / 800 / 0. No total replaces them.",
+  "authored_from": [
+    "codex-protocol-0.160.1-token-usage-arithmetic",
+    "codex-api-0.160.1-responses-usage"
+  ],
+  "native": {
+    "evidence_kind": "synthetic",
+    "profile": "codex_stream",
+    "compatibility_entry": "codex-cli/exec-json-stream/0.160.1",
+    "run_spec_fixture": "syn-codex-exec-families-0.160.1",
+    "artifact": "stream.jsonl",
+    "lines": [
+      "{\"type\":\"thread.started\",\"thread_id\":\"00000000-0000-4000-8000-00000000fa12\"}",
+      "{\"type\":\"turn.started\"}",
+      "{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1000,\"cached_input_tokens\":800,\"cache_write_input_tokens\":0,\"output_tokens\":50,\"reasoning_output_tokens\":0}}"
+    ]
+  },
+  "expected": [
+    {
+      "record": 3,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/uncached_input_tokens": 200,
+        "/usage_observations/0/cache_read_tokens": 800,
+        "/usage_observations/0/cache_write_tokens": 0,
+        "/usage_observations/0/output_tokens": 50,
+        "/usage_observations/0/components/0/component_basis_id": 2
+      },
+      "absent": [
+        "/usage_observations/0/reported_total_tokens"
+      ]
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "inclusive-copied",
+      "record": 3,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/uncached_input_tokens": 1000
+      },
+      "why": "The Codex count includes the 800 cached tokens; the same spelling under another vendor's meaning is not normalized."
+    }
+  ]
+}

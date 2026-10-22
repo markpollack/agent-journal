@@ -3,11 +3,12 @@
   "format_version": "0.1",
   "id": "codex-web-search-duplicate-id-live",
   "concept": "opaque-malformed-and-blank-records",
-  "description": "A Codex CLI 0.160.1 web_search line repeats item.id: serde writes ThreadItem.id (the exec processor's item_N) and then the flattened WebSearchItem.id (the app-server item's own id). Strict parsing refuses the line, so it is retained verbatim as an opaque record with both ids; in exactly this declared form it is also read as a tool call under the first id, never the last. The search action is the request arguments and the results are the result content.",
+  "description": "A Codex CLI 0.160.1 web_search line repeats the item's id: serde writes ThreadItem.id (the exec processor's item_N) and then the flattened WebSearchItem.id (the app-server item's own id), both in the root's item object (RFC 6901 /item/id, twice). Strict parsing refuses the line, so it is retained verbatim as an opaque record with both ids; in exactly this declared form at that exact location it is also read as a started web search (activity 4) under the first id, never the last. The stream names no tool: tool_name is absent, the family is web_search and the kind 5 search by the family table. The search action is the arguments and the results are the result content.",
   "authored_from": [
     "codex-exec-0.160.1-emitter-items",
     "codex-exec-0.160.1-types",
-    "codex-exec-0.160.1-thread-item-flatten"
+    "codex-exec-0.160.1-thread-item-flatten",
+    "rfc-6901-json-pointer"
   ],
   "native": {
     "evidence_kind": "live",
@@ -31,19 +32,20 @@
     {
       "record": 4,
       "class": "tool_call",
-      "activity_id": 1,
+      "activity_id": 4,
       "values": {
         "/tool_call_uid": "item_1",
         "/identity_basis_id": 2,
-        "/tool_name": "web_search",
         "/tool_kind_id": 5,
         "/arguments": {
           "type": "other"
         },
-        "/source_ref/is_whole_record": false
+        "/source_ref/is_whole_record": false,
+        "/tool_family": "web_search"
       },
       "absent": [
-        "/data"
+        "/data",
+        "/tool_name"
       ]
     },
     {
@@ -338,8 +340,17 @@
           }
         ],
         "/status_id": 0,
-        "/status_basis_id": 3
+        "/status_basis_id": 3,
+        "/tool_family": "web_search"
       }
+    }
+  ],
+  "absent_events": [
+    {
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 1,
+      "why": "the stream reports the search as started; the model request is not observed"
     }
   ],
   "counterexamples": [
@@ -347,11 +358,31 @@
       "id": "last-member-wins",
       "record": 4,
       "class": "tool_call",
-      "activity_id": 1,
+      "activity_id": 4,
       "values": {
         "/tool_call_uid": "exec-6556473a-3503-4dad-9f2b-41bea3a57b0e"
       },
       "why": "A last-key-wins parser would silently take the search item's own id as the call identity; the declared form names the first member as the stream-local item id."
+    },
+    {
+      "id": "family-as-name",
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 4,
+      "values": {
+        "/tool_name": "web_search"
+      },
+      "why": "web_search is the item family; the stream reports no tool name for a search."
+    },
+    {
+      "id": "model-request-observed",
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 1,
+      "values": {
+        "/tool_call_uid": "item_1"
+      },
+      "why": "item.started reports a started search, not the model's request."
     }
   ]
 }

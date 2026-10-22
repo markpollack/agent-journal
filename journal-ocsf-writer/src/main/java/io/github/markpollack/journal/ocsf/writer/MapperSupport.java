@@ -27,7 +27,7 @@ final class MapperSupport {
     static final Map<Integer, String> STATUS_BASIS = Map.of(0, "Unknown", 1, "Reported", 2, "Derived", 3, "Not derivable");
     static final Map<Integer, String> IDENTITY_BASIS = Map.of(0, "Unknown", 1, "Model-facing call identifier", 2, "Stream-local item identifier", 99, "Other");
     static final Map<Integer, String> MEASUREMENT_STATUS = Map.of(0, "Unknown", 1, "Measured", 2, "Possibly default");
-    static final Map<Integer, String> REASONING_FORM = Map.of(0, "Unknown", 1, "Full reasoning", 2, "Summary", 99, "Other");
+    static final Map<Integer, String> REASONING_FORM = Map.of(0, "Unknown", 1, "Full reasoning", 2, "Summary", 3, "Redacted", 99, "Other");
     static final Map<Integer, String> TIME_BASIS = Map.of(1, "Source record", 2, "Earliest available fallback", 3, "Capture observation");
     static final Map<Integer, String> PROVIDER_BASIS = Map.of(0, "Unknown", 1, "Reported", 2, "Derived", 3, "Unavailable");
 
@@ -71,19 +71,6 @@ final class MapperSupport {
             m.put("provider_kind", providerKind);
         }
         return m.put("provider_basis_id", providerBasis).put("provider_basis", PROVIDER_BASIS.get(providerBasis));
-    }
-
-    /** Copies integral native usage components into normalized names; absent or non-integral stay absent. */
-    static void components(Jv.Obj into, Jv usage, String... pairs) {
-        if (usage == null) {
-            return;
-        }
-        for (int i = 0; i + 1 < pairs.length; i += 2) {
-            Jv v = usage.member(pairs[i]);
-            if (isIntegral(v)) {
-                into.put(pairs[i + 1], v);
-            }
-        }
     }
 
     static Jv.Obj usage(int scope, int status, String basis, Jv sourceRef, Jv.Obj modelRef, Jv data) {
@@ -179,15 +166,11 @@ final class MapperSupport {
     record ClaudeMessage(SourceContext ctx, NativeRecord r, Time t, String ts, String uid, String sess) {
     }
 
-    /** A Claude assistant message's usage as a response-scope observation: the usage members, thinking tokens as reasoning_tokens when reported. */
+    /** A Claude assistant message's usage as a response-scope observation of that message's own total, in canonical tranches (thinking is part of output). */
     static Jv.Obj claudeMessageUsage(ClaudeRoute route, ClaudeMessage c, Jv.Obj m, boolean terminal) {
         Jv.Obj usage = usage(2, terminal ? 2 : 1, route.usageBasis(), c.ctx().sourceRef(c.r(), c.uid(), c.ts(), false), modelRef(text(m, "model"), 3, null), m.member("usage"));
-        components(usage, m.member("usage"), "input_tokens", "input_tokens", "output_tokens", "output_tokens",
-                "cache_read_input_tokens", "cache_read_tokens", "cache_creation_input_tokens", "cache_write_tokens");
-        Jv thinking = m.path("usage", "output_tokens_details", "thinking_tokens");
-        if (isIntegral(thinking)) {
-            usage.put("reasoning_tokens", thinking);
-        }
+        UsageTranches.aggregation(usage, 1, "anthropic.usage.per_message.v1: message.usage is the usage of this one API message, the response's own total");
+        UsageTranches.anthropic(usage, m.member("usage"));
         return usage;
     }
 

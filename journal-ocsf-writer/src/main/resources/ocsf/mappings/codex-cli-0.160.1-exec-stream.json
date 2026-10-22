@@ -1,5 +1,5 @@
 {
-  "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+  "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
   "applies_to": {
     "product": "Codex CLI",
     "version": "0.160.1",
@@ -16,13 +16,20 @@
     "reported": "none: the exec stream carries no timestamps",
     "fallback": "capture start for every record"
   },
-  "tool_kind_table": {
-    "rule": "codex.tool_name_to_kind.v1",
+  "family_kind_table": {
+    "rule": "codex.stream.item_family_to_kind.v1",
+    "meaning": "a tool activity is classified by the item family the stream reports (item.type), never by a tool name; the stream names no tool for web_search or file_change",
     "map": {
-      "exec": 6,
       "web_search": 5,
       "file_change": 2
     },
+    "default": 99
+  },
+  "namespace_kind_bindings": {
+    "rule": "codex.stream.mcp_namespace_kind.v1",
+    "family": "mcp_tool_call",
+    "meaning": "an MCP tool (item.server, item.tool) takes a kind only from a reviewed binding of that exact server and tool; none is declared, so every MCP tool is 99 other, whatever its name (an MCP tool named exec, Read or web_search never inherits a built-in kind)",
+    "bindings": [],
     "default": 99
   },
   "block_kind_table": {
@@ -44,8 +51,8 @@
         "item.type": "agent_message"
       },
       "target": "agentic_cli/model_response",
-      "activity": "2 Completed",
-      "owner": "response_uid = item.id (stream-scoped id such as item_0; it does not occur in the rollout, R13-08)"
+      "activity": "3 Item completed",
+      "owner": "item_uid = item.id (identity_basis 2 stream-local; codex.stream.content_item.v1); the model response it belongs to is not reported: no response_uid"
     },
     {
       "id": "codex.stream.reasoning->model_response",
@@ -54,8 +61,8 @@
         "item.type": "reasoning"
       },
       "target": "agentic_cli/model_response",
-      "activity": "2 Completed",
-      "owner": "response_uid = item.id (stream-local)",
+      "activity": "3 Item completed",
+      "owner": "item_uid = item.id (identity_basis 2 stream-local); no response_uid: which model response, or invocation, the summary belongs to is not reported",
       "content": "one block: block_kind 2 Thought, reasoning_form_id 2 Summary (codex.stream.reasoning_summary.v1: the processor writes the reasoning summary parts joined by newlines; raw reasoning content is not projected)"
     },
     {
@@ -83,9 +90,9 @@
         "item.type": "mcp_tool_call"
       },
       "target": "agentic_cli/tool_call",
-      "activity": "1 Requested",
+      "activity": "4 Started",
       "owner": "tool_call_uid = item.id (identity_basis 2 stream-local)",
-      "request": "tool_name = item.tool, tool_namespace = item.server, arguments = item.arguments exactly, reported_state = item.status"
+      "request": "tool_name = item.tool, tool_namespace = item.server, tool_family = mcp_tool_call, arguments = item.arguments exactly, reported_state = item.status; kind by codex.stream.mcp_namespace_kind.v1 (no binding: 99 other); a started invocation, not the model request: no response owner, model call id or permission decision follows"
     },
     {
       "id": "codex.stream.mcp_tool_call->tool_call.result",
@@ -96,7 +103,7 @@
       "target": "agentic_cli/tool_call",
       "activity": "2 Result observed",
       "owner": "tool_call_uid = item.id (identity_basis 2 stream-local)",
-      "result": "tool_result.data = item.result.content (null when result has none), structured_result = item.result.structured_content when not null, error_reported = item.status failed; status_id 1/2 from item.status (Reported); item.error stays in data"
+      "result": "tool_result.data = item.result.content (null when result has none), structured_result = item.result.structured_content when not null, error_reported = item.status failed; status_id 1/2 from item.status (Reported); item.error stays in data; tool_name, tool_namespace and tool_family as on the start"
     },
     {
       "id": "codex.stream.web_search->tool_call.requested",
@@ -105,9 +112,9 @@
         "item.type": "web_search"
       },
       "target": "agentic_cli/tool_call",
-      "activity": "1 Requested",
+      "activity": "4 Started",
       "owner": "tool_call_uid = item.id (identity_basis 2 stream-local)",
-      "request": "only the declared duplicate form (item.id twice: the exec item id, then the search item's own id), recorded by a duplicate-recording parse; tool_call_uid = the first item.id; tool_name = web_search (the item type: the stream names no tool); arguments = item.action exactly; the record itself is retained verbatim by common.opaque->source_record, both ids in raw_data"
+      "request": "only the declared duplicate form (the id member twice inside the root item object, RFC 6901 /item/id: the exec item id, then the search item own id), recorded at its exact location by a duplicate-recording parse; tool_call_uid = the first id; no tool_name (the stream names no tool), tool_family = web_search, kind 5 search by the family table; arguments = item.action exactly; the record itself is retained verbatim by common.opaque->source_record, both ids in raw_data"
     },
     {
       "id": "codex.stream.web_search->tool_call.result",
@@ -118,7 +125,7 @@
       "target": "agentic_cli/tool_call",
       "activity": "2 Result observed",
       "owner": "tool_call_uid = item.id (identity_basis 2 stream-local)",
-      "result": "tool_result.data = item.results when present; arguments = the completed item.action; status_id 0, basis 3 (no status is reported)"
+      "result": "tool_result.data = item.results when present; arguments = the completed item.action; no tool_name, tool_family = web_search; status_id 0, basis 3 (no status is reported)"
     },
     {
       "id": "codex.stream.collab_tool_call->tool_call.requested",
@@ -127,9 +134,9 @@
         "item.type": "collab_tool_call"
       },
       "target": "agentic_cli/tool_call",
-      "activity": "1 Requested",
+      "activity": "4 Started",
       "owner": "tool_call_uid = item.id (identity_basis 2 stream-local)",
-      "request": "tool_name = item.tool (spawn_agent, send_input, wait, close_agent), reported_state = item.status; sender, receivers, prompt and agent states stay in data (no child-run link is made)"
+      "request": "tool_name = item.tool exactly as the stream labels it (spawn_agent, send_input, wait, close_agent; the emitter labels both ResumeAgent and Wait as wait), tool_family = collab_tool_call, kind 99, reported_state = item.status; sender, receivers, prompt and agent states stay in data (no child-run link is made)"
     },
     {
       "id": "codex.stream.collab_tool_call->tool_call.result",
@@ -140,7 +147,7 @@
       "target": "agentic_cli/tool_call",
       "activity": "2 Result observed",
       "owner": "tool_call_uid = item.id (identity_basis 2 stream-local)",
-      "result": "no result content is reported; status_id 1/2 from item.status (Reported)"
+      "result": "no result content is reported; tool_name = item.tool as labelled; status_id 1/2 from item.status (Reported)"
     },
     {
       "id": "codex.stream.file_change->tool_call.requested",
@@ -149,9 +156,9 @@
         "item.type": "file_change"
       },
       "target": "agentic_cli/tool_call",
-      "activity": "1 Requested",
+      "activity": "4 Started",
       "owner": "tool_call_uid = item.id (identity_basis 2 stream-local)",
-      "request": "tool_name = file_change (the item type: the stream names no tool), reported_state = item.status; the changes (path, kind) stay in data"
+      "request": "no tool_name (the stream names no tool), tool_family = file_change, kind 2 edit by the family table, reported_state = item.status; the changes (path, kind) stay in data; an execution observation, not the model request or its arguments"
     },
     {
       "id": "codex.stream.file_change->tool_call.result",
@@ -162,7 +169,7 @@
       "target": "agentic_cli/tool_call",
       "activity": "2 Result observed",
       "owner": "tool_call_uid = item.id (identity_basis 2 stream-local)",
-      "result": "no result content is reported; status_id 1/2 from item.status (Reported; the processor reports a declined patch as failed)"
+      "result": "no result content is reported; tool_family = file_change, no tool_name; status_id 1/2 from item.status (Reported; the processor reports a declined patch as failed)"
     },
     {
       "id": "codex.stream.turn_completed->prompt_turn.completed",
@@ -171,7 +178,7 @@
       },
       "target": "agentic_cli/prompt_turn",
       "activity": "2 Turn completed",
-      "usage": "usage -> scope 5 Session (the thread) status 2 Final for this run (rule codex.stream.thread_usage.v2: ThreadTokenUsage.total, the thread's cumulative usage at this turn's completion; not per turn); measurement_status_id 1 Measured when any component is non-zero, 2 Possibly default when all are zero (codex.stream.usage_measurement.v1: the emitter writes Usage::default() when no update arrived)"
+      "usage": "usage -> scope 5 Session (the thread) status 2 Final for this run, aggregation 2 Cumulative snapshot (codex.stream.thread_usage.v2, codex.stream.thread_usage_aggregation.v1: ThreadTokenUsage.total, the thread running total at this turn completion; not per turn, never summed with another snapshot); canonical tranches: uncached_input_tokens derived = input_tokens - cached_input_tokens when cache_write_input_tokens is reported 0 (codex.usage.uncached_input.v1: input_tokens includes cached_input_tokens, TokenUsage::non_cached_input; with non-zero cache writes or cached > input the tranche is unavailable, not guessed or clamped; a 0 cache write may be the deserializer default for a provider that reports none), cache_read_tokens = cached_input_tokens, cache_write_tokens = cache_write_input_tokens, output_tokens, reasoning_tokens = reasoning_output_tokens with reasoning_relation 1 Part of output (codex.usage.reasoning_in_output.v1); components[] states each as Reported, Derived or Unavailable with RFC 6901 pointers; measurement_status_id 1 Measured when any component is non-zero, 2 Possibly default when all are zero (codex.stream.usage_measurement.v1: the emitter writes Usage::default() when no update arrived)"
     },
     {
       "id": "codex.stream.fallback->source_record",
@@ -195,8 +202,8 @@
     }
   ],
   "candidate": {
-    "status": "SEM-1 candidate (2026-10-22): changed and new meanings are proposed for the Project Owner's semantic approval; tested candidate behaviour is not approved support",
-    "previous": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype (usage at turn scope; MCP, web search, collaboration, file-change and reasoning items retained whole; web_search lines opaque)"
+    "status": "SEM-CLOSE candidate (2026-10-22): the revised meanings follow the delegated SEM-1 decisions and await the managing reviewer binding of their claim revisions; tested candidate behaviour is not approved support",
+    "previous": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype (vendor-dependent input_tokens; response_uid = stream-local item id; item.started read as the model request; the item type written as tool_name; kinds by bare tool name; web_search duplicate selected by a dotted path)"
   },
-  "identity": "codex.stream.item_identity.v1: every item.id is the exec processor's own stream-local id (item_N, minted per stream; raw app-server ids are dropped), never the model-facing call id, which the stream omits; identity_basis_id 2 states it on tool calls and operations"
+  "identity": "codex.stream.item_identity.v2: every item.id is the exec processor own stream-local id (item_N, minted per stream; raw app-server ids are dropped), unique only within this artifact of one Journal invocation (journal.run_uid, journal.invocation_index, source_ref.artifact); it is tool_call_uid, operation uid or item_uid with identity_basis_id 2, never the model-facing call id or the provider response id, which the stream omits"
 }

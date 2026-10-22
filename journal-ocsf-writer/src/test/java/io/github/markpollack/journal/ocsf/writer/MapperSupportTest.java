@@ -120,12 +120,13 @@ class MapperSupportTest {
         assertThat(MapperSupport.decisionId(null)).isEqualTo(99);
 
         Jv.Obj into = new Jv.Obj();
-        MapperSupport.components(into, Jv.parse("{\"input_tokens\":12,\"output_tokens\":1.5,\"cache_read_input_tokens\":\"7\",\"cache_creation_input_tokens\":null}"),
-                "input_tokens", "input_tokens", "output_tokens", "output_tokens", "cache_read_input_tokens", "cache_read_tokens", "cache_creation_input_tokens", "cache_write_tokens", "missing", "reasoning_tokens");
-        assertThat(into.members().keySet()).as("only integral numbers are components; a decimal, a string, a null and an absent value stay absent").containsExactly("input_tokens");
-        assertThat(Jv.write(into.get("input_tokens"))).isEqualTo("12");
-        MapperSupport.components(into, null, "x", "y");
-        assertThat(into.members()).hasSize(1);
+        UsageTranches.anthropic(into, Jv.parse("{\"input_tokens\":12,\"output_tokens\":1.5,\"cache_read_input_tokens\":\"7\",\"cache_creation_input_tokens\":null}"));
+        assertThat(into.members().keySet()).as("only integral numbers are components; a decimal, a string, a null and an absent value stay absent").containsExactly("uncached_input_tokens", "components");
+        assertThat(Jv.write(into.get("uncached_input_tokens"))).isEqualTo("12");
+        assertThat(Jv.write(into.get("components"))).isEqualTo("[{\"name\":\"uncached_input_tokens\",\"component_basis_id\":1,\"component_basis\":\"Reported\",\"native_pointers\":[\"/input_tokens\"]}]");
+        Jv.Obj none = new Jv.Obj();
+        UsageTranches.anthropic(none, null);
+        assertThat(none.members()).isEmpty();
 
         Jv.Obj model = MapperSupport.modelRef("m", 1, "vendor");
         assertThat(model.get("provider_kind").text()).isEqualTo("vendor");

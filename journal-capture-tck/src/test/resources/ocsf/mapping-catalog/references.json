@@ -111,6 +111,78 @@
    "locator": "sha256 in native/expected-sources.json; provenance.json",
    "evidence_kind": "live",
    "note": "sanitized live recording (ACCEPT-1): an observed rejection and the run-scope denial naming it (record 18)"
+  },
+  {
+   "id": "codex-protocol-0.160.1-token-usage-arithmetic",
+   "source": "openai/codex",
+   "revision": "d27764b82f7118f674371e6d6e76271d9d606edb",
+   "path": "codex-rs/protocol/src/protocol.rs",
+   "blob": "abc4e90847636bfe51e6275ede528a13616c8573",
+   "symbol": "TokenUsage (cache_write_input_tokens #[serde(default)]); TokenUsage::non_cached_input (input_tokens - cached_input); TokenUsage::blended_total (non-cached input + output_tokens); FinalOutput Display (\"output=N (reasoning M)\")",
+   "evidence_kind": "source_inspection",
+   "note": "input_tokens includes cached_input_tokens; reasoning is shown inside output and never added to a total; whether input_tokens includes cache_write_input_tokens is not stated"
+  },
+  {
+   "id": "codex-api-0.160.1-responses-usage",
+   "source": "openai/codex",
+   "revision": "d27764b82f7118f674371e6d6e76271d9d606edb",
+   "path": "codex-rs/codex-api/src/sse/responses.rs",
+   "blob": "6b2a7ed47cb662f375f47bcac908b8c17bedc75e",
+   "symbol": "impl From<ResponseCompletedUsage> for TokenUsage; ResponseCompletedInputTokensDetails (cache_write_tokens #[serde(default)]); test parses_cache_write_token_usage",
+   "evidence_kind": "source_inspection",
+   "note": "reasoning_output_tokens = output_tokens_details.reasoning_tokens; an omitted cache_write_tokens deserializes as 0; the vendor test totals input 100 + output 10 = 110 with reasoning 5 inside output"
+  },
+  {
+   "id": "codex-exec-0.160.1-emitter-collab",
+   "source": "openai/codex",
+   "revision": "d27764b82f7118f674371e6d6e76271d9d606edb",
+   "path": "codex-rs/exec/src/event_processor_with_jsonl_output.rs",
+   "blob": "73e0c9d911c82aae67c44e6b1a4ce54c7092b6be",
+   "symbol": "ThreadItem::CollabAgentToolCall arm: ResumeAgent => CollabTool::Wait, Wait => CollabTool::Wait; SendMessage, FollowupTask, InterruptAgent, ListAgents => None",
+   "evidence_kind": "source_inspection",
+   "note": "the exposed collaboration label wait does not identify one underlying action; some collaboration variants are not emitted"
+  },
+  {
+   "id": "anthropic-prompt-caching-2026-10-22",
+   "source": "Anthropic platform documentation",
+   "revision": "retrieved 2026-10-22",
+   "path": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+   "symbol": "Tracking cache performance; 1-hour cache duration",
+   "evidence_kind": "specification",
+   "note": "input_tokens: \"Number of input tokens that were not read from or used to create a cache\"; total_input_tokens = cache_read_input_tokens + cache_creation_input_tokens + input_tokens; cache_creation_input_tokens equals the sum of the cache_creation object (ephemeral_5m_input_tokens, ephemeral_1h_input_tokens)"
+  },
+  {
+   "id": "anthropic-sdk-typescript-0.135.0-usage",
+   "source": "@anthropic-ai/sdk",
+   "revision": "0.135.0 (src/resources/messages/messages.ts sha256 855f18f8e7bcf1e3ac4f0e2d418bccd5858e573be34ad2c7c2ea0b41b6fc11d1)",
+   "path": "src/resources/messages/messages.ts",
+   "symbol": "Usage (cache_creation: \"Breakdown of cached tokens by TTL\"; output_tokens_details: \"output_tokens remains the inclusive, authoritative total used for billing\"); OutputTokensDetails.thinking_tokens (\"Always <= output_tokens\")",
+   "evidence_kind": "source_inspection"
+  },
+  {
+   "id": "claude-agent-sdk-0.3.304-model-usage",
+   "source": "@anthropic-ai/claude-agent-sdk",
+   "revision": "0.3.304 (claudeCodeVersion 2.1.304; sdk.d.ts sha256 a30343b6cb2f9b4ce08ec78563a19b2a9209bb8590acb5ac46adb2bbcba1b36e)",
+   "path": "sdk.d.ts",
+   "symbol": "ModelUsage (inputTokens, cacheReadInputTokens, cacheCreationInputTokens, outputTokens; thinkingTokens: \"already counted inside outputTokens\"; costBasis: \"a consumer that differences the cumulative costUSD per turn\")",
+   "evidence_kind": "source_inspection",
+   "note": "per-model running totals; the live denial recording (no child) shows every ModelUsage component equal to the result usage member"
+  },
+  {
+   "id": "agentic-cli-0.6.0-usage-and-identity",
+   "source": "markpollack/agent-journal",
+   "revision": "extension agentic_cli 0.6.0-prototype (compiled sha256 70aa97c9e4cb3bf2e26e2fadffc9b4010e5bb2325ce8a993946be091a311f35e)",
+   "path": "prototype/ocsf-acp/extension/agentic_cli/dictionary.json",
+   "symbol": "uncached_input_tokens, cache_write_tiers, aggregation_id, reasoning_relation_id, components, item_uid, identity_basis_id, tool_family; tool_call activity 4 Started; model_response activity 3 Item completed; reasoning_form_id 3 Redacted",
+   "evidence_kind": "specification"
+  },
+  {
+   "id": "rfc-6901-json-pointer",
+   "source": "IETF RFC 6901",
+   "revision": "April 2013",
+   "path": "https://www.rfc-editor.org/rfc/rfc6901",
+   "symbol": "sections 3 and 4 (syntax, ~0 and ~1 escaping, evaluation); section 4 on duplicate members",
+   "evidence_kind": "specification"
   }
  ]
 }

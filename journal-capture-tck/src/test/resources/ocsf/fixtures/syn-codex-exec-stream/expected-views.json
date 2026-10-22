@@ -2,8 +2,8 @@
   "_authored": "By hand from the native stream.jsonl records of this labelled synthetic fixture (record indexes cited), 2026-10-21; a subset pattern compared against AnalysisViews.all, not generated from the views, the adapter or the contract.",
   "_rationale": {
     "submissions": "An exec --json stream does not echo the prompt: no prompt_turn Prompt submitted, submission_count 0.",
-    "responses": "Records 3 (item_0) and 11 (item_5) are agent_message items; their ids are stream-scoped (identity_scope artifact: they do not occur in a rollout), so there are 2 observations and 2 source-scoped identities and no logical count can be claimed across sources.",
-    "usage": "Record 12 turn.completed reports the thread's cumulative usage (ThreadTokenUsage.total, pinned emitter) once per exec run; its scope is the session (the thread), owned by the thread id thread.started states (SEM-1 candidate reading, pending Owner approval; until 2026-10-22 this answer said turn scope, owner 'turn unidentified in stream.jsonl'). input_tokens 9007199254740993 is 2^53+1 and must survive exactly.",
+    "responses": "Records 3 (item_0) and 11 (item_5) are agent_message items: completed content items whose stream-local ids are not response identities (0.6.0-prototype; until 2026-10-22 this answer counted them as two artifact-scoped response identities). The stream does not report which model response either belongs to, so there are 2 observations, 0 response identities and 2 unresolved rows; no logical count can be given.",
+    "usage": "Record 12 turn.completed reports the thread's cumulative usage (ThreadTokenUsage.total, pinned emitter) once per exec run; its scope is the session (the thread), owned by the thread id thread.started states (SEM-1 candidate reading, pending Owner approval; until 2026-10-22 this answer said turn scope, owner 'turn unidentified in stream.jsonl'). The reported input_tokens 9007199254740993 (2^53+1) includes the 24576 cached tokens (TokenUsage::non_cached_input) and cache writes are reported 0, so the uncached tranche is 9007199254740993 - 24576 = 9007199254716417, exact (computed by hand, 0.6.0-prototype); the reported 2^53+1 survives exactly in the observation data.",
     "associations": "Records 4/5 (item_1: in_progress then completed, exit 0), 6/7 (item_2: in_progress then failed, exit 1) and 8 (item_3: started, completion never observed) are 5 operation observations over 3 stream-scoped identities. The stream reports no call id, so every observation is Unattributed; a logical count of 3 is available only because there is a single source.",
     "tool_exchanges": "No tool_call Requested or Result observed exists in an exec stream: no calls, no repeats, no identical content."
   },
@@ -12,13 +12,13 @@
   "submissions": {"submission_count": 0, "rows": []},
   "responses": {
     "observation_count": 2,
-    "identity_count": 2,
-    "unresolved_count": 0,
+    "identity_count": 0,
+    "unresolved_count": 2,
     "logical_count": null,
     "rows": [
-      {"response_uid": "item_0", "identity_scope": "artifact", "occurrence_count": 1,
-       "artifacts": {"stream.jsonl": {"update_semantics": "SNAPSHOT", "occurrences": [{"record_index": 3, "block_types": ["agent_message.text"]}]}}},
-      {"response_uid": "item_5", "identity_scope": "artifact", "occurrence_count": 1,
+      {"response_uid": null, "resolved": false, "occurrence_count": 1,
+       "artifacts": {"stream.jsonl": {"update_semantics": "UNKNOWN", "occurrences": [{"record_index": 3, "block_types": ["agent_message.text"]}]}}},
+      {"response_uid": null, "resolved": false, "occurrence_count": 1,
        "artifacts": {"stream.jsonl": {"occurrences": [{"record_index": 11}]}}}
     ]
   },
@@ -26,7 +26,7 @@
     "group_count": 1,
     "groups": [
       {"scope": "Session", "owner": "00000000-0000-4000-8000-0000000c0de5", "source": "stream.jsonl", "final_observations": 1, "provisional_observations": 0, "conflict": false,
-       "applicable_final": {"input_tokens": 9007199254740993, "output_tokens": 143, "cache_read_tokens": 24576, "cache_write_tokens": 0, "reasoning_tokens": 7},
+       "applicable_final": {"uncached_input_tokens": 9007199254716417, "output_tokens": 143, "cache_read_tokens": 24576, "cache_write_tokens": 0, "reasoning_tokens": 7},
        "observations": [{"record_index": 12, "status": "Final"}]}
     ]
   },

@@ -1,6 +1,6 @@
 {
  "kind": "agent-journal/mapping-catalog",
- "version": "0.4.0",
+ "version": "0.5.0",
  "reviewed": "2026-10-22",
  "property_scopes": {
   "meaning": "the owner an oracle property is reported for: root (once, by the root core), core (each core: main and every child), otherwise source (each core's artifacts, '<core>/<artifact>'); the coverage summary owes a result for every such owner the frozen expected sources establish",
@@ -244,22 +244,22 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.system.init->session_context.settings",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.user.prompt->prompt_turn.submitted",
      "implementation": "ClaudeTranscriptMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.session_meta->session_context.settings",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.fallback->source_record",
      "implementation": "CodexStreamMapper#map"
     }
@@ -590,32 +590,32 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.user.prompt->prompt_turn.submitted",
      "implementation": "ClaudeTranscriptMapper#map"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.result->prompt_turn.completed",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.task_started->prompt_turn.started",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.turn_context->session_context.settings",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.task_complete->prompt_turn.completed",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.turn_completed->prompt_turn.completed",
      "implementation": "CodexStreamMapper#map"
     }
@@ -944,12 +944,12 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "SourceContext#event"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.assistant_message->model_response",
      "implementation": "OcsfRunWriter#open"
     }
@@ -1213,22 +1213,22 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.user.prompt->prompt_turn.submitted",
      "implementation": "ClaudeTranscriptMapper#map"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.fallback->source_record",
      "implementation": "ClaudeTranscriptMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.user_message->prompt_turn.submitted",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.item_completed.UserMessage->prompt_turn.submitted",
      "implementation": "CodexRolloutMapper#map"
     }
@@ -1319,17 +1319,17 @@
    "claims": [
     {
      "id": "claude.stream.child-scope-prompt",
-     "revision": 1,
-     "digest": "sha256:05cdefb08d7b22120ad48f446a6195b8a0d8d73d54b10e206eec3b45df9165f1",
+     "revision": 2,
+     "digest": "sha256:f0178cd7ebea0d53f91b3187475933179bbdfdd87d0a9516711ae7d17d5221ca",
      "statement": "On Claude Code 2.1.304 stream-json (stdout), a user record whose parent_tool_use_id names a sub-agent spawn and which carries text and no tool_result is the prompt the stream echoes for that child scope. Journal records it as a prompt_turn Prompt submitted event in the child's core with its exact text. This applies only to an actually echoed child-scope prompt: no main-thread prompt and no turn id are invented.",
      "applicability": {
       "routes": [
        "claude-code/stream-json/2.1.304-stdout"
       ],
       "contracts": [
-       "claude-code/stream-json/2.1.303/0.2.0-prototype"
+       "claude-code/stream-json/2.1.303/0.3.0-prototype"
       ],
-      "extension": "agentic_cli 0.5.0-prototype"
+      "extension": "agentic_cli 0.6.0-prototype"
      },
      "semantics": {
       "owner_scope": "the child core whose spawn the record's parent_tool_use_id names",
@@ -1354,12 +1354,13 @@
       "junit:LiveFixtureFeaturesTest#theSubAgentPromptIsTheChildScopesVendorReportedPrompt"
      ],
      "approval": {
-      "status": "approved",
-      "revision": 1,
-      "digest": "sha256:05cdefb08d7b22120ad48f446a6195b8a0d8d73d54b10e206eec3b45df9165f1",
-      "approver": "Project Owner (markpollack)",
-      "decision": "OWNER-2026-10-21-ACCEPT-1-6",
-      "basis": "reused at its exact scope: the decision's own wording (an actually echoed child-scope prompt only, without inventing main-thread or turn facts) is this claim's scope; bound to this digest at SEM-1 for the Owner's confirmation"
+      "status": "proposed",
+      "previous": {
+       "revision": 1,
+       "digest": "sha256:05cdefb08d7b22120ad48f446a6195b8a0d8d73d54b10e206eec3b45df9165f1",
+       "decision": "OWNER-2026-10-21-ACCEPT-1-6",
+       "delta": "applicability only: extension agentic_cli 0.5.0-prototype -> 0.6.0-prototype and contract claude-code/stream-json/2.1.303/0.2.0-prototype -> 0.3.0-prototype; statement, semantics, destinations and normative examples unchanged"
+      }
      }
     }
    ]
@@ -1538,27 +1539,27 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.assistant->model_response",
      "implementation": "ClaudeTranscriptMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.assistant_message->model_response",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.item_completed.AgentMessage->model_response",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.agent_message->model_response",
      "implementation": "CodexStreamMapper#map"
     }
@@ -1897,27 +1898,27 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "MapperSupport#blocks"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.assistant->model_response",
      "implementation": "MapperSupport#blocks"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.assistant_message->model_response",
      "implementation": "MapperSupport#blocks"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.developer_message->session_context.context",
      "implementation": "MapperSupport#blocks"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.agent_message->model_response",
      "implementation": "CodexStreamMapper#map"
     }
@@ -2265,17 +2266,17 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "MapperSupport#blocks"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.assistant->model_response",
      "implementation": "MapperSupport#blocks"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.reasoning->model_response",
      "implementation": "CodexStreamMapper#response"
     }
@@ -2417,28 +2418,32 @@
    "claims": [
     {
      "id": "codex.exec-stream.reasoning-summary",
-     "revision": 1,
-     "digest": "sha256:408a7a781171d52350b2c10985946887243b31b2d7964c0c341bf5f116f5d291",
-     "statement": "A Codex CLI 0.160.1 reasoning item.completed is a model_response (activity 2 Completed, response_uid = the stream-local item id) with one content block: block_kind 2 Thought, reasoning_form_id 2 Summary, text and data = item.text exactly. The pinned processor builds that text from the reasoning summary parts joined by newlines and drops raw reasoning content: it is not the model's full reasoning, and no signature is reported.",
+     "revision": 2,
+     "digest": "sha256:efc247247d0aae9cb0c248a91637e5760f2cf73ba5b11e3e2e03f36dfc8b4b5e",
+     "statement": "A Codex CLI 0.160.1 reasoning item.completed is a completed content item of some model response (model_response activity 3 Item completed, item_uid = the stream-local item id, identity_basis_id 2) with one content block: block_kind 2 Thought, reasoning_form_id 2 Summary (distinct from 1 Full reasoning and 3 Redacted), text and data = item.text exactly. The pinned processor builds that text from the reasoning summary parts joined by newlines and drops raw reasoning content; no signature is reported. Which model response or invocation the summary belongs to is not reported, so no response_uid is written. A summary and a later agent message are two content observations with their own ids, in source order: not two known model invocations, and not one inferred invocation.",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
       ],
       "contracts": [
-       "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+       "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype"
       ],
-      "extension": "agentic_cli 0.5.0-prototype"
+      "extension": "agentic_cli 0.6.0-prototype"
      },
      "semantics": {
-      "identity": "stream-local item id; which model response the summary belongs to is not reported"
+      "identity": "stream-local content-item id; the owning model response is not reported",
+      "order": "source order of the content items (source_ref.record_index); no grouping into responses is stated"
      },
      "destinations": [
+      "model_response.item_uid",
+      "model_response.identity_basis_id",
       "model_response.content_blocks[].reasoning_form_id",
       "model_response.content_blocks[].block_kind_id",
       "model_response.content_blocks[].text"
      ],
      "normative_examples": [
-      "codex-reasoning-summary-live"
+      "codex-reasoning-summary-live",
+      "codex-reasoning-and-answer-live"
      ],
      "evidence": [
       "codex-exec-0.160.1-emitter-items",
@@ -2450,7 +2455,7 @@
       "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
       "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
      ],
-     "replaces": "contract 0.2.0-prototype retained reasoning items whole without normalization",
+     "replaces": "r1 (proposed): each reasoning item was a model_response Completed whose response_uid was the stream-local item id",
      "approval": {
       "status": "proposed"
      }
@@ -2609,12 +2614,12 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "MapperSupport#blocks"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.fallback->source_record",
      "implementation": "CodexRolloutMapper#map"
     }
@@ -2845,12 +2850,12 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "MapperSupport#blocks"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.user_message->prompt_turn.submitted",
      "implementation": "MapperSupport#blocks"
     }
@@ -3070,12 +3075,12 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "MapperSupport#blocks"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.assistant_message->model_response",
      "implementation": "MapperSupport#blocks"
     }
@@ -3316,27 +3321,27 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.result->prompt_turn.completed",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.assistant->model_response",
      "implementation": "ClaudeTranscriptMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.assistant_message->model_response",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.task_complete->prompt_turn.completed",
      "implementation": "CodexRolloutMapper#map"
     }
@@ -3619,22 +3624,22 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.assistant->model_response",
      "implementation": "ClaudeTranscriptMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.item_completed.AgentMessage->model_response",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.agent_message->model_response",
      "implementation": "CodexStreamMapper#map"
     }
@@ -3948,37 +3953,37 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.assistant.tool_use->tool_call.requested",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.assistant.tool_use->tool_call.requested",
      "implementation": "ClaudeTranscriptMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.custom_tool_call->tool_call.requested",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.mcp_tool_call->tool_call.requested",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.web_search->tool_call.requested",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.collab_tool_call->tool_call.requested",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.file_change->tool_call.requested",
      "implementation": "CodexStreamMapper#toolCall"
     }
@@ -4155,32 +4160,34 @@
    "claims": [
     {
      "id": "codex.exec-stream.stream-local-identity",
-     "revision": 1,
-     "digest": "sha256:0f9ad0797796b3832d90c72101c46f02033b22f2417d40b6c768b447cab77fc6",
-     "statement": "Every item.id on Codex CLI 0.160.1 exec --json is minted by the exec processor for its own stream (item_N); the app-server item id is dropped (a web search's second id aside). Journal uses it as tool_call_uid, operation uid and response_uid with identity_basis_id 2 Stream-local item identifier on tool calls and operations. It is never presented as the model-facing call id, which this route does not report, and it cannot be joined with a native session's call ids.",
+     "revision": 2,
+     "digest": "sha256:c095ba88b935705dc10569f7782653801d84208bcc0041d109c9e593fcd18dba",
+     "statement": "Every item.id on Codex CLI 0.160.1 exec --json is minted by the exec processor for its own stream (item_N); the app-server item id is dropped (a web search's second id aside). It is unique only within that source artifact of one Journal invocation (journal.run_uid, journal.invocation_index, source_ref.artifact): an equal item_0 in another invocation is another item. Journal uses it as tool_call_uid, operation uid and, on agent-message and reasoning content items, item_uid, each with identity_basis_id 2 Stream-local item identifier. It is never the model-facing call id or the provider's response id, which this route does not report: no response_uid is written, and one content item is not one model invocation.",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
       ],
       "contracts": [
-       "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+       "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype"
       ],
-      "extension": "agentic_cli 0.5.0-prototype"
+      "extension": "agentic_cli 0.6.0-prototype"
      },
      "semantics": {
-      "identity": "stream-local item id, unique within one exec stream; the started and completed records of one item share it"
+      "identity": "stream-local item id, unique within (run, invocation, artifact); the started and completed records of one item share it"
      },
      "destinations": [
       "tool_call.tool_call_uid",
       "tool_call.identity_basis_id",
       "tool_call.tool_operation.uid",
       "tool_call.tool_operation.identity_basis_id",
-      "model_response.response_uid"
+      "model_response.item_uid",
+      "model_response.identity_basis_id"
      ],
      "normative_examples": [
       "codex-mcp-tool-call-live",
       "codex-command-line-live",
-      "codex-file-change-live"
+      "codex-file-change-live",
+      "codex-reasoning-and-answer-live"
      ],
      "evidence": [
       "codex-exec-0.160.1-emitter-items",
@@ -4190,34 +4197,40 @@
       "oracle:CodexStreamProfile/request.values",
       "oracle:CodexStreamProfile/result.values",
       "oracle:CodexStreamProfile/operation.values",
+      "oracle:CodexStreamProfile/population.responses",
       "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
-      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
+      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects",
+      "junit:CodexStreamMapperTest#equalItemIdsOfTwoInvocationsAreTwoItemsOfTheirOwnNamespaces"
      ],
+     "replaces": "r1 (proposed): the same ids, but agent messages and reasoning items took the stream-local id as response_uid",
      "approval": {
       "status": "proposed"
      }
     },
     {
      "id": "codex.exec-stream.mcp-tool-call",
-     "revision": 1,
-     "digest": "sha256:37efcc011d9ae6e639ecdc1f7fd6e981cb8657855938e96d775451371be20baa",
-     "statement": "A Codex CLI 0.160.1 mcp_tool_call item.started is a tool request: tool_name = item.tool, tool_namespace = item.server, arguments = item.arguments exactly, reported_state = item.status. Its item.completed is the result of the same stream-local id: tool_result.data = item.result.content exactly (JSON null when the result has no content), structured_result = item.result.structured_content when not null, and the reported completed or failed status is the outcome (status_id 1 or 2, error_reported false or true; an MCP isError arrives as failed). item.error and result._meta stay in the retained record. The kind is 99 other by the contract's name table.",
+     "revision": 2,
+     "digest": "sha256:f27e91090b2f77eff512f96d662e892b1908145463fb8cd2699cf4f25663fc94",
+     "statement": "A Codex CLI 0.160.1 mcp_tool_call item.started reports a started invocation (tool_call activity 4 Started), not the model's original request: no model response owner, model call id or permission approval follows from it. tool_name = item.tool, tool_namespace = item.server, tool_family = mcp_tool_call, arguments = item.arguments exactly, reported_state = item.status. Its item.completed is the result of the same stream-local id: tool_result.data = item.result.content exactly (JSON null when the result has no content), structured_result = item.result.structured_content when not null, and the reported completed or failed status is the outcome (status_id 1 or 2, error_reported false or true; an MCP isError arrives as failed). An item observed only at completion has only its result. The kind is 99 Other unless a reviewed binding of the exact server and tool exists (none does): a name such as exec, Read or web_search never inherits a built-in kind. item.error and result._meta stay in the retained record.",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
       ],
       "contracts": [
-       "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+       "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype"
       ],
-      "extension": "agentic_cli 0.5.0-prototype"
+      "extension": "agentic_cli 0.6.0-prototype"
      },
      "semantics": {
-      "identity": "stream-local item id shared by the request and its result",
-      "order": "request on item.started, result on item.completed; both records retained in order"
+      "identity": "stream-local item id shared by the start and its result",
+      "order": "started on item.started, result on item.completed; both records retained in order; a later stage is not evidence of an earlier one"
      },
      "destinations": [
       "tool_call.tool_name",
       "tool_call.tool_namespace",
+      "tool_call.tool_family",
+      "tool_call.tool_kind_id",
+      "tool_call.tool_kind_basis",
       "tool_call.arguments",
       "tool_call.tool_result.data",
       "tool_call.tool_result.structured_result",
@@ -4226,7 +4239,9 @@
       "tool_call.reported_state"
      ],
      "normative_examples": [
-      "codex-mcp-tool-call-live"
+      "codex-mcp-tool-call-live",
+      "codex-mcp-builtin-names-synthetic",
+      "codex-mcp-completed-only-synthetic"
      ],
      "evidence": [
       "codex-exec-0.160.1-emitter-items",
@@ -4241,40 +4256,43 @@
       "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
       "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
      ],
-     "replaces": "contract 0.2.0-prototype retained MCP items whole as source records without normalization",
+     "replaces": "r1 (proposed): item.started read as the model request (activity 1) and the kind taken from a table over bare tool names",
      "approval": {
       "status": "proposed"
      }
     },
     {
      "id": "codex.exec-stream.collab-and-file-change",
-     "revision": 1,
-     "digest": "sha256:7826b5e217027b68850ff126293ee8138f2a4bc5164229e5ad266536060c1bb7",
-     "statement": "Codex CLI 0.160.1 collaboration and file-change items are tool calls under their stream-local ids: tool_name is item.tool for collaboration (spawn_agent, send_input, wait, close_agent) and file_change for file changes (the item type; the stream names no tool), the kind is 99 other and 2 edit by the contract's table, reported_state is item.status and a completed or failed status is the outcome (the processor reports a declined patch as failed). No arguments or result content are claimed: sender and receiver thread ids, prompt, agent states and the changed paths stay in the retained record, and receiver threads are not linked as child runs.",
+     "revision": 2,
+     "digest": "sha256:1d3bd790e431bb58e928db3d03ec9479a0e0b898953c3d98ba50e8408f1ca5f0",
+     "statement": "Codex CLI 0.160.1 collaboration and file-change items are tool activities at the stage the stream reports, under their stream-local ids: item.started is a started execution observation (activity 4), not the model's request or its arguments, and item.completed its observed result. A tool name is written only where the stream supplies one: collaboration items carry item.tool as labelled (spawn_agent, send_input, wait, close_agent; the pinned emitter writes wait for both ResumeAgent and Wait, so no unique underlying action is inferred), file changes carry none. The item type is tool_family (collab_tool_call, file_change), and the kind comes from the family table (file_change 2 edit, collaboration 99), never from a guessed tool such as apply_patch. reported_state is item.status and a completed or failed status is the outcome (the processor reports a declined patch as failed). Sender and receiver thread ids, prompt, agent states and the changed paths and kinds stay in the retained record; receivers are not linked as child runs.",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
       ],
       "contracts": [
-       "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+       "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype"
       ],
-      "extension": "agentic_cli 0.5.0-prototype"
+      "extension": "agentic_cli 0.6.0-prototype"
      },
      "semantics": {
       "identity": "stream-local item id shared by start and completion"
      },
      "destinations": [
       "tool_call.tool_name",
+      "tool_call.tool_family",
       "tool_call.tool_kind_id",
       "tool_call.reported_state",
       "tool_call.status_id"
      ],
      "normative_examples": [
-      "codex-file-change-live"
+      "codex-file-change-live",
+      "codex-collab-wait-live"
      ],
      "evidence": [
       "codex-exec-0.160.1-emitter-items",
-      "codex-exec-0.160.1-types"
+      "codex-exec-0.160.1-types",
+      "codex-exec-0.160.1-emitter-collab"
      ],
      "checks": [
       "oracle:CodexStreamProfile/request.values",
@@ -4282,7 +4300,7 @@
       "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
       "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
      ],
-     "replaces": "contract 0.2.0-prototype retained collaboration and file-change items whole without normalization",
+     "replaces": "r1 (proposed): the file-change item type written as tool_name and the start read as the model request",
      "approval": {
       "status": "proposed"
      }
@@ -4442,37 +4460,37 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.assistant.tool_use->tool_call.requested",
      "implementation": "MappingContracts#toolKind"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.assistant.tool_use->tool_call.requested",
      "implementation": "MappingContracts#toolKind"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.custom_tool_call->tool_call.requested",
      "implementation": "MappingContracts#toolKind"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.mcp_tool_call->tool_call.requested",
      "implementation": "MappingContracts#toolKind"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.web_search->tool_call.requested",
      "implementation": "MappingContracts#toolKind"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.collab_tool_call->tool_call.requested",
      "implementation": "MappingContracts#toolKind"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.file_change->tool_call.requested",
      "implementation": "MappingContracts#toolKind"
     }
@@ -4682,37 +4700,37 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.user.tool_result->tool_call.result",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.user.tool_result->tool_call.result",
      "implementation": "ClaudeTranscriptMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.custom_tool_call_output->tool_call.result",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.mcp_tool_call->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.web_search->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.collab_tool_call->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.file_change->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     }
@@ -5031,37 +5049,37 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.user.tool_result->tool_call.result",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.user.tool_result->tool_call.result",
      "implementation": "ClaudeTranscriptMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.custom_tool_call_output->tool_call.result",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.mcp_tool_call->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.web_search->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.collab_tool_call->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.file_change->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     }
@@ -5335,37 +5353,37 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.user.tool_result->tool_call.result",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.user.tool_result->tool_call.result",
      "implementation": "ClaudeTranscriptMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.custom_tool_call_output->tool_call.result",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.mcp_tool_call->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.web_search->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.collab_tool_call->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.file_change->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     }
@@ -5665,12 +5683,12 @@
    ],
    "mapping": [
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.CommandExecution->tool_call.operation",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.command_execution->tool_call.operation",
      "implementation": "CodexStreamMapper#map"
     }
@@ -5720,17 +5738,17 @@
    "claims": [
     {
      "id": "codex.exec-stream.standalone-operation-command",
-     "revision": 1,
-     "digest": "sha256:20ec664ec7b92885da540b870ce5495744acece6d2f60c9d5c996cb865ed4749",
+     "revision": 2,
+     "digest": "sha256:7eec91b2c986b2c6b3154476698af983e161e761cec281e45dfe251a03038a93",
      "statement": "A Codex CLI 0.160.1 command_execution item is a standalone operation observation (tool_call activity 3): attribution 3 Unattributed because no wrapping call id is reported, operation uid = the stream-local item id, command_line = item.command exactly, reported_state, exit_code when integral and stdout = aggregated_output; tool_call_uid is absent. The command string is never parsed into argv and no operating-system effect is inferred from it.",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
       ],
       "contracts": [
-       "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+       "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype"
       ],
-      "extension": "agentic_cli 0.5.0-prototype"
+      "extension": "agentic_cli 0.6.0-prototype"
      },
      "semantics": {
       "owner_scope": "no owning tool call: the operation is retained at its reported scope"
@@ -5757,12 +5775,13 @@
      ],
      "replaces": "contract 0.2.0-prototype kept the command string only inside the retained record",
      "approval": {
-      "status": "approved",
-      "revision": 1,
-      "digest": "sha256:20ec664ec7b92885da540b870ce5495744acece6d2f60c9d5c996cb865ed4749",
-      "approver": "Managing semantic reviewer, explicitly delegated by Project Owner (markpollack)",
-      "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
-      "basis": "delegated acceptance: the Project Owner explicitly delegated the SEM-1 semantic decision pass to the managing reviewer, who accepted this exact revision and digest at its stated applicability; not a direct human review of the digest and not a test result"
+      "status": "proposed",
+      "previous": {
+       "revision": 1,
+       "digest": "sha256:20ec664ec7b92885da540b870ce5495744acece6d2f60c9d5c996cb865ed4749",
+       "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
+       "delta": "applicability only: extension agentic_cli 0.5.0-prototype -> 0.6.0-prototype and contract codex-cli/exec-json-stream/0.160.1/0.3.0-prototype -> 0.4.0-prototype; statement, semantics, destinations and normative examples unchanged"
+      }
      }
     }
    ]
@@ -5928,12 +5947,12 @@
    ],
    "mapping": [
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.CommandExecution->tool_call.operation",
      "implementation": "MapperSupport#attribution"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.command_execution->tool_call.operation",
      "implementation": "MapperSupport#attribution"
     }
@@ -6143,17 +6162,17 @@
    ],
    "mapping": [
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.custom_tool_call->tool_call.requested",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.CommandExecution->tool_call.operation",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.command_execution->tool_call.operation",
      "implementation": "CodexStreamMapper#map"
     }
@@ -6199,17 +6218,17 @@
    "claims": [
     {
      "id": "codex.exec-stream.declined-status",
-     "revision": 1,
-     "digest": "sha256:6e7df5bad65e13bd278589c399f5e0be71adcfab5dd18a5296984251631c4a5a",
+     "revision": 2,
+     "digest": "sha256:fbdcbdb7b1d03cb8e34a244a2fa8d6be53091f27b28d93ab6b7283c9e6efebd3",
      "statement": "A Codex CLI 0.160.1 command_execution whose status is declined has status_id 99 with status \"Declined\" (basis Reported), distinct from 0 Unknown and from 2 Failure: the command did not run. It records the item's reported status only; it is not a permission decision, because the exec stream reports no approval request or decision, so no permission_decision is created.",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
       ],
       "contracts": [
-       "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+       "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype"
       ],
-      "extension": "agentic_cli 0.5.0-prototype"
+      "extension": "agentic_cli 0.6.0-prototype"
      },
      "semantics": {
       "absence_default": "no exit code is reported for a declined command and none is recorded"
@@ -6233,12 +6252,13 @@
      ],
      "replaces": "contract 0.2.0-prototype gave a declined command status 0 Unknown",
      "approval": {
-      "status": "approved",
-      "revision": 1,
-      "digest": "sha256:6e7df5bad65e13bd278589c399f5e0be71adcfab5dd18a5296984251631c4a5a",
-      "approver": "Managing semantic reviewer, explicitly delegated by Project Owner (markpollack)",
-      "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
-      "basis": "delegated acceptance: the Project Owner explicitly delegated the SEM-1 semantic decision pass to the managing reviewer, who accepted this exact revision and digest at its stated applicability; not a direct human review of the digest and not a test result"
+      "status": "proposed",
+      "previous": {
+       "revision": 1,
+       "digest": "sha256:6e7df5bad65e13bd278589c399f5e0be71adcfab5dd18a5296984251631c4a5a",
+       "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
+       "delta": "applicability only: extension agentic_cli 0.5.0-prototype -> 0.6.0-prototype and contract codex-cli/exec-json-stream/0.160.1/0.3.0-prototype -> 0.4.0-prototype; statement, semantics, destinations and normative examples unchanged"
+      }
      }
     }
    ]
@@ -6409,7 +6429,7 @@
      "implementation": "LineFramer#end"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "common.opaque->source_record",
      "implementation": "OcsfRunWriter#interrupt"
     }
@@ -6661,7 +6681,7 @@
    "ocsf": [
     {
      "class": "usage_observation",
-     "path": "usage_observation.input_tokens",
+     "path": "usage_observation.uncached_input_tokens",
      "definition_file": "objects/usage_observation.json"
     },
     {
@@ -6690,18 +6710,58 @@
      "definition_file": "objects/usage_observation.json"
     },
     {
+     "class": "usage_observation",
+     "path": "usage_observation.cache_write_tiers",
+     "definition_file": "objects/usage_observation.json"
+    },
+    {
+     "class": "usage_observation",
+     "path": "usage_observation.reasoning_relation_id",
+     "definition_file": "objects/usage_observation.json"
+    },
+    {
+     "class": "usage_observation",
+     "path": "usage_observation.components",
+     "definition_file": "objects/usage_observation.json"
+    },
+    {
+     "class": "cache_write_tier",
+     "path": "cache_write_tier.tier",
+     "definition_file": "objects/cache_write_tier.json"
+    },
+    {
+     "class": "cache_write_tier",
+     "path": "cache_write_tier.token_count",
+     "definition_file": "objects/cache_write_tier.json"
+    },
+    {
+     "class": "usage_component",
+     "path": "usage_component.component_basis_id",
+     "definition_file": "objects/usage_component.json"
+    },
+    {
+     "class": "usage_component",
+     "path": "usage_component.native_pointers",
+     "definition_file": "objects/usage_component.json"
+    },
+    {
+     "class": "usage_component",
+     "path": "usage_component.derivation",
+     "definition_file": "objects/usage_component.json"
+    },
+    {
      "class": "model_response",
-     "path": "model_response.usage_observations[].input_tokens",
+     "path": "model_response.usage_observations[].uncached_input_tokens",
      "definition_file": "events/agent_execution/model_response.json"
     },
     {
      "class": "prompt_turn",
-     "path": "prompt_turn.usage_observations[].input_tokens",
+     "path": "prompt_turn.usage_observations[].uncached_input_tokens",
      "definition_file": "events/agent_execution/prompt_turn.json"
     },
     {
      "class": "session_context",
-     "path": "session_context.usage_observations[].input_tokens",
+     "path": "session_context.usage_observations[].uncached_input_tokens",
      "definition_file": "events/agent_execution/session_context.json"
     }
    ],
@@ -6758,39 +6818,39 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
-     "implementation": "MapperSupport#components"
+     "implementation": "UsageTranches#anthropic"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.result->prompt_turn.completed",
-     "implementation": "MapperSupport#components"
+     "implementation": "UsageTranches#anthropic"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.assistant->model_response",
-     "implementation": "MapperSupport#components"
+     "implementation": "UsageTranches#anthropic"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.cost_state->session_context.accounting",
-     "implementation": "MapperSupport#components"
+     "implementation": "UsageTranches#claudeModelUsage"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.token_usage_record->session_context.accounting",
-     "implementation": "MapperSupport#components"
+     "implementation": "UsageTranches#codex"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.task_complete->prompt_turn.completed",
-     "implementation": "MapperSupport#components"
+     "implementation": "UsageTranches#codex"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.turn_completed->prompt_turn.completed",
-     "implementation": "MapperSupport#components"
+     "implementation": "UsageTranches#codex"
     }
    ],
    "oracle": [
@@ -6840,9 +6900,9 @@
    "disposition": "normalized",
    "decision": {
     "value": "adapt",
-    "reason": "Reported components only, absent never zero, no computed totals; OTel and OpenInference fold cache into input totals and Weave turns absent into 0."
+    "reason": "Disjoint tranches with the same meaning on every source (uncached input, cache reads, cache writes and tiers, output with reasoning inside), each reported or exactly derived with its basis, absent or unavailable never zero, no computed totals; OTel and OpenInference fold cache into input totals and Weave turns absent into 0."
    },
-   "notes": "Only Codex reports a total (total_tokens -> reported_total_tokens); Claude never does and none is computed. Claude's cache_creation sub-object (TTL split, REPORT §4 known omissions) and the result record's usage.iterations[] are retained in usage_observation.data / event data without normalized meaning. Codex reports input_tokens inclusive of cached_input_tokens (TokenUsage::non_cached_input = input_tokens - cached_input_tokens at rust-v0.160.1); Claude's input_tokens excludes cache reads. The components are preserved under their native meanings; a consumer must not add cache_read_tokens to a Codex input_tokens (SEM-1 claim, proposed).",
+   "notes": "0.6.0-prototype (SEM-CLOSE): usage is exposed in disjoint economic tranches. uncached_input_tokens is the input neither read from nor written to a cache: Claude reports it as input_tokens (prompt-caching definitions: input_tokens are the tokens neither read from nor used to create a cache; total input = input + cache reads + cache writes); Codex reports an inclusive input_tokens (TokenUsage::non_cached_input = input_tokens - cached_input_tokens at rust-v0.160.1), so the tranche is derived as that difference when cache_write_input_tokens is reported 0 and is unavailable when cache writes are non-zero (the pinned source does not establish whether input_tokens includes them) or cached exceeds input; never clamped or guessed. Cache reads and cache writes are distinct; Claude cache_creation tiers become cache_write_tiers, parts of cache_write_tokens. Reasoning is part of output on both (Anthropic OutputTokensDetails, Claude Code ModelUsage, Codex output_tokens_details.reasoning_tokens): reasoning_relation_id 1. components[] states each component as Reported, Derived or Unavailable with RFC 6901 pointers into data, which keeps the native object. Only Codex reports a total (total_tokens -> reported_total_tokens, rollout only); none is computed. A Codex cache write of 0 may be the deserializer default for a provider that reports none. The 0.5.0-prototype input_tokens carried each vendor's own meaning (superseded claim usage-components-inclusive r1).",
    "observations": [
     {
      "item": "per-response input/output/cache read/cache creation",
@@ -6965,36 +7025,97 @@
    "claims": [
     {
      "id": "codex.exec-stream.usage-components-inclusive",
-     "revision": 1,
-     "digest": "sha256:5ffc73aff8a68856620c24fee08c70b35645bbd807f46b83cbe5c524f2a53e36",
-     "statement": "Codex reports input_tokens inclusive of cached_input_tokens (its protocol computes non-cached input as input_tokens minus cached_input_tokens), while Claude's input_tokens excludes cache reads. Journal copies each vendor's components unchanged under their native meaning (Codex cached_input_tokens as cache_read_tokens) and does not rewrite them into one inclusion basis; a consumer must not add cache_read_tokens to a Codex input_tokens.",
+     "revision": 2,
+     "digest": "sha256:d43dc407d8be93c4756b5ef7f6274deaad23ace41d4a2354a32e88e83f3496c7",
+     "statement": "Codex CLI 0.160.1 reports input_tokens inclusive of cached_input_tokens (its protocol computes non-cached input as input_tokens minus cached_input_tokens). Journal states the canonical disjoint tranches: uncached_input_tokens is derived as input_tokens minus cached_input_tokens when cache_write_input_tokens is reported 0 and cached does not exceed input; with non-zero cache writes the pinned source does not establish whether input_tokens includes them, so the tranche is unavailable, neither guessed nor clamped. cache_read_tokens = cached_input_tokens and cache_write_tokens = cache_write_input_tokens are copied; reasoning_tokens = reasoning_output_tokens is part of output_tokens (reasoning_relation_id 1). components[] states each tranche as Reported, Derived or Unavailable with RFC 6901 pointers into data, which keeps the native object exactly. A reported cache write of 0 may be the deserializer's default for a provider that reports none. The same tranches on Claude are equal for the same facts (usage-equivalent pair).",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
       ],
       "contracts": [
-       "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+       "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype"
       ],
-      "extension": "agentic_cli 0.5.0-prototype"
+      "extension": "agentic_cli 0.6.0-prototype"
      },
      "semantics": {
-      "grouping": "components of one observation; no derived total"
+      "grouping": "components of one observation; no derived total",
+      "absence_default": "a missing or ambiguous tranche is absent (unavailable with its reason when reported operands do not establish it), never zero"
      },
      "destinations": [
-      "usage_observation.input_tokens",
-      "usage_observation.cache_read_tokens"
+      "usage_observation.uncached_input_tokens",
+      "usage_observation.cache_read_tokens",
+      "usage_observation.cache_write_tokens",
+      "usage_observation.reasoning_relation_id",
+      "usage_observation.components",
+      "usage_observation.data"
      ],
      "normative_examples": [
-      "codex-thread-usage-live-mcp"
+      "codex-thread-usage-live-mcp",
+      "codex-usage-cache-write-unavailable-synthetic",
+      "usage-equivalent-codex-synthetic"
      ],
      "evidence": [
       "codex-protocol-0.160.1-token-usage-info",
+      "codex-protocol-0.160.1-token-usage-arithmetic",
+      "codex-api-0.160.1-responses-usage",
       "codex-exec-0.160.1-types"
      ],
      "checks": [
       "oracle:CodexStreamProfile/usage.values",
       "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
-      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
+      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects",
+      "junit:SemanticExampleTest#equivalentClaudeAndCodexUsageNormalizeToTheSameTranches",
+      "junit:CodexExecStreamTest#anOffByOneUsageValueOrAMissingComponentIsAUsageValueDefect"
+     ],
+     "replaces": "r1 (proposed, not approved; the delegated decision required its revision): copied each vendor's components under their native meanings, Codex input_tokens inclusive",
+     "approval": {
+      "status": "proposed"
+     }
+    },
+    {
+     "id": "claude.stream.usage-tranches",
+     "revision": 1,
+     "digest": "sha256:37fa33e627432b2eb558befea0fc1cd6ba914059c43a161848b6aadfb3f28f1a",
+     "statement": "On Claude Code 2.1.304 stream-json (stdout), every Anthropic usage object (an assistant message's usage and the result record's usage) is stated in the canonical disjoint tranches, each copied as reported: uncached_input_tokens = input_tokens (the tokens neither read from nor used to create a cache), cache_read_tokens = cache_read_input_tokens, cache_write_tokens = cache_creation_input_tokens with cache_write_tiers from the cache_creation members (parts of the writes, never additional), output_tokens, and reasoning_tokens = output_tokens_details.thinking_tokens as part of output (reasoning_relation_id 1). A message's usage is that one API message's own total (aggregation 1 Scope total; provisional until a stop reason is reported); the result's usage states no aggregation, because whether it covers the run's sub-agents is not established; each modelUsage entry is Claude Code's running total for that model (aggregation 2 Cumulative snapshot), with thinkingTokens already counted inside outputTokens. components[] names each tranche's native member; data keeps the native object.",
+     "applicability": {
+      "routes": [
+       "claude-code/stream-json/2.1.304-stdout"
+      ],
+      "contracts": [
+       "claude-code/stream-json/2.1.303/0.3.0-prototype"
+      ],
+      "extension": "agentic_cli 0.6.0-prototype"
+     },
+     "semantics": {
+      "grouping": "one observation per usage object at its reported scope; never summed",
+      "absence_default": "absent members stay absent; nothing is defaulted to zero"
+     },
+     "destinations": [
+      "usage_observation.uncached_input_tokens",
+      "usage_observation.cache_read_tokens",
+      "usage_observation.cache_write_tokens",
+      "usage_observation.cache_write_tiers",
+      "usage_observation.reasoning_tokens",
+      "usage_observation.reasoning_relation_id",
+      "usage_observation.aggregation_id",
+      "usage_observation.components"
+     ],
+     "normative_examples": [
+      "claude-usage-tranches-live",
+      "usage-equivalent-claude-synthetic"
+     ],
+     "evidence": [
+      "anthropic-prompt-caching-2026-10-22",
+      "anthropic-sdk-typescript-0.135.0-usage",
+      "claude-agent-sdk-0.3.304-model-usage",
+      "claude-live-2.1.304-denial"
+     ],
+     "checks": [
+      "oracle:ClaudeStreamProfile/population.usage",
+      "oracle:ClaudeStreamProfile/usage.values",
+      "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
+      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects",
+      "junit:SemanticExampleTest#equivalentClaudeAndCodexUsageNormalizeToTheSameTranches"
      ],
      "approval": {
       "status": "proposed"
@@ -7174,22 +7295,22 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.result->prompt_turn.completed",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.assistant->model_response",
      "implementation": "ClaudeTranscriptMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.token_usage_record->session_context.accounting",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.turn_completed->prompt_turn.completed",
      "implementation": "CodexStreamMapper#map"
     }
@@ -7478,37 +7599,37 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "MapperSupport#usage"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.result->prompt_turn.completed",
      "implementation": "MapperSupport#usage"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.assistant->model_response",
      "implementation": "MapperSupport#usage"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.cost_state->session_context.accounting",
      "implementation": "MapperSupport#usage"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.token_usage_record->session_context.accounting",
      "implementation": "MapperSupport#usage"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.task_complete->prompt_turn.completed",
      "implementation": "MapperSupport#usage"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.turn_completed->prompt_turn.completed",
      "implementation": "MapperSupport#usage"
     }
@@ -7608,17 +7729,17 @@
    "claims": [
     {
      "id": "codex.exec-stream.thread-usage",
-     "revision": 1,
-     "digest": "sha256:39cd69be58f09965e76734d4de577c022d3c97b3af5d99c5e5e7ee7bcf39c306",
-     "statement": "On Codex CLI 0.160.1 exec --json (stdout), the usage a turn.completed record carries is the thread's cumulative token usage at that turn's completion (ThreadTokenUsage.total), not a measurement of the turn. Journal records it once per run as a usage observation at scope 5 Session (the Codex thread is the session) with status 2 Final for the run, components copied exactly, attached to the turn's completion event. Journal computes no per-turn delta and no cross-run sum; a later run of a resumed thread reports a larger cumulative total of its own.",
+     "revision": 2,
+     "digest": "sha256:4c841c7322689fffbda4420e41a000dbf30795cb7aa84a12d1d772117ea1adeb",
+     "statement": "On Codex CLI 0.160.1 exec --json (stdout), the usage a turn.completed record carries is the thread's cumulative token usage at that turn's completion (ThreadTokenUsage.total), not a measurement of the turn. Journal records it once per run as a usage observation at scope 5 Session (the Codex thread is the session), status 2 Final for the run and aggregation 2 Cumulative snapshot, in the canonical tranches of codex.exec-stream.usage-components-inclusive, attached to the turn's completion event. Final refers to the snapshot within this capture's group: it is not consumption during the capture, a completed thread, or a value to sum with another cumulative snapshot. Journal computes no per-turn delta and no cross-run sum; a later run of a resumed thread reports a larger cumulative total of its own.",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
       ],
       "contracts": [
-       "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+       "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype"
       ],
-      "extension": "agentic_cli 0.5.0-prototype"
+      "extension": "agentic_cli 0.6.0-prototype"
      },
      "semantics": {
       "owner_scope": "the session (Codex thread) that thread.started names; the observation sits on the prompt_turn Turn completed event of the record",
@@ -7629,7 +7750,8 @@
      "destinations": [
       "usage_observation.scope_id",
       "usage_observation.usage_status_id",
-      "usage_observation.input_tokens",
+      "usage_observation.aggregation_id",
+      "usage_observation.uncached_input_tokens",
       "usage_observation.cache_read_tokens",
       "usage_observation.cache_write_tokens",
       "usage_observation.output_tokens",
@@ -7644,7 +7766,8 @@
       "codex-exec-0.160.1-emitter-usage",
       "codex-app-server-0.160.1-thread-token-usage",
       "codex-protocol-0.160.1-token-usage-info",
-      "codex-exec-0.160.1-emitter-tests"
+      "codex-exec-0.160.1-emitter-tests",
+      "codex-protocol-0.160.1-token-usage-arithmetic"
      ],
      "checks": [
       "oracle:CodexStreamProfile/population.usage",
@@ -7653,29 +7776,30 @@
       "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects",
       "junit:SemanticExampleTest#aPerTurnLabelOnTheCumulativeUsageIsRejectedThoughEveryComponentIsEqual"
      ],
-     "replaces": "contract 0.2.0-prototype read turn.completed usage as scope 3 Prompt turn, Final (\"reports the turn's usage once\"); never approved, refuted by the pinned emitter",
+     "replaces": "r1 (approved, contract 0.3.0-prototype): the same reading with vendor-dependent input_tokens and no aggregation facet; contract 0.2.0-prototype read turn.completed usage as scope 3 Prompt turn, never approved, refuted by the pinned emitter",
      "approval": {
-      "status": "approved",
-      "revision": 1,
-      "digest": "sha256:39cd69be58f09965e76734d4de577c022d3c97b3af5d99c5e5e7ee7bcf39c306",
-      "approver": "Managing semantic reviewer, explicitly delegated by Project Owner (markpollack)",
-      "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
-      "basis": "delegated acceptance: the Project Owner explicitly delegated the SEM-1 semantic decision pass to the managing reviewer, who accepted this exact revision and digest at its stated applicability; not a direct human review of the digest and not a test result"
+      "status": "proposed",
+      "previous": {
+       "revision": 1,
+       "digest": "sha256:39cd69be58f09965e76734d4de577c022d3c97b3af5d99c5e5e7ee7bcf39c306",
+       "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
+       "delta": "statement and semantics add the aggregation facet (aggregation_id 2 Cumulative snapshot), as the delegated decision asks; destinations input_tokens -> uncached_input_tokens plus aggregation_id; normative examples restated in canonical tranches (uncached 11082 and 500 derived instead of the inclusive 63434 and 2500); scope, finality and no-delta meaning unchanged"
+      }
      }
     },
     {
      "id": "codex.exec-stream.usage-measurement",
-     "revision": 1,
-     "digest": "sha256:2de474fb406dde2008bee42897611d4c6b4d155f9f6d26cbfeae622f95d59f0a",
+     "revision": 2,
+     "digest": "sha256:d1331eb5a6fa03d9a94b6d669db8e9b25979d6cde5c8ec782b9bb96ee195ba1d",
      "statement": "When every usage component a Codex CLI 0.160.1 turn.completed reports is zero, the value may be the emitter's Usage::default(), which it writes when no token-usage update arrived; a measured zero is not established, so the observation's measurement_status_id is 2 Possibly default. When any component is non-zero an update was received and measurement_status_id is 1 Measured. The components are preserved exactly in both cases; none is dropped or replaced.",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
       ],
       "contracts": [
-       "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+       "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype"
       ],
-      "extension": "agentic_cli 0.5.0-prototype"
+      "extension": "agentic_cli 0.6.0-prototype"
      },
      "semantics": {
       "absence_default": "all-zero components are kept and marked Possibly default; a missing component stays absent, never zero"
@@ -7698,12 +7822,13 @@
       "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
      ],
      "approval": {
-      "status": "approved",
-      "revision": 1,
-      "digest": "sha256:2de474fb406dde2008bee42897611d4c6b4d155f9f6d26cbfeae622f95d59f0a",
-      "approver": "Managing semantic reviewer, explicitly delegated by Project Owner (markpollack)",
-      "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
-      "basis": "delegated acceptance: the Project Owner explicitly delegated the SEM-1 semantic decision pass to the managing reviewer, who accepted this exact revision and digest at its stated applicability; not a direct human review of the digest and not a test result"
+      "status": "proposed",
+      "previous": {
+       "revision": 1,
+       "digest": "sha256:2de474fb406dde2008bee42897611d4c6b4d155f9f6d26cbfeae622f95d59f0a",
+       "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
+       "delta": "normative examples restated in canonical tranches (the all-zero example expects uncached_input_tokens 0, derived, in place of input_tokens 0; the live MCP example as in thread-usage r2); statement, semantics and destinations unchanged"
+      }
      }
     }
    ]
@@ -7900,12 +8025,12 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.result->prompt_turn.completed",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.cost_state->session_context.accounting",
      "implementation": "ClaudeTranscriptMapper#map"
     }
@@ -8226,32 +8351,32 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "MapperSupport#modelRef"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.result->prompt_turn.completed",
      "implementation": "MapperSupport#modelRef"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.system.init->session_context.settings",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.session_meta->session_context.settings",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.turn_context->session_context.settings",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.world_state->session_context.settings",
      "implementation": "CodexRolloutMapper#map"
     }
@@ -8606,22 +8731,22 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.user.tool_result->tool_call.result",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.result->prompt_turn.completed",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.user.tool_result->tool_call.result",
      "implementation": "ClaudeTranscriptMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.turn_context->session_context.settings",
      "implementation": "CodexRolloutMapper#map"
     }
@@ -8763,17 +8888,17 @@
    "claims": [
     {
      "id": "claude.stream.named-denial-attribution",
-     "revision": 1,
-     "digest": "sha256:28d7b4b615efc5b5e108bc3e36d171741f97850d815a5e6262a725ff761ef326",
+     "revision": 2,
+     "digest": "sha256:b7f4f6565da5b99bd23f60d57ec7a0dca340f593ac71d05ceddc48fa0f1eef7d",
      "statement": "On Claude Code 2.1.304 stream-json (stdout), a run-scope permission denial in the result record's permission_denials[] that names tool_use_id is linked to exactly that source-reported call id (attribution outcome 1 Unique, method 1 Reported identifier) and stays at its reported Run scope on the turn completion. A denial without an id, or one whose id is ambiguous, keeps its original scope and is not attached to a tool call by guess.",
      "applicability": {
       "routes": [
        "claude-code/stream-json/2.1.304-stdout"
       ],
       "contracts": [
-       "claude-code/stream-json/2.1.303/0.2.0-prototype"
+       "claude-code/stream-json/2.1.303/0.3.0-prototype"
       ],
-      "extension": "agentic_cli 0.5.0-prototype"
+      "extension": "agentic_cli 0.6.0-prototype"
      },
      "semantics": {
       "owner_scope": "Run scope as reported; the attribution names the call",
@@ -8799,12 +8924,13 @@
       "junit:LiveFixtureFeaturesTest#theDenialRecordingExhibitsAnObservedRejectionAtBothScopes"
      ],
      "approval": {
-      "status": "approved",
-      "revision": 1,
-      "digest": "sha256:28d7b4b615efc5b5e108bc3e36d171741f97850d815a5e6262a725ff761ef326",
-      "approver": "Project Owner (markpollack)",
-      "decision": "OWNER-2026-10-21-ACCEPT-1-7",
-      "basis": "reused at its exact scope: the decision's own wording (a link to the exact source-reported call id; unnamed or ambiguous denials retain their original scope) is this claim's scope; bound to this digest at SEM-1 for the Owner's confirmation"
+      "status": "proposed",
+      "previous": {
+       "revision": 1,
+       "digest": "sha256:28d7b4b615efc5b5e108bc3e36d171741f97850d815a5e6262a725ff761ef326",
+       "decision": "OWNER-2026-10-21-ACCEPT-1-7",
+       "delta": "applicability only: extension agentic_cli 0.5.0-prototype -> 0.6.0-prototype and contract claude-code/stream-json/2.1.303/0.2.0-prototype -> 0.3.0-prototype; statement, semantics, destinations and normative examples unchanged"
+      }
      }
     }
    ]
@@ -9033,27 +9159,27 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.system.init->session_context.settings",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.session_meta->session_context.settings",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.turn_context->session_context.settings",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.world_state->session_context.settings",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.fallback->source_record",
      "implementation": "CodexStreamMapper#map"
     }
@@ -9311,17 +9437,17 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.attachment->session_context.context",
      "implementation": "MapperSupport#renderedBlocks"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.developer_message->session_context.context",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.user_message->prompt_turn.submitted",
      "implementation": "CodexRolloutMapper#map"
     }
@@ -9576,17 +9702,17 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.cost_state->session_context.accounting",
      "implementation": "ClaudeTranscriptMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.token_usage_record->session_context.accounting",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.fallback->source_record",
      "implementation": "CodexRolloutMapper#map"
     }
@@ -9851,12 +9977,12 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "OcsfRunWriter#childFor"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.user.tool_result->tool_call.result",
      "implementation": "OcsfRunWriter#childLinks"
     }
@@ -10193,22 +10319,22 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "SourceContext#sourceRef"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.assistant->model_response",
      "implementation": "SourceContext#sourceRef"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.custom_tool_call->tool_call.requested",
      "implementation": "SourceContext#sourceRef"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.command_execution->tool_call.operation",
      "implementation": "SourceContext#sourceRef"
     },
@@ -10324,8 +10450,8 @@
    "claims": [
     {
      "id": "journal.mapping-rule-provenance",
-     "revision": 1,
-     "digest": "sha256:3b3650b6a57035f85cf184b3f58fffb09c1ded36d82357f012836bfa93d631ea",
+     "revision": 2,
+     "digest": "sha256:4fb94929db9c25ed7762325a38f407efb3d20cf09b5cf7c07566c63b22ed42c0",
      "statement": "Every event Journal writes names the contract rule that produced it in journal.rule_uid (extension 0.5.0-prototype), beside journal.contract_uid. OCSF unmapped is left to its own purpose, source-specific data no OCSF attribute maps; Journal's provenance is not source data. Packages written with extension 0.4.0 or earlier carry the rule as unmapped.rule_id and remain readable from their own definitions.",
      "applicability": {
       "routes": [
@@ -10337,7 +10463,7 @@
        "codex-cli/exec-json-stream/0.160.1",
        "codex-cli/rollout/0.160.1"
       ],
-      "extension": "agentic_cli 0.5.0-prototype",
+      "extension": "agentic_cli 0.6.0-prototype",
       "condition": "every event of every contract"
      },
      "destinations": [
@@ -10358,12 +10484,13 @@
      ],
      "replaces": "extension 0.4.0-prototype and earlier stored the rule as OCSF unmapped.rule_id",
      "approval": {
-      "status": "approved",
-      "revision": 1,
-      "digest": "sha256:3b3650b6a57035f85cf184b3f58fffb09c1ded36d82357f012836bfa93d631ea",
-      "approver": "Managing semantic reviewer, explicitly delegated by Project Owner (markpollack)",
-      "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
-      "basis": "delegated acceptance: the Project Owner explicitly delegated the SEM-1 semantic decision pass to the managing reviewer, who accepted this exact revision and digest at its stated applicability; not a direct human review of the digest and not a test result"
+      "status": "proposed",
+      "previous": {
+       "revision": 1,
+       "digest": "sha256:3b3650b6a57035f85cf184b3f58fffb09c1ded36d82357f012836bfa93d631ea",
+       "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
+       "delta": "applicability: extension agentic_cli 0.5.0-prototype -> 0.6.0-prototype; normative example journal-rule-provenance: the expected /journal/contract_uid of the Codex event names contract 0.4.0-prototype and that MCP start event is activity 4 Started (was 0.3.0-prototype, activity 1); statement, semantics and destinations unchanged"
+      }
      }
     }
    ]
@@ -10555,27 +10682,27 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "common.mapper_exception->source_record",
      "implementation": "OcsfRunWriter#record"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.fallback->source_record",
      "implementation": "SourceContext#fallback"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.fallback->source_record",
      "implementation": "SourceContext#fallback"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.fallback->source_record",
      "implementation": "SourceContext#fallback"
     },
@@ -10911,22 +11038,22 @@
      "implementation": "OpaqueTextMapper#map"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "common.opaque->source_record",
      "implementation": "SourceContext#opaque"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "common.opaque->source_record",
      "implementation": "SourceContext#opaque"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "common.opaque->source_record",
      "implementation": "SourceContext#opaque"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "common.opaque->source_record",
      "implementation": "LineFramer#end"
     }
@@ -10975,25 +11102,27 @@
    "claims": [
     {
      "id": "codex.exec-stream.web-search-duplicate-id",
-     "revision": 1,
-     "digest": "sha256:c3585862aa697483e47a8c7b0936582ea32130af81d8ea06b88cf12b326df57c",
-     "statement": "A Codex CLI 0.160.1 web_search line repeats item.id: the exec item id, then the search item's own id (serde flattens WebSearchItem into ThreadItem). Strict parsing refuses it, so the line is retained verbatim as an opaque record with both ids in raw_data. In exactly this declared form (the only repeated member is item.id, twice, on item.started or item.completed of item.type web_search) Journal also reads it as a tool call under the first id: tool_name web_search (the item type), kind 5 search, arguments = item.action exactly, result data = item.results; no status is reported (status 0, not derivable). Any other repeated member stays an opaque record without interpretation, and strict duplicate rejection is unchanged.",
+     "revision": 2,
+     "digest": "sha256:504136e56dc791a0d843d62ce5870ab0268e42f22acac7757d3de7edd4c92726",
+     "statement": "A Codex CLI 0.160.1 web_search line repeats the id member of its item: the exec item id, then the search item's own id (serde flattens WebSearchItem into ThreadItem), both inside the root's item object (RFC 6901 /item/id). Strict parsing refuses it, so the line is retained verbatim as an opaque record with both ids in raw_data. In exactly this declared form (the line's only repeated member is id, twice and both strings, in the root's one item object, on item.started or item.completed of item.type web_search) Journal also reads it as a web search under the first id: item.started a started search (activity 4), item.completed its result; no tool name is reported (tool_name absent, tool_family web_search), kind 5 search by the family table, arguments = item.action exactly, result data = item.results; no status is reported (status 0, not derivable). A repeat at any other location, including a root member literally named item.id, stays an opaque record without interpretation, and strict duplicate rejection is unchanged.",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
       ],
       "contracts": [
-       "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+       "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype"
       ],
-      "extension": "agentic_cli 0.5.0-prototype"
+      "extension": "agentic_cli 0.6.0-prototype"
      },
      "semantics": {
-      "identity": "the first item.id member (exec item id); the second (the search item's id) is preserved verbatim, not normalized",
+      "identity": "the first id member (exec item id); the second (the search item's id) is preserved verbatim, not normalized",
       "absence_default": "no status is reported for web searches; status_id 0 with basis not derivable"
      },
      "destinations": [
       "source_record.raw_data",
       "tool_call.tool_call_uid",
+      "tool_call.tool_family",
+      "tool_call.tool_kind_id",
       "tool_call.arguments",
       "tool_call.tool_result.data"
      ],
@@ -11002,7 +11131,8 @@
      ],
      "evidence": [
       "codex-exec-0.160.1-thread-item-flatten",
-      "codex-exec-0.160.1-emitter-items"
+      "codex-exec-0.160.1-emitter-items",
+      "rfc-6901-json-pointer"
      ],
      "checks": [
       "oracle:CodexStreamProfile/whole_record.bytes",
@@ -11018,12 +11148,13 @@
      ],
      "replaces": "contract 0.2.0-prototype kept web_search lines only as opaque records",
      "approval": {
-      "status": "approved",
-      "revision": 1,
-      "digest": "sha256:c3585862aa697483e47a8c7b0936582ea32130af81d8ea06b88cf12b326df57c",
-      "approver": "Managing semantic reviewer, explicitly delegated by Project Owner (markpollack)",
-      "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
-      "basis": "delegated acceptance: the Project Owner explicitly delegated the SEM-1 semantic decision pass to the managing reviewer, who accepted this exact revision and digest at its stated applicability; not a direct human review of the digest and not a test result; the accepted meaning is the intended one (only the actual nested duplicate-id form); the dotted-path duplicate selector of the 0.3.0-prototype implementation has a known defect that this decision does not accept"
+      "status": "proposed",
+      "previous": {
+       "revision": 1,
+       "digest": "sha256:c3585862aa697483e47a8c7b0936582ea32130af81d8ea06b88cf12b326df57c",
+       "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
+       "delta": "the meaning r1 intended, applied at the exact location: the declared form is the id member twice inside the root item object (RFC 6901 /item/id), so a root member literally named item.id is not it; the family/name decision applies (no tool_name, tool_family web_search, kind 5 by the family table) and item.started is a started search (activity 4, the model request is not observed); normative example and destinations change accordingly; applicability pins 0.6.0-prototype / contract 0.4.0-prototype"
+      }
      }
     }
    ]
@@ -11217,22 +11348,22 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.fallback->source_record",
      "implementation": "ClaudeTranscriptMapper#map"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.fallback->source_record",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.fallback->source_record",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.fallback->source_record",
      "implementation": "CodexStreamMapper#map"
     }
@@ -11492,12 +11623,12 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.fallback->source_record",
      "implementation": "ClaudeTranscriptMapper#map"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.fallback->source_record",
      "implementation": "ClaudeStreamMapper#map"
     },
@@ -11736,22 +11867,22 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.fallback->source_record",
      "implementation": "SourceContext#timeFor"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.fallback->source_record",
      "implementation": "SourceContext#timeFor"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.assistant_message->model_response",
      "implementation": "SourceContext#timeFor"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype",
      "rule_id": "codex.stream.agent_message->model_response",
      "implementation": "SourceContext#timeFor"
     }
@@ -12009,22 +12140,22 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.result->prompt_turn.completed",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
+     "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
      "rule_id": "claude.transcript.cost_state->session_context.accounting",
      "implementation": "ClaudeTranscriptMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.CommandExecution->tool_call.operation",
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
      "rule_id": "codex.rollout.task_complete->prompt_turn.completed",
      "implementation": "CodexRolloutMapper#map"
     }

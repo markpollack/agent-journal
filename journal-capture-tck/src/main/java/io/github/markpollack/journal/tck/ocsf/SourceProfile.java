@@ -63,6 +63,21 @@ public interface SourceProfile {
         return out;
     }
 
+    /**
+     * An Anthropic assistant message (Claude stream and transcript): its response with the exact native blocks, and its
+     * own usage, the total of that one API message (provisional until a stop reason is reported). Returns the blocks.
+     */
+    static List<Json> anthropicMessage(ExpectedFacts f, int index, Json message) {
+        String stop = text(message, "stop_reason");
+        List<Json> blocks = message.member("content") == null ? null : message.member("content").elements();
+        f.responses.add(new ExpectedFacts.Response(index, text(message, "id"), blocks, stop, stop != null, text(message, "model")));
+        Json usage = message.member("usage");
+        if (usage != null) {
+            f.usages.add(new ExpectedFacts.Usage(index, index, 2, stop == null ? 1 : 2, TrancheReading.anthropic(usage), text(message, "model"), null, null, 1));
+        }
+        return blocks == null ? List.of() : blocks;
+    }
+
     /** Whether a record belongs to this core under an owner-scoped selector such as {@code parent_tool_use_id}. */
     static boolean owned(Json record, Json scope) {
         if (scope == null) {

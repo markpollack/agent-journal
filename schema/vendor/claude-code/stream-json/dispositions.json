@@ -9,7 +9,7 @@
   "claude-code/stream-json/2.1.304-stdout"
  ],
  "specification": "schema/vendor/claude-code/stream-json/2.1.303.json",
- "contract": "claude-code/stream-json/2.1.303/0.2.0-prototype",
+ "contract": "claude-code/stream-json/2.1.303/0.3.0-prototype",
  "contract_file": "claude-code-2.1.303-stream",
  "evidence_fixtures": [
   "claude-child-2.1.299",
@@ -310,14 +310,14 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "subtree default for usage members that are not reported token components (cache_creation ephemeral buckets, service_tier, speed, inference_geo): kept whole in the record and in usage_observation.data"
+   "note": "subtree default for usage members that are not reported token components (service_tier, speed, inference_geo): kept whole in the record and in usage_observation.data"
   },
   {
    "variant": "assistant",
    "path": "message.usage.input_tokens",
    "disposition": "normalized",
    "destination": [
-    "model_response.usage_observations[].input_tokens"
+    "model_response.usage_observations[].uncached_input_tokens"
    ],
    "rule": "claude.stream.assistant->model_response",
    "evidence": {
@@ -326,7 +326,8 @@
    "tests": [
     "OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero",
     "AnalysisViewsTest#usageSelectsOneApplicableFinalPerGroupAndNeverSums"
-   ]
+   ],
+   "note": "0.6.0-prototype: the uncached tranche (Anthropic input_tokens are the tokens neither read from nor used to create a cache), copied as reported"
   },
   {
    "variant": "assistant",
@@ -372,6 +373,40 @@
    "tests": [
     "OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero"
    ]
+  },
+  {
+   "variant": "assistant",
+   "path": "message.usage.cache_creation.ephemeral_5m_input_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "model_response.usage_observations[].cache_write_tiers[].token_count",
+    "model_response.usage_observations[].cache_write_tiers[].tier"
+   ],
+   "rule": "claude.stream.assistant->model_response",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes"
+   ],
+   "note": "0.6.0-prototype: a cache-write tier (the member name is the tier); a part of cache_creation_input_tokens, never additional usage"
+  },
+  {
+   "variant": "assistant",
+   "path": "message.usage.cache_creation.ephemeral_1h_input_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "model_response.usage_observations[].cache_write_tiers[].token_count",
+    "model_response.usage_observations[].cache_write_tiers[].tier"
+   ],
+   "rule": "claude.stream.assistant->model_response",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes"
+   ],
+   "note": "0.6.0-prototype: a cache-write tier (the member name is the tier); a part of cache_creation_input_tokens, never additional usage"
   },
   {
    "variant": "assistant",
@@ -575,14 +610,14 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "subtree default for run-usage members that are not reported components (iterations[], server_tool_use, cache_creation buckets, fallback_credit, service_tier, speed, inference_geo): whole record and usage_observation.data"
+   "note": "subtree default for run-usage members that are not reported components (iterations[], server_tool_use, fallback_credit, service_tier, speed, inference_geo): whole record and usage_observation.data"
   },
   {
    "variant": "result",
    "path": "usage.input_tokens",
    "disposition": "normalized",
    "destination": [
-    "prompt_turn.usage_observations[].input_tokens"
+    "prompt_turn.usage_observations[].uncached_input_tokens"
    ],
    "rule": "claude.stream.result->prompt_turn.completed",
    "evidence": {
@@ -590,7 +625,8 @@
    },
    "tests": [
     "OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero"
-   ]
+   ],
+   "note": "0.6.0-prototype: the uncached tranche (Anthropic input_tokens are the tokens neither read from nor used to create a cache), copied as reported"
   },
   {
    "variant": "result",
@@ -639,6 +675,40 @@
   },
   {
    "variant": "result",
+   "path": "usage.cache_creation.ephemeral_5m_input_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.usage_observations[].cache_write_tiers[].token_count",
+    "prompt_turn.usage_observations[].cache_write_tiers[].tier"
+   ],
+   "rule": "claude.stream.result->prompt_turn.completed",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes"
+   ],
+   "note": "0.6.0-prototype: a cache-write tier (the member name is the tier); a part of cache_creation_input_tokens, never additional usage"
+  },
+  {
+   "variant": "result",
+   "path": "usage.cache_creation.ephemeral_1h_input_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.usage_observations[].cache_write_tiers[].token_count",
+    "prompt_turn.usage_observations[].cache_write_tiers[].tier"
+   ],
+   "rule": "claude.stream.result->prompt_turn.completed",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes"
+   ],
+   "note": "0.6.0-prototype: a cache-write tier (the member name is the tier); a part of cache_creation_input_tokens, never additional usage"
+  },
+  {
+   "variant": "result",
    "path": "usage.output_tokens_details.thinking_tokens",
    "disposition": "normalized",
    "destination": [
@@ -671,7 +741,7 @@
    "path": "modelUsage.{*}.inputTokens",
    "disposition": "normalized",
    "destination": [
-    "prompt_turn.usage_observations[].input_tokens",
+    "prompt_turn.usage_observations[].uncached_input_tokens",
     "usage_observation.model_ref.name"
    ],
    "rule": "claude.stream.result->prompt_turn.completed",
@@ -681,7 +751,7 @@
    "tests": [
     "OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero"
    ],
-   "note": "model-scope final usage per model name"
+   "note": "model-scope final usage per model name; 0.6.0-prototype: the uncached tranche (Anthropic input_tokens are the tokens neither read from nor used to create a cache), copied as reported"
   },
   {
    "variant": "result",

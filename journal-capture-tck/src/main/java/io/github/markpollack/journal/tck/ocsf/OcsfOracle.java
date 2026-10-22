@@ -960,7 +960,8 @@ public final class OcsfOracle {
         }
         List<String> actual = new ArrayList<>();
         for (Event e : events) {
-            if (e.is("tool_call", 1)) {
+            // the first observed stage of a tool activity: the model's request (1) or a started invocation (4)
+            if (e.is("tool_call", 1) || e.is("tool_call", 4)) {
                 actual.add(e.recordIndex() + ":" + e.text("tool_call_uid"));
             }
         }
@@ -969,12 +970,19 @@ public final class OcsfOracle {
         List<String> representation = new ArrayList<>();
         int examined = 0;
         for (ExpectedFacts.Request r : facts.requests) {
-            Event e = find(events, "tool_call", 1, r.recordIndex(), "tool_call_uid", r.id());
+            Event e = find(events, "tool_call", r.activityId(), r.recordIndex(), "tool_call_uid", r.id());
+            String what = r.recordIndex() + ":" + r.id();
             if (e == null) {
+                Event other = find(events, "tool_call", r.activityId() == 1 ? 4 : 1, r.recordIndex(), "tool_call_uid", r.id());
+                if (other != null) {
+                    examined++;
+                    problems.add(what + " activity_id " + other.activityId + " != " + r.activityId() + (r.activityId() == 4
+                            ? " (the source reports a started invocation, not the model's request)" : " (the source reports the model's request)"));
+                }
                 continue;
             }
             examined++;
-            String what = r.recordIndex() + ":" + r.id();
+            stated(what + " tool_family", r.family(), e.text("tool_family"), problems);
             if (!Objects.equals(r.name(), e.text("tool_name"))) {
                 problems.add(what + " tool_name " + e.text("tool_name") + " != " + r.name());
             }
@@ -988,9 +996,9 @@ public final class OcsfOracle {
             stated(what + " tool_namespace", r.namespace(), e.text("tool_namespace"), problems);
             stated(what + " identity_basis_id", r.identityBasisId(), e.integer("identity_basis_id"), problems);
             Integer kind = e.integer("tool_kind_id");
-            Integer expectedKind = toolKind(core, e.contractUid(), r.name());
+            Integer expectedKind = r.kindId() != null ? r.kindId() : toolKind(core, e.contractUid(), r.name());
             if (expectedKind != null && !expectedKind.equals(kind)) {
-                problems.add(what + " tool_kind_id " + kind + " != " + expectedKind + " from the embedded name table");
+                problems.add(what + " tool_kind_id " + kind + " != " + expectedKind + (r.kindId() != null ? " (the profile's family or namespace reading)" : " from the embedded name table"));
             }
         }
         valueCheck("request.values", owner, examined, problems, representation);
@@ -1083,6 +1091,7 @@ public final class OcsfOracle {
                 }
             }
             stated(what + " identity_basis_id", r.identityBasisId(), e.integer("identity_basis_id"), problems);
+            stated(what + " tool_family", r.family(), e.text("tool_family"), problems);
             int expectedStatus = r.isError() instanceof Json.JBool b ? (b.value() ? 2 : 1) : 0;
             int expectedBasis = r.isError() instanceof Json.JBool ? 1 : 3;
             if (!Objects.equals(e.integer("status_id"), expectedStatus) || !Objects.equals(e.integer("status_basis_id"), expectedBasis)) {
@@ -1095,12 +1104,12 @@ public final class OcsfOracle {
     private void responses(ExpectedFacts facts, List<Event> events, String owner) {
         List<String> expected = new ArrayList<>();
         for (ExpectedFacts.Response r : facts.responses) {
-            expected.add(r.recordIndex() + ":" + r.id());
+            expected.add(responseKey(r.recordIndex(), r.itemIdentityBasisId() != null ? null : r.id(), r.itemIdentityBasisId() != null ? r.id() : null));
         }
         List<String> actual = new ArrayList<>();
         for (Event e : events) {
             if ("model_response".equals(e.className)) {
-                actual.add(e.recordIndex() + ":" + e.text("response_uid"));
+                actual.add(responseKey(e.recordIndex(), e.text("response_uid"), e.text("item_uid")));
             }
         }
         populationCheck("population.responses", owner, expected, actual);
@@ -1108,9 +1117,10 @@ public final class OcsfOracle {
         List<String> representation = new ArrayList<>();
         int examined = 0;
         for (ExpectedFacts.Response r : facts.responses) {
+            String key = expected.get(facts.responses.indexOf(r));
             Event e = null;
             for (Event c : events) {
-                if ("model_response".equals(c.className) && Objects.equals(c.recordIndex(), r.recordIndex()) && Objects.equals(c.text("response_uid"), r.id())) {
+                if ("model_response".equals(c.className) && responseKey(c.recordIndex(), c.text("response_uid"), c.text("item_uid")).equals(key)) {
                     e = c;
                 }
             }
@@ -1119,9 +1129,11 @@ public final class OcsfOracle {
             }
             examined++;
             String what = r.recordIndex() + ":" + r.id();
-            if (!Objects.equals(e.activityId, r.terminal() ? 2 : 1)) {
-                problems.add(what + " activity_id " + e.activityId + " but the record is " + (r.terminal() ? "terminal" : "non-terminal"));
+            if (!Objects.equals(e.activityId, r.activityId())) {
+                problems.add(what + " activity_id " + e.activityId + " but the record is " + (r.itemIdentityBasisId() != null ? "a completed content item of an unidentified response"
+                        : r.terminal() ? "terminal" : "non-terminal"));
             }
+            stated(what + " identity_basis_id", r.itemIdentityBasisId(), e.integer("identity_basis_id"), problems);
             if (!Objects.equals(r.stopReason(), e.text("stop_reason"))) {
                 problems.add(what + " stop_reason " + e.text("stop_reason") + " != " + r.stopReason());
             }
@@ -1153,6 +1165,11 @@ public final class OcsfOracle {
             }
         }
         valueCheck("response.values", owner, examined, problems, representation);
+    }
+
+    /** A response's population key: its provider response id, or the source's content-item id when no response is identified. */
+    private static String responseKey(Integer recordIndex, String responseUid, String itemUid) {
+        return recordIndex + ":" + (responseUid != null ? responseUid : itemUid != null ? "item " + itemUid : null);
     }
 
     private void prompts(ExpectedFacts facts, List<Event> events, String owner) {
@@ -1247,6 +1264,9 @@ public final class OcsfOracle {
                     problems.add(key + " native usage object (data) not retained");
                 }
                 stated(key + " measurement_status_id", u.measurementStatusId(), Event.integer(o.member("measurement_status_id")), problems);
+                if (u.tranches() != null) {
+                    tranches(key, u, o, problems);
+                }
                 String provider = SchemaCatalog.text(o.member("model_ref"), "provider_kind");
                 if (u.provider() != null && !u.provider().equals(provider)) {
                     problems.add(key + " model_ref.provider_kind " + provider + " != reported " + u.provider());
@@ -1257,6 +1277,68 @@ public final class OcsfOracle {
             }
         }
         valueCheck("usage.values", owner, examined, problems, representation);
+    }
+
+    /**
+     * The canonical-tranche facets of one observation: aggregation, the reasoning relation, the cache-write tiers and
+     * how each component is established (reported, derived or unavailable, with its native pointers), against the
+     * profile's own reading.
+     */
+    private static void tranches(String key, ExpectedFacts.Usage u, Json o, List<String> problems) {
+        stated(key + " aggregation_id", u.aggregationId(), Event.integer(o.member("aggregation_id")), problems);
+        stated(key + " reasoning_relation_id", u.tranches().reasoningRelationId(), Event.integer(o.member("reasoning_relation_id")), problems);
+        tiers(key, u.tranches().tiers(), o, problems);
+        componentBases(key, u.tranches(), o, problems);
+    }
+
+    /** The cache-write tiers, in order: native tier name, exact count and the pointer of the native member. */
+    private static void tiers(String key, List<ExpectedFacts.Tier> expected, Json o, List<String> problems) {
+        List<String> want = new ArrayList<>();
+        for (ExpectedFacts.Tier t : expected) {
+            want.add(t.tier() + "=" + t.count().scalarText() + "@" + List.of(t.pointer()));
+        }
+        List<String> have = new ArrayList<>();
+        for (Json t : o.member("cache_write_tiers") == null ? List.<Json>of() : o.member("cache_write_tiers").elements()) {
+            Json count = t.member("token_count");
+            have.add(SchemaCatalog.text(t, "tier") + "=" + (count == null ? null : count.scalarText()) + "@" + texts(t.member("native_pointers")));
+        }
+        if (!want.equals(have)) {
+            problems.add(key + " cache_write_tiers " + have + " != " + want);
+        }
+    }
+
+    /** components[]: exactly one entry per component the profile reads, with its basis and native pointers; an unavailable component has no value. */
+    private static void componentBases(String key, ExpectedFacts.Tranches t, Json o, List<String> problems) {
+        Map<String, Json> entries = new LinkedHashMap<>();
+        for (Json c : o.member("components") == null ? List.<Json>of() : o.member("components").elements()) {
+            if (entries.put(SchemaCatalog.text(c, "name"), c) != null) {
+                problems.add(key + " components[] names " + SchemaCatalog.text(c, "name") + " twice");
+            }
+        }
+        for (Map.Entry<String, Integer> b : t.bases().entrySet()) {
+            Json c = entries.remove(b.getKey());
+            if (c == null) {
+                problems.add(key + " components[] has no entry for " + b.getKey() + " (expected basis " + b.getValue() + ")");
+                continue;
+            }
+            stated(key + " " + b.getKey() + " component_basis_id", b.getValue(), Event.integer(c.member("component_basis_id")), problems);
+            stated(key + " " + b.getKey() + " native_pointers", t.pointers().get(b.getKey()), texts(c.member("native_pointers")), problems);
+            if (b.getValue() == TrancheReading.UNAVAILABLE && o.member(b.getKey()) != null) {
+                problems.add(key + " " + b.getKey() + " present although the source does not establish it");
+            }
+        }
+        if (!entries.isEmpty()) {
+            problems.add(key + " components[] states " + entries.keySet() + ", which the source does not report");
+        }
+    }
+
+    /** The strings of a JSON array, in order (empty when absent). */
+    private static List<String> texts(Json array) {
+        List<String> out = new ArrayList<>();
+        for (Json x : array == null ? List.<Json>of() : array.elements()) {
+            out.add(x.text());
+        }
+        return out;
     }
 
     private void cost(ExpectedFacts facts, List<Event> events, String owner) {

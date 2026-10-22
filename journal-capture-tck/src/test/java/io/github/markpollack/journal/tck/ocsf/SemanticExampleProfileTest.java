@@ -57,16 +57,21 @@ class SemanticExampleProfileTest {
     static Map<String, Json> stated(ExpectedFacts f, String cls, int activity, int record) {
         Map<String, Json> out = new LinkedHashMap<>();
         switch (cls + "/" + activity) {
-            case "tool_call/1" -> f.requests.stream().filter(r -> r.recordIndex() == record).findFirst().ifPresent(r -> {
+            case "tool_call/1", "tool_call/4" -> f.requests.stream().filter(r -> r.recordIndex() == record && r.activityId() == activity).findFirst().ifPresent(r -> {
                 put(out, "/tool_call_uid", r.id() == null ? null : new Json.JString(r.id()));
                 put(out, "/tool_name", r.name() == null ? null : new Json.JString(r.name()));
+                put(out, "/tool_family", r.family() == null ? null : new Json.JString(r.family()));
                 put(out, "/tool_namespace", r.namespace() == null ? null : new Json.JString(r.namespace()));
                 put(out, "/identity_basis_id", r.identityBasisId() == null ? null : num(r.identityBasisId()));
+                if (r.kindId() != null) {
+                    put(out, "/tool_kind_id", num(r.kindId()));
+                }
                 put(out, "/arguments", r.arguments());
                 put(out, "/reported_state", r.reportedState() == null ? null : new Json.JString(r.reportedState()));
             });
             case "tool_call/2" -> f.results.stream().filter(r -> r.recordIndex() == record).findFirst().ifPresent(r -> {
                 put(out, "/tool_call_uid", new Json.JString(r.id()));
+                put(out, "/tool_family", r.family() == null ? null : new Json.JString(r.family()));
                 put(out, "/identity_basis_id", r.identityBasisId() == null ? null : num(r.identityBasisId()));
                 put(out, "/tool_result/data", r.content());
                 put(out, "/tool_result/structured_result", r.structured());
@@ -82,8 +87,15 @@ class SemanticExampleProfileTest {
                 put(out, "/tool_operation/attribution/outcome_id", num(o.outcomeId()));
                 put(out, "/status_id", num(o.statusId()));
             });
-            case "model_response/2", "model_response/1" -> f.responses.stream().filter(r -> r.recordIndex() == record).findFirst().ifPresent(r -> {
-                put(out, "/response_uid", new Json.JString(r.id()));
+            case "model_response/1", "model_response/2", "model_response/3" -> f.responses.stream().filter(r -> r.recordIndex() == record && r.activityId() == activity).findFirst().ifPresent(r -> {
+                if (r.itemIdentityBasisId() != null) {
+                    put(out, "/item_uid", new Json.JString(r.id()));
+                    put(out, "/identity_basis_id", num(r.itemIdentityBasisId()));
+                    put(out, "/response_uid", null);
+                }
+                else {
+                    put(out, "/response_uid", new Json.JString(r.id()));
+                }
                 for (int i = 0; r.blocks() != null && i < r.blocks().size(); i++) {
                     put(out, "/content_blocks/" + i + "/data", r.blocks().get(i));
                     put(out, "/content_blocks/" + i + "/reasoning_form_id", r.reasoningForm() == null ? null : num(r.reasoningForm()));
@@ -107,20 +119,47 @@ class SemanticExampleProfileTest {
                     put(out, at + "attribution/method_id", num(d.methodId()));
                     put(out, at + "attribution/candidates", new Json.JArray(d.candidates().stream().<Json>map(Json.JString::new).toList()));
                 }
-                List<ExpectedFacts.Usage> usages = f.usages.stream().filter(u -> u.eventRecordIndex() == record).toList();
-                for (int i = 0; i < usages.size(); i++) {
-                    ExpectedFacts.Usage u = usages.get(i);
-                    String at = "/usage_observations/" + i + "/";
-                    put(out, at + "scope_id", num(u.scopeId()));
-                    put(out, at + "usage_status_id", num(u.statusId()));
-                    put(out, at + "measurement_status_id", u.measurementStatusId() == null ? null : num(u.measurementStatusId()));
-                    u.components().forEach((k, v) -> put(out, at + k, v));
-                }
             }
             default -> {
             }
         }
+        if (!"tool_call".equals(cls) && !out.isEmpty() || "prompt_turn".equals(cls)) {
+            usage(f, record, out);
+        }
         return out;
+    }
+
+    /** The usage observations an event carries, as the profile states them: scope, finality, aggregation and every tranche facet. */
+    private static void usage(ExpectedFacts f, int record, Map<String, Json> out) {
+        List<ExpectedFacts.Usage> usages = f.usages.stream().filter(u -> u.eventRecordIndex() == record).toList();
+        for (int i = 0; i < usages.size(); i++) {
+            ExpectedFacts.Usage u = usages.get(i);
+            String at = "/usage_observations/" + i + "/";
+            put(out, at + "scope_id", num(u.scopeId()));
+            put(out, at + "usage_status_id", num(u.statusId()));
+            put(out, at + "measurement_status_id", u.measurementStatusId() == null ? null : num(u.measurementStatusId()));
+            u.components().forEach((k, v) -> put(out, at + k, v));
+            if (u.tranches() == null) {
+                continue;
+            }
+            put(out, at + "aggregation_id", u.aggregationId() == null ? null : num(u.aggregationId()));
+            put(out, at + "reasoning_relation_id", u.tranches().reasoningRelationId() == null ? null : num(u.tranches().reasoningRelationId()));
+            int c = 0;
+            for (Map.Entry<String, Integer> b : u.tranches().bases().entrySet()) {
+                String ct = at + "components/" + c++ + "/";
+                put(out, ct + "name", new Json.JString(b.getKey()));
+                put(out, ct + "component_basis_id", num(b.getValue()));
+                put(out, ct + "native_pointers", new Json.JArray(u.tranches().pointers().get(b.getKey()).stream().<Json>map(Json.JString::new).toList()));
+                if (b.getValue() == TrancheReading.UNAVAILABLE) {
+                    put(out, at + b.getKey(), null);
+                }
+            }
+            for (int t = 0; t < u.tranches().tiers().size(); t++) {
+                ExpectedFacts.Tier tier = u.tranches().tiers().get(t);
+                put(out, at + "cache_write_tiers/" + t + "/tier", new Json.JString(tier.tier()));
+                put(out, at + "cache_write_tiers/" + t + "/token_count", tier.count());
+            }
+        }
     }
 
     private static void put(Map<String, Json> out, String pointer, Json value) {
@@ -156,6 +195,15 @@ class SemanticExampleProfileTest {
                         compared++;
                         problems.add(id + " record " + record + " " + absent.text() + ": the profile states " + NeutralJson.write(stated.get(absent.text())) + ", the reviewed example says absent");
                     }
+                }
+            }
+            for (Json absent : ex.member("absent_events") == null ? List.<Json>of() : ex.member("absent_events").elements()) {
+                int record = Event.integer(absent.member("record"));
+                compared++;
+                Map<String, Json> stated = stated(facts, SchemaCatalog.text(absent, "class"), Event.integer(absent.member("activity_id")), record);
+                if (!stated.isEmpty()) {
+                    problems.add(id + " record " + record + ": the profile states a " + SchemaCatalog.text(absent, "class") + " activity " + Event.integer(absent.member("activity_id"))
+                            + " event, the reviewed example says the source establishes none");
                 }
             }
         }

@@ -17,6 +17,8 @@ final class ClaudeStreamMapper implements SourceMapper {
 
     static final MapperSupport.ClaudeRoute ROUTE = new MapperSupport.ClaudeRoute("claude-code-2.1.303-stream", "claude.stream", "claude.stream.usage_status.v1: stop_reason null -> provisional, non-null -> final", "claude.stream.activity.v1: stop_reason null -> Partial, non-null -> Completed", "tool_use_result");
     static final String CONTRACT = "claude-code-2.1.303-stream";
+    /** Claude Code's ModelUsage accumulates over the session: consumers difference its costUSD per turn, and it is partial for a resumed session begun on an older version. */
+    static final String CUMULATIVE_MODEL_USAGE = "claude.model_usage.cumulative.v1: ModelUsage is Claude Code's running total per model (consumers difference it per turn; a resumed session's earlier turns are included)";
 
     @Override
     public String contractName() {
@@ -103,12 +105,8 @@ final class ClaudeStreamMapper implements SourceMapper {
             Jv.Arr obs = new Jv.Arr();
             Jv u = o.member("usage");
             Jv.Obj runUsage = MapperSupport.usage(4, 2, "claude.stream.result_usage.v1: the result line reports run totals once", ctx.sourceRef(r, uid, ts, false), null, u);
-            MapperSupport.components(runUsage, u, "input_tokens", "input_tokens", "output_tokens", "output_tokens",
-                    "cache_read_input_tokens", "cache_read_tokens", "cache_creation_input_tokens", "cache_write_tokens");
-            Jv thinking = u == null ? null : u.path("output_tokens_details", "thinking_tokens");
-            if (MapperSupport.isIntegral(thinking)) {
-                runUsage.put("reasoning_tokens", thinking);
-            }
+            // the result's usage is an Anthropic usage object; whether it covers the run's sub-agents is not established, so no aggregation is stated
+            UsageTranches.anthropic(runUsage, u);
             obs.add(runUsage);
             String costBasis = null;
             Jv mu = o.member("modelUsage");
@@ -116,8 +114,8 @@ final class ClaudeStreamMapper implements SourceMapper {
                 for (var m : models.members().entrySet()) {
                     Jv.Obj mo = MapperSupport.usage(6, 2, "claude.stream.result_usage.v1: modelUsage per model on the result line", ctx.sourceRef(r, uid, ts, false),
                             MapperSupport.modelRef(m.getKey(), 1, text(m.getValue(), "provider")), m.getValue());
-                    MapperSupport.components(mo, m.getValue(), "inputTokens", "input_tokens", "outputTokens", "output_tokens", "cacheReadInputTokens", "cache_read_tokens",
-                            "cacheCreationInputTokens", "cache_write_tokens", "thinkingTokens", "reasoning_tokens");
+                    UsageTranches.aggregation(mo, 2, CUMULATIVE_MODEL_USAGE);
+                    UsageTranches.claudeModelUsage(mo, m.getValue());
                     obs.add(mo);
                     costBasis = models.members().size() == 1 ? text(m.getValue(), "costBasis") : null;
                 }

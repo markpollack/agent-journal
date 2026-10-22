@@ -20,10 +20,10 @@
     {
       "record": 4,
       "class": "tool_call",
-      "activity_id": 1,
+      "activity_id": 4,
       "values": {
         "/journal/rule_uid": "codex.stream.mcp_tool_call->tool_call.requested",
-        "/journal/contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+        "/journal/contract_uid": "codex-cli/exec-json-stream/0.160.1/0.4.0-prototype"
       },
       "absent": [
         "/unmapped"
@@ -46,7 +46,7 @@
       "id": "rule-in-unmapped",
       "record": 4,
       "class": "tool_call",
-      "activity_id": 1,
+      "activity_id": 4,
       "values": {
         "/unmapped/rule_id": "codex.stream.mcp_tool_call->tool_call.requested"
       },

@@ -1,0 +1,73 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "codex-mcp-builtin-names-synthetic",
+  "concept": "tool-request-identity-and-arguments",
+  "description": "LABELLED SYNTHETIC, in the McpToolCallItem key set of the live recording: MCP tools named exec and web_search on server local. A bare name never selects a kind: an MCP tool is 99 Other unless a reviewed binding of its exact server and tool exists, and none does; the names and namespace are kept exactly.",
+  "authored_from": [
+    "codex-exec-0.160.1-types",
+    "codex-exec-0.160.1-emitter-items"
+  ],
+  "native": {
+    "evidence_kind": "synthetic",
+    "profile": "codex_stream",
+    "compatibility_entry": "codex-cli/exec-json-stream/0.160.1",
+    "run_spec_fixture": "syn-codex-exec-families-0.160.1",
+    "artifact": "stream.jsonl",
+    "lines": [
+      "{\"type\":\"thread.started\",\"thread_id\":\"00000000-0000-4000-8000-00000000fa13\"}",
+      "{\"type\":\"turn.started\"}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_0\",\"type\":\"mcp_tool_call\",\"server\":\"local\",\"tool\":\"exec\",\"arguments\":{\"cmd\":\"ls\"},\"result\":null,\"error\":null,\"status\":\"in_progress\"}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_1\",\"type\":\"mcp_tool_call\",\"server\":\"local\",\"tool\":\"web_search\",\"arguments\":{\"q\":\"x\"},\"result\":null,\"error\":null,\"status\":\"in_progress\"}}"
+    ]
+  },
+  "expected": [
+    {
+      "record": 3,
+      "class": "tool_call",
+      "activity_id": 4,
+      "values": {
+        "/tool_name": "exec",
+        "/tool_namespace": "local",
+        "/tool_family": "mcp_tool_call",
+        "/tool_kind_id": 99,
+        "/arguments": {
+          "cmd": "ls"
+        }
+      }
+    },
+    {
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 4,
+      "values": {
+        "/tool_name": "web_search",
+        "/tool_namespace": "local",
+        "/tool_family": "mcp_tool_call",
+        "/tool_kind_id": 99
+      }
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "builtin-exec-kind",
+      "record": 3,
+      "class": "tool_call",
+      "activity_id": 4,
+      "values": {
+        "/tool_kind_id": 6
+      },
+      "why": "exec is Codex's built-in command tool; an MCP tool of that name on server local is another tool."
+    },
+    {
+      "id": "builtin-search-kind",
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 4,
+      "values": {
+        "/tool_kind_id": 5
+      },
+      "why": "A coincidental name does not make a server's tool a web search."
+    }
+  ]
+}

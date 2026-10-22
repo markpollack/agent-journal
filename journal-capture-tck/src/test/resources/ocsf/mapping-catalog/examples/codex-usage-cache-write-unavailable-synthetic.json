@@ -1,0 +1,91 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "codex-usage-cache-write-unavailable-synthetic",
+  "concept": "usage-components-and-cache",
+  "description": "LABELLED SYNTHETIC, source-grounded (TokenUsage at rust-v0.160.1 has cache_write_input_tokens; the vendor test parses_cache_write_token_usage reports one): a turn.completed with non-zero cache writes. input_tokens includes the cached tokens (non_cached_input), but the pinned source does not establish whether it also includes the 60 cache writes, so the uncached tranche is unavailable, not guessed: neither 1000 - 800 - 60 nor 1000 - 800. Cache reads, cache writes, output and its reasoning part are copied.",
+  "authored_from": [
+    "codex-protocol-0.160.1-token-usage-arithmetic",
+    "codex-api-0.160.1-responses-usage",
+    "codex-exec-0.160.1-emitter-usage"
+  ],
+  "native": {
+    "evidence_kind": "synthetic",
+    "profile": "codex_stream",
+    "compatibility_entry": "codex-cli/exec-json-stream/0.160.1",
+    "run_spec_fixture": "syn-codex-exec-families-0.160.1",
+    "artifact": "stream.jsonl",
+    "lines": [
+      "{\"type\":\"thread.started\",\"thread_id\":\"00000000-0000-4000-8000-00000000fa11\"}",
+      "{\"type\":\"turn.started\"}",
+      "{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1000,\"cached_input_tokens\":800,\"cache_write_input_tokens\":60,\"output_tokens\":50,\"reasoning_output_tokens\":10}}"
+    ]
+  },
+  "expected": [
+    {
+      "record": 3,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/aggregation_id": 2,
+        "/usage_observations/0/cache_read_tokens": 800,
+        "/usage_observations/0/cache_write_tokens": 60,
+        "/usage_observations/0/output_tokens": 50,
+        "/usage_observations/0/reasoning_tokens": 10,
+        "/usage_observations/0/reasoning_relation_id": 1,
+        "/usage_observations/0/components/0/name": "uncached_input_tokens",
+        "/usage_observations/0/components/0/component_basis_id": 3,
+        "/usage_observations/0/components/0/native_pointers": [
+          "/input_tokens",
+          "/cached_input_tokens",
+          "/cache_write_input_tokens"
+        ],
+        "/usage_observations/0/components/1/name": "cache_read_tokens",
+        "/usage_observations/0/components/1/component_basis_id": 1,
+        "/usage_observations/0/components/1/native_pointers": [
+          "/cached_input_tokens"
+        ],
+        "/usage_observations/0/components/2/name": "cache_write_tokens",
+        "/usage_observations/0/components/2/component_basis_id": 1,
+        "/usage_observations/0/components/2/native_pointers": [
+          "/cache_write_input_tokens"
+        ],
+        "/usage_observations/0/components/3/name": "output_tokens",
+        "/usage_observations/0/components/3/component_basis_id": 1,
+        "/usage_observations/0/components/3/native_pointers": [
+          "/output_tokens"
+        ],
+        "/usage_observations/0/components/4/name": "reasoning_tokens",
+        "/usage_observations/0/components/4/component_basis_id": 1,
+        "/usage_observations/0/components/4/native_pointers": [
+          "/reasoning_output_tokens"
+        ]
+      },
+      "absent": [
+        "/usage_observations/0/uncached_input_tokens"
+      ]
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "writes-subtracted",
+      "record": 3,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/uncached_input_tokens": 140
+      },
+      "why": "Assumes input_tokens includes the cache writes, which the source does not state."
+    },
+    {
+      "id": "writes-ignored",
+      "record": 3,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/uncached_input_tokens": 200
+      },
+      "why": "Assumes input_tokens excludes the cache writes, which the source does not state either; a formula that balances is not evidence."
+    }
+  ]
+}

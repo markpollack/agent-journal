@@ -23,7 +23,7 @@ public final class AnalysisViews {
     static final Map<String, String> OUTCOME = Map.of("0", "Unknown", "1", "Unique", "2", "Ambiguous", "3", "Unattributed");
     static final Map<String, String> METHOD = Map.of("0", "Unknown", "1", "Reported identifier", "2", "Derived by rule");
     static final Map<String, String> STATUS = Map.of("0", "Unknown", "1", "Provisional", "2", "Final");
-    static final List<String> COMPONENTS = List.of("input_tokens", "output_tokens", "cache_read_tokens", "cache_write_tokens",
+    static final List<String> COMPONENTS = List.of("uncached_input_tokens", "output_tokens", "cache_read_tokens", "cache_write_tokens",
             "reasoning_tokens", "reported_total_tokens");
 
     private AnalysisViews() {
@@ -574,9 +574,11 @@ public final class AnalysisViews {
                 c.put("results", new Json.JArray(List.of()));
                 return c;
             });
-            if (e.activityId == 1) {
+            if (e.activityId == 1 || e.activityId == 4) {
+                // the first observed stage: the model's request (1) or a started invocation (4), kept apart
                 Map<String, Json> r = new LinkedHashMap<>();
                 r.put("occurrence", str(e.occurrence()));
+                r.put("stage", str(e.activityId == 1 ? "requested" : "started"));
                 r.put("name", e.get("tool_name") == null ? Json.JNull.INSTANCE : e.get("tool_name"));
                 r.put("kind", e.get("tool_kind") == null ? Json.JNull.INSTANCE : e.get("tool_kind"));
                 r.put("arguments_sha256", str(sha(NeutralJson.write(e.get("arguments") == null ? Json.JNull.INSTANCE : e.get("arguments")))));

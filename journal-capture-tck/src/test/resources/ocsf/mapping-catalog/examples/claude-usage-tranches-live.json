@@ -1,0 +1,117 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "claude-usage-tranches-live",
+  "concept": "usage-components-and-cache",
+  "description": "Claude Code 2.1.304 stdout (live recording): usage in canonical tranches. Record 4, a provisional assistant message: its own usage (one API message: scope total of the response) with uncached 2, cache reads 11228, cache writes 13295 split into tiers 5m 0 and 1h 13295 (parts of the writes, never additional). Record 18, the result: the run usage, uncached 8, reads 89843, writes 16376 (tier 1h 16376), output 839 of which 305 thinking (reasoning is part of output: thinking_tokens is always at most output_tokens, the inclusive billed total); its coverage of sub-agents is not established, so no aggregation is stated; and modelUsage for claude-haiku-5-5, Claude Code's running total per model (a cumulative snapshot), with thinkingTokens already counted inside outputTokens.",
+  "authored_from": [
+    "anthropic-prompt-caching-2026-10-22",
+    "anthropic-sdk-typescript-0.135.0-usage",
+    "claude-agent-sdk-0.3.304-model-usage",
+    "claude-live-2.1.304-denial"
+  ],
+  "native": {
+    "evidence_kind": "live",
+    "profile": "claude_stream",
+    "compatibility_entry": "claude-code/stream-json/2.1.304-stdout",
+    "fixture": "claude-live-2.1.304-denial",
+    "artifact": "stream.jsonl",
+    "sha256": "9ad3dbef780b504ac318d620a5d859459cc5c8fea90e3a8d41b3698e6ec4273e"
+  },
+  "expected": [
+    {
+      "record": 4,
+      "class": "model_response",
+      "activity_id": 1,
+      "values": {
+        "/usage_observations/0/scope_id": 2,
+        "/usage_observations/0/usage_status_id": 1,
+        "/usage_observations/0/aggregation_id": 1,
+        "/usage_observations/0/uncached_input_tokens": 2,
+        "/usage_observations/0/cache_read_tokens": 11228,
+        "/usage_observations/0/cache_write_tokens": 13295,
+        "/usage_observations/0/cache_write_tiers/0/tier": "ephemeral_5m_input_tokens",
+        "/usage_observations/0/cache_write_tiers/0/token_count": 0,
+        "/usage_observations/0/cache_write_tiers/1/tier": "ephemeral_1h_input_tokens",
+        "/usage_observations/0/cache_write_tiers/1/token_count": 13295,
+        "/usage_observations/0/output_tokens": 6
+      },
+      "absent": [
+        "/usage_observations/0/reasoning_tokens",
+        "/usage_observations/0/cache_write_tiers/2"
+      ]
+    },
+    {
+      "record": 18,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/scope_id": 4,
+        "/usage_observations/0/usage_status_id": 2,
+        "/usage_observations/0/uncached_input_tokens": 8,
+        "/usage_observations/0/cache_read_tokens": 89843,
+        "/usage_observations/0/cache_write_tokens": 16376,
+        "/usage_observations/0/cache_write_tiers/0/tier": "ephemeral_1h_input_tokens",
+        "/usage_observations/0/cache_write_tiers/0/token_count": 16376,
+        "/usage_observations/0/cache_write_tiers/1/token_count": 0,
+        "/usage_observations/0/output_tokens": 839,
+        "/usage_observations/0/reasoning_tokens": 305,
+        "/usage_observations/0/reasoning_relation_id": 1,
+        "/usage_observations/1/scope_id": 6,
+        "/usage_observations/1/aggregation_id": 2,
+        "/usage_observations/1/uncached_input_tokens": 8,
+        "/usage_observations/1/cache_read_tokens": 89843,
+        "/usage_observations/1/cache_write_tokens": 16376,
+        "/usage_observations/1/output_tokens": 839,
+        "/usage_observations/1/reasoning_tokens": 305,
+        "/usage_observations/1/reasoning_relation_id": 1
+      },
+      "absent": [
+        "/usage_observations/0/aggregation_id",
+        "/usage_observations/1/cache_write_tiers"
+      ]
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "thinking-added-to-output",
+      "record": 18,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/reasoning_relation_id": 2
+      },
+      "why": "thinking_tokens are a part of output_tokens; stating them separate would count 305 tokens twice."
+    },
+    {
+      "id": "tiers-as-extra-writes",
+      "record": 18,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/cache_write_tokens": 32752
+      },
+      "why": "The tier counts are parts of cache_creation_input_tokens, not additional writes."
+    },
+    {
+      "id": "run-usage-aggregation-asserted",
+      "record": 18,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/aggregation_id": 1
+      },
+      "why": "Whether the result's usage is the whole run's total, sub-agents included, is not established on this route."
+    },
+    {
+      "id": "model-usage-as-run-total",
+      "record": 18,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/1/aggregation_id": 1
+      },
+      "why": "ModelUsage is a running total per model across the session's turns (resumed turns included), not one unit's consumption."
+    }
+  ]
+}

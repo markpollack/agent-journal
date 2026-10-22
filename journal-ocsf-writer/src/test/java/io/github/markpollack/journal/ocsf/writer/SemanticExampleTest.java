@@ -73,10 +73,19 @@ class SemanticExampleTest {
                     }
                 }
             }
+            for (Jv absent : ex.member("absent_events") == null ? List.<Jv>of() : ex.member("absent_events").elements()) {
+                Jv event = find(events, absent);
+                int record = integer(absent.member("record"));
+                String what = absent.member("class").text() + " activity " + absent.member("activity_id").text();
+                results.add(new Compared(id, record, "(event) " + what, null, event == null ? null : Jv.write(event), event == null ? "ABSENT" : "PRESENT"));
+                if (event != null) {
+                    problems.add(id + " record " + record + ": the source establishes no " + what + " event, the writer produced one");
+                }
+            }
             for (Jv counter : ex.member("counterexamples") == null ? List.<Jv>of() : ex.member("counterexamples").elements()) {
                 String cid = id + "#" + counter.member("id").text();
                 Jv exp = expectedFor(ex, counter);
-                if (exp == null || !rejects(exp, (Jv.Obj) counter.member("values"))) {
+                if (!namesAbsentEvent(ex, counter) && (exp == null || !rejects(exp, (Jv.Obj) counter.member("values")))) {
                     problems.add(cid + ": the counterexample is not rejected by the expected example (no differing pointer)");
                 }
                 Jv event = find(events, counter);
@@ -118,8 +127,42 @@ class SemanticExampleTest {
             }
         }
         assertThat(differing).containsExactly("/usage_observations/0/scope_id");
-        assertThat(((Jv.Obj) exp.member("values")).members().keySet()).contains("/usage_observations/0/input_tokens", "/usage_observations/0/cache_read_tokens",
+        assertThat(((Jv.Obj) exp.member("values")).members().keySet()).contains("/usage_observations/0/uncached_input_tokens", "/usage_observations/0/cache_read_tokens",
                 "/usage_observations/0/output_tokens", "/usage_observations/0/data");
+    }
+
+    /**
+     * The decision's equal-scope example on both sources: Claude's reported 200 / 800 / 0 and Codex's inclusive 1000 with
+     * 800 cached and no writes, read back from each saved package, are the same canonical tranches; the Claude value is
+     * reported and the Codex one derived, and their aggregation differs (one message's own total, a thread's running
+     * snapshot), so equal tranches are comparable but not summable.
+     */
+    @Test
+    void equivalentClaudeAndCodexUsageNormalizeToTheSameTranches(@TempDir Path work) throws IOException {
+        Jv claude = usageOf("usage-equivalent-claude-synthetic", work.resolve("claude"));
+        Jv codex = usageOf("usage-equivalent-codex-synthetic", work.resolve("codex"));
+        for (String tranche : List.of("uncached_input_tokens", "cache_read_tokens", "cache_write_tokens", "output_tokens")) {
+            assertThat(Jv.write(claude.member(tranche))).as(tranche).isEqualTo(Jv.write(codex.member(tranche)));
+        }
+        assertThat(Jv.write(claude.member("uncached_input_tokens"))).isEqualTo("200");
+        assertThat(claude.path("components").elements().get(0).member("component_basis").text()).isEqualTo("Reported");
+        assertThat(codex.path("components").elements().get(0).member("component_basis").text()).isEqualTo("Derived");
+        assertThat(claude.member("aggregation").text()).isEqualTo("Scope total");
+        assertThat(codex.member("aggregation").text()).isEqualTo("Cumulative snapshot");
+        assertThat(Jv.write(claude.member("data"))).as("each native object is kept as reported").contains("\"input_tokens\":200");
+        assertThat(Jv.write(codex.member("data"))).contains("\"input_tokens\":1000");
+    }
+
+    /** The first usage observation the example's native input yields, read back from the saved package. */
+    static Jv usageOf(String example, Path dir) throws IOException {
+        Jv ex = Jv.parse(Files.readString(EXAMPLES.resolve(example + ".json"), StandardCharsets.UTF_8));
+        Jv nat = ex.member("native");
+        for (Jv e : write(nat, nativeBytes(nat, dir), dir)) {
+            if (e.member("usage_observations") != null && !e.member("usage_observations").elements().isEmpty()) {
+                return e.member("usage_observations").elements().get(0);
+            }
+        }
+        throw new AssertionError("no usage in " + example);
     }
 
     // ---- inputs -----------------------------------------------------------------------------------------------------
@@ -189,11 +232,28 @@ class SemanticExampleTest {
 
     static Jv expectedFor(Jv example, Jv counter) {
         for (Jv exp : example.member("expected").elements()) {
+            if (integer(exp.member("record")) == integer(counter.member("record")) && exp.member("class").text().equals(counter.member("class").text())
+                    && integer(exp.member("activity_id")) == integer(counter.member("activity_id"))) {
+                return exp;
+            }
+        }
+        for (Jv exp : example.member("expected").elements()) {
             if (integer(exp.member("record")) == integer(counter.member("record")) && exp.member("class").text().equals(counter.member("class").text())) {
                 return exp;
             }
         }
         return null;
+    }
+
+    /** Whether the counterexample describes an event the example lists as not established by the source. */
+    static boolean namesAbsentEvent(Jv example, Jv counter) {
+        for (Jv a : example.member("absent_events") == null ? List.<Jv>of() : example.member("absent_events").elements()) {
+            if (integer(a.member("record")) == integer(counter.member("record")) && a.member("class").text().equals(counter.member("class").text())
+                    && integer(a.member("activity_id")) == integer(counter.member("activity_id"))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

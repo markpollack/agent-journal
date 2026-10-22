@@ -1,0 +1,11 @@
+{
+  "caption": "Cache Write Tier",
+  "description": "One source-reported part of cache_write_tokens: a retention or pricing tier and its token count. Tier counts are parts of their parent total, never additional usage.",
+  "extends": "object",
+  "name": "cache_write_tier",
+  "attributes": {
+    "tier": {"requirement": "required"},
+    "token_count": {"requirement": "required"},
+    "native_pointers": {"description": "The RFC 6901 pointer of the native member, in the observation's data.", "requirement": "required"}
+  }
+}

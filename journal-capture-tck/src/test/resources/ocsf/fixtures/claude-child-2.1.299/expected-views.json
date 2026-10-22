@@ -114,7 +114,7 @@
     "repeated_final_observations": 0,
     "conflict": false,
     "applicable_final": {
-     "input_tokens": 28,
+     "uncached_input_tokens": 28,
      "output_tokens": 1040,
      "cache_read_tokens": 64749,
      "cache_write_tokens": 7220,
@@ -133,7 +133,7 @@
     "model": "claude-haiku-4-5-20251001",
     "final_observations": 1,
     "applicable_final": {
-     "input_tokens": 46,
+     "uncached_input_tokens": 46,
      "output_tokens": 1362,
      "cache_read_tokens": 78077,
      "cache_write_tokens": 22130,

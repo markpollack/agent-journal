@@ -29,8 +29,9 @@
       "values": {
         "/usage_observations/0/scope_id": 5,
         "/usage_observations/0/measurement_status_id": 2,
-        "/usage_observations/0/input_tokens": 0,
-        "/usage_observations/0/output_tokens": 0
+        "/usage_observations/0/uncached_input_tokens": 0,
+        "/usage_observations/0/output_tokens": 0,
+        "/usage_observations/0/components/0/component_basis_id": 2
       }
     }
   ],
@@ -51,7 +52,7 @@
       "class": "prompt_turn",
       "activity_id": 2,
       "values": {
-        "/usage_observations/0/input_tokens": null
+        "/usage_observations/0/uncached_input_tokens": null
       },
       "why": "The source reported the components; the ambiguity is stated, the values are not discarded."
     }

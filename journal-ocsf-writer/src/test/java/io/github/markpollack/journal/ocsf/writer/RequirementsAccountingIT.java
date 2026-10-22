@@ -202,7 +202,7 @@ class RequirementsAccountingIT {
                 junit("NativeRequirementTest#everyNativeRfcSpecificationCarriesTheCompleteStatementAndThePromptRendersIt", "complete statements (Agent Judge 0.19.0)")));
         CRITERIA.put("UC5-AC9", List.of(oracle("UC5-AC9", "reporter controls computed on the real reports")));
         CRITERIA.put("UC5-AC10", List.of(separate("mutation sensitivity is measured by the pit profiles of both modules (threshold 70%, mutators and targets unchanged) in detached worktrees of the delivered revision, not in this build; killed, survived and uncovered counts are reported apart in the return")));
-        CRITERIA.put("UC5-AC11", List.of(validator("every committed fixture core, execution records selected by the record rule; ocsf-toolkit v0.9.0, compiled schema ec1b99bc")));
+        CRITERIA.put("UC5-AC11", List.of(validator("every committed fixture core, execution records selected by the record rule; ocsf-toolkit v0.9.0, the compiled schema hash each summary records")));
         CRITERIA.put("UC5-AC12", List.of(oracle("UC5-AC12", "reporter controls"), junit("RequirementsReporterReproductionTest#rr02RemovingOneRequiredPropertyOrOneRequiredOwnerIsAnErrorNotAPass", "missing property or owner is ERROR")));
         CRITERIA.put("UC5-AC13", List.of(junit("MappingCatalogTest#theCommonConceptMatrixIsDerivedFromTheEntriesAndThisRunsOracleResultsWithStatesKeptSeparate", BOTH),
                 junit("MappingCatalogTest#everyCatalogReferenceResolvesInJava", "reference validity")));
@@ -816,7 +816,7 @@ class RequirementsAccountingIT {
             md.append(e.getValue().stream().map(o -> "`" + o.item().ref() + "` " + o.status()).reduce((a, b) -> a + "<br>" + b).orElse("")).append(" |\n");
         }
         md.append("\n## Semantic claims (approval and executed checks kept apart)\n\n")
-                .append("Approval is the Project Owner's recorded decision on the exact claim revision and digest (owner-decisions.json, validated by SemanticClaimTest in this build); ")
+                .append("Approval is a recorded decision of the Project Owner, or of a reviewer the Owner explicitly delegated, on the exact claim revision and digest (owner-decisions.json, validated by SemanticClaimTest in this build); a revision awaiting binding names its previous approved revision as evidence only; ")
                 .append("checks are this build's executed evidence. A proposed claim whose checks pass is a candidate, never approved support.\n\n")
                 .append("| Claim | Concept | Rev | Approval | Checks (this build) | Support |\n|---|---|---|---|---|---|\n");
         for (ClaimAccount c : claims) {

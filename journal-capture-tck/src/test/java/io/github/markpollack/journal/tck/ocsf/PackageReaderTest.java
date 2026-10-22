@@ -46,8 +46,8 @@ class PackageReaderTest {
         assertThat(fromEvents.standalone()).as("read from the file's declarations; run.json is ancillary").isTrue();
         assertThat(fromEvents.manifest.packageState()).isEqualTo("COMPLETED");
         assertThat(fromEvents.manifest.extensionUid()).isEqualTo(901);
-        assertThat(fromEvents.manifest.extensionVersion()).isEqualTo("0.5.0-prototype");
-        assertThat(fromEvents.manifest.contracts()).containsKey("codex-cli/rollout/0.160.1/0.2.0-prototype");
+        assertThat(fromEvents.manifest.extensionVersion()).isEqualTo("0.6.0-prototype");
+        assertThat(fromEvents.manifest.contracts()).containsKey("codex-cli/rollout/0.160.1/0.3.0-prototype");
     }
 
     @Test
@@ -89,10 +89,11 @@ class PackageReaderTest {
         assertThat(p.manifest.extensionVersion()).isEqualTo("0.3.0-prototype");
         assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
         OracleReport report = OcsfFixtures.verify(historical);
-        assertThat(report.defects()).extracting(Check::property).containsOnly("population.usage", "operation.values");
+        // under the 0.6.0 reading this old package also presents its stream-local agent-message ids as response identities
+        assertThat(report.defects()).extracting(Check::property).containsOnly("population.usage", "operation.values", "population.responses");
         assertThat(report.missingRequired()).isEmpty();
         Path current = copy(OcsfFixtures.LIVE_CODEX, work.resolve("current"));
-        assertThat(open(current).manifest.extensionVersion()).isEqualTo("0.5.0-prototype");
+        assertThat(open(current).manifest.extensionVersion()).isEqualTo("0.6.0-prototype");
     }
 
     /**
@@ -108,7 +109,29 @@ class PackageReaderTest {
         assertThat(p.manifest.extensionVersion()).isEqualTo("0.4.0-prototype");
         assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
         OracleReport report = OcsfFixtures.verify(historical);
-        assertThat(report.defects()).extracting(Check::property).containsOnly("population.usage", "population.requests", "population.results", "whole_record.class");
+        // population.responses: under the 0.6.0 reading its stream-local agent-message ids are not response identities
+        assertThat(report.defects()).extracting(Check::property).containsOnly("population.usage", "population.requests", "population.results", "whole_record.class", "population.responses");
+        assertThat(report.missingRequired()).isEmpty();
+    }
+
+    /**
+     * The 0.5.0 package of the live MCP recording, written before the delegated semantic closure: it reads from its own
+     * embedded definitions without defect, and the current oracle names exactly the revised meanings it predates
+     * (fixtures-historical/extension-0.5.0-prototype/README.md): a stream-local item presented as a response identity,
+     * the started MCP invocations recorded as the model's request without their family, and usage without the
+     * canonical tranches (its vendor-dependent input_tokens).
+     */
+    @Test
+    void aPackageWrittenWithExtension050StillReadsAndShowsOnlyTheRevisedMeanings(@TempDir Path work) {
+        Path historical = copyHistorical("extension-0.5.0-prototype", OcsfFixtures.LIVE_CODEX_MCP, work);
+        OcsfPackage p = open(historical);
+        assertThat(p.refused()).isFalse();
+        assertThat(p.manifest.extensionVersion()).isEqualTo("0.5.0-prototype");
+        assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
+        OracleReport report = OcsfFixtures.verify(historical);
+        assertThat(report.defects()).extracting(Check::property).containsOnly("population.responses", "request.values", "result.values", "usage.values");
+        assertThat(report.check("request.values", "main/stream.jsonl").detail()).contains("activity_id 1 != 4");
+        assertThat(report.check("usage.values", "main/stream.jsonl").detail()).contains("uncached_input_tokens MISSING").contains("components[] has no entry for uncached_input_tokens");
         assertThat(report.missingRequired()).isEmpty();
     }
 
@@ -174,7 +197,7 @@ class PackageReaderTest {
         Path fixture = copy(CODEX, work);
         editDeclarations(pkg(fixture), decls -> {
             obj(declaration(decls, "definition:type/long_t").path("definition", "body")).members().put("caption", str("Synthetic"));
-            obj(declaration(decls, "contract:codex-cli/rollout/0.160.1/0.2.0-prototype").path("contract", "embedded")).members().put("tampered", str("yes"));
+            obj(declaration(decls, "contract:codex-cli/rollout/0.160.1/0.3.0-prototype").path("contract", "embedded")).members().put("tampered", str("yes"));
         });
         editManifest(pkg(fixture), run -> obj(run.path("semantic_contract", "declarations").elements().get(0)).members().put("tampered", str("yes")));
         OcsfPackage p = open(fixture);

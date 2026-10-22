@@ -60,7 +60,8 @@ class CodexExecStreamTest {
         Json views = AnalysisViews.all(open(copy(CODEX_STREAM, work)));
         Json expected = NeutralJson.parse(new String(CodexExecStreamTest.class.getResourceAsStream("/ocsf/fixtures/" + CODEX_STREAM + "/expected-views.json").readAllBytes(), StandardCharsets.UTF_8));
         assertThat(subsetDifferences(expected, views, "$")).isEmpty();
-        assertThat(views.path("responses", "logical_count_basis").text()).contains("2 artifact-scoped identit(ies) are not linked");
+        assertThat(views.path("responses", "logical_count_basis").text()).as("content items of unidentified responses are neither distinct responses nor repeats")
+                .contains("2 response(s) without an id cannot be counted as distinct or as repeats");
         assertThat(views.path("associations", "operations", "logical_count_basis").text()).startsWith("single source");
     }
 
@@ -97,18 +98,19 @@ class CodexExecStreamTest {
         Path fixture = copy(CODEX_STREAM, work);
         editEvents(pkg(fixture), events -> {
             Json u = at(events, "prompt_turn", 2, 12).member("usage_observations").elements().get(0);
-            obj(u).members().put("input_tokens", num("9007199254740992"));
+            // the exact uncached tranche is 2^53+1 - 24576 = 9007199254716417; one less is a value defect
+            obj(u).members().put("uncached_input_tokens", num("9007199254716416"));
             obj(u).members().remove("reasoning_tokens");
         });
         String detail = verify(fixture).check("usage.values", STREAM).detail();
-        assertThat(detail).contains("input_tokens VALUE").contains("reasoning_tokens MISSING");
+        assertThat(detail).contains("uncached_input_tokens VALUE").contains("reasoning_tokens MISSING");
     }
 
     @Test
     void anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected(@TempDir Path work) {
         Path fixture = copy(CODEX_STREAM, work);
         editEvents(pkg(fixture), events -> {
-            Json r = at(events, "model_response", 2, 11);
+            Json r = at(events, "model_response", 3, 11);
             obj(r.member("content_blocks").elements().get(0)).members().put("data", str("changed"));
             events.remove(at(events, "source_record", 1, 10)); // the synthetic unknown event, retained whole
         });

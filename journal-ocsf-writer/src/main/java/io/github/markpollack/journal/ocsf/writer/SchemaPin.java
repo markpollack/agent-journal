@@ -24,7 +24,7 @@ import java.util.TreeMap;
 public final class SchemaPin {
 
     public static final String EXTENSION = "agentic_cli";
-    public static final String BUNDLED_EXCERPT = "/ocsf/compiled-excerpt-agentic_cli-0.5.0-prototype.json";
+    public static final String BUNDLED_EXCERPT = "/ocsf/compiled-excerpt-agentic_cli-0.6.0-prototype.json";
 
     /** One written class as the compiled schema defines it. */
     public record ClassDef(String name, String caption, int classUid, int categoryUid, String categoryName, Map<String, String> activities) {
@@ -156,9 +156,9 @@ public final class SchemaPin {
             "events/agent_execution/model_response.json", "events/agent_execution/prompt_turn.json",
             "events/agent_execution/session_context.json", "events/agent_execution/source_record.json",
             "events/agent_execution/tool_call.json",
-            "objects/attribution.json", "objects/cli_agent.json", "objects/content_block.json", "objects/cost_observation.json",
+            "objects/attribution.json", "objects/cache_write_tier.json", "objects/cli_agent.json", "objects/content_block.json", "objects/cost_observation.json",
             "objects/journal_provenance.json", "objects/model_ref.json", "objects/operation.json", "objects/permission_decision.json",
-            "objects/session_settings.json", "objects/source_ref.json", "objects/tool_result.json", "objects/usage_observation.json");
+            "objects/session_settings.json", "objects/source_ref.json", "objects/tool_result.json", "objects/usage_component.json", "objects/usage_observation.json");
 
     /** Reads the bundled extension source; fills {@code files} (path to parsed document) and returns the source hash. */
     public static String extensionSource(Map<String, Jv> files) {

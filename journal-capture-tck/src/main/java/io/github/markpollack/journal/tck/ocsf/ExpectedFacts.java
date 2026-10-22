@@ -20,48 +20,83 @@ import java.util.Set;
 public final class ExpectedFacts {
 
     /**
+     * The first observed stage of a tool activity: the model's request (activity 1) or a started invocation (activity 4).
+     *
+     * @param name the tool name the source reports, or {@code null} when it reports none (a family is not a name)
      * @param namespace the namespace the source reports beside the tool name (an MCP server), or {@code null}
      * @param identityBasisId the kind of identifier {@code id} is (2: stream-local item id), or {@code null} when the profile states none
+     * @param activityId 1 when the source reports the model's request, 4 when it reports an invocation as started
+     * @param family the source's own family of the activity (a Codex item type), or {@code null} when it reports none
+     * @param kindId the kind the profile itself establishes from the pinned interface, or {@code null} to read it from the package's embedded name table
      */
-    public record Request(int recordIndex, String id, String name, Json arguments, String responseUid, String reportedState, String namespace, Integer identityBasisId) {
+    public record Request(int recordIndex, String id, String name, Json arguments, String responseUid, String reportedState, String namespace, Integer identityBasisId,
+            int activityId, String family, Integer kindId) {
         public Request(int recordIndex, String id, String name, Json arguments, String responseUid, String reportedState) {
-            this(recordIndex, id, name, arguments, responseUid, reportedState, null, null);
+            this(recordIndex, id, name, arguments, responseUid, reportedState, null, null, 1, null, null);
         }
     }
 
     /** {@code isError} is the native boolean when reported, else {@code null}; {@code content} is {@code null} when the source reports no result content. */
-    public record Result(int recordIndex, String id, Json content, Json isError, Json structured, Decision decision, String reportedState, Integer identityBasisId) {
+    public record Result(int recordIndex, String id, Json content, Json isError, Json structured, Decision decision, String reportedState, Integer identityBasisId, String family) {
         public Result(int recordIndex, String id, Json content, Json isError, Json structured, Decision decision, String reportedState) {
-            this(recordIndex, id, content, isError, structured, decision, reportedState, null);
+            this(recordIndex, id, content, isError, structured, decision, reportedState, null, null);
         }
     }
 
     /**
      * {@code blocks} are the native block values in order, or {@code null} when the source carries no content;
      * {@code reasoningForm} is the reasoning_form_id every block must carry, or {@code null} when the profile states none.
+     * When {@code itemIdentityBasisId} is set, {@code id} is the source's own content-item id ({@code item_uid} of that
+     * basis), the model response is not identified (no {@code response_uid}) and the activity is 3 Item completed.
      */
-    public record Response(int recordIndex, String id, List<Json> blocks, String stopReason, boolean terminal, String model, Integer reasoningForm) {
+    public record Response(int recordIndex, String id, List<Json> blocks, String stopReason, boolean terminal, String model, Integer reasoningForm, Integer itemIdentityBasisId) {
         public Response(int recordIndex, String id, List<Json> blocks, String stopReason, boolean terminal, String model) {
-            this(recordIndex, id, blocks, stopReason, terminal, model, null);
+            this(recordIndex, id, blocks, stopReason, terminal, model, null, null);
+        }
+
+        /** The activity the event must carry. */
+        public int activityId() {
+            return itemIdentityBasisId != null ? 3 : terminal ? 2 : 1;
         }
     }
 
     public record Prompt(int recordIndex, String turnUid, List<String> texts) {
     }
 
+    /** One source-reported part of the cache writes: the tier's native name, its exact count and the pointer of its member in the usage object. */
+    public record Tier(String tier, Json count, String pointer) {
+    }
+
+    /**
+     * The canonical tranches of one native usage object as the profile reads them from the pinned definitions: each
+     * component's exact value (absent when not established), how each named component is established (1 reported,
+     * 2 derived, 3 unavailable) with the native pointers it is read from, the cache-write tiers, and whether reasoning is
+     * part of output ({@code null} when not established).
+     */
+    public record Tranches(Map<String, Json> values, Map<String, Integer> bases, Map<String, List<String>> pointers, List<Tier> tiers, Integer reasoningRelationId) {
+    }
+
     /**
      * @param eventRecordIndex the record whose event carries the observation
      * @param recordIndex the record the observation cites
      * @param components normalized component name to exact native number
+     * @param aggregationId 1 scope total, 2 cumulative snapshot, or {@code null} when the profile establishes none
+     * @param tranches the component bases, tiers and reasoning relation, or {@code null} when the profile states none
      */
-    public record Usage(int eventRecordIndex, int recordIndex, int scopeId, int statusId, Map<String, Json> components, String model, String provider, Integer measurementStatusId) {
+    public record Usage(int eventRecordIndex, int recordIndex, int scopeId, int statusId, Map<String, Json> components, String model, String provider, Integer measurementStatusId,
+            Integer aggregationId, Tranches tranches) {
         /** A usage whose record reports no provider (the provider must then be absent on the observation, never inferred). */
         public Usage(int eventRecordIndex, int recordIndex, int scopeId, int statusId, Map<String, Json> components, String model) {
-            this(eventRecordIndex, recordIndex, scopeId, statusId, components, model, null, null);
+            this(eventRecordIndex, recordIndex, scopeId, statusId, components, model, null, null, null, null);
         }
 
         public Usage(int eventRecordIndex, int recordIndex, int scopeId, int statusId, Map<String, Json> components, String model, String provider) {
-            this(eventRecordIndex, recordIndex, scopeId, statusId, components, model, provider, null);
+            this(eventRecordIndex, recordIndex, scopeId, statusId, components, model, provider, null, null, null);
+        }
+
+        /** A usage stated in canonical tranches. */
+        public Usage(int eventRecordIndex, int recordIndex, int scopeId, int statusId, Tranches tranches, String model, String provider, Integer measurementStatusId, Integer aggregationId) {
+            this(eventRecordIndex, recordIndex, scopeId, statusId, tranches.values(), model, provider, measurementStatusId, aggregationId, tranches);
         }
     }
 

@@ -76,8 +76,8 @@ class StandaloneEventFileTest {
         assertThat(p.declarations.lineOf("definition:agentic_cli/tool_call#2")).as("a later core attribute was added by an amendment, not a rewrite").isNotNull();
 
         // essential references resolve inside the file
-        assertThat(p.manifest.contracts()).containsKey("claude-code/stream-json/2.1.303/0.2.0-prototype");
-        assertThat(p.manifest.contract("claude-code/stream-json/2.1.303/0.2.0-prototype").path("embedded", "rules")).isNotNull();
+        assertThat(p.manifest.contracts()).containsKey("claude-code/stream-json/2.1.303/0.3.0-prototype");
+        assertThat(p.manifest.contract("claude-code/stream-json/2.1.303/0.3.0-prototype").path("embedded", "rules")).isNotNull();
         Json source = p.manifest.source("stream.jsonl");
         assertThat(source.member("profile").text()).isEqualTo("claude_stream");
         assertThat(source.member("sha256").text()).as("the source end declares the final extent").hasSize(64);
@@ -105,7 +105,7 @@ class StandaloneEventFileTest {
         assertThat(responses).isNotEmpty();
         assertThat(responses.get(0).elements("usage_observations")).isNotEmpty();
         assertThat(responses.get(0).integer("usage_observations")).isNull();
-        assertThat(responses.get(0).elements("usage_observations").get(0).member("input_tokens")).isNotNull();
+        assertThat(responses.get(0).elements("usage_observations").get(0).member("uncached_input_tokens")).isNotNull();
         Event retained = p.events.stream().filter(e -> e.get("data") != null).findFirst().orElseThrow();
         assertThat(retained.get("data", "type")).as("the vendor record is retained whole beside the portable fields").isNotNull();
 
@@ -130,7 +130,7 @@ class StandaloneEventFileTest {
         assertThat(c.events).hasSize(4);
         assertThat(c.catalog.classes()).containsKeys("agentic_cli/tool_call", "agentic_cli/model_response");
         assertThat(c.catalog.classes()).as("a class no event of this file uses is not declared here").doesNotContainKey("agentic_cli/session_context");
-        assertThat(c.manifest.contracts()).containsKey("claude-code/stream-json/2.1.303/0.2.0-prototype");
+        assertThat(c.manifest.contracts()).containsKey("claude-code/stream-json/2.1.303/0.3.0-prototype");
         assertThat(c.manifest.source("stream.jsonl").member("sha256").text()).hasSize(64);
 
         // judged on its own against the frozen native artifact (the parent's obligations are the parent's)
@@ -181,7 +181,7 @@ class StandaloneEventFileTest {
         Path c = copy(CODEX, work.resolve("c"));
         editDeclarations(pkg(c), decls -> decls.removeIf(d -> SchemaCatalog.text(d.member("declaration"), "kind").equals("contract")));
         OcsfPackage pc = open(alone(pkg(c), work.resolve("c-alone")));
-        assertThat(pc.diagnosticsWithCode("CONTRACT_REF_UNRESOLVED").get(0).detail()).contains("codex-cli/rollout/0.160.1/0.2.0-prototype");
+        assertThat(pc.diagnosticsWithCode("CONTRACT_REF_UNRESOLVED").get(0).detail()).contains("codex-cli/rollout/0.160.1/0.3.0-prototype");
         assertThat(pc.diagnosticsWithCode("REFERENCE_BEFORE_DECLARATION")).isNotEmpty();
 
         // (d) the source declaration removed: every event's artifact reference is unresolved
@@ -246,7 +246,9 @@ class StandaloneEventFileTest {
         assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
         assertThat(p.events).hasSize(39);
         OracleReport report = OcsfOracle.verify(p, natives(fixture));
-        assertThat(report.defects()).as(report.toString()).isEmpty();
+        // the layout reads; under the 0.6.0 reading its usage predates the canonical tranches (no uncached tranche, no component bases)
+        assertThat(report.defects()).as(report.toString()).extracting(Check::property).containsOnly("usage.values");
+        assertThat(report.check("usage.values", "main/rollout.jsonl").detail()).contains("uncached_input_tokens MISSING");
 
         Path alone = alone(pkg(fixture), work.resolve("hist-alone"));
         OcsfPackage detached = PackageReader.open(alone.resolve("events.jsonl"));

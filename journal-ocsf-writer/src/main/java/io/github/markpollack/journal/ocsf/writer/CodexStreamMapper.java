@@ -9,19 +9,23 @@ import static io.github.markpollack.journal.ocsf.writer.MapperSupport.TOOL_KIND;
 import static io.github.markpollack.journal.ocsf.writer.MapperSupport.text;
 
 /**
- * Codex CLI {@code exec --json} live output (contract {@code codex-cli-0.160.1-exec-stream}, 0.3.0-prototype, the
- * SEM-1 candidate whose changed meanings await the Project Owner's semantic approval). The exec processor assigns
- * its own item ids ({@code item_N}): they are stream-local, never the model-facing call ids, which the stream omits.
- * Agent messages are responses; a reasoning item is a response whose one block is a reasoning summary (the emitter
- * joins the summary parts and drops raw reasoning). A command execution is a standalone operation (no wrapping call id
- * is reported) with its command string; a declined command keeps status 99 "Declined", the item's reported status,
- * not an observed permission decision. MCP, web search, collaboration and file-change items are tool calls:
- * {@code item.started} is the request, {@code item.completed} the result ({@link CodexItems} reads each item).
- * {@code turn.completed} carries the thread's cumulative usage ({@code ThreadTokenUsage.total}), not a per-turn
- * measurement, and all-zero components may be the emitter's default. A web_search line carries {@code item.id} twice
- * (the exec item id, then the search item's own id); only that declared form is interpreted, and its record is retained
- * verbatim. {@code thread.started} states the thread id, the session identity of every later event. The stream
- * carries no timestamps, so every event uses the capture-start fallback.
+ * Codex CLI {@code exec --json} live output (contract {@code codex-cli-0.160.1-exec-stream}, 0.4.0-prototype, whose
+ * revised meanings await the managing reviewer's binding). The exec processor assigns its own item ids ({@code item_N}):
+ * they are stream-local, unique only within this artifact of this Journal invocation, never a model-facing call id or a
+ * provider's response id, which the stream omits. Agent messages and reasoning items are completed content items of
+ * some model response (activity 3, {@code item_uid}); which response, and whether two items share one, is not reported,
+ * so no {@code response_uid} is written. A reasoning item's one block is the emitter's joined reasoning summary. A command
+ * execution is a standalone operation (no wrapping call id is reported) with its command string; a declined command
+ * keeps status 99 "Declined", the item's reported status, not an observed permission decision. MCP, web search,
+ * collaboration and file-change items are tool activities at the stage the stream reports: {@code item.started} is a
+ * started invocation (activity 4, not the model's request), {@code item.completed} its observed result; the item type is
+ * {@code tool_family}, a tool name is written only where the item reports one, and the kind comes from the family, or for
+ * MCP from a reviewed namespace binding (none: Other), never from a bare name ({@link CodexItems} reads each item).
+ * {@code turn.completed} carries the thread's cumulative usage ({@code ThreadTokenUsage.total}) as a cumulative snapshot
+ * in canonical tranches; all-zero components may be the emitter's default. A web_search line carries the item's
+ * {@code id} twice (the exec item id, then the search item's own id); only that declared form is interpreted, and its
+ * record is retained verbatim. {@code thread.started} states the thread id, the session identity of every later event.
+ * The stream carries no timestamps, so every event uses the capture-start fallback.
  */
 final class CodexStreamMapper implements SourceMapper {
 
@@ -87,12 +91,12 @@ final class CodexStreamMapper implements SourceMapper {
         return o.member("item") instanceof Jv.Obj io ? io : new Jv.Obj();
     }
 
-    /** An agent message, or a reasoning item whose text is the emitter's joined reasoning summary. */
+    /** An agent message, or a reasoning item whose text is the emitter's joined reasoning summary: a completed content item, its response unidentified. */
     private void response(NativeRecord r, SourceContext ctx, Jv o, String itype, String family) {
         boolean reasoning = "reasoning".equals(itype);
         Jv it = item(o);
-        ctx.family(family, r.raw().length, reasoning ? "normalized: model_response Completed with one reasoning-summary block (stream-local item id)"
-                : "normalized: model_response Completed (stream-scoped item id)");
+        ctx.family(family, r.raw().length, reasoning ? "normalized: model_response Item completed with one reasoning-summary block (stream-local item id; response not identified)"
+                : "normalized: model_response Item completed (stream-local item id; response not identified)");
         // item.text is the one content block; an item without text has no block (the source carries none)
         Jv.Arr blocks = new Jv.Arr();
         if (it.member("text") != null && !it.member("text").isNull()) {
@@ -106,10 +110,11 @@ final class CodexStreamMapper implements SourceMapper {
             }
             blocks.add(block.put("text", text(it, "text")).put("data", it.member("text")));
         }
-        Jv.Obj ev = ctx.event("model_response", 2, r, ctx.timeFor(r, null), CONTRACT,
+        Jv.Obj ev = ctx.event("model_response", 3, r, ctx.timeFor(r, null), CONTRACT,
                 reasoning ? "codex.stream.reasoning->model_response" : "codex.stream.agent_message->model_response", null, text(it, "id"), true, null);
-        ev.put("session_uid", session(ctx)).put("response_uid", text(it, "id")).put("content_blocks", blocks)
-                .put("basis", "item.completed is terminal; response_uid is the stream-local item id (the exec processor's item_N, not an upstream response id)").put("data", o);
+        ev.put("session_uid", session(ctx)).put("item_uid", text(it, "id")).put("identity_basis_id", 2).put("identity_basis", IDENTITY_BASIS.get(2)).put("content_blocks", blocks)
+                .put("basis", "codex.stream.content_item.v1: item.completed completes this content item; item_uid is the stream-local item id (the exec processor's item_N); "
+                        + "the model response it belongs to is not reported, so no response_uid is written").put("data", o);
         ctx.emit(ev);
     }
 
@@ -135,8 +140,9 @@ final class CodexStreamMapper implements SourceMapper {
     }
 
     /**
-     * An MCP, web search, collaboration or file-change item as a tool call: {@code item.started} the request,
-     * {@code item.completed} the result, under the stream-local item id.
+     * An MCP, web search, collaboration or file-change item as a tool activity at its reported stage: {@code item.started}
+     * a started invocation (activity 4; the model's request is not observed), {@code item.completed} the observed result,
+     * under the stream-local item id, with the item type as the family and a name only where the item reports one.
      *
      * @param whole whether this event retains the record whole ({@code false} for the web_search form, whose
      *        verbatim record is the opaque event beside it)
@@ -144,13 +150,13 @@ final class CodexStreamMapper implements SourceMapper {
     private void toolCall(NativeRecord r, SourceContext ctx, Jv o, String type, String itype, boolean whole) {
         Jv it = item(o);
         boolean started = "item.started".equals(type);
-        String name = CodexItems.toolName(itype, it);
-        int kind = ctx.contracts.toolKind(CONTRACT, name);
-        Jv.Obj ev = ctx.event("tool_call", started ? 1 : 2, r, ctx.timeFor(r, null), CONTRACT, CodexItems.TOOL_RULES.get(itype).get(started ? 0 : 1), null, text(it, "id"), whole,
+        String namespace = "mcp_tool_call".equals(itype) ? text(it, "server") : null;
+        MappingContracts.Kind kind = ctx.contracts.familyKind(CONTRACT, itype, namespace, CodexItems.toolName(itype, it));
+        Jv.Obj ev = ctx.event("tool_call", started ? 4 : 2, r, ctx.timeFor(r, null), CONTRACT, CodexItems.TOOL_RULES.get(itype).get(started ? 0 : 1), null, text(it, "id"), whole,
                 started ? null : CodexItems.resultStatus(itype, it));
         ev.put("session_uid", session(ctx)).put("tool_call_uid", text(it, "id")).put("identity_basis_id", 2).put("identity_basis", IDENTITY_BASIS.get(2))
-                .put("tool_name", name).put("tool_namespace", "mcp_tool_call".equals(itype) ? text(it, "server") : null)
-                .put("tool_kind_id", kind).put("tool_kind", TOOL_KIND.get(kind)).put("tool_kind_basis", ctx.contracts.toolKindRule(CONTRACT))
+                .put("tool_name", CodexItems.toolName(itype, it)).put("tool_family", itype).put("tool_namespace", namespace)
+                .put("tool_kind_id", kind.id()).put("tool_kind", TOOL_KIND.get(kind.id())).put("tool_kind_basis", kind.rule())
                 .put("arguments", CodexItems.arguments(itype, it)).put("reported_state", text(it, "status"))
                 .put("tool_result", started ? null : CodexItems.result(itype, it)).put("data", whole ? o : null);
         ctx.emit(ev);
@@ -158,16 +164,17 @@ final class CodexStreamMapper implements SourceMapper {
 
     /** turn.completed: the thread's cumulative usage as of this turn's completion, with its measurement status. */
     private void turn(NativeRecord r, SourceContext ctx, Jv o, String family) {
-        ctx.family(family, r.raw().length, "normalized: prompt_turn Turn completed with the thread's cumulative usage (session scope, final for this run)");
+        ctx.family(family, r.raw().length, "normalized: prompt_turn Turn completed with the thread's cumulative usage snapshot (session scope, final for this run, canonical tranches)");
         Jv usage = o.member("usage");
         Jv.Obj ob = MapperSupport.usage(5, 2, "codex.stream.thread_usage.v2: turn.completed carries ThreadTokenUsage.total, the thread's cumulative usage as of this turn's completion,"
                 + " including earlier turns of a resumed thread; not a per-turn measurement; final for this run", ctx.sourceRef(r, null, null, false), null, usage);
-        MapperSupport.components(ob, usage, "input_tokens", "input_tokens", "output_tokens", "output_tokens", "cached_input_tokens", "cache_read_tokens",
-                "cache_write_input_tokens", "cache_write_tokens", "reasoning_output_tokens", "reasoning_tokens");
+        UsageTranches.aggregation(ob, 2, "codex.stream.thread_usage_aggregation.v1: a running total of the thread up to this turn's completion; never summed with another snapshot");
+        UsageTranches.codex(ob, usage, "");
         Integer measurement = CodexItems.measurement(usage);
         if (measurement != null) {
             ob.put("measurement_status_id", measurement).put("measurement_status", MEASUREMENT_STATUS.get(measurement));
         }
+        UsageTranches.dataLast(ob);
         Jv.Obj ev = ctx.event("prompt_turn", 2, r, ctx.timeFor(r, null), CONTRACT, "codex.stream.turn_completed->prompt_turn.completed", null, null, true,
                 new MapperSupport.Status(0, 3, "turn.completed carries no status"));
         ev.put("session_uid", session(ctx)).put("usage_observations", new Jv.Arr(List.of(ob))).put("data", o);

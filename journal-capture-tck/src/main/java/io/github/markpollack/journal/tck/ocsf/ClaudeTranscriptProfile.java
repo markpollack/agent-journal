@@ -43,20 +43,7 @@ final class ClaudeTranscriptProfile implements SourceProfile {
                 }
                 f.normalized.add(r.index());
                 time(f, r, ts);
-                String stop = SourceProfile.text(message, "stop_reason");
-                List<Json> blocks = message.member("content") == null ? null : message.member("content").elements();
-                f.responses.add(new ExpectedFacts.Response(r.index(), SourceProfile.text(message, "id"), blocks, stop, stop != null, SourceProfile.text(message, "model")));
-                Json usage = message.member("usage");
-                if (usage != null) {
-                    Map<String, Json> c = SourceProfile.components(usage, "input_tokens", "input_tokens", "output_tokens", "output_tokens",
-                            "cache_read_input_tokens", "cache_read_tokens", "cache_creation_input_tokens", "cache_write_tokens");
-                    Json thinking = usage.path("output_tokens_details", "thinking_tokens");
-                    if (SourceProfile.isIntegral(thinking)) {
-                        c.put("reasoning_tokens", thinking);
-                    }
-                    f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 2, stop == null ? 1 : 2, c, SourceProfile.text(message, "model")));
-                }
-                for (Json b : blocks == null ? List.<Json>of() : blocks) {
+                for (Json b : SourceProfile.anthropicMessage(f, r.index(), message)) {
                     if ("tool_use".equals(SourceProfile.text(b, "type"))) {
                         admittedTools.add(SourceProfile.text(b, "id"));
                         f.requests.add(new ExpectedFacts.Request(r.index(), SourceProfile.text(b, "id"), SourceProfile.text(b, "name"),
@@ -137,9 +124,7 @@ final class ClaudeTranscriptProfile implements SourceProfile {
                 f.contexts.add(new ExpectedFacts.Context(r.index(), 3, "cost-state", null, Map.of(), null, null));
                 if (o.member("modelUsage") instanceof Json.JObject mu) {
                     for (Map.Entry<String, Json> m : mu.members().entrySet()) {
-                        f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 5, 2, SourceProfile.components(m.getValue(),
-                                "inputTokens", "input_tokens", "outputTokens", "output_tokens", "cacheReadInputTokens", "cache_read_tokens",
-                                "cacheCreationInputTokens", "cache_write_tokens", "thinkingTokens", "reasoning_tokens"), m.getKey()));
+                        f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 5, 2, TrancheReading.claudeModelUsage(m.getValue()), m.getKey(), null, null, 2));
                     }
                 }
                 if (o.member("totalCostUSD") instanceof Json.JNumber) {

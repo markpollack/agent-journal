@@ -1,0 +1,67 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "codex-mcp-completed-only-synthetic",
+  "concept": "tool-request-identity-and-arguments",
+  "description": "LABELLED SYNTHETIC: an MCP item observed only at completion (its item.started is not in the capture). Only the result stage is recorded; no start and no model request is invented to precede it.",
+  "authored_from": [
+    "codex-exec-0.160.1-types",
+    "codex-exec-0.160.1-emitter-items"
+  ],
+  "native": {
+    "evidence_kind": "synthetic",
+    "profile": "codex_stream",
+    "compatibility_entry": "codex-cli/exec-json-stream/0.160.1",
+    "run_spec_fixture": "syn-codex-exec-families-0.160.1",
+    "artifact": "stream.jsonl",
+    "lines": [
+      "{\"type\":\"thread.started\",\"thread_id\":\"00000000-0000-4000-8000-00000000fa14\"}",
+      "{\"type\":\"turn.started\"}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"mcp_tool_call\",\"server\":\"local\",\"tool\":\"echo\",\"arguments\":{\"text\":\"x\"},\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"x\"}],\"structured_content\":null},\"error\":null,\"status\":\"completed\"}}"
+    ]
+  },
+  "expected": [
+    {
+      "record": 3,
+      "class": "tool_call",
+      "activity_id": 2,
+      "values": {
+        "/tool_call_uid": "item_0",
+        "/tool_family": "mcp_tool_call",
+        "/status_id": 1,
+        "/tool_result/data": [
+          {
+            "type": "text",
+            "text": "x"
+          }
+        ]
+      }
+    }
+  ],
+  "absent_events": [
+    {
+      "record": 3,
+      "class": "tool_call",
+      "activity_id": 4,
+      "why": "no item.started was observed"
+    },
+    {
+      "record": 3,
+      "class": "tool_call",
+      "activity_id": 1,
+      "why": "no model request was observed"
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "invented-start",
+      "record": 3,
+      "class": "tool_call",
+      "activity_id": 4,
+      "values": {
+        "/tool_call_uid": "item_0"
+      },
+      "why": "No start was observed; a result does not prove when or how the invocation began."
+    }
+  ]
+}

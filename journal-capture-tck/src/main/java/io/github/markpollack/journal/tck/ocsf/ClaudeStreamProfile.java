@@ -46,17 +46,7 @@ final class ClaudeStreamProfile implements SourceProfile {
             if ("assistant".equals(type) && message != null) {
                 f.normalized.add(r.index());
                 String id = SourceProfile.text(message, "id");
-                String stop = SourceProfile.text(message, "stop_reason");
-                List<Json> blocks = message.member("content") == null ? null : message.member("content").elements();
-                f.responses.add(new ExpectedFacts.Response(r.index(), id, blocks, stop, stop != null, SourceProfile.text(message, "model")));
-                Json usage = message.member("usage");
-                if (usage != null) {
-                    f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 2, stop == null ? 1 : 2, SourceProfile.components(usage,
-                            "input_tokens", "input_tokens", "output_tokens", "output_tokens",
-                            "cache_read_input_tokens", "cache_read_tokens", "cache_creation_input_tokens", "cache_write_tokens"),
-                            SourceProfile.text(message, "model")));
-                }
-                for (Json b : blocks == null ? List.<Json>of() : blocks) {
+                for (Json b : SourceProfile.anthropicMessage(f, r.index(), message)) {
                     if ("tool_use".equals(SourceProfile.text(b, "type"))) {
                         f.requests.add(new ExpectedFacts.Request(r.index(), SourceProfile.text(b, "id"), SourceProfile.text(b, "name"),
                                 b.member("input"), id, null));
@@ -104,20 +94,14 @@ final class ClaudeStreamProfile implements SourceProfile {
                 boolean success = "success".equals(SourceProfile.text(o, "subtype")) && o.member("is_error") instanceof Json.JBool b && !b.value();
                 f.completed.add(new ExpectedFacts.TurnCompleted(r.index(), success ? 1 : 2, SourceProfile.text(o, "stop_reason")));
                 Json usage = o.member("usage");
-                Map<String, Json> run = SourceProfile.components(usage, "input_tokens", "input_tokens", "output_tokens", "output_tokens",
-                        "cache_read_input_tokens", "cache_read_tokens", "cache_creation_input_tokens", "cache_write_tokens");
-                Json thinking = usage == null ? null : usage.path("output_tokens_details", "thinking_tokens");
-                if (SourceProfile.isIntegral(thinking)) {
-                    run.put("reasoning_tokens", thinking);
-                }
-                f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 4, 2, run, null));
+                // whether the result's usage covers the run's sub-agents is not established: no aggregation is expected
+                f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 4, 2, TrancheReading.anthropic(usage), null, null, null, null));
                 Json modelUsage = o.member("modelUsage");
                 if (modelUsage instanceof Json.JObject mu) {
                     for (Map.Entry<String, Json> m : mu.members().entrySet()) {
-                        f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 6, 2, SourceProfile.components(m.getValue(),
-                                "inputTokens", "input_tokens", "outputTokens", "output_tokens", "cacheReadInputTokens", "cache_read_tokens",
-                                "cacheCreationInputTokens", "cache_write_tokens", "thinkingTokens", "reasoning_tokens"), m.getKey(),
-                                SourceProfile.text(m.getValue(), "provider")));
+                        // ModelUsage is Claude Code's running total per model: a cumulative snapshot
+                        f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 6, 2, TrancheReading.claudeModelUsage(m.getValue()), m.getKey(),
+                                SourceProfile.text(m.getValue(), "provider"), null, 2));
                     }
                 }
                 if (o.member("total_cost_usd") instanceof Json.JNumber) {

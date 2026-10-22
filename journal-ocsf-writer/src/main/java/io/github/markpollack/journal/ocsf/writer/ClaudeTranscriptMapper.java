@@ -116,8 +116,8 @@ final class ClaudeTranscriptMapper implements SourceMapper {
                 for (var e : models.members().entrySet()) {
                     Jv.Obj mo = MapperSupport.usage(5, 2, "claude.transcript.cost_state.v1: cost-state is the session's cumulative per-model usage, written after the turn",
                             ctx.sourceRef(r, uid, ts, false), MapperSupport.modelRef(e.getKey(), 3, null), e.getValue());
-                    MapperSupport.components(mo, e.getValue(), "inputTokens", "input_tokens", "outputTokens", "output_tokens", "cacheReadInputTokens", "cache_read_tokens",
-                            "cacheCreationInputTokens", "cache_write_tokens", "thinkingTokens", "reasoning_tokens");
+                    UsageTranches.aggregation(mo, 2, ClaudeStreamMapper.CUMULATIVE_MODEL_USAGE);
+                    UsageTranches.claudeModelUsage(mo, e.getValue());
                     obs.add(mo);
                 }
             }

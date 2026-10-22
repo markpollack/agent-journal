@@ -3,7 +3,7 @@
   "format_version": "0.1",
   "id": "codex-mcp-tool-call-live",
   "concept": "tool-request-identity-and-arguments",
-  "description": "A Codex CLI 0.160.1 MCP call (live recording, local deterministic stdio server): item.started is the request and item.completed the result, both under the exec processor's own stream-local item id, which is not the model-facing call id (the processor mints item_N and drops the app-server id). The server is the tool's namespace, the tool name and arguments are exact, the result content and structured content are exact, and the completed or failed status is the reported outcome (MCP isError arrives as failed).",
+  "description": "A Codex CLI 0.160.1 MCP tool call (live recording, local deterministic MCP server fnd1). item.started reports a started invocation (activity 4), not the model's original request: tool_name and tool_namespace are the reported item.tool and item.server, the family is the item type, the arguments are the invocation's exactly, and the kind is 99 Other because no reviewed binding of server fnd1 exists. item.completed is the result under the same stream-local id.",
   "authored_from": [
     "codex-exec-0.160.1-emitter-items",
     "codex-exec-0.160.1-types"
@@ -20,7 +20,7 @@
     {
       "record": 4,
       "class": "tool_call",
-      "activity_id": 1,
+      "activity_id": 4,
       "values": {
         "/tool_call_uid": "item_1",
         "/identity_basis_id": 2,
@@ -31,7 +31,8 @@
           "text": "fnd-1",
           "n": 7
         },
-        "/reported_state": "in_progress"
+        "/reported_state": "in_progress",
+        "/tool_family": "mcp_tool_call"
       },
       "absent": [
         "/response_uid",
@@ -59,7 +60,8 @@
           "ok": true
         },
         "/tool_result/error_reported": false,
-        "/reported_state": "completed"
+        "/reported_state": "completed",
+        "/tool_family": "mcp_tool_call"
       }
     },
     {
@@ -83,12 +85,20 @@
       ]
     }
   ],
+  "absent_events": [
+    {
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 1,
+      "why": "the stream reports the invocation as started; the model request that caused it is not observed on this route"
+    }
+  ],
   "counterexamples": [
     {
       "id": "model-facing-call-id",
       "record": 4,
       "class": "tool_call",
-      "activity_id": 1,
+      "activity_id": 4,
       "values": {
         "/identity_basis_id": 1
       },
@@ -98,7 +108,7 @@
       "id": "server-folded-into-name",
       "record": 4,
       "class": "tool_call",
-      "activity_id": 1,
+      "activity_id": 4,
       "values": {
         "/tool_name": "fnd1/echo_record"
       },
@@ -113,6 +123,16 @@
         "/status_id": 1
       },
       "why": "The item reports status failed; a result with content is not a success."
+    },
+    {
+      "id": "model-request-observed",
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 1,
+      "values": {
+        "/tool_call_uid": "item_1"
+      },
+      "why": "A started invocation is not the model's request; no response owner, model call id or permission decision follows from it."
     }
   ]
 }
