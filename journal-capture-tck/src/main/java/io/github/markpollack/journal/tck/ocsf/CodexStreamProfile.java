@@ -144,7 +144,14 @@ final class CodexStreamProfile implements SourceProfile {
         return !any ? null : nonZero ? 1 : 2;
     }
 
-    /** A web_search line in the one repeated-member form the emitter writes ({@code item.id} twice), else {@code null}. */
+    /** Where the emitter's repeat is: the member {@code id} of the root's one {@code item} object (RFC 6901 {@code /item/id}). */
+    private static final List<NeutralJson.Step> ITEM = List.of(NeutralJson.Step.member("item", 1));
+
+    /**
+     * A web_search line in the one repeated-member form the emitter writes, else {@code null}: the only repeat in the
+     * line is {@code id} inside the root's {@code item}, exactly two string values, on item.started or item.completed. A
+     * root member literally named {@code item.id} is another location and never this form.
+     */
     private static Json webSearchLine(NativeArtifact.Record r) {
         if (r.text() == null) {
             return null;
@@ -156,10 +163,15 @@ final class CodexStreamProfile implements SourceProfile {
         catch (IllegalArgumentException e) {
             return null;
         }
+        if (w.repeated().size() != 1) {
+            return null;
+        }
+        NeutralJson.Repeated rep = w.repeated().get(0);
+        boolean id = ITEM.equals(rep.container()) && "id".equals(rep.member()) && rep.values().size() == 2
+                && rep.values().stream().allMatch(v -> v instanceof Json.JString);
         Json o = w.value();
         String type = SourceProfile.text(o, "type");
-        boolean form = w.repeated().size() == 1 && "item.id".equals(w.repeated().get(0).path()) && w.repeated().get(0).values().size() == 2
-                && ("item.started".equals(type) || "item.completed".equals(type)) && "web_search".equals(SourceProfile.text(o, "item", "type"));
+        boolean form = id && ("item.started".equals(type) || "item.completed".equals(type)) && "web_search".equals(SourceProfile.text(o, "item", "type"));
         return form ? o : null;
     }
 }

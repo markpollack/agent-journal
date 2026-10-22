@@ -8,7 +8,6 @@ import com.fasterxml.jackson.core.StreamReadFeature;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -177,18 +176,57 @@ public sealed interface Jv permits Jv.Obj, Jv.Arr, Jv.Str, Jv.Num, Jv.Bool, Jv.N
         }
     }
 
-    /** One repeated object member: its dotted member path (array elements as their index), its occurrence (2 or more) and value. */
-    record Duplicate(String path, int occurrence, Jv value) {
+    /**
+     * An exact location in one parsed JSON text: from the root, each step is an object member (its name and its
+     * occurrence among the members of that object with the same name, 1 for the first) or an array element (its index).
+     * Unlike a dotted path it cannot confuse the member {@code item.id} of the root with the member {@code id} of the
+     * root's {@code item}, and unlike a JSON Pointer alone it tells repeated members of one object apart.
+     */
+    record Location(List<Step> steps) {
+        static final Location ROOT = new Location(List.of());
+
+        /** One step: {@code member} with its {@code occurrence} (1 = first), or array element {@code index} when {@code member} is {@code null}. */
+        record Step(String member, int occurrence, int index) {
+        }
+
+        Location member(String name, int occurrence) {
+            List<Step> s = new ArrayList<>(steps);
+            s.add(new Step(name, occurrence, -1));
+            return new Location(List.copyOf(s));
+        }
+
+        Location element(int index) {
+            List<Step> s = new ArrayList<>(steps);
+            s.add(new Step(null, 0, index));
+            return new Location(List.copyOf(s));
+        }
+
+        /** The RFC 6901 JSON Pointer of this location ({@code ~} as {@code ~0}, {@code /} as {@code ~1}); it does not carry occurrences. */
+        String pointer() {
+            StringBuilder sb = new StringBuilder();
+            for (Step st : steps) {
+                sb.append('/').append(st.member() == null ? Integer.toString(st.index()) : st.member().replace("~", "~0").replace("/", "~1"));
+            }
+            return sb.toString();
+        }
+    }
+
+    /** One object member that occurs more than once: the exact location of its containing object, its name and every value in source order. */
+    record Repeated(Location container, String member, List<Jv> values) {
+        /** The member's RFC 6901 JSON Pointer; equal for every occurrence, which is why {@link #values} keeps them all. */
+        String pointer() {
+            return container.member(member, 1).pointer();
+        }
     }
 
     /** A value whose repeated object members were recorded, not merged: the tree holds each member's first occurrence. */
-    record WithDuplicates(Jv value, List<Duplicate> duplicates) {
+    record WithDuplicates(Jv value, List<Repeated> repeated) {
     }
 
     /**
-     * Parses one JSON value while recording every repeated object member instead of rejecting the text. This is not
-     * the reader's mode: {@link #parse} stays strict, and a caller must accept only a duplicate form it has declared
-     * (both values are kept in {@link WithDuplicates#duplicates}; nothing is silently overwritten).
+     * Parses one JSON value while recording every repeated object member, at its exact location, instead of rejecting
+     * the text. This is not the reader's mode: {@link #parse} stays strict, and a caller must accept only a duplicate
+     * form it has declared (every value is kept in {@link Repeated#values}; nothing is silently overwritten).
      *
      * @throws IllegalArgumentException if the text is not exactly one JSON value apart from repeated members
      */
@@ -199,12 +237,12 @@ public sealed interface Jv permits Jv.Obj, Jv.Arr, Jv.Str, Jv.Num, Jv.Bool, Jv.N
             if (first == null) {
                 throw new IllegalArgumentException("empty JSON text");
             }
-            List<Duplicate> duplicates = new ArrayList<>();
-            Jv value = read(parser, first, "", duplicates);
+            List<Repeated> repeated = new ArrayList<>();
+            Jv value = read(parser, first, Location.ROOT, repeated);
             if (parser.nextToken() != null) {
                 throw new IllegalArgumentException("trailing content after the JSON value");
             }
-            return new WithDuplicates(value, List.copyOf(duplicates));
+            return new WithDuplicates(value, List.copyOf(repeated));
         }
         catch (IOException e) {
             throw new IllegalArgumentException("not JSON: " + e.getMessage(), e);
@@ -235,24 +273,26 @@ public sealed interface Jv permits Jv.Obj, Jv.Arr, Jv.Str, Jv.Num, Jv.Bool, Jv.N
         }
     }
 
-    /** As {@link #read(JsonParser, JsonToken)}, recording each repeated member under its dotted path instead of keeping it. */
-    private static Jv read(JsonParser parser, JsonToken token, String path, List<Duplicate> duplicates) throws IOException {
+    /** As {@link #read(JsonParser, JsonToken)}, keeping each member's first value and recording every repeated member with all its values. */
+    private static Jv read(JsonParser parser, JsonToken token, Location at, List<Repeated> repeated) throws IOException {
         switch (token) {
             case START_OBJECT -> {
                 Obj o = new Obj();
-                Map<String, Integer> seen = new HashMap<>();
+                Map<String, List<Jv>> values = new LinkedHashMap<>();
                 while (parser.nextToken() != JsonToken.END_OBJECT) {
                     String key = parser.currentName();
-                    String at = path.isEmpty() ? key : path + "." + key;
-                    Jv v = read(parser, parser.nextToken(), at, duplicates);
-                    int n = seen.merge(key, 1, Integer::sum);
-                    if (n == 1) {
+                    List<Jv> seen = values.computeIfAbsent(key, k -> new ArrayList<>());
+                    Jv v = read(parser, parser.nextToken(), at.member(key, seen.size() + 1), repeated);
+                    seen.add(v);
+                    if (seen.size() == 1) {
                         o.members().put(key, v);
                     }
-                    else {
-                        duplicates.add(new Duplicate(at, n, v));
-                    }
                 }
+                values.forEach((key, vs) -> {
+                    if (vs.size() > 1) {
+                        repeated.add(new Repeated(at, key, List.copyOf(vs)));
+                    }
+                });
                 return o;
             }
             case START_ARRAY -> {
@@ -260,7 +300,7 @@ public sealed interface Jv permits Jv.Obj, Jv.Arr, Jv.Str, Jv.Num, Jv.Bool, Jv.N
                 JsonToken next;
                 int i = 0;
                 while ((next = parser.nextToken()) != JsonToken.END_ARRAY) {
-                    a.add(read(parser, next, path + "." + i++, duplicates));
+                    a.add(read(parser, next, at.element(i++), repeated));
                 }
                 return a;
             }

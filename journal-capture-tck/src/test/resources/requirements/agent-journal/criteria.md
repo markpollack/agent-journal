@@ -307,6 +307,11 @@ Rule: RULE-39. Tests: `SemanticExampleTest#aPerTurnLabelOnTheCumulativeUsageIsRe
 When a proposed interpretation passes its behaviour tests without the Owner's approval, the evidence shall retain the technical results and shall report the claim as a candidate, not as approved support.
 Rule: RULE-38. Tests: `SemanticClaimTest#aProposedClaimWithPassingChecksIsACandidateNotApprovedSupport`; the requirements accounting reports each claim's approval and executed checks apart.
 
+### UC5-AC22: Interpret a repeated member only at its declared exact location
+
+If a native record repeats a member anywhere other than the declared location, or a member's name only spells the declared path with dots, slashes or tildes, then the writer and the oracle profile shall each retain the record as an opaque record, state no interpreted fact from it and report the repeat at its exact location.
+Rule: RULE-42. Tests: `DuplicateMemberAddressingTest#onlyTheExactDeclaredLocationIsInterpretedAndEveryRepeatHasItsExactLocation`, `DuplicateMemberAddressingTest#aRootMemberLiterallyNamedItemIdIsNotTheDeclaredForm`, `DuplicateMemberAddressingTest#theWholeOracleAcceptsTheDottedLiteralLineOnlyAsAnOpaqueRecord`, `CodexDuplicateMemberProfileTest#onlyTheExactDeclaredLocationStatesARequestAndEveryRepeatHasItsExactLocation`, `CodexDuplicateMemberProfileTest#rootMembersLiterallyNamedItemIdAreNotTheDeclaredForm`.
+
 ## Change log
 
 2026-10-21, consolidated event-file work order (REQ-1 amendment). Retained identifiers with changed
@@ -330,3 +335,7 @@ NOT_APPLICABLE result cannot verify a concept; a genuinely absent trigger is une
 compensation by another owner or occurrence; stale approvals refused; added evidence keeps an approval; a removed or
 altered evidence link is exposed; equal numbers do not establish a meaning; a candidate is not approved support). No
 criterion removed; `RequirementsRosterTest` pins the per-use-case counts 7, 6, 15, 8 and 21.
+
+2026-10-22, delegated semantic closure (SEM-CLOSE): added UC5-AC22 (a repeated member is interpreted only at its
+declared exact location; a dotted, slash or tilde look-alike stays opaque in the writer and the oracle profile). No
+criterion removed; `RequirementsRosterTest` pins the per-use-case counts 7, 6, 15, 8 and 22.

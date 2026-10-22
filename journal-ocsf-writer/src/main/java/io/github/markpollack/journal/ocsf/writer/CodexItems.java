@@ -108,10 +108,15 @@ final class CodexItems {
         return nonZero ? 1 : 2;
     }
 
+    /** The container of the one declared repeat: the root's first (and only) {@code item} member, RFC 6901 {@code /item}. */
+    private static final Jv.Location ITEM = Jv.Location.ROOT.member("item", 1);
+
     /**
      * The one duplicate form the contract interprets: an {@code item.started} or {@code item.completed} web_search line
-     * whose only repeated member is {@code item.id}, twice, as the emitter's flattened ThreadItem writes it. Any other
-     * repeated member, or a repeat elsewhere, stays an opaque record without interpretation.
+     * whose only repeated member is {@code id}, exactly twice and both strings, inside the root's {@code item} object
+     * ({@code /item/id}), as the emitter's flattened ThreadItem writes it. The location is exact: a root member literally
+     * named {@code item.id} ({@code /item.id}), a repeat in another object, a third value or any further repeat is not
+     * this form and stays an opaque record without interpretation.
      */
     static Jv.WithDuplicates declaredWebSearch(NativeRecord r) {
         if (r.status() != NativeRecord.Status.MALFORMED || r.text() == null) {
@@ -124,12 +129,14 @@ final class CodexItems {
         catch (IllegalArgumentException e) {
             return null;
         }
-        if (!(w.value() instanceof Jv.Obj o) || w.duplicates().size() != 1 || !"web_search".equals(text(o, "item", "type")) || text(o, "item", "id") == null) {
+        if (!(w.value() instanceof Jv.Obj o) || w.repeated().size() != 1) {
             return null;
         }
-        Jv.Duplicate d = w.duplicates().get(0);
+        Jv.Repeated d = w.repeated().get(0);
+        boolean itemId = ITEM.equals(d.container()) && "id".equals(d.member()) && d.values().size() == 2
+                && d.values().get(0) instanceof Jv.Str && d.values().get(1) instanceof Jv.Str;
         String type = text(o, "type");
         boolean event = "item.started".equals(type) || "item.completed".equals(type);
-        return event && "item.id".equals(d.path()) && d.occurrence() == 2 && d.value() instanceof Jv.Str ? w : null;
+        return itemId && event && "web_search".equals(text(o, "item", "type")) ? w : null;
     }
 }

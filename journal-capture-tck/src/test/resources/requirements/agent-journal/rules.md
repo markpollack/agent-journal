@@ -227,6 +227,13 @@ Tests: `MappingCatalogSummaryTest`.
 **Reason:** An approval binds a meaning, not a mapper; supporting evidence may grow without reapproval, but a changed meaning under an old approval would present an unreviewed interpretation as approved. Pending meanings still need their data kept and their candidate behaviour tested.
 Tests: `SemanticClaimTest` (the digest boundary: changed meaning refused, added evidence accepted).
 
+## Exact addressing and canonical semantics
+
+### RULE-42
+**MUST** address an exact location in a native record by RFC 6901 JSON Pointer or equally unambiguous member and index steps, and **MUST** record a repeated object member at the exact location and occurrence of its containing object with every value in source order; **MUST** interpret a repeated member only in a declared form at that exact location, keep strict parsing strict otherwise, and write canonical events whose objects repeat no member.
+**Reason:** A dotted path cannot tell the member `item.id` of the root from the member `id` of the root's `item`, and a pointer alone cannot tell repeated members of one object apart; a repeat at any other location, or one whose name only spells the declared path, must stay an opaque record with no interpreted fact. A pointer establishes a location, not a meaning or an ownership join.
+Tests: `DuplicateMemberAddressingTest` (writer), `CodexDuplicateMemberProfileTest` (oracle profile), `CodexStreamMapperTest#onlyTheDeclaredWebSearchDuplicateIsInterpretedAndEveryOtherDuplicateStaysOpaque`.
+
 ## Change log
 
 2026-10-21, consolidated event-file work order (REQ-1 amendment). Retained identifiers with changed
@@ -254,4 +261,6 @@ needs a new revision and approval; preservation and labelled candidate testing c
 
 2026-10-22, delegated semantic closure (SEM-CLOSE). Retained identifier with changed meaning: RULE-38 now also accepts a
 decision the Project Owner explicitly delegated to an identified reviewer for a decision pass, recorded under that
-delegated identity and not as the Owner's direct review of each digest. No rule added or removed in this change.
+delegated identity and not as the Owner's direct review of each digest. Added RULE-42 (exact RFC 6901 addressing; a
+repeated member is recorded at its containing object's exact location and occurrence and interpreted only in a declared
+form there; canonical events repeat no member). No rule removed; `RequirementsRosterTest` pins 42 rules.

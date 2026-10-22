@@ -58,8 +58,33 @@ public final class NeutralJson {
         }
     }
 
-    /** An object member that occurs more than once: its member path ({@code item.id}) and every value, in source order. */
-    public record Repeated(String path, List<Json> values) {
+    /**
+     * One step from the root to a value: an object member, named, with its occurrence among the members of that object
+     * that share the name (1 = first), or an array element by index ({@code member} {@code null}).
+     */
+    public record Step(String member, int occurrence, int index) {
+        public static Step member(String name, int occurrence) {
+            return new Step(name, occurrence, -1);
+        }
+    }
+
+    /**
+     * An object member that occurs more than once: the exact steps to its containing object, its name and every value in
+     * source order. Names are kept whole, so a member literally named {@code item.id} is never the {@code id} of {@code item}.
+     */
+    public record Repeated(List<Step> container, String member, List<Json> values) {
+        /** The RFC 6901 JSON Pointer of the member (each name with {@code ~} as {@code ~0} and {@code /} as {@code ~1}); occurrences are not part of it. */
+        public String pointer() {
+            StringBuilder sb = new StringBuilder();
+            for (Step st : container) {
+                sb.append('/').append(st.member() == null ? String.valueOf(st.index()) : escape(st.member()));
+            }
+            return sb.append('/').append(escape(member)).toString();
+        }
+
+        private static String escape(String name) {
+            return name.replace("~", "~0").replace("/", "~1");
+        }
     }
 
     /** A value whose repeated members are reported rather than collapsed; the tree holds each member's first value. */
@@ -67,8 +92,8 @@ public final class NeutralJson {
     }
 
     /**
-     * Parses text that strict parsing refuses only because an object repeats a member, reporting every repeat with
-     * all its values. For a source profile that declares one such form; {@link #parse} stays strict.
+     * Parses text that strict parsing refuses only because an object repeats a member, reporting every repeat at its
+     * exact location with all its values. For a source profile that declares one such form; {@link #parse} stays strict.
      *
      * @throws IllegalArgumentException if the text is not one JSON value apart from repeated members
      */
@@ -79,17 +104,11 @@ public final class NeutralJson {
             if (first == null) {
                 throw new IllegalArgumentException("empty JSON text");
             }
-            Map<String, List<Json>> values = new LinkedHashMap<>();
-            Json value = readRepeats(parser, first, null, values);
+            List<Repeated> repeated = new ArrayList<>();
+            Json value = readRepeats(parser, first, List.of(), repeated);
             if (parser.nextToken() != null) {
                 throw new IllegalArgumentException("trailing content after the JSON value");
             }
-            List<Repeated> repeated = new ArrayList<>();
-            values.forEach((path, vs) -> {
-                if (vs.size() > 1) {
-                    repeated.add(new Repeated(path, List.copyOf(vs)));
-                }
-            });
             return new WithRepeats(value, List.copyOf(repeated));
         }
         catch (IOException e) {
@@ -97,16 +116,23 @@ public final class NeutralJson {
         }
     }
 
-    /** Every member's values by member path ({@code a.b}; array elements by index); the returned tree keeps first values. */
-    private static Json readRepeats(JsonParser parser, JsonToken token, String path, Map<String, List<Json>> values) throws IOException {
+    /** Reads one value at {@code steps}; an object's members are grouped by name in its own scope, so repeats are per containing object. */
+    private static Json readRepeats(JsonParser parser, JsonToken token, List<Step> steps, List<Repeated> repeated) throws IOException {
         if (token == JsonToken.START_OBJECT) {
-            Map<String, Json> members = new LinkedHashMap<>();
+            Map<String, List<Json>> byName = new LinkedHashMap<>();
             while (parser.nextToken() != JsonToken.END_OBJECT) {
                 String key = parser.currentName();
-                String at = path == null ? key : path + "." + key;
-                Json v = readRepeats(parser, parser.nextToken(), at, values);
-                values.computeIfAbsent(at, k -> new ArrayList<>()).add(v);
-                members.putIfAbsent(key, v);
+                List<Json> vs = byName.computeIfAbsent(key, k -> new ArrayList<>());
+                List<Step> child = new ArrayList<>(steps);
+                child.add(Step.member(key, vs.size() + 1));
+                vs.add(readRepeats(parser, parser.nextToken(), List.copyOf(child), repeated));
+            }
+            Map<String, Json> members = new LinkedHashMap<>();
+            for (Map.Entry<String, List<Json>> e : byName.entrySet()) {
+                members.put(e.getKey(), e.getValue().get(0));
+                if (e.getValue().size() > 1) {
+                    repeated.add(new Repeated(steps, e.getKey(), List.copyOf(e.getValue())));
+                }
             }
             return new Json.JObject(members);
         }
@@ -114,7 +140,9 @@ public final class NeutralJson {
             List<Json> elements = new ArrayList<>();
             JsonToken next;
             while ((next = parser.nextToken()) != JsonToken.END_ARRAY) {
-                elements.add(readRepeats(parser, next, (path == null ? "" : path + ".") + elements.size(), values));
+                List<Step> child = new ArrayList<>(steps);
+                child.add(new Step(null, 0, elements.size()));
+                elements.add(readRepeats(parser, next, List.copyOf(child), repeated));
             }
             return new Json.JArray(elements);
         }

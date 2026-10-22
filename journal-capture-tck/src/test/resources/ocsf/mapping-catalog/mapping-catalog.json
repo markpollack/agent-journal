@@ -11011,7 +11011,10 @@
       "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
       "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects",
       "junit:CodexStreamMapperTest#onlyTheDeclaredWebSearchDuplicateIsInterpretedAndEveryOtherDuplicateStaysOpaque",
-      "junit:CodexDuplicateMemberProfileTest#onlyTheDeclaredWebSearchFormStatesAToolRequestUnderTheFirstId"
+      "junit:CodexDuplicateMemberProfileTest#onlyTheDeclaredWebSearchFormStatesAToolRequestUnderTheFirstId",
+      "junit:DuplicateMemberAddressingTest#onlyTheExactDeclaredLocationIsInterpretedAndEveryRepeatHasItsExactLocation",
+      "junit:DuplicateMemberAddressingTest#theWholeOracleAcceptsTheDottedLiteralLineOnlyAsAnOpaqueRecord",
+      "junit:CodexDuplicateMemberProfileTest#onlyTheExactDeclaredLocationStatesARequestAndEveryRepeatHasItsExactLocation"
      ],
      "replaces": "contract 0.2.0-prototype kept web_search lines only as opaque records",
      "approval": {

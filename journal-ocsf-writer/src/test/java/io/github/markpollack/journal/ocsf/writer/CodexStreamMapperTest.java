@@ -203,7 +203,8 @@ class CodexStreamMapperTest {
         }
         Jv.WithDuplicates d = Jv.parseRecordingDuplicates(inputs.get(0));
         assertThat(d.value().path("item", "id").text()).isEqualTo("item_1");
-        assertThat(d.duplicates()).containsExactly(new Jv.Duplicate("item.id", 2, new Jv.Str("search-1")));
+        assertThat(d.repeated()).containsExactly(new Jv.Repeated(Jv.Location.ROOT.member("item", 1), "id", List.of(new Jv.Str("item_1"), new Jv.Str("search-1"))));
+        assertThat(d.repeated().get(0).pointer()).isEqualTo("/item/id");
     }
 
     /** The thread id the stream states once in thread.started is the session identity of every later event, and is declared once in the file. */
