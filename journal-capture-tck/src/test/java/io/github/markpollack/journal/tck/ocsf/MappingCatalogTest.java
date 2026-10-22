@@ -166,6 +166,7 @@ class MappingCatalogTest {
                     problems.add(id + ": availability claim names " + route + ", which is not a compatibility entry");
                     continue;
                 }
+                problems.addAll(vendorBasisProblems(id, route, n));
                 String refuted = CatalogCoverage.availabilityRefuted(n, recordings(route), work.resolve("claims").resolve(id));
                 if (refuted != null) {
                     problems.add(id + ": availability claim on " + route + " (" + SchemaCatalog.text(n, "availability") + ") is refuted: " + refuted);
@@ -189,6 +190,51 @@ class MappingCatalogTest {
             problems.add("initial concepts removed: " + lost);
         }
         assertThat(problems).isEmpty();
+    }
+
+    /**
+     * On a route with a pinned vendor inventory an availability claim rests on the vendor source, not on recordings
+     * alone: {@code absent} names one of the inventory's projection omissions, {@code supported} names the declared
+     * families that carry the concept while Journal does not normalize it (a family may be normalized for another concept, as
+     * a declined command is normalized as an operation state, not as a permission decision).
+     */
+    static List<String> vendorBasisProblems(String id, String route, Json claim) {
+        List<String> problems = new ArrayList<>();
+        for (VendorStreamInventoryTest.Profile p : VendorStreamInventoryTest.PROFILES) {
+            com.fasterxml.jackson.databind.JsonNode inv = VendorStreamInventoryTest.inventory(p);
+            if (!route.equals(inv.path("compatibility_entry").asText())) {
+                continue;
+            }
+            String availability = SchemaCatalog.text(claim, "availability");
+            if ("absent".equals(availability)) {
+                String omission = SchemaCatalog.text(claim, "vendor_omission");
+                boolean found = false;
+                for (com.fasterxml.jackson.databind.JsonNode o : inv.path("omitted_by_projection")) {
+                    found |= o.path("what").asText().equals(omission);
+                }
+                if (!found) {
+                    problems.add(id + ": absence on " + route + " names no projection omission of the vendor inventory (" + omission + ")");
+                }
+            }
+            else if ("supported".equals(availability)) {
+                Map<String, com.fasterxml.jackson.databind.JsonNode> families = VendorStreamInventoryTest.families(inv);
+                if (claim.member("vendor_families") == null || claim.member("vendor_families").elements().isEmpty()) {
+                    problems.add(id + ": a supported claim on " + route + " names its vendor families");
+                }
+                else {
+                    for (Json v : claim.member("vendor_families").elements()) {
+                        com.fasterxml.jackson.databind.JsonNode f = families.get(v.text());
+                        if (f == null) {
+                            problems.add(id + ": vendor family " + v.text() + " is not declared by the inventory");
+                        }
+                    }
+                }
+            }
+            else {
+                problems.add(id + ": availability " + availability + " on " + route + " is neither absent nor supported");
+            }
+        }
+        return problems;
     }
 
     /**
@@ -289,6 +335,19 @@ class MappingCatalogTest {
                     return e.getValue() + " on " + e.getKey();
                 }
             }
+        }
+        List<String> exercising = new ArrayList<>();
+        String unsupported = null;
+        for (Map.Entry<String, String> e : perRecording.entrySet()) {
+            if (e.getValue().startsWith("unsupported")) {
+                unsupported = e.getValue().substring(0, e.getValue().indexOf("; retained whole") + "; retained whole, not normalized".length());
+                if (!e.getValue().contains("no occurrence")) {
+                    exercising.add(e.getKey());
+                }
+            }
+        }
+        if (unsupported != null) {
+            return unsupported + "; " + (exercising.isEmpty() ? "unexercised on the route's " + perRecording.size() + " recordings" : "occurs on " + String.join(", ", exercising)) + ")";
         }
         long verified = perRecording.values().stream().filter("verified"::equals).count();
         if (verified > 0) {

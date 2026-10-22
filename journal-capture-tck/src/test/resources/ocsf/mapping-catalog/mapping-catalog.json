@@ -1169,9 +1169,11 @@
      "artifact": "stream.jsonl",
      "route": "codex-cli/exec-json-stream/0.160.1",
      "records": "every committed recording of the route",
-     "field": "user prompt (the exec stream does not echo it)",
+     "field": "user prompt",
      "availability": "absent",
-     "scenario": "facts:prompts"
+     "scenario": "facts:prompts",
+     "vendor_omission": "user prompt (UserMessage items) and hook prompts",
+     "basis": "vendor source (exec projection omits it) and the route's recordings: exec does not project UserMessage items"
     }
    ],
    "mapping": [
@@ -1238,7 +1240,7 @@
     "value": "adapt",
     "reason": "Human submissions separated from repeated request-side representations and injected context; foundations record what a request carried."
    },
-   "notes": "Identity is (run_uid, turn_uid, exact concatenated block text) per semantic-contract-0.2.0 submission.identity.v1; the Codex environment_context user-role record is excluded by the declared classifier codex.user_role_context.v1, not by heuristics. The Claude live stream never carries the prompt, so a stream-only package cannot answer this question (unavailable at that source; the transcript supplies it).",
+   "notes": "Identity is (run_uid, turn_uid, exact concatenated block text) per semantic-contract-0.2.0 submission.identity.v1; the Codex environment_context user-role record is excluded by the declared classifier codex.user_role_context.v1, not by heuristics. The Claude live stream never carries the prompt, so a stream-only package cannot answer this question (unavailable at that source; the transcript supplies it). FND-1 vendor audit (Codex 0.160.1 exec, d27764b): absent: user prompt.",
    "observations": [
     {
      "item": "typed prompt text",
@@ -2178,9 +2180,13 @@
      "artifact": "stream.jsonl",
      "route": "codex-cli/exec-json-stream/0.160.1",
      "records": "every committed recording of the route",
-     "field": "reasoning item",
-     "availability": "absent",
-     "scenario": "value:item.type=reasoning"
+     "field": "reasoning summary text (item.completed/reasoning; non-empty summaries only, joined with newlines; no signature or raw content)",
+     "availability": "supported",
+     "vendor_families": [
+      "item.completed/reasoning"
+     ],
+     "scenario": "value:item.type=reasoning",
+     "basis": "vendor source declares it on the exec stream (codex-rs/exec/src/exec_events.rs at rust-v0.160.1); Journal retains the records whole and does not normalize them: FND-1 gap: normalize the summary as a reasoning block; the signature and raw content are omitted by the projection"
     }
    ],
    "mapping": [
@@ -2225,7 +2231,7 @@
     "value": "adapt",
     "reason": "Reasoning text and the opaque signature kept verbatim, empty text included; OTel has no signature field and Weave drops empty signed thinking."
    },
-   "notes": "On these 2.1.303 fixtures every thinking block has an empty thinking string and a signature; the oracle compares the native block value exactly, so a dropped or re-encoded signature is a response.values defect. Codex 0.160.1 wrote no reasoning items in pair B (CONCEPT-MATRIX row 8 saw encrypted reasoning on other runs); that case is unexercised here and would fall under block_kind default 99 with the block retained whole.",
+   "notes": "On these 2.1.303 fixtures every thinking block has an empty thinking string and a signature; the oracle compares the native block value exactly, so a dropped or re-encoded signature is a response.values defect. Codex 0.160.1 wrote no reasoning items in pair B (CONCEPT-MATRIX row 8 saw encrypted reasoning on other runs); that case is unexercised here and would fall under block_kind default 99 with the block retained whole. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: reasoning summary text (item.completed/reasoning; non-empty summaries only, joined with newlines; no signature or raw content).",
    "observations": [
     {
      "item": "thinking block (empty text + signature)",
@@ -3804,9 +3810,19 @@
      "artifact": "stream.jsonl",
      "route": "codex-cli/exec-json-stream/0.160.1",
      "records": "every committed recording of the route",
-     "field": "tool call request (the exec stream reports command_execution items, no call records)",
-     "availability": "absent",
-     "scenario": "facts:requests"
+     "field": "MCP server, tool and structured arguments; collab operation and prompt; web-search query and action; file-change paths; each under a stream-local item id (the original call id is omitted)",
+     "availability": "supported",
+     "vendor_families": [
+      "item.started/mcp_tool_call",
+      "item.completed/mcp_tool_call",
+      "item.started/collab_tool_call",
+      "item.completed/collab_tool_call",
+      "item.completed/file_change",
+      "item.started/web_search",
+      "item.completed/web_search"
+     ],
+     "scenario": "value:item.type=mcp_tool_call",
+     "basis": "vendor source declares it on the exec stream (codex-rs/exec/src/exec_events.rs at rust-v0.160.1); Journal retains the records whole and does not normalize them: commands are normalized as operations (observed-operations); MCP, collab, web-search and file-change requests are not normalized as tool calls; no model-facing call id exists on the stream"
     }
    ],
    "mapping": [
@@ -3866,7 +3882,7 @@
     "value": "adapt",
     "reason": "Native call id, exact tool name and structured arguments; foundations carry arguments as a JSON string."
    },
-   "notes": "Parsed-equal arguments are checked (CONCEPT-MATRIX row 4: byte-level argument comparison is not claimed); the Jv tree keeps number spellings so representation differences are reported separately. The Codex exec input is a single string wrapping several commands and is never parsed for classification (owner decision 2026-10-14).",
+   "notes": "Parsed-equal arguments are checked (CONCEPT-MATRIX row 4: byte-level argument comparison is not claimed); the Jv tree keeps number spellings so representation differences are reported separately. The Codex exec input is a single string wrapping several commands and is never parsed for classification (owner decision 2026-10-14). FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: MCP server, tool and structured arguments; collab operation and prompt; web-search query and action; file-change paths; each under a stream-local item id (the original call id is omitted).",
    "observations": [
     {
      "item": "tool call id and parsed arguments",
@@ -4142,9 +4158,16 @@
      "artifact": "stream.jsonl",
      "route": "codex-cli/exec-json-stream/0.160.1",
      "records": "every committed recording of the route",
-     "field": "tool name (no call records)",
-     "availability": "absent",
-     "scenario": "facts:requests"
+     "field": "tool families that imply a kind (mcp_tool_call, collab_tool_call, web_search, file_change, command_execution)",
+     "availability": "supported",
+     "vendor_families": [
+      "item.completed/mcp_tool_call",
+      "item.completed/collab_tool_call",
+      "item.completed/web_search",
+      "item.completed/file_change"
+     ],
+     "scenario": "value:item.type=mcp_tool_call",
+     "basis": "vendor source declares it on the exec stream (codex-rs/exec/src/exec_events.rs at rust-v0.160.1); Journal retains the records whole and does not normalize them: no kind table for the exec stream families yet"
     }
    ],
    "mapping": [
@@ -4192,7 +4215,7 @@
     "value": "adopt",
     "reason": "ACP v1 ToolKind vocabulary taken as is, with the mapping basis recorded; a kind is not evidence of an operating-system effect."
    },
-   "notes": "The tables are claude.tool_name_to_kind.v1 and codex.tool_name_to_kind.v1 in the contracts (Task and unknown names -> 99 other). The oracle recomputes the kind from the name table independently of the writer.",
+   "notes": "The tables are claude.tool_name_to_kind.v1 and codex.tool_name_to_kind.v1 in the contracts (Task and unknown names -> 99 other). The oracle recomputes the kind from the name table independently of the writer. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: tool families that imply a kind (mcp_tool_call, collab_tool_call, web_search, file_change, command_execution).",
    "observations": []
   },
   {
@@ -4363,9 +4386,14 @@
      "artifact": "stream.jsonl",
      "route": "codex-cli/exec-json-stream/0.160.1",
      "records": "every committed recording of the route",
-     "field": "result keyed by a call id (no result records)",
-     "availability": "absent",
-     "scenario": "facts:results"
+     "field": "MCP result content, error and web-search results on the completion of the same stream-local item id",
+     "availability": "supported",
+     "vendor_families": [
+      "item.completed/mcp_tool_call",
+      "item.completed/web_search"
+     ],
+     "scenario": "value:item.type=mcp_tool_call",
+     "basis": "vendor source declares it on the exec stream (codex-rs/exec/src/exec_events.rs at rust-v0.160.1); Journal retains the records whole and does not normalize them: results are owned by the stream-local item id (start and completion share it), not by a model-facing call id"
     }
    ],
    "mapping": [
@@ -4432,7 +4460,7 @@
     "value": "adapt",
     "reason": "Result owned by the call id its own record names, never by matching content; model-visible content kept exactly."
    },
-   "notes": "Ownership is the declared path on the result's own record (Claude content[].tool_use_id, Codex payload.call_id), per result.ownership.v1; equal content never pairs. Pair A has two Read calls (6,8) with different content and two Bash calls (14,16) whose results are both errors; genuinely identical results under two owners are exercised by the synthetic Codex fixture, not by A or B. FULL-1R (S-5): the tool_exchanges view separates repeated_result_observations (one owner observed more than once, for example in the live output and again in the saved session file, counted as one owner) from identical_content_distinct_owners (kept separate); the former identical_result_content list is replaced.",
+   "notes": "Ownership is the declared path on the result's own record (Claude content[].tool_use_id, Codex payload.call_id), per result.ownership.v1; equal content never pairs. Pair A has two Read calls (6,8) with different content and two Bash calls (14,16) whose results are both errors; genuinely identical results under two owners are exercised by the synthetic Codex fixture, not by A or B. FULL-1R (S-5): the tool_exchanges view separates repeated_result_observations (one owner observed more than once, for example in the live output and again in the saved session file, counted as one owner) from identical_content_distinct_owners (kept separate); the former identical_result_content list is replaced. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: MCP result content, error and web-search results on the completion of the same stream-local item id.",
    "observations": [
     {
      "item": "result owned by its call id; identical results distinct",
@@ -4691,9 +4719,14 @@
      "artifact": "stream.jsonl",
      "route": "codex-cli/exec-json-stream/0.160.1",
      "records": "every committed recording of the route",
-     "field": "tool result (no result records)",
-     "availability": "absent",
-     "scenario": "facts:results"
+     "field": "MCP result.structured_content and _meta; web-search results",
+     "availability": "supported",
+     "vendor_families": [
+      "item.completed/mcp_tool_call",
+      "item.completed/web_search"
+     ],
+     "scenario": "value:item.type=mcp_tool_call",
+     "basis": "vendor source declares it on the exec stream (codex-rs/exec/src/exec_events.rs at rust-v0.160.1); Journal retains the records whole and does not normalize them: structured content retained in the whole record only"
     }
    ],
    "mapping": [
@@ -4752,7 +4785,7 @@
     "value": "adapt",
     "reason": "Structured result detail beside the model-visible content, kept as structure, not stringified."
    },
-   "notes": "CONCEPT-MATRIX row 4 recorded the old defects (structured results stringified, R13-04; integral numbers arriving as doubles, R13-09); the Jv tree and the oracle's kind/value differences close both. Claude's tool_use_result/toolUseResult is a vendor object whose field meanings are not normalized (retained exactly under structured_result).",
+   "notes": "CONCEPT-MATRIX row 4 recorded the old defects (structured results stringified, R13-04; integral numbers arriving as doubles, R13-09); the Jv tree and the oracle's kind/value differences close both. Claude's tool_use_result/toolUseResult is a vendor object whose field meanings are not normalized (retained exactly under structured_result). FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: MCP result.structured_content and _meta; web-search results.",
    "observations": [
     {
      "item": "structured hook tool_response",
@@ -4976,9 +5009,15 @@
      "artifact": "stream.jsonl",
      "route": "codex-cli/exec-json-stream/0.160.1",
      "records": "every committed recording of the route",
-     "field": "tool result error flag (no result records)",
-     "availability": "absent",
-     "scenario": "facts:results"
+     "field": "MCP status and error.message; file-change status (declined reported as failed); collab status",
+     "availability": "supported",
+     "vendor_families": [
+      "item.completed/mcp_tool_call",
+      "item.completed/file_change",
+      "item.completed/collab_tool_call"
+     ],
+     "scenario": "value:item.type=mcp_tool_call",
+     "basis": "vendor source declares it on the exec stream (codex-rs/exec/src/exec_events.rs at rust-v0.160.1); Journal retains the records whole and does not normalize them: command status and exit code are normalized as operation state; the other families' status is retained only"
     }
    ],
    "mapping": [
@@ -5026,7 +5065,7 @@
     "value": "adapt",
     "reason": "Reported error flag kept as reported; derived status carries its basis, so absent and false stay distinct."
    },
-   "notes": "CONCEPT-MATRIX row 11: a failed command inside a multi-command Codex exec is visible only on its CommandExecution item (see observed-operations); the call-level output reports no status, so the result event is Unknown/Not derivable by rule, not failed by inference.",
+   "notes": "CONCEPT-MATRIX row 11: a failed command inside a multi-command Codex exec is visible only on its CommandExecution item (see observed-operations); the call-level output reports no status, so the result event is Unknown/Not derivable by rule, not failed by inference. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: MCP status and error.message; file-change status (declined reported as failed); collab status.",
    "observations": [
     {
      "item": "failed tool call",
@@ -7262,7 +7301,9 @@
      "records": "every committed recording of the route",
      "field": "monetary cost",
      "availability": "absent",
-     "scenario": "facts:cost"
+     "scenario": "facts:cost",
+     "vendor_omission": "per-update token usage, per-turn last usage, cost",
+     "basis": "vendor source (exec projection omits it) and the route's recordings: turn.completed carries token counts only"
     }
    ],
    "mapping": [
@@ -7319,7 +7360,7 @@
     "value": "adapt",
     "reason": "Reported total as a total with currency, scope, basis and source; ACP v1's cumulative session cost is the nearest shape; calculated prices are analysis."
    },
-   "notes": "Codex reports no cost at either source (population.cost expected empty; absence is evidenced, not inferred). The per-model costUSD inside Claude's modelUsage is a reported component at Model scope that the current contracts keep only in data; promoting it to a Model-scope cost_observation is a candidate model decision, listed here so it is not silently lost. Calculated/reference cost is out of scope for the core (DESIGN §6).",
+   "notes": "Codex reports no cost at either source (population.cost expected empty; absence is evidenced, not inferred). The per-model costUSD inside Claude's modelUsage is a reported component at Model scope that the current contracts keep only in data; promoting it to a Model-scope cost_observation is a candidate model decision, listed here so it is not silently lost. Calculated/reference cost is out of scope for the core (DESIGN §6). FND-1 vendor audit (Codex 0.160.1 exec, d27764b): absent: monetary cost.",
    "observations": [
     {
      "item": "CLI-reported cost (session/model scope)",
@@ -7586,7 +7627,9 @@
      "records": "every committed recording of the route",
      "field": "model id",
      "availability": "absent",
-     "scenario": "path:model"
+     "scenario": "path:model",
+     "vendor_omission": "session configuration beyond thread_id (model, cwd, sandbox and approval policy, provider)",
+     "basis": "vendor source (exec projection omits it) and the route's recordings: thread.started carries only thread_id; a model reroute appears only as text inside an error item"
     }
    ],
    "mapping": [
@@ -7659,7 +7702,7 @@
     "value": "adapt",
     "reason": "Exact reported model id; provider only with its basis, never inferred from the name."
    },
-   "notes": "Core ai_model requires a provider organization, which neither CLI reports per response; model_ref exists for that reason (objects/model_ref.json). The Codex rollout reports model_provider as a string at session scope only ('provider organization' is in that contract's unavailable_at_source list). Codex responses carry no model, so model_ref is absent on them rather than copied from turn_context.",
+   "notes": "Core ai_model requires a provider organization, which neither CLI reports per response; model_ref exists for that reason (objects/model_ref.json). The Codex rollout reports model_provider as a string at session scope only ('provider organization' is in that contract's unavailable_at_source list). Codex responses carry no model, so model_ref is absent on them rather than copied from turn_context. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): absent: model id.",
    "observations": [
     {
      "item": "response model id",
@@ -7959,9 +8002,14 @@
      "artifact": "stream.jsonl",
      "route": "codex-cli/exec-json-stream/0.160.1",
      "records": "every committed recording of the route",
-     "field": "permission decision",
-     "availability": "absent",
-     "scenario": "facts:decisions"
+     "field": "a declined command (command_execution status declined); a declined patch is reported as failed (projection omission); approval requests are not projected",
+     "availability": "supported",
+     "vendor_families": [
+      "item.completed/command_execution",
+      "item.completed/file_change"
+     ],
+     "scenario": "value:item.status=declined",
+     "basis": "vendor source declares it on the exec stream (codex-rs/exec/src/exec_events.rs at rust-v0.160.1); Journal retains the records whole and does not normalize them: the declined command status survives only as the operation's reported_state with status Unknown; no permission_decision is normalized"
     }
    ],
    "mapping": [
@@ -8028,7 +8076,7 @@
     "value": "adapt",
     "reason": "Decisions at their reported scope (tool call or run) with source and reason; ACP's permission request is the vocabulary, not a delegation."
    },
-   "notes": "Every decision in pair A is at tool-call scope with method 1 Reported identifier (the meta entry names the tool_use_id). Run-scope unattributed denials (Claude permission_denials non-empty; Antigravity denied_actions, CONCEPT-MATRIX row 13) are modelled on prompt_turn.permission_decisions[] but not exercised by A or B. The transcript's permissionDecision is taken only when the record carries exactly one tool_result; a multi-result record would leave it in data (declared in the contract rule).",
+   "notes": "Every decision in pair A is at tool-call scope with method 1 Reported identifier (the meta entry names the tool_use_id). Run-scope unattributed denials (Claude permission_denials non-empty; Antigravity denied_actions, CONCEPT-MATRIX row 13) are modelled on prompt_turn.permission_decisions[] but not exercised by A or B. The transcript's permissionDecision is taken only when the record carries exactly one tool_result; a multi-result record would leave it in data (declared in the contract rule). FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: a declined command (command_execution status declined); a declined patch is reported as failed (projection omission); approval requests are not projected.",
    "observations": [
     {
      "item": "manual-mode denial decision and text",
@@ -8336,9 +8384,11 @@
      "artifact": "stream.jsonl",
      "route": "codex-cli/exec-json-stream/0.160.1",
      "records": "every committed recording of the route",
-     "field": "settings (thread.started carries only thread_id)",
+     "field": "settings beyond the thread id",
      "availability": "absent",
-     "scenario": "facts:contexts"
+     "scenario": "facts:contexts",
+     "vendor_omission": "session configuration beyond thread_id (model, cwd, sandbox and approval policy, provider)",
+     "basis": "vendor source (exec projection omits it) and the route's recordings: thread.started carries only thread_id"
     }
    ],
    "mapping": [
@@ -8401,7 +8451,7 @@
     "value": "adapt",
     "reason": "Reported settings, one observation per record at its scope, nothing merged."
    },
-   "notes": "settings.context.v1: one row per record at its reported scope; nothing merged, so Codex cwd on records 1 and 8 are two rows. The launch command line itself is not in any native record; it is recorded in the run spec (specs/*.json launch_settings) and run.json, not as an event. Per-record envelope settings on Claude transcript records (cwd, gitBranch, permissionMode, version) are retained in data only; whether they merit a settings-change row is an open model question. FULL-1R: a synthetic world_state record (rollout fixture 34, in the shape of pair B record 2) is committed coverage for the collaboration_mode.model setting.",
+   "notes": "settings.context.v1: one row per record at its reported scope; nothing merged, so Codex cwd on records 1 and 8 are two rows. The launch command line itself is not in any native record; it is recorded in the run spec (specs/*.json launch_settings) and run.json, not as an event. Per-record envelope settings on Claude transcript records (cwd, gitBranch, permissionMode, version) are retained in data only; whether they merit a settings-change row is an open model question. FULL-1R: a synthetic world_state record (rollout fixture 34, in the shape of pair B record 2) is committed coverage for the collaboration_mode.model setting. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): absent: settings beyond the thread id.",
    "observations": [
     {
      "item": "Claude Code app version",
@@ -8614,7 +8664,9 @@
      "records": "every committed recording of the route",
      "field": "injected context",
      "availability": "absent",
-     "scenario": "facts:contexts"
+     "scenario": "facts:contexts",
+     "vendor_omission": "user prompt (UserMessage items) and hook prompts",
+     "basis": "vendor source (exec projection omits it) and the route's recordings: exec does not project user or hook prompts"
     }
    ],
    "mapping": [
@@ -8680,7 +8732,7 @@
     "value": "journal_defined",
     "reason": "Context injected into the model's input kept as its own observation, distinct from human submissions."
    },
-   "notes": "The attachment object's inner meaning (environment snapshot, tool/agent/skill listings, instructions files, credential org, prompt snapshots, deferred tools) is retained whole and not normalized beyond kind/role/rendered blocks; the credential_org attachment carries account-related data (REPORT row 23 privacy flag). The Codex environment_context record is still a prompt_turn event at the writer; only the semantic classifier removes it from the submission count. FULL-1R (2026-10-21, review FR-03): context.values now checks every rendered block (block_index, block_type, verbatim text and the native element retained as data) against the native record for Claude attachments and Codex developer messages, not only the block count; the exactness claim of this row holds at that scope. Two synthetic developer-message records (rollout fixture 32-33) exercise multi-block order and cross-owner swaps.",
+   "notes": "The attachment object's inner meaning (environment snapshot, tool/agent/skill listings, instructions files, credential org, prompt snapshots, deferred tools) is retained whole and not normalized beyond kind/role/rendered blocks; the credential_org attachment carries account-related data (REPORT row 23 privacy flag). The Codex environment_context record is still a prompt_turn event at the writer; only the semantic classifier removes it from the submission count. FULL-1R (2026-10-21, review FR-03): context.values now checks every rendered block (block_index, block_type, verbatim text and the native element retained as data) against the native record for Claude attachments and Codex developer messages, not only the block count; the exactness claim of this row holds at that scope. Two synthetic developer-message records (rollout fixture 32-33) exercise multi-block order and cross-owner swaps. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): absent: injected context.",
    "observations": [
     {
      "item": "system instructions (CLAUDE.md)",
@@ -8875,9 +8927,11 @@
      "artifact": "stream.jsonl",
      "route": "codex-cli/exec-json-stream/0.160.1",
      "records": "every committed recording of the route",
-     "field": "accounting record (turn.completed usage is the usage concept)",
+     "field": "separate accounting records",
      "availability": "absent",
-     "scenario": "facts:contexts"
+     "scenario": "facts:contexts",
+     "vendor_omission": "per-update token usage, per-turn last usage, cost",
+     "basis": "vendor source (exec projection omits it) and the route's recordings: only the thread's cumulative usage at turn end, carried by turn.completed (usage concepts)"
     }
    ],
    "mapping": [
@@ -8938,7 +8992,7 @@
     "value": "adapt",
     "reason": "Session- or response-scope accounting records kept as supporting observations at their scope, never summed by the writer."
    },
-   "notes": "Codex token_count is deliberately a whole-record fallback while its usage observation is carried on the task_complete event with source_ref.record_index pointing at the token_count record (eventRecordIndex 26, recordIndex 21/25 in the oracle); this is the one place an observation's citing record differs from its event's record. The rate_limits object in token_count has no normalized destination. FULL-1R: a synthetic token_usage_record (rollout fixture 35, in the shape of pair B records 20/23) gives committed coverage of the response-scope final beside provisional turn and thread figures (three groups, never summed; S-6 example).",
+   "notes": "Codex token_count is deliberately a whole-record fallback while its usage observation is carried on the task_complete event with source_ref.record_index pointing at the token_count record (eventRecordIndex 26, recordIndex 21/25 in the oracle); this is the one place an observation's citing record differs from its event's record. The rate_limits object in token_count has no normalized destination. FULL-1R: a synthetic token_usage_record (rollout fixture 35, in the shape of pair B records 20/23) gives committed coverage of the response-scope final beside provisional turn and thread figures (three groups, never summed; S-6 example). FND-1 vendor audit (Codex 0.160.1 exec, d27764b): absent: separate accounting records.",
    "observations": [
     {
      "item": "transcript cost-state record",
@@ -9145,9 +9199,14 @@
      "artifact": "stream.jsonl",
      "route": "codex-cli/exec-json-stream/0.160.1",
      "records": "every committed recording of the route",
-     "field": "child run or spawning call",
-     "availability": "absent",
-     "scenario": "run:children"
+     "field": "collab spawn_agent with sender/receiver thread ids, prompt and agent states; the child's own activity is not projected",
+     "availability": "supported",
+     "vendor_families": [
+      "item.started/collab_tool_call",
+      "item.completed/collab_tool_call"
+     ],
+     "scenario": "value:item.type=collab_tool_call",
+     "basis": "vendor source declares it on the exec stream (codex-rs/exec/src/exec_events.rs at rust-v0.160.1); Journal retains the records whole and does not normalize them: the spawn relationship is retained only; child-thread items are omitted by the projection"
     }
    ],
    "mapping": [
@@ -9193,7 +9252,7 @@
     "value": "adapt",
     "reason": "A child run has its own core linked to the spawning call; ACP sub-agents exist only in its unstable schema."
    },
-   "notes": "Neither frozen pair contains a child; the concept is exercised by the sanitized fixture claude-child-2.1.299 (spawn toolu_01BnEuCUmZ2Vu1LpADzksmrJ) from pair D, which the cited tests use. The stream contract's owner_routing (parent_tool_use_id -> child core) is a labelled split of the parent's own stream, not live child capture; the child's sidechain transcript and .meta.json (REPORT row 6, §4 known omissions) were not acquired for A, and a missing child file is a gap, not an empty child (work order §1). Child-scope usage (scope 7) is not produced by any current contract. ACCEPT-1 (2026-10-21): child routing by parent_tool_use_id is implemented (layout 0.3.0-prototype, each child file with its own declarations) and exercised on the committed claude-child-2.1.299 fixture; the oracle checks the expected split cores and their owner scopes (package.children). Codex exec stream: no child concept observed.",
+   "notes": "Neither frozen pair contains a child; the concept is exercised by the sanitized fixture claude-child-2.1.299 (spawn toolu_01BnEuCUmZ2Vu1LpADzksmrJ) from pair D, which the cited tests use. The stream contract's owner_routing (parent_tool_use_id -> child core) is a labelled split of the parent's own stream, not live child capture; the child's sidechain transcript and .meta.json (REPORT row 6, §4 known omissions) were not acquired for A, and a missing child file is a gap, not an empty child (work order §1). Child-scope usage (scope 7) is not produced by any current contract. ACCEPT-1 (2026-10-21): child routing by parent_tool_use_id is implemented (layout 0.3.0-prototype, each child file with its own declarations) and exercised on the committed claude-child-2.1.299 fixture; the oracle checks the expected split cores and their owner scopes (package.children). Codex exec stream: no child concept observed. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: collab spawn_agent with sender/receiver thread ids, prompt and agent states; the child's own activity is not projected.",
    "observations": [
     {
      "item": "child interior and parent link",
@@ -11194,6 +11253,17 @@
      "records": "1-15",
      "field": "durations",
      "availability": "absent"
+    },
+    {
+     "cli": "codex",
+     "artifact": "stream.jsonl",
+     "route": "codex-cli/exec-json-stream/0.160.1",
+     "records": "every committed recording of the route",
+     "field": "reported durations",
+     "availability": "absent",
+     "scenario": "path:item.duration_ms",
+     "vendor_omission": "command cwd, process id, source, parsed command actions, duration, plugin id, script path",
+     "basis": "vendor source (exec projection omits it) and the route's recordings: no duration on any exec item (MCP duration is omitted too)"
     }
    ],
    "mapping": [
@@ -11245,7 +11315,7 @@
     "value": "vendor_detail",
     "reason": "Vendor-reported durations stay in whole-record data; OTel durations are client-measured, a different fact. Normalization deferred."
    },
-   "notes": "No extension attribute normalizes a duration; the values are reachable in the whole-record data of the events listed and are preserved by the structure/value checks, not by a duration-specific property. Whether a common duration field is warranted (run, turn, operation) is a model decision for the review; this catalog records that the values exist at source and are not lost.",
+   "notes": "No extension attribute normalizes a duration; the values are reachable in the whole-record data of the events listed and are preserved by the structure/value checks, not by a duration-specific property. Whether a common duration field is warranted (run, turn, operation) is a model decision for the review; this catalog records that the values exist at source and are not lost. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): absent: reported durations.",
    "observations": [
     {
      "item": "run, API and time-to-first-token durations",

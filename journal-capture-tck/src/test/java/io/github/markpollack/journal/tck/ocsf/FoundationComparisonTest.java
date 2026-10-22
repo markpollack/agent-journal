@@ -518,6 +518,7 @@ class FoundationComparisonTest {
             case "retained-only" -> "retained_raw";
             case "unavailable-at-source" -> "unavailable_input";
             case "unexercised" -> "unexercised";
+            case "unsupported" -> "retained_raw";
             default -> "unresolved";
         };
     }

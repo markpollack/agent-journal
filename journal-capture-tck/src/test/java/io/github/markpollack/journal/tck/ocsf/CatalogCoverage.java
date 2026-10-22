@@ -27,7 +27,10 @@ import java.util.Set;
  * <li><b>Scenario occurrence</b> comes from the native records ({@link #occurrences}): a broad property passing on a
  * fixture that holds no instance of the concept's scenario does not exercise the concept.</li>
  * <li><b>Availability</b> claims count only when they name the route's compatibility entry and a scenario, and that
- * scenario is checked against the route's recordings by {@link #availabilityRefuted}.</li>
+ * scenario is checked against the route's recordings by {@link #availabilityRefuted}. Where the route has a pinned vendor
+ * inventory, an {@code absent} claim must name the projection omission that establishes it, and a {@code supported} claim
+ * names the vendor families that carry the concept while Journal only retains them: the state is then {@code unsupported},
+ * never {@code unavailable-at-source}.</li>
  * </ul>
  *
  * <p>On a recording the frozen manifest marks incomplete, a property the catalog lists under
@@ -198,6 +201,24 @@ final class CatalogCoverage {
                 claims.add(n);
             }
         }
+        List<String> supported = new ArrayList<>();
+        for (Json n : claims) {
+            if ("supported".equals(SchemaCatalog.text(n, "availability"))) {
+                for (Json v : n.member("vendor_families").elements()) {
+                    supported.add(v.text());
+                }
+            }
+        }
+        if (!supported.isEmpty()) {
+            int n = 0;
+            for (Json c : claims) {
+                if ("supported".equals(SchemaCatalog.text(c, "availability")) && SchemaCatalog.text(c, "scenario") != null) {
+                    n += occurrences(SchemaCatalog.text(c, "scenario"), route, natives, expected);
+                }
+            }
+            return "unsupported (vendor-supported " + String.join(", ", supported) + "; retained whole, not normalized; "
+                    + (n > 0 ? n + " occurrence(s) on this recording" : "no occurrence on this recording") + ")";
+        }
         if (!claims.isEmpty() && claims.stream().allMatch(n -> "absent".equals(SchemaCatalog.text(n, "availability")))) {
             return "optional-unexercised".equals(disposition) ? "unexercised (no occurrence on the route's sources)" : "unavailable-at-source";
         }
@@ -350,6 +371,9 @@ final class CatalogCoverage {
             total += occurrences(scenario, r, OcsfFixtures.natives(fixture), ExpectedSources.beside(OcsfFixtures.natives(fixture)));
         }
         String availability = SchemaCatalog.text(claim, "availability");
+        if ("supported".equals(availability)) {
+            return null; // a vendor-supported capability may be unexercised by the recordings; its vendor families are checked by the catalog test
+        }
         if ("absent".equals(availability) && total > 0) {
             return scenario + " occurs " + total + " time(s) on the route's recordings";
         }
