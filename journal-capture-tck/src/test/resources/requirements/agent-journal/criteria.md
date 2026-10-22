@@ -265,7 +265,7 @@ Rule: RULE-36. Tests: `RequirementsEvidenceTest`, `RequirementsReporterReproduct
 ### UC5-AC13: Derive the comparison matrix from the mapping catalog
 
 When common-model coverage is compared across CLIs, the matrix shall be generated from reviewed mapping-catalog entries with verified, retained-only, unavailable-at-source, unexercised and unresolved states kept separate.
-Rule: RULE-35. Tests: `MappingCatalogTest#theCommonConceptMatrixIsDerivedFromTheEntriesAndThisRunsOracleResultsWithStatesKeptSeparate`, `MappingCatalogTest#everyCatalogReferenceResolvesInJava`. Status: implemented 2026-10-21 (ACCEPT-1); the matrix is written to `target/mapping-catalog/COMMON-CONCEPTS.md`; "mapping catalog" replaces the earlier term "crosswalk".
+Rule: RULE-35. Tests: `MappingCatalogTest#theCommonConceptMatrixIsDerivedFromTheEntriesAndThisRunsOracleResultsWithStatesKeptSeparate`, `MappingCatalogTest#everyCatalogReferenceResolvesInJava`. Status: implemented 2026-10-21 (ACCEPT-1); "mapping catalog" replaces the earlier term "crosswalk". Repaired 2026-10-22 (FND-1): the coverage summary (`CatalogCoverage`, reproduced by `MappingCatalogSummaryTest`) owes every listed property for every owner the frozen expected sources establish, at its declared scope, with an occurrence of the concept's native scenario; a missing owed result blocks verification; the table is written to `target/mapping-catalog/CLI-COVERAGE.md`, one column per admitted CLI/version/profile/route.
 
 ## Change log
 

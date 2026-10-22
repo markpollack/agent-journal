@@ -124,15 +124,21 @@ class MappingCatalogSummaryTest {
     @Test
     void aBroadPropertyPassingIsNotAnOccurrenceOfTheConceptsScenario(@TempDir Path work) {
         Run run = run(CHILD_ROUTE, work);
-        // response.values is VERIFIED on this fixture, but its stream carries no redacted reasoning, media or unknown block,
-        // and the run is complete: none of these concepts was exercised by it
+        // response.values is VERIFIED on this fixture, but its stream carries no redacted reasoning or media block, and the
+        // run is complete: none of these concepts was exercised by it
         assertThat(run.report().check("response.values", MAIN).outcome()).isEqualTo(Outcome.VERIFIED);
-        assertThat(summary("redacted-or-encrypted-reasoning", CHILD_ROUTE, run, run.report())).startsWith("unexercised");
-        assertThat(summary("media-and-multimodal-blocks", CHILD_ROUTE, run, run.report())).startsWith("unexercised");
-        assertThat(summary("unknown-block-kinds", CHILD_ROUTE, run, run.report())).startsWith("unexercised");
-        assertThat(summary("interrupted-run-and-never-observed-result", CHILD_ROUTE, run, run.report())).startsWith("unexercised");
-        // the thinking blocks the stream does carry still count
+        assertThat(summary("redacted-or-encrypted-reasoning", CHILD_ROUTE, run, run.report())).startsWith("unexercised").contains("block:redacted_thinking");
+        assertThat(summary("media-and-multimodal-blocks", CHILD_ROUTE, run, run.report())).startsWith("unexercised").contains("block:media");
+        assertThat(summary("interrupted-run-and-never-observed-result", CHILD_ROUTE, run, run.report())).startsWith("unexercised").contains("run:incomplete");
+        // what the stream does carry still counts: thinking blocks, and one tool_reference block nested in a tool result,
+        // a kind outside the profile's block table, checked exactly by result.values
         assertThat(summary("reasoning-blocks-and-signature", CHILD_ROUTE, run, run.report())).isEqualTo("verified");
+        assertThat(CatalogCoverage.occurrences("block:unknown", CHILD_ROUTE, OcsfFixtures.natives(run.fixture()),
+                ExpectedSources.beside(OcsfFixtures.natives(run.fixture())))).isEqualTo(1);
+        assertThat(summary("unknown-block-kinds", CHILD_ROUTE, run, run.report())).isEqualTo("verified");
+        // the interrupted prefix of the same stream does exercise the interruption concept
+        Run prefix = run(MappingCatalogTest.ROUTES.get(7), work.resolve("prefix"));
+        assertThat(summary("interrupted-run-and-never-observed-result", MappingCatalogTest.ROUTES.get(7), prefix, prefix.report())).doesNotStartWith("unexercised");
     }
 
     @Test
@@ -169,5 +175,23 @@ class MappingCatalogSummaryTest {
         Run live = run(LIVE_FEATURES_ROUTE, work.resolve("live"));
         assertThat(MappingCatalogTest.summarize(entry, LIVE_FEATURES_ROUTE, live.fixture(), live.report())).startsWith("unresolved")
                 .contains("claude-code/stream-json/2.1.304-stdout");
+    }
+
+    @Test
+    void anIncompleteFrozenRunMustNotClaimACompleteCapture(@TempDir Path work) {
+        MappingCatalogTest.Route route = MappingCatalogTest.ROUTES.get(7);
+        Run prefix = run(route, work);
+        // the frozen manifest marks the prefix incomplete; the oracle honestly reports completeness UNSUPPORTED
+        assertThat(prefix.report().check("acquisition.complete", "main").outcome()).isEqualTo(Outcome.UNSUPPORTED);
+        assertThat(summary("interrupted-run-and-never-observed-result", route, prefix, prefix.report())).isEqualTo("verified");
+        assertThat(summary("journal-run-and-invocation", route, prefix, prefix.report())).isEqualTo("verified");
+        OracleReport claimsComplete = prefix.report().replaced(c -> is(c, "main", "acquisition.complete"),
+                c -> new Check(c.category(), c.property(), c.owner(), Outcome.VERIFIED, "complete"));
+        assertThat(summary("interrupted-run-and-never-observed-result", route, prefix, claimsComplete)).startsWith("defective").contains("expected UNSUPPORTED");
+        // on a complete frozen run the same property is judged as usual: UNSUPPORTED there is unresolved, not evidence
+        Run whole = run(CHILD_ROUTE, work.resolve("whole"));
+        OracleReport notClaimed = whole.report().replaced(c -> is(c, "main", "acquisition.complete"),
+                c -> new Check(c.category(), c.property(), c.owner(), Outcome.UNSUPPORTED, "incomplete"));
+        assertThat(summary("source-occurrence-provenance", CHILD_ROUTE, whole, notClaimed)).startsWith("unresolved").contains("acquisition.complete [main]");
     }
 }
