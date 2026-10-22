@@ -278,7 +278,8 @@ class RequirementsAccountingIT {
         RULES.put("RULE-35", new RuleEvidence(List.of("UC5-AC13"), List.of(), ""));
         RULES.put("RULE-36", new RuleEvidence(List.of("UC5-AC12", "UC5-AC14", "UC5-AC16"), List.of(), ""));
         RULES.put("RULE-37", new RuleEvidence(List.of(), List.of(junit("StandaloneEventFileTest#theParentEventFileAloneIsInterpretedFromItsDeclarations", "definitions once per file, not per event")), "no mapping language, generated reader or model call exists in the build; enforced by review beyond the executable check"));
-        RULES.put("RULE-38", new RuleEvidence(List.of("UC5-AC17", "UC5-AC21"), List.of(), "approval is a recorded Owner decision naming the exact claim revision and digest"));
+        RULES.put("RULE-38", new RuleEvidence(List.of("UC5-AC17", "UC5-AC21"), List.of(junit("SemanticClaimTest#aDelegatedDecisionStatesItsDelegationAndClaimsNoDirectOwnerReviewOfEachDigest", "the delegated SEM-1 decision under its delegated identity")),
+                "approval is a recorded decision of the Owner, or of a reviewer the Owner explicitly delegated, naming the exact claim revision and digest"));
         RULES.put("RULE-39", new RuleEvidence(List.of("UC5-AC19", "UC5-AC20"), List.of(), ""));
         RULES.put("RULE-40", new RuleEvidence(List.of("UC5-AC14", "UC5-AC15"), List.of(), ""));
         RULES.put("RULE-41", new RuleEvidence(List.of("UC5-AC17", "UC5-AC18"), List.of(), "the digest boundary is the catalog's semantic_claims.digest_boundary"));

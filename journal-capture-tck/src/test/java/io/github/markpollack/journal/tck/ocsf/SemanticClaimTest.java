@@ -95,7 +95,7 @@ class SemanticClaimTest {
     }
 
     static final String APPROVED = "claude.stream.child-scope-prompt";
-    static final String PROPOSED = "codex.exec-stream.thread-usage";
+    static final String PROPOSED = "codex.exec-stream.mcp-tool-call";
 
     // ---- the committed data -----------------------------------------------------------------------------------------
 
@@ -158,16 +158,16 @@ class SemanticClaimTest {
         assertThat(problems(noExample, examples, decisions)).anyMatch(p -> p.contains("normative example no-such-example does not exist"));
         Json noPin = claimChanged(catalog, id, k -> with(k, "evidence", new Json.JArray(List.of(new Json.JString("codex-exec-0.160.1-unpinned")))));
         assertThat(problems(noPin, examples, decisions)).anyMatch(p -> p.contains("evidence codex-exec-0.160.1-unpinned is not a pinned reference"));
-        Json foreign = claimChanged(catalog, id, k -> with(k, "destinations", new Json.JArray(List.of(new Json.JString("usage_observation.turn_delta_tokens")))));
-        assertThat(problems(foreign, examples, decisions)).anyMatch(p -> p.contains("destination usage_observation.turn_delta_tokens does not resolve"));
-        Json noCheck = claimChanged(catalog, id, k -> with(k, "checks", new Json.JArray(List.of(new Json.JString("junit:SemanticExampleTest#aTestThatNeverExisted"), new Json.JString("oracle:CodexStreamProfile/usage.turn_scope")))));
+        Json foreign = claimChanged(catalog, id, k -> with(k, "destinations", new Json.JArray(List.of(new Json.JString("tool_call.model_call_uid")))));
+        assertThat(problems(foreign, examples, decisions)).anyMatch(p -> p.contains("destination tool_call.model_call_uid does not resolve"));
+        Json noCheck = claimChanged(catalog, id, k -> with(k, "checks", new Json.JArray(List.of(new Json.JString("junit:SemanticExampleTest#aTestThatNeverExisted"), new Json.JString("oracle:CodexStreamProfile/request.model_call_uid")))));
         assertThat(problems(noCheck, examples, decisions)).anyMatch(p -> p.contains("names no test in the test sources")).anyMatch(p -> p.contains("did not report in this run"));
         Json noRoute = claimChanged(catalog, id, k -> with(k, "applicability", with(k.member("applicability"), "routes", new Json.JArray(List.of(new Json.JString("codex-cli/exec-json-stream/0.161.0"))))));
         assertThat(problems(noRoute, examples, decisions)).anyMatch(p -> p.contains("route codex-cli/exec-json-stream/0.161.0 is not a compatibility entry"));
         // an example's native input altered: the pinned recording no longer matches, so the meaning's digest changes
         Map<String, Json> exs = new TreeMap<>(examples);
-        Json ex = exs.get("codex-thread-usage-live-mcp");
-        exs.put("codex-thread-usage-live-mcp", with(ex, "native", with(ex.member("native"), "sha256", new Json.JString("0".repeat(64)))));
+        Json ex = exs.get("codex-mcp-tool-call-live");
+        exs.put("codex-mcp-tool-call-live", with(ex, "native", with(ex.member("native"), "sha256", new Json.JString("0".repeat(64)))));
         assertThat(problems(catalog, exs, decisions)).anyMatch(p -> p.startsWith(id + " r1: digest"));
     }
 
@@ -188,6 +188,21 @@ class SemanticClaimTest {
             ds.add(with(d, "approves", new Json.JArray(List.of(with(x, "digest", new Json.JString("sha256:" + "1".repeat(64)))))));
         }
         assertThat(problems(catalog, examples, with(decisions, "decisions", new Json.JArray(ds)))).anyMatch(p -> p.startsWith(APPROVED + " r1: decision") && p.contains("does not approve"));
+    }
+
+    @Test
+    void aDelegatedDecisionStatesItsDelegationAndClaimsNoDirectOwnerReviewOfEachDigest() {
+        // the delegated SEM-1 pass is recorded under the reviewer's identity and the Owner's delegation, exactly as decided; its
+        // binding says the digests were not each reviewed by the Owner, and its record is a public-safe pointer, not private prose
+        Json delegated = decisions.member("decisions").elements().stream().filter(d -> "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT".equals(SchemaCatalog.text(d, "id"))).findFirst().orElseThrow();
+        assertThat(SchemaCatalog.text(delegated, "approver")).isEqualTo("Managing semantic reviewer, explicitly delegated by Project Owner (markpollack)");
+        assertThat(SchemaCatalog.text(delegated, "binding")).contains("not direct human review of each digest");
+        assertThat(SchemaCatalog.text(delegated, "record")).startsWith("private steward decision record:").doesNotContain("/").doesNotContain(".md");
+        for (SemanticClaims.Claim c : SemanticClaims.claims(catalog)) {
+            if ("OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT".equals(SchemaCatalog.text(c.json().member("approval"), "decision"))) {
+                assertThat(SchemaCatalog.text(c.json().member("approval"), "approver")).as(c.id()).isEqualTo(SchemaCatalog.text(delegated, "approver"));
+            }
+        }
     }
 
     @Test

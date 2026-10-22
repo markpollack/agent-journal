@@ -5757,7 +5757,12 @@
      ],
      "replaces": "contract 0.2.0-prototype kept the command string only inside the retained record",
      "approval": {
-      "status": "proposed"
+      "status": "approved",
+      "revision": 1,
+      "digest": "sha256:20ec664ec7b92885da540b870ce5495744acece6d2f60c9d5c996cb865ed4749",
+      "approver": "Managing semantic reviewer, explicitly delegated by Project Owner (markpollack)",
+      "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
+      "basis": "delegated acceptance: the Project Owner explicitly delegated the SEM-1 semantic decision pass to the managing reviewer, who accepted this exact revision and digest at its stated applicability; not a direct human review of the digest and not a test result"
      }
     }
    ]
@@ -6228,7 +6233,12 @@
      ],
      "replaces": "contract 0.2.0-prototype gave a declined command status 0 Unknown",
      "approval": {
-      "status": "proposed"
+      "status": "approved",
+      "revision": 1,
+      "digest": "sha256:6e7df5bad65e13bd278589c399f5e0be71adcfab5dd18a5296984251631c4a5a",
+      "approver": "Managing semantic reviewer, explicitly delegated by Project Owner (markpollack)",
+      "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
+      "basis": "delegated acceptance: the Project Owner explicitly delegated the SEM-1 semantic decision pass to the managing reviewer, who accepted this exact revision and digest at its stated applicability; not a direct human review of the digest and not a test result"
      }
     }
    ]
@@ -7645,7 +7655,12 @@
      ],
      "replaces": "contract 0.2.0-prototype read turn.completed usage as scope 3 Prompt turn, Final (\"reports the turn's usage once\"); never approved, refuted by the pinned emitter",
      "approval": {
-      "status": "proposed"
+      "status": "approved",
+      "revision": 1,
+      "digest": "sha256:39cd69be58f09965e76734d4de577c022d3c97b3af5d99c5e5e7ee7bcf39c306",
+      "approver": "Managing semantic reviewer, explicitly delegated by Project Owner (markpollack)",
+      "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
+      "basis": "delegated acceptance: the Project Owner explicitly delegated the SEM-1 semantic decision pass to the managing reviewer, who accepted this exact revision and digest at its stated applicability; not a direct human review of the digest and not a test result"
      }
     },
     {
@@ -7683,7 +7698,12 @@
       "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
      ],
      "approval": {
-      "status": "proposed"
+      "status": "approved",
+      "revision": 1,
+      "digest": "sha256:2de474fb406dde2008bee42897611d4c6b4d155f9f6d26cbfeae622f95d59f0a",
+      "approver": "Managing semantic reviewer, explicitly delegated by Project Owner (markpollack)",
+      "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
+      "basis": "delegated acceptance: the Project Owner explicitly delegated the SEM-1 semantic decision pass to the managing reviewer, who accepted this exact revision and digest at its stated applicability; not a direct human review of the digest and not a test result"
      }
     }
    ]
@@ -10338,7 +10358,12 @@
      ],
      "replaces": "extension 0.4.0-prototype and earlier stored the rule as OCSF unmapped.rule_id",
      "approval": {
-      "status": "proposed"
+      "status": "approved",
+      "revision": 1,
+      "digest": "sha256:3b3650b6a57035f85cf184b3f58fffb09c1ded36d82357f012836bfa93d631ea",
+      "approver": "Managing semantic reviewer, explicitly delegated by Project Owner (markpollack)",
+      "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
+      "basis": "delegated acceptance: the Project Owner explicitly delegated the SEM-1 semantic decision pass to the managing reviewer, who accepted this exact revision and digest at its stated applicability; not a direct human review of the digest and not a test result"
      }
     }
    ]
@@ -10990,7 +11015,12 @@
      ],
      "replaces": "contract 0.2.0-prototype kept web_search lines only as opaque records",
      "approval": {
-      "status": "proposed"
+      "status": "approved",
+      "revision": 1,
+      "digest": "sha256:c3585862aa697483e47a8c7b0936582ea32130af81d8ea06b88cf12b326df57c",
+      "approver": "Managing semantic reviewer, explicitly delegated by Project Owner (markpollack)",
+      "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
+      "basis": "delegated acceptance: the Project Owner explicitly delegated the SEM-1 semantic decision pass to the managing reviewer, who accepted this exact revision and digest at its stated applicability; not a direct human review of the digest and not a test result; the accepted meaning is the intended one (only the actual nested duplicate-id form); the dotted-path duplicate selector of the 0.3.0-prototype implementation has a known defect that this decision does not accept"
      }
     }
    ]

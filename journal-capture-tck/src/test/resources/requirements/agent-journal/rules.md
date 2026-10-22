@@ -208,9 +208,9 @@ Tests: `RequirementsEvidenceTest`, `RequirementsReporterReproductionTest`, `Mapp
 Tests: the RULE-23 build-file inspection in `RequirementsEvidenceTest` covers the writer's freedom from model and evaluation dependencies; the rest is enforced by review.
 
 ### RULE-38
-**MUST** report a concept or claim as approved support only when the Project Owner's recorded decision approves the exact semantic claim revision and digest, and that claim names the CLI, profile, version and route it applies to.
-**Reason:** A reviewed date, a source citation, an author's judgment or a passing build is not an approval; an approval of one wording does not extend to another, and support without its route is a claim about every route.
-Tests: `SemanticClaimTest` (decisions in `owner-decisions.json`, stale and borrowed approvals refused).
+**MUST** report a concept or claim as approved support only when a recorded decision approves the exact semantic claim revision and digest, made by the Project Owner or by a reviewer the Owner explicitly delegated for that decision pass and recorded under that delegated identity, and that claim names the CLI, profile, version and route it applies to.
+**Reason:** A reviewed date, a source citation, an author's judgment or a passing build is not an approval; an approval of one wording does not extend to another, and support without its route is a claim about every route. A delegated decision is not presented as the Owner's direct review of each digest, and an implementing agent does not approve its own meanings.
+Tests: `SemanticClaimTest` (decisions in `owner-decisions.json`, stale and borrowed approvals refused, the delegated identity stated).
 
 ### RULE-39
 **MUST** link every semantic claim to pinned supporting evidence, its canonical destinations in the compiled schema and independently authored expected examples with counterexamples, each resolvable, and MUST NOT treat a citation or the agreement of the mapper and the oracle as proof of the interpretation.
@@ -251,3 +251,7 @@ revision, digest and route), RULE-39 (claims link pinned evidence, destinations 
 RULE-40 (NOT_APPLICABLE needs the owner's independently established zero occurrences) and RULE-41 (a changed meaning
 needs a new revision and approval; preservation and labelled candidate testing continue). No rule removed;
 `RequirementsRosterTest` pins 41 rules.
+
+2026-10-22, delegated semantic closure (SEM-CLOSE). Retained identifier with changed meaning: RULE-38 now also accepts a
+decision the Project Owner explicitly delegated to an identified reviewer for a decision pass, recorded under that
+delegated identity and not as the Owner's direct review of each digest. No rule added or removed in this change.

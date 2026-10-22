@@ -1,7 +1,7 @@
 {
  "kind": "agent-journal/owner-decisions",
  "format_version": "0.1",
- "meaning": "Public-safe identities of the Project Owner's semantic decisions. Each decision approves exact claim revisions and digests; its full record is private (the project's steward repository). A claim is approved only through an entry here that names its revision and digest; a reviewed date or a passing build is not an approval.",
+ "meaning": "Public-safe identities of explicitly Owner-authorized semantic decisions, including a decision pass the Project Owner explicitly delegated to an identified reviewer (its approver and binding say so). Each decision approves exact claim revisions and digests; semantic approval is separate from executed behaviour verification. Its full record is private (the project's steward repository). A claim is approved only through an entry here that names its revision and digest; a reviewed date or a passing build is not an approval.",
  "decisions": [
   {
    "id": "OWNER-2026-10-21-ACCEPT-1-6",
@@ -30,6 +30,46 @@
      "claim": "claude.stream.named-denial-attribution",
      "revision": 1,
      "digest": "sha256:28d7b4b615efc5b5e108bc3e36d171741f97850d815a5e6262a725ff761ef326"
+    }
+   ]
+  },
+  {
+   "id": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
+   "date": "2026-10-22",
+   "approver": "Managing semantic reviewer, explicitly delegated by Project Owner (markpollack)",
+   "summary": "Accept the exact scoped definitions of cumulative thread-usage snapshots, uncertain all-zero measurements, intact standalone command observations, reported Declined status without an invented permission decision, mapping-rule provenance and the supported duplicate-web-search interpretation.",
+   "record": "private steward decision record: SEM-1 delegated semantic decisions, 2026-10-22",
+   "binding": "The Project Owner explicitly delegated this semantic decision pass to the managing reviewer. The reviewer accepted the six listed normative revisions/digests at their stated source/contract applicability. This records delegated acceptance, not direct human review of each digest or a fresh test result. Changed meanings, applicability or normative examples require a new revision and approval; implementation defects cannot become verified through approval.",
+   "approves": [
+    {
+     "claim": "codex.exec-stream.thread-usage",
+     "revision": 1,
+     "digest": "sha256:39cd69be58f09965e76734d4de577c022d3c97b3af5d99c5e5e7ee7bcf39c306"
+    },
+    {
+     "claim": "codex.exec-stream.usage-measurement",
+     "revision": 1,
+     "digest": "sha256:2de474fb406dde2008bee42897611d4c6b4d155f9f6d26cbfeae622f95d59f0a"
+    },
+    {
+     "claim": "codex.exec-stream.standalone-operation-command",
+     "revision": 1,
+     "digest": "sha256:20ec664ec7b92885da540b870ce5495744acece6d2f60c9d5c996cb865ed4749"
+    },
+    {
+     "claim": "codex.exec-stream.declined-status",
+     "revision": 1,
+     "digest": "sha256:6e7df5bad65e13bd278589c399f5e0be71adcfab5dd18a5296984251631c4a5a"
+    },
+    {
+     "claim": "journal.mapping-rule-provenance",
+     "revision": 1,
+     "digest": "sha256:3b3650b6a57035f85cf184b3f58fffb09c1ded36d82357f012836bfa93d631ea"
+    },
+    {
+     "claim": "codex.exec-stream.web-search-duplicate-id",
+     "revision": 1,
+     "digest": "sha256:c3585862aa697483e47a8c7b0936582ea32130af81d8ea06b88cf12b326df57c"
     }
    ]
   }
