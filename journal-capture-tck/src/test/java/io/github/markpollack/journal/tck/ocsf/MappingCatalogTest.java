@@ -314,19 +314,22 @@ class MappingCatalogTest {
         Map<String, Map<String, Integer>> totals = new TreeMap<>();
         List<String> failures = new ArrayList<>();
         List<Map<String, Object>> evidence = new ArrayList<>();
+        Map<String, String> approval = SemanticClaims.approvalByConcept(catalog);
         for (Json e : catalog.member("concepts").elements()) {
             String id = SchemaCatalog.text(e, "id");
             Map<String, Object> row = new LinkedHashMap<>();
             row.put("id", id);
             row.put("concept", SchemaCatalog.text(e, "concept"));
             row.put("disposition", SchemaCatalog.text(e, "disposition"));
+            // a separate dimension: the Owner's approval of the concept's claimed meanings, never derived from the states beside it
+            row.put("semantic_approval", approval.get(id));
             Map<String, Object> cells = new LinkedHashMap<>();
             for (Column col : COLUMNS) {
                 Map<String, String> perRecording = new LinkedHashMap<>();
                 for (Route r : recordings(col.entry())) {
                     CatalogCoverage.Assessment a = CatalogCoverage.assess(catalog, e, r, fixtures.get(r), reports.get(r));
                     perRecording.put(r.fixture(), a.state());
-                    evidence.add(evidenceRow(id, r, fixtures.get(r), a));
+                    evidence.add(evidenceRow(id, r, fixtures.get(r), a, approval.get(id)));
                 }
                 String state = combine(perRecording);
                 if (state.startsWith("defective") || state.startsWith("blocked")) {
@@ -376,9 +379,10 @@ class MappingCatalogTest {
     }
 
     /** One concept on one recording: the state and every judged obligation, with the frozen native artifact hashes. */
-    static Map<String, Object> evidenceRow(String concept, Route r, Path fixture, CatalogCoverage.Assessment a) {
+    static Map<String, Object> evidenceRow(String concept, Route r, Path fixture, CatalogCoverage.Assessment a, String claims) {
         Map<String, Object> row = new LinkedHashMap<>();
         row.put("concept", concept);
+        row.put("claims", claims);
         row.put("route", r.entry());
         row.put("profile", r.profile());
         row.put("fixture", r.fixture());
@@ -522,13 +526,16 @@ class MappingCatalogTest {
                 .append("A NOT_APPLICABLE result counts only where the owner's own native records hold zero occurrences of the property's declared trigger; a VERIFIED result must state and cover the owner's native occurrences. ")
                 .append("Every judged obligation, with the frozen native hashes, is in `coverage-evidence.json`. ")
                 .append("A finite corpus: a state describes the named recordings, not every version, route or future behavior. Do not edit; regenerate.\n\n");
-        md.append("| Concept | Disposition |");
+        md.append("The semantic-approval column is a separate dimension: the Project Owner's approval of the concept's claimed meanings (SEMANTIC-CLAIMS.md), ")
+                .append("which a verified behaviour state never implies; a proposed meaning can verify as a candidate while its approval is pending.\n\n");
+        md.append("| Concept | Disposition | Semantic approval |");
         COLUMNS.forEach(c -> md.append(' ').append(c.label()).append(" |"));
-        md.append("\n|---|---|");
+        md.append("\n|---|---|---|");
         COLUMNS.forEach(c -> md.append("---|"));
         md.append('\n');
         for (Map<String, Object> row : rows) {
-            md.append("| ").append(row.get("concept")).append(" (`").append(row.get("id")).append("`) | ").append(row.get("disposition")).append(" |");
+            md.append("| ").append(row.get("concept")).append(" (`").append(row.get("id")).append("`) | ").append(row.get("disposition")).append(" | ")
+                    .append(String.valueOf(row.get("semantic_approval")).replace("|", "\\|")).append(" |");
             Map<String, Map<String, Object>> cells = (Map<String, Map<String, Object>>) row.get("routes");
             for (Column c : COLUMNS) {
                 md.append(' ').append(String.valueOf(cells.get(c.entry()).get("state")).replace("|", "\\|")).append(" |");

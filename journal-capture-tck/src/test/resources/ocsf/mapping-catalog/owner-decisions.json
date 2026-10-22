@@ -1,0 +1,37 @@
+{
+ "kind": "agent-journal/owner-decisions",
+ "format_version": "0.1",
+ "meaning": "Public-safe identities of the Project Owner's semantic decisions. Each decision approves exact claim revisions and digests; its full record is private (the project's steward repository). A claim is approved only through an entry here that names its revision and digest; a reviewed date or a passing build is not an approval.",
+ "decisions": [
+  {
+   "id": "OWNER-2026-10-21-ACCEPT-1-6",
+   "date": "2026-10-21",
+   "approver": "Project Owner (markpollack)",
+   "summary": "ACCEPT-1 disposition item 6: accept the child-scope prompt mapping for an actually echoed child-scope prompt only, without inventing main-thread or turn facts; keep post-live replay evidence labelled",
+   "record": "private steward decision record: ACCEPT-1 acceptance review, Owner disposition, item 6",
+   "binding": "the decision predates claim digests; its wording is the scope of claim claude.stream.child-scope-prompt revision 1, bound to that digest at SEM-1 (2026-10-22) and listed in the SEM-1 decision packet for the Owner's confirmation",
+   "approves": [
+    {
+     "claim": "claude.stream.child-scope-prompt",
+     "revision": 1,
+     "digest": "sha256:05cdefb08d7b22120ad48f446a6195b8a0d8d73d54b10e206eec3b45df9165f1"
+    }
+   ]
+  },
+  {
+   "id": "OWNER-2026-10-21-ACCEPT-1-7",
+   "date": "2026-10-21",
+   "approver": "Project Owner (markpollack)",
+   "summary": "ACCEPT-1 disposition item 7: accept a link to the exact source-reported call id; unnamed or ambiguous denials retain their original scope",
+   "record": "private steward decision record: ACCEPT-1 acceptance review, Owner disposition, item 7",
+   "binding": "the decision predates claim digests; its wording is the scope of claim claude.stream.named-denial-attribution revision 1, bound to that digest at SEM-1 (2026-10-22) and listed in the SEM-1 decision packet for the Owner's confirmation",
+   "approves": [
+    {
+     "claim": "claude.stream.named-denial-attribution",
+     "revision": 1,
+     "digest": "sha256:28d7b4b615efc5b5e108bc3e36d171741f97850d815a5e6262a725ff761ef326"
+    }
+   ]
+  }
+ ]
+}

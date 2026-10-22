@@ -431,7 +431,7 @@ class FoundationComparisonTest {
         JsonNode projection = read(PROJECTION);
         Files.writeString(out.resolve("OCSF-PROJECTION.md"), projectionMarkdown(projection), StandardCharsets.UTF_8);
         Files.writeString(out.resolve("ocsf-projection.json"), MappingCatalogTest.PRETTY.writeValueAsString(projection) + "\n", StandardCharsets.UTF_8);
-        Files.writeString(out.resolve("MODEL-BASELINE.json"), MappingCatalogTest.PRETTY.writeValueAsString(baseline(d)) + "\n", StandardCharsets.UTF_8);
+        Files.writeString(out.resolve("MODEL-BASELINE.json"), MappingCatalogTest.PRETTY.writeValueAsString(baseline(d, coverage)) + "\n", StandardCharsets.UTF_8);
         // the current Journal columns come from the coverage calculation for every concept, pending concepts included
         assertThat(coverage).hasSize(d.catalog().path("concepts").size());
         assertThat(Files.readString(out.resolve("PRESERVATION.md"))).contains("journal.claude-code-2.1.304-stdout");
@@ -623,7 +623,7 @@ class FoundationComparisonTest {
     }
 
     /** The formal model baseline: exact definitions and hashes, versions, pins and the evidence tooling this run used. */
-    static Map<String, Object> baseline(Documents d) throws IOException {
+    static Map<String, Object> baseline(Documents d, Map<String, Map<String, String>> coverage) throws IOException {
         Map<String, Object> doc = new LinkedHashMap<>();
         doc.put("kind", "agent-journal/model-baseline");
         doc.put("derived_by", "FoundationComparisonTest");
@@ -654,9 +654,16 @@ class FoundationComparisonTest {
         Map<String, Object> catalog = new LinkedHashMap<>();
         catalog.put("version", d.catalog().path("version").asText());
         catalog.put("concepts", d.catalog().path("concepts").size());
-        for (String f : List.of("mapping-catalog.json", "foundation-pins.json", "foundation-inventory.json")) {
+        for (String f : List.of("mapping-catalog.json", "foundation-pins.json", "foundation-inventory.json", "owner-decisions.json", "references.json")) {
             catalog.put(f, NeutralJson.sha256(CATALOG_DIR.resolve(f)));
         }
+        Map<String, String> examples = new TreeMap<>();
+        try (Stream<Path> s = Files.list(CATALOG_DIR.resolve("examples"))) {
+            for (Path p : s.filter(x -> x.toString().endsWith(".json")).sorted().toList()) {
+                examples.put(p.getFileName().toString(), NeutralJson.sha256(p));
+            }
+        }
+        catalog.put("examples", examples);
         doc.put("catalog", catalog);
         Map<String, String> pins = new LinkedHashMap<>();
         for (JsonNode f : d.pins().path("foundations")) {
@@ -674,8 +681,46 @@ class FoundationComparisonTest {
         }
         doc.put("mapping_contracts_sha256", contracts);
         doc.put("projection_sha256", NeutralJson.sha256(PROJECTION));
-        doc.put("independent_obligations", "CatalogCoverage over the catalog's oracle items, property_scopes and incomplete_run_outcomes; MappingCatalogSummaryTest controls");
+        doc.put("independent_obligations", "CatalogCoverage over the catalog's oracle items, property_scopes, property_triggers, representation_properties and incomplete_run_outcomes; MappingCatalogSummaryTest controls");
+        doc.put("dimensions", dimensions(coverage));
         return doc;
+    }
+
+    /**
+     * The baseline's four dimensions, kept apart: schema and catalog integrity (checked by this build's reference and
+     * schema tests), the Owner's semantic approval of each claim's exact revision, behaviour verification per admitted
+     * route (the coverage calculation of this build) and live exercise (the live scenario results). No composite figure.
+     */
+    static Map<String, Object> dimensions(Map<String, Map<String, String>> coverage) {
+        Json catalog = MappingCatalogTest.catalogDocument();
+        Map<String, Object> dims = new LinkedHashMap<>();
+        dims.put("schema_catalog_integrity", "pinned compiled schema and OCSF projection (this test), catalog references (MappingCatalogTest#everyCatalogReferenceResolvesInJava), "
+                + "coverage document schemas (CoverageDocumentSchemaTest), claim digests and links (SemanticClaimTest)");
+        List<Map<String, Object>> claims = new ArrayList<>();
+        for (SemanticClaims.Claim c : SemanticClaims.claims(catalog)) {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("claim", c.id());
+            m.put("concept", c.concept());
+            m.put("revision", c.revision());
+            m.put("digest", c.digest());
+            m.put("approval", c.status());
+            m.put("decision", SchemaCatalog.text(c.json().member("approval"), "decision"));
+            claims.add(m);
+        }
+        dims.put("semantic_approval", claims);
+        Map<String, String> approval = SemanticClaims.approvalByConcept(catalog);
+        Map<String, Object> concepts = new LinkedHashMap<>();
+        coverage.forEach((id, routes) -> {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("semantic_approval", approval.get(id));
+            Map<String, String> behaviour = new LinkedHashMap<>();
+            routes.forEach((route, state) -> behaviour.put(route, MappingCatalogTest.word(state)));
+            m.put("behaviour_verification", behaviour);
+            concepts.put(id, m);
+        });
+        dims.put("concepts", concepts);
+        dims.put("live_exercise", "live-scenarios/results.json and LIVE-SCENARIOS.md: per behaviour and route, live, attempted-not-triggered and synthetic kept apart");
+        return dims;
     }
 
     static String sha256(String text) {

@@ -1,0 +1,116 @@
+{
+ "kind": "agent-journal/coverage-references",
+ "format_version": "0.1",
+ "meaning": "Pinned sources the semantic claims and reviewed examples cite (by id). A reference identifies where an interpretation came from; it does not prove the interpretation, which the Project Owner approves from the claim and its examples.",
+ "references": [
+  {
+   "id": "codex-exec-0.160.1-emitter-usage",
+   "source": "openai/codex",
+   "revision": "d27764b82f7118f674371e6d6e76271d9d606edb",
+   "path": "codex-rs/exec/src/event_processor_with_jsonl_output.rs",
+   "blob": "73e0c9d911c82aae67c44e6b1a4ce54c7092b6be",
+   "symbol": "EventProcessorWithJsonOutput::usage_from_last_total; collect_thread_events ThreadTokenUsageUpdated and TurnCompleted arms",
+   "evidence_kind": "source_inspection",
+   "note": "turn.completed copies ThreadTokenUsage.total; Usage::default() (all zeros) when no update arrived"
+  },
+  {
+   "id": "codex-exec-0.160.1-emitter-items",
+   "source": "openai/codex",
+   "revision": "d27764b82f7118f674371e6d6e76271d9d606edb",
+   "path": "codex-rs/exec/src/event_processor_with_jsonl_output.rs",
+   "blob": "73e0c9d911c82aae67c44e6b1a4ce54c7092b6be",
+   "symbol": "map_item_with_id; started_item_id; completed_item_id; next_item_id",
+   "evidence_kind": "source_inspection",
+   "note": "exec item ids are minted per stream (item_N); the raw app-server ids are dropped (..), except WebSearchItem.id; Reasoning text = summary.join(\"\\n\"); file-change Declined collapses into Failed; command Declined kept"
+  },
+  {
+   "id": "codex-exec-0.160.1-types",
+   "source": "openai/codex",
+   "revision": "d27764b82f7118f674371e6d6e76271d9d606edb",
+   "path": "codex-rs/exec/src/exec_events.rs",
+   "blob": "06565c097b28d3bf2ad592943cc30c776b45e236",
+   "symbol": "ThreadItem; ThreadItemDetails; ReasoningItem (doc: Agent's reasoning summary); CommandExecutionItem; CommandExecutionStatus; McpToolCallItem; CollabToolCallItem; FileChangeItem; WebSearchItem; Usage",
+   "evidence_kind": "source_inspection"
+  },
+  {
+   "id": "codex-exec-0.160.1-thread-item-flatten",
+   "source": "openai/codex",
+   "revision": "d27764b82f7118f674371e6d6e76271d9d606edb",
+   "path": "codex-rs/exec/src/exec_events.rs",
+   "blob": "06565c097b28d3bf2ad592943cc30c776b45e236",
+   "symbol": "ThreadItem { id, #[serde(flatten)] details } with WebSearchItem { id, query, action, results }",
+   "evidence_kind": "source_inspection",
+   "note": "serde writes ThreadItem.id first, then the flattened WebSearchItem.id: a web_search line repeats item.id (observed live in FND-1)"
+  },
+  {
+   "id": "codex-app-server-0.160.1-thread-token-usage",
+   "source": "openai/codex",
+   "revision": "d27764b82f7118f674371e6d6e76271d9d606edb",
+   "path": "codex-rs/app-server-protocol/src/protocol/v2/thread.rs",
+   "blob": "2e166d5506b10996e2da286feb6082d6b8711340",
+   "symbol": "ThreadTokenUsage { total, last, model_context_window }; From<CoreTokenUsageInfo> (total = total_token_usage)",
+   "evidence_kind": "source_inspection"
+  },
+  {
+   "id": "codex-protocol-0.160.1-token-usage-info",
+   "source": "openai/codex",
+   "revision": "d27764b82f7118f674371e6d6e76271d9d606edb",
+   "path": "codex-rs/protocol/src/protocol.rs",
+   "blob": "abc4e90847636bfe51e6275ede528a13616c8573",
+   "symbol": "TokenUsageInfo::append_last_usage (total_token_usage.add_assign(last)); TokenUsage::non_cached_input (input_tokens - cached_input)",
+   "evidence_kind": "source_inspection"
+  },
+  {
+   "id": "codex-exec-0.160.1-emitter-tests",
+   "source": "openai/codex",
+   "revision": "d27764b82f7118f674371e6d6e76271d9d606edb",
+   "path": "codex-rs/exec/tests/event_processor_with_json_output.rs",
+   "blob": "15a0015aa44fdeaec5d5dd0eaaaa7a49007fc1cf",
+   "symbol": "token_usage_update_is_emitted_on_turn_completion; turn_completion_recovers_final_message_from_turn_items",
+   "evidence_kind": "source_inspection",
+   "note": "the vendor test uses total == last, so it cannot tell cumulative from per-turn; the second emits Usage::default()"
+  },
+  {
+   "id": "ocsf-1.9.0-unmapped",
+   "source": "ocsf/ocsf-schema",
+   "revision": "856d462bd20dc46cc1ffed2dfffe3b91ef0fbeba",
+   "path": "dictionary.json",
+   "blob": "0546ca602e94d9e0342454a754a42472161d7374",
+   "symbol": "attributes.unmapped",
+   "evidence_kind": "specification",
+   "note": "a container for source-specific attributes that do not map to any defined OCSF attribute"
+  },
+  {
+   "id": "agentic-cli-0.5.0-journal-provenance",
+   "source": "markpollack/agent-journal",
+   "revision": "extension agentic_cli 0.5.0-prototype (compiled sha256 b3393cac32fe5847aaf6cf5fc12dede0819efc9f82ef18a76ff2583901079fe1)",
+   "path": "prototype/ocsf-acp/extension/agentic_cli/objects/journal_provenance.json",
+   "symbol": "rule_uid",
+   "evidence_kind": "specification"
+  },
+  {
+   "id": "claude-agent-sdk-0.3.304-types",
+   "source": "@anthropic-ai/claude-agent-sdk",
+   "revision": "0.3.304 (claudeCodeVersion 2.1.304; sdk.d.ts sha256 a30343b6cb2f9b4ce08ec78563a19b2a9209bb8590acb5ac46adb2bbcba1b36e)",
+   "path": "sdk.d.ts",
+   "symbol": "SDKUserMessage.parent_tool_use_id; SDKResultMessage.permission_denials (SDKPermissionDenial tool_name, tool_use_id, tool_input)",
+   "evidence_kind": "source_inspection"
+  },
+  {
+   "id": "claude-live-2.1.304-features",
+   "source": "markpollack/agent-journal fixture claude-live-2.1.304-features",
+   "path": "journal-capture-tck/src/test/resources/ocsf/fixtures/claude-live-2.1.304-features/native/stream.jsonl",
+   "locator": "sha256 in native/expected-sources.json; provenance.json",
+   "evidence_kind": "live",
+   "note": "sanitized live recording (ACCEPT-1): a sub-agent whose prompt the stream echoes in the child scope (record 24)"
+  },
+  {
+   "id": "claude-live-2.1.304-denial",
+   "source": "markpollack/agent-journal fixture claude-live-2.1.304-denial",
+   "path": "journal-capture-tck/src/test/resources/ocsf/fixtures/claude-live-2.1.304-denial/native/stream.jsonl",
+   "locator": "sha256 in native/expected-sources.json; provenance.json",
+   "evidence_kind": "live",
+   "note": "sanitized live recording (ACCEPT-1): an observed rejection and the run-scope denial naming it (record 18)"
+  }
+ ]
+}

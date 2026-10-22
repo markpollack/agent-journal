@@ -89,7 +89,24 @@ class SemanticExampleProfileTest {
                     put(out, "/content_blocks/" + i + "/reasoning_form_id", r.reasoningForm() == null ? null : num(r.reasoningForm()));
                 }
             });
+            case "prompt_turn/1" -> f.prompts.stream().filter(p -> p.recordIndex() == record).findFirst().ifPresent(p -> {
+                put(out, "/turn_uid", p.turnUid() == null ? null : new Json.JString(p.turnUid()));
+                for (int i = 0; i < p.texts().size(); i++) {
+                    put(out, "/content_blocks/" + i + "/text", new Json.JString(p.texts().get(i)));
+                }
+            });
             case "prompt_turn/2" -> {
+                List<ExpectedFacts.Decision> decisions = f.decisions.stream().filter(d -> d.recordIndex() == record && d.scopeId() != 1).toList();
+                for (int i = 0; i < decisions.size(); i++) {
+                    ExpectedFacts.Decision d = decisions.get(i);
+                    String at = "/permission_decisions/" + i + "/";
+                    put(out, at + "decision_id", num(d.decisionId()));
+                    put(out, at + "reported_decision", new Json.JString(d.reportedDecision()));
+                    put(out, at + "scope_id", num(d.scopeId()));
+                    put(out, at + "attribution/outcome_id", num(d.outcomeId()));
+                    put(out, at + "attribution/method_id", num(d.methodId()));
+                    put(out, at + "attribution/candidates", new Json.JArray(d.candidates().stream().<Json>map(Json.JString::new).toList()));
+                }
                 List<ExpectedFacts.Usage> usages = f.usages.stream().filter(u -> u.eventRecordIndex() == record).toList();
                 for (int i = 0; i < usages.size(); i++) {
                     ExpectedFacts.Usage u = usages.get(i);

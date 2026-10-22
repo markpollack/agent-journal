@@ -1,0 +1,61 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "claude-named-denial-live",
+  "concept": "permission-decisions",
+  "description": "Claude Code 2.1.304 stream-json (stdout, live recording): the result record's permission_denials[] names the denied call by tool_use_id. The run-scope denial is linked to exactly that source-reported call id (attribution Unique, method Reported identifier) and stays at its reported Run scope on the turn completion; it is not moved onto the tool call, and a denial without an id would keep its scope unattributed.",
+  "authored_from": [
+    "claude-agent-sdk-0.3.304-types",
+    "claude-live-2.1.304-denial"
+  ],
+  "native": {
+    "evidence_kind": "live",
+    "profile": "claude_stream",
+    "compatibility_entry": "claude-code/stream-json/2.1.304-stdout",
+    "fixture": "claude-live-2.1.304-denial",
+    "artifact": "stream.jsonl",
+    "sha256": "9ad3dbef780b504ac318d620a5d859459cc5c8fea90e3a8d41b3698e6ec4273e"
+  },
+  "expected": [
+    {
+      "record": 18,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/permission_decisions/0/decision_id": 2,
+        "/permission_decisions/0/reported_decision": "denied",
+        "/permission_decisions/0/scope_id": 4,
+        "/permission_decisions/0/attribution/outcome_id": 1,
+        "/permission_decisions/0/attribution/method_id": 1,
+        "/permission_decisions/0/attribution/candidates": [
+          "toolu_01N8xZH4f5KoLaQhkgQLfVLi"
+        ]
+      },
+      "absent": [
+        "/permission_decisions/1"
+      ]
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "moved-to-tool-call-scope",
+      "record": 18,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/permission_decisions/0/scope_id": 1
+      },
+      "why": "The source reports the denial at run scope; the link names the call, the scope stays as reported."
+    },
+    {
+      "id": "unattributed-despite-id",
+      "record": 18,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/permission_decisions/0/attribution/outcome_id": 3
+      },
+      "why": "The source names the call; the decision is to link exactly that reported id."
+    }
+  ]
+}

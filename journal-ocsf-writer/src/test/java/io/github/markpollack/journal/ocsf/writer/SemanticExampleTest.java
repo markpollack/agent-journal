@@ -98,6 +98,30 @@ class SemanticExampleTest {
         assertThat(problems).isEmpty();
     }
 
+    /**
+     * UC5-AC20: the writer's own output for the live MCP recording, relabelled per-turn (scope 3) with every component
+     * unchanged, is rejected by the reviewed example on exactly the scope, while every number still matches. Equal
+     * numbers do not establish the meaning.
+     */
+    @Test
+    void aPerTurnLabelOnTheCumulativeUsageIsRejectedThoughEveryComponentIsEqual(@TempDir Path work) throws IOException {
+        Jv ex = Jv.parse(Files.readString(EXAMPLES.resolve("codex-thread-usage-live-mcp.json"), StandardCharsets.UTF_8));
+        Jv nat = ex.member("native");
+        Jv exp = ex.member("expected").elements().get(0);
+        Jv turn = find(write(nat, nativeBytes(nat, work), work), exp);
+        Jv.Obj usage = (Jv.Obj) at(turn, "/usage_observations/0");
+        usage.put("scope_id", 3).put("scope", "Prompt turn");
+        List<String> differing = new ArrayList<>();
+        for (Map.Entry<String, Jv> v : ((Jv.Obj) exp.member("values")).members().entrySet()) {
+            if (!same(v.getValue(), at(turn, v.getKey()))) {
+                differing.add(v.getKey());
+            }
+        }
+        assertThat(differing).containsExactly("/usage_observations/0/scope_id");
+        assertThat(((Jv.Obj) exp.member("values")).members().keySet()).contains("/usage_observations/0/input_tokens", "/usage_observations/0/cache_read_tokens",
+                "/usage_observations/0/output_tokens", "/usage_observations/0/data");
+    }
+
     // ---- inputs -----------------------------------------------------------------------------------------------------
 
     static List<Path> examples() throws IOException {
@@ -129,9 +153,14 @@ class SemanticExampleTest {
             Replay.feedRecords(w.source(source(nat)), in, options().clock());
             w.complete();
         }
+        // the root core and every child core (a split artifact's records are each in exactly one core)
         List<Jv> out = new ArrayList<>();
-        for (String line : WriterTestSupport.eventLines(core.resolve("events.jsonl"))) {
-            out.add(Jv.parse(line));
+        try (Stream<Path> files = Files.walk(core)) {
+            for (Path f : files.filter(x -> x.getFileName().toString().equals("events.jsonl")).sorted().toList()) {
+                for (String line : WriterTestSupport.eventLines(f)) {
+                    out.add(Jv.parse(line));
+                }
+            }
         }
         return out;
     }

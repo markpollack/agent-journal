@@ -1,6 +1,6 @@
 {
  "kind": "agent-journal/mapping-catalog",
- "version": "0.3.0",
+ "version": "0.4.0",
  "reviewed": "2026-10-22",
  "property_scopes": {
   "meaning": "the owner an oracle property is reported for: root (once, by the root core), core (each core: main and every child), otherwise source (each core's artifacts, '<core>/<artifact>'); the coverage summary owes a result for every such owner the frozen expected sources establish",
@@ -1315,6 +1315,53 @@
      ],
      "input": "none"
     }
+   ],
+   "claims": [
+    {
+     "id": "claude.stream.child-scope-prompt",
+     "revision": 1,
+     "digest": "sha256:05cdefb08d7b22120ad48f446a6195b8a0d8d73d54b10e206eec3b45df9165f1",
+     "statement": "On Claude Code 2.1.304 stream-json (stdout), a user record whose parent_tool_use_id names a sub-agent spawn and which carries text and no tool_result is the prompt the stream echoes for that child scope. Journal records it as a prompt_turn Prompt submitted event in the child's core with its exact text. This applies only to an actually echoed child-scope prompt: no main-thread prompt and no turn id are invented.",
+     "applicability": {
+      "routes": [
+       "claude-code/stream-json/2.1.304-stdout"
+      ],
+      "contracts": [
+       "claude-code/stream-json/2.1.303/0.2.0-prototype"
+      ],
+      "extension": "agentic_cli 0.5.0-prototype"
+     },
+     "semantics": {
+      "owner_scope": "the child core whose spawn the record's parent_tool_use_id names",
+      "absence_default": "the main thread's -p prompt is not echoed on this route and stays unavailable at source"
+     },
+     "destinations": [
+      "prompt_turn.content_blocks[].text",
+      "prompt_turn.turn_uid"
+     ],
+     "normative_examples": [
+      "claude-child-scope-prompt-live"
+     ],
+     "evidence": [
+      "claude-agent-sdk-0.3.304-types",
+      "claude-live-2.1.304-features"
+     ],
+     "checks": [
+      "oracle:ClaudeStreamProfile/population.prompts",
+      "oracle:ClaudeStreamProfile/prompt.values",
+      "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
+      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects",
+      "junit:LiveFixtureFeaturesTest#theSubAgentPromptIsTheChildScopesVendorReportedPrompt"
+     ],
+     "approval": {
+      "status": "approved",
+      "revision": 1,
+      "digest": "sha256:05cdefb08d7b22120ad48f446a6195b8a0d8d73d54b10e206eec3b45df9165f1",
+      "approver": "Project Owner (markpollack)",
+      "decision": "OWNER-2026-10-21-ACCEPT-1-6",
+      "basis": "reused at its exact scope: the decision's own wording (an actually echoed child-scope prompt only, without inventing main-thread or turn facts) is this claim's scope; bound to this digest at SEM-1 for the Owner's confirmation"
+     }
+    }
    ]
   },
   {
@@ -2365,6 +2412,48 @@
       "competitor-refresh-2026-10-19:row-8"
      ],
      "input": "pairs A-D: Claude Code 2.1.303 -p stream-json, claude-haiku-4-5; Journal 1.12.0-SNAPSHOT at the refresh (main f652231 to 83d5057); stream is the only parser input"
+    }
+   ],
+   "claims": [
+    {
+     "id": "codex.exec-stream.reasoning-summary",
+     "revision": 1,
+     "digest": "sha256:408a7a781171d52350b2c10985946887243b31b2d7964c0c341bf5f116f5d291",
+     "statement": "A Codex CLI 0.160.1 reasoning item.completed is a model_response (activity 2 Completed, response_uid = the stream-local item id) with one content block: block_kind 2 Thought, reasoning_form_id 2 Summary, text and data = item.text exactly. The pinned processor builds that text from the reasoning summary parts joined by newlines and drops raw reasoning content: it is not the model's full reasoning, and no signature is reported.",
+     "applicability": {
+      "routes": [
+       "codex-cli/exec-json-stream/0.160.1"
+      ],
+      "contracts": [
+       "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+      ],
+      "extension": "agentic_cli 0.5.0-prototype"
+     },
+     "semantics": {
+      "identity": "stream-local item id; which model response the summary belongs to is not reported"
+     },
+     "destinations": [
+      "model_response.content_blocks[].reasoning_form_id",
+      "model_response.content_blocks[].block_kind_id",
+      "model_response.content_blocks[].text"
+     ],
+     "normative_examples": [
+      "codex-reasoning-summary-live"
+     ],
+     "evidence": [
+      "codex-exec-0.160.1-emitter-items",
+      "codex-exec-0.160.1-types"
+     ],
+     "checks": [
+      "oracle:CodexStreamProfile/population.responses",
+      "oracle:CodexStreamProfile/response.values",
+      "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
+      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
+     ],
+     "replaces": "contract 0.2.0-prototype retained reasoning items whole without normalization",
+     "approval": {
+      "status": "proposed"
+     }
     }
    ]
   },
@@ -4062,6 +4151,142 @@
      ],
      "input": "pairs A-D: Claude Code 2.1.303 -p stream-json, claude-haiku-4-5; Journal 1.12.0-SNAPSHOT at the refresh (main f652231 to 83d5057); stream is the only parser input"
     }
+   ],
+   "claims": [
+    {
+     "id": "codex.exec-stream.stream-local-identity",
+     "revision": 1,
+     "digest": "sha256:0f9ad0797796b3832d90c72101c46f02033b22f2417d40b6c768b447cab77fc6",
+     "statement": "Every item.id on Codex CLI 0.160.1 exec --json is minted by the exec processor for its own stream (item_N); the app-server item id is dropped (a web search's second id aside). Journal uses it as tool_call_uid, operation uid and response_uid with identity_basis_id 2 Stream-local item identifier on tool calls and operations. It is never presented as the model-facing call id, which this route does not report, and it cannot be joined with a native session's call ids.",
+     "applicability": {
+      "routes": [
+       "codex-cli/exec-json-stream/0.160.1"
+      ],
+      "contracts": [
+       "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+      ],
+      "extension": "agentic_cli 0.5.0-prototype"
+     },
+     "semantics": {
+      "identity": "stream-local item id, unique within one exec stream; the started and completed records of one item share it"
+     },
+     "destinations": [
+      "tool_call.tool_call_uid",
+      "tool_call.identity_basis_id",
+      "tool_call.tool_operation.uid",
+      "tool_call.tool_operation.identity_basis_id",
+      "model_response.response_uid"
+     ],
+     "normative_examples": [
+      "codex-mcp-tool-call-live",
+      "codex-command-line-live",
+      "codex-file-change-live"
+     ],
+     "evidence": [
+      "codex-exec-0.160.1-emitter-items",
+      "codex-exec-0.160.1-types"
+     ],
+     "checks": [
+      "oracle:CodexStreamProfile/request.values",
+      "oracle:CodexStreamProfile/result.values",
+      "oracle:CodexStreamProfile/operation.values",
+      "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
+      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
+     ],
+     "approval": {
+      "status": "proposed"
+     }
+    },
+    {
+     "id": "codex.exec-stream.mcp-tool-call",
+     "revision": 1,
+     "digest": "sha256:37efcc011d9ae6e639ecdc1f7fd6e981cb8657855938e96d775451371be20baa",
+     "statement": "A Codex CLI 0.160.1 mcp_tool_call item.started is a tool request: tool_name = item.tool, tool_namespace = item.server, arguments = item.arguments exactly, reported_state = item.status. Its item.completed is the result of the same stream-local id: tool_result.data = item.result.content exactly (JSON null when the result has no content), structured_result = item.result.structured_content when not null, and the reported completed or failed status is the outcome (status_id 1 or 2, error_reported false or true; an MCP isError arrives as failed). item.error and result._meta stay in the retained record. The kind is 99 other by the contract's name table.",
+     "applicability": {
+      "routes": [
+       "codex-cli/exec-json-stream/0.160.1"
+      ],
+      "contracts": [
+       "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+      ],
+      "extension": "agentic_cli 0.5.0-prototype"
+     },
+     "semantics": {
+      "identity": "stream-local item id shared by the request and its result",
+      "order": "request on item.started, result on item.completed; both records retained in order"
+     },
+     "destinations": [
+      "tool_call.tool_name",
+      "tool_call.tool_namespace",
+      "tool_call.arguments",
+      "tool_call.tool_result.data",
+      "tool_call.tool_result.structured_result",
+      "tool_call.tool_result.error_reported",
+      "tool_call.status_id",
+      "tool_call.reported_state"
+     ],
+     "normative_examples": [
+      "codex-mcp-tool-call-live"
+     ],
+     "evidence": [
+      "codex-exec-0.160.1-emitter-items",
+      "codex-exec-0.160.1-types"
+     ],
+     "checks": [
+      "oracle:CodexStreamProfile/population.requests",
+      "oracle:CodexStreamProfile/request.values",
+      "oracle:CodexStreamProfile/population.results",
+      "oracle:CodexStreamProfile/result.values",
+      "oracle:CodexStreamProfile/result.owner",
+      "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
+      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
+     ],
+     "replaces": "contract 0.2.0-prototype retained MCP items whole as source records without normalization",
+     "approval": {
+      "status": "proposed"
+     }
+    },
+    {
+     "id": "codex.exec-stream.collab-and-file-change",
+     "revision": 1,
+     "digest": "sha256:7826b5e217027b68850ff126293ee8138f2a4bc5164229e5ad266536060c1bb7",
+     "statement": "Codex CLI 0.160.1 collaboration and file-change items are tool calls under their stream-local ids: tool_name is item.tool for collaboration (spawn_agent, send_input, wait, close_agent) and file_change for file changes (the item type; the stream names no tool), the kind is 99 other and 2 edit by the contract's table, reported_state is item.status and a completed or failed status is the outcome (the processor reports a declined patch as failed). No arguments or result content are claimed: sender and receiver thread ids, prompt, agent states and the changed paths stay in the retained record, and receiver threads are not linked as child runs.",
+     "applicability": {
+      "routes": [
+       "codex-cli/exec-json-stream/0.160.1"
+      ],
+      "contracts": [
+       "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+      ],
+      "extension": "agentic_cli 0.5.0-prototype"
+     },
+     "semantics": {
+      "identity": "stream-local item id shared by start and completion"
+     },
+     "destinations": [
+      "tool_call.tool_name",
+      "tool_call.tool_kind_id",
+      "tool_call.reported_state",
+      "tool_call.status_id"
+     ],
+     "normative_examples": [
+      "codex-file-change-live"
+     ],
+     "evidence": [
+      "codex-exec-0.160.1-emitter-items",
+      "codex-exec-0.160.1-types"
+     ],
+     "checks": [
+      "oracle:CodexStreamProfile/request.values",
+      "oracle:CodexStreamProfile/result.values",
+      "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
+      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
+     ],
+     "replaces": "contract 0.2.0-prototype retained collaboration and file-change items whole without normalization",
+     "approval": {
+      "status": "proposed"
+     }
+    }
    ]
   },
   {
@@ -5491,7 +5716,51 @@
     "reason": "Separately reported operations inside one call (ACP terminals are the nearest counterpart) with their own identity, argv and exit code."
    },
    "notes": "Pair B is the real case: 1 exec call (record 13) and 5 CommandExecution items with one failure (record 17). Normalized fields are uid, argv, exit_code, reported_state, stdout, stderr; duration, cwd, parsed_cmd, aggregated_output and formatted_output stay in tool_operation.data (retained-only, meaning known). The stream's command argv is not read by the CodexStreamProfile (argv null), so only the rollout promises argv. FULL-1R (review FR-04/05): the exec-stream mapper has committed coverage on the labelled synthetic syn-codex-exec-stream fixture (verified native key sets). Count units in associations.operations: pair B has 10 stream observations over 5 stream-scoped item identities plus 5 rollout identities; stream and rollout identities are not linked by any supported rule, so the logical operation count is unavailable, never 10 or 15. \"Ten operations\" in the FULL-1 packet meant ten observations. SEM-1 (2026-10-22): the Codex exec stream's command executions carry the reported command string as operation.command_line (never parsed into argv) and identity_basis_id 2 (stream-local item id); a candidate meaning under contract 0.3.0-prototype, awaiting the Project Owner's approval.",
-   "observations": []
+   "observations": [],
+   "claims": [
+    {
+     "id": "codex.exec-stream.standalone-operation-command",
+     "revision": 1,
+     "digest": "sha256:20ec664ec7b92885da540b870ce5495744acece6d2f60c9d5c996cb865ed4749",
+     "statement": "A Codex CLI 0.160.1 command_execution item is a standalone operation observation (tool_call activity 3): attribution 3 Unattributed because no wrapping call id is reported, operation uid = the stream-local item id, command_line = item.command exactly, reported_state, exit_code when integral and stdout = aggregated_output; tool_call_uid is absent. The command string is never parsed into argv and no operating-system effect is inferred from it.",
+     "applicability": {
+      "routes": [
+       "codex-cli/exec-json-stream/0.160.1"
+      ],
+      "contracts": [
+       "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+      ],
+      "extension": "agentic_cli 0.5.0-prototype"
+     },
+     "semantics": {
+      "owner_scope": "no owning tool call: the operation is retained at its reported scope"
+     },
+     "destinations": [
+      "tool_call.tool_operation.command_line",
+      "tool_call.tool_operation.uid",
+      "tool_call.tool_operation.attribution.outcome_id",
+      "tool_call.tool_operation.reported_state"
+     ],
+     "normative_examples": [
+      "codex-command-line-live",
+      "codex-declined-command-synthetic"
+     ],
+     "evidence": [
+      "codex-exec-0.160.1-types",
+      "codex-exec-0.160.1-emitter-items"
+     ],
+     "checks": [
+      "oracle:CodexStreamProfile/population.operations",
+      "oracle:CodexStreamProfile/operation.values",
+      "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
+      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
+     ],
+     "replaces": "contract 0.2.0-prototype kept the command string only inside the retained record",
+     "approval": {
+      "status": "proposed"
+     }
+    }
+   ]
   },
   {
    "id": "operation-attribution",
@@ -5921,7 +6190,48 @@
     "reason": "Vendor lifecycle strings kept verbatim beside the normalized status; interrupted, denied, failed, completed and never observed stay distinct."
    },
    "notes": "Interrupted, denied, failed, completed and never observed must not collapse (DESIGN §5); on these fixtures only completed/failed/in_progress occur. Antigravity's DONE-plus-denied case (CONCEPT-MATRIX row 14) is a separate retained fixture, not part of A or B. SEM-1 (2026-10-22): a declined Codex command is status_id 99 with status \"Declined\" and reported_state declined (Reported), distinct from status Unknown; it is the item's reported status, not a permission decision (none is reported). Candidate meaning, contract 0.3.0-prototype.",
-   "observations": []
+   "observations": [],
+   "claims": [
+    {
+     "id": "codex.exec-stream.declined-status",
+     "revision": 1,
+     "digest": "sha256:6e7df5bad65e13bd278589c399f5e0be71adcfab5dd18a5296984251631c4a5a",
+     "statement": "A Codex CLI 0.160.1 command_execution whose status is declined has status_id 99 with status \"Declined\" (basis Reported), distinct from 0 Unknown and from 2 Failure: the command did not run. It records the item's reported status only; it is not a permission decision, because the exec stream reports no approval request or decision, so no permission_decision is created.",
+     "applicability": {
+      "routes": [
+       "codex-cli/exec-json-stream/0.160.1"
+      ],
+      "contracts": [
+       "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+      ],
+      "extension": "agentic_cli 0.5.0-prototype"
+     },
+     "semantics": {
+      "absence_default": "no exit code is reported for a declined command and none is recorded"
+     },
+     "destinations": [
+      "tool_call.status_id",
+      "tool_call.status",
+      "tool_call.tool_operation.reported_state"
+     ],
+     "normative_examples": [
+      "codex-declined-command-synthetic"
+     ],
+     "evidence": [
+      "codex-exec-0.160.1-types",
+      "codex-exec-0.160.1-emitter-items"
+     ],
+     "checks": [
+      "oracle:CodexStreamProfile/operation.values",
+      "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
+      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
+     ],
+     "replaces": "contract 0.2.0-prototype gave a declined command status 0 Unknown",
+     "approval": {
+      "status": "proposed"
+     }
+    }
+   ]
   },
   {
    "id": "interrupted-run-and-never-observed-result",
@@ -6641,6 +6951,45 @@
      ],
      "input": "pairs A-D: Claude Code 2.1.303 -p stream-json, claude-haiku-4-5; Journal 1.12.0-SNAPSHOT at the refresh (main f652231 to 83d5057); stream is the only parser input"
     }
+   ],
+   "claims": [
+    {
+     "id": "codex.exec-stream.usage-components-inclusive",
+     "revision": 1,
+     "digest": "sha256:5ffc73aff8a68856620c24fee08c70b35645bbd807f46b83cbe5c524f2a53e36",
+     "statement": "Codex reports input_tokens inclusive of cached_input_tokens (its protocol computes non-cached input as input_tokens minus cached_input_tokens), while Claude's input_tokens excludes cache reads. Journal copies each vendor's components unchanged under their native meaning (Codex cached_input_tokens as cache_read_tokens) and does not rewrite them into one inclusion basis; a consumer must not add cache_read_tokens to a Codex input_tokens.",
+     "applicability": {
+      "routes": [
+       "codex-cli/exec-json-stream/0.160.1"
+      ],
+      "contracts": [
+       "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+      ],
+      "extension": "agentic_cli 0.5.0-prototype"
+     },
+     "semantics": {
+      "grouping": "components of one observation; no derived total"
+     },
+     "destinations": [
+      "usage_observation.input_tokens",
+      "usage_observation.cache_read_tokens"
+     ],
+     "normative_examples": [
+      "codex-thread-usage-live-mcp"
+     ],
+     "evidence": [
+      "codex-protocol-0.160.1-token-usage-info",
+      "codex-exec-0.160.1-types"
+     ],
+     "checks": [
+      "oracle:CodexStreamProfile/usage.values",
+      "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
+      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
+     ],
+     "approval": {
+      "status": "proposed"
+     }
+    }
    ]
   },
   {
@@ -7244,6 +7593,98 @@
       "competitor-refresh-2026-10-19:row-16"
      ],
      "input": "pairs A-D: Claude Code 2.1.303 -p stream-json, claude-haiku-4-5; Journal 1.12.0-SNAPSHOT at the refresh (main f652231 to 83d5057); stream is the only parser input"
+    }
+   ],
+   "claims": [
+    {
+     "id": "codex.exec-stream.thread-usage",
+     "revision": 1,
+     "digest": "sha256:39cd69be58f09965e76734d4de577c022d3c97b3af5d99c5e5e7ee7bcf39c306",
+     "statement": "On Codex CLI 0.160.1 exec --json (stdout), the usage a turn.completed record carries is the thread's cumulative token usage at that turn's completion (ThreadTokenUsage.total), not a measurement of the turn. Journal records it once per run as a usage observation at scope 5 Session (the Codex thread is the session) with status 2 Final for the run, components copied exactly, attached to the turn's completion event. Journal computes no per-turn delta and no cross-run sum; a later run of a resumed thread reports a larger cumulative total of its own.",
+     "applicability": {
+      "routes": [
+       "codex-cli/exec-json-stream/0.160.1"
+      ],
+      "contracts": [
+       "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+      ],
+      "extension": "agentic_cli 0.5.0-prototype"
+     },
+     "semantics": {
+      "owner_scope": "the session (Codex thread) that thread.started names; the observation sits on the prompt_turn Turn completed event of the record",
+      "grouping": "one observation per exec run; never summed across runs, scopes or sources",
+      "finality": "Final for the run's thread-scope group; a later run of the same thread reports its own cumulative total",
+      "absence_default": "governed by codex.exec-stream.usage-measurement"
+     },
+     "destinations": [
+      "usage_observation.scope_id",
+      "usage_observation.usage_status_id",
+      "usage_observation.input_tokens",
+      "usage_observation.cache_read_tokens",
+      "usage_observation.cache_write_tokens",
+      "usage_observation.output_tokens",
+      "usage_observation.reasoning_tokens",
+      "usage_observation.data"
+     ],
+     "normative_examples": [
+      "codex-thread-usage-live-mcp",
+      "codex-thread-usage-resumed-synthetic"
+     ],
+     "evidence": [
+      "codex-exec-0.160.1-emitter-usage",
+      "codex-app-server-0.160.1-thread-token-usage",
+      "codex-protocol-0.160.1-token-usage-info",
+      "codex-exec-0.160.1-emitter-tests"
+     ],
+     "checks": [
+      "oracle:CodexStreamProfile/population.usage",
+      "oracle:CodexStreamProfile/usage.values",
+      "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
+      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects",
+      "junit:SemanticExampleTest#aPerTurnLabelOnTheCumulativeUsageIsRejectedThoughEveryComponentIsEqual"
+     ],
+     "replaces": "contract 0.2.0-prototype read turn.completed usage as scope 3 Prompt turn, Final (\"reports the turn's usage once\"); never approved, refuted by the pinned emitter",
+     "approval": {
+      "status": "proposed"
+     }
+    },
+    {
+     "id": "codex.exec-stream.usage-measurement",
+     "revision": 1,
+     "digest": "sha256:2de474fb406dde2008bee42897611d4c6b4d155f9f6d26cbfeae622f95d59f0a",
+     "statement": "When every usage component a Codex CLI 0.160.1 turn.completed reports is zero, the value may be the emitter's Usage::default(), which it writes when no token-usage update arrived; a measured zero is not established, so the observation's measurement_status_id is 2 Possibly default. When any component is non-zero an update was received and measurement_status_id is 1 Measured. The components are preserved exactly in both cases; none is dropped or replaced.",
+     "applicability": {
+      "routes": [
+       "codex-cli/exec-json-stream/0.160.1"
+      ],
+      "contracts": [
+       "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+      ],
+      "extension": "agentic_cli 0.5.0-prototype"
+     },
+     "semantics": {
+      "absence_default": "all-zero components are kept and marked Possibly default; a missing component stays absent, never zero"
+     },
+     "destinations": [
+      "usage_observation.measurement_status_id",
+      "usage_observation.measurement_status"
+     ],
+     "normative_examples": [
+      "codex-usage-default-zero-synthetic",
+      "codex-thread-usage-live-mcp"
+     ],
+     "evidence": [
+      "codex-exec-0.160.1-emitter-usage",
+      "codex-exec-0.160.1-emitter-tests"
+     ],
+     "checks": [
+      "oracle:CodexStreamProfile/usage.values",
+      "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
+      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
+     ],
+     "approval": {
+      "status": "proposed"
+     }
     }
    ]
   },
@@ -8297,6 +8738,54 @@
       "competitor-refresh-2026-10-19:row-13"
      ],
      "input": "pairs A-D: Claude Code 2.1.303 -p stream-json, claude-haiku-4-5; Journal 1.12.0-SNAPSHOT at the refresh (main f652231 to 83d5057); stream is the only parser input"
+    }
+   ],
+   "claims": [
+    {
+     "id": "claude.stream.named-denial-attribution",
+     "revision": 1,
+     "digest": "sha256:28d7b4b615efc5b5e108bc3e36d171741f97850d815a5e6262a725ff761ef326",
+     "statement": "On Claude Code 2.1.304 stream-json (stdout), a run-scope permission denial in the result record's permission_denials[] that names tool_use_id is linked to exactly that source-reported call id (attribution outcome 1 Unique, method 1 Reported identifier) and stays at its reported Run scope on the turn completion. A denial without an id, or one whose id is ambiguous, keeps its original scope and is not attached to a tool call by guess.",
+     "applicability": {
+      "routes": [
+       "claude-code/stream-json/2.1.304-stdout"
+      ],
+      "contracts": [
+       "claude-code/stream-json/2.1.303/0.2.0-prototype"
+      ],
+      "extension": "agentic_cli 0.5.0-prototype"
+     },
+     "semantics": {
+      "owner_scope": "Run scope as reported; the attribution names the call",
+      "identity": "the tool_use_id the denial reports"
+     },
+     "destinations": [
+      "prompt_turn.permission_decisions[].attribution.outcome_id",
+      "prompt_turn.permission_decisions[].attribution.candidates",
+      "prompt_turn.permission_decisions[].scope_id"
+     ],
+     "normative_examples": [
+      "claude-named-denial-live"
+     ],
+     "evidence": [
+      "claude-agent-sdk-0.3.304-types",
+      "claude-live-2.1.304-denial"
+     ],
+     "checks": [
+      "oracle:ClaudeStreamProfile/population.decisions",
+      "oracle:ClaudeStreamProfile/decision.values",
+      "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
+      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects",
+      "junit:LiveFixtureFeaturesTest#theDenialRecordingExhibitsAnObservedRejectionAtBothScopes"
+     ],
+     "approval": {
+      "status": "approved",
+      "revision": 1,
+      "digest": "sha256:28d7b4b615efc5b5e108bc3e36d171741f97850d815a5e6262a725ff761ef326",
+      "approver": "Project Owner (markpollack)",
+      "decision": "OWNER-2026-10-21-ACCEPT-1-7",
+      "basis": "reused at its exact scope: the decision's own wording (a link to the exact source-reported call id; unnamed or ambiguous denials retain their original scope) is this claim's scope; bound to this digest at SEM-1 for the Owner's confirmation"
+     }
     }
    ]
   },
@@ -9811,6 +10300,47 @@
      ],
      "input": "pairs A-D: Claude Code 2.1.303 -p stream-json, claude-haiku-4-5; Journal 1.12.0-SNAPSHOT at the refresh (main f652231 to 83d5057); stream is the only parser input"
     }
+   ],
+   "claims": [
+    {
+     "id": "journal.mapping-rule-provenance",
+     "revision": 1,
+     "digest": "sha256:3b3650b6a57035f85cf184b3f58fffb09c1ded36d82357f012836bfa93d631ea",
+     "statement": "Every event Journal writes names the contract rule that produced it in journal.rule_uid (extension 0.5.0-prototype), beside journal.contract_uid. OCSF unmapped is left to its own purpose, source-specific data no OCSF attribute maps; Journal's provenance is not source data. Packages written with extension 0.4.0 or earlier carry the rule as unmapped.rule_id and remain readable from their own definitions.",
+     "applicability": {
+      "routes": [
+       "claude-code/stream-json/2.1.299-sdk",
+       "claude-code/stream-json/2.1.303-sdk",
+       "claude-code/stream-json/2.1.304-stdout",
+       "claude-code/session-transcript/2.1.299-session-file",
+       "claude-code/session-transcript/2.1.303-session-file",
+       "codex-cli/exec-json-stream/0.160.1",
+       "codex-cli/rollout/0.160.1"
+      ],
+      "extension": "agentic_cli 0.5.0-prototype",
+      "condition": "every event of every contract"
+     },
+     "destinations": [
+      "journal_provenance.rule_uid",
+      "journal_provenance.contract_uid"
+     ],
+     "normative_examples": [
+      "journal-rule-provenance"
+     ],
+     "evidence": [
+      "ocsf-1.9.0-unmapped",
+      "agentic-cli-0.5.0-journal-provenance"
+     ],
+     "checks": [
+      "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
+      "junit:PinsTest#mappingContractsDeclareEveryRuleTheMappersExecute",
+      "junit:LiveFixtureFeaturesTest#theSubAgentPromptIsTheChildScopesVendorReportedPrompt"
+     ],
+     "replaces": "extension 0.4.0-prototype and earlier stored the rule as OCSF unmapped.rule_id",
+     "approval": {
+      "status": "proposed"
+     }
+    }
    ]
   },
   {
@@ -10416,7 +10946,54 @@
     "reason": "Unparsable or blank input retained byte-exact with a parse status; nothing silently dropped."
    },
    "notes": "The only real opaque record in the frozen set is the Codex stderr line; malformed JSON, duplicate keys and non-UTF-8 bytes are exercised by mutation/synthetic tests. A parsed record retained as Opaque, or an opaque record normalized, is a whole_record.class defect in both directions. The Claude stream.err artifact has zero records and must appear in the source inventory with its hash. SEM-1 (2026-10-22): a Codex web_search line repeats item.id; it stays an opaque record (verbatim, both ids in raw_data) and, in exactly that declared form, is also read as a tool call under the first id; any other repeated member stays opaque without interpretation, and strict duplicate rejection is unchanged elsewhere.",
-   "observations": []
+   "observations": [],
+   "claims": [
+    {
+     "id": "codex.exec-stream.web-search-duplicate-id",
+     "revision": 1,
+     "digest": "sha256:c3585862aa697483e47a8c7b0936582ea32130af81d8ea06b88cf12b326df57c",
+     "statement": "A Codex CLI 0.160.1 web_search line repeats item.id: the exec item id, then the search item's own id (serde flattens WebSearchItem into ThreadItem). Strict parsing refuses it, so the line is retained verbatim as an opaque record with both ids in raw_data. In exactly this declared form (the only repeated member is item.id, twice, on item.started or item.completed of item.type web_search) Journal also reads it as a tool call under the first id: tool_name web_search (the item type), kind 5 search, arguments = item.action exactly, result data = item.results; no status is reported (status 0, not derivable). Any other repeated member stays an opaque record without interpretation, and strict duplicate rejection is unchanged.",
+     "applicability": {
+      "routes": [
+       "codex-cli/exec-json-stream/0.160.1"
+      ],
+      "contracts": [
+       "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+      ],
+      "extension": "agentic_cli 0.5.0-prototype"
+     },
+     "semantics": {
+      "identity": "the first item.id member (exec item id); the second (the search item's id) is preserved verbatim, not normalized",
+      "absence_default": "no status is reported for web searches; status_id 0 with basis not derivable"
+     },
+     "destinations": [
+      "source_record.raw_data",
+      "tool_call.tool_call_uid",
+      "tool_call.arguments",
+      "tool_call.tool_result.data"
+     ],
+     "normative_examples": [
+      "codex-web-search-duplicate-id-live"
+     ],
+     "evidence": [
+      "codex-exec-0.160.1-thread-item-flatten",
+      "codex-exec-0.160.1-emitter-items"
+     ],
+     "checks": [
+      "oracle:CodexStreamProfile/whole_record.bytes",
+      "oracle:CodexStreamProfile/request.values",
+      "oracle:CodexStreamProfile/result.values",
+      "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
+      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects",
+      "junit:CodexStreamMapperTest#onlyTheDeclaredWebSearchDuplicateIsInterpretedAndEveryOtherDuplicateStaysOpaque",
+      "junit:CodexDuplicateMemberProfileTest#onlyTheDeclaredWebSearchFormStatesAToolRequestUnderTheFirstId"
+     ],
+     "replaces": "contract 0.2.0-prototype kept web_search lines only as opaque records",
+     "approval": {
+      "status": "proposed"
+     }
+    }
+   ]
   },
   {
    "id": "retained-only-known-meaning-families",
@@ -12432,5 +13009,12 @@
    "optional-unexercised",
    "pending"
   ]
+ },
+ "semantic_claims": {
+  "meaning": "a concept's claims[] are its reviewed semantic meanings, each with a revision and a digest of its normative content; approval names that exact revision and digest, the Project Owner and a decision in owner-decisions.json. A claim without an approval record, a reviewed date, a source citation or a passing test is not approved; tested behaviour, semantic approval and live exercise are kept apart",
+  "digest_boundary": "sha256 over canonical JSON (object keys sorted, no whitespace, strings with only \\\", \\\\ and control characters escaped, numbers as spelled) of {statement, applicability, semantics, destinations, examples: [{id, native, expected, counterexamples without why}] in normative_examples order}. Evidence, checks, replaces, notes, approval, example descriptions and authored_from are outside it: adding supporting evidence or checks does not change the meaning; changing any normative member needs a new revision and approval",
+  "owner_decisions": "owner-decisions.json",
+  "references": "references.json",
+  "examples": "examples/"
  }
 }

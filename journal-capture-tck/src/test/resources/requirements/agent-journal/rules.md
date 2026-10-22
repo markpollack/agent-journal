@@ -198,14 +198,34 @@ Tests: `FieldDispositionTest` (every observed field; vendor-declared entries kep
 Tests: `MappingCatalogTest` (reference validity in Java and the derived CLI coverage table), `CatalogCoverage` and `MappingCatalogSummaryTest` (owed results from frozen populations), `FoundationComparisonTest` (foundation, preservation and projection tables from the same catalog); the catalog's earlier Python reference checker is historical tooling.
 
 ### RULE-36
-**MUST** establish every required property, every applicable owner and every scenario a criterion names before reporting that criterion as passed, treating a configured check that is missing from the evidence as an error, an observed wrong value as a failure, and an unexercised trigger or insufficient evidence as not assessed.
-**Reason:** A reducer that passes on whichever checks happened to appear accepts partial evidence as full; a pass must be scoped to the obligations and scenarios actually exercised. Explicitly declared subject applicability may yield not-applicable; a trigger absent from a fixture is not such a declaration.
-Tests: `RequirementsEvidenceTest`, `RequirementsReporterReproductionTest`.
+**MUST** establish every required property, every applicable owner, every native occurrence and every scenario a criterion or a mapping-catalog concept names before reporting that criterion as passed or that concept as verified, with each owed result retained as inspectable evidence, treating a configured check that is missing from the evidence as an error, an observed wrong value as a failure, and an unexercised trigger or insufficient evidence as not assessed.
+**Reason:** A reducer that passes on whichever checks happened to appear accepts partial evidence as full; a pass must be scoped to the obligations, owners, occurrences and scenarios actually exercised, and its basis must be inspectable afterwards. Explicitly declared subject applicability may yield not-applicable; a trigger absent from a fixture is not such a declaration.
+Tests: `RequirementsEvidenceTest`, `RequirementsReporterReproductionTest`, `MappingCatalogSummaryTest` (the catalog's coverage summary, with every judged obligation retained in `coverage-evidence.json`).
 
 ### RULE-37
 **MUST NOT** repeat schema definitions per event, introduce a mapping or transformation language, generate a reader project, or call a model in a routine acceptance gate.
 **Reason:** Each of these adds a second model, a second runtime or an unrepeatable judge; deterministic Java checks over declared definitions are the ordinary acceptance mechanism, and AI assistance stays in review proposals.
 Tests: the RULE-23 build-file inspection in `RequirementsEvidenceTest` covers the writer's freedom from model and evaluation dependencies; the rest is enforced by review.
+
+### RULE-38
+**MUST** report a concept or claim as approved support only when the Project Owner's recorded decision approves the exact semantic claim revision and digest, and that claim names the CLI, profile, version and route it applies to.
+**Reason:** A reviewed date, a source citation, an author's judgment or a passing build is not an approval; an approval of one wording does not extend to another, and support without its route is a claim about every route.
+Tests: `SemanticClaimTest` (decisions in `owner-decisions.json`, stale and borrowed approvals refused).
+
+### RULE-39
+**MUST** link every semantic claim to pinned supporting evidence, its canonical destinations in the compiled schema and independently authored expected examples with counterexamples, each resolvable, and MUST NOT treat a citation or the agreement of the mapper and the oracle as proof of the interpretation.
+**Reason:** A citation shows where a meaning came from, and two implementations can share a wrong premise; a concrete expected example, grounded in the pinned source and challenged by a counterexample, is what the Owner reviews and what the tests enforce on both implementations.
+Tests: `SemanticClaimTest`, `SemanticExampleTest` (writer), `SemanticExampleProfileTest` (oracle profile).
+
+### RULE-40
+**MUST** accept NOT_APPLICABLE for an applicable obligation only when the owner's own native records, read independently of the candidate, hold zero occurrences of the property's declared trigger, and MUST report such an obligation as unexercised with that basis, distinct from a check that is missing.
+**Reason:** Absence of evidence is not evidence of absence: a NOT_APPLICABLE beside a good sibling, or derived from the candidate's own output, would hide a required result; a genuinely absent trigger is an honest gap, not a failure and not a pass.
+Tests: `MappingCatalogSummaryTest`.
+
+### RULE-41
+**MUST** require a new claim revision and a new Owner approval for any change to an approved meaning (its statement, applicability, semantics, destinations or normative examples), while data preservation and clearly labelled experimental verification of the pending revision continue.
+**Reason:** An approval binds a meaning, not a mapper; supporting evidence may grow without reapproval, but a changed meaning under an old approval would present an unreviewed interpretation as approved. Pending meanings still need their data kept and their candidate behaviour tested.
+Tests: `SemanticClaimTest` (the digest boundary: changed meaning refused, added evidence accepted).
 
 ## Change log
 
@@ -223,3 +243,11 @@ RULE-37. No rule was removed; `RequirementsRosterTest` pins 37 rules.
 is a separate mode), no obligation changed; RULE-34 extended to every field the pinned vendor inventory declares for a
 supported route, observed or not, with its tests named; RULE-35's Tests: line names the repaired coverage summary and
 the foundation comparison. No rule added or removed; `RequirementsRosterTest` pins 37 rules.
+
+2026-10-22, semantic evidence consolidation (SEM-1). Retained identifier with changed meaning: RULE-36 now also covers a
+mapping-catalog concept reported verified, adds every native occurrence to the owed obligations and requires the
+owed results to be retained as inspectable evidence. Added RULE-38 (approved support names the Owner-approved claim
+revision, digest and route), RULE-39 (claims link pinned evidence, destinations and independently authored examples),
+RULE-40 (NOT_APPLICABLE needs the owner's independently established zero occurrences) and RULE-41 (a changed meaning
+needs a new revision and approval; preservation and labelled candidate testing continue). No rule removed;
+`RequirementsRosterTest` pins 41 rules.

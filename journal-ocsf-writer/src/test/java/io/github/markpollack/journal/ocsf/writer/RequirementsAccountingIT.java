@@ -2,6 +2,10 @@ package io.github.markpollack.journal.ocsf.writer;
 
 import io.github.markpollack.judge.ai.requirements.EarsRequirement;
 import io.github.markpollack.judge.ai.requirements.Rfc2119Requirement;
+import io.github.markpollack.judge.judgment.Judgment;
+import io.github.markpollack.judge.serialization.ResultJson;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -14,6 +18,7 @@ import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -192,8 +197,8 @@ class RequirementsAccountingIT {
                 junit("CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted", "labelled synthetic Codex stream"),
                 junit("OcsfOracleFixtureTest#sanitizedClaudeStreamWithChildCoreIsJudgedPerCoreWithoutDefect", "sanitized real 2.1.299 stream"),
                 note("not claimed (not observed on any tested route): media/multimodal blocks, redacted or encrypted reasoning, an interactively answered permission prompt (the bidirectional stream-json route), Codex sub-agents, Codex permission decisions, a live open request at interruption")));
-        CRITERIA.put("UC5-AC8", List.of(junit("RequirementsRosterTest#everyRuleHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedRoster", "37 rules, strict"),
-                junit("RequirementsRosterTest#everyCriterionHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedCounts", "49 criteria, strict"),
+        CRITERIA.put("UC5-AC8", List.of(junit("RequirementsRosterTest#everyRuleHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedRoster", "41 rules, strict"),
+                junit("RequirementsRosterTest#everyCriterionHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedCounts", "57 criteria, strict"),
                 junit("NativeRequirementTest#everyNativeRfcSpecificationCarriesTheCompleteStatementAndThePromptRendersIt", "complete statements (Agent Judge 0.19.0)")));
         CRITERIA.put("UC5-AC9", List.of(oracle("UC5-AC9", "reporter controls computed on the real reports")));
         CRITERIA.put("UC5-AC10", List.of(separate("mutation sensitivity is measured by the pit profiles of both modules (threshold 70%, mutators and targets unchanged) in detached worktrees of the delivered revision, not in this build; killed, survived and uncovered counts are reported apart in the return")));
@@ -201,6 +206,28 @@ class RequirementsAccountingIT {
         CRITERIA.put("UC5-AC12", List.of(oracle("UC5-AC12", "reporter controls"), junit("RequirementsReporterReproductionTest#rr02RemovingOneRequiredPropertyOrOneRequiredOwnerIsAnErrorNotAPass", "missing property or owner is ERROR")));
         CRITERIA.put("UC5-AC13", List.of(junit("MappingCatalogTest#theCommonConceptMatrixIsDerivedFromTheEntriesAndThisRunsOracleResultsWithStatesKeptSeparate", BOTH),
                 junit("MappingCatalogTest#everyCatalogReferenceResolvesInJava", "reference validity")));
+        String summary = "the catalog's coverage summary on committed recordings with real oracle reports, single results removed or changed";
+        CRITERIA.put("UC5-AC14", List.of(junit("MappingCatalogSummaryTest#aRequiredApplicableResultReportedNotApplicableCannotVerifyBesideAVerifiedPopulation", summary),
+                junit("MappingCatalogSummaryTest#aMissingRequiredPropertyBlocksVerificationAndIsNamed", summary),
+                junit("MappingCatalogSummaryTest#aResultOwnerNotApplicableDerivedFromTheCandidateIsRejectedAgainstTheNativeResults", summary)));
+        CRITERIA.put("UC5-AC15", List.of(junit("MappingCatalogSummaryTest#anUnexercisedConceptStatesTheZeroOccurrenceBasisOfEachNotApplicableObligation", summary),
+                junit("MappingCatalogSummaryTest#zeroApplicableOccurrencesAreUnexercisedButADroppedCheckIsNot", summary),
+                junit("MappingCatalogSummaryTest#aGenuinelyAbsentTriggerForOneOwnerDoesNotBlockTheOwnerThatHasIt", summary)));
+        CRITERIA.put("UC5-AC16", List.of(junit("MappingCatalogSummaryTest#anotherOwnersVerifiedResultCannotSatisfyAnExpectedChildsNotApplicable", summary),
+                junit("MappingCatalogSummaryTest#aValueResultCoveringFewerOccurrencesThanTheNativePopulationCannotVerify", summary),
+                junit("MappingCatalogSummaryTest#aResultForAnUnrelatedOwnerCannotEstablishTheTargetOwnersObligation", summary),
+                junit("MappingCatalogSummaryTest#aRepresentationDifferenceOnAValuePropertyIsNotAnAllowedNonSemanticDifference", summary)));
+        String claims = "the catalog's semantic claims, examples, references and Owner decisions, one change per control";
+        CRITERIA.put("UC5-AC17", List.of(junit("SemanticClaimTest#aChangedMeaningUnderAnOldApprovalIsRefused", claims),
+                junit("SemanticClaimTest#anApprovalNeedsARecordedDecisionThatListsTheExactRevisionAndDigest", claims)));
+        CRITERIA.put("UC5-AC18", List.of(junit("SemanticClaimTest#addedEvidenceAndChecksLeaveTheDigestAndTheApprovalValid", claims)));
+        CRITERIA.put("UC5-AC19", List.of(junit("SemanticClaimTest#aRemovedOrAlteredLinkIsExposed", claims),
+                junit("SemanticClaimTest#theCommittedClaimsExamplesReferencesAndDecisionsAreConsistent", claims)));
+        CRITERIA.put("UC5-AC20", List.of(junit("SemanticExampleTest#aPerTurnLabelOnTheCumulativeUsageIsRejectedThoughEveryComponentIsEqual", "the writer's output for the live Codex MCP recording, relabelled per-turn"),
+                junit("SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes", "reviewed examples against the writer (live and labelled synthetic inputs)"),
+                junit("SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects", "reviewed examples against the oracle profile")));
+        CRITERIA.put("UC5-AC21", List.of(junit("SemanticClaimTest#aProposedClaimWithPassingChecksIsACandidateNotApprovedSupport", claims),
+                note("each claim's approval and its executed checks are reported apart in the semantic-claims section of this accounting; proposed meanings stay candidates")));
     }
 
     /** Rule to the criteria and direct checks whose conjunction establishes its full obligation. */
@@ -249,8 +276,12 @@ class RequirementsAccountingIT {
         RULES.put("RULE-33", new RuleEvidence(List.of("UC2-AC5"), List.of(junit("UntestedCompatibilityTest#normalizingAfterANoMatchSelectionIsADefect", "normalization after no match is a defect")), ""));
         RULES.put("RULE-34", new RuleEvidence(List.of("UC3-AC14"), List.of(), ""));
         RULES.put("RULE-35", new RuleEvidence(List.of("UC5-AC13"), List.of(), ""));
-        RULES.put("RULE-36", new RuleEvidence(List.of("UC5-AC12"), List.of(), ""));
+        RULES.put("RULE-36", new RuleEvidence(List.of("UC5-AC12", "UC5-AC14", "UC5-AC16"), List.of(), ""));
         RULES.put("RULE-37", new RuleEvidence(List.of(), List.of(junit("StandaloneEventFileTest#theParentEventFileAloneIsInterpretedFromItsDeclarations", "definitions once per file, not per event")), "no mapping language, generated reader or model call exists in the build; enforced by review beyond the executable check"));
+        RULES.put("RULE-38", new RuleEvidence(List.of("UC5-AC17", "UC5-AC21"), List.of(), "approval is a recorded Owner decision naming the exact claim revision and digest"));
+        RULES.put("RULE-39", new RuleEvidence(List.of("UC5-AC19", "UC5-AC20"), List.of(), ""));
+        RULES.put("RULE-40", new RuleEvidence(List.of("UC5-AC14", "UC5-AC15"), List.of(), ""));
+        RULES.put("RULE-41", new RuleEvidence(List.of("UC5-AC17", "UC5-AC18"), List.of(), "the digest boundary is the catalog's semantic_claims.digest_boundary"));
     }
 
     /** The §4 corruption-control roster: each control must have run and passed in this build (positive controls live beside them in the same tests). */
@@ -266,6 +297,13 @@ class RequirementsAccountingIT {
         CONTROLS.put("absent versus zero or null", List.of("OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero", "OcsfOracleMutationTest#jo03RetainedJsonNumberTurnedIntoBooleanTrueIsDefective"));
         CONTROLS.put("false completion", List.of("WriterAcquisitionRegressionTest#aSourceEndedAsInterruptedThenCompletedIsPreservedButNotAcceptedAsComplete", "FullOneReviewRegressionTest#anHonestlyInterruptedSourceIsPreservedButNotAcceptedAsComplete", "CliCaptureTest#anAbnormalExitInsideARecordLeavesAnHonestIncompleteTailAndAFailedProcess"));
         CONTROLS.put("unknown version treated as compatible", List.of("UntestedCompatibilityTest#normalizingAfterANoMatchSelectionIsADefect", "CompatibilityTest#outsideEveryRangeOrOffEveryKeyIsNoMatchAndTheNearestEntryIsNotSelected"));
+        CONTROLS.put("required result reported NOT_APPLICABLE beside a good sibling", List.of("MappingCatalogSummaryTest#aRequiredApplicableResultReportedNotApplicableCannotVerifyBesideAVerifiedPopulation",
+                "MappingCatalogSummaryTest#aResultOwnerNotApplicableDerivedFromTheCandidateIsRejectedAgainstTheNativeResults"));
+        CONTROLS.put("missing owner or occurrence", List.of("MappingCatalogSummaryTest#anotherOwnersVerifiedResultCannotSatisfyAnExpectedChildsNotApplicable",
+                "MappingCatalogSummaryTest#aValueResultCoveringFewerOccurrencesThanTheNativePopulationCannotVerify"));
+        CONTROLS.put("stale approval or altered claim meaning", List.of("SemanticClaimTest#aChangedMeaningUnderAnOldApprovalIsRefused", "SemanticClaimTest#anApprovalNeedsARecordedDecisionThatListsTheExactRevisionAndDigest"));
+        CONTROLS.put("removed evidence, example or result link", List.of("SemanticClaimTest#aRemovedOrAlteredLinkIsExposed"));
+        CONTROLS.put("shared misreading with equal numbers", List.of("SemanticExampleTest#aPerTurnLabelOnTheCumulativeUsageIsRejectedThoughEveryComponentIsEqual", "SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"));
         CONTROLS.put("missing, altered or late declarations", List.of("StandaloneEventFileTest#removingOrAlteringAMandatoryDeclarationFailsInterpretationExplicitly", "DeclaredFileDiagnosticsTest#malformedDuplicateUnknownAndConflictingDeclarationsAreEachReported", "DeclaredFileDiagnosticsTest#aContractDeclarationAlteredUnderItsHashAndAnAttributeUsedBeforeItsAmendmentAreDefects"));
     }
 
@@ -328,7 +366,9 @@ class RequirementsAccountingIT {
             controls.put(e.getKey(), out);
         }
 
-        write(criteria, rules, criterionItems, criterionStatus, ruleItems, ruleStatus, ruleDetail, controls, surefire.size());
+        List<ClaimAccount> claims = claims(surefire);
+        persistClaimJudgments(claims);
+        write(criteria, rules, criterionItems, criterionStatus, ruleItems, ruleStatus, ruleDetail, controls, claims, surefire.size());
 
         List<String> errors = new ArrayList<>();
         List<String> failures = new ArrayList<>();
@@ -353,12 +393,24 @@ class RequirementsAccountingIT {
                 errors.add("control '" + name + "': " + o.item().ref() + ": " + o.status() + " " + o.detail());
             }
         }));
+        for (ClaimAccount c : claims) {
+            for (Outcome o : c.checks()) {
+                if (o.status() == Status.ERROR) {
+                    errors.add("claim " + c.id() + ": " + o.item().ref() + ": " + o.detail());
+                }
+                if (o.status() == Status.FAIL) {
+                    failures.add("claim " + c.id() + ": " + o.item().ref() + ": " + o.detail());
+                }
+            }
+        }
         assertThat(errors).as("missing instruments (evidence named but not executed in this build) and failed controls").isEmpty();
         assertThat(failures).as("failed obligations").isEmpty();
         long criteriaPass = criterionStatus.values().stream().filter(s -> s == Status.PASS).count();
         long rulesPass = ruleStatus.values().stream().filter(s -> s == Status.PASS).count();
+        Map<String, Integer> support = new TreeMap<>();
+        claims.forEach(c -> support.merge(c.support().replaceAll(" \\(.*", ""), 1, Integer::sum));
         System.out.println("requirements accounting: criteria PASS " + criteriaPass + "/" + criteria.size() + " (" + statusCounts(criterionStatus) + "); rules PASS " + rulesPass + "/" + rules.size()
-                + " (" + statusCounts(ruleStatus) + "); surefire results of " + surefire.size() + " test classes read");
+                + " (" + statusCounts(ruleStatus) + "); semantic claims " + claims.size() + " " + support + "; surefire results of " + surefire.size() + " test classes read");
     }
 
     /** RULE-23 directly: the writer's build file declares no evaluation or model dependency outside test scope. */
@@ -601,10 +653,126 @@ class RequirementsAccountingIT {
         }
     }
 
+    // ---- semantic claims ------------------------------------------------------------------------------------------
+
+    /** One semantic claim of the catalog: its approval as recorded, and what this build executed for it, kept apart. */
+    record ClaimAccount(String id, String concept, int revision, String digest, String approval, String decision, List<Outcome> checks, String support) {
+    }
+
+    /**
+     * Every claim of the catalog with its checks evaluated from this build: a JUnit check by its surefire result, an
+     * oracle check by every obligation of that property on the claim's routes in the catalog's coverage evidence
+     * ({@code coverage-evidence.json} of the TCK's test phase). Approved support needs the recorded approval (validated
+     * by SemanticClaimTest in this build) and every check passing; passing checks alone make a candidate.
+     */
+    static List<ClaimAccount> claims(Map<String, Surefire> surefire) throws IOException {
+        Jv catalog = Jv.parse(Files.readString(TCK.resolve("src/test/resources/ocsf/mapping-catalog/mapping-catalog.json"), StandardCharsets.UTF_8));
+        Path evidenceFile = TCK.resolve("target/mapping-catalog/coverage-evidence.json");
+        Jv evidence = Files.isRegularFile(evidenceFile) ? Jv.parse(Files.readString(evidenceFile, StandardCharsets.UTF_8)) : null;
+        Outcome approvals = evaluate(junit("SemanticClaimTest#theCommittedClaimsExamplesReferencesAndDecisionsAreConsistent", "claim digests, links and approvals"), surefire, Map.of());
+        List<ClaimAccount> out = new ArrayList<>();
+        for (Jv concept : catalog.member("concepts").elements()) {
+            for (Jv k : concept.member("claims") == null ? List.<Jv>of() : concept.member("claims").elements()) {
+                String id = MapperSupport.text(k, "id");
+                List<String> routes = new ArrayList<>();
+                k.path("applicability", "routes").elements().forEach(r -> routes.add(r.text()));
+                List<Outcome> checks = new ArrayList<>();
+                for (Jv ch : k.member("checks").elements()) {
+                    String ref = ch.text();
+                    checks.add(ref.startsWith("junit:") ? evaluate(junit(ref.substring("junit:".length()), "claim " + id), surefire, Map.of()) : oracleCheck(evidence, ref, routes));
+                }
+                boolean passed = checks.stream().allMatch(o -> o.status() == Status.PASS);
+                String approval = MapperSupport.text(k.member("approval"), "status");
+                boolean approved = "approved".equals(approval) && approvals.status() == Status.PASS;
+                String support = approved ? (passed ? "approved, verified" : "approved, not verified")
+                        : (passed ? "candidate verified" : "candidate not verified") + " (" + approval + "; not approved support)";
+                out.add(new ClaimAccount(id, MapperSupport.text(concept, "id"), ((Jv.Num) k.member("revision")).value().intValue(), MapperSupport.text(k, "digest"), approval,
+                        MapperSupport.text(k.member("approval"), "decision"), checks, support));
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Each claim's executed checks as an Agent Judge judgment (its existing result model and {@code ResultJson}
+     * serialization), written to {@code target/requirements-accounting/claim-judgments.json}: one check per executed
+     * instrument with its status and detail, reduced ERROR over FAIL over ABSTAIN over PASS. The judgment records
+     * behaviour evidence only; the reasoning restates the approval beside it, which no check can supply.
+     */
+    static void persistClaimJudgments(List<ClaimAccount> claims) throws IOException {
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("question", "did this build execute every check a semantic claim names, and did each establish its obligation? (approval is recorded separately)");
+        Map<String, Judgment> judgments = new LinkedHashMap<>();
+        for (ClaimAccount c : claims) {
+            List<io.github.markpollack.judge.judgment.Check> checks = new ArrayList<>();
+            for (Outcome o : c.checks()) {
+                Judgment j = switch (o.status()) {
+                    case PASS -> Judgment.builder().pass().reasoning(o.detail()).build();
+                    case FAIL -> Judgment.builder().fail().reasoning(o.detail()).build();
+                    case ERROR -> Judgment.error(o.detail());
+                    default -> Judgment.abstain(o.detail());
+                };
+                checks.add(new io.github.markpollack.judge.judgment.Check(o.item().ref(), j));
+            }
+            Status s = reduce(c.checks());
+            String reasoning = c.id() + " r" + c.revision() + " " + c.digest() + ": approval " + c.approval() + (c.decision() == null ? "" : " (" + c.decision() + ")") + "; " + c.support();
+            Map<String, Object> meta = new LinkedHashMap<>();
+            meta.put("claim", c.id());
+            meta.put("revision", c.revision());
+            meta.put("digest", c.digest());
+            meta.put("approval", c.approval());
+            meta.put("decision", c.decision() == null ? "none" : c.decision());
+            meta.put("support", c.support());
+            judgments.put(c.id(), switch (s) {
+                case PASS -> Judgment.builder().pass().reasoning(reasoning).checks(checks).metadata(meta).build();
+                case FAIL -> Judgment.builder().fail().reasoning(reasoning).checks(checks).metadata(meta).build();
+                case ERROR -> Judgment.builder().error().reasoning(reasoning).checks(checks).metadata(meta).build();
+                default -> Judgment.builder().abstain().reasoning(reasoning).checks(checks).metadata(meta).build();
+            });
+        }
+        out.put("judgments", judgments);
+        ObjectMapper mapper = new ObjectMapper().registerModule(ResultJson.module()).enable(SerializationFeature.INDENT_OUTPUT);
+        Path dir = WRITER.resolve("target/requirements-accounting");
+        Files.createDirectories(dir);
+        Files.writeString(dir.resolve("claim-judgments.json"), mapper.writeValueAsString(out) + "\n", StandardCharsets.UTF_8);
+    }
+
+    /** An oracle check of a claim: every owed obligation of the property on the claim's routes, each recording and owner once. */
+    static Outcome oracleCheck(Jv evidence, String ref, List<String> routes) {
+        Item item = new Item(Kind.ORACLE, ref, "routes " + routes);
+        if (evidence == null) {
+            return new Outcome(item, Status.ERROR, "coverage-evidence.json of this build not found");
+        }
+        String[] pp = ref.substring("oracle:".length()).split("/", 2);
+        Map<String, String> verdicts = new TreeMap<>();
+        for (Jv row : evidence.member("rows").elements()) {
+            if (!pp[0].equals(MapperSupport.text(row, "profile")) || !routes.contains(MapperSupport.text(row, "route"))) {
+                continue;
+            }
+            for (Jv ob : row.member("obligations").elements()) {
+                if (pp[1].equals(MapperSupport.text(ob, "property"))) {
+                    verdicts.put(MapperSupport.text(row, "fixture") + " " + MapperSupport.text(ob, "owner"), MapperSupport.text(ob, "verdict"));
+                }
+            }
+        }
+        long established = verdicts.values().stream().filter("ESTABLISHED"::equals).count();
+        long absent = verdicts.values().stream().filter("ABSENT"::equals).count();
+        List<String> bad = verdicts.entrySet().stream().filter(e -> !Set.of("ESTABLISHED", "ABSENT").contains(e.getValue())).map(e -> e.getKey() + " " + e.getValue()).toList();
+        if (!bad.isEmpty()) {
+            return new Outcome(item, Status.FAIL, String.join("; ", bad));
+        }
+        if (verdicts.isEmpty()) {
+            return new Outcome(item, Status.ERROR, "no obligation of this property on the claim's routes in this build's coverage evidence");
+        }
+        String detail = established + " established, " + absent + " absent with zero native occurrences, over " + verdicts.size() + " recording-owner pairs";
+        return new Outcome(item, established > 0 ? Status.PASS : Status.ABSTAIN, detail);
+    }
+
     // ---- output -----------------------------------------------------------------------------------------------------
 
     static void write(List<EarsRequirement> criteria, List<Rfc2119Requirement> rules, Map<String, List<Outcome>> criterionItems, Map<String, Status> criterionStatus,
-            Map<String, List<Outcome>> ruleItems, Map<String, Status> ruleStatus, Map<String, String> ruleDetail, Map<String, List<Outcome>> controls, int executed) throws IOException {
+            Map<String, List<Outcome>> ruleItems, Map<String, Status> ruleStatus, Map<String, String> ruleDetail, Map<String, List<Outcome>> controls, List<ClaimAccount> claims,
+            int executed) throws IOException {
         Path dir = WRITER.resolve("target/requirements-accounting");
         Files.createDirectories(dir);
         StringBuilder md = new StringBuilder();
@@ -638,6 +806,16 @@ class RequirementsAccountingIT {
             md.append("| ").append(e.getKey()).append(" | ");
             md.append(e.getValue().stream().map(o -> "`" + o.item().ref() + "` " + o.status()).reduce((a, b) -> a + "<br>" + b).orElse("")).append(" |\n");
         }
+        md.append("\n## Semantic claims (approval and executed checks kept apart)\n\n")
+                .append("Approval is the Project Owner's recorded decision on the exact claim revision and digest (owner-decisions.json, validated by SemanticClaimTest in this build); ")
+                .append("checks are this build's executed evidence. A proposed claim whose checks pass is a candidate, never approved support.\n\n")
+                .append("| Claim | Concept | Rev | Approval | Checks (this build) | Support |\n|---|---|---|---|---|---|\n");
+        for (ClaimAccount c : claims) {
+            md.append("| `").append(c.id()).append("` | ").append(c.concept()).append(" | ").append(c.revision()).append(" | ").append(c.approval())
+                    .append(c.decision() == null ? "" : " (" + c.decision() + ")").append(" | ")
+                    .append(c.checks().stream().map(o -> "`" + escape(o.item().ref()) + "` " + o.status() + (o.item().kind() == Kind.ORACLE ? ": " + escape(o.detail()) : "")).reduce((a, b) -> a + "<br>" + b).orElse(""))
+                    .append(" | **").append(c.support()).append("** |\n");
+        }
         md.append("\n## Totals\n\n- criteria: ").append(statusCounts(criterionStatus)).append(" of ").append(criteria.size()).append("\n- rules: ").append(statusCounts(ruleStatus)).append(" of ").append(rules.size()).append('\n');
         md.append("\nDeferred (Owner disposition requested) or measured separately: ");
         List<String> deferred = new ArrayList<>();
@@ -665,7 +843,19 @@ class RequirementsAccountingIT {
         for (Rfc2119Requirement r : rules) {
             json.append(i++ > 0 ? ",\n" : "").append("    \"").append(r.id()).append("\": {\"status\": \"").append(ruleStatus.get(r.id())).append("\", \"detail\": \"").append(jsonEscape(ruleDetail.get(r.id()))).append("\"}");
         }
-        json.append("\n  }\n}\n");
+        json.append("\n  },\n  \"claims\": [\n");
+        i = 0;
+        for (ClaimAccount c : claims) {
+            json.append(i++ > 0 ? ",\n" : "").append("    {\"id\": \"").append(jsonEscape(c.id())).append("\", \"revision\": ").append(c.revision()).append(", \"digest\": \"").append(c.digest())
+                    .append("\", \"approval\": \"").append(c.approval()).append("\", \"decision\": ").append(c.decision() == null ? "null" : "\"" + jsonEscape(c.decision()) + "\"")
+                    .append(", \"support\": \"").append(jsonEscape(c.support())).append("\", \"checks\": [");
+            int j = 0;
+            for (Outcome o : c.checks()) {
+                json.append(j++ > 0 ? ", " : "").append("{\"ref\": \"").append(jsonEscape(o.item().ref())).append("\", \"status\": \"").append(o.status()).append("\", \"detail\": \"").append(jsonEscape(o.detail())).append("\"}");
+            }
+            json.append("]}");
+        }
+        json.append("\n  ]\n}\n");
         Files.writeString(dir.resolve("accounting.json"), json.toString(), StandardCharsets.UTF_8);
     }
 

@@ -1,0 +1,88 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "urn:agent-journal:coverage-references:0.1",
+ "title": "Shared pinned evidence references (ocsf/mapping-catalog/references.json)",
+ "type": "object",
+ "required": [
+  "kind",
+  "format_version",
+  "references"
+ ],
+ "properties": {
+  "kind": {
+   "const": "agent-journal/coverage-references"
+  },
+  "format_version": {
+   "const": "0.1"
+  },
+  "meaning": {
+   "type": "string"
+  },
+  "references": {
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "type": "object",
+    "required": [
+     "id",
+     "source",
+     "evidence_kind"
+    ],
+    "properties": {
+     "id": {
+      "type": "string"
+     },
+     "source": {
+      "type": "string"
+     },
+     "revision": {
+      "type": "string"
+     },
+     "path": {
+      "type": "string"
+     },
+     "blob": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+     },
+     "symbol": {
+      "type": "string"
+     },
+     "locator": {
+      "type": "string"
+     },
+     "evidence_kind": {
+      "enum": [
+       "specification",
+       "source_inspection",
+       "synthetic",
+       "replay",
+       "live",
+       "persisted_readback"
+      ]
+     },
+     "note": {
+      "type": "string"
+     }
+    },
+    "allOf": [
+     {
+      "if": {
+       "properties": {
+        "evidence_kind": {
+         "const": "source_inspection"
+        }
+       }
+      },
+      "then": {
+       "required": [
+        "revision",
+        "path"
+       ]
+      }
+     }
+    ]
+   }
+  }
+ }
+}

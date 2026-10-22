@@ -1,0 +1,50 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "claude-child-scope-prompt-live",
+  "concept": "user-submission",
+  "description": "Claude Code 2.1.304 stream-json (stdout, live recording): a user record whose parent_tool_use_id names the sub-agent spawn and which carries text and no tool_result is the prompt the stream echoes for that child scope. It is a prompt_turn Prompt submitted event in the child's core with the exact text; no turn id is invented, and the main thread's own -p prompt, which this route does not echo, is not invented either.",
+  "authored_from": [
+    "claude-agent-sdk-0.3.304-types",
+    "claude-live-2.1.304-features"
+  ],
+  "native": {
+    "evidence_kind": "live",
+    "profile": "claude_stream",
+    "compatibility_entry": "claude-code/stream-json/2.1.304-stdout",
+    "fixture": "claude-live-2.1.304-features",
+    "artifact": "stream.jsonl",
+    "sha256": "6d4beb37f396b6ca21c6dcec3acb929588386f694109e69d6ebb7a610d14ef68"
+  },
+  "expected": [
+    {
+      "record": 24,
+      "class": "prompt_turn",
+      "activity_id": 1,
+      "values": {
+        "/content_blocks/0/text": "Read the file /work/beta.txt and report its content back exactly. Do not modify any files.",
+        "/content_blocks/0/data": {
+          "type": "text",
+          "text": "Read the file /work/beta.txt and report its content back exactly. Do not modify any files."
+        },
+        "/session_uid": "00000000-0000-4000-8000-0000000000a1"
+      },
+      "absent": [
+        "/turn_uid",
+        "/content_blocks/1"
+      ]
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "invented-turn-id",
+      "record": 24,
+      "class": "prompt_turn",
+      "activity_id": 1,
+      "values": {
+        "/turn_uid": "turn-1"
+      },
+      "why": "The stream names no turn id; one is never invented."
+    }
+  ]
+}

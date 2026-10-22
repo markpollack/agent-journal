@@ -1,0 +1,217 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "urn:agent-journal:semantic-claim:0.1",
+ "title": "Semantic claim of a mapping-catalog concept (catalog concepts[].claims[])",
+ "description": "Shape only. Java (SemanticClaimTest) checks the digest, the links to examples, evidence, destinations and checks, and the approval's decision; a valid claim says nothing about whether its interpretation is right.",
+ "type": "object",
+ "required": [
+  "id",
+  "revision",
+  "digest",
+  "statement",
+  "applicability",
+  "destinations",
+  "normative_examples",
+  "evidence",
+  "checks",
+  "approval"
+ ],
+ "additionalProperties": false,
+ "properties": {
+  "id": {
+   "type": "string",
+   "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$"
+  },
+  "revision": {
+   "type": "integer",
+   "minimum": 1
+  },
+  "digest": {
+   "type": "string",
+   "pattern": "^sha256:[0-9a-f]{64}$"
+  },
+  "statement": {
+   "type": "string",
+   "minLength": 40
+  },
+  "applicability": {
+   "type": "object",
+   "required": [
+    "routes"
+   ],
+   "additionalProperties": false,
+   "properties": {
+    "routes": {
+     "type": "array",
+     "minItems": 1,
+     "items": {
+      "type": "string"
+     }
+    },
+    "contracts": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "extension": {
+     "type": "string"
+    },
+    "condition": {
+     "type": "string"
+    }
+   }
+  },
+  "semantics": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "identity": {
+     "type": "string"
+    },
+    "owner_scope": {
+     "type": "string"
+    },
+    "grouping": {
+     "type": "string"
+    },
+    "order": {
+     "type": "string"
+    },
+    "finality": {
+     "type": "string"
+    },
+    "absence_default": {
+     "type": "string"
+    }
+   }
+  },
+  "destinations": {
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "type": "string"
+   }
+  },
+  "normative_examples": {
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "type": "string"
+   }
+  },
+  "evidence": {
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "type": "string"
+   }
+  },
+  "checks": {
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "type": "string",
+    "pattern": "^(oracle:[A-Za-z]+Profile/[a-z_.]+|junit:[A-Za-z]+#[A-Za-z0-9]+)$"
+   }
+  },
+  "replaces": {
+   "type": "string"
+  },
+  "notes": {
+   "type": "string"
+  },
+  "approval": {
+   "type": "object",
+   "required": [
+    "status"
+   ],
+   "properties": {
+    "status": {
+     "enum": [
+      "proposed",
+      "approved",
+      "superseded",
+      "rejected"
+     ]
+    },
+    "revision": {
+     "type": "integer"
+    },
+    "digest": {
+     "type": "string"
+    },
+    "approver": {
+     "type": "string"
+    },
+    "decision": {
+     "type": "string"
+    },
+    "basis": {
+     "type": "string"
+    },
+    "superseded_by": {
+     "type": "string"
+    }
+   },
+   "allOf": [
+    {
+     "if": {
+      "properties": {
+       "status": {
+        "const": "approved"
+       }
+      }
+     },
+     "then": {
+      "required": [
+       "revision",
+       "digest",
+       "approver",
+       "decision"
+      ]
+     }
+    },
+    {
+     "if": {
+      "properties": {
+       "status": {
+        "const": "superseded"
+       }
+      }
+     },
+     "then": {
+      "required": [
+       "superseded_by"
+      ]
+     }
+    },
+    {
+     "if": {
+      "properties": {
+       "status": {
+        "const": "proposed"
+       }
+      }
+     },
+     "then": {
+      "not": {
+       "anyOf": [
+        {
+         "required": [
+          "decision"
+         ]
+        },
+        {
+         "required": [
+          "approver"
+         ]
+        }
+       ]
+      }
+     }
+    }
+   ]
+  }
+ }
+}

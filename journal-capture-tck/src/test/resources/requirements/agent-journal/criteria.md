@@ -267,6 +267,46 @@ Rule: RULE-36. Tests: `RequirementsEvidenceTest`, `RequirementsReporterReproduct
 When common-model coverage is compared across CLIs, the matrix shall be generated from reviewed mapping-catalog entries with verified, retained-only, unavailable-at-source, unexercised and unresolved states kept separate.
 Rule: RULE-35. Tests: `MappingCatalogTest#theCommonConceptMatrixIsDerivedFromTheEntriesAndThisRunsOracleResultsWithStatesKeptSeparate`, `MappingCatalogTest#everyCatalogReferenceResolvesInJava`. Status: implemented 2026-10-21 (ACCEPT-1); "mapping catalog" replaces the earlier term "crosswalk". Repaired 2026-10-22 (FND-1): the coverage summary (`CatalogCoverage`, reproduced by `MappingCatalogSummaryTest`) owes every listed property for every owner the frozen expected sources establish, at its declared scope, with an occurrence of the concept's native scenario; a missing owed result blocks verification; the table is written to `target/mapping-catalog/CLI-COVERAGE.md`, one column per admitted CLI/version/profile/route.
 
+### UC5-AC14: Refuse a concept verification when an applicable result is missing or not applicable
+
+If a required applicable result of a mapping-catalog concept is missing from the oracle report or is reported NOT_APPLICABLE while the owner's native records hold occurrences of its trigger, then the coverage summary shall not report the concept verified and shall name the property and owner.
+Rule: RULE-36, RULE-40. Tests: `MappingCatalogSummaryTest#aRequiredApplicableResultReportedNotApplicableCannotVerifyBesideAVerifiedPopulation`, `MappingCatalogSummaryTest#aMissingRequiredPropertyBlocksVerificationAndIsNamed`, `MappingCatalogSummaryTest#aResultOwnerNotApplicableDerivedFromTheCandidateIsRejectedAgainstTheNativeResults`.
+
+### UC5-AC15: Report a genuinely absent trigger as unexercised with its basis
+
+When the owner's native records hold zero occurrences of a property's declared trigger, the coverage summary shall report the obligation unexercised with that zero-occurrence basis, distinct from a check missing from the report.
+Rule: RULE-40. Tests: `MappingCatalogSummaryTest#anUnexercisedConceptStatesTheZeroOccurrenceBasisOfEachNotApplicableObligation`, `MappingCatalogSummaryTest#zeroApplicableOccurrencesAreUnexercisedButADroppedCheckIsNot`, `MappingCatalogSummaryTest#aGenuinelyAbsentTriggerForOneOwnerDoesNotBlockTheOwnerThatHasIt`.
+
+### UC5-AC16: Refuse compensation by another owner or occurrence
+
+If one expected owner or native occurrence of an obligation lacks its established result, then the coverage summary shall not report the concept verified, whatever another owner's or a sibling property's result says.
+Rule: RULE-36. Tests: `MappingCatalogSummaryTest#anotherOwnersVerifiedResultCannotSatisfyAnExpectedChildsNotApplicable`, `MappingCatalogSummaryTest#aValueResultCoveringFewerOccurrencesThanTheNativePopulationCannotVerify`, `MappingCatalogSummaryTest#aResultForAnUnrelatedOwnerCannotEstablishTheTargetOwnersObligation`, `MappingCatalogSummaryTest#aRepresentationDifferenceOnAValuePropertyIsNotAnAllowedNonSemanticDifference`.
+
+### UC5-AC17: Refuse a stale approval of a changed meaning
+
+If a semantic claim's normative content changes after the Owner approved an earlier revision, then validation shall refuse the old approval for the changed claim.
+Rule: RULE-41, RULE-38. Tests: `SemanticClaimTest#aChangedMeaningUnderAnOldApprovalIsRefused`, `SemanticClaimTest#anApprovalNeedsARecordedDecisionThatListsTheExactRevisionAndDigest`.
+
+### UC5-AC18: Keep an approval when only supporting evidence grows
+
+When an unchanged semantic claim gains supporting evidence or checks, the claim's digest and its existing approval shall remain valid under the documented digest boundary.
+Rule: RULE-41. Tests: `SemanticClaimTest#addedEvidenceAndChecksLeaveTheDigestAndTheApprovalValid`.
+
+### UC5-AC19: Expose a removed or altered evidence link
+
+If a claim's pinned reference, normative example, destination, check or route is removed or altered, or an example's native input changes, then validation shall report the missing or inconsistent link.
+Rule: RULE-39. Tests: `SemanticClaimTest#aRemovedOrAlteredLinkIsExposed`, `SemanticClaimTest#theCommittedClaimsExamplesReferencesAndDecisionsAreConsistent`.
+
+### UC5-AC20: Reject a wrong meaning despite equal numbers
+
+If cumulative usage is labelled with a turn or interval scope, then an independently specified expected case shall reject that meaning although every numeric component is equal.
+Rule: RULE-39. Tests: `SemanticExampleTest#aPerTurnLabelOnTheCumulativeUsageIsRejectedThoughEveryComponentIsEqual`, `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`.
+
+### UC5-AC21: Keep a candidate meaning out of approved support
+
+When a proposed interpretation passes its behaviour tests without the Owner's approval, the evidence shall retain the technical results and shall report the claim as a candidate, not as approved support.
+Rule: RULE-38. Tests: `SemanticClaimTest#aProposedClaimWithPassingChecksIsACandidateNotApprovedSupport`; the requirements accounting reports each claim's approval and executed checks apart.
+
 ## Change log
 
 2026-10-21, consolidated event-file work order (REQ-1 amendment). Retained identifiers with changed
@@ -284,3 +324,9 @@ per-use-case counts 7, 6, 15, 8 and 13.
 records (`run.json` mirrors them), matching the standalone layout in force since `f4e68f8`; UC2-AC4's status line
 updated to the implemented compatibility declaration; UC5-AC13's status records the repaired coverage summary. No
 criterion added or removed.
+
+2026-10-22, semantic evidence consolidation (SEM-1): added UC5-AC14 to UC5-AC21 (a missing or unjustified
+NOT_APPLICABLE result cannot verify a concept; a genuinely absent trigger is unexercised with its basis; no
+compensation by another owner or occurrence; stale approvals refused; added evidence keeps an approval; a removed or
+altered evidence link is exposed; equal numbers do not establish a meaning; a candidate is not approved support). No
+criterion removed; `RequirementsRosterTest` pins the per-use-case counts 7, 6, 15, 8 and 21.
