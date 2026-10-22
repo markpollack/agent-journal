@@ -116,6 +116,15 @@
         },
         "note": {
          "type": "string"
+        },
+        "canonical": {
+         "type": "array",
+         "minItems": 1,
+         "items": {
+          "type": "string",
+          "pattern": "^[a-z_]+\\.[a-z_]+$"
+         },
+         "description": "oracle properties whose results on the attempt's own recording constitute the behaviour's canonical assertion (SEM-1); required by LiveScenarioTest for a live-observed behaviour"
         }
        },
        "allOf": [

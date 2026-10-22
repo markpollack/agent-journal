@@ -1,7 +1,7 @@
 {
  "kind": "agent-journal/live-scenario-results",
  "version": "0.1",
- "meaning": "Attempts against the roster, appended after each run: reused live recordings, new live runs (promoted to sanitized fixtures), replay and labelled synthetic cases, each with per-behavior status (observed, attempted-not-triggered, not-run, blocked) and raw predicates the Java check evaluates on the committed native recording. Only an attempt of evidence class live can make a behavior live-observed.",
+ "meaning": "Attempts against the roster, appended after each run: reused live recordings, new live runs (promoted to sanitized fixtures), replay and labelled synthetic cases, each with per-behavior status (observed, attempted-not-triggered, not-run, blocked) and raw predicates the Java check evaluates on the committed native recording. Only an attempt of evidence class live can make a behavior live-observed. SEM-1: canonical names the oracle properties whose results, run on the attempt's own committed recording, constitute the behaviour's canonical assertion; LiveScenarioTest judges them as the coverage summary does (every owner established, or absent with zero native occurrences) and reports them per attempt.",
  "attempts": [
   {
    "id": "accept1-claude-features-1",
@@ -23,7 +23,11 @@
      "assertions": [
       "LiveFixtureFeaturesTest#theClaudeFeatureRecordingExhibitsToolsChildrenFailureUsageAndRetainedFamilies"
      ],
-     "note": "the main prompt is not echoed by the stream; the sub-agent's prompt is"
+     "note": "the main prompt is not echoed by the stream; the sub-agent's prompt is",
+     "canonical": [
+      "population.responses",
+      "response.values"
+     ]
     },
     {
      "behavior": "LIVE-02",
@@ -40,6 +44,12 @@
      ],
      "assertions": [
       "LiveFixtureFeaturesTest#theClaudeFeatureRecordingExhibitsToolsChildrenFailureUsageAndRetainedFamilies"
+     ],
+     "canonical": [
+      "population.requests",
+      "request.values",
+      "population.results",
+      "result.values"
      ]
     },
     {
@@ -54,7 +64,11 @@
      "assertions": [
       "LiveFixtureFeaturesTest#theClaudeFeatureRecordingExhibitsToolsChildrenFailureUsageAndRetainedFamilies"
      ],
-     "note": "repeated tools with distinct ids; parallel overlap not claimed"
+     "note": "repeated tools with distinct ids; parallel overlap not claimed",
+     "canonical": [
+      "population.requests",
+      "request.values"
+     ]
     },
     {
      "behavior": "LIVE-04",
@@ -67,6 +81,9 @@
      ],
      "assertions": [
       "LiveFixtureFeaturesTest#theClaudeFeatureRecordingExhibitsToolsChildrenFailureUsageAndRetainedFamilies"
+     ],
+     "canonical": [
+      "result.values"
      ]
     },
     {
@@ -80,6 +97,11 @@
      ],
      "assertions": [
       "LiveFixtureFeaturesTest#theSubAgentPromptIsTheChildScopesVendorReportedPrompt"
+     ],
+     "canonical": [
+      "package.children",
+      "population.prompts",
+      "prompt.values"
      ]
     },
     {
@@ -101,6 +123,12 @@
      ],
      "assertions": [
       "LiveFixtureFeaturesTest#theClaudeFeatureRecordingExhibitsToolsChildrenFailureUsageAndRetainedFamilies"
+     ],
+     "canonical": [
+      "population.usage",
+      "usage.values",
+      "cost.values",
+      "response.values"
      ]
     }
    ]
@@ -125,7 +153,11 @@
      "assertions": [
       "LiveFixtureFeaturesTest#theDenialRecordingExhibitsAnObservedRejectionAtBothScopes"
      ],
-     "note": "print-route denial under --permission-mode default; the interactive prompt route is a separate mode, not exercised"
+     "note": "print-route denial under --permission-mode default; the interactive prompt route is a separate mode, not exercised",
+     "canonical": [
+      "population.decisions",
+      "decision.values"
+     ]
     }
    ]
   },
@@ -173,7 +205,11 @@
      "assertions": [
       "LiveFixtureFeaturesTest#theCodexRecordingExhibitsOperationsFailureRepetitionAndUsage"
      ],
-     "note": "the exec stream does not echo the prompt (user messages are not projected)"
+     "note": "the exec stream does not echo the prompt (user messages are not projected)",
+     "canonical": [
+      "population.responses",
+      "response.values"
+     ]
     },
     {
      "behavior": "LIVE-02",
@@ -187,7 +223,11 @@
      "assertions": [
       "LiveFixtureFeaturesTest#theCodexRecordingExhibitsOperationsFailureRepetitionAndUsage"
      ],
-     "note": "commands only; no file change, read tool or MCP in this run"
+     "note": "commands only; no file change, read tool or MCP in this run",
+     "canonical": [
+      "population.operations",
+      "operation.values"
+     ]
     },
     {
      "behavior": "LIVE-03",
@@ -201,7 +241,11 @@
      "assertions": [
       "LiveFixtureFeaturesTest#theCodexRecordingExhibitsOperationsFailureRepetitionAndUsage"
      ],
-     "note": "repeated commands with distinct stream-local ids; no overlap evidence"
+     "note": "repeated commands with distinct stream-local ids; no overlap evidence",
+     "canonical": [
+      "population.operations",
+      "operation.values"
+     ]
     },
     {
      "behavior": "LIVE-04",
@@ -214,6 +258,9 @@
      ],
      "assertions": [
       "LiveFixtureFeaturesTest#theCodexRecordingExhibitsOperationsFailureRepetitionAndUsage"
+     ],
+     "canonical": [
+      "operation.values"
      ]
     },
     {
@@ -228,7 +275,11 @@
      "assertions": [
       "LiveFixtureFeaturesTest#theCodexRecordingExhibitsOperationsFailureRepetitionAndUsage"
      ],
-     "note": "usage at turn end (the thread's cumulative total); no reasoning summary item in this run; no cost on this route"
+     "note": "usage at turn end (the thread's cumulative total); no reasoning summary item in this run; no cost on this route",
+     "canonical": [
+      "population.usage",
+      "usage.values"
+     ]
     }
    ]
   },
@@ -276,7 +327,14 @@
      "assertions": [
       "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
      ],
-     "note": "synthetic: shows Journal retains MCP records whole; no live MCP run"
+     "note": "synthetic: MCP calls normalized as tool calls under stream-local ids (SEM-1 candidate, contract 0.3.0); no live inference",
+     "canonical": [
+      "population.requests",
+      "request.values",
+      "population.results",
+      "result.values",
+      "result.owner"
+     ]
     },
     {
      "behavior": "LIVE-07",
@@ -290,7 +348,13 @@
      "assertions": [
       "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
      ],
-     "note": "synthetic collab spawn; retained only"
+     "note": "synthetic collab spawn_agent: normalized as a tool call (SEM-1 candidate); receiver threads are not linked as child runs",
+     "canonical": [
+      "population.requests",
+      "request.values",
+      "population.results",
+      "result.values"
+     ]
     },
     {
      "behavior": "LIVE-05",
@@ -304,7 +368,10 @@
      "assertions": [
       "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
      ],
-     "note": "synthetic declined command"
+     "note": "synthetic declined command: status 99 Declined (SEM-1 candidate), not a permission decision",
+     "canonical": [
+      "operation.values"
+     ]
     },
     {
      "behavior": "LIVE-09",
@@ -318,7 +385,11 @@
      "assertions": [
       "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
      ],
-     "note": "synthetic reasoning summary; retained only"
+     "note": "synthetic reasoning summary: normalized as a reasoning-summary block (SEM-1 candidate)",
+     "canonical": [
+      "population.responses",
+      "response.values"
+     ]
     }
    ]
   },
@@ -346,7 +417,15 @@
      "assertions": [
       "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
      ],
-     "note": "a patch edit (file_change started and completed: path and kind, no patch contents) and a read command; file_change is retained only"
+     "note": "a patch edit (file_change started and completed: path and kind, no patch contents) and a read command; file_change is retained only",
+     "canonical": [
+      "population.requests",
+      "request.values",
+      "population.results",
+      "result.values",
+      "population.operations",
+      "operation.values"
+     ]
     }
    ]
   },
@@ -370,7 +449,14 @@
      "assertions": [
       "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
      ],
-     "note": "local deterministic stdio MCP test server: structured arguments and structured_content preserved in the retained records; not normalized"
+     "note": "local deterministic stdio MCP test server: requests and results normalized under stream-local ids with structured arguments, result content and structured_content (SEM-1 candidate, pending Owner approval)",
+     "canonical": [
+      "population.requests",
+      "request.values",
+      "population.results",
+      "result.values",
+      "result.owner"
+     ]
     },
     {
      "behavior": "LIVE-04",
@@ -384,7 +470,10 @@
      "assertions": [
       "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
      ],
-     "note": "the always_fails tool (isError) is reported as status failed with result content and error null; the error.message variant was not triggered"
+     "note": "the always_fails tool (isError) is reported as status failed with result content and error null; the error.message variant was not triggered",
+     "canonical": [
+      "result.values"
+     ]
     }
    ]
   },
@@ -412,7 +501,12 @@
      "assertions": [
       "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
      ],
-     "note": "reasoning summary with model_reasoning_summary=detailed (retained only); reasoning token count normalized from turn.completed; no plan item (the plan tool was not enabled)"
+     "note": "reasoning summary (model_reasoning_summary=detailed) normalized as a reasoning-summary block (SEM-1 candidate); reasoning token count normalized from turn.completed (the thread's cumulative usage)",
+     "canonical": [
+      "population.responses",
+      "response.values",
+      "usage.values"
+     ]
     }
    ]
   },
@@ -436,7 +530,12 @@
      "assertions": [
       "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
      ],
-     "note": "plan tool (update_plan, enabled with tools.update_plan.enabled=true): todo_list started, updated three times, completed at turn end under one item id; retained only"
+     "note": "plan tool (update_plan, enabled with tools.update_plan.enabled=true): todo_list started, updated three times, completed at turn end under one item id; retained only",
+     "canonical": [
+      "whole_record.coverage",
+      "whole_record.class",
+      "whole_record.structure_value"
+     ]
     }
    ]
   },
@@ -460,7 +559,14 @@
      "assertions": [
       "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
      ],
-     "note": "web search started and completed: both lines carry two id members, so the reader keeps them only as opaque bytes (defect); results' third-party content replaced in the fixture"
+     "note": "web search started and completed: both lines repeat item.id; each is retained verbatim as an opaque record and, in that declared form, read as a tool call under the first id (SEM-1 candidate)",
+     "canonical": [
+      "population.requests",
+      "request.values",
+      "population.results",
+      "result.values",
+      "whole_record.bytes"
+     ]
     }
    ]
   },
@@ -484,7 +590,7 @@
      "assertions": [
       "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
      ],
-     "note": "a child agent did run, but the stream carried only a collab wait without receivers: the spawn is not projected on this run, so the stream cannot link the child"
+     "note": "a child agent did run, but the stream carried only a collab wait: structured payload recheck (SEM-1): tool wait, receiver_thread_ids [], agents_states {}, prompt null on both records; no spawn_agent item and no receiver id, so the spawn is not projected on this run. Unexercised, not a source absence: the pinned emitter maps SpawnAgent"
     }
    ]
   },
@@ -512,7 +618,13 @@
      "assertions": [
       "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
      ],
-     "note": "cancelled after 25 s while sleep 40 was running: item.started without completion; frozen incomplete; storage INTERRUPTED; no process left behind"
+     "note": "cancelled after 25 s while sleep 40 was running: item.started without completion; frozen incomplete; storage INTERRUPTED; no process left behind",
+     "canonical": [
+      "population.operations",
+      "operation.values",
+      "acquisition.complete",
+      "package.state"
+     ]
     }
    ]
   },
@@ -536,7 +648,7 @@
      "assertions": [
       "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
      ],
-     "note": "read-only sandbox: the failed write left no command_execution item at all (no declined status, no approval request); the stream shows only agent messages"
+     "note": "read-only sandbox: structured payload recheck (SEM-1): the stream holds two agent messages and the turn completion only; no command_execution item, no declined status and no approval request; the refusal appears only in the model's own prose, which is not a reported decision. Unexercised, not a source absence: the pinned emitter maps CommandExecutionStatus::Declined"
     }
    ]
   }

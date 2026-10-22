@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.github.markpollack.journal.tck.verify.Check;
+import io.github.markpollack.journal.tck.verify.Json;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -176,7 +178,58 @@ class LiveScenarioTest {
                         problems.add(id + ": " + beh + ": assertion " + t.asText() + " not found in the test sources");
                     }
                 }
+                if ("observed".equals(status) && "live".equals(cls) && b.path("canonical").isEmpty()) {
+                    problems.add(id + ": " + beh + " live-observed without the canonical results that ran for it (a test name alone is not evidence)");
+                }
+                if ("observed".equals(status) && copy != null && !b.path("canonical").isEmpty()) {
+                    for (String p : canonical(b.path("canonical"), copy, route(fixture, route, copy), new ArrayList<>())) {
+                        problems.add(id + ": " + beh + ": " + p);
+                    }
+                }
             }
+        }
+        return problems;
+    }
+
+    /**
+     * The canonical results that ran for an attempt: the oracle on the attempt's own committed recording, each named
+     * property judged for every owner the frozen expected sources establish, as the coverage summary judges it
+     * ({@link CatalogCoverage#judge}: established, or absent with zero native occurrences of its trigger). Returns the
+     * problems and adds one summary line per property to {@code summary}.
+     */
+    static List<String> canonical(JsonNode properties, Path copy, MappingCatalogTest.Route route, List<String> summary) {
+        List<String> problems = new ArrayList<>();
+        OracleReport report = OcsfFixtures.verify(copy);
+        Path natives = OcsfFixtures.natives(copy);
+        ExpectedSources expected = ExpectedSources.beside(natives);
+        Json catalog = MappingCatalogTest.catalogDocument();
+        for (JsonNode pn : properties) {
+            String p = pn.asText();
+            String trigger = CatalogCoverage.trigger(catalog, p);
+            String honest = expected.complete() ? null : CatalogCoverage.incompleteRunOutcome(catalog, p);
+            List<String> owners = CatalogCoverage.owners(CatalogCoverage.scope(catalog, p), CatalogCoverage.PROFILE_NAMES.get(route.profile()), expected);
+            int established = 0;
+            for (String owner : owners) {
+                List<Check> results = report.checks().stream().filter(c -> c.property().equals(p) && c.owner().equals(owner)).toList();
+                if (results.isEmpty()) {
+                    problems.add(p + " [" + owner + "] missing from the oracle report of this recording");
+                    continue;
+                }
+                Integer n = trigger == null ? null : CatalogCoverage.ownerOccurrences(trigger, owner, route, natives, expected);
+                for (Check c : results) {
+                    CatalogCoverage.Judged j = CatalogCoverage.judge(catalog, new CatalogCoverage.Obligation(p, owner, null, List.of(c)), c, honest, trigger, n);
+                    if (j.verdict() == CatalogCoverage.Verdict.ESTABLISHED) {
+                        established++;
+                    }
+                    else if (j.verdict() != CatalogCoverage.Verdict.ABSENT) {
+                        problems.add(p + " [" + owner + "] " + j.verdict() + ": " + j.reason());
+                    }
+                }
+            }
+            if (established == 0) {
+                problems.add(p + " is never established on this recording (no owner has an established result)");
+            }
+            summary.add(p + " " + established + "/" + owners.size());
         }
         return problems;
     }
@@ -209,18 +262,30 @@ class LiveScenarioTest {
         ArrayNode applicable = (ArrayNode) dropped.path("applicability").get(0).path("applicable");
         applicable.remove(applicable.size() - 1);
         assertThat(rosterProblems(dropped)).anyMatch(p -> p.contains("classified 0 times"));
+        // a live-observed behavior must name the canonical results that ran; and those must be established on its own recording
+        ObjectNode untested = read("results.json").deepCopy();
+        ((ObjectNode) untested.path("attempts").get(0).path("behaviors").get(0)).remove("canonical");
+        assertThat(resultProblems(roster, untested, work.resolve("d"))).anyMatch(p -> p.contains("live-observed without the canonical results"));
+        ObjectNode wrongCanonical = read("results.json").deepCopy();
+        for (JsonNode a : wrongCanonical.path("attempts")) {
+            if ("accept1-codex-commands-1".equals(a.path("id").asText())) {
+                ((ArrayNode) a.path("behaviors").get(1).path("canonical")).add("request.values");
+            }
+        }
+        assertThat(resultProblems(roster, wrongCanonical, work.resolve("e"))).anyMatch(p -> p.contains("accept1-codex-commands-1: LIVE-02: request.values is never established"));
         // the valid control holds
         assertThat(resultProblems(roster, read("results.json"), work.resolve("c"))).isEmpty();
     }
 
     @Test
-    void theScenarioCoverageIsGenerated() throws IOException {
+    void theScenarioCoverageIsGenerated(@TempDir Path work) throws IOException {
         JsonNode roster = read("roster.json");
         JsonNode results = read("results.json");
         List<Map<String, Object>> rows = new ArrayList<>();
         StringBuilder md = new StringBuilder("# Live scenario coverage\n\nGenerated by `LiveScenarioTest` from `ocsf/live-scenarios/roster.json` and `results.json`; do not edit. ")
                 .append("Per route and behavior: live-observed (a live attempt's raw predicates hold on its committed sanitized recording), synthetic-only or replay-only, ")
-                .append("attempted-not-triggered, blocked, not-run, or not applicable with its basis. One run can cover several behaviors; each is counted once per attempt.\n\n");
+                .append("attempted-not-triggered, blocked, not-run, or not applicable with its basis. One run can cover several behaviors; each is counted once per attempt. ")
+                .append("Each observed attempt lists the canonical results that ran on its own recording (oracle properties judged as the coverage summary judges them: established owners of all owners).\n\n");
         md.append("| Route | Behavior | Applicability | State | Attempts |\n|---|---|---|---|---|\n");
         for (JsonNode a : roster.path("applicability")) {
             String route = a.path("route").asText();
@@ -243,7 +308,14 @@ class LiveScenarioTest {
                         if (id.equals(b.path("behavior").asText())) {
                             String status = b.path("status").asText();
                             byClass.computeIfAbsent(status, k -> new TreeSet<>()).add(at.path("evidence_class").asText());
-                            attempts.add(at.path("id").asText() + " (" + at.path("evidence_class").asText() + ", " + status + ")");
+                            List<String> canonical = new ArrayList<>();
+                            if (!b.path("canonical").isEmpty()) {
+                                String fixture = at.path("fixture").asText();
+                                Path copy = OcsfFixtures.copy(fixture, work.resolve(at.path("id").asText() + "-" + id));
+                                canonical(b.path("canonical"), copy, route(fixture, route, copy), canonical);
+                            }
+                            attempts.add(at.path("id").asText() + " (" + at.path("evidence_class").asText() + ", " + status
+                                    + (canonical.isEmpty() ? "" : "; canonical results on this recording, established/owners: " + String.join(", ", canonical)) + ")");
                         }
                     }
                 }
