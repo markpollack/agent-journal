@@ -197,8 +197,8 @@ class RequirementsAccountingIT {
                 junit("CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted", "labelled synthetic Codex stream"),
                 junit("OcsfOracleFixtureTest#sanitizedClaudeStreamWithChildCoreIsJudgedPerCoreWithoutDefect", "sanitized real 2.1.299 stream"),
                 note("not claimed (not observed on any tested route): media/multimodal blocks, redacted or encrypted reasoning, an interactively answered permission prompt (the bidirectional stream-json route), Codex sub-agents, Codex permission decisions, a live open request at interruption")));
-        CRITERIA.put("UC5-AC8", List.of(junit("RequirementsRosterTest#everyRuleHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedRoster", "42 rules, strict"),
-                junit("RequirementsRosterTest#everyCriterionHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedCounts", "58 criteria, strict"),
+        CRITERIA.put("UC5-AC8", List.of(junit("RequirementsRosterTest#everyRuleHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedRoster", "46 rules, strict"),
+                junit("RequirementsRosterTest#everyCriterionHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedCounts", "62 criteria, strict"),
                 junit("NativeRequirementTest#everyNativeRfcSpecificationCarriesTheCompleteStatementAndThePromptRendersIt", "complete statements (Agent Judge 0.19.0)")));
         CRITERIA.put("UC5-AC9", List.of(oracle("UC5-AC9", "reporter controls computed on the real reports")));
         CRITERIA.put("UC5-AC10", List.of(separate("mutation sensitivity is measured by the pit profiles of both modules (threshold 70%, mutators and targets unchanged) in detached worktrees of the delivered revision, not in this build; killed, survived and uncovered counts are reported apart in the return")));
@@ -234,6 +234,19 @@ class RequirementsAccountingIT {
                 junit("DuplicateMemberAddressingTest#theWholeOracleAcceptsTheDottedLiteralLineOnlyAsAnOpaqueRecord", "a written package judged by the whole oracle; canonical events repeat no member"),
                 junit("CodexDuplicateMemberProfileTest#onlyTheExactDeclaredLocationStatesARequestAndEveryRepeatHasItsExactLocation", addressing + ", oracle profile"),
                 junit("CodexDuplicateMemberProfileTest#rootMembersLiterallyNamedItemIdAreNotTheDeclaredForm", "the review's form and the root pair alone, oracle profile")));
+        String examples = "reviewed examples (live and labelled synthetic), writer side";
+        String profiled = "reviewed examples, oracle profile side";
+        CRITERIA.put("UC5-AC23", List.of(junit("SemanticExampleTest#equivalentClaudeAndCodexUsageNormalizeToTheSameTranches", "the decision's equal-scope pair, read back from both packages"),
+                junit("SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes", examples + " (usage tranches, cache-write unavailable)"),
+                junit("SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects", profiled),
+                junit("CodexExecStreamTest#anOffByOneUsageValueOrAMissingComponentIsAUsageValueDefect", "an off-by-one uncached tranche is a value defect")));
+        CRITERIA.put("UC5-AC24", List.of(junit("SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes", examples + " (started stages, completed-only, MCP built-in names, families)"),
+                junit("SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects", profiled),
+                junit("PackageReaderTest#aPackageWrittenWithExtension050StillReadsAndShowsOnlyTheRevisedMeanings", "a 0.5.0 package's Requested stage is a defect under the revised reading")));
+        CRITERIA.put("UC5-AC25", List.of(junit("CodexStreamMapperTest#equalItemIdsOfTwoInvocationsAreTwoItemsOfTheirOwnNamespaces", "labelled synthetic item_0 in two invocations")));
+        CRITERIA.put("UC5-AC26", List.of(junit("SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes", examples + " (reasoning summary and answer)"),
+                junit("SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects", profiled),
+                junit("LiveFixtureFeaturesTest#theCodexRecordingExhibitsOperationsFailureRepetitionAndUsage", "live Codex content items without response ids")));
     }
 
     /** Rule to the criteria and direct checks whose conjunction establishes its full obligation. */
@@ -291,6 +304,10 @@ class RequirementsAccountingIT {
         RULES.put("RULE-41", new RuleEvidence(List.of("UC5-AC17", "UC5-AC18"), List.of(), "the digest boundary is the catalog's semantic_claims.digest_boundary"));
         RULES.put("RULE-42", new RuleEvidence(List.of("UC5-AC22"), List.of(junit("CodexStreamMapperTest#onlyTheDeclaredWebSearchDuplicateIsInterpretedAndEveryOtherDuplicateStaysOpaque", "declared form retained verbatim, strict parsing unchanged")),
                 "a pointer locates a value; it establishes no meaning or ownership join"));
+        RULES.put("RULE-43", new RuleEvidence(List.of("UC5-AC23"), List.of(), "tranche meanings are the extension's definitions; their claims await the managing reviewer's binding"));
+        RULES.put("RULE-44", new RuleEvidence(List.of("UC5-AC25", "UC5-AC26"), List.of(), ""));
+        RULES.put("RULE-45", new RuleEvidence(List.of("UC5-AC24"), List.of(), ""));
+        RULES.put("RULE-46", new RuleEvidence(List.of("UC5-AC26"), List.of(), ""));
     }
 
     /** The §4 corruption-control roster: each control must have run and passed in this build (positive controls live beside them in the same tests). */

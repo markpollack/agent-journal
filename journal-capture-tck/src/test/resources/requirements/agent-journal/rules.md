@@ -234,6 +234,26 @@ Tests: `SemanticClaimTest` (the digest boundary: changed meaning refused, added 
 **Reason:** A dotted path cannot tell the member `item.id` of the root from the member `id` of the root's `item`, and a pointer alone cannot tell repeated members of one object apart; a repeat at any other location, or one whose name only spells the declared path, must stay an opaque record with no interpreted fact. A pointer establishes a location, not a meaning or an ownership join.
 Tests: `DuplicateMemberAddressingTest` (writer), `CodexDuplicateMemberProfileTest` (oracle profile), `CodexStreamMapperTest#onlyTheDeclaredWebSearchDuplicateIsInterpretedAndEveryOtherDuplicateStaysOpaque`.
 
+### RULE-43
+**MUST** state reported token usage in canonical tranches whose meaning is the same on every source: uncached input (excluding cache reads and cache writes), cache reads, cache writes with any reported retention or pricing tiers as parts of the writes, and output with the stated relation of its reasoning part; **MUST** keep the native usage object exactly, derive a tranche only by a declared rule whose arithmetic and operands the source establishes, otherwise state it unavailable rather than zero or a guess, and state aggregation (scope total or cumulative snapshot) separately from scope and finality.
+**Reason:** A field spelled the same with a different meaning per vendor is not normalized, and a convenient total hides tranches that are priced differently; an unproven formula that balances, or a missing component taken as zero, invents a measurement. Cumulative snapshots summed with each other or read as a unit's consumption double count.
+Tests: `SemanticExampleTest#equivalentClaudeAndCodexUsageNormalizeToTheSameTranches`, `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`, `CodexExecStreamTest#anOffByOneUsageValueOrAMissingComponentIsAUsageValueDefect`.
+
+### RULE-44
+**MUST NOT** present a source-local item identifier as a model-facing call identifier or a provider's response identifier, and **MUST** state its identity basis and treat it as unique only within its source artifact and Journal invocation; **MUST NOT** require, derive or fabricate a response identity in order to record content the source reports without one.
+**Reason:** An id a CLI's stream mints for its own items cannot be joined with the model's call ids, and equal ids in two invocations name two items; a content item recorded under an invented response id would count or merge model invocations the source never reported.
+Tests: `CodexStreamMapperTest#equalItemIdsOfTwoInvocationsAreTwoItemsOfTheirOwnNamespaces`, `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`.
+
+### RULE-45
+**MUST** record a tool activity at the lifecycle stage the source reports, so that a started invocation is not recorded as the model's request and a result does not imply an observed start; **MUST** record a tool name only where the source reports one, the source's family or item type separately, and classify a tool by a declared family table or a reviewed binding of its exact namespace and name, never by a bare name that coincides with another namespace's tool.
+**Reason:** An execution observation is not evidence of the model's original request, its arguments, a response owner or a permission decision; an item family is not a tool name; and an MCP tool named like a built-in tool is another tool, so a name table across namespaces assigns a wrong kind that shape validation accepts.
+Tests: `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`, `PackageReaderTest#aPackageWrittenWithExtension050StillReadsAndShowsOnlyTheRevisedMeanings`.
+
+### RULE-46
+**MUST** keep a reasoning summary distinct from full and from redacted reasoning, preserve each content observation with its own source identity and order, and **MUST NOT** count or merge content observations into model invocations or responses the source does not report.
+**Reason:** A summary is not the model's reasoning, and two observations in one stream are neither two known invocations nor one inferred invocation; their relation stays unknown until a source reports it.
+Tests: `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`, `LiveFixtureFeaturesTest#theCodexRecordingExhibitsOperationsFailureRepetitionAndUsage`.
+
 ## Change log
 
 2026-10-21, consolidated event-file work order (REQ-1 amendment). Retained identifiers with changed
@@ -263,4 +283,7 @@ needs a new revision and approval; preservation and labelled candidate testing c
 decision the Project Owner explicitly delegated to an identified reviewer for a decision pass, recorded under that
 delegated identity and not as the Owner's direct review of each digest. Added RULE-42 (exact RFC 6901 addressing; a
 repeated member is recorded at its containing object's exact location and occurrence and interpreted only in a declared
-form there; canonical events repeat no member). No rule removed; `RequirementsRosterTest` pins 42 rules.
+form there; canonical events repeat no member), RULE-43 (canonical usage tranches; derivation only when the source
+establishes it; aggregation apart from scope and finality), RULE-44 (source-local identity, never a call or response
+identity), RULE-45 (the reported lifecycle stage; name, family and classification apart) and RULE-46 (reasoning form;
+content observations are not invocations). No rule removed; `RequirementsRosterTest` pins 46 rules.

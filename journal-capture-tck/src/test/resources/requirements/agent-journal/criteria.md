@@ -312,6 +312,26 @@ Rule: RULE-38. Tests: `SemanticClaimTest#aProposedClaimWithPassingChecksIsACandi
 If a native record repeats a member anywhere other than the declared location, or a member's name only spells the declared path with dots, slashes or tildes, then the writer and the oracle profile shall each retain the record as an opaque record, state no interpreted fact from it and report the repeat at its exact location.
 Rule: RULE-42. Tests: `DuplicateMemberAddressingTest#onlyTheExactDeclaredLocationIsInterpretedAndEveryRepeatHasItsExactLocation`, `DuplicateMemberAddressingTest#aRootMemberLiterallyNamedItemIdIsNotTheDeclaredForm`, `DuplicateMemberAddressingTest#theWholeOracleAcceptsTheDottedLiteralLineOnlyAsAnOpaqueRecord`, `CodexDuplicateMemberProfileTest#onlyTheExactDeclaredLocationStatesARequestAndEveryRepeatHasItsExactLocation`, `CodexDuplicateMemberProfileTest#rootMembersLiterallyNamedItemIdAreNotTheDeclaredForm`.
 
+### UC5-AC23: State equal usage facts as equal tranches and an unproven tranche as unavailable
+
+When two sources report the same usage facts in different representations, the writer and the oracle profile shall state equal canonical tranches with each component's basis, and if a source's reported components do not establish a tranche, then they shall state it unavailable and write no value for it.
+Rule: RULE-43. Tests: `SemanticExampleTest#equivalentClaudeAndCodexUsageNormalizeToTheSameTranches`, `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`, `CodexExecStreamTest#anOffByOneUsageValueOrAMissingComponentIsAUsageValueDefect`.
+
+### UC5-AC24: Keep the reported stage, name, family and namespace of a tool activity
+
+If a source reports a tool invocation as started, or only its completion, or an MCP tool whose name equals a built-in tool's, then the writer and the oracle profile shall record only the reported stages, the reported name and family apart, and the kind of a reviewed binding or Other, never a model request or a built-in kind.
+Rule: RULE-45. Tests: `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`, `PackageReaderTest#aPackageWrittenWithExtension050StillReadsAndShowsOnlyTheRevisedMeanings`.
+
+### UC5-AC25: Scope a stream-local identifier to its invocation and artifact
+
+When two invocations of one run report the same stream-local item identifier, the writer shall record two items, each with its stream-local identity basis and its own invocation and artifact, and shall write neither as a call or response identity.
+Rule: RULE-44. Tests: `CodexStreamMapperTest#equalItemIdsOfTwoInvocationsAreTwoItemsOfTheirOwnNamespaces`.
+
+### UC5-AC26: Record a reasoning summary and an answer as two observations of unidentified responses
+
+When a source reports a reasoning summary and an answer as separate content items without the response they belong to, the writer and the oracle profile shall record two content observations in source order, the summary as a summary, and no response identity on either.
+Rule: RULE-46, RULE-44. Tests: `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`, `LiveFixtureFeaturesTest#theCodexRecordingExhibitsOperationsFailureRepetitionAndUsage`.
+
 ## Change log
 
 2026-10-21, consolidated event-file work order (REQ-1 amendment). Retained identifiers with changed
@@ -338,4 +358,7 @@ criterion removed; `RequirementsRosterTest` pins the per-use-case counts 7, 6, 1
 
 2026-10-22, delegated semantic closure (SEM-CLOSE): added UC5-AC22 (a repeated member is interpreted only at its
 declared exact location; a dotted, slash or tilde look-alike stays opaque in the writer and the oracle profile). No
-criterion removed; `RequirementsRosterTest` pins the per-use-case counts 7, 6, 15, 8 and 22.
+criterion removed; `RequirementsRosterTest` pins the per-use-case counts 7, 6, 15, 8 and 22. Then added UC5-AC23 to
+UC5-AC26 (equal usage facts as equal tranches, an unproven tranche unavailable; the reported stage, name, family and
+namespace of a tool activity; a stream-local id scoped to its invocation and artifact; a reasoning summary and an
+answer as two observations of unidentified responses); the counts are 7, 6, 15, 8 and 26.
