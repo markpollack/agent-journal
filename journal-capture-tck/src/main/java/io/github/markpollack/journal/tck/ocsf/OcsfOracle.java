@@ -901,6 +901,13 @@ public final class OcsfOracle {
         return problems;
     }
 
+    /** A value the profile may state: compared when stated; present on the event without a statement is a defect too. */
+    private static void stated(String what, Object expected, Object actual, List<String> problems) {
+        if (expected == null ? actual != null : !expected.equals(actual)) {
+            problems.add(what + " " + actual + " != " + (expected == null ? "absent (the source profile states none)" : expected));
+        }
+    }
+
     private void populationCheck(String property, String owner, List<String> expected, List<String> actual) {
         List<String> problems = population(expected, actual);
         Outcome outcome = problems.isEmpty() ? (expected.isEmpty() ? Outcome.NOT_APPLICABLE : Outcome.VERIFIED) : Outcome.DEFECTIVE;
@@ -978,6 +985,8 @@ public final class OcsfOracle {
             if (r.reportedState() != null && !r.reportedState().equals(e.text("reported_state"))) {
                 problems.add(what + " reported_state " + e.text("reported_state") + " != " + r.reportedState());
             }
+            stated(what + " tool_namespace", r.namespace(), e.text("tool_namespace"), problems);
+            stated(what + " identity_basis_id", r.identityBasisId(), e.integer("identity_basis_id"), problems);
             Integer kind = e.integer("tool_kind_id");
             Integer expectedKind = toolKind(core, e.contractUid(), r.name());
             if (expectedKind != null && !expectedKind.equals(kind)) {
@@ -1073,6 +1082,7 @@ public final class OcsfOracle {
                     problems.add(what + " reported_state " + e.text("reported_state") + " != " + r.reportedState());
                 }
             }
+            stated(what + " identity_basis_id", r.identityBasisId(), e.integer("identity_basis_id"), problems);
             int expectedStatus = r.isError() instanceof Json.JBool b ? (b.value() ? 2 : 1) : 0;
             int expectedBasis = r.isError() instanceof Json.JBool ? 1 : 3;
             if (!Objects.equals(e.integer("status_id"), expectedStatus) || !Objects.equals(e.integer("status_basis_id"), expectedBasis)) {
@@ -1139,6 +1149,7 @@ public final class OcsfOracle {
                     problems.add(what + " block " + i + " block_type " + SchemaCatalog.text(b, "block_type") + " != " + SchemaCatalog.text(native_, "type"));
                 }
                 compare(what + " block " + i + " data", native_, b.member("data"), problems, representation);
+                stated(what + " block " + i + " reasoning_form_id", r.reasoningForm(), Event.integer(b.member("reasoning_form_id")), problems);
             }
         }
         valueCheck("response.values", owner, examined, problems, representation);
@@ -1235,6 +1246,7 @@ public final class OcsfOracle {
                 if (data == null) {
                     problems.add(key + " native usage object (data) not retained");
                 }
+                stated(key + " measurement_status_id", u.measurementStatusId(), Event.integer(o.member("measurement_status_id")), problems);
                 String provider = SchemaCatalog.text(o.member("model_ref"), "provider_kind");
                 if (u.provider() != null && !u.provider().equals(provider)) {
                     problems.add(key + " model_ref.provider_kind " + provider + " != reported " + u.provider());
@@ -1426,6 +1438,8 @@ public final class OcsfOracle {
             if (!Objects.equals(op.reportedState(), SchemaCatalog.text(o, "reported_state"))) {
                 problems.add(what + " reported_state " + SchemaCatalog.text(o, "reported_state") + " != " + op.reportedState());
             }
+            stated(what + " command_line", op.commandLine(), SchemaCatalog.text(o, "command_line"), problems);
+            stated(what + " identity_basis_id", op.identityBasisId(), Event.integer(o.member("identity_basis_id")), problems);
             if (!Objects.equals(e.integer("status_id"), op.statusId())) {
                 problems.add(what + " status_id " + e.integer("status_id") + " != " + op.statusId());
             }

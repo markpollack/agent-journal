@@ -70,7 +70,7 @@
           "basis": "item_completed AgentMessage and response_item message repeat the full message with one id; snapshots must agree"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
           "mode": "SNAPSHOT",
           "identity_scope": "artifact",
           "basis": "item ids are stream-scoped and do not occur in the rollout (R13-08)"

@@ -69,13 +69,14 @@ class PinsTest {
     void mappingContractsDeclareEveryRuleTheMappersExecute() throws Exception {
         MappingContracts c = new MappingContracts();
         for (String name : List.of(ClaudeStreamMapper.CONTRACT, ClaudeTranscriptMapper.CONTRACT, CodexRolloutMapper.CONTRACT, CodexStreamMapper.CONTRACT, OpaqueTextMapper.CONTRACT)) {
-            assertThat(c.uid(name)).endsWith("/0.2.0-prototype");
+            // the Codex exec-stream contract is the SEM-1 candidate (0.3.0); the others are unchanged
+            assertThat(c.uid(name)).endsWith(CodexStreamMapper.CONTRACT.equals(name) ? "/0.3.0-prototype" : "/0.2.0-prototype");
             c.rule(name, "common.opaque->source_record");
             c.rule(name, "common.mapper_exception->source_record");
         }
         // every rule id string literal used by a mapper class is declared in its contract
         for (Map.Entry<String, String> m : Map.of("ClaudeStreamMapper.java", ClaudeStreamMapper.CONTRACT, "ClaudeTranscriptMapper.java", ClaudeTranscriptMapper.CONTRACT,
-                "CodexRolloutMapper.java", CodexRolloutMapper.CONTRACT, "CodexStreamMapper.java", CodexStreamMapper.CONTRACT).entrySet()) {
+                "CodexRolloutMapper.java", CodexRolloutMapper.CONTRACT, "CodexStreamMapper.java", CodexStreamMapper.CONTRACT, "CodexItems.java", CodexStreamMapper.CONTRACT).entrySet()) {
             String src = Files.readString(Path.of("src/main/java/io/github/markpollack/journal/ocsf/writer/" + m.getKey()), StandardCharsets.UTF_8);
             java.util.regex.Matcher mt = java.util.regex.Pattern.compile("\"([a-z]+\\.[a-z_.A-Z]+->[a-z_.]+)\"").matcher(src);
             int found = 0;

@@ -116,7 +116,7 @@ class LiveFixtureFeaturesTest {
         assertThat(prompt.text("content_blocks")).isNull();
         assertThat(prompt.elements("content_blocks").get(0).member("text").text()).startsWith("Read the file /work/beta.txt and report its content back");
         assertThat(prompt.get("turn_uid")).as("the stream names no turn id; none is invented").isNull();
-        assertThat(prompt.text("unmapped", "rule_id")).isEqualTo("claude.stream.user.prompt->prompt_turn.submitted");
+        assertThat(prompt.text("journal", "rule_uid")).isEqualTo("claude.stream.user.prompt->prompt_turn.submitted");
     }
 
     /** Permission: an observed rejection at tool-call scope and the run-scope denial that names the same call; the Write before it was accepted by rule. */
@@ -199,7 +199,9 @@ class LiveFixtureFeaturesTest {
         Json usage = turn.elements("usage_observations").get(0);
         assertThat(usage.member("input_tokens").scalarText()).isEqualTo("79261");
         assertThat(usage.member("reasoning_tokens").scalarText()).isEqualTo("18");
-        assertThat(usage.member("scope").text()).isEqualTo("Prompt turn");
+        // the thread's cumulative usage at turn completion (SEM-1 candidate reading of contract 0.3.0; pending Owner approval)
+        assertThat(usage.member("scope").text()).isEqualTo("Session");
+        assertThat(usage.member("measurement_status").text()).isEqualTo("Measured");
         assertThat(turn.get("cost_observation")).as("the exec stream reports no cost; none is invented").isNull();
         assertThat(report.outcome("identity.values", MAIN)).isEqualTo(Outcome.VERIFIED);
         assertThat(p.events("model_response", 2)).hasSize(2);

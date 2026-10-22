@@ -1,0 +1,53 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "codex-command-line-live",
+  "concept": "observed-operations",
+  "description": "A Codex CLI 0.160.1 command execution (live recording) reports its command as one string (CommandExecutionItem.command). Journal keeps that exact string as operation.command_line and never parses it into argv: shell quoting and the wrapping /bin/bash -lc are the source's text, not a Journal interpretation. The operation is a standalone observation: the stream reports no wrapping call id.",
+  "authored_from": [
+    "codex-exec-0.160.1-emitter-items",
+    "codex-exec-0.160.1-types"
+  ],
+  "native": {
+    "evidence_kind": "live",
+    "profile": "codex_stream",
+    "compatibility_entry": "codex-cli/exec-json-stream/0.160.1",
+    "fixture": "codex-live-0.160.1-commands",
+    "artifact": "stream.jsonl",
+    "sha256": "342231e485af173418b3f380ad37333e8ae5494d916d669883446260f8cf55e1"
+  },
+  "expected": [
+    {
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 3,
+      "values": {
+        "/tool_operation/command_line": "/bin/bash -lc 'printf alpha > alpha.txt'",
+        "/tool_operation/uid": "item_1",
+        "/tool_operation/identity_basis_id": 2,
+        "/tool_operation/attribution/outcome_id": 3,
+        "/status_id": 0
+      },
+      "absent": [
+        "/tool_operation/argv",
+        "/tool_call_uid"
+      ]
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "parsed-argv",
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 3,
+      "values": {
+        "/tool_operation/argv": [
+          "/bin/bash",
+          "-lc",
+          "printf alpha > alpha.txt"
+        ]
+      },
+      "why": "Splitting the string reconstructs a shell's parse the source did not report."
+    }
+  ]
+}

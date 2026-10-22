@@ -1,0 +1,59 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "codex-usage-default-zero-synthetic",
+  "concept": "usage-scope-finality-and-repeats",
+  "description": "LABELLED SYNTHETIC, source-grounded: a turn.completed whose components are all zero. The pinned emitter writes Usage::default() (all zeros) when no ThreadTokenUsageUpdated arrived (the vendor test turn_completion_recovers_final_message_from_turn_items emits exactly that), so a measured zero is not established: the components are preserved and the measurement status is Possibly default.",
+  "authored_from": [
+    "codex-exec-0.160.1-emitter-usage",
+    "codex-exec-0.160.1-emitter-tests"
+  ],
+  "native": {
+    "evidence_kind": "synthetic",
+    "profile": "codex_stream",
+    "compatibility_entry": "codex-cli/exec-json-stream/0.160.1",
+    "run_spec_fixture": "syn-codex-exec-families-0.160.1",
+    "artifact": "stream.jsonl",
+    "lines": [
+      "{\"type\":\"thread.started\",\"thread_id\":\"00000000-0000-4000-8000-00000000fa01\"}",
+      "{\"type\":\"turn.started\"}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"agent_message\",\"text\":\"SYNTHETIC: final answer\"}}",
+      "{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":0,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":0,\"reasoning_output_tokens\":0}}"
+    ]
+  },
+  "expected": [
+    {
+      "record": 4,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/scope_id": 5,
+        "/usage_observations/0/measurement_status_id": 2,
+        "/usage_observations/0/input_tokens": 0,
+        "/usage_observations/0/output_tokens": 0
+      }
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "measured-zero",
+      "record": 4,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/measurement_status_id": 1
+      },
+      "why": "All zeros is also the emitter's default without an update; claiming a measurement would turn missing usage into a zero."
+    },
+    {
+      "id": "dropped-components",
+      "record": 4,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/input_tokens": null
+      },
+      "why": "The source reported the components; the ambiguity is stated, the values are not discarded."
+    }
+  ]
+}

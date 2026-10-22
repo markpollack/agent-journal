@@ -7,7 +7,7 @@
   "codex-cli/exec-json-stream/0.160.1"
  ],
  "specification": "schema/vendor/codex-cli/exec-json-stream/0.160.1.json",
- "contract": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
+ "contract": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
  "contract_file": "codex-cli-0.160.1-exec-stream",
  "evidence_fixtures": [
   "codex-live-0.160.1-collab-wait",
@@ -31,7 +31,7 @@
    "disposition": "normalized",
    "destination": [
     "*.class_uid",
-    "*.unmapped",
+    "*.journal.rule_uid",
     "source_record.record_type"
    ],
    "rule": "record_discriminator",
@@ -250,25 +250,34 @@
   {
    "variant": "item.started/command_execution",
    "path": "item.command",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "operation.values"
    },
    "tests": [
-    "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "the command line as one string, kept in tool_operation.data and the whole record; not split into argv (the stream gives no argv)"
+   "note": "the reported command string exactly, never parsed into argv (SEM-1 candidate)",
+   "destination": [
+    "tool_call.tool_operation.command_line"
+   ],
+   "rule": "codex.stream.command_execution->tool_call.operation"
   },
   {
    "variant": "item.completed/command_execution",
    "path": "item.command",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "operation.values"
    },
    "tests": [
-    "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
-   ]
+    "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+   ],
+   "destination": [
+    "tool_call.tool_operation.command_line"
+   ],
+   "rule": "codex.stream.command_execution->tool_call.operation",
+   "note": "the reported command string exactly, never parsed into argv (SEM-1 candidate)"
   },
   {
    "variant": "turn.completed",
@@ -421,46 +430,53 @@
   {
    "variant": "item.completed/reasoning",
    "path": "item.id",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "model_response.response_uid"
+   ],
+   "rule": "codex.stream.reasoning->model_response",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "response.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "note": "stream-local item id",
    "vendor_declared": true
   },
   {
    "variant": "item.completed/reasoning",
    "path": "item.text",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "model_response.content_blocks[].text",
+    "model_response.content_blocks[].data"
+   ],
+   "rule": "codex.stream.reasoning->model_response",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "response.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): the reasoning summary parts joined with newlines; raw reasoning content is not emitted; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "note": "the reasoning summary (summary parts joined by newlines); reasoning_form_id 2 Summary",
    "vendor_declared": true
   },
   {
    "variant": "item.completed/file_change",
    "path": "item.id",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_call_uid"
+   ],
+   "rule": "codex.stream.file_change->tool_call.result",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "result.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "note": "stream-local item id (identity_basis_id 2), never the model-facing call id",
    "vendor_declared": true
   },
   {
@@ -496,31 +512,36 @@
   {
    "variant": "item.completed/file_change",
    "path": "item.status",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.reported_state",
+    "tool_call.status_id"
+   ],
+   "rule": "codex.stream.file_change->tool_call.result",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "result.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): patch status; a declined patch is reported as failed; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "note": "the processor reports a declined patch as failed",
    "vendor_declared": true
   },
   {
    "variant": "item.started/file_change",
    "path": "item.id",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_call_uid"
+   ],
+   "rule": "codex.stream.file_change->tool_call.requested",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "request.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "note": "stream-local item id (identity_basis_id 2), never the model-facing call id",
    "vendor_declared": true
   },
   {
@@ -556,11 +577,13 @@
   {
    "variant": "item.started/file_change",
    "path": "item.status",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.reported_state"
+   ],
+   "rule": "codex.stream.file_change->tool_call.requested",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "request.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
@@ -571,26 +594,30 @@
   {
    "variant": "item.started/mcp_tool_call",
    "path": "item.id",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_call_uid"
+   ],
+   "rule": "codex.stream.mcp_tool_call->tool_call.requested",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "request.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "note": "stream-local item id (identity_basis_id 2), never the model-facing call id",
    "vendor_declared": true
   },
   {
    "variant": "item.started/mcp_tool_call",
    "path": "item.server",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_namespace"
+   ],
+   "rule": "codex.stream.mcp_tool_call->tool_call.requested",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "request.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
@@ -601,11 +628,13 @@
   {
    "variant": "item.started/mcp_tool_call",
    "path": "item.tool",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_name"
+   ],
+   "rule": "codex.stream.mcp_tool_call->tool_call.requested",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "request.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
@@ -617,16 +646,18 @@
    "variant": "item.started/mcp_tool_call",
    "path": "item.arguments",
    "subtree": true,
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.arguments"
+   ],
+   "rule": "codex.stream.mcp_tool_call->tool_call.requested",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "request.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): structured tool arguments (null when none); retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "note": "arbitrary MCP arguments, exactly",
    "vendor_declared": true
   },
   {
@@ -695,11 +726,13 @@
   {
    "variant": "item.started/mcp_tool_call",
    "path": "item.status",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.reported_state"
+   ],
+   "rule": "codex.stream.mcp_tool_call->tool_call.requested",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "request.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
@@ -710,16 +743,18 @@
   {
    "variant": "item.completed/mcp_tool_call",
    "path": "item.id",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_call_uid"
+   ],
+   "rule": "codex.stream.mcp_tool_call->tool_call.result",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "result.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "note": "stream-local item id (identity_basis_id 2), never the model-facing call id",
    "vendor_declared": true
   },
   {
@@ -772,16 +807,18 @@
    "variant": "item.completed/mcp_tool_call",
    "path": "item.result.content",
    "subtree": true,
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_result.data"
+   ],
+   "rule": "codex.stream.mcp_tool_call->tool_call.result",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "result.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): MCP content blocks returned to the model; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "note": "the MCP result content exactly",
    "vendor_declared": true
   },
   {
@@ -804,16 +841,18 @@
    "variant": "item.completed/mcp_tool_call",
    "path": "item.result.structured_content",
    "subtree": true,
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_result.structured_result"
+   ],
+   "rule": "codex.stream.mcp_tool_call->tool_call.result",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "result.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): MCP structured result; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "note": "when not null",
    "vendor_declared": true
   },
   {
@@ -834,41 +873,49 @@
   {
    "variant": "item.completed/mcp_tool_call",
    "path": "item.status",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.reported_state",
+    "tool_call.status_id",
+    "tool_call.tool_result.error_reported"
+   ],
+   "rule": "codex.stream.mcp_tool_call->tool_call.result",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "result.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): call status; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "note": "completed and failed are the reported outcome (the MCP isError flag arrives as failed)",
    "vendor_declared": true
   },
   {
    "variant": "item.started/collab_tool_call",
    "path": "item.id",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_call_uid"
+   ],
+   "rule": "codex.stream.collab_tool_call->tool_call.requested",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "request.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "note": "stream-local item id (identity_basis_id 2), never the model-facing call id",
    "vendor_declared": true
   },
   {
    "variant": "item.started/collab_tool_call",
    "path": "item.tool",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_name"
+   ],
+   "rule": "codex.stream.collab_tool_call->tool_call.requested",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "request.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
@@ -940,11 +987,13 @@
   {
    "variant": "item.started/collab_tool_call",
    "path": "item.status",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.reported_state"
+   ],
+   "rule": "codex.stream.collab_tool_call->tool_call.requested",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "request.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
@@ -955,16 +1004,18 @@
   {
    "variant": "item.completed/collab_tool_call",
    "path": "item.id",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_call_uid"
+   ],
+   "rule": "codex.stream.collab_tool_call->tool_call.result",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "result.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
+   "note": "stream-local item id (identity_basis_id 2), never the model-facing call id",
    "vendor_declared": true
   },
   {
@@ -1046,11 +1097,14 @@
   {
    "variant": "item.completed/collab_tool_call",
    "path": "item.status",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.reported_state",
+    "tool_call.status_id"
+   ],
+   "rule": "codex.stream.collab_tool_call->tool_call.result",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "result.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
@@ -1061,22 +1115,24 @@
   {
    "variant": "item.started/web_search",
    "path": "item.id",
-   "disposition": "unresolved",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_call_uid"
+   ],
+   "rule": "codex.stream.web_search->tool_call.requested",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "request.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "vendor-declared (Codex 0.160.1 exec_events.rs); the record is not parsed: the duplicate id member makes the reader refuse to parse the record; its bytes are retained verbatim, no field is readable (defect to resolve); open question: accept duplicate members or retain opaque",
+   "note": "stream-local item id (identity_basis_id 2), never the model-facing call id; the record repeats item.id: the first (exec item id) is normalized, the second (the search item's own id) is kept verbatim in raw_data",
    "vendor_declared": true
   },
   {
    "variant": "item.started/web_search",
    "path": "item.query",
-   "disposition": "unresolved",
+   "disposition": "retained",
    "destination": [],
    "rule": null,
    "evidence": {
@@ -1085,29 +1141,31 @@
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "vendor-declared (Codex 0.160.1 exec_events.rs); the record is not parsed: the duplicate id member makes the reader refuse to parse the record; its bytes are retained verbatim, no field is readable (defect to resolve); open question: accept duplicate members or retain opaque",
+   "note": "kept verbatim in the record's raw_data (the line repeats item.id, so it is retained as an opaque record beside the normalized tool call)",
    "vendor_declared": true
   },
   {
    "variant": "item.started/web_search",
    "path": "item.action",
-   "disposition": "unresolved",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.arguments"
+   ],
+   "rule": "codex.stream.web_search->tool_call.requested",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "request.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "vendor-declared (Codex 0.160.1 exec_events.rs); the record is not parsed: the duplicate id member makes the reader refuse to parse the record; its bytes are retained verbatim, no field is readable (defect to resolve); open question: accept duplicate members or retain opaque",
+   "note": "the search action exactly",
    "vendor_declared": true
   },
   {
    "variant": "item.started/web_search",
    "path": "item.results",
    "subtree": true,
-   "disposition": "unresolved",
+   "disposition": "retained",
    "destination": [],
    "rule": null,
    "evidence": {
@@ -1116,28 +1174,30 @@
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "vendor-declared (Codex 0.160.1 exec_events.rs); the record is not parsed: the duplicate id member makes the reader refuse to parse the record; its bytes are retained verbatim, no field is readable (defect to resolve); open question: accept duplicate members or retain opaque",
+   "note": "kept verbatim in the record's raw_data (the line repeats item.id, so it is retained as an opaque record beside the normalized tool call)",
    "vendor_declared": true
   },
   {
    "variant": "item.completed/web_search",
    "path": "item.id",
-   "disposition": "unresolved",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_call_uid"
+   ],
+   "rule": "codex.stream.web_search->tool_call.result",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "result.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "vendor-declared (Codex 0.160.1 exec_events.rs); the record is not parsed: the duplicate id member makes the reader refuse to parse the record; its bytes are retained verbatim, no field is readable (defect to resolve); open question: accept duplicate members or retain opaque",
+   "note": "stream-local item id (identity_basis_id 2), never the model-facing call id; the record repeats item.id: the first (exec item id) is normalized, the second (the search item's own id) is kept verbatim in raw_data",
    "vendor_declared": true
   },
   {
    "variant": "item.completed/web_search",
    "path": "item.query",
-   "disposition": "unresolved",
+   "disposition": "retained",
    "destination": [],
    "rule": null,
    "evidence": {
@@ -1146,13 +1206,13 @@
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "vendor-declared (Codex 0.160.1 exec_events.rs); the record is not parsed: the duplicate id member makes the reader refuse to parse the record; its bytes are retained verbatim, no field is readable (defect to resolve); open question: accept duplicate members or retain opaque",
+   "note": "kept verbatim in the record's raw_data (the line repeats item.id, so it is retained as an opaque record beside the normalized tool call)",
    "vendor_declared": true
   },
   {
    "variant": "item.completed/web_search",
    "path": "item.action",
-   "disposition": "unresolved",
+   "disposition": "retained",
    "destination": [],
    "rule": null,
    "evidence": {
@@ -1161,23 +1221,25 @@
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "vendor-declared (Codex 0.160.1 exec_events.rs); the record is not parsed: the duplicate id member makes the reader refuse to parse the record; its bytes are retained verbatim, no field is readable (defect to resolve); open question: accept duplicate members or retain opaque",
+   "note": "kept verbatim in the record's raw_data (the line repeats item.id, so it is retained as an opaque record beside the normalized tool call)",
    "vendor_declared": true
   },
   {
    "variant": "item.completed/web_search",
    "path": "item.results",
    "subtree": true,
-   "disposition": "unresolved",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_result.data"
+   ],
+   "rule": "codex.stream.web_search->tool_call.result",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "result.values"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
-   "note": "vendor-declared (Codex 0.160.1 exec_events.rs); the record is not parsed: the duplicate id member makes the reader refuse to parse the record; its bytes are retained verbatim, no field is readable (defect to resolve); open question: accept duplicate members or retain opaque",
+   "note": "the structured results exactly",
    "vendor_declared": true
   },
   {

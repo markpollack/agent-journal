@@ -76,7 +76,7 @@ class SemanticExampleTest {
             for (Jv counter : ex.member("counterexamples") == null ? List.<Jv>of() : ex.member("counterexamples").elements()) {
                 String cid = id + "#" + counter.member("id").text();
                 Jv exp = expectedFor(ex, counter);
-                if (exp == null || !rejects((Jv.Obj) exp.member("values"), (Jv.Obj) counter.member("values"))) {
+                if (exp == null || !rejects(exp, (Jv.Obj) counter.member("values"))) {
                     problems.add(cid + ": the counterexample is not rejected by the expected example (no differing pointer)");
                 }
                 Jv event = find(events, counter);
@@ -167,10 +167,21 @@ class SemanticExampleTest {
         return null;
     }
 
-    /** Whether the expected example takes a different value at some pointer the counterexample names. */
-    static boolean rejects(Jv.Obj expected, Jv.Obj counter) {
+    /**
+     * Whether the expected example takes a different value at some pointer the counterexample names, or states that
+     * pointer (or an enclosing one) absent.
+     */
+    static boolean rejects(Jv expected, Jv.Obj counter) {
+        Jv.Obj values = (Jv.Obj) expected.member("values");
+        List<String> absent = new ArrayList<>();
+        for (Jv a : expected.member("absent") == null ? List.<Jv>of() : expected.member("absent").elements()) {
+            absent.add(a.text());
+        }
         for (Map.Entry<String, Jv> v : counter.members().entrySet()) {
-            if (expected.members().containsKey(v.getKey()) && !same(v.getValue(), expected.members().get(v.getKey()))) {
+            if (values.members().containsKey(v.getKey()) && !same(v.getValue(), values.members().get(v.getKey()))) {
+                return true;
+            }
+            if (absent.stream().anyMatch(a -> v.getKey().equals(a) || v.getKey().startsWith(a + "/"))) {
                 return true;
             }
         }

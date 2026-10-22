@@ -25,15 +25,25 @@
       "values": {
         "/usage_observations/0/scope_id": 5,
         "/usage_observations/0/usage_status_id": 2,
+        "/usage_observations/0/measurement_status_id": 1,
         "/usage_observations/0/source_ref/record_index": 9,
         "/usage_observations/0/input_tokens": 63434,
         "/usage_observations/0/cache_read_tokens": 52352,
         "/usage_observations/0/cache_write_tokens": 0,
         "/usage_observations/0/output_tokens": 164,
         "/usage_observations/0/reasoning_tokens": 0,
-        "/usage_observations/0/data": {"input_tokens": 63434, "cached_input_tokens": 52352, "cache_write_input_tokens": 0, "output_tokens": 164, "reasoning_output_tokens": 0}
+        "/usage_observations/0/data": {
+          "input_tokens": 63434,
+          "cached_input_tokens": 52352,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 164,
+          "reasoning_output_tokens": 0
+        }
       },
-      "absent": ["/usage_observations/0/reported_total_tokens", "/usage_observations/1"]
+      "absent": [
+        "/usage_observations/0/reported_total_tokens",
+        "/usage_observations/1"
+      ]
     }
   ],
   "counterexamples": [
@@ -42,7 +52,9 @@
       "record": 9,
       "class": "prompt_turn",
       "activity_id": 2,
-      "values": {"/usage_observations/0/scope_id": 3},
+      "values": {
+        "/usage_observations/0/scope_id": 3
+      },
       "why": "Turn completion is when the emitter writes the thread's cumulative total; it is not evidence that the measurement covers only this turn. The components are equal under both readings; the scope is the meaning."
     }
   ]

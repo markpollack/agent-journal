@@ -1,11 +1,14 @@
 {
   "caption": "Operation",
-  "description": "A separately reported operation inside a tool call, with its own identity, observed outcome and attribution to a wrapping call.",
+  "description": "A separately reported operation with its own identity and observed outcome. Its attribution states whether the source establishes a wrapping tool call: an operation the source reports on its own is a standalone observation, attributed Unattributed at its reported scope, never given an invented owner.",
   "extends": "object",
   "name": "operation",
   "attributes": {
     "uid": {"description": "The operation's native identifier.", "requirement": "required"},
+    "identity_basis_id": {"requirement": "optional"},
+    "identity_basis": {"requirement": "optional"},
     "argv": {"requirement": "optional"},
+    "command_line": {"requirement": "optional"},
     "exit_code": {"requirement": "optional"},
     "reported_state": {"requirement": "optional"},
     "stdout": {"requirement": "optional"},

@@ -17,6 +17,8 @@
     "cache_write_tokens": {"requirement": "optional"},
     "reasoning_tokens": {"requirement": "optional"},
     "reported_total_tokens": {"requirement": "optional"},
+    "measurement_status_id": {"requirement": "optional"},
+    "measurement_status": {"requirement": "optional"},
     "data": {"description": "The native usage object exactly as reported.", "requirement": "required"}
   }
 }

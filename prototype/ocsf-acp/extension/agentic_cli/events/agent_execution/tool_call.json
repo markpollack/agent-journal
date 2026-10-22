@@ -51,9 +51,22 @@
       "group": "primary",
       "requirement": "recommended"
     },
+    "identity_basis_id": {
+      "description": "What kind of identifier tool_call_uid is, when a declared rule states it.",
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "identity_basis": {
+      "group": "primary",
+      "requirement": "optional"
+    },
     "tool_name": {
       "group": "primary",
       "requirement": "recommended"
+    },
+    "tool_namespace": {
+      "group": "primary",
+      "requirement": "optional"
     },
     "tool_kind_id": {
       "group": "primary",

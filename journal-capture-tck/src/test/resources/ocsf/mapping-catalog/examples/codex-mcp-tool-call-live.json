@@ -1,0 +1,118 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "codex-mcp-tool-call-live",
+  "concept": "tool-request-identity-and-arguments",
+  "description": "A Codex CLI 0.160.1 MCP call (live recording, local deterministic stdio server): item.started is the request and item.completed the result, both under the exec processor's own stream-local item id, which is not the model-facing call id (the processor mints item_N and drops the app-server id). The server is the tool's namespace, the tool name and arguments are exact, the result content and structured content are exact, and the completed or failed status is the reported outcome (MCP isError arrives as failed).",
+  "authored_from": [
+    "codex-exec-0.160.1-emitter-items",
+    "codex-exec-0.160.1-types"
+  ],
+  "native": {
+    "evidence_kind": "live",
+    "profile": "codex_stream",
+    "compatibility_entry": "codex-cli/exec-json-stream/0.160.1",
+    "fixture": "codex-live-0.160.1-mcp",
+    "artifact": "stream.jsonl",
+    "sha256": "2d69d5f7a223f888700474bca9edb1f952574f04acd408fc71bc174986038ffa"
+  },
+  "expected": [
+    {
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 1,
+      "values": {
+        "/tool_call_uid": "item_1",
+        "/identity_basis_id": 2,
+        "/tool_name": "echo_record",
+        "/tool_namespace": "fnd1",
+        "/tool_kind_id": 99,
+        "/arguments": {
+          "text": "fnd-1",
+          "n": 7
+        },
+        "/reported_state": "in_progress"
+      },
+      "absent": [
+        "/response_uid",
+        "/tool_result"
+      ]
+    },
+    {
+      "record": 5,
+      "class": "tool_call",
+      "activity_id": 2,
+      "values": {
+        "/tool_call_uid": "item_1",
+        "/identity_basis_id": 2,
+        "/status_id": 1,
+        "/status_basis_id": 1,
+        "/tool_result/data": [
+          {
+            "type": "text",
+            "text": "{\"echo\": \"fnd-1\", \"n\": 7, \"ok\": true}"
+          }
+        ],
+        "/tool_result/structured_result": {
+          "echo": "fnd-1",
+          "n": 7,
+          "ok": true
+        },
+        "/tool_result/error_reported": false,
+        "/reported_state": "completed"
+      }
+    },
+    {
+      "record": 7,
+      "class": "tool_call",
+      "activity_id": 2,
+      "values": {
+        "/tool_call_uid": "item_2",
+        "/status_id": 2,
+        "/tool_result/data": [
+          {
+            "type": "text",
+            "text": "always_fails: deliberate test failure"
+          }
+        ],
+        "/tool_result/error_reported": true,
+        "/reported_state": "failed"
+      },
+      "absent": [
+        "/tool_result/structured_result"
+      ]
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "model-facing-call-id",
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 1,
+      "values": {
+        "/identity_basis_id": 1
+      },
+      "why": "item_1 is minted by the exec processor; claiming it is the model's call id would let a consumer join it with a native session's call ids, which it cannot match."
+    },
+    {
+      "id": "server-folded-into-name",
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 1,
+      "values": {
+        "/tool_name": "fnd1/echo_record"
+      },
+      "why": "The source reports server and tool separately; Journal never composes a tool name."
+    },
+    {
+      "id": "failed-as-success",
+      "record": 7,
+      "class": "tool_call",
+      "activity_id": 2,
+      "values": {
+        "/status_id": 1
+      },
+      "why": "The item reports status failed; a result with content is not a success."
+    }
+  ]
+}

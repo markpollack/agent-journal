@@ -233,7 +233,7 @@ class VendorStreamInventoryTest {
         for (OcsfPackage core : OcsfFixtures.open(fixture).all()) {
             for (Event e : core.events) {
                 if (e.className != null && e.recordIndex() != null) {
-                    rules.computeIfAbsent(e.recordIndex(), k -> new TreeSet<>()).add(e.text("unmapped", "rule_id"));
+                    rules.computeIfAbsent(e.recordIndex(), k -> new TreeSet<>()).add(e.text("journal", "rule_uid"));
                 }
             }
         }

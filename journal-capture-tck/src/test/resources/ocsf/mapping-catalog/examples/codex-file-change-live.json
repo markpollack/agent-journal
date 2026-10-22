@@ -1,0 +1,68 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "codex-file-change-live",
+  "concept": "tool-request-identity-and-arguments",
+  "description": "A Codex CLI 0.160.1 file change (live recording): item.started and item.completed of one stream-local item. The stream names no tool, only the item type, so the tool name is the family name file_change and the kind is edit by the contract's table; the changed paths and kinds stay in the retained record (no arguments are claimed); completed is the reported outcome (the processor reports a declined patch as failed).",
+  "authored_from": [
+    "codex-exec-0.160.1-emitter-items",
+    "codex-exec-0.160.1-types"
+  ],
+  "native": {
+    "evidence_kind": "live",
+    "profile": "codex_stream",
+    "compatibility_entry": "codex-cli/exec-json-stream/0.160.1",
+    "fixture": "codex-live-0.160.1-file-change",
+    "artifact": "stream.jsonl",
+    "sha256": "3904a14c63d76a117279bddcca607a51dab572b9e6c5d443702174f2d8f5a7d8"
+  },
+  "expected": [
+    {
+      "record": 6,
+      "class": "tool_call",
+      "activity_id": 1,
+      "values": {
+        "/tool_call_uid": "item_2",
+        "/identity_basis_id": 2,
+        "/tool_name": "file_change",
+        "/tool_kind_id": 2,
+        "/reported_state": "in_progress",
+        "/data/item/changes": [
+          {
+            "path": "/work/notes.txt",
+            "kind": "update"
+          }
+        ]
+      },
+      "absent": [
+        "/arguments",
+        "/tool_namespace"
+      ]
+    },
+    {
+      "record": 7,
+      "class": "tool_call",
+      "activity_id": 2,
+      "values": {
+        "/tool_call_uid": "item_2",
+        "/status_id": 1,
+        "/status_basis_id": 1
+      },
+      "absent": [
+        "/tool_result"
+      ]
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "invented-tool-name",
+      "record": 6,
+      "class": "tool_call",
+      "activity_id": 1,
+      "values": {
+        "/tool_name": "apply_patch"
+      },
+      "why": "The model-facing tool is not reported on this route; naming it would be a guess."
+    }
+  ]
+}

@@ -9,6 +9,8 @@
     "block_kind_id": {"requirement": "recommended"},
     "block_kind": {"requirement": "optional"},
     "basis": {"description": "Rule that assigned block_kind_id.", "requirement": "optional"},
+    "reasoning_form_id": {"requirement": "optional"},
+    "reasoning_form": {"requirement": "optional"},
     "text": {"requirement": "optional"},
     "tool_call_uid": {"requirement": "optional"},
     "data": {"description": "The native block exactly as reported.", "requirement": "required"}

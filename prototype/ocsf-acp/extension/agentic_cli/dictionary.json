@@ -709,6 +709,99 @@
       "caption": "Rendered Role",
       "description": "The message role under which injected context was rendered to the model, when the source reports it.",
       "type": "string_t"
+    },
+    "rule_uid": {
+      "caption": "Mapping Rule ID",
+      "description": "The rule of the mapping contract (contract_uid) that produced this event. Journal mapping provenance, declared here rather than in OCSF unmapped, which holds unmapped source data. Added in 0.5.0-prototype; earlier packages carry it as unmapped.rule_id.",
+      "type": "string_t"
+    },
+    "command_line": {
+      "caption": "Command Line",
+      "description": "The command exactly as the source reported it, as one string. Never parsed into argv; a shell's interpretation of it is not reported by this attribute.",
+      "type": "string_t"
+    },
+    "identity_basis_id": {
+      "caption": "Identity Basis ID",
+      "description": "What kind of identifier the source reported as this fact's identity: tool_call_uid on a tool_call event, uid on an operation. A stream-local item identifier is not the identifier the model used for the call and cannot be joined with one.",
+      "type": "integer_t",
+      "sibling": "identity_basis",
+      "enum": {
+        "0": {
+          "caption": "Unknown"
+        },
+        "1": {
+          "caption": "Model-facing call identifier",
+          "description": "The identifier the model's own tool request carried, as the source reports it."
+        },
+        "2": {
+          "caption": "Stream-local item identifier",
+          "description": "An identifier the CLI's output stream assigns to its own items; unique within that stream only; the model-facing call identifier is not reported."
+        },
+        "99": {
+          "caption": "Other"
+        }
+      }
+    },
+    "identity_basis": {
+      "caption": "Identity Basis",
+      "description": "Caption sibling of identity_basis_id.",
+      "type": "string_t"
+    },
+    "tool_namespace": {
+      "caption": "Tool Namespace",
+      "description": "The namespace the source reports beside the tool name, such as the MCP server of an MCP tool. Absent when the source reports none; never derived from the tool name.",
+      "type": "string_t"
+    },
+    "measurement_status_id": {
+      "caption": "Measurement Status ID",
+      "description": "Whether the source establishes that the reported components are a measurement. Absent when no declared rule states it.",
+      "type": "integer_t",
+      "sibling": "measurement_status",
+      "enum": {
+        "0": {
+          "caption": "Unknown"
+        },
+        "1": {
+          "caption": "Measured",
+          "description": "The source reports these exact values only from a measurement."
+        },
+        "2": {
+          "caption": "Possibly default",
+          "description": "The source emits exactly these values also when it has no measurement (for example all-zero defaults); a measured value is not established."
+        }
+      }
+    },
+    "measurement_status": {
+      "caption": "Measurement Status",
+      "description": "Caption sibling of measurement_status_id.",
+      "type": "string_t"
+    },
+    "reasoning_form_id": {
+      "caption": "Reasoning Form ID",
+      "description": "What a reasoning content block holds, as a declared rule establishes it from the source. Absent when the source does not establish it.",
+      "type": "integer_t",
+      "sibling": "reasoning_form",
+      "enum": {
+        "0": {
+          "caption": "Unknown"
+        },
+        "1": {
+          "caption": "Full reasoning",
+          "description": "The model's reasoning text as produced."
+        },
+        "2": {
+          "caption": "Summary",
+          "description": "A summary of the model's reasoning, not its full text."
+        },
+        "99": {
+          "caption": "Other"
+        }
+      }
+    },
+    "reasoning_form": {
+      "caption": "Reasoning Form",
+      "description": "Caption sibling of reasoning_form_id.",
+      "type": "string_t"
     }
   }
 }

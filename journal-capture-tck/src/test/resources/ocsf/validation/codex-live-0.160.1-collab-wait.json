@@ -4,9 +4,9 @@
  "fixture": "codex-live-0.160.1-collab-wait",
  "core": "main",
  "events_jsonl": "fixtures/codex-live-0.160.1-collab-wait/package/events.jsonl",
- "events_jsonl_sha256": "06f35fa5033cdedce19f2c7159111b8b32785e9d65d67cf42084b2220c46607c",
+ "events_jsonl_sha256": "ecfebc2f9eda7b08b6eb3980620605ce71a321dbbbb81bd139f68203b0e90085",
  "execution_records": 7,
- "declarations_skipped": 35,
+ "declarations_skipped": 38,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
  "toolkit": {
   "name": "ocsf-toolkit",
@@ -14,13 +14,28 @@
   "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
   "exit_code": 0
  },
- "compiled_schema_sha256": "01cac1620fa5b6a5c70f4c13f796604f010e6caf39cb43667a1cc4e2b2a814c6",
+ "compiled_schema_sha256": "b3393cac32fe5847aaf6cf5fc12dede0819efc9f82ef18a76ff2583901079fe1",
  "result": {
   "event_files_processed": 7,
   "error_events": 0,
-  "warning_only_events": 0,
+  "warning_only_events": 2,
   "issues_reported": 0
  },
- "findings": {},
+ "findings": {
+  "0004.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0005.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ]
+ },
  "note": "warning-only findings are the toolkit's enum-sibling notice on tool_kind 'other' (a known v0.9.0 limit recorded in the lock); any error event fails UC5-AC11 for this core"
 }

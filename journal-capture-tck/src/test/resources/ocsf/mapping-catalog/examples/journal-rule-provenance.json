@@ -1,0 +1,56 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "journal-rule-provenance",
+  "concept": "source-occurrence-provenance",
+  "description": "Journal's own mapping provenance: every event names the contract rule that produced it in journal.rule_uid (extension 0.5.0). OCSF unmapped is for source data no attribute maps; Journal leaves it to that purpose. Shown on the live MCP recording; the contract rule ids are the contract's.",
+  "authored_from": [
+    "ocsf-1.9.0-unmapped",
+    "agentic-cli-0.5.0-journal-provenance"
+  ],
+  "native": {
+    "evidence_kind": "live",
+    "profile": "codex_stream",
+    "compatibility_entry": "codex-cli/exec-json-stream/0.160.1",
+    "fixture": "codex-live-0.160.1-mcp",
+    "artifact": "stream.jsonl",
+    "sha256": "2d69d5f7a223f888700474bca9edb1f952574f04acd408fc71bc174986038ffa"
+  },
+  "expected": [
+    {
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 1,
+      "values": {
+        "/journal/rule_uid": "codex.stream.mcp_tool_call->tool_call.requested",
+        "/journal/contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype"
+      },
+      "absent": [
+        "/unmapped"
+      ]
+    },
+    {
+      "record": 1,
+      "class": "source_record",
+      "activity_id": 1,
+      "values": {
+        "/journal/rule_uid": "codex.stream.fallback->source_record"
+      },
+      "absent": [
+        "/unmapped"
+      ]
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "rule-in-unmapped",
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 1,
+      "values": {
+        "/unmapped/rule_id": "codex.stream.mcp_tool_call->tool_call.requested"
+      },
+      "why": "OCSF unmapped holds unmapped source data, not producer provenance."
+    }
+  ]
+}

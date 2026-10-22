@@ -3,7 +3,7 @@
   "_rationale": {
     "submissions": "An exec --json stream does not echo the prompt: no prompt_turn Prompt submitted, submission_count 0.",
     "responses": "Records 3 (item_0) and 11 (item_5) are agent_message items; their ids are stream-scoped (identity_scope artifact: they do not occur in a rollout), so there are 2 observations and 2 source-scoped identities and no logical count can be claimed across sources.",
-    "usage": "Record 12 turn.completed reports the turn's usage once; the stream names no turn id, so the owner is 'turn unidentified in stream.jsonl'. input_tokens 9007199254740993 is 2^53+1 and must survive exactly.",
+    "usage": "Record 12 turn.completed reports the thread's cumulative usage (ThreadTokenUsage.total, pinned emitter) once per exec run; its scope is the session (the thread), owned by the thread id thread.started states (SEM-1 candidate reading, pending Owner approval; until 2026-10-22 this answer said turn scope, owner 'turn unidentified in stream.jsonl'). input_tokens 9007199254740993 is 2^53+1 and must survive exactly.",
     "associations": "Records 4/5 (item_1: in_progress then completed, exit 0), 6/7 (item_2: in_progress then failed, exit 1) and 8 (item_3: started, completion never observed) are 5 operation observations over 3 stream-scoped identities. The stream reports no call id, so every observation is Unattributed; a logical count of 3 is available only because there is a single source.",
     "tool_exchanges": "No tool_call Requested or Result observed exists in an exec stream: no calls, no repeats, no identical content."
   },
@@ -25,7 +25,7 @@
   "usage": {
     "group_count": 1,
     "groups": [
-      {"scope": "Prompt turn", "owner": "turn unidentified in stream.jsonl", "source": "stream.jsonl", "final_observations": 1, "provisional_observations": 0, "conflict": false,
+      {"scope": "Session", "owner": "00000000-0000-4000-8000-0000000c0de5", "source": "stream.jsonl", "final_observations": 1, "provisional_observations": 0, "conflict": false,
        "applicable_final": {"input_tokens": 9007199254740993, "output_tokens": 143, "cache_read_tokens": 24576, "cache_write_tokens": 0, "reasoning_tokens": 7},
        "observations": [{"record_index": 12, "status": "Final"}]}
     ]

@@ -58,6 +58,69 @@ public final class NeutralJson {
         }
     }
 
+    /** An object member that occurs more than once: its member path ({@code item.id}) and every value, in source order. */
+    public record Repeated(String path, List<Json> values) {
+    }
+
+    /** A value whose repeated members are reported rather than collapsed; the tree holds each member's first value. */
+    public record WithRepeats(Json value, List<Repeated> repeated) {
+    }
+
+    /**
+     * Parses text that strict parsing refuses only because an object repeats a member, reporting every repeat with
+     * all its values. For a source profile that declares one such form; {@link #parse} stays strict.
+     *
+     * @throws IllegalArgumentException if the text is not one JSON value apart from repeated members
+     */
+    public static WithRepeats parseReportingRepeats(String text) {
+        JsonFactory lenient = JsonFactory.builder().disable(StreamReadFeature.STRICT_DUPLICATE_DETECTION).build();
+        try (JsonParser parser = lenient.createParser(text)) {
+            JsonToken first = parser.nextToken();
+            if (first == null) {
+                throw new IllegalArgumentException("empty JSON text");
+            }
+            Map<String, List<Json>> values = new LinkedHashMap<>();
+            Json value = readRepeats(parser, first, null, values);
+            if (parser.nextToken() != null) {
+                throw new IllegalArgumentException("trailing content after the JSON value");
+            }
+            List<Repeated> repeated = new ArrayList<>();
+            values.forEach((path, vs) -> {
+                if (vs.size() > 1) {
+                    repeated.add(new Repeated(path, List.copyOf(vs)));
+                }
+            });
+            return new WithRepeats(value, List.copyOf(repeated));
+        }
+        catch (IOException e) {
+            throw new IllegalArgumentException("not JSON: " + e.getMessage(), e);
+        }
+    }
+
+    /** Every member's values by member path ({@code a.b}; array elements by index); the returned tree keeps first values. */
+    private static Json readRepeats(JsonParser parser, JsonToken token, String path, Map<String, List<Json>> values) throws IOException {
+        if (token == JsonToken.START_OBJECT) {
+            Map<String, Json> members = new LinkedHashMap<>();
+            while (parser.nextToken() != JsonToken.END_OBJECT) {
+                String key = parser.currentName();
+                String at = path == null ? key : path + "." + key;
+                Json v = readRepeats(parser, parser.nextToken(), at, values);
+                values.computeIfAbsent(at, k -> new ArrayList<>()).add(v);
+                members.putIfAbsent(key, v);
+            }
+            return new Json.JObject(members);
+        }
+        if (token == JsonToken.START_ARRAY) {
+            List<Json> elements = new ArrayList<>();
+            JsonToken next;
+            while ((next = parser.nextToken()) != JsonToken.END_ARRAY) {
+                elements.add(readRepeats(parser, next, (path == null ? "" : path + ".") + elements.size(), values));
+            }
+            return new Json.JArray(elements);
+        }
+        return read(parser, token);
+    }
+
     /** Reads a JSON Lines file; blank lines are skipped, and a line that is not JSON is an error, never skipped. */
     public static List<Line> readLines(Path file) {
         List<Line> lines = new ArrayList<>();

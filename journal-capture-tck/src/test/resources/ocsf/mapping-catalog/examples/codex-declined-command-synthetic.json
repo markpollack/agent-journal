@@ -1,0 +1,64 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "codex-declined-command-synthetic",
+  "concept": "operation-and-request-reported-state",
+  "description": "LABELLED SYNTHETIC (the families fixture, from the pinned exec types): a command_execution whose status is declined. CommandExecutionStatus::Declined is a reported status distinct from failed and from in-progress; the command did not run. It is status 99 with the source's own word Declined, not Unknown, and it is not a permission decision: the exec stream reports no approval request or decision.",
+  "authored_from": [
+    "codex-exec-0.160.1-emitter-items",
+    "codex-exec-0.160.1-types"
+  ],
+  "native": {
+    "evidence_kind": "synthetic",
+    "profile": "codex_stream",
+    "compatibility_entry": "codex-cli/exec-json-stream/0.160.1",
+    "fixture": "syn-codex-exec-families-0.160.1",
+    "artifact": "stream.jsonl",
+    "sha256": "538b32f3afd57a16fa95348d4d4e57d147e1836d8da3fcd879690e42075e5d18"
+  },
+  "expected": [
+    {
+      "record": 7,
+      "class": "tool_call",
+      "activity_id": 3,
+      "values": {
+        "/status_id": 99,
+        "/status": "Declined",
+        "/status_basis_id": 1,
+        "/tool_operation/uid": "item_3",
+        "/tool_operation/identity_basis_id": 2,
+        "/tool_operation/reported_state": "declined",
+        "/tool_operation/command_line": "rm -rf build",
+        "/tool_operation/attribution/outcome_id": 3
+      },
+      "absent": [
+        "/permission_decision",
+        "/tool_operation/exit_code",
+        "/tool_operation/argv",
+        "/tool_call_uid"
+      ]
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "declined-as-unknown",
+      "record": 7,
+      "class": "tool_call",
+      "activity_id": 3,
+      "values": {
+        "/status_id": 0
+      },
+      "why": "The source reports declined; Unknown would erase a reported fact."
+    },
+    {
+      "id": "declined-as-failure",
+      "record": 7,
+      "class": "tool_call",
+      "activity_id": 3,
+      "values": {
+        "/status_id": 2
+      },
+      "why": "A declined command did not run and did not fail."
+    }
+  ]
+}

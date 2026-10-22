@@ -97,7 +97,8 @@ final class SourceContext {
 
     /**
      * The OCSF envelope plus Journal provenance for one event; the caller adds the class-specific attributes.
-     * Numeric identifiers come from the pinned compiled schema only.
+     * Numeric identifiers come from the pinned compiled schema only. The producing contract rule is
+     * {@code journal.rule_uid} (extension 0.5.0); OCSF {@code unmapped} is left to unmapped source data.
      */
     Jv.Obj event(String className, int activity, NativeRecord r, MapperSupport.Time time, String contract, String ruleId,
             String originalTime, String nativeUid, boolean whole, MapperSupport.Status status) {
@@ -120,17 +121,17 @@ final class SourceContext {
         ev.put("metadata", metadata);
         ev.put("journal", new Jv.Obj().put("run_uid", run.runUid()).put("invocation_index", run.invocationIndex())
                 .put("sequence", 0) // assigned by the core when appended
-                .put("contract_uid", contracts.uid(contract)).put("time_basis_id", time.basisId()).put("time_basis", MapperSupport.TIME_BASIS.get(time.basisId()))
+                .put("contract_uid", contracts.uid(contract)).put("rule_uid", contracts.rule(contract, ruleId))
+                .put("time_basis_id", time.basisId()).put("time_basis", MapperSupport.TIME_BASIS.get(time.basisId()))
                 .put("basis", time.detail()));
         ev.put("source_ref", sourceRef(r, nativeUid, originalTime, whole));
         if (status != null) {
-            ev.put("status_id", status.id()).put("status", MapperSupport.STATUS.get(status.id()))
+            ev.put("status_id", status.id()).put("status", status.id() == 99 && status.label() != null ? status.label() : MapperSupport.STATUS.get(status.id()))
                     .put("status_basis_id", status.basisId()).put("status_basis", MapperSupport.STATUS_BASIS.get(status.basisId()));
             if (status.derivation() != null) {
                 ev.put("derivation", status.derivation());
             }
         }
-        ev.put("unmapped", new Jv.Obj().put("rule_id", contracts.rule(contract, ruleId)));
         return ev;
     }
 

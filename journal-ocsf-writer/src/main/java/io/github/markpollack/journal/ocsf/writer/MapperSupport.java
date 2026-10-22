@@ -23,8 +23,11 @@ final class MapperSupport {
     static final Map<Integer, String> OUTCOME = Map.of(0, "Unknown", 1, "Unique", 2, "Ambiguous", 3, "Unattributed");
     static final Map<Integer, String> METHOD = Map.of(0, "Unknown", 1, "Reported identifier", 2, "Derived by rule");
     static final Map<Integer, String> DECISION = Map.of(0, "Unknown", 1, "Allowed", 2, "Denied", 99, "Other");
-    static final Map<Integer, String> STATUS = Map.of(0, "Unknown", 1, "Success", 2, "Failure");
+    static final Map<Integer, String> STATUS = Map.of(0, "Unknown", 1, "Success", 2, "Failure", 99, "Other");
     static final Map<Integer, String> STATUS_BASIS = Map.of(0, "Unknown", 1, "Reported", 2, "Derived", 3, "Not derivable");
+    static final Map<Integer, String> IDENTITY_BASIS = Map.of(0, "Unknown", 1, "Model-facing call identifier", 2, "Stream-local item identifier", 99, "Other");
+    static final Map<Integer, String> MEASUREMENT_STATUS = Map.of(0, "Unknown", 1, "Measured", 2, "Possibly default");
+    static final Map<Integer, String> REASONING_FORM = Map.of(0, "Unknown", 1, "Full reasoning", 2, "Summary", 99, "Other");
     static final Map<Integer, String> TIME_BASIS = Map.of(1, "Source record", 2, "Earliest available fallback", 3, "Capture observation");
     static final Map<Integer, String> PROVIDER_BASIS = Map.of(0, "Unknown", 1, "Reported", 2, "Derived", 3, "Unavailable");
 
@@ -34,7 +37,11 @@ final class MapperSupport {
     }
 
     /** A status triple for the envelope. */
-    record Status(int id, int basisId, String derivation) {
+    record Status(int id, int basisId, String derivation, String label) {
+        /** A status whose caption is the schema's; {@code label} is the source's own word for status 99 Other. */
+        Status(int id, int basisId, String derivation) {
+            this(id, basisId, derivation, null);
+        }
     }
 
     /** A time decision for the envelope. */

@@ -24,7 +24,7 @@
    "disposition": "normalized",
    "destination": [
     "*.class_uid",
-    "*.unmapped",
+    "*.journal.rule_uid",
     "source_record.record_type"
    ],
    "rule": "record_discriminator",

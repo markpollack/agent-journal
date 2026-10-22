@@ -4,9 +4,9 @@
  "fixture": "syn-codex-exec-families-0.160.1",
  "core": "main",
  "events_jsonl": "fixtures/syn-codex-exec-families-0.160.1/package/events.jsonl",
- "events_jsonl_sha256": "02d9e0b46e5e4b68fe4eb91baab6d5480c4b6027bac1ce6afbf48c1b8299a795",
- "execution_records": 22,
- "declarations_skipped": 39,
+ "events_jsonl_sha256": "aeff36591eb3131fe227fd8319e85cce3355577f7b4b293686d03215007e58d4",
+ "execution_records": 24,
+ "declarations_skipped": 38,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
  "toolkit": {
   "name": "ocsf-toolkit",
@@ -14,13 +14,56 @@
   "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
   "exit_code": 0
  },
- "compiled_schema_sha256": "01cac1620fa5b6a5c70f4c13f796604f010e6caf39cb43667a1cc4e2b2a814c6",
+ "compiled_schema_sha256": "b3393cac32fe5847aaf6cf5fc12dede0819efc9f82ef18a76ff2583901079fe1",
  "result": {
-  "event_files_processed": 22,
+  "event_files_processed": 24,
   "error_events": 0,
-  "warning_only_events": 0,
+  "warning_only_events": 6,
   "issues_reported": 0
  },
- "findings": {},
+ "findings": {
+  "0008.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0009.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0010.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0011.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0012.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0013.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ]
+ },
  "note": "warning-only findings are the toolkit's enum-sibling notice on tool_kind 'other' (a known v0.9.0 limit recorded in the lock); any error event fails UC5-AC11 for this core"
 }

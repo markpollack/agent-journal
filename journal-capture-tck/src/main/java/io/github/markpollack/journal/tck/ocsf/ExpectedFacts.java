@@ -19,15 +19,31 @@ import java.util.Set;
  */
 public final class ExpectedFacts {
 
-    public record Request(int recordIndex, String id, String name, Json arguments, String responseUid, String reportedState) {
+    /**
+     * @param namespace the namespace the source reports beside the tool name (an MCP server), or {@code null}
+     * @param identityBasisId the kind of identifier {@code id} is (2: stream-local item id), or {@code null} when the profile states none
+     */
+    public record Request(int recordIndex, String id, String name, Json arguments, String responseUid, String reportedState, String namespace, Integer identityBasisId) {
+        public Request(int recordIndex, String id, String name, Json arguments, String responseUid, String reportedState) {
+            this(recordIndex, id, name, arguments, responseUid, reportedState, null, null);
+        }
     }
 
     /** {@code isError} is the native boolean when reported, else {@code null}; {@code content} is {@code null} when the source reports no result content. */
-    public record Result(int recordIndex, String id, Json content, Json isError, Json structured, Decision decision, String reportedState) {
+    public record Result(int recordIndex, String id, Json content, Json isError, Json structured, Decision decision, String reportedState, Integer identityBasisId) {
+        public Result(int recordIndex, String id, Json content, Json isError, Json structured, Decision decision, String reportedState) {
+            this(recordIndex, id, content, isError, structured, decision, reportedState, null);
+        }
     }
 
-    /** {@code blocks} are the native block values in order, or {@code null} when the source carries no content. */
-    public record Response(int recordIndex, String id, List<Json> blocks, String stopReason, boolean terminal, String model) {
+    /**
+     * {@code blocks} are the native block values in order, or {@code null} when the source carries no content;
+     * {@code reasoningForm} is the reasoning_form_id every block must carry, or {@code null} when the profile states none.
+     */
+    public record Response(int recordIndex, String id, List<Json> blocks, String stopReason, boolean terminal, String model, Integer reasoningForm) {
+        public Response(int recordIndex, String id, List<Json> blocks, String stopReason, boolean terminal, String model) {
+            this(recordIndex, id, blocks, stopReason, terminal, model, null);
+        }
     }
 
     public record Prompt(int recordIndex, String turnUid, List<String> texts) {
@@ -38,10 +54,14 @@ public final class ExpectedFacts {
      * @param recordIndex the record the observation cites
      * @param components normalized component name to exact native number
      */
-    public record Usage(int eventRecordIndex, int recordIndex, int scopeId, int statusId, Map<String, Json> components, String model, String provider) {
+    public record Usage(int eventRecordIndex, int recordIndex, int scopeId, int statusId, Map<String, Json> components, String model, String provider, Integer measurementStatusId) {
         /** A usage whose record reports no provider (the provider must then be absent on the observation, never inferred). */
         public Usage(int eventRecordIndex, int recordIndex, int scopeId, int statusId, Map<String, Json> components, String model) {
-            this(eventRecordIndex, recordIndex, scopeId, statusId, components, model, null);
+            this(eventRecordIndex, recordIndex, scopeId, statusId, components, model, null, null);
+        }
+
+        public Usage(int eventRecordIndex, int recordIndex, int scopeId, int statusId, Map<String, Json> components, String model, String provider) {
+            this(eventRecordIndex, recordIndex, scopeId, statusId, components, model, provider, null);
         }
     }
 
@@ -57,8 +77,15 @@ public final class ExpectedFacts {
             int scopeId, int outcomeId, int methodId, List<String> candidates, String ownerId) {
     }
 
+    /**
+     * @param commandLine the command string the source reports, or {@code null}
+     * @param identityBasisId the kind of identifier {@code uid} is, or {@code null} when the profile states none
+     */
     public record Operation(int recordIndex, String uid, Json argv, Json exitCode, String reportedState, int statusId,
-            int outcomeId, int methodId, List<String> candidates) {
+            int outcomeId, int methodId, List<String> candidates, String commandLine, Integer identityBasisId) {
+        public Operation(int recordIndex, String uid, Json argv, Json exitCode, String reportedState, int statusId, int outcomeId, int methodId, List<String> candidates) {
+            this(recordIndex, uid, argv, exitCode, reportedState, statusId, outcomeId, methodId, candidates, null, null);
+        }
     }
 
     public record TurnCompleted(int recordIndex, int statusId, String stopReason) {

@@ -4,9 +4,9 @@
  "fixture": "claude-child-2.1.299",
  "core": "children/toolu_01BnEuCUmZ2Vu1LpADzksmrJ",
  "events_jsonl": "fixtures/claude-child-2.1.299/package/children/toolu_01BnEuCUmZ2Vu1LpADzksmrJ/events.jsonl",
- "events_jsonl_sha256": "b89f5a4f71d8c232d933ffe62e82d84f6afa5d0b2d8397b5c2eda163ff3f38b8",
+ "events_jsonl_sha256": "b103725bf6ca0314a94bade376747e7219820cb40d0aacd79f28b5d50264e106",
  "execution_records": 4,
- "declarations_skipped": 37,
+ "declarations_skipped": 36,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
  "toolkit": {
   "name": "ocsf-toolkit",
@@ -14,7 +14,7 @@
   "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
   "exit_code": 0
  },
- "compiled_schema_sha256": "01cac1620fa5b6a5c70f4c13f796604f010e6caf39cb43667a1cc4e2b2a814c6",
+ "compiled_schema_sha256": "b3393cac32fe5847aaf6cf5fc12dede0819efc9f82ef18a76ff2583901079fe1",
  "result": {
   "event_files_processed": 4,
   "error_events": 0,

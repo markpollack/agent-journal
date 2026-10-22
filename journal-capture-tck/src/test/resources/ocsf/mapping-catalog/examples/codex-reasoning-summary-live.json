@@ -1,0 +1,48 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "codex-reasoning-summary-live",
+  "concept": "reasoning-blocks-and-signature",
+  "description": "A Codex CLI 0.160.1 reasoning item (live recording). The pinned processor builds its text from the reasoning item's summary parts joined by newlines and drops the raw reasoning content (ThreadItem::Reasoning { summary, .. }); exec_events.rs documents ReasoningItem as the agent's reasoning summary. It is one Thought block whose form is a summary, not the model's full reasoning; no signature is reported.",
+  "authored_from": [
+    "codex-exec-0.160.1-emitter-items",
+    "codex-exec-0.160.1-types"
+  ],
+  "native": {
+    "evidence_kind": "live",
+    "profile": "codex_stream",
+    "compatibility_entry": "codex-cli/exec-json-stream/0.160.1",
+    "fixture": "codex-live-0.160.1-reasoning",
+    "artifact": "stream.jsonl",
+    "sha256": "85cdb8e590a570499c80c6542fca2472f9a6caba1f053bdc5ecb7f66cb099fa2"
+  },
+  "expected": [
+    {
+      "record": 3,
+      "class": "model_response",
+      "activity_id": 2,
+      "values": {
+        "/response_uid": "item_0",
+        "/content_blocks/0/block_kind_id": 2,
+        "/content_blocks/0/reasoning_form_id": 2,
+        "/content_blocks/0/text": "**Planning next steps**\n\nI need to ensure I comply with the closest approach since no tool is available. It’s essential to lay out my initial thoughts clearly, even if that wasn’t done before. So, I’ll create a concise three-step plan. I’ll detail each step through commentary, keeping commands separate as I update progress. This structure should help ensure clarity as I move forward with the task!",
+        "/content_blocks/0/data": "**Planning next steps**\n\nI need to ensure I comply with the closest approach since no tool is available. It’s essential to lay out my initial thoughts clearly, even if that wasn’t done before. So, I’ll create a concise three-step plan. I’ll detail each step through commentary, keeping commands separate as I update progress. This structure should help ensure clarity as I move forward with the task!"
+      },
+      "absent": [
+        "/content_blocks/1"
+      ]
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "full-reasoning",
+      "record": 3,
+      "class": "model_response",
+      "activity_id": 2,
+      "values": {
+        "/content_blocks/0/reasoning_form_id": 1
+      },
+      "why": "The emitter discards raw reasoning content; the text is the summary only."
+    }
+  ]
+}

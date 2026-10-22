@@ -1,5 +1,6 @@
 package io.github.markpollack.journal.tck.ocsf;
 
+import io.github.markpollack.journal.tck.verify.Check;
 import io.github.markpollack.journal.tck.verify.Json;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -45,7 +46,7 @@ class PackageReaderTest {
         assertThat(fromEvents.standalone()).as("read from the file's declarations; run.json is ancillary").isTrue();
         assertThat(fromEvents.manifest.packageState()).isEqualTo("COMPLETED");
         assertThat(fromEvents.manifest.extensionUid()).isEqualTo(901);
-        assertThat(fromEvents.manifest.extensionVersion()).isEqualTo("0.4.0-prototype");
+        assertThat(fromEvents.manifest.extensionVersion()).isEqualTo("0.5.0-prototype");
         assertThat(fromEvents.manifest.contracts()).containsKey("codex-cli/rollout/0.160.1/0.2.0-prototype");
     }
 
@@ -74,7 +75,12 @@ class PackageReaderTest {
         assertThat(d.events).isEmpty();
     }
 
-    /** A package written before cli_agent stopped extending ai_agent (extension 0.4.0) reads and judges from its own embedded definitions. */
+    /**
+     * A package written before cli_agent stopped extending ai_agent (extension 0.4.0) reads from its own embedded
+     * definitions. Judged by today's Codex profile (the SEM-1 candidate reading of contract 0.3.0), only the changed
+     * meanings differ: its usage observation states the superseded turn scope, and its operations carry no command
+     * string or identity basis. Nothing is missing and nothing else is defective.
+     */
     @Test
     void aPackageWrittenWithExtension030StillReadsFromItsOwnDefinitions(@TempDir Path work) {
         Path historical = copyHistorical("extension-0.3.0-prototype", OcsfFixtures.LIVE_CODEX, work);
@@ -83,10 +89,27 @@ class PackageReaderTest {
         assertThat(p.manifest.extensionVersion()).isEqualTo("0.3.0-prototype");
         assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
         OracleReport report = OcsfFixtures.verify(historical);
-        assertThat(report.defects()).isEmpty();
+        assertThat(report.defects()).extracting(Check::property).containsOnly("population.usage", "operation.values");
         assertThat(report.missingRequired()).isEmpty();
         Path current = copy(OcsfFixtures.LIVE_CODEX, work.resolve("current"));
-        assertThat(open(current).manifest.extensionVersion()).isEqualTo("0.4.0-prototype");
+        assertThat(open(current).manifest.extensionVersion()).isEqualTo("0.5.0-prototype");
+    }
+
+    /**
+     * The 0.4.0 package of the live MCP recording, written before the SEM-1 candidate: its rule ids are in OCSF
+     * unmapped and its MCP items are retained whole. It reads from its own definitions; today's profile, which reads
+     * the MCP items as tool calls and the usage at session scope, finds exactly those meanings changed.
+     */
+    @Test
+    void aPackageWrittenWithExtension040StillReadsAndShowsOnlyTheChangedCodexMeanings(@TempDir Path work) {
+        Path historical = copyHistorical("extension-0.4.0-prototype", OcsfFixtures.LIVE_CODEX_MCP, work);
+        OcsfPackage p = open(historical);
+        assertThat(p.refused()).isFalse();
+        assertThat(p.manifest.extensionVersion()).isEqualTo("0.4.0-prototype");
+        assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
+        OracleReport report = OcsfFixtures.verify(historical);
+        assertThat(report.defects()).extracting(Check::property).containsOnly("population.usage", "population.requests", "population.results", "whole_record.class");
+        assertThat(report.missingRequired()).isEmpty();
     }
 
     @Test

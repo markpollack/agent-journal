@@ -69,7 +69,7 @@ class UntestedCompatibilityTest {
             if (e.recordIndex() != null && e.recordIndex() > 1) {
                 assertThat(e.className).as("record " + e.recordIndex()).isEqualTo("source_record");
                 assertThat(e.contractUid()).isEqualTo("agent-journal/untested-compatibility/0.1");
-                assertThat(e.text("unmapped", "rule_id")).isEqualTo("compat.no_match->source_record");
+                assertThat(e.text("journal", "rule_uid")).isEqualTo("compat.no_match->source_record");
                 assertThat(e.text("basis")).contains("retained whole");
                 assertThat(e.get("data")).as("the whole record is kept").isNotNull();
                 retained++;

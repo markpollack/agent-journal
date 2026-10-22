@@ -20,6 +20,10 @@
     "contract_uid": {
       "requirement": "required"
     },
+    "rule_uid": {
+      "description": "The contract rule that produced this event (0.5.0-prototype; earlier packages carry unmapped.rule_id).",
+      "requirement": "recommended"
+    },
     "contract_sha256": {
       "requirement": "optional"
     },

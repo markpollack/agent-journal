@@ -6,7 +6,7 @@
  },
  "extension": {
   "name": "agentic_cli",
-  "version": "0.4.0-prototype"
+  "version": "0.5.0-prototype"
  },
  "purpose": "Comparison inventory only: for each attribute our extension defines, the upstream attribute it means, if any, and the verdict. It does not reshape the extension; our attributes and names are kept.",
  "evidence_class": "source-verified",
@@ -385,12 +385,36 @@
    "caveat": "No tool-call identifier at 1.9.0; the development head's ai_capability with transaction_uid (a JSON-RPC request id) is unreleased."
   },
   {
+   "ours": "tool_call.identity_basis_id",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream statement of what kind of identifier a tool-call id is (model-facing call id versus a stream-local item id)."
+  },
+  {
+   "ours": "tool_call.identity_basis",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of identity_basis_id, which has no counterpart."
+  },
+  {
    "ours": "tool_call.tool_name",
    "ours_kind": "class",
    "upstream": null,
    "upstream_file": null,
    "verdict": "no_counterpart",
    "caveat": "No tool identity at 1.9.0; the development head's ai_capability.name is unreleased and generalizes tools with resources and prompt templates."
+  },
+  {
+   "ours": "tool_call.tool_namespace",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No tool namespace (such as an MCP server) at 1.9.0; the development head's ai_capability is unreleased."
   },
   {
    "ours": "tool_call.tool_kind_id",
@@ -830,6 +854,22 @@
    "caveat": "No upstream content-kind classification (text, thought, tool call, tool result, image)."
   },
   {
+   "ours": "content_block.reasoning_form_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream distinction between full reasoning and a reasoning summary."
+  },
+  {
+   "ours": "content_block.reasoning_form",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of reasoning_form_id, which has no counterpart."
+  },
+  {
    "ours": "content_block.block_kind",
    "ours_kind": "object",
    "upstream": null,
@@ -966,6 +1006,14 @@
    "caveat": "Reached through metadata.transformation_info_list as one list element."
   },
   {
+   "ours": "journal_provenance.rule_uid",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "transformation_info identifies a transformation as a whole (our contract); no upstream attribute names the rule within it that produced an event."
+  },
+  {
    "ours": "journal_provenance.contract_sha256",
    "ours_kind": "object",
    "upstream": null,
@@ -1062,12 +1110,36 @@
    "caveat": "Upstream uid is assigned by the producer for a process; ours is the CLI's native identifier for a reported operation."
   },
   {
+   "ours": "operation.identity_basis_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream statement of what kind of identifier an operation id is."
+  },
+  {
+   "ours": "operation.identity_basis",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of identity_basis_id, which has no counterpart."
+  },
+  {
    "ours": "operation.argv",
    "ours_kind": "object",
    "upstream": "process_entity.cmd_line",
    "upstream_file": "objects/process_entity.json",
    "verdict": "maps_with_loss",
    "caveat": "An argument vector flattens into one command-line string; argument boundaries are lost."
+  },
+  {
+   "ours": "operation.command_line",
+   "ours_kind": "object",
+   "upstream": "process_entity.cmd_line",
+   "upstream_file": "objects/process_entity.json",
+   "verdict": "maps_with_loss",
+   "caveat": "Upstream describes an observed operating-system process; ours is the command string the CLI reports for an operation, not evidence that a process ran or how a shell parsed it."
   },
   {
    "ours": "operation.exit_code",
@@ -1412,6 +1484,22 @@
    "upstream_file": null,
    "verdict": "no_counterpart",
    "caveat": "Caption sibling of usage_status_id, which has no counterpart."
+  },
+  {
+   "ours": "usage_observation.measurement_status_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Upstream counts carry no statement that a value is measured rather than a source default."
+  },
+  {
+   "ours": "usage_observation.measurement_status",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of measurement_status_id, which has no counterpart."
   },
   {
    "ours": "usage_observation.basis",

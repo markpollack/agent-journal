@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.StreamReadFeature;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -176,6 +177,40 @@ public sealed interface Jv permits Jv.Obj, Jv.Arr, Jv.Str, Jv.Num, Jv.Bool, Jv.N
         }
     }
 
+    /** One repeated object member: its dotted member path (array elements as their index), its occurrence (2 or more) and value. */
+    record Duplicate(String path, int occurrence, Jv value) {
+    }
+
+    /** A value whose repeated object members were recorded, not merged: the tree holds each member's first occurrence. */
+    record WithDuplicates(Jv value, List<Duplicate> duplicates) {
+    }
+
+    /**
+     * Parses one JSON value while recording every repeated object member instead of rejecting the text. This is not
+     * the reader's mode: {@link #parse} stays strict, and a caller must accept only a duplicate form it has declared
+     * (both values are kept in {@link WithDuplicates#duplicates}; nothing is silently overwritten).
+     *
+     * @throws IllegalArgumentException if the text is not exactly one JSON value apart from repeated members
+     */
+    static WithDuplicates parseRecordingDuplicates(String text) {
+        JsonFactory lenient = JsonFactory.builder().disable(StreamReadFeature.STRICT_DUPLICATE_DETECTION).build();
+        try (JsonParser parser = lenient.createParser(text)) {
+            JsonToken first = parser.nextToken();
+            if (first == null) {
+                throw new IllegalArgumentException("empty JSON text");
+            }
+            List<Duplicate> duplicates = new ArrayList<>();
+            Jv value = read(parser, first, "", duplicates);
+            if (parser.nextToken() != null) {
+                throw new IllegalArgumentException("trailing content after the JSON value");
+            }
+            return new WithDuplicates(value, List.copyOf(duplicates));
+        }
+        catch (IOException e) {
+            throw new IllegalArgumentException("not JSON: " + e.getMessage(), e);
+        }
+    }
+
     private static Jv read(JsonParser parser, JsonToken token) throws IOException {
         switch (token) {
             case START_OBJECT -> {
@@ -194,6 +229,49 @@ public sealed interface Jv permits Jv.Obj, Jv.Arr, Jv.Str, Jv.Num, Jv.Bool, Jv.N
                 }
                 return a;
             }
+            default -> {
+                return scalar(parser, token);
+            }
+        }
+    }
+
+    /** As {@link #read(JsonParser, JsonToken)}, recording each repeated member under its dotted path instead of keeping it. */
+    private static Jv read(JsonParser parser, JsonToken token, String path, List<Duplicate> duplicates) throws IOException {
+        switch (token) {
+            case START_OBJECT -> {
+                Obj o = new Obj();
+                Map<String, Integer> seen = new HashMap<>();
+                while (parser.nextToken() != JsonToken.END_OBJECT) {
+                    String key = parser.currentName();
+                    String at = path.isEmpty() ? key : path + "." + key;
+                    Jv v = read(parser, parser.nextToken(), at, duplicates);
+                    int n = seen.merge(key, 1, Integer::sum);
+                    if (n == 1) {
+                        o.members().put(key, v);
+                    }
+                    else {
+                        duplicates.add(new Duplicate(at, n, v));
+                    }
+                }
+                return o;
+            }
+            case START_ARRAY -> {
+                Arr a = new Arr();
+                JsonToken next;
+                int i = 0;
+                while ((next = parser.nextToken()) != JsonToken.END_ARRAY) {
+                    a.add(read(parser, next, path + "." + i++, duplicates));
+                }
+                return a;
+            }
+            default -> {
+                return scalar(parser, token);
+            }
+        }
+    }
+
+    private static Jv scalar(JsonParser parser, JsonToken token) throws IOException {
+        switch (token) {
             case VALUE_STRING -> {
                 return new Str(parser.getText());
             }

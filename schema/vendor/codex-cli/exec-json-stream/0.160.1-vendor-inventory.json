@@ -147,7 +147,7 @@
    "journal": {
     "behavior": "normalized",
     "rule": "codex.stream.turn_completed->prompt_turn.completed",
-    "note": "usage observation with scope turn and status final; the vendor value is the thread's cumulative total and zeros when unreported (see gaps)"
+    "note": "usage observation at session (thread) scope, final for the run: the vendor value is ThreadTokenUsage.total, the thread's cumulative usage at turn completion; measurement_status 2 when every component is zero (the emitter's default), 1 otherwise (SEM-1 candidate, pending Owner approval)"
    }
   },
   {
@@ -336,9 +336,9 @@
     "reasoning_item_completed_uses_synthetic_id"
    ],
    "journal": {
-    "behavior": "retained-only",
-    "rule": "codex.stream.fallback->source_record",
-    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+    "behavior": "normalized",
+    "rule": "codex.stream.reasoning->model_response",
+    "note": "a model_response whose one block is the reasoning summary (block_kind Thought, reasoning_form Summary); stream-local item id (SEM-1 candidate)"
    }
   },
   {
@@ -423,7 +423,7 @@
    "journal": {
     "behavior": "normalized",
     "rule": "codex.stream.command_execution->tool_call.operation",
-    "note": "a tool_call carrying one observed operation (uid = stream-local item id, reported_state, exit_code, stdout); command text retained in data only; declined is kept as reported_state with status Unknown"
+    "note": "a standalone operation observation (uid = stream-local item id, identity_basis 2; command_line = item.command exactly; reported_state, exit_code, stdout); declined is status 99 \"Declined\", the reported status, not a permission decision (SEM-1 candidate)"
    }
   },
   {
@@ -509,7 +509,7 @@
    "journal": {
     "behavior": "normalized",
     "rule": "codex.stream.command_execution->tool_call.operation",
-    "note": "a tool_call carrying one observed operation (uid = stream-local item id, reported_state, exit_code, stdout); command text retained in data only; declined is kept as reported_state with status Unknown"
+    "note": "a standalone operation observation (uid = stream-local item id, identity_basis 2; command_line = item.command exactly; reported_state, exit_code, stdout); declined is status 99 \"Declined\", the reported status, not a permission decision (SEM-1 candidate)"
    }
   },
   {
@@ -597,9 +597,9 @@
     "file_change_declined_maps_to_failed_status"
    ],
    "journal": {
-    "behavior": "retained-only",
-    "rule": "codex.stream.fallback->source_record",
-    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+    "behavior": "normalized",
+    "rule": "codex.stream.file_change->tool_call.result",
+    "note": "a tool_call Result observed under the stream-local item id (identity_basis 2); reported status (a declined patch is reported as failed); the changes stay in data (SEM-1 candidate)"
    }
   },
   {
@@ -684,9 +684,9 @@
    ],
    "vendor_tests": [],
    "journal": {
-    "behavior": "retained-only",
-    "rule": "codex.stream.fallback->source_record",
-    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+    "behavior": "normalized",
+    "rule": "codex.stream.file_change->tool_call.requested",
+    "note": "a tool_call Requested under the stream-local item id (identity_basis 2); reported status (a declined patch is reported as failed); the changes stay in data (SEM-1 candidate)"
    }
   },
   {
@@ -815,9 +815,9 @@
     "mcp_tool_call_defaults_arguments_and_preserves_structured_content"
    ],
    "journal": {
-    "behavior": "retained-only",
-    "rule": "codex.stream.fallback->source_record",
-    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+    "behavior": "normalized",
+    "rule": "codex.stream.mcp_tool_call->tool_call.requested",
+    "note": "a tool_call Requested under the stream-local item id (identity_basis 2); tool name, server as tool_namespace, arguments, result content, structured content and the reported outcome (SEM-1 candidate)"
    }
   },
   {
@@ -947,9 +947,9 @@
     "mcp_tool_call_defaults_arguments_and_preserves_structured_content"
    ],
    "journal": {
-    "behavior": "retained-only",
-    "rule": "codex.stream.fallback->source_record",
-    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+    "behavior": "normalized",
+    "rule": "codex.stream.mcp_tool_call->tool_call.result",
+    "note": "a tool_call Result observed under the stream-local item id (identity_basis 2); tool name, server as tool_namespace, arguments, result content, structured content and the reported outcome (SEM-1 candidate)"
    }
   },
   {
@@ -1053,9 +1053,9 @@
     "collab_spawn_begin_and_end_emit_item_events"
    ],
    "journal": {
-    "behavior": "retained-only",
-    "rule": "codex.stream.fallback->source_record",
-    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+    "behavior": "normalized",
+    "rule": "codex.stream.collab_tool_call->tool_call.requested",
+    "note": "a tool_call Requested under the stream-local item id (identity_basis 2); tool name and reported status; sender, receivers, prompt and agent states stay in data (no child-run link) (SEM-1 candidate)"
    }
   },
   {
@@ -1159,9 +1159,9 @@
     "collab_spawn_begin_and_end_emit_item_events"
    ],
    "journal": {
-    "behavior": "retained-only",
-    "rule": "codex.stream.fallback->source_record",
-    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+    "behavior": "normalized",
+    "rule": "codex.stream.collab_tool_call->tool_call.result",
+    "note": "a tool_call Result observed under the stream-local item id (identity_basis 2); tool name and reported status; sender, receivers, prompt and agent states stay in data (no child-run link) (SEM-1 candidate)"
    }
   },
   {
@@ -1238,9 +1238,12 @@
     "web_search_start_and_completion_reuse_item_id"
    ],
    "journal": {
-    "behavior": "opaque",
-    "rule": "common.opaque->source_record",
-    "note": "the duplicate id member makes the reader refuse to parse the record; its bytes are retained verbatim, no field is readable (defect to resolve)"
+    "behavior": "normalized",
+    "rule": "codex.stream.web_search->tool_call.requested",
+    "also_rules": [
+     "common.opaque->source_record"
+    ],
+    "note": "the line repeats item.id (the exec item id, then the search item's own id), so strict parsing refuses it and it is retained verbatim as an opaque record; only that declared form is read beside it as a tool_call under the first id, with the action as arguments and the results as the result (SEM-1 candidate)"
    },
    "wire_note": "the line very likely carries two 'id' members: the stream-local item id, then the search item's own id (WebSearchItem flattens an id field beside ThreadItem.id and emit() serializes with serde_json::to_string); inferred from the vendor types, the vendor tests compare deserialized values and cannot show it; needs live confirmation"
   },
@@ -1320,9 +1323,12 @@
     "web_search_start_and_completion_reuse_item_id"
    ],
    "journal": {
-    "behavior": "opaque",
-    "rule": "common.opaque->source_record",
-    "note": "the duplicate id member makes the reader refuse to parse the record; its bytes are retained verbatim, no field is readable (defect to resolve)"
+    "behavior": "normalized",
+    "rule": "codex.stream.web_search->tool_call.result",
+    "also_rules": [
+     "common.opaque->source_record"
+    ],
+    "note": "the line repeats item.id (the exec item id, then the search item's own id), so strict parsing refuses it and it is retained verbatim as an opaque record; only that declared form is read beside it as a tool_call under the first id, with the action as arguments and the results as the result (SEM-1 candidate)"
    },
    "wire_note": "the line very likely carries two 'id' members: the stream-local item id, then the search item's own id (WebSearchItem flattens an id field beside ThreadItem.id and emit() serializes with serde_json::to_string); inferred from the vendor types, the vendor tests compare deserialized values and cannot show it; needs live confirmation"
   },

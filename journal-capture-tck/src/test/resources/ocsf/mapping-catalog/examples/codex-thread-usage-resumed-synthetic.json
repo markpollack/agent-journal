@@ -30,11 +30,14 @@
       "values": {
         "/usage_observations/0/scope_id": 5,
         "/usage_observations/0/usage_status_id": 2,
+        "/usage_observations/0/measurement_status_id": 1,
         "/usage_observations/0/input_tokens": 2500,
         "/usage_observations/0/cache_read_tokens": 2000,
         "/usage_observations/0/output_tokens": 40
       },
-      "absent": ["/usage_observations/1"]
+      "absent": [
+        "/usage_observations/1"
+      ]
     }
   ],
   "counterexamples": [
@@ -43,7 +46,9 @@
       "record": 4,
       "class": "prompt_turn",
       "activity_id": 2,
-      "values": {"/usage_observations/0/scope_id": 3},
+      "values": {
+        "/usage_observations/0/scope_id": 3
+      },
       "why": "Would state that this turn used 2500 input tokens; it used 1500. Equal components, different meaning."
     },
     {
@@ -51,7 +56,9 @@
       "record": 4,
       "class": "prompt_turn",
       "activity_id": 2,
-      "values": {"/usage_observations/0/input_tokens": 1500},
+      "values": {
+        "/usage_observations/0/input_tokens": 1500
+      },
       "why": "A per-turn delta needs the previous run's total; the writer records what the source reported and never computes deltas or cross-run sums."
     }
   ]

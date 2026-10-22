@@ -56,7 +56,7 @@ class CodexStreamMapperTest {
         assertThat(first.member("content_blocks").elements()).hasSize(1);
         assertThat(first.member("content_blocks").elements().get(0).member("text").text()).isEqualTo("SYNTHETIC: I will run three commands.\n");
         assertThat(first.member("content_blocks").elements().get(0).member("block_type").text()).isEqualTo("agent_message.text");
-        assertThat(first.path("unmapped", "rule_id").text()).isEqualTo("codex.stream.agent_message->model_response");
+        assertThat(first.path("journal", "rule_uid").text()).isEqualTo("codex.stream.agent_message->model_response");
         // 4..8 command executions: operations, unattributed, with the reported state and exit code of each observation
         operation(events.get(3), "item_1", "in_progress", null, 0);
         operation(events.get(4), "item_1", "completed", "0", 1);
@@ -71,7 +71,7 @@ class CodexStreamMapperTest {
         assertThat(events.get(8).member("record_type").text()).isEqualTo("item.completed/synthetic_unknown_item");
         assertThat(events.get(8).path("data", "item", "note").text()).contains("SYNTHETIC");
         assertThat(events.get(9).member("record_type").text()).isEqualTo("synthetic.unknown_event");
-        assertThat(events.get(9).path("unmapped", "rule_id").text()).isEqualTo("codex.stream.fallback->source_record");
+        assertThat(events.get(9).path("journal", "rule_uid").text()).isEqualTo("codex.stream.fallback->source_record");
         // 11 second agent message, 12 turn.completed with the exact usage spelled as the source spelled it
         assertThat(events.get(10).member("response_uid").text()).isEqualTo("item_5");
         Jv turn = events.get(11);
@@ -85,8 +85,10 @@ class CodexStreamMapperTest {
         assertThat(Jv.write(usage.member("output_tokens"))).isEqualTo("143");
         assertThat(Jv.write(usage.member("reasoning_tokens"))).isEqualTo("7");
         assertThat(usage.member("reported_total_tokens")).as("the stream reports no total; none is derived").isNull();
-        assertThat(((Jv.Num) usage.member("scope_id")).value().intValue()).isEqualTo(3);
+        // the thread's cumulative usage at turn completion, session scope, final for the run (SEM-1 candidate, pending Owner approval)
+        assertThat(((Jv.Num) usage.member("scope_id")).value().intValue()).isEqualTo(5);
         assertThat(((Jv.Num) usage.member("usage_status_id")).value().intValue()).isEqualTo(2);
+        assertThat(((Jv.Num) usage.member("measurement_status_id")).value().intValue()).as("a non-zero component: a measured update").isEqualTo(1);
         assertThat(((Jv.Num) turn.member("status_id")).value().intValue()).isEqualTo(0);
         assertThat(((Jv.Num) turn.member("status_basis_id")).value().intValue()).isEqualTo(3);
         // the family inventory the writer declares
@@ -105,6 +107,8 @@ class CodexStreamMapperTest {
         assertThat(((Jv.Num) e.member("activity_id")).value().intValue()).isEqualTo(3);
         Jv op = e.member("tool_operation");
         assertThat(op.member("uid").text()).isEqualTo(uid);
+        assertThat(((Jv.Num) op.member("identity_basis_id")).value().intValue()).as("a stream-local item id").isEqualTo(2);
+        assertThat(op.member("command_line")).as("the reported command string, unparsed").isEqualTo(e.path("data", "item", "command"));
         assertThat(op.member("reported_state").text()).isEqualTo(state);
         if (exitCode == null) {
             assertThat(op.member("exit_code")).as("exit_code null at source is absent, never 0").isNull();
@@ -118,7 +122,7 @@ class CodexStreamMapperTest {
         assertThat(((Jv.Num) op.path("attribution", "method_id")).value().intValue()).isEqualTo(2);
         assertThat(op.path("attribution", "candidates").elements()).isEmpty();
         assertThat(e.member("tool_call_uid")).as("no call id exists in the stream").isNull();
-        assertThat(e.path("unmapped", "rule_id").text()).isEqualTo("codex.stream.command_execution->tool_call.operation");
+        assertThat(e.path("journal", "rule_uid").text()).isEqualTo("codex.stream.command_execution->tool_call.operation");
     }
 
     @Test
@@ -148,6 +152,58 @@ class CodexStreamMapperTest {
         Jv source = WriterTestSupport.manifest(core).member("sources").elements().get(0);
         assertThat(((Jv.Num) source.member("opaque_records")).value().intValue()).isEqualTo(1);
         assertThat(((Jv.Num) source.member("records")).value().intValue()).isEqualTo(3);
+    }
+
+    /**
+     * A web_search line repeats item.id (serde flattens WebSearchItem, which has its own id, into ThreadItem, whose id
+     * comes first). That one declared form is read as a tool call under the first id beside its verbatim opaque record;
+     * any other repeated member, a third id, or the same repeat on another item type stays an opaque record with no
+     * interpretation, and strict parsing still refuses every duplicate.
+     */
+    @Test
+    void onlyTheDeclaredWebSearchDuplicateIsInterpretedAndEveryOtherDuplicateStaysOpaque(@TempDir Path work) {
+        // SYNTHETIC unit inputs in the vendor's key order; only the first is the form the pinned emitter writes
+        List<String> inputs = List.of(
+                "{\"type\":\"item.started\",\"item\":{\"id\":\"item_1\",\"type\":\"web_search\",\"id\":\"search-1\",\"query\":\"\",\"action\":{\"type\":\"other\"}}}",
+                "{\"type\":\"item.started\",\"item\":{\"id\":\"item_2\",\"type\":\"web_search\",\"query\":\"a\",\"query\":\"b\",\"action\":{\"type\":\"other\"}}}",
+                "{\"type\":\"item.started\",\"item\":{\"id\":\"item_3\",\"type\":\"web_search\",\"id\":\"search-3\",\"id\":\"search-3b\",\"query\":\"\",\"action\":{\"type\":\"other\"}}}",
+                "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_4\",\"type\":\"agent_message\",\"id\":\"msg-4\",\"text\":\"x\"}}",
+                "{\"type\":\"item.started\",\"type\":\"item.completed\",\"item\":{\"id\":\"item_5\",\"type\":\"web_search\",\"query\":\"\",\"action\":{\"type\":\"other\"}}}");
+        Path core = work.resolve("core");
+        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(CODEX_STREAM), SchemaPin.bundled(), options())) {
+            SourceInput in = w.source(codexStream());
+            for (String line : inputs) {
+                in.record(line.getBytes(StandardCharsets.UTF_8), "LF", options().clock().instant());
+            }
+            in.end(SourceInput.End.EOF, options().clock().instant());
+            w.complete();
+        }
+        List<Jv> events = new ArrayList<>();
+        for (String line : WriterTestSupport.eventLines(core.resolve("events.jsonl"))) {
+            events.add(Jv.parse(line));
+        }
+        // record 1: the verbatim opaque record (both ids in raw_data), then the tool call under the first id, not retaining the record
+        assertThat(events).hasSize(6);
+        assertThat(events.get(0).member("raw_data").text()).isEqualTo(inputs.get(0));
+        assertThat(events.get(0).path("source_ref", "is_whole_record")).isEqualTo(new Jv.Bool(true));
+        assertThat(events.get(1).member("class_name").text()).isEqualTo("Tool Call");
+        assertThat(events.get(1).member("tool_call_uid").text()).isEqualTo("item_1");
+        assertThat(events.get(1).path("source_ref", "is_whole_record")).isEqualTo(new Jv.Bool(false));
+        assertThat(events.get(1).member("data")).isNull();
+        // records 2 to 5: an opaque record each, nothing else
+        for (int i = 2; i < 6; i++) {
+            Jv e = events.get(i);
+            assertThat(e.member("class_name").text()).isEqualTo("Source Record");
+            assertThat(((Jv.Num) e.member("activity_id")).value().intValue()).isEqualTo(2);
+            assertThat(e.member("raw_data").text()).isEqualTo(inputs.get(i - 1));
+        }
+        // strict parsing is unchanged; the duplicate-recording parse keeps both values without merging them
+        for (String line : inputs) {
+            org.assertj.core.api.Assertions.assertThatThrownBy(() -> Jv.parse(line)).isInstanceOf(IllegalArgumentException.class);
+        }
+        Jv.WithDuplicates d = Jv.parseRecordingDuplicates(inputs.get(0));
+        assertThat(d.value().path("item", "id").text()).isEqualTo("item_1");
+        assertThat(d.duplicates()).containsExactly(new Jv.Duplicate("item.id", 2, new Jv.Str("search-1")));
     }
 
     /** The thread id the stream states once in thread.started is the session identity of every later event, and is declared once in the file. */

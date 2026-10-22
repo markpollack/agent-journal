@@ -48,7 +48,7 @@ class DeclaredFileDiagnosticsTest {
 
         Path c = copy(CODEX, work.resolve("extension"));
         editManifest(pkg(c), run -> obj(run.get("extension")).members().put("version", str("0.9.0-prototype")));
-        assertThat(open(c).diagnosticsWithCode("MANIFEST_DISAGREES").get(0).detail()).contains("extension 901 0.9.0-prototype vs declared 901 0.4.0-prototype");
+        assertThat(open(c).diagnosticsWithCode("MANIFEST_DISAGREES").get(0).detail()).contains("extension 901 0.9.0-prototype vs declared 901 0.5.0-prototype");
 
         Path d = copy(CODEX, work.resolve("classes"));
         editManifest(pkg(d), run -> obj(run.path("extension", "classes")).members().remove("tool_call"));

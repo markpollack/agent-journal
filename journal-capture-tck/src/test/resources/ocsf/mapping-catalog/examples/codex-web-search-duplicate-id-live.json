@@ -1,0 +1,357 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "codex-web-search-duplicate-id-live",
+  "concept": "opaque-malformed-and-blank-records",
+  "description": "A Codex CLI 0.160.1 web_search line repeats item.id: serde writes ThreadItem.id (the exec processor's item_N) and then the flattened WebSearchItem.id (the app-server item's own id). Strict parsing refuses the line, so it is retained verbatim as an opaque record with both ids; in exactly this declared form it is also read as a tool call under the first id, never the last. The search action is the request arguments and the results are the result content.",
+  "authored_from": [
+    "codex-exec-0.160.1-emitter-items",
+    "codex-exec-0.160.1-types",
+    "codex-exec-0.160.1-thread-item-flatten"
+  ],
+  "native": {
+    "evidence_kind": "live",
+    "profile": "codex_stream",
+    "compatibility_entry": "codex-cli/exec-json-stream/0.160.1",
+    "fixture": "codex-live-0.160.1-web-search",
+    "artifact": "stream.jsonl",
+    "sha256": "bf2b9309998c1cbe16f3030c6230e371fca312c1e6f189b56e97056761722e0c"
+  },
+  "expected": [
+    {
+      "record": 4,
+      "class": "source_record",
+      "activity_id": 2,
+      "values": {
+        "/raw_data": "{\"type\":\"item.started\",\"item\":{\"id\":\"item_1\",\"type\":\"web_search\",\"id\":\"exec-6556473a-3503-4dad-9f2b-41bea3a57b0e\",\"query\":\"\",\"action\":{\"type\":\"other\"}}}",
+        "/parse_status_id": 2,
+        "/source_ref/is_whole_record": true
+      }
+    },
+    {
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 1,
+      "values": {
+        "/tool_call_uid": "item_1",
+        "/identity_basis_id": 2,
+        "/tool_name": "web_search",
+        "/tool_kind_id": 5,
+        "/arguments": {
+          "type": "other"
+        },
+        "/source_ref/is_whole_record": false
+      },
+      "absent": [
+        "/data"
+      ]
+    },
+    {
+      "record": 5,
+      "class": "tool_call",
+      "activity_id": 2,
+      "values": {
+        "/tool_call_uid": "item_1",
+        "/arguments": {
+          "type": "search",
+          "query": "example.com IANA reserved domain"
+        },
+        "/tool_result/data": [
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-1"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-2"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-3"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-4"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-5"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-6"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-7"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-8"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-9"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-10"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-11"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-12"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-13"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-14"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-15"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-16"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-17"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-18"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-19"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-20"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-21"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-22"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-23"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-24"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-25"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-26"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-27"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-28"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-29"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-30"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-31"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-32"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-33"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-34"
+          },
+          {
+            "type": "SANITIZED: third-party web content",
+            "domain": "SANITIZED: third-party web content",
+            "ref_id": "SANITIZED: third-party web content",
+            "snippet": "SANITIZED: third-party web content",
+            "title": "SANITIZED: third-party web content",
+            "url": "https://example.com/result-35"
+          }
+        ],
+        "/status_id": 0,
+        "/status_basis_id": 3
+      }
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "last-member-wins",
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 1,
+      "values": {
+        "/tool_call_uid": "exec-6556473a-3503-4dad-9f2b-41bea3a57b0e"
+      },
+      "why": "A last-key-wins parser would silently take the search item's own id as the call identity; the declared form names the first member as the stream-local item id."
+    }
+  ]
+}

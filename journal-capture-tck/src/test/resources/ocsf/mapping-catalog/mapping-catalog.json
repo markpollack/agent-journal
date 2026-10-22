@@ -259,7 +259,7 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
      "rule_id": "codex.stream.fallback->source_record",
      "implementation": "CodexStreamMapper#map"
     }
@@ -615,7 +615,7 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
      "rule_id": "codex.stream.turn_completed->prompt_turn.completed",
      "implementation": "CodexStreamMapper#map"
     }
@@ -1511,7 +1511,7 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
      "rule_id": "codex.stream.agent_message->model_response",
      "implementation": "CodexStreamMapper#map"
     }
@@ -1870,7 +1870,7 @@
      "implementation": "MapperSupport#blocks"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
      "rule_id": "codex.stream.agent_message->model_response",
      "implementation": "CodexStreamMapper#map"
     }
@@ -2172,6 +2172,11 @@
      "class": "model_response",
      "path": "model_response.content_blocks[].data",
      "definition_file": "objects/content_block.json"
+    },
+    {
+     "class": "model_response",
+     "path": "model_response.content_blocks[].reasoning_form_id",
+     "definition_file": "objects/content_block.json"
     }
    ],
    "native_evidence": [
@@ -2209,19 +2214,6 @@
      "records": "1-15",
      "field": "reasoning item",
      "availability": "absent"
-    },
-    {
-     "cli": "codex",
-     "artifact": "stream.jsonl",
-     "route": "codex-cli/exec-json-stream/0.160.1",
-     "records": "every committed recording of the route",
-     "field": "reasoning summary text (item.completed/reasoning; non-empty summaries only, joined with newlines; no signature or raw content)",
-     "availability": "supported",
-     "vendor_families": [
-      "item.completed/reasoning"
-     ],
-     "scenario": "value:item.type=reasoning",
-     "basis": "vendor source declares it on the exec stream (codex-rs/exec/src/exec_events.rs at rust-v0.160.1); Journal retains the records whole and does not normalize them: FND-1 gap: normalize the summary as a reasoning block; the signature and raw content are omitted by the projection"
     }
    ],
    "mapping": [
@@ -2234,6 +2226,11 @@
      "contract_uid": "claude-code/session-transcript/2.1.303/0.2.0-prototype",
      "rule_id": "claude.transcript.assistant->model_response",
      "implementation": "MapperSupport#blocks"
+    },
+    {
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "rule_id": "codex.stream.reasoning->model_response",
+     "implementation": "CodexStreamMapper#response"
     }
    ],
    "oracle": [
@@ -2252,6 +2249,15 @@
       "response.values"
      ],
      "scenario": "block:thinking"
+    },
+    {
+     "profile": "CodexStreamProfile",
+     "family": "Response",
+     "properties": [
+      "population.responses",
+      "response.values"
+     ],
+     "scenario": "value:item.type=reasoning"
     }
    ],
    "views": [
@@ -2266,7 +2272,7 @@
     "value": "adapt",
     "reason": "Reasoning text and the opaque signature kept verbatim, empty text included; OTel has no signature field and Weave drops empty signed thinking."
    },
-   "notes": "On these 2.1.303 fixtures every thinking block has an empty thinking string and a signature; the oracle compares the native block value exactly, so a dropped or re-encoded signature is a response.values defect. Codex 0.160.1 wrote no reasoning items in pair B (CONCEPT-MATRIX row 8 saw encrypted reasoning on other runs); that case is unexercised here and would fall under block_kind default 99 with the block retained whole. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: reasoning summary text (item.completed/reasoning; non-empty summaries only, joined with newlines; no signature or raw content).",
+   "notes": "On these 2.1.303 fixtures every thinking block has an empty thinking string and a signature; the oracle compares the native block value exactly, so a dropped or re-encoded signature is a response.values defect. Codex 0.160.1 wrote no reasoning items in pair B (CONCEPT-MATRIX row 8 saw encrypted reasoning on other runs); that case is unexercised here and would fall under block_kind default 99 with the block retained whole. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: reasoning summary text (item.completed/reasoning; non-empty summaries only, joined with newlines; no signature or raw content). SEM-1 (2026-10-22): the Codex exec stream's reasoning items (one reasoning-summary block, reasoning_form_id 2 Summary: the processor joins the summary parts; no signature or raw reasoning is projected) are normalized under contract 0.3.0-prototype, a candidate whose meaning awaits the Project Owner's approval; the earlier route claim that Journal only retained them (vendor families ['item.completed/reasoning']) is replaced by the oracle obligations above.",
    "observations": [
     {
      "item": "thinking block (empty text + signature)",
@@ -3539,7 +3545,7 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
      "rule_id": "codex.stream.agent_message->model_response",
      "implementation": "CodexStreamMapper#map"
     }
@@ -3809,6 +3815,16 @@
      "class": "content_block",
      "path": "content_block.tool_call_uid",
      "definition_file": "objects/content_block.json"
+    },
+    {
+     "class": "tool_call",
+     "path": "tool_call.identity_basis_id",
+     "definition_file": "events/agent_execution/tool_call.json"
+    },
+    {
+     "class": "tool_call",
+     "path": "tool_call.tool_namespace",
+     "definition_file": "events/agent_execution/tool_call.json"
     }
    ],
    "native_evidence": [
@@ -3839,25 +3855,6 @@
      "records": "1-15",
      "field": "call id / request record (none; the stream has only command_execution items)",
      "availability": "absent"
-    },
-    {
-     "cli": "codex",
-     "artifact": "stream.jsonl",
-     "route": "codex-cli/exec-json-stream/0.160.1",
-     "records": "every committed recording of the route",
-     "field": "MCP server, tool and structured arguments; collab operation and prompt; web-search query and action; file-change paths; each under a stream-local item id (the original call id is omitted)",
-     "availability": "supported",
-     "vendor_families": [
-      "item.started/mcp_tool_call",
-      "item.completed/mcp_tool_call",
-      "item.started/collab_tool_call",
-      "item.completed/collab_tool_call",
-      "item.completed/file_change",
-      "item.started/web_search",
-      "item.completed/web_search"
-     ],
-     "scenario": "value:item.type=mcp_tool_call",
-     "basis": "vendor source declares it on the exec stream (codex-rs/exec/src/exec_events.rs at rust-v0.160.1); Journal retains the records whole and does not normalize them: commands are normalized as operations (observed-operations); MCP, collab, web-search and file-change requests are not normalized as tool calls; no model-facing call id exists on the stream"
     }
    ],
    "mapping": [
@@ -3875,6 +3872,26 @@
      "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
      "rule_id": "codex.rollout.custom_tool_call->tool_call.requested",
      "implementation": "CodexRolloutMapper#map"
+    },
+    {
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "rule_id": "codex.stream.mcp_tool_call->tool_call.requested",
+     "implementation": "CodexStreamMapper#toolCall"
+    },
+    {
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "rule_id": "codex.stream.web_search->tool_call.requested",
+     "implementation": "CodexStreamMapper#toolCall"
+    },
+    {
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "rule_id": "codex.stream.collab_tool_call->tool_call.requested",
+     "implementation": "CodexStreamMapper#toolCall"
+    },
+    {
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "rule_id": "codex.stream.file_change->tool_call.requested",
+     "implementation": "CodexStreamMapper#toolCall"
     }
    ],
    "oracle": [
@@ -3901,6 +3918,15 @@
       "population.requests",
       "request.values"
      ]
+    },
+    {
+     "profile": "CodexStreamProfile",
+     "family": "Request",
+     "properties": [
+      "population.requests",
+      "request.values"
+     ],
+     "scenario": "facts:requests"
     }
    ],
    "views": [
@@ -3917,7 +3943,7 @@
     "value": "adapt",
     "reason": "Native call id, exact tool name and structured arguments; foundations carry arguments as a JSON string."
    },
-   "notes": "Parsed-equal arguments are checked (CONCEPT-MATRIX row 4: byte-level argument comparison is not claimed); the Jv tree keeps number spellings so representation differences are reported separately. The Codex exec input is a single string wrapping several commands and is never parsed for classification (owner decision 2026-10-14). FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: MCP server, tool and structured arguments; collab operation and prompt; web-search query and action; file-change paths; each under a stream-local item id (the original call id is omitted).",
+   "notes": "Parsed-equal arguments are checked (CONCEPT-MATRIX row 4: byte-level argument comparison is not claimed); the Jv tree keeps number spellings so representation differences are reported separately. The Codex exec input is a single string wrapping several commands and is never parsed for classification (owner decision 2026-10-14). FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: MCP server, tool and structured arguments; collab operation and prompt; web-search query and action; file-change paths; each under a stream-local item id (the original call id is omitted). SEM-1 (2026-10-22): the Codex exec stream's MCP, web search, collaboration and file-change requests (stream-local item ids, identity_basis_id 2; MCP server as tool_namespace) are normalized under contract 0.3.0-prototype, a candidate whose meaning awaits the Project Owner's approval; the earlier route claim that Journal only retained them (vendor families ['item.completed/collab_tool_call', 'item.completed/file_change', 'item.completed/mcp_tool_call', 'item.completed/web_search', 'item.started/collab_tool_call', 'item.started/mcp_tool_call', 'item.started/web_search']) is replaced by the oracle obligations above.",
    "observations": [
     {
      "item": "tool call id and parsed arguments",
@@ -4187,22 +4213,6 @@
      "records": "1-15",
      "field": "tool name (none: command_execution items carry a command string, no tool name)",
      "availability": "absent"
-    },
-    {
-     "cli": "codex",
-     "artifact": "stream.jsonl",
-     "route": "codex-cli/exec-json-stream/0.160.1",
-     "records": "every committed recording of the route",
-     "field": "tool families that imply a kind (mcp_tool_call, collab_tool_call, web_search, file_change, command_execution)",
-     "availability": "supported",
-     "vendor_families": [
-      "item.completed/mcp_tool_call",
-      "item.completed/collab_tool_call",
-      "item.completed/web_search",
-      "item.completed/file_change"
-     ],
-     "scenario": "value:item.type=mcp_tool_call",
-     "basis": "vendor source declares it on the exec stream (codex-rs/exec/src/exec_events.rs at rust-v0.160.1); Journal retains the records whole and does not normalize them: no kind table for the exec stream families yet"
     }
    ],
    "mapping": [
@@ -4220,6 +4230,26 @@
      "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
      "rule_id": "codex.rollout.custom_tool_call->tool_call.requested",
      "implementation": "MappingContracts#toolKind"
+    },
+    {
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "rule_id": "codex.stream.mcp_tool_call->tool_call.requested",
+     "implementation": "MappingContracts#toolKind"
+    },
+    {
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "rule_id": "codex.stream.web_search->tool_call.requested",
+     "implementation": "MappingContracts#toolKind"
+    },
+    {
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "rule_id": "codex.stream.collab_tool_call->tool_call.requested",
+     "implementation": "MappingContracts#toolKind"
+    },
+    {
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "rule_id": "codex.stream.file_change->tool_call.requested",
+     "implementation": "MappingContracts#toolKind"
     }
    ],
    "oracle": [
@@ -4236,6 +4266,14 @@
      "properties": [
       "request.values"
      ]
+    },
+    {
+     "profile": "CodexStreamProfile",
+     "family": "Request",
+     "properties": [
+      "request.values"
+     ],
+     "scenario": "facts:requests"
     }
    ],
    "views": [
@@ -4250,7 +4288,7 @@
     "value": "adopt",
     "reason": "ACP v1 ToolKind vocabulary taken as is, with the mapping basis recorded; a kind is not evidence of an operating-system effect."
    },
-   "notes": "The tables are claude.tool_name_to_kind.v1 and codex.tool_name_to_kind.v1 in the contracts (Task and unknown names -> 99 other). The oracle recomputes the kind from the name table independently of the writer. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: tool families that imply a kind (mcp_tool_call, collab_tool_call, web_search, file_change, command_execution).",
+   "notes": "The tables are claude.tool_name_to_kind.v1 and codex.tool_name_to_kind.v1 in the contracts (Task and unknown names -> 99 other). The oracle recomputes the kind from the name table independently of the writer. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: tool families that imply a kind (mcp_tool_call, collab_tool_call, web_search, file_change, command_execution). SEM-1 (2026-10-22): the Codex exec stream's tool families (kind by the contract's name table: web_search 5 search, file_change 2 edit, MCP and collaboration tools 99 other) are normalized under contract 0.3.0-prototype, a candidate whose meaning awaits the Project Owner's approval; the earlier route claim that Journal only retained them (vendor families ['item.completed/collab_tool_call', 'item.completed/file_change', 'item.completed/mcp_tool_call', 'item.completed/web_search']) is replaced by the oracle obligations above.",
    "observations": []
   },
   {
@@ -4415,20 +4453,6 @@
      "records": "1-15",
      "field": "result keyed by call id (none)",
      "availability": "absent"
-    },
-    {
-     "cli": "codex",
-     "artifact": "stream.jsonl",
-     "route": "codex-cli/exec-json-stream/0.160.1",
-     "records": "every committed recording of the route",
-     "field": "MCP result content, error and web-search results on the completion of the same stream-local item id",
-     "availability": "supported",
-     "vendor_families": [
-      "item.completed/mcp_tool_call",
-      "item.completed/web_search"
-     ],
-     "scenario": "value:item.type=mcp_tool_call",
-     "basis": "vendor source declares it on the exec stream (codex-rs/exec/src/exec_events.rs at rust-v0.160.1); Journal retains the records whole and does not normalize them: results are owned by the stream-local item id (start and completion share it), not by a model-facing call id"
     }
    ],
    "mapping": [
@@ -4446,6 +4470,26 @@
      "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
      "rule_id": "codex.rollout.custom_tool_call_output->tool_call.result",
      "implementation": "CodexRolloutMapper#map"
+    },
+    {
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "rule_id": "codex.stream.mcp_tool_call->tool_call.result",
+     "implementation": "CodexStreamMapper#toolCall"
+    },
+    {
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "rule_id": "codex.stream.web_search->tool_call.result",
+     "implementation": "CodexStreamMapper#toolCall"
+    },
+    {
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "rule_id": "codex.stream.collab_tool_call->tool_call.result",
+     "implementation": "CodexStreamMapper#toolCall"
+    },
+    {
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "rule_id": "codex.stream.file_change->tool_call.result",
+     "implementation": "CodexStreamMapper#toolCall"
     }
    ],
    "oracle": [
@@ -4475,6 +4519,16 @@
       "result.values",
       "result.owner"
      ]
+    },
+    {
+     "profile": "CodexStreamProfile",
+     "family": "Result",
+     "properties": [
+      "population.results",
+      "result.values",
+      "result.owner"
+     ],
+     "scenario": "facts:results"
     }
    ],
    "views": [
@@ -4495,7 +4549,7 @@
     "value": "adapt",
     "reason": "Result owned by the call id its own record names, never by matching content; model-visible content kept exactly."
    },
-   "notes": "Ownership is the declared path on the result's own record (Claude content[].tool_use_id, Codex payload.call_id), per result.ownership.v1; equal content never pairs. Pair A has two Read calls (6,8) with different content and two Bash calls (14,16) whose results are both errors; genuinely identical results under two owners are exercised by the synthetic Codex fixture, not by A or B. FULL-1R (S-5): the tool_exchanges view separates repeated_result_observations (one owner observed more than once, for example in the live output and again in the saved session file, counted as one owner) from identical_content_distinct_owners (kept separate); the former identical_result_content list is replaced. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: MCP result content, error and web-search results on the completion of the same stream-local item id.",
+   "notes": "Ownership is the declared path on the result's own record (Claude content[].tool_use_id, Codex payload.call_id), per result.ownership.v1; equal content never pairs. Pair A has two Read calls (6,8) with different content and two Bash calls (14,16) whose results are both errors; genuinely identical results under two owners are exercised by the synthetic Codex fixture, not by A or B. FULL-1R (S-5): the tool_exchanges view separates repeated_result_observations (one owner observed more than once, for example in the live output and again in the saved session file, counted as one owner) from identical_content_distinct_owners (kept separate); the former identical_result_content list is replaced. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: MCP result content, error and web-search results on the completion of the same stream-local item id. SEM-1 (2026-10-22): the Codex exec stream's MCP and web-search results (and collaboration and file-change completions without result content) are normalized under contract 0.3.0-prototype, a candidate whose meaning awaits the Project Owner's approval; the earlier route claim that Journal only retained them (vendor families ['item.completed/mcp_tool_call', 'item.completed/web_search']) is replaced by the oracle obligations above.",
    "observations": [
     {
      "item": "result owned by its call id; identical results distinct",
@@ -4748,20 +4802,6 @@
      "records": "1-15",
      "field": "tool result (none: the exec stream reports operations, not results)",
      "availability": "absent"
-    },
-    {
-     "cli": "codex",
-     "artifact": "stream.jsonl",
-     "route": "codex-cli/exec-json-stream/0.160.1",
-     "records": "every committed recording of the route",
-     "field": "MCP result.structured_content and _meta; web-search results",
-     "availability": "supported",
-     "vendor_families": [
-      "item.completed/mcp_tool_call",
-      "item.completed/web_search"
-     ],
-     "scenario": "value:item.type=mcp_tool_call",
-     "basis": "vendor source declares it on the exec stream (codex-rs/exec/src/exec_events.rs at rust-v0.160.1); Journal retains the records whole and does not normalize them: structured content retained in the whole record only"
     }
    ],
    "mapping": [
@@ -4779,6 +4819,26 @@
      "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
      "rule_id": "codex.rollout.custom_tool_call_output->tool_call.result",
      "implementation": "CodexRolloutMapper#map"
+    },
+    {
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "rule_id": "codex.stream.mcp_tool_call->tool_call.result",
+     "implementation": "CodexStreamMapper#toolCall"
+    },
+    {
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "rule_id": "codex.stream.web_search->tool_call.result",
+     "implementation": "CodexStreamMapper#toolCall"
+    },
+    {
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "rule_id": "codex.stream.collab_tool_call->tool_call.result",
+     "implementation": "CodexStreamMapper#toolCall"
+    },
+    {
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "rule_id": "codex.stream.file_change->tool_call.result",
+     "implementation": "CodexStreamMapper#toolCall"
     }
    ],
    "oracle": [
@@ -4805,6 +4865,14 @@
       "result.values"
      ],
      "scenario": "facts:results.structured"
+    },
+    {
+     "profile": "CodexStreamProfile",
+     "family": "Result",
+     "properties": [
+      "result.values"
+     ],
+     "scenario": "facts:results.structured"
     }
    ],
    "views": [
@@ -4820,7 +4888,7 @@
     "value": "adapt",
     "reason": "Structured result detail beside the model-visible content, kept as structure, not stringified."
    },
-   "notes": "CONCEPT-MATRIX row 4 recorded the old defects (structured results stringified, R13-04; integral numbers arriving as doubles, R13-09); the Jv tree and the oracle's kind/value differences close both. Claude's tool_use_result/toolUseResult is a vendor object whose field meanings are not normalized (retained exactly under structured_result). FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: MCP result.structured_content and _meta; web-search results.",
+   "notes": "CONCEPT-MATRIX row 4 recorded the old defects (structured results stringified, R13-04; integral numbers arriving as doubles, R13-09); the Jv tree and the oracle's kind/value differences close both. Claude's tool_use_result/toolUseResult is a vendor object whose field meanings are not normalized (retained exactly under structured_result). FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: MCP result.structured_content and _meta; web-search results. SEM-1 (2026-10-22): the Codex exec stream's MCP structured_content are normalized under contract 0.3.0-prototype, a candidate whose meaning awaits the Project Owner's approval; the earlier route claim that Journal only retained them (vendor families ['item.completed/mcp_tool_call', 'item.completed/web_search']) is replaced by the oracle obligations above.",
    "observations": [
     {
      "item": "structured hook tool_response",
@@ -5038,21 +5106,6 @@
      "records": "1-15",
      "field": "tool result error flag (none: no result records)",
      "availability": "absent"
-    },
-    {
-     "cli": "codex",
-     "artifact": "stream.jsonl",
-     "route": "codex-cli/exec-json-stream/0.160.1",
-     "records": "every committed recording of the route",
-     "field": "MCP status and error.message; file-change status (declined reported as failed); collab status",
-     "availability": "supported",
-     "vendor_families": [
-      "item.completed/mcp_tool_call",
-      "item.completed/file_change",
-      "item.completed/collab_tool_call"
-     ],
-     "scenario": "value:item.type=mcp_tool_call",
-     "basis": "vendor source declares it on the exec stream (codex-rs/exec/src/exec_events.rs at rust-v0.160.1); Journal retains the records whole and does not normalize them: command status and exit code are normalized as operation state; the other families' status is retained only"
     }
    ],
    "mapping": [
@@ -5070,6 +5123,26 @@
      "contract_uid": "codex-cli/rollout/0.160.1/0.2.0-prototype",
      "rule_id": "codex.rollout.custom_tool_call_output->tool_call.result",
      "implementation": "CodexRolloutMapper#map"
+    },
+    {
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "rule_id": "codex.stream.mcp_tool_call->tool_call.result",
+     "implementation": "CodexStreamMapper#toolCall"
+    },
+    {
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "rule_id": "codex.stream.web_search->tool_call.result",
+     "implementation": "CodexStreamMapper#toolCall"
+    },
+    {
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "rule_id": "codex.stream.collab_tool_call->tool_call.result",
+     "implementation": "CodexStreamMapper#toolCall"
+    },
+    {
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
+     "rule_id": "codex.stream.file_change->tool_call.result",
+     "implementation": "CodexStreamMapper#toolCall"
     }
    ],
    "oracle": [
@@ -5086,6 +5159,14 @@
      "properties": [
       "result.values"
      ]
+    },
+    {
+     "profile": "CodexStreamProfile",
+     "family": "Result",
+     "properties": [
+      "result.values"
+     ],
+     "scenario": "facts:results.failed"
     }
    ],
    "views": [
@@ -5100,7 +5181,7 @@
     "value": "adapt",
     "reason": "Reported error flag kept as reported; derived status carries its basis, so absent and false stay distinct."
    },
-   "notes": "CONCEPT-MATRIX row 11: a failed command inside a multi-command Codex exec is visible only on its CommandExecution item (see observed-operations); the call-level output reports no status, so the result event is Unknown/Not derivable by rule, not failed by inference. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: MCP status and error.message; file-change status (declined reported as failed); collab status.",
+   "notes": "CONCEPT-MATRIX row 11: a failed command inside a multi-command Codex exec is visible only on its CommandExecution item (see observed-operations); the call-level output reports no status, so the result event is Unknown/Not derivable by rule, not failed by inference. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: MCP status and error.message; file-change status (declined reported as failed); collab status. SEM-1 (2026-10-22): the Codex exec stream's MCP, collaboration and file-change outcomes (completed/failed reported in item.status; a declined patch is reported as failed) are normalized under contract 0.3.0-prototype, a candidate whose meaning awaits the Project Owner's approval; the earlier route claim that Journal only retained them (vendor families ['item.completed/collab_tool_call', 'item.completed/file_change', 'item.completed/mcp_tool_call']) is replaced by the oracle obligations above.",
    "observations": [
     {
      "item": "failed tool call",
@@ -5322,6 +5403,16 @@
      "class": "tool_call",
      "path": "tool_call.activity_id",
      "definition_file": "events/agent_execution/tool_call.json"
+    },
+    {
+     "class": "tool_call",
+     "path": "tool_call.tool_operation.command_line",
+     "definition_file": "objects/operation.json"
+    },
+    {
+     "class": "tool_call",
+     "path": "tool_call.tool_operation.identity_basis_id",
+     "definition_file": "objects/operation.json"
     }
    ],
    "native_evidence": [
@@ -5354,7 +5445,7 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
      "rule_id": "codex.stream.command_execution->tool_call.operation",
      "implementation": "CodexStreamMapper#map"
     }
@@ -5399,7 +5490,7 @@
     "value": "adapt",
     "reason": "Separately reported operations inside one call (ACP terminals are the nearest counterpart) with their own identity, argv and exit code."
    },
-   "notes": "Pair B is the real case: 1 exec call (record 13) and 5 CommandExecution items with one failure (record 17). Normalized fields are uid, argv, exit_code, reported_state, stdout, stderr; duration, cwd, parsed_cmd, aggregated_output and formatted_output stay in tool_operation.data (retained-only, meaning known). The stream's command argv is not read by the CodexStreamProfile (argv null), so only the rollout promises argv. FULL-1R (review FR-04/05): the exec-stream mapper has committed coverage on the labelled synthetic syn-codex-exec-stream fixture (verified native key sets). Count units in associations.operations: pair B has 10 stream observations over 5 stream-scoped item identities plus 5 rollout identities; stream and rollout identities are not linked by any supported rule, so the logical operation count is unavailable, never 10 or 15. \"Ten operations\" in the FULL-1 packet meant ten observations.",
+   "notes": "Pair B is the real case: 1 exec call (record 13) and 5 CommandExecution items with one failure (record 17). Normalized fields are uid, argv, exit_code, reported_state, stdout, stderr; duration, cwd, parsed_cmd, aggregated_output and formatted_output stay in tool_operation.data (retained-only, meaning known). The stream's command argv is not read by the CodexStreamProfile (argv null), so only the rollout promises argv. FULL-1R (review FR-04/05): the exec-stream mapper has committed coverage on the labelled synthetic syn-codex-exec-stream fixture (verified native key sets). Count units in associations.operations: pair B has 10 stream observations over 5 stream-scoped item identities plus 5 rollout identities; stream and rollout identities are not linked by any supported rule, so the logical operation count is unavailable, never 10 or 15. \"Ten operations\" in the FULL-1 packet meant ten observations. SEM-1 (2026-10-22): the Codex exec stream's command executions carry the reported command string as operation.command_line (never parsed into argv) and identity_basis_id 2 (stream-local item id); a candidate meaning under contract 0.3.0-prototype, awaiting the Project Owner's approval.",
    "observations": []
   },
   {
@@ -5568,7 +5659,7 @@
      "implementation": "MapperSupport#attribution"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
      "rule_id": "codex.stream.command_execution->tool_call.operation",
      "implementation": "MapperSupport#attribution"
     }
@@ -5605,7 +5696,7 @@
     "value": "adapt",
     "reason": "Reported identifiers attribute an operation; a derived candidate keeps its method and candidates and is never promoted to a reported link."
    },
-   "notes": "The derivation rule is codex.operation_attribution.v1 (same turn, exec call, last command token contained verbatim in the call input); the oracle recomputes candidates independently. A unique derived candidate sets tool_call_uid with method 2; the association view labels it derived. Ambiguity (two exec calls in one turn) is exercised by the synthetic Codex fixture only.",
+   "notes": "The derivation rule is codex.operation_attribution.v1 (same turn, exec call, last command token contained verbatim in the call input); the oracle recomputes candidates independently. A unique derived candidate sets tool_call_uid with method 2; the association view labels it derived. Ambiguity (two exec calls in one turn) is exercised by the synthetic Codex fixture only. SEM-1 (2026-10-22): an operation reported without any wrapping call id is a standalone observation (Unattributed at its reported scope); extension 0.5.0 states this in the operation description.",
    "observations": []
   },
   {
@@ -5788,7 +5879,7 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
      "rule_id": "codex.stream.command_execution->tool_call.operation",
      "implementation": "CodexStreamMapper#map"
     }
@@ -5829,7 +5920,7 @@
     "value": "adapt",
     "reason": "Vendor lifecycle strings kept verbatim beside the normalized status; interrupted, denied, failed, completed and never observed stay distinct."
    },
-   "notes": "Interrupted, denied, failed, completed and never observed must not collapse (DESIGN §5); on these fixtures only completed/failed/in_progress occur. Antigravity's DONE-plus-denied case (CONCEPT-MATRIX row 14) is a separate retained fixture, not part of A or B.",
+   "notes": "Interrupted, denied, failed, completed and never observed must not collapse (DESIGN §5); on these fixtures only completed/failed/in_progress occur. Antigravity's DONE-plus-denied case (CONCEPT-MATRIX row 14) is a separate retained fixture, not part of A or B. SEM-1 (2026-10-22): a declined Codex command is status_id 99 with status \"Declined\" and reported_state declined (Reported), distinct from status Unknown; it is the item's reported status, not a permission decision (none is reported). Candidate meaning, contract 0.3.0-prototype.",
    "observations": []
   },
   {
@@ -6377,7 +6468,7 @@
      "implementation": "MapperSupport#components"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
      "rule_id": "codex.stream.turn_completed->prompt_turn.completed",
      "implementation": "MapperSupport#components"
     }
@@ -6431,7 +6522,7 @@
     "value": "adapt",
     "reason": "Reported components only, absent never zero, no computed totals; OTel and OpenInference fold cache into input totals and Weave turns absent into 0."
    },
-   "notes": "Only Codex reports a total (total_tokens -> reported_total_tokens); Claude never does and none is computed. Claude's cache_creation sub-object (TTL split, REPORT §4 known omissions) and the result record's usage.iterations[] are retained in usage_observation.data / event data without normalized meaning.",
+   "notes": "Only Codex reports a total (total_tokens -> reported_total_tokens); Claude never does and none is computed. Claude's cache_creation sub-object (TTL split, REPORT §4 known omissions) and the result record's usage.iterations[] are retained in usage_observation.data / event data without normalized meaning. Codex reports input_tokens inclusive of cached_input_tokens (TokenUsage::non_cached_input = input_tokens - cached_input_tokens at rust-v0.160.1); Claude's input_tokens excludes cache reads. The components are preserved under their native meanings; a consumer must not add cache_read_tokens to a Codex input_tokens (SEM-1 claim, proposed).",
    "observations": [
     {
      "item": "per-response input/output/cache read/cache creation",
@@ -6739,7 +6830,7 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
      "rule_id": "codex.stream.turn_completed->prompt_turn.completed",
      "implementation": "CodexStreamMapper#map"
     }
@@ -6968,6 +7059,11 @@
      "class": "session_context",
      "path": "session_context.turn_uid",
      "definition_file": "events/agent_execution/session_context.json"
+    },
+    {
+     "class": "usage_observation",
+     "path": "usage_observation.measurement_status_id",
+     "definition_file": "objects/usage_observation.json"
     }
    ],
    "native_evidence": [
@@ -7017,7 +7113,7 @@
      "cli": "codex",
      "artifact": "stream.jsonl",
      "records": "15",
-     "field": "usage -> scope 3 Final",
+     "field": "usage -> scope 5 Session Final for the run: ThreadTokenUsage.total, the thread's cumulative usage at turn completion (SEM-1 candidate, contract 0.3.0-prototype; was scope 3 Prompt turn under 0.2.0-prototype, a reading the pinned emitter refutes)",
      "availability": "present"
     }
    ],
@@ -7053,7 +7149,7 @@
      "implementation": "MapperSupport#usage"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
      "rule_id": "codex.stream.turn_completed->prompt_turn.completed",
      "implementation": "MapperSupport#usage"
     }
@@ -7109,7 +7205,7 @@
     "value": "journal_defined",
     "reason": "Scope and provisional/final status on every usage observation; no foundation distinguishes provisional stream usage from final usage."
    },
-   "notes": "Status rules are named in each observation's basis (claude.stream.usage_status.v1, claude.transcript.usage_status.v1, claude.stream.result_usage.v1, claude.transcript.cost_state.v1, codex.rollout.token_usage_record.v1, codex.rollout.token_count.v1, codex.stream.turn_usage.v1; these are sub-rules of the listed rule ids, not separate rule ids). usage.final_selection.v1 groups by (run, scope, owner, model, source artifact); groups are never summed across scopes, sources, models or child runs. Stream and transcript observations of the same Claude response are different groups (different artifact) and are compared, not merged.",
+   "notes": "Status rules are named in each observation's basis (claude.stream.usage_status.v1, claude.transcript.usage_status.v1, claude.stream.result_usage.v1, claude.transcript.cost_state.v1, codex.rollout.token_usage_record.v1, codex.rollout.token_count.v1, codex.stream.turn_usage.v1; these are sub-rules of the listed rule ids, not separate rule ids). usage.final_selection.v1 groups by (run, scope, owner, model, source artifact); groups are never summed across scopes, sources, models or child runs. Stream and transcript observations of the same Claude response are different groups (different artifact) and are compared, not merged. SEM-1 (2026-10-22): the Codex exec stream's turn.completed usage is the thread's cumulative total (codex.stream.thread_usage.v2), scope 5, with measurement_status_id 1 Measured when a component is non-zero and 2 Possibly default when all are zero (the emitter writes Usage::default() without an update). The experimental rollout profile's info.total_token_usage at scope 3 is the same suspected misreading on an unadmitted route; recorded as a gap, not changed by SEM-1.",
    "observations": [
     {
      "item": "final per-response usage and run total",
@@ -8037,7 +8133,7 @@
      "artifact": "stream.jsonl",
      "route": "codex-cli/exec-json-stream/0.160.1",
      "records": "every committed recording of the route",
-     "field": "a declined command (command_execution status declined); a declined patch is reported as failed (projection omission); approval requests are not projected",
+     "field": "a declined command (command_execution status declined) is normalized as operation status 99 \"Declined\", not as a permission decision; a declined patch is reported as failed (projection omission); approval requests are not projected",
      "availability": "supported",
      "vendor_families": [
       "item.completed/command_execution",
@@ -8448,7 +8544,7 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
      "rule_id": "codex.stream.fallback->source_record",
      "implementation": "CodexStreamMapper#map"
     }
@@ -9234,7 +9330,7 @@
      "artifact": "stream.jsonl",
      "route": "codex-cli/exec-json-stream/0.160.1",
      "records": "every committed recording of the route",
-     "field": "collab spawn_agent with sender/receiver thread ids, prompt and agent states; the child's own activity is not projected",
+     "field": "collab tool calls are normalized as tool calls (SEM-1 candidate); spawn_agent receiver thread ids, prompt and agent states stay retained, not linked as child runs; the child's own activity is not projected",
      "availability": "supported",
      "vendor_families": [
       "item.started/collab_tool_call",
@@ -9603,7 +9699,7 @@
      "implementation": "SourceContext#sourceRef"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
      "rule_id": "codex.stream.command_execution->tool_call.operation",
      "implementation": "SourceContext#sourceRef"
     },
@@ -9924,7 +10020,7 @@
      "implementation": "SourceContext#fallback"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
      "rule_id": "codex.stream.fallback->source_record",
      "implementation": "SourceContext#fallback"
     },
@@ -10275,7 +10371,7 @@
      "implementation": "SourceContext#opaque"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
      "rule_id": "common.opaque->source_record",
      "implementation": "LineFramer#end"
     }
@@ -10319,7 +10415,7 @@
     "value": "journal_defined",
     "reason": "Unparsable or blank input retained byte-exact with a parse status; nothing silently dropped."
    },
-   "notes": "The only real opaque record in the frozen set is the Codex stderr line; malformed JSON, duplicate keys and non-UTF-8 bytes are exercised by mutation/synthetic tests. A parsed record retained as Opaque, or an opaque record normalized, is a whole_record.class defect in both directions. The Claude stream.err artifact has zero records and must appear in the source inventory with its hash.",
+   "notes": "The only real opaque record in the frozen set is the Codex stderr line; malformed JSON, duplicate keys and non-UTF-8 bytes are exercised by mutation/synthetic tests. A parsed record retained as Opaque, or an opaque record normalized, is a whole_record.class defect in both directions. The Claude stream.err artifact has zero records and must appear in the source inventory with its hash. SEM-1 (2026-10-22): a Codex web_search line repeats item.id; it stays an opaque record (verbatim, both ids in raw_data) and, in exactly that declared form, is also read as a tool call under the first id; any other repeated member stays opaque without interpretation, and strict duplicate rejection is unchanged elsewhere.",
    "observations": []
   },
   {
@@ -10526,7 +10622,7 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
      "rule_id": "codex.stream.fallback->source_record",
      "implementation": "CodexStreamMapper#map"
     }
@@ -11045,7 +11141,7 @@
      "implementation": "SourceContext#timeFor"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.2.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.3.0-prototype",
      "rule_id": "codex.stream.agent_message->model_response",
      "implementation": "SourceContext#timeFor"
     }
