@@ -1,0 +1,58 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "codex-thread-usage-resumed-synthetic",
+  "concept": "usage-scope-finality-and-repeats",
+  "description": "LABELLED SYNTHETIC, source-grounded: the second exec run of one thread (codex exec resume). The thread's first run reported a total of input 1000 (cached 0), output 25. The pinned emitter copies ThreadTokenUsage.total into this run's turn.completed, and the protocol accumulates every response into total_token_usage (TokenUsageInfo::append_last_usage), so 2500 input tokens is the thread's cumulative total; this turn alone used 1500 input tokens, a delta the writer must not compute. A per-turn reading would claim 2500 for this turn with exactly the same numbers.",
+  "authored_from": [
+    "codex-exec-0.160.1-emitter-usage",
+    "codex-app-server-0.160.1-thread-token-usage",
+    "codex-protocol-0.160.1-token-usage-info"
+  ],
+  "native": {
+    "evidence_kind": "synthetic",
+    "profile": "codex_stream",
+    "compatibility_entry": "codex-cli/exec-json-stream/0.160.1",
+    "run_spec_fixture": "syn-codex-exec-families-0.160.1",
+    "artifact": "stream.jsonl",
+    "lines": [
+      "{\"type\":\"thread.started\",\"thread_id\":\"00000000-0000-4000-8000-00000000fa01\"}",
+      "{\"type\":\"turn.started\"}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"agent_message\",\"text\":\"SYNTHETIC: second turn of a resumed thread.\"}}",
+      "{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":2500,\"cached_input_tokens\":2000,\"cache_write_input_tokens\":0,\"output_tokens\":40,\"reasoning_output_tokens\":0}}"
+    ]
+  },
+  "expected": [
+    {
+      "record": 4,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/scope_id": 5,
+        "/usage_observations/0/usage_status_id": 2,
+        "/usage_observations/0/input_tokens": 2500,
+        "/usage_observations/0/cache_read_tokens": 2000,
+        "/usage_observations/0/output_tokens": 40
+      },
+      "absent": ["/usage_observations/1"]
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "per-turn-scope",
+      "record": 4,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {"/usage_observations/0/scope_id": 3},
+      "why": "Would state that this turn used 2500 input tokens; it used 1500. Equal components, different meaning."
+    },
+    {
+      "id": "computed-turn-delta",
+      "record": 4,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {"/usage_observations/0/input_tokens": 1500},
+      "why": "A per-turn delta needs the previous run's total; the writer records what the source reported and never computes deltas or cross-run sums."
+    }
+  ]
+}

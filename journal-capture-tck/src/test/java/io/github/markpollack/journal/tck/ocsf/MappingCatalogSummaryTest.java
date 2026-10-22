@@ -111,6 +111,69 @@ class MappingCatalogSummaryTest {
         assertThat(summary("tool-request-identity-and-arguments", CHILD_ROUTE, run, populationDefect)).startsWith("defective");
     }
 
+    // ---- SEM-1 (R-SEM-01): an applicable obligation answered NOT_APPLICABLE, short of its occurrences, or as an
+    // undeclared representation difference is not established; a good sibling property or owner cannot stand in for it
+
+    static OracleReport as(OracleReport report, String owner, String property, Outcome outcome, String detail) {
+        return report.replaced(c -> is(c, owner, property), c -> new Check(c.category(), c.property(), c.owner(), outcome, detail));
+    }
+
+    @Test
+    void aRequiredApplicableResultReportedNotApplicableCannotVerifyBesideAVerifiedPopulation(@TempDir Path work) {
+        Run run = run(CHILD_ROUTE, work);
+        // the root core's stream has tool requests: population.requests is VERIFIED; request.values claims no occurrence
+        assertThat(run.report().check("population.requests", MAIN).outcome()).isEqualTo(Outcome.VERIFIED);
+        OracleReport na = as(run.report(), MAIN, "request.values", Outcome.NOT_APPLICABLE, "no occurrence");
+        assertThat(summary("tool-request-identity-and-arguments", CHILD_ROUTE, run, na)).doesNotStartWith("verified").doesNotStartWith("unexercised")
+                .contains("request.values [" + MAIN + "]");
+    }
+
+    @Test
+    void anotherOwnersVerifiedResultCannotSatisfyAnExpectedChildsNotApplicable(@TempDir Path work) {
+        Run run = run(CHILD_ROUTE, work);
+        // the expected child core has its own tool requests; the root core's identical property stays VERIFIED
+        assertThat(run.report().check("request.values", MAIN).outcome()).isEqualTo(Outcome.VERIFIED);
+        OracleReport na = as(run.report(), CHILD, "request.values", Outcome.NOT_APPLICABLE, "no occurrence");
+        assertThat(summary("tool-request-identity-and-arguments", CHILD_ROUTE, run, na)).doesNotStartWith("verified").doesNotStartWith("unexercised")
+                .contains("request.values [" + CHILD + "]").doesNotContain("request.values [" + MAIN + "]");
+    }
+
+    @Test
+    void aValueResultCoveringFewerOccurrencesThanTheNativePopulationCannotVerify(@TempDir Path work) {
+        Run run = run(CHILD_ROUTE, work);
+        // one required occurrence of the root core is not established: the result claims a single exact occurrence
+        assertThat(CatalogCoverage.occurrences("facts:requests", CHILD_ROUTE, OcsfFixtures.natives(run.fixture()),
+                ExpectedSources.beside(OcsfFixtures.natives(run.fixture())))).isGreaterThan(2);
+        OracleReport shortOne = as(run.report(), MAIN, "request.values", Outcome.VERIFIED, "1 occurrence(s) exact");
+        assertThat(summary("tool-request-identity-and-arguments", CHILD_ROUTE, run, shortOne)).doesNotStartWith("verified")
+                .contains("request.values [" + MAIN + "]");
+    }
+
+    @Test
+    void aRepresentationDifferenceOnAValuePropertyIsNotAnAllowedNonSemanticDifference(@TempDir Path work) {
+        Run run = run(CHILD_ROUTE, work);
+        OracleReport differs = as(run.report(), MAIN, "request.values", Outcome.REPRESENTATION_DIFFERS, "1 spelled as 1.0");
+        assertThat(summary("tool-request-identity-and-arguments", CHILD_ROUTE, run, differs)).doesNotStartWith("verified")
+                .contains("request.values [" + MAIN + "]");
+    }
+
+    @Test
+    void aGenuinelyAbsentTriggerForOneOwnerDoesNotBlockTheOwnerThatHasIt(@TempDir Path work) {
+        Run run = run(CHILD_ROUTE, work);
+        // the run's cost is reported on the root core only; the child core honestly reports no cost occurrence
+        assertThat(run.report().check("cost.values", CHILD).outcome()).isEqualTo(Outcome.NOT_APPLICABLE);
+        assertThat(run.report().check("cost.values", MAIN).outcome()).isEqualTo(Outcome.VERIFIED);
+        assertThat(summary("reported-cost", CHILD_ROUTE, run, run.report())).isEqualTo("verified");
+    }
+
+    @Test
+    void anUnexercisedConceptStatesTheZeroOccurrenceBasisOfEachNotApplicableObligation(@TempDir Path work) {
+        Run run = run(LIVE_DENIAL_ROUTE, work);
+        assertThat(run.report().check("package.children", "main").outcome()).isEqualTo(Outcome.NOT_APPLICABLE);
+        assertThat(summary("child-runs", LIVE_DENIAL_ROUTE, run, run.report())).startsWith("unexercised")
+                .contains("package.children [main]: 0 native occurrence(s) of run:children");
+    }
+
     @Test
     void zeroApplicableOccurrencesAreUnexercisedButADroppedCheckIsNot(@TempDir Path work) {
         Run run = run(LIVE_DENIAL_ROUTE, work);
