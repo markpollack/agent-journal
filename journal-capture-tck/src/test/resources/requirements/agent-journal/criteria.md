@@ -229,8 +229,8 @@ Rule: RULE-29. Tests: `FullOneReviewRegressionTest#aRequiredCheckMissingFromTheR
 
 ### UC5-AC6: Label the evidence class
 
-When a fixture or report is published, it shall state whether it is live capture, real recorded replay or labelled synthetic.
-Rule: RULE-30. Tests: `PublicFixtureRegenerationTest` (labelled synthetic fixtures). Status: no assertion enforces the label on every fixture.
+When a fixture, reference or example is published, it shall state one evidence class from the declared vocabularies (a fixture: a live recording, a sanitized real stream or labelled synthetic; a reference: specification, source inspection, synthetic, replay, live, persisted readback or publisher-normalized), and an artifact that states no class, or whose provenance contradicts its class, shall be reported.
+Rule: RULE-30, RULE-31. Tests: `FixtureEvidenceClassTest#eachCommittedFixtureHasExactlyItsStatedClass`, `FixtureEvidenceClassTest#aRelabelledOrMixedClassIsReported`, `LiveFixtureFeaturesTest#everyFixtureStatesItsEvidenceClassAndLiveOnesCarryProvenance`, `CoverageDocumentSchemaTest#aPublisherNormalizedCorpusIsItsOwnEvidenceClassAndNeverAnExamplesNativeInput`. Status: enforced for every fixture under `ocsf/fixtures`, every reference and every example; the historical fixtures, the `verify/` resources and the per-CLI module fixtures state their origin in README files and names only.
 
 ### UC5-AC7: Back each claimed feature with an observed fixture
 
@@ -357,6 +357,12 @@ Rule: RULE-43. Tests: `UsageComponentMeasurementTest#aPositiveRunningTotalWithAn
 
 When a source reports one command or shell tool invocation whose text runs further commands, pipelines or interpreters, the writer and the oracle shall record exactly the invocation and the operations the source reports, with the command text verbatim, and no additional tool call, operation, argument vector or operating-system action derived from that text.
 Rule: RULE-45. Tests: `ToolClassificationTest#aShellCommandWithGrepAPipeAndPythonIsOneReportedInvocation`, `IdentityClassificationControlTest#anInvocationOrOperationInventedFromAShellCommandsTextIsAPopulationDefect`, `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`.
+
+### UC5-AC32: Account for every pinned Tier 1 field once and keep proposed exclusions visible
+
+When the parity ledger is checked against the pinned foundation inventory, every pinned field shall be assigned to exactly one facet, the denominator and the roster of proposed exclusions shall equal their pins, and a field left unassigned, assigned twice, unknown to the inventory or dropped from it, or an exclusion hidden, re-tiered or reported as accepted without a recorded decision, shall fail the check while executed verification stays apart from the ledger's reviewed states.
+Rule: RULE-47. Tests: `ParityLedgerTest#everyPinnedFieldIsAccountedForExactlyOnce`, `ParityLedgerTest#eachCorruptionIsDetected`, `ParityLedgerTest#theLedgerAndTheTopicExplanationAreGenerated`. Status: accounting and consistency only; the ledger's facet states and the eleven proposed exclusions are reviewed proposals, not approved, and no facet state is gated on executed evidence.
+
 ## Change log
 
 2026-10-21, consolidated event-file work order (REQ-1 amendment). Retained identifiers with changed
@@ -405,5 +411,8 @@ UC5-AC24 is narrowed to its rule: the kind of a reviewed binding of the exact na
 a built-in kind inferred from the bare name (it no longer reads as forbidding a reviewed binding's kind). UC5-AC25 is
 narrowed to its rule: a stream-local identifier is never presented as a model-facing call identifier or a provider's
 response identifier (it no longer forbids the stream-local call identity Journal states with its basis). Added UC5-AC31
-(one invocation for a shell command whatever its text runs). No criterion removed; `RequirementsRosterTest` pins the
-per-use-case counts 7, 6, 15, 8 and 31.
+(one invocation for a shell command whatever its text runs). UC5-AC6 is retained with changed meaning: one evidence
+class from the declared vocabularies for fixtures, references and examples, a missing or contradicted class reported
+(it named three labels for fixtures and reports only). Added UC5-AC32 (every pinned Tier 1 field accounted once, the
+denominator and the proposed-exclusion roster pinned). No criterion removed; `RequirementsRosterTest` pins the
+per-use-case counts 7, 6, 15, 8 and 32.

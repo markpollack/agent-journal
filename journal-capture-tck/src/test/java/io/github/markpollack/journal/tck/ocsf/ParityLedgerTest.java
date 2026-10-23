@@ -45,7 +45,7 @@ class ParityLedgerTest {
 
     record Inputs(JsonNode parity, JsonNode inventory, JsonNode catalog, JsonNode october) {
         Inputs copy() {
-            return new Inputs(parity.deepCopy(), inventory, catalog, october);
+            return new Inputs(parity.deepCopy(), inventory.deepCopy(), catalog, october);
         }
     }
 
@@ -77,6 +77,48 @@ class ParityLedgerTest {
     }
 
     // ------------------------------------------------------------------------------------------ validation
+
+    /**
+     * The pinned Tier 1 denominator: the number of fields each pinned foundation revision declares. A field leaving the
+     * inventory, or a changed pin, is a deliberate edit here, never a silent shrink (the gated re-derivation in
+     * FoundationFieldsTest checks the inventory against the pinned files themselves).
+     */
+    static final Map<String, Integer> PINNED_DENOMINATOR = Map.of("otel_genai.semconv@547934afa90a34298441caf80c43b27255c3a292", 301,
+            "openinference.semconv@48becd7a6098992c189ba86b837e5acf045270ef", 190, "weave.agents_schema@9c3780483c5c743daba1487a5f75e1fdf7c5c347", 213);
+
+    /**
+     * The proposed exclusions awaiting review, with the number of pinned fields each keeps in the denominator. A proposal
+     * is visible until a recorded decision disposes of it; re-tiering, deleting, merging or adding one is a deliberate edit
+     * of this roster, never a side effect of editing a facet.
+     */
+    static final Map<String, Integer> PROPOSED_EXCLUSIONS = Map.ofEntries(Map.entry("identity.hosted-project", 2), Map.entry("operation.agent-creation", 2),
+            Map.entry("operation.mcp-protocol", 28), Map.entry("content.storage-references", 9), Map.entry("rag.embeddings", 10), Map.entry("rag.retrieval", 14),
+            Map.entry("rag.reranker", 6), Map.entry("api.decision-models", 12), Map.entry("api.fetch-response", 2), Map.entry("hosting.weave-linkage", 7),
+            Map.entry("tracing.span-naming", 8));
+
+    /** The denominator and the proposed-exclusion roster against their pins. */
+    static List<String> pinned(Inputs in) {
+        List<String> problems = new ArrayList<>();
+        Map<String, Integer> denominator = new TreeMap<>();
+        for (JsonNode f : in.inventory().path("foundations")) {
+            denominator.put(f.path("foundation").asText() + "@" + f.path("revision").asText(), f.path("fields").size());
+        }
+        if (!denominator.equals(new TreeMap<>(PINNED_DENOMINATOR))) {
+            problems.add("denominator " + denominator + " is not the pinned " + new TreeMap<>(PINNED_DENOMINATOR)
+                    + " (a pinned field left the inventory or a pin changed: edit PINNED_DENOMINATOR deliberately)");
+        }
+        Map<String, Integer> proposed = new TreeMap<>();
+        for (JsonNode f : in.parity().path("facets")) {
+            if ("out_of_scope_proposed".equals(f.path("tier").asText()) || "excluded_proposed".equals(f.path("state").asText())) {
+                proposed.put(f.path("id").asText(), f.path("fields").size());
+            }
+        }
+        if (!proposed.equals(new TreeMap<>(PROPOSED_EXCLUSIONS))) {
+            problems.add("proposed exclusion roster " + proposed + " is not the pinned " + new TreeMap<>(PROPOSED_EXCLUSIONS)
+                    + " (an exclusion was hidden, re-tiered, merged or added without a deliberate roster edit and a recorded decision)");
+        }
+        return problems;
+    }
 
     /** Every reconciliation, reference and consistency problem; {@code destination} resolves a path or says why not. */
     static List<String> problems(Inputs in, Function<String, String> destination, Set<String> compatibility) {
@@ -156,6 +198,7 @@ class ParityLedgerTest {
                 problems.add("field " + fid + " is not assigned to any facet");
             }
         }
+        problems.addAll(pinned(in));
         return problems;
     }
 
@@ -242,6 +285,28 @@ class ParityLedgerTest {
         corruptions.put("a proposed exclusion has state", in -> ((ObjectNode) facet(in, "rag.embeddings")).put("state", "source_limited"));
         corruptions.put("names no catalog claim", in -> ((ArrayNode) facet(in, "usage.output").path("evidence")).add("claim:no.such.claim"));
         corruptions.put("not in the vocabulary", in -> ((ObjectNode) facet(in, "usage.output")).put("tier", "1.5"));
+        corruptions.put("state accepted not in the vocabulary", in -> ((ObjectNode) facet(in, "rag.embeddings")).put("state", "accepted"));
+        corruptions.put("route state verified not in the vocabulary", in -> ((ObjectNode) facet(in, "usage.output").path("routes")).put("codex-cli/exec-json-stream/0.160.1", "verified"));
+        corruptions.put("are not exactly", in -> ((ObjectNode) facet(in, "usage.output").path("routes")).remove("codex-cli/exec-json-stream/0.160.1"));
+        corruptions.put("duplicate facet", in -> ((ArrayNode) in.parity().path("facets")).add(facet(in, "usage.output").deepCopy()));
+        corruptions.put("assigns no field", in -> ((ArrayNode) facet(in, "api.fetch-response").path("fields")).removeAll());
+        // a proposed exclusion hidden by re-tiering it consistently: every other check stays green
+        corruptions.put("proposed exclusion roster", in -> ((ObjectNode) facet(in, "rag.embeddings")).put("tier", "3").put("state", "tier3_consumer"));
+        // a pinned field removed from the inventory and from its facet together: assignment stays exact, the denominator shrinks
+        corruptions.put("is not the pinned", in -> {
+            JsonNode first = in.inventory().path("foundations").get(0);
+            String fid = first.path("fields").get(0).path("id").asText();
+            ((ArrayNode) first.path("fields")).remove(0);
+            for (JsonNode f : in.parity().path("facets")) {
+                ArrayNode fs = (ArrayNode) f.path("fields");
+                for (int i = 0; i < fs.size(); i++) {
+                    if (fid.equals(fs.get(i).asText())) {
+                        fs.remove(i);
+                        return;
+                    }
+                }
+            }
+        });
         Inputs clean = inputs();
         assertThat(problems(clean, dest, compat)).isEmpty();
         for (Map.Entry<String, Consumer<Inputs>> c : corruptions.entrySet()) {

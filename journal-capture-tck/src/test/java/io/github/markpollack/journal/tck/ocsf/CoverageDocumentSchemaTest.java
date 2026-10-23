@@ -2,6 +2,7 @@ package io.github.markpollack.journal.tck.ocsf;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
@@ -105,5 +106,28 @@ class CoverageDocumentSchemaTest {
             f0.remove(k);
         }
         assertThat(pins.validate(unpinned)).isNotEmpty();
+    }
+
+    /**
+     * A third party's normalized corpus (for example a published agent-trajectory dataset) is its own evidence class:
+     * neither native CLI output nor a live run. A reference to one must pin its revision and file and say what the
+     * publisher transformed; an example's native input can never be such a corpus row, only a reviewed synthetic
+     * equivalent, so no private dataset enters the build.
+     */
+    @Test
+    void aPublisherNormalizedCorpusIsItsOwnEvidenceClassAndNeverAnExamplesNativeInput() {
+        JsonSchema references = schema("coverage-references.schema.json");
+        ObjectNode doc = read(SemanticClaims.DIR.resolve("references.json")).deepCopy();
+        ObjectNode corpus = ((ArrayNode) doc.path("references")).addObject();
+        corpus.put("id", "corpus-control").put("source", "a published normalized corpus").put("evidence_kind", "publisher_normalized");
+        assertThat(references.validate(doc)).as("unpinned corpus reference").isNotEmpty();
+        corpus.put("revision", "0000000000000000000000000000000000000000").put("path", "data/sample.jsonl").put("note", "publisher-normalized rows: renamed tools, rewritten arguments, positional call ids");
+        assertThat(references.validate(doc)).as("pinned corpus reference with its transformation stated").isEmpty();
+
+        JsonSchema examples = schema("semantic-example.schema.json");
+        ObjectNode example = read(SemanticClaims.DIR.resolve("examples").resolve("codex-command-pipeline-synthetic.json")).deepCopy();
+        assertThat(examples.validate(example)).isEmpty();
+        ((ObjectNode) example.path("native")).put("evidence_kind", "publisher_normalized");
+        assertThat(examples.validate(example)).as("a corpus row as an example's native input").isNotEmpty();
     }
 }

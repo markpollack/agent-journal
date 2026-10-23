@@ -189,7 +189,12 @@ class RequirementsAccountingIT {
                 junit("PackageReaderTest#typeMismatchAndMissingRequiredAreDefects", "diagnostics")));
         CRITERIA.put("UC5-AC4", List.of(oracle("UC5-AC4", BOTH), junit("FullOneReviewRegressionTest#aRenamedSourceIsBothAnOmissionAndAnUnexpectedSource", "renamed source")));
         CRITERIA.put("UC5-AC5", List.of(junit("FullOneReviewRegressionTest#aRequiredCheckMissingFromTheReportBlocksAcceptance", "registered required checks")));
-        CRITERIA.put("UC5-AC6", List.of(junit("LiveFixtureFeaturesTest#everyFixtureStatesItsEvidenceClassAndLiveOnesCarryProvenance", "every committed fixture")));
+        CRITERIA.put("UC5-AC6", List.of(junit("LiveFixtureFeaturesTest#everyFixtureStatesItsEvidenceClassAndLiveOnesCarryProvenance", "every committed fixture"),
+                junit("FixtureEvidenceClassTest#eachCommittedFixtureHasExactlyItsStatedClass", "every committed fixture, one exclusive class from its own provenance"),
+                junit("FixtureEvidenceClassTest#aRelabelledOrMixedClassIsReported", "fixture copies relabelled, mixed or unlabelled"),
+                junit("CoverageDocumentSchemaTest#aPublisherNormalizedCorpusIsItsOwnEvidenceClassAndNeverAnExamplesNativeInput", "references and examples"),
+                junit("SemanticClaimTest#theCommittedClaimsExamplesReferencesAndDecisionsAreConsistent", "every reference and example validated against its vocabulary"),
+                note("historical fixtures, the verify/ resources and the per-CLI module fixtures state their origin in README files and names only")));
         CRITERIA.put("UC5-AC7", List.of(junit("LiveFixtureFeaturesTest#theClaudeFeatureRecordingExhibitsToolsChildrenFailureUsageAndRetainedFamilies", CLAUDE_ALL),
                 junit("LiveFixtureFeaturesTest#theDenialRecordingExhibitsAnObservedRejectionAtBothScopes", "Claude 2.1.304 denial"),
                 junit("LiveFixtureFeaturesTest#theCancelledRecordingsAreHonestInterruptedPrefixes", "both CLIs cancelled"),
@@ -197,8 +202,8 @@ class RequirementsAccountingIT {
                 junit("CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted", "labelled synthetic Codex stream"),
                 junit("OcsfOracleFixtureTest#sanitizedClaudeStreamWithChildCoreIsJudgedPerCoreWithoutDefect", "sanitized real 2.1.299 stream"),
                 note("not claimed (not observed on any tested route): media/multimodal blocks, redacted or encrypted reasoning, an interactively answered permission prompt (the bidirectional stream-json route), Codex sub-agents, Codex permission decisions, a live open request at interruption")));
-        CRITERIA.put("UC5-AC8", List.of(junit("RequirementsRosterTest#everyRuleHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedRoster", "46 rules, strict"),
-                junit("RequirementsRosterTest#everyCriterionHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedCounts", "67 criteria, strict"),
+        CRITERIA.put("UC5-AC8", List.of(junit("RequirementsRosterTest#everyRuleHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedRoster", "47 rules, strict"),
+                junit("RequirementsRosterTest#everyCriterionHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedCounts", "68 criteria, strict"),
                 junit("NativeRequirementTest#everyNativeRfcSpecificationCarriesTheCompleteStatementAndThePromptRendersIt", "complete statements (Agent Judge 0.19.0)")));
         CRITERIA.put("UC5-AC9", List.of(oracle("UC5-AC9", "reporter controls computed on the real reports")));
         CRITERIA.put("UC5-AC10", List.of(separate("mutation sensitivity is measured by the pit profiles of both modules (threshold 70%, mutators and targets unchanged) in detached worktrees of the delivered revision, not in this build; killed, survived and uncovered counts are reported apart in the return")));
@@ -283,6 +288,11 @@ class RequirementsAccountingIT {
                 junit("IdentityClassificationControlTest#anInvocationOrOperationInventedFromAShellCommandsTextIsAPopulationDefect", "live Claude and Codex recordings with an invented inner invocation or operation, independent oracle"),
                 junit("SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes", examples + " (shell pipelines)"),
                 junit("SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects", profiled)));
+        String ledger = "the committed parity ledger and pinned inventory, one corruption per control";
+        CRITERIA.put("UC5-AC32", List.of(junit("ParityLedgerTest#everyPinnedFieldIsAccountedForExactlyOnce", "704 pinned fields, 87 facets"),
+                junit("ParityLedgerTest#eachCorruptionIsDetected", ledger + " (unassigned, duplicate, unknown, dropped from the denominator, exclusion re-tiered or accepted, route and vocabulary)"),
+                junit("ParityLedgerTest#theLedgerAndTheTopicExplanationAreGenerated", "executed verification per concept and route from the coverage summary, apart from the reviewed facet states"),
+                note("accounting and consistency only: facet states and the eleven proposed exclusions are reviewed proposals, not approved; no facet state is gated on executed evidence")));
     }
 
     /** Rule to the criteria and direct checks whose conjunction establishes its full obligation. */
@@ -344,6 +354,10 @@ class RequirementsAccountingIT {
         RULES.put("RULE-44", new RuleEvidence(List.of("UC5-AC25", "UC5-AC26"), List.of(), ""));
         RULES.put("RULE-45", new RuleEvidence(List.of("UC5-AC24", "UC5-AC31"), List.of(), "no shell text is parsed: a command string is recorded verbatim (command_line), never split into argv or classified"));
         RULES.put("RULE-46", new RuleEvidence(List.of("UC5-AC26"), List.of(), ""));
+        RULES.put("RULE-47", new RuleEvidence(List.of("UC5-AC32"), List.of(junit("MappingCatalogSummaryTest#aMissingRequiredPropertyBlocksVerificationAndIsNamed", "executed verification needs every property"),
+                junit("MappingCatalogSummaryTest#anotherOwnersVerifiedResultCannotSatisfyAnExpectedChildsNotApplicable", "and every owner"),
+                junit("MappingCatalogSummaryTest#aValueResultCoveringFewerOccurrencesThanTheNativePopulationCannotVerify", "and every occurrence")),
+                "Tier 1 is the union of the pinned foundations; per-route availability is a separate fact"));
     }
 
     /** The §4 corruption-control roster: each control must have run and passed in this build (positive controls live beside them in the same tests). */
@@ -369,6 +383,8 @@ class RequirementsAccountingIT {
                 "UsageUncertaintyControlTest#aLowerBoundRelabelledMeasuredIsADefectThoughTheNumberIsUnchanged", "UsageUncertaintyControlTest#callerSuppliedDataPresentedAsASourceReportedSettingIsADefect"));
         CONTROLS.put("forged identity or classification from a bare name or command text", List.of("IdentityClassificationControlTest#aForgedResponseIdentityOnAStreamLocalToolItemIsADefect",
                 "IdentityClassificationControlTest#aBuiltInKindGivenToAnMcpToolWithoutAReviewedBindingIsADefect", "IdentityClassificationControlTest#anInvocationOrOperationInventedFromAShellCommandsTextIsAPopulationDefect"));
+        CONTROLS.put("Tier 1 entry dropped, duplicated or exclusion hidden", List.of("ParityLedgerTest#eachCorruptionIsDetected"));
+        CONTROLS.put("evidence class relabelled or mixed", List.of("FixtureEvidenceClassTest#aRelabelledOrMixedClassIsReported", "LiveScenarioTest#anUntriggeredBehaviorLabelledObservedAndAMislabelledEvidenceClassAreDetected"));
         CONTROLS.put("shared misreading with equal numbers", List.of("SemanticExampleTest#aPerTurnLabelOnTheCumulativeUsageIsRejectedThoughEveryComponentIsEqual", "SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"));
         CONTROLS.put("missing, altered or late declarations", List.of("StandaloneEventFileTest#removingOrAlteringAMandatoryDeclarationFailsInterpretationExplicitly", "DeclaredFileDiagnosticsTest#malformedDuplicateUnknownAndConflictingDeclarationsAreEachReported", "DeclaredFileDiagnosticsTest#aContractDeclarationAlteredUnderItsHashAndAnAttributeUsedBeforeItsAmendmentAreDefects"));
     }

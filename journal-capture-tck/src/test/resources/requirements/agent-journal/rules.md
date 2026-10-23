@@ -167,9 +167,9 @@ Tests: `CodexExecStreamTest`, `OcsfOracleFixtureTest#sanitizedClaudeStreamWithCh
 Tests: `OcsfOracleMutationTest`, `OcsfOracleValueCheckTest`, `FullOneReviewRegressionTest` (independent reader and hand-authored expectations).
 
 ### RULE-30
-**MUST** label every fixture, report and claim as live capture, real recorded replay or labelled synthetic, and MUST NOT present one class as another.
-**Reason:** Replay through a recorded seam is regression evidence; only a live run establishes live lifecycle integration.
-Tests: fixture `spec.json` files carry the synthetic label; `PublicFixtureRegenerationTest` regenerates labelled fixtures.
+**MUST** label every fixture, reference, example, report and claim with its evidence class from the project's declared vocabularies, keeping what an artifact is (a pinned definition or specification; a pinned source, schema, type or serializer inspection; a sanitized recording of a live run; a sanitized real stream recorded elsewhere; labelled synthetic input; a publisher-normalized corpus) apart from how a check executed it (a live run, a replay of a recording, a synthetic replay), and **MUST NOT** present one class as another.
+**Reason:** Replay through a recorded seam is regression evidence; only a live run establishes live lifecycle integration. A capability an SDK type or serializer declares is not observed until a recording shows it, and a prompt that asks for a feature does not establish that it was exercised. A publisher's normalized corpus (renamed tools, rewritten arguments, positional call ids) is neither native output nor a live run: it can motivate a reviewed synthetic case but never stand in for one, and one artifact can have a provenance class and a separate execution class.
+Tests: `FixtureEvidenceClassTest`, `LiveFixtureFeaturesTest#everyFixtureStatesItsEvidenceClassAndLiveOnesCarryProvenance`, `LiveScenarioTest#anUntriggeredBehaviorLabelledObservedAndAMislabelledEvidenceClassAreDetected`, `CoverageDocumentSchemaTest#aPublisherNormalizedCorpusIsItsOwnEvidenceClassAndNeverAnExamplesNativeInput`, `SemanticClaimTest#theCommittedClaimsExamplesReferencesAndDecisionsAreConsistent`.
 
 ### RULE-31
 **MUST** publish only deliberately reviewed and sanitized material as public test data, with a manifest of capture command, CLI version, mode, source, hashes, sanitization and origin.
@@ -254,6 +254,13 @@ Tests: `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCo
 **Reason:** A summary is not the model's reasoning, and two observations in one stream are neither two known invocations nor one inferred invocation; their relation stays unknown until a source reports it.
 Tests: `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`, `LiveFixtureFeaturesTest#theCodexRecordingExhibitsOperationsFailureRepetitionAndUsage`.
 
+## Tier 1 foundation accounting
+
+### RULE-47
+**MUST** account for every field the pinned Tier 1 execution-domain foundations declare (OTel GenAI, OpenInference/Arize and Weave at their pinned revisions) exactly once in the parity ledger, a proposed exclusion included; **MUST** keep a proposed exclusion in the denominator, visible and reported as proposed, until a recorded decision disposes of it; **MUST** report availability at source, definition, mapper implementation, semantic approval and executed evidence apart; **MUST NOT** count raw retention as canonical parity; and **MUST NOT** report a facet's concepts verified on a route while an applicable property, owner or occurrence lacks its executed result.
+**Reason:** Tier 1 is the useful union of the three foundations, not their intersection and not what every CLI emits: a capability any one of them represents is in scope, and whether a route supplies it is a separate, per-route fact. An entry that leaves the denominator, an exclusion that disappears or is re-tiered without a decision, or retained raw data counted as a mapping would make parity look complete when it is not; a reference check proves accounting, not semantic correctness.
+Tests: `ParityLedgerTest#everyPinnedFieldIsAccountedForExactlyOnce`, `ParityLedgerTest#eachCorruptionIsDetected`, `ParityLedgerTest#theLedgerAndTheTopicExplanationAreGenerated`, `MappingCatalogSummaryTest` (executed verification needs every property, owner and occurrence).
+
 ## Change log
 
 2026-10-21, consolidated event-file work order (REQ-1 amendment). Retained identifiers with changed
@@ -307,5 +314,9 @@ non-zero cumulative value establish that every contribution was reported (the re
 candidate). RULE-45 is retained, extended by the no-shell-inference obligation: one reported invocation whose command
 text runs grep, Python or a pipeline is one invocation, and no tool call, operation, argv or operating-system action is
 derived from that text; separately reported operations stay their own observations; classification may use a declared
-exact-name table. RULE-44 is unchanged; its Tests line names the new independent controls. No rule added or removed;
-`RequirementsRosterTest` pins 46 rules.
+exact-name table. RULE-44 is unchanged; its Tests line names the new independent controls. RULE-30 is retained with
+changed meaning: it reuses the declared vocabularies to keep what an artifact is (definition, source inspection, live
+recording, sanitized real stream, synthetic, publisher-normalized corpus) apart from how a check executed it (live,
+replay, synthetic replay), in place of one three-label list that could not represent research evidence. Added RULE-47
+(exact field accounting of the pinned Tier 1 union with proposed exclusions kept visible). No rule removed;
+`RequirementsRosterTest` pins 47 rules.

@@ -58,8 +58,10 @@
        "synthetic",
        "replay",
        "live",
-       "persisted_readback"
-      ]
+       "persisted_readback",
+       "publisher_normalized"
+      ],
+      "description": "What the reference is: specification (a definition), source_inspection (pinned source, schema, type or serializer), synthetic, replay (of a recording), live (a recording of a live run), persisted_readback, or publisher_normalized (a third party's normalized corpus of agent sessions: neither native CLI output nor a live run; its rows do not establish an original native identity, mapping or field)"
      },
      "note": {
       "type": "string"
@@ -78,6 +80,22 @@
        "required": [
         "revision",
         "path"
+       ]
+      }
+     },
+     {
+      "if": {
+       "properties": {
+        "evidence_kind": {
+         "const": "publisher_normalized"
+        }
+       }
+      },
+      "then": {
+       "required": [
+        "revision",
+        "path",
+        "note"
        ]
       }
      }

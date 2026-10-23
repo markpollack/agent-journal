@@ -59,16 +59,19 @@ class LiveScenarioTest {
         }
     }
 
-    /** The fixture's own evidence class: live when its frozen manifest records the live process, synthetic when its spec says so. */
+    /**
+     * The fixture's own evidence class in the attempt vocabulary, from its stated origin (FixtureEvidenceClass): live for a
+     * recording of a live run, replay for a sanitized real stream recorded elsewhere, synthetic for labelled synthetic input.
+     * Until 2026-10-23 this read synthetic whenever spec.json had its (always present) synthetic member, so a sanitized real
+     * stream was classed synthetic and replay was unreachable.
+     */
     static String fixtureClass(String fixture) {
         Path dir = FIXTURES.resolve(fixture);
         if (!Files.isDirectory(dir)) {
             return null;
         }
-        if (!readFile(dir.resolve("native/expected-sources.json")).path("frozen").path("live_process").isMissingNode()) {
-            return "live";
-        }
-        return readFile(dir.resolve("spec.json")).has("synthetic") ? "synthetic" : "replay";
+        FixtureEvidenceClass.Origin origin = FixtureEvidenceClass.origin(dir);
+        return origin == null ? null : origin.attemptClass;
     }
 
     static MappingCatalogTest.Route route(String fixture, String entry, Path copy) {

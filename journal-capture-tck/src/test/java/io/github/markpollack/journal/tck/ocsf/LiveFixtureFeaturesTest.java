@@ -228,10 +228,9 @@ class LiveFixtureFeaturesTest {
                 Json spec = NeutralJson.readDocument(dir.resolve("spec.json"));
                 String label = SchemaCatalog.text(spec.member("synthetic"), "label");
                 assertThat(label).as(name + " spec.json synthetic.label").isNotBlank();
-                boolean live = label.startsWith("SANITIZED REAL LIVE RECORDING");
-                boolean sanitizedReal = label.startsWith("SANITIZED REAL");
-                boolean synthetic = label.contains("SYNTHETIC");
-                assertThat(live || sanitizedReal || synthetic).as(name + " states live, sanitized real or synthetic: " + label).isTrue();
+                assertThat(FixtureEvidenceClass.origin(dir)).as(name + " states live recording, sanitized real stream or labelled synthetic: " + label).isNotNull();
+                assertThat(FixtureEvidenceClass.problems(dir)).as(name + " is consistent with its stated evidence class").isEmpty();
+                boolean live = FixtureEvidenceClass.origin(dir) == FixtureEvidenceClass.Origin.LIVE_RECORDING;
                 if (live) {
                     Json prov = NeutralJson.readDocument(dir.resolve("provenance.json"));
                     assertThat(SchemaCatalog.text(prov, "origin")).startsWith("SANITIZED REAL LIVE RECORDING");
