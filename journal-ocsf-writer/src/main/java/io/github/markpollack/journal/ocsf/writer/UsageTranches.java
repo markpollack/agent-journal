@@ -30,7 +30,8 @@ final class UsageTranches {
             + "a completion without usage adds nothing (ResponseEvent::Completed.token_usage is an Option), and within a response an omitted cache_write_tokens, "
             + "input_tokens_details or output_tokens_details is written as cache-write, cached or reasoning 0 (#[serde(default)], unwrap_or_default, "
             + "unwrap_or(0)) while input_tokens and output_tokens are required. So no member establishes the thread's complete quantity, however large: with any "
-            + "non-zero member a zero cached, cache-write or reasoning member is Possibly default and every other member is a Lower bound; with every member zero "
+            + "non-zero member a zero cached, cache-write or reasoning member is Possibly default and every other member is a Lower bound (the thread's actual quantity "
+            + "is at least the member and may exceed it: a reported 100 is compatible with an actual 150); with every member zero "
             + "(Usage::default, no update arrived) each is Possibly default";
     static final String CODEX_UNCACHED = "codex.usage.uncached_input.v2: input_tokens - cached_input_tokens (input_tokens includes cached_input_tokens: "
             + "TokenUsage::non_cached_input) is the uncached input only if cache_write_input_tokens is a measured 0, which the pinned deserializer does not "

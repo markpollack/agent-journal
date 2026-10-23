@@ -180,6 +180,45 @@ public final class ExpectedFacts {
         this.artifact = artifact;
     }
 
+    /**
+     * These facts without those of the given records: records that arrived under a non-normalizing compatibility
+     * selection are retained whole and never normalized, so no fact of theirs is owed or credited, and their events
+     * carry the fallback time. Ownership and admission are unchanged.
+     */
+    public ExpectedFacts without(Set<Integer> records) {
+        ExpectedFacts f = new ExpectedFacts(artifact);
+        requests.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.requests::add);
+        results.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.results::add);
+        responses.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.responses::add);
+        prompts.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.prompts::add);
+        usages.stream().filter(x -> !records.contains(x.eventRecordIndex())).forEach(f.usages::add);
+        costs.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.costs::add);
+        decisions.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.decisions::add);
+        operations.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.operations::add);
+        completed.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.completed::add);
+        started.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.started::add);
+        contexts.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.contexts::add);
+        f.owned.addAll(owned);
+        normalized.stream().filter(i -> !records.contains(i)).forEach(f.normalized::add);
+        f.excluded.putAll(excluded);
+        sessionOf.forEach((i, v) -> {
+            if (!records.contains(i)) {
+                f.sessionOf.put(i, v);
+            }
+        });
+        nativeUid.forEach((i, v) -> {
+            if (!records.contains(i)) {
+                f.nativeUid.put(i, v);
+            }
+        });
+        nativeTime.forEach((i, v) -> {
+            if (!records.contains(i)) {
+                f.nativeTime.put(i, v);
+            }
+        });
+        return f;
+    }
+
     public Map<String, Integer> counts() {
         Map<String, Integer> m = new LinkedHashMap<>();
         m.put("owned", owned.size());

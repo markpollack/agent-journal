@@ -31,6 +31,8 @@ final class SourceContext {
         int records;
         long bytes;
         String disposition;
+        int unselected;
+        String unselectedDisposition;
     }
 
     SourceContext(SourceDescriptor source, RunDescriptor run, MappingContracts contracts, SchemaPin pin, Sink sink) {
@@ -56,6 +58,18 @@ final class SourceContext {
         f.records++;
         f.bytes += bytes;
         f.disposition = disposition;
+    }
+
+    /**
+     * Counts a record retained whole and unnormalized because no compatible entry was selected when it arrived; the
+     * family keeps the disposition its normalized records were given, and states the unselected ones apart.
+     */
+    void unselected(String recordType, long bytes, String disposition) {
+        Family f = families.computeIfAbsent(recordType == null ? "(untyped)" : recordType, k -> new Family());
+        f.records++;
+        f.bytes += bytes;
+        f.unselected++;
+        f.unselectedDisposition = disposition;
     }
 
     /** Source time when reported; else the latest preceding reported time in this artifact; else the capture start. */

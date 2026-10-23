@@ -775,8 +775,7 @@
         "openinference.semconv:enum_member:OpenInferenceSpanKindValues=UNKNOWN"
       ],
       "concepts": [
-        "retained-only-unresolved-families",
-        "opaque-malformed-and-blank-records"
+        "retained-only-unresolved-families"
       ],
       "proposal": null,
       "destinations": [
@@ -784,7 +783,7 @@
         "source_record.data"
       ],
       "relation": "adapted",
-      "differences": "Journal keeps unknown native families whole as source_record with their discriminator, flagged unresolved.",
+      "differences": "Journal marks an operation whose kind it does not know portably: the record stays a source_record with its native discriminator (record_type), a retained-only unresolved disposition in the family inventory and its whole bytes in data. That is the correspondence of OpenInference's UNKNOWN span kind: a known-unknown kind, retained exactly.",
       "tier": "1",
       "tier_reason": "Execution information represented by a Tier 1 foundation",
       "definition": "defined",
@@ -793,9 +792,26 @@
         "claude-code/stream-json/2.1.304-stdout": "mapped",
         "codex-cli/exec-json-stream/0.160.1": "mapped"
       },
-      "route_evidence": "Unmapped families on both routes are source_record events",
+      "route_evidence": "Both routes: unresolved families are source_record events whose retention checks are established (executed state retained-only); their meaning is not claimed",
       "evidence": [],
-      "action": "none"
+      "action": "none",
+      "excludes": "What the unknown operation did: its semantics stay unresolved and are never inferred from the retained bytes, so the catalog concept remains retained-only and exact retention is not semantic parity. Unparseable lines are not operations; they are accounted under opaque-malformed-and-blank-records.",
+      "aspects": [
+        {
+          "id": "marking-and-retention",
+          "summary": "an operation of unknown kind kept as a source_record with its native discriminator, an unresolved disposition and its exact bytes",
+          "concept": "retained-only-unresolved-families",
+          "executed": "retained-only",
+          "destinations": [
+            "source_record.record_type",
+            "source_record.data"
+          ],
+          "routes": {
+            "claude-code/stream-json/2.1.304-stdout": "mapped",
+            "codex-cli/exec-json-stream/0.160.1": "mapped"
+          }
+        }
+      ]
     },
     {
       "id": "model.response-model",
@@ -1305,26 +1321,80 @@
       ],
       "concepts": [
         "user-submission",
+        "ordered-content-blocks",
+        "tool-result-ownership-and-content",
         "injected-context"
       ],
       "proposal": null,
       "destinations": [
         "prompt_turn.content_blocks[].text",
+        "model_response.content_blocks[].text",
+        "tool_call.tool_result.data",
         "session_context.rendered_role"
       ],
       "relation": "adapted",
-      "differences": "Journal encodes the role in the event class (prompt_turn, model_response, tool result) and keeps a rendered role for injected context.",
+      "differences": "Journal encodes who produced content in the event class: a user prompt the source reports (prompt_turn), assistant output (model_response content), a tool's result (tool_call result), and an injected-context record keeps its rendered role (session_context.rendered_role). Support differs by role and route (aspects): the Claude stream reports user prompts (a child agent's; the root prompt is the caller's and never presented as reported) and the Codex exec stream does not; assistant and tool content are reported on both; no recording on either admitted stream route demonstrates an injected-context role, which stays unexercised on the Claude stream and is not reported by the Codex exec stream.",
       "tier": "1",
       "tier_reason": "Execution information represented by a Tier 1 foundation",
       "definition": "defined",
-      "state": "covered",
+      "state": "partial",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
         "codex-cli/exec-json-stream/0.160.1": "mapped"
       },
-      "route_evidence": "Both routes",
+      "route_evidence": "Per role (aspects): each aspect's route state agrees with its own concept's executed state on that route",
       "evidence": [],
-      "action": "none"
+      "action": "Exercise an injected-context record with a rendered role on the Claude stream route (a recording and an independent ClaudeStreamProfile check), or establish from pinned source that the route does not report one",
+      "aspects": [
+        {
+          "id": "user",
+          "summary": "a user prompt the source reports",
+          "concept": "user-submission",
+          "destinations": [
+            "prompt_turn.content_blocks[].text"
+          ],
+          "routes": {
+            "claude-code/stream-json/2.1.304-stdout": "mapped",
+            "codex-cli/exec-json-stream/0.160.1": "source_limited"
+          }
+        },
+        {
+          "id": "assistant",
+          "summary": "assistant output",
+          "concept": "ordered-content-blocks",
+          "destinations": [
+            "model_response.content_blocks[].text"
+          ],
+          "routes": {
+            "claude-code/stream-json/2.1.304-stdout": "mapped",
+            "codex-cli/exec-json-stream/0.160.1": "mapped"
+          }
+        },
+        {
+          "id": "tool",
+          "summary": "a tool's result",
+          "concept": "tool-result-ownership-and-content",
+          "destinations": [
+            "tool_call.tool_result.data"
+          ],
+          "routes": {
+            "claude-code/stream-json/2.1.304-stdout": "mapped",
+            "codex-cli/exec-json-stream/0.160.1": "mapped"
+          }
+        },
+        {
+          "id": "injected-context",
+          "summary": "context injected into the model's input with its rendered role (system, developer, reminder)",
+          "concept": "injected-context",
+          "destinations": [
+            "session_context.rendered_role"
+          ],
+          "routes": {
+            "claude-code/stream-json/2.1.304-stdout": "unexercised",
+            "codex-cli/exec-json-stream/0.160.1": "source_limited"
+          }
+        }
+      ]
     },
     {
       "id": "content.participant-name",

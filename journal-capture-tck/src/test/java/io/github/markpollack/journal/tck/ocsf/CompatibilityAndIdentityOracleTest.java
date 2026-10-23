@@ -102,8 +102,8 @@ class CompatibilityAndIdentityOracleTest {
         Path unknownVersion = copy(CHILD, work.resolve("vu"));
         editCompatibility(unknownVersion, c -> c.members().put("status", str("version_unknown")));
         OracleReport vu = verify(unknownVersion);
-        assertThat(vu.outcome("source.compatibility", MAIN)).isEqualTo(Outcome.UNRESOLVED);
-        assertThat(vu.check("source.compatibility", MAIN).detail()).contains("the version was never known for this source").contains("mapped provisionally under the profile's contract claude-code/stream-json/2.1.303/0.3.0-prototype");
+        assertThat(vu.outcome("source.compatibility", MAIN)).as("records normalized while no entry was selected: no provisional interpretation is accepted").isEqualTo(Outcome.DEFECTIVE);
+        assertThat(vu.check("source.compatibility", MAIN).detail()).contains("were normalized while the version was unknown").contains("never interpreted provisionally");
         OcsfPackage vup = open(unknownVersion);
         assertThat(vup.diagnosticsWithCode("COMPATIBILITY_VERSION_UNKNOWN")).hasSize(1);
         assertThat(vup.diagnosticsWithCode("CONTRACT_APPLICABILITY")).as("without a selection the contract's own single version is compared again (2.1.303 vs 2.1.299)").hasSize(1);
@@ -163,19 +163,15 @@ class CompatibilityAndIdentityOracleTest {
         assertThat(nm.outcome("source.compatibility", MAIN)).isEqualTo(Outcome.DEFECTIVE);
         assertThat(nm.check("source.compatibility", MAIN).detail()).contains("status no_match but an entry_id claude-code/stream-json/2.1.299-sdk is named");
 
-        // the selection claimed earlier than it was: the init record (1) was normalized, so a records_before_selection of 0 is a lie
-        Path earlier = copy(UNTESTED, work.resolve("earlier"));
-        editCompatibility(earlier, c -> c.members().put("records_before_selection", new Json.JNumber("0")));
-        OracleReport er = verify(earlier);
-        assertThat(er.outcome("source.compatibility", MAIN)).isEqualTo(Outcome.DEFECTIVE);
-        assertThat(er.check("source.compatibility", MAIN).detail()).contains("1 record(s) after the no_match selection (records_before_selection 0) were normalized");
-
-        // the selection claimed later than it was: records 2..27 are then expected normalized but are fallback, a class defect
-        Path later = copy(UNTESTED, work.resolve("later"));
-        editCompatibility(later, c -> c.members().put("records_before_selection", new Json.JNumber("27")));
-        OracleReport lt = verify(later);
-        assertThat(lt.outcome("whole_record.class", MAIN)).isEqualTo(Outcome.DEFECTIVE);
-        assertThat(lt.check("whole_record.class", MAIN).detail()).contains("record 4 has a normalization rule but is retained only as a source_record fallback");
+        // every selection relabelled tested, as if an entry had covered 2.1.999: the retained records then owe normalized facts
+        Path relabelled = copy(UNTESTED, work.resolve("relabelled"));
+        editCompatibility(relabelled, c -> {
+            c.members().put("status", str("tested"));
+            c.members().put("entry_id", str("claude-code/stream-json/2.1.304-stdout"));
+        });
+        OracleReport rl = verify(relabelled);
+        assertThat(rl.outcome("whole_record.class", MAIN)).isEqualTo(Outcome.DEFECTIVE);
+        assertThat(rl.check("whole_record.class", MAIN).detail()).contains("record 1 has a normalization rule but is retained only as a source_record fallback");
 
         // a tested fixture relabelled no_match: its normalized events betray it (the writer-side forge, repeated here on the committed package)
         Path forged = copy(CHILD, work.resolve("forged"));
@@ -186,7 +182,7 @@ class CompatibilityAndIdentityOracleTest {
         });
         OracleReport fg = verify(forged);
         assertThat(fg.outcome("source.compatibility", MAIN)).isEqualTo(Outcome.DEFECTIVE);
-        assertThat(fg.check("source.compatibility", MAIN).detail()).contains("were normalized; a no_match source is retained whole, not normalized");
+        assertThat(fg.check("source.compatibility", MAIN).detail()).contains("were normalized; a source with no selected entry is retained whole, not normalized");
         assertThat(open(forged).diagnosticsWithCode("COMPATIBILITY_NO_MATCH")).hasSize(1);
     }
 

@@ -23,7 +23,7 @@
   }
  ],
  "synthetic": {
-  "label": "LABELLED SYNTHETIC (2026-10-21, ACCEPT-1): the sanitized real claude-child-2.1.299 stream with claude_code_version edited to 2.1.999, a version outside every compatibility entry; exercises RULE-33 / UC2-AC5 / UC1-AC5: records after the version report are retained whole under the untested-compatibility contract, flagged, not normalized; the native session file is not selected",
+  "label": "LABELLED SYNTHETIC (2026-10-21, ACCEPT-1): the sanitized real claude-child-2.1.299 stream with claude_code_version edited to 2.1.999, a version outside every compatibility entry; exercises RULE-33 / UC2-AC5 / UC1-AC5 and RULE-9: the version bootstrap reads 2.1.999 from record 1 and the no_match selection is declared before record 1 is interpreted, so every record, record 1 included, is retained whole under the untested-compatibility contract, flagged, not normalized; the native session file is not selected",
   "derived_from": "fixtures/claude-child-2.1.299/native/stream.jsonl (one field changed in record 1)"
  }
 }

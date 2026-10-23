@@ -57,9 +57,6 @@ final class CoreWriter {
         /** The compatibility selections declared so far for an artifact, oldest first (the last is the one in force). */
         java.util.List<Jv.Obj> compatibilityDeclarations(String artifact);
 
-        /** The selected stream reported the CLI version (first report wins; later reports are not re-declared). */
-        void cliVersionReported(String version);
-
         String startedText();
     }
 
@@ -163,6 +160,13 @@ final class CoreWriter {
         }
     }
 
+    /** Declares the first CLI version a source reported (read by the compatibility bootstrap before its record was normalized); later reports are not re-declared here. */
+    void declareCliVersion(Jv.Obj payload) {
+        if (!declared("cli_version:reported")) {
+            declare("cli_version", "cli_version:reported", payload);
+        }
+    }
+
     void declareContract(String contractUid) {
         String uid = "contract:" + contractUid;
         if (declared(uid)) {
@@ -225,17 +229,6 @@ final class CoreWriter {
         }
         if (event.get("session_uid") instanceof Jv.Str s) {
             declareSession(s.value());
-        }
-        if (event.path("settings", "version") instanceof Jv.Str v && !declared("cli_version:reported")) {
-            Jv.Obj cv = new Jv.Obj().put("version", v.value()).put("basis", "reported by the selected source in its session settings record; no version command was run");
-            if (sourceRef != null && sourceRef.member("record_index") instanceof Jv.Num n) {
-                cv.put("record_index", n);
-            }
-            if (artifact != null) {
-                cv.put("artifact", artifact);
-            }
-            declare("cli_version", "cli_version:reported", cv);
-            context.cliVersionReported(v.value());
         }
         Integer classUid = event.get("class_uid") instanceof Jv.Num n ? (int) n.value().longValueExact() : null;
         String className = null;

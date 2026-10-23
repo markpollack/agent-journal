@@ -628,7 +628,7 @@ class MappingCatalogTest {
 
     static Set<String> semanticOperations() {
         Set<String> out = new TreeSet<>();
-        Json sc = NeutralJson.readDocument(PROJECT.resolve("journal-capture-tck/src/main/resources/ocsf/semantic-contract-0.5.0-prototype.json"));
+        Json sc = NeutralJson.readDocument(PROJECT.resolve("journal-capture-tck/src/main/resources/ocsf/semantic-contract-0.6.0-prototype.json"));
         for (Json d : sc.member("declarations").elements()) {
             for (String k : List.of("id", "operation")) {
                 if (SchemaCatalog.text(d, k) != null) {

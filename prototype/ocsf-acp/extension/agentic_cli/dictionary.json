@@ -766,11 +766,11 @@
         },
         "3": {
           "caption": "Conditional",
-          "description": "On a usage component whose canonical value the source does not establish: a declared formula gives a result from the reported operands that is the component's quantity only under assumptions the component's derivation names (for example that a possibly default operand, or one that is only a lower bound, is a complete measurement). The result is the component's conditional_value, never the canonical value, which stays absent. A price estimate from it holds only under the same assumptions; it is exact only where the applicable price schedule does not distinguish the uncertain operand (for example no separate cache-write rate for the model)."
+          "description": "On a usage component whose canonical value the source does not establish: a declared formula gives a result from the reported operands that is the component's quantity only under assumptions the component's derivation names (for example that a possibly default operand, or one that is only a lower bound, is a complete measurement). The result is the component's conditional_value, never the canonical value, which stays absent. A price estimate from it holds only under the same assumptions. Equal prices for the tranches between which the uncertain quantity could fall make that allocation immaterial to their subtotal; they do not make the subtotal exact when an operand is itself a lower bound, because no price recovers a contribution the source never reported."
         },
         "4": {
           "caption": "Lower bound",
-          "description": "The quantity is at least this value, and that it equals the quantity is not established: the value sums measured contributions while a contribution the source did not receive, or for which it wrote its default, is missing (for example a running total that adds only the responses whose usage arrived and writes 0 for an omitted member). A positive running total therefore does not establish that every contribution was reported."
+          "description": "The quantity is at least this value, and that it equals the quantity is not established: the value sums measured contributions while a contribution the source did not receive, or for which it wrote its default, is missing (for example a running total that adds only the responses whose usage arrived and writes 0 for an omitted member). A positive running total therefore does not establish that every contribution was reported: a reported 100 is compatible with an actual 150. The value is kept as reported, never raised to a guessed quantity, and a price estimate computed from it is itself only a lower bound of the charge."
         }
       }
     },
@@ -781,7 +781,7 @@
     },
     "conditional_value": {
       "caption": "Conditional Value",
-      "description": "The result of a usage component's declared formula when the source does not establish the component's canonical value and the formula gives that quantity only under assumptions the component's derivation names (measurement_status_id 3 Conditional). Not the canonical value, which stays absent; consumers that use it inherit the named assumptions.",
+      "description": "The result of a usage component's declared formula when the source does not establish the component's canonical value and the formula gives that quantity only under assumptions the component's derivation names (measurement_status_id 3 Conditional). Not the canonical value, which stays absent; consumers that use it inherit the named assumptions, and when an operand is a lower bound the result is no more complete than that operand.",
       "type": "long_t"
     },
     "reasoning_form_id": {

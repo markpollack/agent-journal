@@ -24,7 +24,7 @@ import java.util.TreeMap;
 public final class SchemaPin {
 
     public static final String EXTENSION = "agentic_cli";
-    public static final String BUNDLED_EXCERPT = "/ocsf/compiled-excerpt-agentic_cli-0.8.0-prototype.json";
+    public static final String BUNDLED_EXCERPT = "/ocsf/compiled-excerpt-agentic_cli-0.9.0-prototype.json";
 
     /** One written class as the compiled schema defines it. */
     public record ClassDef(String name, String caption, int classUid, int categoryUid, String categoryName, Map<String, String> activities) {

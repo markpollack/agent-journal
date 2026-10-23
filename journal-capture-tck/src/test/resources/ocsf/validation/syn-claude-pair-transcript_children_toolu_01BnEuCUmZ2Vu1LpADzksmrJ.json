@@ -4,7 +4,7 @@
  "fixture": "syn-claude-pair-transcript",
  "core": "children/toolu_01BnEuCUmZ2Vu1LpADzksmrJ",
  "events_jsonl": "fixtures/syn-claude-pair-transcript/package/children/toolu_01BnEuCUmZ2Vu1LpADzksmrJ/events.jsonl",
- "events_jsonl_sha256": "a21bd7618c813b40dd3f72f3081d90c7a0e2f347788874b1ee1ebbef72d47fb7",
+ "events_jsonl_sha256": "369e355fa283a27e7972ea96d4103f0f664e5f1bf2e4eca3b1bb93293f525a12",
  "execution_records": 4,
  "declarations_skipped": 38,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
@@ -14,7 +14,7 @@
   "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
   "exit_code": 0
  },
- "compiled_schema_sha256": "1d3b294a2df516385ea5f3bc468065727d8dfbdb251b6fe1496be09b6a719bff",
+ "compiled_schema_sha256": "9b77697bdc5b3f5433e3d064d25e4488c230634311abe634faf2f34745f6eb56",
  "result": {
   "event_files_processed": 4,
   "error_events": 0,

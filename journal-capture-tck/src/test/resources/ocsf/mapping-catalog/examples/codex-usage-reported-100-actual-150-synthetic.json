@@ -1,0 +1,100 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "codex-usage-reported-100-actual-150-synthetic",
+  "concept": "usage-components-and-cache",
+  "description": "LABELLED SYNTHETIC, source-grounded numerical counterexample for the lower bound and the conditional value. A turn with two model responses: the first reports input 1000, cached 600, no cache writes, output 100; the second's completion carries no usage (ResponseEvent::Completed.token_usage is an Option and Session::record_token_usage_info adds only Some), although it consumed input 1100, cached 1000 and output 50. The printed thread total is exactly the first response's usage. So the reported output 100 is a lower bound and the thread's actual output, 150, is at least 100: the report is not 'at least the thread's output'. Journal keeps 100 as reported, states it 4 Lower bound, and never raises it to a guessed total. input 1000 minus cached 600 = 400 is the uncached input only if the cache-write 0 was measured and both operands are complete; it is the component's conditional value, while the actual uncached input here is 500. Pricing consequence: equal prices for uncached input and cache writes would make the allocation of a possibly omitted cache write immaterial to their subtotal (400 at that price either way), but cannot recover the second response, so an estimate from these values is at most a lower bound of the charge, never an exact bill.",
+  "authored_from": [
+    "codex-api-0.160.1-responses-usage-defaults",
+    "codex-exec-0.160.1-emitter-usage",
+    "codex-protocol-0.160.1-token-usage-info",
+    "codex-api-0.160.1-completed-usage-optional",
+    "codex-core-0.160.1-record-token-usage",
+    "agentic-cli-0.9.0-lower-bound-direction"
+  ],
+  "native": {
+    "evidence_kind": "synthetic",
+    "profile": "codex_stream",
+    "compatibility_entry": "codex-cli/exec-json-stream/0.160.1",
+    "run_spec_fixture": "syn-codex-exec-families-0.160.1",
+    "artifact": "stream.jsonl",
+    "lines": [
+      "{\"type\":\"thread.started\",\"thread_id\":\"00000000-0000-4000-8000-00000000fa42\"}",
+      "{\"type\":\"turn.started\"}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"agent_message\",\"text\":\"SYNTHETIC: first response.\"}}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"agent_message\",\"text\":\"SYNTHETIC: second response, whose usage never arrived.\"}}",
+      "{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1000,\"cached_input_tokens\":600,\"cache_write_input_tokens\":0,\"output_tokens\":100,\"reasoning_output_tokens\":0}}"
+    ]
+  },
+  "expected": [
+    {
+      "record": 5,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/aggregation_id": 2,
+        "/usage_observations/0/measurement_status_id": 4,
+        "/usage_observations/0/cache_read_tokens": 600,
+        "/usage_observations/0/cache_write_tokens": 0,
+        "/usage_observations/0/output_tokens": 100,
+        "/usage_observations/0/components/0/name": "uncached_input_tokens",
+        "/usage_observations/0/components/0/component_basis_id": 3,
+        "/usage_observations/0/components/0/measurement_status_id": 3,
+        "/usage_observations/0/components/0/conditional_value": 400,
+        "/usage_observations/0/components/1/name": "cache_read_tokens",
+        "/usage_observations/0/components/1/measurement_status_id": 4,
+        "/usage_observations/0/components/2/name": "cache_write_tokens",
+        "/usage_observations/0/components/2/measurement_status_id": 2,
+        "/usage_observations/0/components/3/name": "output_tokens",
+        "/usage_observations/0/components/3/measurement_status_id": 4,
+        "/usage_observations/0/components/4/name": "reasoning_tokens",
+        "/usage_observations/0/components/4/measurement_status_id": 2
+      },
+      "absent": [
+        "/usage_observations/0/uncached_input_tokens"
+      ]
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "output-raised-to-the-actual-150",
+      "record": 5,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/output_tokens": 150
+      },
+      "why": "The second response's 50 output tokens were never reported. Journal keeps the reported 100, which the thread's actual output (here 150) is at least; writing the actual would invent a measurement the source does not make."
+    },
+    {
+      "id": "output-lower-bound-relabelled-complete",
+      "record": 5,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/components/3/measurement_status_id": 1
+      },
+      "why": "100 is a lower bound: the actual 150 is at least 100. Measured would claim that every response's output was counted."
+    },
+    {
+      "id": "observation-relabelled-complete",
+      "record": 5,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/measurement_status_id": 1
+      },
+      "why": "A non-zero member shows that some update arrived, not that every response's usage did; equal tranche prices would not change that."
+    },
+    {
+      "id": "conditional-value-relabelled-canonical",
+      "record": 5,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/uncached_input_tokens": 400
+      },
+      "why": "400 is the uncached input only if the cache-write 0 was measured and both operands are complete; here the missing response adds 100, so the actual uncached input is 500. It stays the component's conditional value."
+    }
+  ]
+}

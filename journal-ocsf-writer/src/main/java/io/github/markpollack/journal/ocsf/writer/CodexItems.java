@@ -90,8 +90,9 @@ final class CodexItems {
 
     /**
      * codex.stream.usage_measurement.v2: any non-zero component proves a token-usage update arrived (the emitter's
-     * default is all zeros), but the thread running total adds only the responses whose usage arrived, so its values are
-     * each at least their quantity (4 Lower bound), never established as complete; all reported components zero may be
+     * default is all zeros), but the thread running total adds only the responses whose usage arrived, so each value is a
+     * lower bound (4): the thread's actual quantity is at least the value and may exceed it, never established as complete
+     * (a reported 100 is compatible with an actual 150); all reported components zero may be
      * that default (2); no integral component, no statement.
      */
     static Integer measurement(Jv usage) {

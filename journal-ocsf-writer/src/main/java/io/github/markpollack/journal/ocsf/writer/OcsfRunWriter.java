@@ -63,6 +63,9 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
     private final Jv semanticContract;
     private String sessionUid;
     private String reportedCliVersion;
+    /** The first assertion of each distinct CLI version in this capture: the launch declaration, then what sources reported. */
+    private final List<Compatibility.Assertion> versionAssertions = new ArrayList<>();
+    private boolean versionConflict;
     private Jv.Obj process;
     private Jv.Obj archive;
 
@@ -75,6 +78,9 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         this.started = options.clock().instant();
         this.extensionSourceSha256 = SchemaPin.extensionSource(extensionSource);
         this.semanticContract = loadSemanticContract();
+        if (run.cli().version() != null) {
+            versionAssertions.add(Compatibility.Assertion.launch(run.cli().version(), run.cli().declaredVersionBasis()));
+        }
         this.root = new CoreWriter(dir, run.runUid(), this, runDeclaration(run.runUid(), null, null));
         root.flush(c -> manifest(c, null, null, List.of()));
         this.lastFlush = started;
@@ -157,13 +163,38 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         return started.toString();
     }
 
-    @Override
-    public void cliVersionReported(String version) {
+    /**
+     * A version the bootstrap read from a record of {@code asserting}, before that record is interpreted (RULE-9,
+     * RULE-10). The first source-reported version is declared once in the root file. In a capture that knew no
+     * version it selects for every pending source, the asserting record included; an assertion equal to one already
+     * made changes nothing; a contradicting one makes every version-scoped source ambiguous (conflict), keeping every
+     * assertion with its origin and stopping normalization from that record on.
+     */
+    private void versionAsserted(Compatibility.Assertion a, Source asserting) {
         if (reportedCliVersion == null) {
-            reportedCliVersion = version;
+            reportedCliVersion = a.version();
+            root.declareCliVersion(new Jv.Obj().put("version", a.version())
+                    .put("basis", "reported by the selected source at " + a.pointer() + " of its record " + a.recordIndex() + " (" + a.basis()
+                            + "); read by the compatibility bootstrap before that record was normalized; no version command was run")
+                    .put("record_index", a.recordIndex()).put("artifact", a.artifact()).put("pointer", a.pointer()));
+        }
+        boolean known = false;
+        for (Compatibility.Assertion k : versionAssertions) {
+            known |= k.version().equals(a.version());
+        }
+        if (known) {
+            return; // the same version again: idempotent
+        }
+        versionAssertions.add(a);
+        if (versionAssertions.size() == 1) {
             for (Source s : sources.values()) {
-                s.reselect();
+                s.reselect(s == asserting ? asserting.records - 1 : s.records);
             }
+            return;
+        }
+        versionConflict = true;
+        for (Source s : sources.values()) {
+            s.conflict(s == asserting ? asserting.records - 1 : s.records);
         }
     }
 
@@ -179,9 +210,10 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
     }
 
     private String cliVersionBasis() {
-        return run.cli().version() != null ? run.cli().declaredVersionBasis() : reportedCliVersion != null
-                ? "reported by the selected source (cli_version declaration); not known at launch, no version command was run"
+        String basis = run.cli().version() != null ? run.cli().declaredVersionBasis() : reportedCliVersion != null
+                ? "reported by the selected source (cli_version declaration, read by the compatibility bootstrap); not known at launch, no version command was run"
                 : "not known at launch and not (yet) reported by the selected stream; no version command was run";
+        return versionConflict ? basis + "; contradicted by another version assertion within this capture (compatibility status conflict)" : basis;
     }
 
     @Override
@@ -284,17 +316,33 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
             catch (NoSuchAlgorithmException e) {
                 throw new IllegalStateException(e);
             }
-            this.selection = compatibility.select(run.cli().name(), descriptor.profile(), descriptor.route(), cliVersion());
+            Compatibility.Selection first = compatibility.select(run.cli().name(), descriptor.profile(), descriptor.route(), cliVersion());
+            this.selection = versionConflict && first.status() != Compatibility.Status.NOT_VERSION_SCOPED
+                    ? Compatibility.conflict(run.cli().name(), descriptor.profile(), descriptor.route(), versionAssertions)
+                    : first.withAssertions(versionAssertions);
             compatibilityDeclared.add(Compatibility.declaration(selection, descriptor.artifact(), cliVersionBasis(), 0, pin.compiledSha256()));
         }
 
-        /** Repeats the selection once the version is known; the new selection is appended to every file that references this source. */
-        void reselect() {
+        /** Repeats the selection once the version is known; it governs the records after {@code before}. */
+        void reselect(int before) {
             if (selection.status() != Compatibility.Status.VERSION_UNKNOWN || cliVersion() == null) {
                 return;
             }
-            selection = compatibility.select(run.cli().name(), descriptor.profile(), descriptor.route(), cliVersion());
-            Jv.Obj d = Compatibility.declaration(selection, descriptor.artifact(), cliVersionBasis(), records, pin.compiledSha256());
+            redeclare(compatibility.select(run.cli().name(), descriptor.profile(), descriptor.route(), cliVersion()).withAssertions(versionAssertions), before);
+        }
+
+        /** Contradictory version assertions: the selection becomes ambiguous for the records after {@code before}; nothing earlier changes. */
+        void conflict(int before) {
+            if (selection.status() == Compatibility.Status.NOT_VERSION_SCOPED) {
+                return;
+            }
+            redeclare(Compatibility.conflict(run.cli().name(), descriptor.profile(), descriptor.route(), versionAssertions), before);
+        }
+
+        /** Puts a new selection in force and appends its declaration to every file that references this source. */
+        private void redeclare(Compatibility.Selection next, int before) {
+            selection = next;
+            Jv.Obj d = Compatibility.declaration(selection, descriptor.artifact(), cliVersionBasis(), before, pin.compiledSha256());
             compatibilityDeclared.add(d);
             int n = compatibilityDeclared.size();
             root.declareCompatibility(descriptor.artifact(), n, d);
@@ -369,9 +417,23 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
                     incompleteTail = r.index();
                 }
             }
+            // the bootstrap reads only the version and its location, so the selection is in force before the record is interpreted
+            Compatibility.Assertion asserted = compatibility.bootstrap(descriptor.profile(), descriptor.artifact(), r);
+            if (asserted != null) {
+                versionAsserted(asserted, this);
+            }
+            interpret(r);
+            recordsSinceFlush++;
+            if (options.autoFlushEveryRecords() > 0 && recordsSinceFlush >= options.autoFlushEveryRecords()) {
+                flush();
+            }
+        }
+
+        /** Normalizes the record under the selection in force, or retains it whole when none permits normalization; a mapper defect never loses it. */
+        private void interpret(NativeRecord r) {
             try {
                 if (!selection.normalizes()) {
-                    retainUntested(r);
+                    retainUnselected(r);
                 }
                 else {
                     mapper.map(r, ctx);
@@ -389,29 +451,48 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
                     emit(null, ctx.opaque(r, mapper.contractName()));
                 }
             }
-            recordsSinceFlush++;
-            if (options.autoFlushEveryRecords() > 0 && recordsSinceFlush >= options.autoFlushEveryRecords()) {
-                flush();
-            }
         }
 
         /**
-         * RULE-33: the version, profile or route matched no compatibility entry, so the record is retained whole under
-         * the untested-compatibility contract and nothing is normalized; the nearest entry's mapper is not consulted.
+         * A record that arrived while no compatible entry was selected is retained whole under the
+         * untested-compatibility contract and nothing in it is normalized; no mapper is consulted. RULE-9: before the
+         * version is known (never provisionally interpreted, and not reinterpreted by a later selection); RULE-33: the
+         * version, profile or route matched no entry (the nearest entry is not chosen); RULE-10: the version
+         * assertions contradict each other.
          */
-        private void retainUntested(NativeRecord r) {
-            String family;
+        private void retainUnselected(NativeRecord r) {
+            String status = selection.status().name().toLowerCase(Locale.ROOT);
+            String rule;
+            String disposition;
+            String basis;
+            switch (selection.status()) {
+                case VERSION_UNKNOWN -> {
+                    rule = "compat.version_pending->source_record";
+                    disposition = "retained-only: arrived before a compatibility entry was selected (version_unknown); not normalized";
+                    basis = "retained whole and unnormalized: the record arrived before a compatibility entry was selected (the CLI version was not known yet); "
+                            + "it is not interpreted provisionally and no later selection reinterprets it";
+                }
+                case CONFLICT -> {
+                    rule = "compat.conflict->source_record";
+                    disposition = "retained-only: ambiguous compatibility (conflict); not normalized";
+                    basis = "retained whole: " + selection.detail();
+                }
+                default -> {
+                    rule = "compat.no_match->source_record";
+                    disposition = "retained-only: untested compatibility (" + status + "); not normalized";
+                    basis = "retained whole: " + selection.detail();
+                }
+            }
             if (r.parsed()) {
                 Jv o = r.json();
                 String type = MapperSupport.text(o, "type");
                 String sub = MapperSupport.text(o, "subtype");
-                family = type == null ? "(untyped)" : sub == null ? type : type + "/" + sub;
-                ctx.family(family, r.raw().length, "retained-only: untested compatibility (" + selection.status().name().toLowerCase(Locale.ROOT) + "); not normalized");
-                emit(null, ctx.fallback(r, Compatibility.UNTESTED_CONTRACT, "compat.no_match->source_record", family, null, null, sessionUid,
-                        "retained whole: " + selection.detail()));
+                String family = type == null ? "(untyped)" : sub == null ? type : type + "/" + sub;
+                ctx.unselected(family, r.raw().length, disposition);
+                emit(null, ctx.fallback(r, Compatibility.UNTESTED_CONTRACT, rule, family, null, null, sessionUid, basis));
             }
             else {
-                ctx.family("opaque", r.raw().length, "retained-only: not one JSON object (bytes kept verbatim); untested compatibility");
+                ctx.unselected("opaque", r.raw().length, "retained-only: not one JSON object (bytes kept verbatim); " + status + " compatibility");
                 emit(null, ctx.opaque(r, Compatibility.UNTESTED_CONTRACT));
             }
         }
@@ -462,7 +543,12 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         Jv.Obj familyInventory() {
             Jv.Obj fam = new Jv.Obj();
             for (Map.Entry<String, SourceContext.Family> f : ctx.families.entrySet()) {
-                fam.put(f.getKey(), new Jv.Obj().put("records", f.getValue().records).put("bytes", f.getValue().bytes).put("disposition", f.getValue().disposition));
+                SourceContext.Family v = f.getValue();
+                Jv.Obj entry = new Jv.Obj().put("records", v.records).put("bytes", v.bytes).put("disposition", v.disposition != null ? v.disposition : v.unselectedDisposition);
+                if (v.unselected > 0) {
+                    entry.put("unselected_records", v.unselected).put("unselected_disposition", v.unselectedDisposition);
+                }
+                fam.put(f.getKey(), entry);
             }
             return fam;
         }

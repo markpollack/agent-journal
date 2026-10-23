@@ -21,7 +21,14 @@ import java.util.TreeMap;
  * {@code untested-compatibility} contract and flags it rather than choosing the nearest entry. A version inside a
  * range that no tested entry names is {@link Status#IN_RANGE}: a reviewed range, not an individually tested release.
  * A version not yet known is {@link Status#VERSION_UNKNOWN} until the stream reports it (RULE-9: records are
- * persisted meanwhile). Versions compare numerically per dot-separated component.
+ * persisted meanwhile, whole and unnormalized). Versions compare numerically per dot-separated component.
+ *
+ * <p>Selection precedes vendor normalization (RULE-9, RULE-10): only a tested or in-range selection lets a record be
+ * mapped. The registry's {@code version_bootstrap} names, per profile, the one record that reports the CLI version and
+ * the RFC 6901 location of the version in it; {@link #bootstrap} reads exactly that and nothing else, so the writer can
+ * select before it normalizes the very record that carried the version. Contradictory assertions within one capture
+ * (the launch declaration and a record, or two records) are {@link Status#CONFLICT}: no entry is chosen, every
+ * assertion is kept with its origin, and normalization stops.
  */
 final class Compatibility {
 
@@ -38,8 +45,37 @@ final class Compatibility {
         /** The version is not known yet; the selection is repeated once the stream reports it. */
         VERSION_UNKNOWN,
         /** The profile normalizes nothing and has no entry (opaque text). */
-        NOT_VERSION_SCOPED
+        NOT_VERSION_SCOPED,
+        /** Contradictory version assertions within one capture: no entry is selected and normalization stops while the selection is ambiguous. */
+        CONFLICT
     }
+
+    /**
+     * One assertion of the CLI version: by the capture at launch with the basis it states, or by a source record the
+     * version bootstrap read (artifact, record index and the pointer of the version in it).
+     *
+     * @param origin {@code launch} or {@code source}
+     */
+    record Assertion(String version, String origin, String basis, String artifact, Integer recordIndex, String pointer) {
+
+        static Assertion launch(String version, String basis) {
+            return new Assertion(version, "launch", basis, null, null, null);
+        }
+
+        Jv.Obj toJson() {
+            Jv.Obj a = new Jv.Obj().put("version", version).put("origin", origin).put("basis", basis);
+            if (artifact != null) {
+                a.put("artifact", artifact).put("record_index", recordIndex).put("pointer", pointer);
+            }
+            return a;
+        }
+
+        String describe() {
+            return version + ("launch".equals(origin) ? " (declared at launch: " + basis + ")" : " (" + artifact + " record " + recordIndex + " at " + pointer + ")");
+        }
+    }
+
+
 
     record Entry(String id, String cli, String profile, List<String> routes, String minVersion, String maxVersion, Jv sourceSpecification, Jv schema,
             String contract, String mapper, List<Jv> tested, String note, String retired, Jv raw) {
@@ -71,22 +107,35 @@ final class Compatibility {
         }
     }
 
-    /** The outcome of one selection: the status, the entry (when one matched) and the facts the declaration states. */
-    record Selection(Status status, Entry entry, String cli, String profile, String route, String version, String detail) {
+    /**
+     * The outcome of one selection: the status, the entry (when one matched), the facts the declaration states and the
+     * version assertions it rests on (empty when the version is not known).
+     */
+    record Selection(Status status, Entry entry, String cli, String profile, String route, String version, String detail, List<Assertion> assertions) {
 
-        /** The contract the writer uses for this source: the entry's, or the retention contract on no match. */
-        String contractName(String mapperContract) {
-            return status == Status.NO_MATCH ? UNTESTED_CONTRACT : mapperContract;
+        Selection(Status status, Entry entry, String cli, String profile, String route, String version, String detail) {
+            this(status, entry, cli, profile, route, version, detail, List.of());
         }
 
+        Selection withAssertions(List<Assertion> stated) {
+            return new Selection(status, entry, cli, profile, route, version, detail, List.copyOf(stated));
+        }
+
+        /** The contract a record is written under: the mapper's when the selection normalizes, else the retention contract. */
+        String contractName(String mapperContract) {
+            return normalizes() ? mapperContract : UNTESTED_CONTRACT;
+        }
+
+        /** Whether a record arriving under this selection may be normalized: only under a selected entry (or a profile that normalizes nothing). */
         boolean normalizes() {
-            return status != Status.NO_MATCH;
+            return status == Status.TESTED || status == Status.IN_RANGE || status == Status.NOT_VERSION_SCOPED;
         }
     }
 
     private final Jv document;
     private final List<Entry> entries;
     private final Map<String, String> notVersionScoped = new TreeMap<>();
+    private final VersionBootstrap bootstrap;
 
     private Compatibility(Jv document) {
         this.document = document;
@@ -106,6 +155,7 @@ final class Compatibility {
                 notVersionScoped.put(m.getKey(), m.getValue().text());
             }
         }
+        this.bootstrap = VersionBootstrap.of(document.member("version_bootstrap"));
         validate();
     }
 
@@ -170,6 +220,7 @@ final class Compatibility {
                 problems.add(e.id + ": profile " + e.profile + " is declared not version-scoped and cannot also have an entry");
             }
         }
+        problems.addAll(bootstrap.problems(notVersionScoped.keySet()));
         for (int i = 0; i < entries.size(); i++) {
             for (int j = i + 1; j < entries.size(); j++) {
                 Entry a = entries.get(i);
@@ -214,7 +265,8 @@ final class Compatibility {
             }
             return new Selection(Status.VERSION_UNKNOWN, null, cli, profile, route, null, "the CLI version is not known yet; " + (keyed.isEmpty()
                     ? "no entry is keyed on " + cli + " " + profile + " route " + route + ", so the selection will be no_match whatever the version"
-                    : "candidate entries keyed on " + cli + " " + profile + " route " + route + ": " + ids + "; the selection is repeated when the stream reports the version"));
+                    : "candidate entries keyed on " + cli + " " + profile + " route " + route + ": " + ids + "; the selection is repeated when the stream reports the version")
+                    + "; until then every record is retained whole and unnormalized");
         }
         List<Entry> matches = new ArrayList<>();
         for (Entry e : keyed) {
@@ -256,18 +308,52 @@ final class Compatibility {
                 "version " + version + " lies inside the reviewed range [" + e.minVersion + ", " + e.maxVersion + "] of " + e.id + " but is not individually tested");
     }
 
+    /**
+     * The selection for contradictory version assertions: no entry, no version, every assertion kept with its origin,
+     * and no normalization while the selection is ambiguous (the nearest or the first assertion is never chosen).
+     */
+    static Selection conflict(String cli, String profile, String route, List<Assertion> assertions) {
+        List<String> stated = new ArrayList<>();
+        for (Assertion a : assertions) {
+            stated.add(a.describe());
+        }
+        return new Selection(Status.CONFLICT, null, cli, profile, route, null, "contradictory CLI version assertions within this capture: " + String.join("; ", stated)
+                + "; no entry is selected and neither assertion is preferred; vendor normalization stops while the selection is ambiguous, every later record is retained whole under "
+                + UNTESTED_CONTRACT + ", and events written under an earlier selection stay as written", List.copyOf(assertions));
+    }
+
+    /** What the registry's version bootstrap reads from a record of a profile: see {@link VersionBootstrap#read}. */
+    Assertion bootstrap(String profile, String artifact, NativeRecord r) {
+        return bootstrap.read(profile, artifact, r);
+    }
+
     /** The {@code compatibility} declaration payload for a selection of one source. */
     static Jv.Obj declaration(Selection s, String artifact, String versionBasis, int recordsBefore, String schemaSha256) {
         Jv.Obj d = new Jv.Obj().put("artifact", artifact).put("cli", s.cli()).put("profile", s.profile()).put("route", s.route() == null ? "unspecified" : s.route())
                 .put("version", s.version() == null ? Jv.Null.INSTANCE : new Jv.Str(s.version())).put("version_basis", versionBasis)
                 .put("status", s.status().name().toLowerCase(Locale.ROOT)).put("detail", s.detail()).put("records_before_selection", recordsBefore)
-                .put("normalizes", s.normalizes() && s.status() != Status.NOT_VERSION_SCOPED && s.status() != Status.VERSION_UNKNOWN ? "yes" : s.status() == Status.VERSION_UNKNOWN
-                        ? "provisionally, under the profile's mapper, until the version is known" : "no");
+                .put("normalizes", normalizesText(s.status()));
+        if (!s.assertions().isEmpty()) {
+            Jv.Arr stated = new Jv.Arr();
+            for (Assertion a : s.assertions()) {
+                stated.add(a.toJson());
+            }
+            d.put("version_assertions", stated);
+        }
         if (s.entry() != null) {
             describe(d, s.entry());
         }
         d.put("schema_sha256_in_use", schemaSha256);
         return d;
+    }
+
+    private static String normalizesText(Status status) {
+        return switch (status) {
+            case TESTED, IN_RANGE -> "yes";
+            case VERSION_UNKNOWN -> "no: every record is retained whole and unnormalized until a compatible entry is selected; no record is interpreted before then";
+            case CONFLICT -> "no: the version assertions contradict each other; normalization stops while the selection is ambiguous";
+            case NO_MATCH, NOT_VERSION_SCOPED -> "no";
+        };
     }
 
     /** The selected entry's own facts: identity, range, specification, schema, mapper, contract, tested evidence, note and retirement. */

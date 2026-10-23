@@ -224,7 +224,28 @@ public final class PackageReader {
         }
         shared.members().put("contracts", new Json.JObject(contracts));
         m.members().put("shared", shared);
+        if (m.get("sources") instanceof Json.JArray sources) {
+            m.members().put("sources", declaredCompatibility(sources, declared));
+        }
         return m;
+    }
+
+    /** The compatibility selections are the file's own declarations (run.json mirrors only the one in force): each governs the records after it. */
+    private static Json declaredCompatibility(Json.JArray sources, DeclaredFile declared) {
+        List<Json> withHistory = new ArrayList<>();
+        for (Json s : sources.elements()) {
+            List<Json> history = declared.compatibility(SchemaCatalog.text(s, "artifact"));
+            if (s instanceof Json.JObject so && !history.isEmpty()) {
+                Map<String, Json> entry = new LinkedHashMap<>(so.members());
+                entry.put("compatibility", history.get(history.size() - 1));
+                entry.put("compatibility_history", new Json.JArray(history));
+                withHistory.add(new Json.JObject(entry));
+            }
+            else {
+                withHistory.add(s);
+            }
+        }
+        return new Json.JArray(withHistory);
     }
 
     private static void finalizationConsistency(RunManifest manifest, DeclaredFile declared, List<Diagnostic> diags) {
@@ -634,10 +655,15 @@ public final class PackageReader {
     }
 
     /**
-     * The compatibility selection each source declares (RULE-10, RULE-33): a tested selection is silent; an in-range
-     * selection, an unknown version and a no-match (retained, untested, not normalized) are warnings that name the
-     * source; a 0.3.0 source without any compatibility declaration predates the registry and is a warning too.
+     * The compatibility selection each source declares (RULE-9, RULE-10, RULE-33): a tested selection is silent; an
+     * in-range selection, an unknown version, a no-match (retained, untested, not normalized) and contradictory version
+     * assertions (conflict: ambiguous, normalization stopped) are warnings that name the source; a 0.3.0 source without
+     * any compatibility declaration predates the registry and is a warning too. A file written before selection
+     * preceded normalization says so in its own version_unknown declaration ("provisionally"); it reads as written.
      */
+    private static final Map<String, String> COMPATIBILITY_WARNINGS = Map.of("in_range", "COMPATIBILITY_IN_RANGE", "version_unknown", "COMPATIBILITY_VERSION_UNKNOWN",
+            "no_match", "COMPATIBILITY_NO_MATCH", "conflict", "COMPATIBILITY_CONFLICT");
+
     private static void sourceCompatibility(RunManifest m, List<Diagnostic> diags) {
         for (Json s : m.sources()) {
             String artifact = SchemaCatalog.text(s, "artifact");
@@ -652,15 +678,12 @@ public final class PackageReader {
             String status = SchemaCatalog.text(c, "status");
             String detail = artifact + " (" + SchemaCatalog.text(c, "cli") + " " + SchemaCatalog.text(c, "version") + ", " + SchemaCatalog.text(c, "profile") + ", route "
                     + SchemaCatalog.text(c, "route") + "): " + SchemaCatalog.text(c, "detail");
-            switch (String.valueOf(status)) {
-                case "tested" -> {
-                }
-                case "in_range" -> diags.add(new Diagnostic(Diagnostic.Severity.WARNING, "COMPATIBILITY_IN_RANGE", detail));
-                case "version_unknown" -> diags.add(new Diagnostic(Diagnostic.Severity.WARNING, "COMPATIBILITY_VERSION_UNKNOWN", detail));
-                case "no_match" -> diags.add(new Diagnostic(Diagnostic.Severity.WARNING, "COMPATIBILITY_NO_MATCH", detail));
-                case "not_version_scoped" -> {
-                }
-                default -> diags.add(new Diagnostic(Diagnostic.Severity.DEFECT, "COMPATIBILITY_STATUS_UNKNOWN", artifact + ": compatibility status " + status + " is not one this reader knows"));
+            String warning = COMPATIBILITY_WARNINGS.get(String.valueOf(status));
+            if (warning != null) {
+                diags.add(new Diagnostic(Diagnostic.Severity.WARNING, warning, detail));
+            }
+            else if (!"tested".equals(status) && !"not_version_scoped".equals(status)) {
+                diags.add(new Diagnostic(Diagnostic.Severity.DEFECT, "COMPATIBILITY_STATUS_UNKNOWN", artifact + ": compatibility status " + status + " is not one this reader knows"));
             }
         }
     }

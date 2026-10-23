@@ -63,8 +63,8 @@ Rule: RULE-8. Tests: `CliCaptureTest#codexVersionIsDiscoveredOnceByTheDocumented
 
 ### UC2-AC3: Retain records that arrive before the version is known
 
-When records arrive before the CLI version is known, the capture shall retain them whole and in order.
-Rule: RULE-9. Tests: `UntestedCompatibilityTest#aSupportedVersionReportedByTheStreamDeclaresThePendingSelectionThenTheTestedOne`, `UntestedCompatibilityTest#factsInterpretedBeforeANoMatchAreDeclaredProvisionalAndNeverCreditedAsSupport`, `UntestedCompatibilityTest#aVersionNeverLearnedLeavesTheSelectionPendingAndUnresolved`, `LiveCaptureSeamTest` (the records before the reported version are already persisted). Status: retention is implemented; interpreting pending records provisionally is today's behavior, not an approved policy (see RULE-9).
+When records arrive before the CLI version is known, the capture shall retain them whole, in order and unnormalized, declare the compatibility selection before it normalizes the record that reports a supported version, normalize that record under the selection, and never interpret, reinterpret or credit a record that arrived before the selection.
+Rule: RULE-9. Tests: `CompatibilityTest#theVersionBootstrapReadsOnlyTheVersionAndItsLocation`, `UntestedCompatibilityTest#aSupportedInitRecordSelectsFirstAndIsThenNormalizedUnderTheSelection`, `UntestedCompatibilityTest#aRecordBeforeTheInitRecordStaysRetainedOnlyAndIsNotCredited`, `UntestedCompatibilityTest#aVersionNeverLearnedRetainsEveryRecordUnnormalizedAndUnresolved`, `PackageReaderTest#aPackageWrittenWithProvisionalPendingInterpretationStillReadsAndIsJudgedByTheCurrentPolicy`, `LiveCaptureSeamTest` (the records before the reported version are already persisted). Status: implemented; in every committed recording the record that reports the version is the first, so no record precedes a selection there, and the controls construct one.
 
 ### UC2-AC4: State the selected compatibility entry and its applicability
 
@@ -74,12 +74,17 @@ Rule: RULE-10. Tests: `CompatibilityTest#theDeclarationStatesEachStatusAndOnlyWh
 ### UC2-AC5: Retain and flag an untested version
 
 If the recorded CLI version, source format or launch route matches no compatibility entry, then the capture shall retain the acquired input, record the compatibility status as untested and surface a warning rather than select the nearest entry or record the version as supported.
-Rule: RULE-33. Tests: `UntestedCompatibilityTest#aVersionNoEntryCoversIsRetainedFlaggedAndNotNormalized`, `UntestedCompatibilityTest#normalizingAfterANoMatchSelectionIsADefect`, `UntestedCompatibilityTest#factsInterpretedBeforeANoMatchAreDeclaredProvisionalAndNeverCreditedAsSupport`, `CompatibilityTest#outsideEveryRangeOrOffEveryKeyIsNoMatchAndTheNearestEntryIsNotSelected`, `CliCaptureTest#aVersionTestedOnAnotherRouteOnlyIsNoMatchRetainedAndFlagged`. Status: retention, the no-match declaration and the reader's `COMPATIBILITY_NO_MATCH` warning are implemented; a strict mode and any partial untested normalization remain proposals.
+Rule: RULE-33. Tests: `UntestedCompatibilityTest#aVersionNoEntryCoversIsRetainedFlaggedAndNotNormalized`, `UntestedCompatibilityTest#normalizingAfterANoMatchSelectionIsADefect`, `UntestedCompatibilityTest#aRecordBeforeTheVersionIsRetainedUnnormalizedThenNoMatchCreditsNothing`, `CompatibilityTest#outsideEveryRangeOrOffEveryKeyIsNoMatchAndTheNearestEntryIsNotSelected`, `CliCaptureTest#aVersionTestedOnAnotherRouteOnlyIsNoMatchRetainedAndFlagged`. Status: retention, the no-match declaration and the reader's `COMPATIBILITY_NO_MATCH` warning are implemented; a strict mode and any partial untested normalization remain proposals.
 
 ### UC2-AC6: Reject an ambiguous compatibility selection
 
 If more than one compatibility entry matches a CLI, source profile, launch route and version, then selection shall fail as a configuration error rather than choose one of them.
 Rule: RULE-10. Tests: `CompatibilityTest#overlappingEntriesAreRejectedWhenTheRegistryLoads`, `CompatibilityTest#everyOtherMisconfigurationIsRejectedWhenTheRegistryLoads`. Status: ambiguity is rejected when the registry loads, so the selection-time error is unreachable and untested.
+
+### UC2-AC7: Stop normalizing on contradictory version assertions
+
+If two version assertions within one capture contradict each other, then the capture shall keep both with their origins, declare the selection ambiguous (conflict) without preferring either, retain every later record whole and unnormalized while keeping what it wrote before, and the reader and the oracle shall report the source ambiguous rather than supported; an identical repeated assertion shall change nothing.
+Rule: RULE-10. Tests: `CompatibilityTest#contradictoryVersionAssertionsAreAConflictThatSelectsNothing`, `UntestedCompatibilityTest#contradictoryStreamAssertionsStopNormalizationAndKeepThePrefix`, `UntestedCompatibilityTest#aLaunchDeclarationContradictedByTheStreamIsAConflict`, `UntestedCompatibilityTest#aLaunchProbeContradictedByARolloutRecordIsAConflict`, `UntestedCompatibilityTest#anIdenticalRepeatedAssertionIsIdempotent`. Status: implemented on labelled synthetic edits of committed recordings; the Codex exec stream reports no version, so its only assertion is the launch probe's.
 
 ## UC3: Mapping and preservation
 
@@ -349,19 +354,24 @@ Rule: RULE-43, RULE-12. Tests: `UsageComponentMeasurementTest#aPossiblyDefaulted
 
 ### UC5-AC30: Do not establish complete contributions from a positive cumulative value
 
-If a cumulative usage value sums contributions of which the source may have received only some, or for which it may have written its default, then the writer and the oracle profile shall state that value at least the quantity it reports (a lower bound) and not measured, however large it is, and shall keep the number.
-Rule: RULE-43. Tests: `UsageComponentMeasurementTest#aPositiveRunningTotalWithAnOmittedContributionIsALowerBoundNotAMeasurement`, `UsageComponentMeasurementProfileTest#theProfileReadsAPositiveRunningTotalAsALowerBoundNotAMeasurement`, `UsageUncertaintyControlTest`, `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`.
+If a cumulative usage value sums contributions of which the source may have received only some, or for which it may have written its default, then the writer and the oracle profile shall state that value a lower bound, the actual quantity being at least the reported value and possibly more (a reported 100 is compatible with an actual 150), never measured and never raised to an assumed total, however large it is, and shall keep the number.
+Rule: RULE-43. Tests: `UsageComponentMeasurementTest#aPositiveRunningTotalWithAnOmittedContributionIsALowerBoundNotAMeasurement`, `UsageComponentMeasurementProfileTest#theProfileReadsAPositiveRunningTotalAsALowerBoundNotAMeasurement`, `UsageUncertaintyControlTest`, `UsageUncertaintyControlTest#aLowerBoundRaisedToAnAssumedCompleteTotalIsADefect`, `UsageUncertaintyControlTest#equalPricesRemoveTheAllocationUncertaintyButNotTheMissingContributions`, the reviewed example `codex-usage-reported-100-actual-150-synthetic` through `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`.
 
 
 ### UC5-AC31: Record one invocation for a shell command whatever its text runs
 
-When a source reports one command or shell tool invocation whose text runs further commands, pipelines or interpreters, the writer and the oracle shall record exactly the invocation and the operations the source reports, with the command text verbatim, and no additional tool call, operation, argument vector or operating-system action derived from that text.
-Rule: RULE-45. Tests: `ToolClassificationTest#aShellCommandWithGrepAPipeAndPythonIsOneReportedInvocation`, `IdentityClassificationControlTest#anInvocationOrOperationInventedFromAShellCommandsTextIsAPopulationDefect`, `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`.
+When a source reports one command or shell tool invocation whose text runs further commands, pipelines or interpreters, the writer and the oracle shall record exactly the invocation and the operations the source reports, with the command text verbatim, a start and a completion the source reports for it as two observations of that one invocation, and no additional tool call, operation, argument vector or operating-system action derived from that text.
+Rule: RULE-45. Tests: `ToolClassificationTest#aShellCommandWithGrepAPipeAndPythonIsOneReportedInvocation`, `IdentityClassificationControlTest#anInvocationOrOperationInventedFromAShellCommandsTextIsAPopulationDefect`, `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`. Status: the Codex pipeline example is a normative example of `codex.exec-stream.standalone-operation-command` (r4) and the Claude Bash example of `claude.stream.shell-command-invocation` (r1), each scoped to its own route; both claims are proposed.
 
 ### UC5-AC32: Account for every pinned Tier 1 field once and keep proposed exclusions visible
 
 When the parity ledger is checked against the pinned foundation inventory, every pinned field shall be assigned to exactly one facet, the denominator and the roster of proposed exclusions shall equal their pins, and a field left unassigned, assigned twice, unknown to the inventory or dropped from it, or an exclusion hidden, re-tiered or reported as accepted without a recorded decision, shall fail the check while executed verification stays apart from the ledger's reviewed states.
-Rule: RULE-47. Tests: `ParityLedgerTest#everyPinnedFieldIsAccountedForExactlyOnce`, `ParityLedgerTest#eachCorruptionIsDetected`, `ParityLedgerTest#theLedgerAndTheTopicExplanationAreGenerated`. Status: accounting and consistency only; the ledger's facet states and the eleven proposed exclusions are reviewed proposals, not approved, and no facet state is gated on executed evidence.
+Rule: RULE-47. Tests: `ParityLedgerTest#everyPinnedFieldIsAccountedForExactlyOnce`, `ParityLedgerTest#eachCorruptionIsDetected`, `ParityLedgerTest#theLedgerAndTheTopicExplanationAreGenerated`. Status: accounting and consistency only; the ledger's facet states and the eleven proposed exclusions are reviewed proposals, not approved; whether a facet's parts agree with executed evidence is UC5-AC33.
+
+### UC5-AC33: Rest each part of a facet on its own executed evidence per route
+
+When a parity facet's support differs by role or aspect, the ledger shall state each part with one of the facet's concepts and a state per route that agrees with that concept's executed state on that route, and a part claimed mapped where its concept is unavailable at source or unexercised, retained bytes claimed as verified meaning, a part citing another part's concept or a concept outside the facet, a removed part, or a facet reported covered while a part is unexercised shall fail the check.
+Rule: RULE-47. Tests: `ParityLedgerTest#everyFacetAspectAgreesWithItsConceptsExecutedStatePerRoute`, `ParityLedgerTest#theLedgerAndTheTopicExplanationAreGenerated`. Status: two facets state parts: `operation.unknown` (the portable marking and exact retention of an operation of unknown kind; its semantics excluded) and `content.roles` (user, assistant, tool and injected-context roles per route). The parts are reviewed proposals; their agreement with this build's executed states is checked, which approves no meaning.
 
 ## Change log
 
@@ -420,3 +430,14 @@ UC1-AC5, UC1-AC7, UC2-AC1 to UC2-AC6, UC3-AC13, UC3-AC14, UC4-AC8, UC5-AC7 and U
 behaviour and the executed evidence (UC5-AC11: Maven reads pinned validator summaries tied to the current event-file
 hashes, toolkit and compiled schema; it does not run the validator). No criterion removed; `RequirementsRosterTest`
 pins the per-use-case counts 7, 6, 15, 8 and 32.
+
+2026-10-23, review closure. Retained identifiers with changed meaning: UC2-AC3 now requires selection before
+normalization (the record reporting a supported version is normalized after the selection is declared; an earlier
+record stays whole, unnormalized and uncredited) in place of the provisional interpretation its Status line
+described. UC5-AC30 now states the lower bound in its direction: the actual quantity is at least the reported value
+(a reported 100 is compatible with an actual 150), never raised to an assumed total. UC5-AC31 is clarified: a start
+and a completion the source reports stay two observations of the one invocation. Added UC2-AC7 (contradictory
+version assertions stop normalization, keep both assertions and report the source ambiguous; an identical assertion is
+idempotent) and UC5-AC33 (each part of a facet rests on its own concept's executed state per route). Annotations only:
+the Tests or Status lines of UC2-AC5 and UC5-AC32. No criterion removed; `RequirementsRosterTest` pins the per-use-case
+counts 7, 7, 15, 8 and 33.

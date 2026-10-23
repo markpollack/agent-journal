@@ -3,7 +3,7 @@
   "format_version": "0.1",
   "id": "codex-command-pipeline-synthetic",
   "concept": "observed-operations",
-  "description": "LABELLED SYNTHETIC, source-grounded (CommandExecutionItem carries the command string the exec processor reports): one command_execution item whose command runs grep, a pipe and a Python interpreter. The source reports one operation with that command string and its aggregated output; Journal records exactly that operation with the command line verbatim, never parsed into argv, and invents no tool call, child operation or operating-system action for grep, python3 or the pipeline. Classifying commands inside shell text is a consumer's analysis, not an execution fact the stream reported.",
+  "description": "LABELLED SYNTHETIC, source-grounded (CommandExecutionItem carries the command string the exec processor reports): one command_execution item whose command runs grep, a pipe and a Python interpreter. The source reports one operation, observed twice (item.started, then item.completed with the aggregated output), under one stream-local id; Journal records exactly that operation with the command line verbatim, never parsed into argv, and invents no tool call, child operation or operating-system action for grep, python3 or the pipeline. Classifying commands inside shell text is a consumer's analysis, not an execution fact the stream reported. The two observations stay two events of the one operation: they are neither collapsed into one event nor multiplied into further operations.",
   "authored_from": [
     "codex-exec-0.160.1-types",
     "codex-exec-0.160.1-emitter-items"
@@ -24,6 +24,23 @@
   },
   "expected": [
     {
+      "record": 3,
+      "class": "tool_call",
+      "activity_id": 3,
+      "values": {
+        "/tool_operation/command_line": "/bin/bash -lc 'grep -rn TODO src | python3 -c \"import sys; print(len(sys.stdin.readlines()))\"'",
+        "/tool_operation/uid": "item_0",
+        "/tool_operation/identity_basis_id": 2,
+        "/tool_operation/reported_state": "in_progress",
+        "/tool_operation/attribution/outcome_id": 3
+      },
+      "absent": [
+        "/tool_operation/argv",
+        "/tool_call_uid",
+        "/tool_name"
+      ]
+    },
+    {
       "record": 4,
       "class": "tool_call",
       "activity_id": 3,
@@ -31,7 +48,8 @@
         "/tool_operation/command_line": "/bin/bash -lc 'grep -rn TODO src | python3 -c \"import sys; print(len(sys.stdin.readlines()))\"'",
         "/tool_operation/uid": "item_0",
         "/tool_operation/identity_basis_id": 2,
-        "/tool_operation/attribution/outcome_id": 3
+        "/tool_operation/attribution/outcome_id": 3,
+        "/tool_operation/reported_state": "completed"
       },
       "absent": [
         "/tool_operation/argv",
@@ -41,6 +59,12 @@
     }
   ],
   "absent_events": [
+    {
+      "record": 3,
+      "class": "tool_call",
+      "activity_id": 1,
+      "why": "the start of a command_execution is not a model request; no request is reported for the command or anything inside its text"
+    },
     {
       "record": 4,
       "class": "tool_call",
@@ -94,6 +118,16 @@
         "/tool_name": "grep"
       },
       "why": "grep inside the shell text is not a tool the model requested or the stream reported."
+    },
+    {
+      "id": "start-and-completion-as-two-operations",
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 3,
+      "values": {
+        "/tool_operation/uid": "item_1"
+      },
+      "why": "The completion observes the operation the start observed (the same stream-local id item_0); giving it another identity would count one invocation twice."
     }
   ]
 }

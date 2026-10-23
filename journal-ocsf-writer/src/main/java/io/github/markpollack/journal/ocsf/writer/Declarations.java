@@ -28,11 +28,14 @@ import java.util.Set;
  * <li>{@code definition}: one compiled class, object or scalar-type definition, or an amendment adding attributes to
  * one declared earlier ({@code amends}); written before the first event that uses it.</li>
  * <li>{@code session}: the native session id once the source reports it.</li>
- * <li>{@code cli_version}: the CLI version once the selected stream reports it (a capture launched without knowing
- * the version retains the records that arrive before it; no version command is run).</li>
- * <li>{@code compatibility}: the compatibility selection for a source (entry, reviewed range, tested evidence and
- * the status tested, in_range, no_match or version_unknown); declared with the source and again when a version
- * becomes known, so the latest declaration for an artifact is the one in force (RULE-10, RULE-33).</li>
+ * <li>{@code cli_version}: the CLI version once the selected stream reports it, with the record and RFC 6901 pointer
+ * the compatibility bootstrap read it from (a capture launched without knowing the version retains the records that
+ * arrive before it, unnormalized; no version command is run).</li>
+ * <li>{@code compatibility}: the compatibility selection for a source (entry, reviewed range, tested evidence, the
+ * version assertions it rests on and the status tested, in_range, no_match, version_unknown or conflict); declared
+ * with the source and again when a version becomes known or is contradicted, so the latest declaration for an
+ * artifact is the one in force and each governs the records after its records_before_selection (RULE-9, RULE-10,
+ * RULE-33).</li>
  * <li>{@code child}: a linked child event file (location and spawn identity), never its content.</li>
  * <li>{@code source_end}: how a source ended, with its final extent, hash and family inventory.</li>
  * <li>{@code recording}: the writer's finalization of this file (COMPLETED or INTERRUPTED) with the acquisition
@@ -87,7 +90,7 @@ final class Declarations {
                 .put("session_uid", scalar("string_t", "required")).put("basis", scalar("string_t", "optional")));
         declare(objects, "cli_version", new Jv.Obj()
                 .put("version", scalar("string_t", "required")).put("basis", scalar("string_t", "required")).put("record_index", scalar("integer_t", "optional"))
-                .put("artifact", scalar("string_t", "optional")));
+                .put("artifact", scalar("string_t", "optional")).put("pointer", scalar("string_t", "optional")));
         declare(objects, "compatibility", new Jv.Obj()
                 .put("artifact", scalar("string_t", "required")).put("cli", scalar("string_t", "required")).put("profile", scalar("string_t", "required"))
                 .put("route", scalar("string_t", "required")).put("version", scalar("string_t", "optional")).put("version_basis", scalar("string_t", "required"))
@@ -95,7 +98,7 @@ final class Declarations {
                 .put("normalizes", scalar("string_t", "required")).put("entry_id", scalar("string_t", "optional")).put("min_version", scalar("string_t", "optional"))
                 .put("max_version", scalar("string_t", "optional")).put("source_specification", scalar("json_t", "optional")).put("schema", scalar("json_t", "optional"))
                 .put("mapper", scalar("string_t", "optional")).put("contract", scalar("string_t", "optional")).put("tested", scalar("json_t", "optional"))
-                .put("note", scalar("string_t", "optional")).put("schema_sha256_in_use", scalar("string_t", "optional")));
+                .put("note", scalar("string_t", "optional")).put("version_assertions", scalar("json_t", "optional")).put("schema_sha256_in_use", scalar("string_t", "optional")));
         declare(objects, "child", new Jv.Obj()
                 .put("run_uid", scalar("string_t", "required")).put("path", scalar("string_t", "required")).put("spawn_tool_call_uid", scalar("string_t", "required"))
                 .put("basis", scalar("string_t", "optional")).put("parent_scope", scalar("json_t", "optional")));

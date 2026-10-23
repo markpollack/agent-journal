@@ -3,7 +3,7 @@
   "format_version": "0.1",
   "id": "codex-usage-running-total-lower-bound-synthetic",
   "concept": "usage-components-and-cache",
-  "description": "LABELLED SYNTHETIC, source-grounded: one turn whose command execution between two agent outputs shows at least two model responses. Suppose the first response's usage reported 60 cache-write tokens and the second omitted cache_write_tokens, which the deserializer writes as 0, or that a third response's completion carried no usage at all, which adds nothing to the running total (ResponseEvent::Completed.token_usage is an Option; Session::record_token_usage_info updates only Some). The printed thread total is then exactly these bytes, the same as when every response reported: a positive cumulative value cannot establish that every contribution was reported. Every positive member is a Lower bound (at least this value), the observation too; the numbers are kept. With non-zero cache writes whose inclusion in input is not established the uncached tranche is Unavailable with no formula, so no conditional value either.",
+  "description": "LABELLED SYNTHETIC, source-grounded: one turn whose command execution between two agent outputs shows at least two model responses. Suppose the first response's usage reported 60 cache-write tokens and the second omitted cache_write_tokens, which the deserializer writes as 0, or that a third response's completion carried no usage at all, which adds nothing to the running total (ResponseEvent::Completed.token_usage is an Option; Session::record_token_usage_info updates only Some). The printed thread total is then exactly these bytes, the same as when every response reported: a positive cumulative value cannot establish that every contribution was reported. Every positive member is a Lower bound (the thread's actual quantity is at least this value and may exceed it), the observation too; the numbers are kept. With non-zero cache writes whose inclusion in input is not established the uncached tranche is Unavailable with no formula, so no conditional value either.",
   "authored_from": [
     "codex-api-0.160.1-responses-usage-defaults",
     "codex-exec-0.160.1-emitter-usage",
@@ -67,7 +67,7 @@
       "values": {
         "/usage_observations/0/components/2/measurement_status_id": 1
       },
-      "why": "The thread running total adds only the responses whose completion carried usage and writes 0 for an omitted member, so a positive total does not establish that every response's contribution was reported; it is at least this value, not a measurement of the whole."
+      "why": "The thread running total adds only the responses whose completion carried usage and writes 0 for an omitted member, so a positive total does not establish that every response's contribution was reported; the thread's cache writes are at least 60, possibly more, not a measurement of the whole."
     },
     {
       "id": "positive-output-as-measured",
@@ -77,7 +77,7 @@
       "values": {
         "/usage_observations/0/components/3/measurement_status_id": 1
       },
-      "why": "output_tokens is required in each response's usage, so no response's output was defaulted; but a response whose completion carried no usage added nothing, so 90 is still only at least the thread's output."
+      "why": "output_tokens is required in each response's usage, so no response's output was defaulted; but a response whose completion carried no usage added nothing, so the thread's output is at least 90 and may be larger."
     },
     {
       "id": "observation-measured",

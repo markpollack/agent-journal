@@ -1,12 +1,17 @@
 {
   "kind": "agent-journal/compatibility-registry",
-  "version": "0.1",
-  "reviewed": "2026-10-21 (ACCEPT-1; narrowed to exact tested version/route combinations in the ACCEPT-1 follow-up, Owner disposition 4)",
-  "selection_rule": "exactly one entry whose cli, profile and route match and whose inclusive [min_version, max_version] contains the CLI version selects the source description, contract and mapper; overlapping entries are a configuration error rejected at load; no match retains the acquired input under the untested-compatibility contract and flags it, never the numerically nearest entry; a version inside the range that is not listed under tested is reported in_range (reviewed range, not individually tested; no bundled entry currently has such a range: every entry is one exactly tested version on its tested route, and 2.1.300 to 2.1.302, 2.1.299 or 2.1.303 on stdout and 2.1.304 on sdk match no entry); a version not yet known is reported version_unknown until the stream reports it",
+  "version": "0.2",
+  "reviewed": "2026-10-21 (ACCEPT-1; narrowed to exact tested version/route combinations in the ACCEPT-1 follow-up, Owner disposition 4); 2026-10-23 (selection before normalization: version bootstrap, retain-only pending records, contradictory assertions)",
+  "selection_rule": "exactly one entry whose cli, profile and route match and whose inclusive [min_version, max_version] contains the CLI version selects the source description, contract and mapper; overlapping entries are a configuration error rejected at load; no match retains the acquired input under the untested-compatibility contract and flags it, never the numerically nearest entry; a version inside the range that is not listed under tested is reported in_range (reviewed range, not individually tested; no bundled entry currently has such a range: every entry is one exactly tested version on its tested route, and 2.1.300 to 2.1.302, 2.1.299 or 2.1.303 on stdout and 2.1.304 on sdk match no entry); a version not yet known is reported version_unknown, and every record that arrives meanwhile is retained whole and unnormalized; vendor normalization of a record requires a selected entry (tested or in_range): the version bootstrap below reads only the version and its location, selects, and then the record that carried the version is normalized under that selection; contradictory version assertions within one capture (the launch declaration and the stream, or two records) are status conflict: every assertion is kept with its origin, and normalization stops for the rest of the capture",
   "routes": {
     "stdout": "the CLI's raw standard output read by the capture process (no SDK stage)",
     "sdk": "stream lines delivered by a vendor SDK (claude-code-sdk rawJson); a filtered surface",
     "native_session_file": "the file the CLI wrote on its own account, read after the run"
+  },
+  "version_bootstrap": {
+    "meaning": "the only vendor facts read before a compatibility entry is selected: which record reports the CLI version (record members that must equal the given strings) and the RFC 6901 location of the version in it; nothing else in that record or any other is interpreted until a selection allows it. A profile without a rule never learns its version from its records: the capture declares it at launch, or it stays unknown",
+    "claude_stream": {"record": {"type": "system", "subtype": "init"}, "pointer": "/claude_code_version", "basis": "the stream-json init record reports the running CLI's version"},
+    "codex_rollout": {"record": {"type": "session_meta"}, "pointer": "/payload/cli_version", "basis": "the rollout's session_meta record reports the version of the CLI that wrote the file"}
   },
   "entries": [
     {
@@ -18,7 +23,7 @@
       "min_version": "2.1.299",
       "max_version": "2.1.299",
       "source_specification": {"path": "schema/vendor/claude-code/stream-json/2.1.303.json", "specification_version": "0.1.0", "profile": "claude_stream"},
-      "schema": {"extension": "agentic_cli", "version": "0.8.0-prototype", "compiled_sha256": "1d3b294a2df516385ea5f3bc468065727d8dfbdb251b6fe1496be09b6a719bff"},
+      "schema": {"extension": "agentic_cli", "version": "0.9.0-prototype", "compiled_sha256": "9b77697bdc5b3f5433e3d064d25e4488c230634311abe634faf2f34745f6eb56"},
       "contract": "claude-code-2.1.303-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper",
       "tested": [
@@ -35,7 +40,7 @@
       "min_version": "2.1.303",
       "max_version": "2.1.303",
       "source_specification": {"path": "schema/vendor/claude-code/stream-json/2.1.303.json", "specification_version": "0.1.0", "profile": "claude_stream"},
-      "schema": {"extension": "agentic_cli", "version": "0.8.0-prototype", "compiled_sha256": "1d3b294a2df516385ea5f3bc468065727d8dfbdb251b6fe1496be09b6a719bff"},
+      "schema": {"extension": "agentic_cli", "version": "0.9.0-prototype", "compiled_sha256": "9b77697bdc5b3f5433e3d064d25e4488c230634311abe634faf2f34745f6eb56"},
       "contract": "claude-code-2.1.303-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper",
       "tested": [
@@ -51,7 +56,7 @@
       "min_version": "2.1.304",
       "max_version": "2.1.304",
       "source_specification": {"path": "schema/vendor/claude-code/stream-json/2.1.303.json", "specification_version": "0.1.0", "profile": "claude_stream"},
-      "schema": {"extension": "agentic_cli", "version": "0.8.0-prototype", "compiled_sha256": "1d3b294a2df516385ea5f3bc468065727d8dfbdb251b6fe1496be09b6a719bff"},
+      "schema": {"extension": "agentic_cli", "version": "0.9.0-prototype", "compiled_sha256": "9b77697bdc5b3f5433e3d064d25e4488c230634311abe634faf2f34745f6eb56"},
       "contract": "claude-code-2.1.303-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper",
       "tested": [
@@ -67,7 +72,7 @@
       "min_version": "2.1.299",
       "max_version": "2.1.299",
       "source_specification": {"path": "schema/vendor/claude-code/session-transcript/2.1.303.json", "specification_version": "0.1.0", "profile": "claude_transcript"},
-      "schema": {"extension": "agentic_cli", "version": "0.8.0-prototype", "compiled_sha256": "1d3b294a2df516385ea5f3bc468065727d8dfbdb251b6fe1496be09b6a719bff"},
+      "schema": {"extension": "agentic_cli", "version": "0.9.0-prototype", "compiled_sha256": "9b77697bdc5b3f5433e3d064d25e4488c230634311abe634faf2f34745f6eb56"},
       "contract": "claude-code-2.1.303-transcript",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeTranscriptMapper",
       "tested": [
@@ -83,7 +88,7 @@
       "min_version": "2.1.303",
       "max_version": "2.1.303",
       "source_specification": {"path": "schema/vendor/claude-code/session-transcript/2.1.303.json", "specification_version": "0.1.0", "profile": "claude_transcript"},
-      "schema": {"extension": "agentic_cli", "version": "0.8.0-prototype", "compiled_sha256": "1d3b294a2df516385ea5f3bc468065727d8dfbdb251b6fe1496be09b6a719bff"},
+      "schema": {"extension": "agentic_cli", "version": "0.9.0-prototype", "compiled_sha256": "9b77697bdc5b3f5433e3d064d25e4488c230634311abe634faf2f34745f6eb56"},
       "contract": "claude-code-2.1.303-transcript",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeTranscriptMapper",
       "tested": [
@@ -99,7 +104,7 @@
       "min_version": "0.160.1",
       "max_version": "0.160.1",
       "source_specification": {"path": "schema/vendor/codex-cli/exec-json-stream/0.160.1.json", "specification_version": "0.1.0", "profile": "codex_stream"},
-      "schema": {"extension": "agentic_cli", "version": "0.8.0-prototype", "compiled_sha256": "1d3b294a2df516385ea5f3bc468065727d8dfbdb251b6fe1496be09b6a719bff"},
+      "schema": {"extension": "agentic_cli", "version": "0.9.0-prototype", "compiled_sha256": "9b77697bdc5b3f5433e3d064d25e4488c230634311abe634faf2f34745f6eb56"},
       "contract": "codex-cli-0.160.1-exec-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.CodexStreamMapper",
       "tested": [
@@ -115,7 +120,7 @@
       "min_version": "0.160.1",
       "max_version": "0.160.1",
       "source_specification": {"path": "schema/vendor/codex-cli/rollout/0.160.1.json", "specification_version": "0.1.0", "profile": "codex_rollout"},
-      "schema": {"extension": "agentic_cli", "version": "0.8.0-prototype", "compiled_sha256": "1d3b294a2df516385ea5f3bc468065727d8dfbdb251b6fe1496be09b6a719bff"},
+      "schema": {"extension": "agentic_cli", "version": "0.9.0-prototype", "compiled_sha256": "9b77697bdc5b3f5433e3d064d25e4488c230634311abe634faf2f34745f6eb56"},
       "contract": "codex-cli-0.160.1-rollout",
       "mapper": "io.github.markpollack.journal.ocsf.writer.CodexRolloutMapper",
       "tested": [

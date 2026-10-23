@@ -35,7 +35,7 @@ class RequirementsRosterTest {
     static final List<String> RULE_IDS = IntStream.rangeClosed(1, 47).mapToObj(i -> "RULE-" + i).toList();
 
     /** Criteria per use case, pinned for the same reason: UC1 recording/source selection, UC2 version, UC3 mapping/preservation, UC4 lifecycle/children, UC5 portable output/testing. */
-    static final Map<String, Integer> CRITERIA_PER_USE_CASE = Map.of("UC1", 7, "UC2", 6, "UC3", 15, "UC4", 8, "UC5", 32);
+    static final Map<String, Integer> CRITERIA_PER_USE_CASE = Map.of("UC1", 7, "UC2", 7, "UC3", 15, "UC4", 8, "UC5", 33);
 
     static final Set<String> KEYWORDS = Set.of("MUST", "MUST NOT", "SHOULD", "SHOULD NOT", "MAY");
 

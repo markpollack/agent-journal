@@ -8,8 +8,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * The compatibility registry's selection rule (RULE-10, RULE-33): exact and bounded matches, inclusive boundary
  * versions, one unique match, rejection of overlapping or ambiguous entries at load, no match outside every range
- * (the nearest entry is not selected), an unknown version, a profile outside version scoping, and the bundled
- * registry's own consistency with the contracts and mappers it names.
+ * (the nearest entry is not selected), an unknown version, a profile outside version scoping, the bundled
+ * registry's own consistency with the contracts and mappers it names, the version bootstrap that reads only the
+ * version and its location, and the conflict selection for contradictory version assertions.
  */
 class CompatibilityTest {
 
@@ -30,7 +31,9 @@ class CompatibilityTest {
             assertThat(java.nio.file.Files.isRegularFile(java.nio.file.Path.of("..").resolve(e.sourceSpecification().member("path").text()))).as(e.id() + " source specification exists").isTrue();
             assertThat(e.tested()).as(e.id() + " has tested evidence").isNotEmpty();
         }
-        assertThat(contracts.uid(Compatibility.UNTESTED_CONTRACT)).isEqualTo("agent-journal/untested-compatibility/0.1");
+        assertThat(contracts.uid(Compatibility.UNTESTED_CONTRACT)).isEqualTo("agent-journal/untested-compatibility/0.2");
+        assertThat(contracts.contract(Compatibility.UNTESTED_CONTRACT).member("rules").elements()).extracting(r -> r.member("id").text())
+                .as("one retention rule per non-normalizing selection").contains("compat.no_match->source_record", "compat.version_pending->source_record", "compat.conflict->source_record");
     }
 
     private static org.assertj.core.api.ThrowableAssert.ThrowingCallable asCallable(Runnable r) {
@@ -128,7 +131,9 @@ class CompatibilityTest {
         Compatibility.Selection s = c.select(CLAUDE, "claude_stream", "stdout", null);
         assertThat(s.status()).isEqualTo(Compatibility.Status.VERSION_UNKNOWN);
         assertThat(s.entry()).isNull();
-        assertThat(s.normalizes()).as("records are mapped provisionally and retained whole until the stream reports the version").isTrue();
+        assertThat(s.normalizes()).as("records are retained whole and unnormalized until a compatible entry is selected; none is interpreted provisionally").isFalse();
+        assertThat(s.contractName("claude-code-2.1.303-stream")).isEqualTo(Compatibility.UNTESTED_CONTRACT);
+        assertThat(s.detail()).contains("retained whole and unnormalized");
         assertThat(s.detail()).contains("claude-code/stream-json/2.1.304-stdout [2.1.304, 2.1.304]").doesNotContain("-sdk");
         Compatibility.Selection opaque = c.select(CLAUDE, "opaque_text", "stdout", "2.1.304");
         assertThat(opaque.status()).isEqualTo(Compatibility.Status.NOT_VERSION_SCOPED);
@@ -206,8 +211,9 @@ class CompatibilityTest {
         Jv.Obj unknown = Compatibility.declaration(c.select(CLAUDE, "claude_stream", "stdout", null), "stream.jsonl", "not known at launch", 0, "abc");
         assertThat(unknown.get("status").text()).isEqualTo("version_unknown");
         assertThat(unknown.get("version").isNull()).isTrue();
-        assertThat(unknown.get("normalizes").text()).startsWith("provisionally");
+        assertThat(unknown.get("normalizes").text()).startsWith("no: every record is retained whole and unnormalized").doesNotContain("provisionally");
         assertThat(unknown.get("entry_id")).isNull();
+        assertThat(unknown.get("version_assertions")).as("no assertion is stated before a version is known").isNull();
 
         Jv.Obj noMatch = Compatibility.declaration(c.select(CLAUDE, "claude_stream", null, "2.1.304"), "stream.jsonl", "reported", 3, "abc");
         assertThat(noMatch.get("status").text()).isEqualTo("no_match");
@@ -225,6 +231,57 @@ class CompatibilityTest {
         assertThat(inRange.get("status").text()).isEqualTo("in_range");
         assertThat(inRange.get("normalizes").text()).isEqualTo("yes");
         assertThat(inRange.get("note")).as("no note is declared when the entry has none").isNull();
+    }
+
+    /**
+     * The bootstrap reads only the version-bearing record's identifying members and the version at its pointer: the
+     * Claude init record and the Codex rollout's session_meta assert their versions with their locations; any other
+     * record, an init record without the version string, and a profile without a rule assert nothing.
+     */
+    @Test
+    void theVersionBootstrapReadsOnlyTheVersionAndItsLocation() {
+        Compatibility c = Compatibility.bundled();
+        Compatibility.Assertion init = c.bootstrap("claude_stream", "stream.jsonl", record(3,
+                "{\"type\":\"system\",\"subtype\":\"init\",\"cwd\":\"/w\",\"claude_code_version\":\"2.1.304\",\"tools\":[\"Bash\"]}"));
+        assertThat(init).isEqualTo(new Compatibility.Assertion("2.1.304", "source", init.basis(), "stream.jsonl", 3, "/claude_code_version"));
+        assertThat(Jv.write(init.toJson().get("record_index"))).isEqualTo("3");
+        Compatibility.Assertion meta = c.bootstrap("codex_rollout", "rollout.jsonl", record(1,
+                "{\"type\":\"session_meta\",\"payload\":{\"id\":\"s\",\"cli_version\":\"0.160.1\"}}"));
+        assertThat(meta.version()).isEqualTo("0.160.1");
+        assertThat(meta.pointer()).isEqualTo("/payload/cli_version");
+        assertThat(c.bootstrap("claude_stream", "stream.jsonl", record(2, "{\"type\":\"assistant\",\"claude_code_version\":\"2.1.304\"}")))
+                .as("only the declared record carries the version").isNull();
+        assertThat(c.bootstrap("claude_stream", "stream.jsonl", record(1, "{\"type\":\"system\",\"subtype\":\"init\",\"claude_code_version\":304}")))
+                .as("a version that is not a string is not read").isNull();
+        assertThat(c.bootstrap("codex_stream", "stream.jsonl", record(1, "{\"type\":\"thread.started\",\"thread_id\":\"t\"}")))
+                .as("the exec stream reports no version; the launch probe declares it").isNull();
+        assertThat(c.bootstrap("claude_stream", "stream.jsonl", NativeRecord.classify(4, "not json".getBytes(java.nio.charset.StandardCharsets.UTF_8), "LF", java.time.Instant.EPOCH))).isNull();
+        String badRule = "{\"kind\":\"agent-journal/compatibility-registry\",\"version\":\"0.2\",\"entries\":[],\"version_bootstrap\":{\"p\":{\"record\":{},\"pointer\":\"v\"}}}";
+        assertThatThrownBy(() -> Compatibility.of(Jv.parse(badRule))).hasMessageContaining("version_bootstrap p");
+    }
+
+    /** Contradictory assertions select nothing and prefer neither: no entry, no version, every assertion with its origin, no normalization. */
+    @Test
+    void contradictoryVersionAssertionsAreAConflictThatSelectsNothing() {
+        Compatibility.Assertion launch = Compatibility.Assertion.launch("2.1.304", "declared by the capture at launch");
+        Compatibility.Assertion stream = new Compatibility.Assertion("2.1.999", "source", "init", "stream.jsonl", 1, "/claude_code_version");
+        Compatibility.Selection s = Compatibility.conflict(CLAUDE, "claude_stream", "stdout", java.util.List.of(launch, stream));
+        assertThat(s.status()).isEqualTo(Compatibility.Status.CONFLICT);
+        assertThat(s.normalizes()).isFalse();
+        assertThat(s.entry()).isNull();
+        assertThat(s.contractName("claude-code-2.1.303-stream")).isEqualTo(Compatibility.UNTESTED_CONTRACT);
+        Jv.Obj d = Compatibility.declaration(s, "stream.jsonl", "declared by the capture at launch", 4, "abc");
+        assertThat(d.get("status").text()).isEqualTo("conflict");
+        assertThat(d.get("version").isNull()).as("neither assertion is preferred").isTrue();
+        assertThat(d.get("normalizes").text()).startsWith("no: the version assertions contradict each other");
+        assertThat(d.get("version_assertions").elements()).extracting(a -> a.member("version").text() + "/" + a.member("origin").text())
+                .containsExactly("2.1.304/launch", "2.1.999/source");
+        assertThat(d.get("detail").text()).contains("2.1.304 (declared at launch").contains("2.1.999 (stream.jsonl record 1 at /claude_code_version)");
+        assertThat(Jv.write(d.get("records_before_selection"))).isEqualTo("4");
+    }
+
+    private static NativeRecord record(int index, String line) {
+        return NativeRecord.classify(index, line.getBytes(java.nio.charset.StandardCharsets.UTF_8), "LF", java.time.Instant.EPOCH);
     }
 
     @Test

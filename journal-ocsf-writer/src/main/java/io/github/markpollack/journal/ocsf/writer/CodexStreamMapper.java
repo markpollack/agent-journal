@@ -22,7 +22,8 @@ import static io.github.markpollack.journal.ocsf.writer.MapperSupport.text;
  * {@code tool_family}, a tool name is written only where the item reports one, and the kind comes from the family, or for
  * MCP from a reviewed namespace binding (none: Other), never from a bare name ({@link CodexItems} reads each item).
  * {@code turn.completed} carries the thread's cumulative usage ({@code ThreadTokenUsage.total}) as a cumulative snapshot
- * in canonical tranches: each value is at least its quantity (the total adds only the responses whose usage arrived),
+ * in canonical tranches: each value is a lower bound, the thread's quantity being at least the value and possibly more
+ * (the total adds only the responses whose usage arrived),
  * a zero the deserializer also writes for an omitted member may be that default, and the uncached tranche is only a
  * conditional value. A web_search line carries the item's
  * {@code id} twice (the exec item id, then the search item's own id); only that declared form is interpreted, and its

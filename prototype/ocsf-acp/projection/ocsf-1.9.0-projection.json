@@ -6,7 +6,7 @@
  },
  "extension": {
   "name": "agentic_cli",
-  "version": "0.8.0-prototype"
+  "version": "0.9.0-prototype"
  },
  "purpose": "Comparison inventory only: for each attribute our extension defines, the upstream attribute it means, if any, and the verdict. It does not reshape the extension; our attributes and names are kept.",
  "evidence_class": "source-verified",

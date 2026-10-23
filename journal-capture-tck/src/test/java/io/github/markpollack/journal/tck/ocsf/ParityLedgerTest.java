@@ -255,6 +255,102 @@ class ParityLedgerTest {
         if ("none".equals(f.path("relation").asText()) == destinations) {
             problems.add(id + ": relation none exactly when there are no destinations");
         }
+        problems.addAll(aspects(id, f, routes));
+        return problems;
+    }
+
+    /**
+     * A facet whose support differs by part (a role, or marking versus meaning) states it per aspect: each aspect cites
+     * exactly one of the facet's concepts (the aspects partition them, so no aspect borrows another's concept), its own
+     * destinations among the facet's, and a state on every route. The facet is covered only when every aspect is mapped,
+     * source-limited or not applicable on every route; a route is mapped for the facet only when some aspect is mapped
+     * there. Whether each aspect's route state agrees with its concept's executed state is {@link #aspectEvidence}.
+     */
+    static List<String> aspects(String id, JsonNode f, Map<String, String> routes) {
+        List<String> problems = new ArrayList<>();
+        JsonNode aspects = f.path("aspects");
+        if (aspects.isMissingNode() || aspects.isEmpty()) {
+            return problems;
+        }
+        Set<String> facetConcepts = new TreeSet<>();
+        f.path("concepts").forEach(c -> facetConcepts.add(c.asText()));
+        Set<String> facetDestinations = new TreeSet<>();
+        f.path("destinations").forEach(d -> facetDestinations.add(d.asText()));
+        Map<String, String> cited = new TreeMap<>();
+        boolean allSettled = true;
+        Map<String, Boolean> mappedSomewhere = new TreeMap<>();
+        for (JsonNode a : aspects) {
+            String aid = id + "/" + a.path("id").asText();
+            String concept = a.path("concept").asText();
+            if (!facetConcepts.contains(concept)) {
+                problems.add(aid + ": concept " + concept + " is not one of the facet's concepts");
+            }
+            String prior = cited.put(concept, aid);
+            if (prior != null) {
+                problems.add(aid + ": concept " + concept + " is already the evidence of " + prior);
+            }
+            for (JsonNode d : a.path("destinations")) {
+                if (!facetDestinations.contains(d.asText())) {
+                    problems.add(aid + ": destination " + d.asText() + " is not one of the facet's");
+                }
+            }
+            Map<String, String> byRoute = new LinkedHashMap<>();
+            a.path("routes").fields().forEachRemaining(e -> byRoute.put(e.getKey(), e.getValue().asText()));
+            if (!byRoute.keySet().equals(routes.keySet())) {
+                problems.add(aid + ": aspect routes " + byRoute.keySet() + " are not exactly " + routes.keySet());
+            }
+            byRoute.forEach((r, st) -> {
+                if ("mapped".equals(st)) {
+                    mappedSomewhere.put(r, true);
+                }
+            });
+            allSettled = allSettled && byRoute.values().stream().allMatch(st -> Set.of("mapped", "source_limited", "not_applicable").contains(st));
+        }
+        for (String c : facetConcepts) {
+            if (!cited.containsKey(c)) {
+                problems.add(id + ": concept " + c + " is cited by no aspect");
+            }
+        }
+        if ("covered".equals(f.path("state").asText()) && !allSettled) {
+            problems.add(id + ": covered needs every aspect mapped, source-limited or not applicable on every route");
+        }
+        routes.forEach((r, st) -> {
+            if ("mapped".equals(st) != mappedSomewhere.getOrDefault(r, false)) {
+                problems.add(id + ": route " + r + " is " + st + " for the facet, but " + (mappedSomewhere.getOrDefault(r, false) ? "an aspect is" : "no aspect is") + " mapped there");
+            }
+        });
+        return problems;
+    }
+
+    /**
+     * Each aspect's route state must agree with what this build executed for its own concept on that route: mapped is
+     * the aspect's declared executed state (verified unless it says otherwise, for example retained-only for the
+     * portable marking of an unknown operation), source_limited is unavailable-at-source, unexercised is an unexercised
+     * or unresolved concept, retained_only is retained-only. A route's state comes from that route's recordings only.
+     */
+    static List<String> aspectEvidence(JsonNode parity, Map<String, Map<String, Executed>> executed) {
+        List<String> problems = new ArrayList<>();
+        for (JsonNode f : parity.path("facets")) {
+            for (JsonNode a : f.path("aspects")) {
+                String aid = f.path("id").asText() + "/" + a.path("id").asText();
+                Map<String, Executed> byRoute = executed.get(a.path("concept").asText());
+                a.path("routes").fields().forEachRemaining(e -> {
+                    Executed x = byRoute == null ? null : byRoute.get(e.getKey());
+                    String word = x == null ? "no executed state" : MappingCatalogTest.word(x.state());
+                    Set<String> allowed = switch (e.getValue().asText()) {
+                        case "mapped" -> Set.of(a.path("executed").asText("verified"));
+                        case "source_limited" -> Set.of("unavailable-at-source");
+                        case "unexercised" -> Set.of("unexercised", "unresolved");
+                        case "retained_only" -> Set.of("retained-only");
+                        default -> null;
+                    };
+                    if (allowed != null && !allowed.contains(word)) {
+                        problems.add(aid + " on " + e.getKey() + ": aspect state " + e.getValue().asText() + " but concept " + a.path("concept").asText() + " executed " + word
+                                + " there (expected " + allowed + ")");
+                    }
+                });
+            }
+        }
         return problems;
     }
 
@@ -314,6 +410,58 @@ class ParityLedgerTest {
             c.getValue().accept(bad);
             assertThat(problems(bad, dest, compat)).as(c.getKey()).anyMatch(x -> x.contains(c.getKey()));
         }
+    }
+
+    /**
+     * Facet aspects agree with this build's executed concept states per route, and each way of overstating them is
+     * detected: a role claimed mapped on a route whose source does not report it, a role the stream never demonstrated
+     * claimed mapped, retained bytes upgraded to verified meaning, required evidence removed, an aspect borrowing
+     * another aspect's concept or one outside its facet, and a covered facet with an unsettled aspect.
+     */
+    @Test
+    void everyFacetAspectAgreesWithItsConceptsExecutedStatePerRoute(@TempDir Path work) {
+        SchemaCatalog schema = FieldDispositionTest.schema(work);
+        Function<String, String> dest = d -> FieldDispositionTest.resolveDestination(schema, d);
+        Set<String> compat = MappingCatalogTest.compatibilityEntries();
+        Map<String, Map<String, Executed>> executed = executed(MappingCatalogTest.catalogDocument(), work);
+        Inputs clean = inputs();
+        assertThat(aspectEvidence(clean.parity(), executed)).isEmpty();
+        assertThat(problems(clean, dest, compat)).isEmpty();
+        String claude = "claude-code/stream-json/2.1.304-stdout";
+        String codex = "codex-cli/exec-json-stream/0.160.1";
+        Map<String, Consumer<Inputs>> evidence = new LinkedHashMap<>();
+        evidence.put("content.roles/user on " + codex, in -> ((ObjectNode) aspect(in, "content.roles", "user").path("routes")).put(codex, "mapped"));
+        evidence.put("content.roles/injected-context on " + claude, in -> ((ObjectNode) aspect(in, "content.roles", "injected-context").path("routes")).put(claude, "mapped"));
+        evidence.put("operation.unknown/marking-and-retention on " + claude, in -> ((ObjectNode) aspect(in, "operation.unknown", "marking-and-retention")).put("executed", "verified"));
+        evidence.put("content.roles/tool on " + codex, in -> ((ObjectNode) aspect(in, "content.roles", "tool")).put("concept", "injected-context"));
+        for (Map.Entry<String, Consumer<Inputs>> c : evidence.entrySet()) {
+            Inputs bad = clean.copy();
+            c.getValue().accept(bad);
+            assertThat(aspectEvidence(bad.parity(), executed)).as(c.getKey()).anyMatch(x -> x.startsWith(c.getKey()));
+        }
+        Map<String, Consumer<Inputs>> structure = new LinkedHashMap<>();
+        structure.put("is cited by no aspect", in -> ((ArrayNode) facet(in, "content.roles").path("aspects")).remove(0));
+        structure.put("is already the evidence of", in -> ((ObjectNode) aspect(in, "content.roles", "injected-context")).put("concept", "user-submission"));
+        structure.put("is not one of the facet's concepts", in -> ((ObjectNode) aspect(in, "content.roles", "injected-context")).put("concept", "launch-and-session-settings"));
+        structure.put("covered needs every aspect", in -> ((ObjectNode) facet(in, "content.roles")).put("state", "covered"));
+        structure.put("no aspect is mapped there", in -> {
+            ((ObjectNode) aspect(in, "operation.unknown", "marking-and-retention").path("routes")).put(claude, "unexercised");
+        });
+        structure.put("are not exactly", in -> ((ObjectNode) aspect(in, "content.roles", "assistant").path("routes")).remove(codex));
+        for (Map.Entry<String, Consumer<Inputs>> c : structure.entrySet()) {
+            Inputs bad = clean.copy();
+            c.getValue().accept(bad);
+            assertThat(problems(bad, dest, compat)).as(c.getKey()).anyMatch(x -> x.contains(c.getKey()));
+        }
+    }
+
+    static JsonNode aspect(Inputs in, String facet, String id) {
+        for (JsonNode a : facet(in, facet).path("aspects")) {
+            if (id.equals(a.path("id").asText())) {
+                return a;
+            }
+        }
+        throw new AssertionError("no aspect " + facet + "/" + id);
     }
 
     static JsonNode facet(Inputs in, String id) {
@@ -398,6 +546,7 @@ class ParityLedgerTest {
         assertThat(problems(in, d -> FieldDispositionTest.resolveDestination(schema, d), MappingCatalogTest.compatibilityEntries())).isEmpty();
         Json catalog = MappingCatalogTest.catalogDocument();
         Map<String, Map<String, Executed>> executed = executed(catalog, work);
+        assertThat(aspectEvidence(in.parity(), executed)).isEmpty();
         Map<String, String> approval = SemanticClaims.approvalByConcept(catalog);
         Path out = MappingCatalogTest.outputDirectory();
         Map<String, Object> ledger = ledger(in, executed, approval);
@@ -459,6 +608,12 @@ class ParityLedgerTest {
             for (String k : List.of("id", "group", "summary", "tier", "tier_reason", "definition", "state", "relation", "differences", "routes", "route_evidence", "destinations",
                     "proposal", "evidence", "action")) {
                 m.put(k, f.get(k));
+            }
+            if (f.has("aspects")) {
+                m.put("aspects", f.get("aspects"));
+            }
+            if (f.has("excludes")) {
+                m.put("excludes", f.get("excludes"));
             }
             Map<String, Integer> counts = new TreeMap<>();
             f.path("fields").forEach(x -> counts.merge(foundationOf(x.asText()), 1, Integer::sum));

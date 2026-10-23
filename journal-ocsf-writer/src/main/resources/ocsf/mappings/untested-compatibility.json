@@ -1,12 +1,12 @@
 {
-  "contract_uid": "agent-journal/untested-compatibility/0.1",
+  "contract_uid": "agent-journal/untested-compatibility/0.2",
   "applies_to": {
-    "product": "any CLI whose version, source profile or launch route matches no compatibility entry",
+    "product": "any CLI whose version, source profile or launch route matches no compatibility entry, whose version is not yet known, or whose version assertions contradict each other",
     "version": "none: this contract claims no version",
     "launch": "any",
     "source_kind": "any"
   },
-  "executor": "journal-ocsf-writer OcsfRunWriter: once the compatibility selection for a source is no_match, every later record of that source bypasses its mapper and is retained whole under compat.no_match->source_record; nothing is normalized",
+  "executor": "journal-ocsf-writer OcsfRunWriter: while the compatibility selection for a source is not tested or in_range, every record of that source bypasses its mapper and is retained whole under the rule for that selection (version_unknown, no_match or conflict); nothing in it is normalized and no later selection reinterprets it. Only the version bootstrap of the compatibility registry reads the version and its location from a record before a selection",
   "record_discriminator": "none: every parsed record is retained whole",
   "rules": [
     {
@@ -17,6 +17,20 @@
       "residual": "whole record in data; record_type is the vendor discriminator; basis names the untested selection. No portable field is populated, so nothing implies supported normalization"
     },
     {
+      "id": "compat.version_pending->source_record",
+      "selector": "every parsed record of a source that arrives before a compatibility entry is selected (the CLI version is not yet known; RULE-9)",
+      "target": "agentic_cli/source_record",
+      "activity": "1 Parsed",
+      "residual": "whole record in data; record_type is the vendor discriminator; basis states that the record arrived before selection. No portable field is populated: the record is not interpreted provisionally and a later selection does not reinterpret it"
+    },
+    {
+      "id": "compat.conflict->source_record",
+      "selector": "every parsed record of a source that arrives after the capture's version assertions contradicted each other (RULE-10)",
+      "target": "agentic_cli/source_record",
+      "activity": "1 Parsed",
+      "residual": "whole record in data; record_type is the vendor discriminator; basis names every assertion and its origin. No portable field is populated while the selection is ambiguous"
+    },
+    {
       "id": "common.opaque->source_record",
       "selector": "any line that is blank, not UTF-8, not one JSON object under strict duplicate-key parsing, or cut off by the end of the source",
       "target": "agentic_cli/source_record",
@@ -24,5 +38,5 @@
       "residual": "raw_data (text) or raw_bytes_b64 (bytes); parse_status_id 5 Incomplete at source end when the source ended mid-record"
     }
   ],
-  "note": "a retention contract, not a mapping: it exists so that acquired input outside every tested range is preserved and flagged rather than guessed at (no nearest-entry selection) or lost"
+  "note": "a retention contract, not a mapping: it exists so that acquired input that no selected compatibility entry covers (outside every tested range, before the version is known, or under contradictory version assertions) is preserved and flagged rather than guessed at (no nearest-entry selection, no provisional interpretation) or lost"
 }

@@ -40,6 +40,7 @@ public final class AnalysisViews {
         out.put("associations", associations(pkg));
         out.put("tool_exchanges", toolExchanges(pkg));
         out.put("settings_context", settingsContext(pkg));
+        out.put("compatibility", compatibility(pkg));
         List<Json> children = new ArrayList<>();
         for (OcsfPackage c : pkg.children) {
             children.add(all(c));
@@ -642,6 +643,44 @@ public final class AnalysisViews {
         out.put("repeated_result_observations", new Json.JArray(repeated));
         out.put("identical_content_distinct_owners", new Json.JArray(identical));
         out.put("rule", str(SchemaCatalog.text(decl, "id")));
+        return new Json.JObject(out);
+    }
+
+    // ------------------------------------------------------------------------------------------ compatibility
+
+    /**
+     * Per declared source, the compatibility selection in force and how the declared history governs its records: how
+     * many arrived while no entry was selected (retained whole, not normalized) and whether the source's normalized
+     * facts may be counted as support at all (only under a tested or in-range selection). The other views read events
+     * only; this one says which of them a consumer may credit (RULE-9, RULE-10, RULE-33).
+     */
+    public static Json compatibility(OcsfPackage pkg) {
+        List<Json> rows = new ArrayList<>();
+        for (Json s : pkg.manifest.sources()) {
+            CompatibilityHistory history = CompatibilityHistory.of(s);
+            Map<String, Json> row = new LinkedHashMap<>();
+            row.put("artifact", str(SchemaCatalog.text(s, "artifact")));
+            CompatibilityHistory.Step inForce = history.inForce();
+            Json declared = inForce == null ? null : inForce.declaration();
+            row.put("status", str(SchemaCatalog.text(declared, "status")));
+            row.put("version", str(SchemaCatalog.text(declared, "version")));
+            row.put("entry_id", str(SchemaCatalog.text(declared, "entry_id")));
+            List<Json> steps = new ArrayList<>();
+            for (CompatibilityHistory.Step st : history.steps()) {
+                Map<String, Json> step = new LinkedHashMap<>();
+                step.put("status", str(st.status()));
+                step.put("from_record", num(st.before() + 1));
+                steps.add(new Json.JObject(step));
+            }
+            row.put("history", new Json.JArray(steps));
+            Integer records = Event.integer(s.member("records"));
+            row.put("records_retained_unselected", num(records == null ? null : history.unselected(records).size()));
+            row.put("normalization_credited", new Json.JBool(inForce == null || CompatibilityHistory.normalizing(inForce.status())));
+            rows.add(new Json.JObject(row));
+        }
+        Map<String, Json> out = new LinkedHashMap<>();
+        out.put("rows", new Json.JArray(rows));
+        out.put("rule", str("a source's normalized facts count as support only under a tested or in_range selection; records that arrived while none was selected are retained whole and owe no fact"));
         return new Json.JObject(out);
     }
 

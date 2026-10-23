@@ -4,7 +4,7 @@
  "fixture": "codex-live-0.160.1-commands",
  "core": "main",
  "events_jsonl": "fixtures/codex-live-0.160.1-commands/package/events.jsonl",
- "events_jsonl_sha256": "8956a2c30c4dadc88ce5442451bf785ac86b625204dd5271b589c07183742df3",
+ "events_jsonl_sha256": "efcc122e5335e6810e481aa92d28066fed5845a3a68b94b1a5d30b12a7673ad8",
  "execution_records": 13,
  "declarations_skipped": 39,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
@@ -14,7 +14,7 @@
   "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
   "exit_code": 0
  },
- "compiled_schema_sha256": "1d3b294a2df516385ea5f3bc468065727d8dfbdb251b6fe1496be09b6a719bff",
+ "compiled_schema_sha256": "9b77697bdc5b3f5433e3d064d25e4488c230634311abe634faf2f34745f6eb56",
  "result": {
   "event_files_processed": 13,
   "error_events": 0,

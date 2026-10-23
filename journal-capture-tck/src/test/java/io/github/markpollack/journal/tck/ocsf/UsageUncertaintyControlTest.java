@@ -5,6 +5,7 @@ import io.github.markpollack.journal.tck.verify.Json;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.math.BigDecimal;
 import java.nio.file.Path;
 
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CODEX_STREAM;
@@ -12,6 +13,7 @@ import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.LIVE_FEATURES;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.at;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.copy;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.editEvents;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.eventLines;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.num;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.obj;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.pkg;
@@ -91,6 +93,54 @@ class UsageUncertaintyControlTest {
         editEvents(pkg(defaulted), events -> obj(component(usage(events), 2)).members().put("measurement_status_id", num("4")));
         assertThat(verify(defaulted).check("usage.values", STREAM).detail()).as("a zero the deserializer also writes is not a lower bound of a measurement")
                 .contains("cache_write_tokens measurement_status_id 4 != 2");
+    }
+
+    /**
+     * The lower bound in its direction: the thread's actual output is at least the reported 143 and may be larger (a
+     * response whose usage never arrived adds nothing). A saved value raised to an assumed complete total (here as if a
+     * missing response's 50 were added) is a defect, though the claimed quantity could be the true one.
+     */
+    @Test
+    void aLowerBoundRaisedToAnAssumedCompleteTotalIsADefect(@TempDir Path work) {
+        Path fixture = copy(CODEX_STREAM, work);
+        assertThat(usage(eventLines(pkg(fixture).resolve("events.jsonl"))).member("output_tokens").scalarText()).isEqualTo("143");
+        editEvents(pkg(fixture), events -> obj(usage(events)).members().put("output_tokens", num("193")));
+        OracleReport report = verify(fixture);
+        assertThat(report.outcome("usage.values", STREAM)).isEqualTo(Outcome.DEFECTIVE);
+        assertThat(report.check("usage.values", STREAM).detail()).contains("output_tokens VALUE").contains("number value differs");
+    }
+
+    /**
+     * The economics invariant on the saved observation, without a price feed: equal prices for uncached input and cache
+     * writes make the allocation of a possibly omitted cache write immaterial to their subtotal (the conditional value
+     * plus the writes gives the same amount for any split), unequal prices do not; and either way the operands are lower
+     * bounds of a running total that may miss whole responses, so the saved statuses allow only a lower bound of the
+     * charge, never an exact bill. Relabelling the statuses so that an exact bill would follow is itself a defect.
+     */
+    @Test
+    void equalPricesRemoveTheAllocationUncertaintyButNotTheMissingContributions(@TempDir Path work) {
+        Path fixture = copy(CODEX_STREAM, work);
+        Json u = usage(eventLines(pkg(fixture).resolve("events.jsonl")));
+        BigDecimal conditional = new BigDecimal(component(u, 0).member("conditional_value").scalarText());
+        BigDecimal writes = new BigDecimal(u.member("cache_write_tokens").scalarText());
+        assertThat(component(u, 0).member("measurement_status_id").scalarText()).isEqualTo("3");
+        assertThat(component(u, 2).member("measurement_status_id").scalarText()).as("the cache-write 0 may be the deserializer default").isEqualTo("2");
+        BigDecimal omitted = new BigDecimal("1000"); // a cache write the provider may have reported and the deserializer zeroed
+        BigDecimal price = new BigDecimal("0.000003");
+        BigDecimal measuredZero = conditional.multiply(price).add(writes.multiply(price));
+        BigDecimal omittedInsideInput = conditional.subtract(omitted).multiply(price).add(writes.add(omitted).multiply(price));
+        assertThat(omittedInsideInput).as("equal prices: the split between the two tranches does not change their subtotal").isEqualByComparingTo(measuredZero);
+        BigDecimal writePrice = new BigDecimal("0.00000375");
+        assertThat(conditional.subtract(omitted).multiply(price).add(writes.add(omitted).multiply(writePrice)))
+                .as("unequal prices: the split matters, so the estimate stays conditional").isNotEqualByComparingTo(conditional.multiply(price).add(writes.multiply(writePrice)));
+        assertThat(u.member("measurement_status_id").scalarText()).as("the running total may miss whole responses: any estimate is a lower bound").isEqualTo("4");
+        assertThat(component(u, 1).member("measurement_status_id").scalarText()).as("the cached operand of the conditional value is itself a lower bound").isEqualTo("4");
+        Path relabelled = copy(CODEX_STREAM, work.resolve("relabelled"));
+        editEvents(pkg(relabelled), events -> {
+            obj(usage(events)).members().put("measurement_status_id", num("1"));
+            obj(component(usage(events), 1)).members().put("measurement_status_id", num("1"));
+        });
+        assertThat(verify(relabelled).outcome("usage.values", STREAM)).as("statuses that would license an exact bill are refused").isEqualTo(Outcome.DEFECTIVE);
     }
 
     /**

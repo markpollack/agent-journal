@@ -207,6 +207,67 @@
      "action": {
       "type": "string",
       "minLength": 1
+     },
+     "excludes": {
+      "type": "string",
+      "minLength": 1,
+      "description": "what the facet's correspondence deliberately does not claim (for example an unknown operation's semantics), so a narrow coverage is not read as a broader one"
+     },
+     "aspects": {
+      "type": "array",
+      "minItems": 1,
+      "description": "the facet's parts where support differs by role or aspect; each rests on one of the facet's concepts and states a route state that ParityLedgerTest checks against that concept's executed state",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "id",
+        "summary",
+        "concept",
+        "destinations",
+        "routes"
+       ],
+       "properties": {
+        "id": {
+         "type": "string",
+         "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "summary": {
+         "type": "string",
+         "minLength": 1
+        },
+        "concept": {
+         "type": "string",
+         "minLength": 1
+        },
+        "executed": {
+         "type": "string",
+         "enum": [
+          "verified",
+          "retained-only"
+         ],
+         "description": "the concept's executed state a mapped route rests on (verified unless stated)"
+        },
+        "destinations": {
+         "type": "array",
+         "items": {
+          "type": "string"
+         }
+        },
+        "routes": {
+         "type": "object",
+         "additionalProperties": {
+          "enum": [
+           "mapped",
+           "unexercised",
+           "retained_only",
+           "source_limited",
+           "not_applicable"
+          ]
+         }
+        }
+       }
+      }
      }
     },
     "additionalProperties": false

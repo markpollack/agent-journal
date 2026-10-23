@@ -43,7 +43,7 @@ class PinsTest {
     @Test
     void semanticContractBytesAreIdenticalInWriterAndReader() throws Exception {
         byte[] writer = resource(Pins.SEMANTIC_CONTRACT_RESOURCE);
-        byte[] reader = Files.readAllBytes(PROJECT.resolve("journal-capture-tck/src/main/resources/ocsf/semantic-contract-0.5.0-prototype.json"));
+        byte[] reader = Files.readAllBytes(PROJECT.resolve("journal-capture-tck/src/main/resources/ocsf/semantic-contract-0.6.0-prototype.json"));
         assertThat(writer).isEqualTo(reader);
         assertThat(io.github.markpollack.journal.tck.ocsf.SemanticOperation.VERSION).isEqualTo(Pins.SEMANTIC_OPERATIONS_VERSION);
         assertThat(io.github.markpollack.journal.tck.ocsf.PackageReader.READER_CONTRACT_VERSION).isEqualTo(Pins.READER_CONTRACT_VERSION);
@@ -69,12 +69,22 @@ class PinsTest {
     void mappingContractsDeclareEveryRuleTheMappersExecute() throws Exception {
         MappingContracts c = new MappingContracts();
         for (String name : List.of(ClaudeStreamMapper.CONTRACT, ClaudeTranscriptMapper.CONTRACT, CodexRolloutMapper.CONTRACT, CodexStreamMapper.CONTRACT, OpaqueTextMapper.CONTRACT)) {
-            // the Codex exec-stream contract is 0.5.0 (component measurement status, Tier 1 wave), the Claude and rollout contracts 0.3.0 (SEM-CLOSE tranches); opaque text is unchanged
-            assertThat(c.uid(name)).endsWith(CodexStreamMapper.CONTRACT.equals(name) ? "/0.6.0-prototype" : CodexRolloutMapper.CONTRACT.equals(name) ? "/0.4.0-prototype"
+            // the Codex exec-stream contract is 0.7.0 (the lower bound in its direction, review closure), the rollout contract 0.4.0 (conditional
+            // uncached value), the Claude contracts 0.3.0 (SEM-CLOSE tranches); opaque text is unchanged
+            assertThat(c.uid(name)).endsWith(CodexStreamMapper.CONTRACT.equals(name) ? "/0.7.0-prototype" : CodexRolloutMapper.CONTRACT.equals(name) ? "/0.4.0-prototype"
                     : OpaqueTextMapper.CONTRACT.equals(name) ? "/0.2.0-prototype" : "/0.3.0-prototype");
             c.rule(name, "common.opaque->source_record");
             c.rule(name, "common.mapper_exception->source_record");
         }
+        // every retention rule the writer applies while no entry is selected is declared in the untested-compatibility contract
+        String writer = Files.readString(Path.of("src/main/java/io/github/markpollack/journal/ocsf/writer/OcsfRunWriter.java"), StandardCharsets.UTF_8);
+        java.util.regex.Matcher compat = java.util.regex.Pattern.compile("\"(compat\\.[a-z_]+->source_record)\"").matcher(writer);
+        List<String> retention = new ArrayList<>();
+        while (compat.find()) {
+            c.rule(Compatibility.UNTESTED_CONTRACT, compat.group(1));
+            retention.add(compat.group(1));
+        }
+        assertThat(retention).containsExactlyInAnyOrder("compat.version_pending->source_record", "compat.conflict->source_record", "compat.no_match->source_record");
         // every rule id string literal used by a mapper class is declared in its contract
         for (Map.Entry<String, String> m : Map.of("ClaudeStreamMapper.java", ClaudeStreamMapper.CONTRACT, "ClaudeTranscriptMapper.java", ClaudeTranscriptMapper.CONTRACT,
                 "CodexRolloutMapper.java", CodexRolloutMapper.CONTRACT, "CodexStreamMapper.java", CodexStreamMapper.CONTRACT, "CodexItems.java", CodexStreamMapper.CONTRACT).entrySet()) {

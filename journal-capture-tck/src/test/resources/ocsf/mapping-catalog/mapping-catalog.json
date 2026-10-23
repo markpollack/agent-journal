@@ -1,7 +1,7 @@
 {
  "kind": "agent-journal/mapping-catalog",
  "version": "0.6.0",
- "reviewed": "2026-10-22",
+ "reviewed": "2026-10-23",
  "property_scopes": {
   "meaning": "the owner an oracle property is reported for: root (once, by the root core), core (each core: main and every child), otherwise source (each core's artifacts, '<core>/<artifact>'); the coverage summary owes a result for every such owner the frozen expected sources establish",
   "root": [
@@ -265,7 +265,7 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.fallback->source_record",
      "implementation": "CodexStreamMapper#map"
     }
@@ -627,7 +627,7 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.turn_completed->prompt_turn.completed",
      "implementation": "CodexStreamMapper#map"
     }
@@ -1354,7 +1354,7 @@
       "contracts": [
        "claude-code/stream-json/2.1.303/0.3.0-prototype"
       ],
-      "extension": "agentic_cli 0.8.0-prototype"
+      "extension": "agentic_cli 0.9.0-prototype"
      },
      "semantics": {
       "owner_scope": "the child core whose spawn the record's parent_tool_use_id names",
@@ -1384,7 +1384,7 @@
        "table:owner_routing"
       ],
       "relevant_digest": "sha256:7ce9548d1baeb1fd6a6e6dcf7ed3576360accb1ad71becf387545fea0c5c2354",
-      "digest": "sha256:09efce6f68e3e74906dc5ae0349320b1389209dfe2dd310203c2c971190c52c6"
+      "digest": "sha256:82f0601fddea9a2deff49442ad242928d7d39facde5ac97f4a71424c21f10972"
      },
      "approval": {
       "status": "proposed",
@@ -1609,7 +1609,7 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.agent_message->model_response",
      "implementation": "CodexStreamMapper#map"
     }
@@ -1966,7 +1966,7 @@
      "implementation": "MapperSupport#blocks"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.agent_message->model_response",
      "implementation": "CodexStreamMapper#map"
     }
@@ -2330,7 +2330,7 @@
      "implementation": "MapperSupport#blocks"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.reasoning->model_response",
      "implementation": "CodexStreamMapper#response"
     }
@@ -2481,9 +2481,9 @@
        "codex-cli/exec-json-stream/0.160.1"
       ],
       "contracts": [
-       "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype"
+       "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype"
       ],
-      "extension": "agentic_cli 0.8.0-prototype"
+      "extension": "agentic_cli 0.9.0-prototype"
      },
      "semantics": {
       "identity": "stream-local content-item id; the owning model response is not reported",
@@ -2516,7 +2516,7 @@
        "table:block_kind_table"
       ],
       "relevant_digest": "sha256:4284555480c228a538976d097b2faccaada1679881ee379ee94f6980de66e63f",
-      "digest": "sha256:5c3135ce824605358ffd20619eacaff7fa856a66c92263aecfbdd9c24c1faa14"
+      "digest": "sha256:6cd37a8b0d95c60fbfea842c80711568b2d2bd921b438fa2192961e9d677d36e"
      },
      "replaces": "r1 (proposed): each reasoning item was a model_response Completed whose response_uid was the stream-local item id",
      "approval": {
@@ -3732,7 +3732,7 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.agent_message->model_response",
      "implementation": "CodexStreamMapper#map"
     }
@@ -4067,22 +4067,22 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.mcp_tool_call->tool_call.requested",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.web_search->tool_call.requested",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.collab_tool_call->tool_call.requested",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.file_change->tool_call.requested",
      "implementation": "CodexStreamMapper#toolCall"
     }
@@ -4268,9 +4268,9 @@
        "codex-cli/exec-json-stream/0.160.1"
       ],
       "contracts": [
-       "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype"
+       "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype"
       ],
-      "extension": "agentic_cli 0.8.0-prototype"
+      "extension": "agentic_cli 0.9.0-prototype"
      },
      "semantics": {
       "identity": "stream-local item id, unique within (run, invocation, artifact); the started and completed records of one item share it"
@@ -4312,7 +4312,7 @@
        "table:identity"
       ],
       "relevant_digest": "sha256:dfe00ee4784b259ba648619bc9fca1814cc5cc8d6636d8d6b006e8d661ce3b8a",
-      "digest": "sha256:2e88e1f387d297a3c8b69642ea70918e2abc5d5649a3c138565d4eb81df234a7"
+      "digest": "sha256:814d4767eb338d5adaf4f625dfb23360e49edc51bc186df8925d99ddb6f742ca"
      },
      "replaces": "r1 (proposed): the same ids, but agent messages and reasoning items took the stream-local id as response_uid",
      "approval": {
@@ -4330,9 +4330,9 @@
        "codex-cli/exec-json-stream/0.160.1"
       ],
       "contracts": [
-       "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype"
+       "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype"
       ],
-      "extension": "agentic_cli 0.8.0-prototype"
+      "extension": "agentic_cli 0.9.0-prototype"
      },
      "semantics": {
       "identity": "stream-local item id shared by the start and its result",
@@ -4377,7 +4377,7 @@
        "table:namespace_kind_bindings"
       ],
       "relevant_digest": "sha256:344fd108a23200241ee2efb475a02c9f7c885c6351f2b31030c2178f885bb0ef",
-      "digest": "sha256:d58aa3a4becd9a85799f69ded651bd0d7ba11b95ce33318887d8d32ac1592932"
+      "digest": "sha256:bfe27cff00aa1fc48f3dfa7a7edb3de0bbd80d1c1836bce19b18d3800439ad0e"
      },
      "replaces": "r1 (proposed): item.started read as the model request (activity 1) and the kind taken from a table over bare tool names",
      "approval": {
@@ -4395,9 +4395,9 @@
        "codex-cli/exec-json-stream/0.160.1"
       ],
       "contracts": [
-       "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype"
+       "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype"
       ],
-      "extension": "agentic_cli 0.8.0-prototype"
+      "extension": "agentic_cli 0.9.0-prototype"
      },
      "semantics": {
       "identity": "stream-local item id shared by start and completion"
@@ -4433,7 +4433,7 @@
        "table:family_kind_table"
       ],
       "relevant_digest": "sha256:bcbb0734d9835b294580ff3cec3b16ce2f7362d79f65e256fb8a6a28eb392073",
-      "digest": "sha256:85db5fbd141aaa8fe3918b7479920a25ec38d9e445a54ca72fb4990f59b7cdb1"
+      "digest": "sha256:91473a57101b37de70438f25a0d9b1f2d877ced0a8143edb95316ca15d25a460"
      },
      "replaces": "r1 (proposed): the file-change item type written as tool_name and the start read as the model request",
      "approval": {
@@ -4616,22 +4616,22 @@
      "implementation": "MappingContracts#toolKind"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.mcp_tool_call->tool_call.requested",
      "implementation": "MappingContracts#toolKind"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.web_search->tool_call.requested",
      "implementation": "MappingContracts#toolKind"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.collab_tool_call->tool_call.requested",
      "implementation": "MappingContracts#toolKind"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.file_change->tool_call.requested",
      "implementation": "MappingContracts#toolKind"
     }
@@ -4673,7 +4673,61 @@
     "reason": "ACP v1 ToolKind vocabulary taken as is, with the mapping basis recorded; a kind is not evidence of an operating-system effect."
    },
    "notes": "The tables are claude.tool_name_to_kind.v1 and codex.tool_name_to_kind.v1 in the contracts (Task and unknown names -> 99 other). The oracle recomputes the kind from the name table independently of the writer. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: tool families that imply a kind (mcp_tool_call, collab_tool_call, web_search, file_change, command_execution). SEM-1 (2026-10-22): the Codex exec stream's tool families (kind by the contract's name table: web_search 5 search, file_change 2 edit, MCP and collaboration tools 99 other) are normalized under contract 0.3.0-prototype, a candidate whose meaning awaits the Project Owner's approval; the earlier route claim that Journal only retained them (vendor families ['item.completed/collab_tool_call', 'item.completed/file_change', 'item.completed/mcp_tool_call', 'item.completed/web_search']) is replaced by the oracle obligations above. SEM-CLOSE (0.6.0-prototype, Codex contract 0.4.0): on the Codex exec stream the kind comes from the item family (family_kind_table: web_search 5, file_change 2, otherwise 99) and an MCP tool takes a kind only from a reviewed binding of its exact server and tool (namespace_kind_bindings: none, so 99), never from a bare name such as exec; the oracle profile states these kinds itself instead of reading the embedded table.",
-   "observations": []
+   "observations": [],
+   "claims": [
+    {
+     "id": "claude.stream.shell-command-invocation",
+     "revision": 1,
+     "digest": "sha256:cfffa0879fc28c5b7ab73523dbc46de97a8326e02ebf69bf00395edea76dd759",
+     "digest_boundary": 2,
+     "statement": "On the Claude Code stream-json (stdout) route, a Bash tool_use is one reported tool invocation: the model's request (tool_call activity 1) with tool_call_uid = the tool_use id, tool_name Bash, kind 6 Execute from the declared exact-name table and arguments = the tool_use input exactly, command string included; its tool_result is the result of the same id (activity 2), a separate observation of the same invocation, never collapsed into the request. A command whose text runs grep, Python or a pipeline is still that one invocation: no tool call, operation, argument vector or operating-system action is derived from the text, and the kind comes from the reported tool name, never from a command inside it. The stream reports no operation for a Bash call, so none is recorded.",
+     "applicability": {
+      "routes": [
+       "claude-code/stream-json/2.1.304-stdout"
+      ],
+      "contracts": [
+       "claude-code/stream-json/2.1.303/0.3.0-prototype"
+      ],
+      "extension": "agentic_cli 0.9.0-prototype"
+     },
+     "semantics": {
+      "identity": "the tool_use id shared by the request and its result",
+      "order": "request in the assistant record, result in the user record: two observations of one invocation"
+     },
+     "destinations": [
+      "tool_call.tool_call_uid",
+      "tool_call.tool_name",
+      "tool_call.tool_kind_id",
+      "tool_call.arguments"
+     ],
+     "normative_examples": [
+      "claude-bash-pipeline-synthetic"
+     ],
+     "evidence": [
+      "claude-agent-sdk-0.3.304-types"
+     ],
+     "checks": [
+      "oracle:ClaudeStreamProfile/population.requests",
+      "oracle:ClaudeStreamProfile/request.values",
+      "oracle:ClaudeStreamProfile/population.results",
+      "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
+      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects",
+      "junit:ToolClassificationTest#aShellCommandWithGrepAPipeAndPythonIsOneReportedInvocation"
+     ],
+     "binding": {
+      "rules": [
+       "claude.stream.assistant.tool_use->tool_call.requested",
+       "claude.stream.user.tool_result->tool_call.result",
+       "table:tool_kind_table"
+      ],
+      "relevant_digest": "sha256:e9424ca4937a637bccafcec2ee3349055cfa4bb2798fc385f821cff50da2ac4c",
+      "digest": "sha256:9903a997b888a4ab265d3ff5b7bd471013947a566725bf7ef16d574ce52d0205"
+     },
+     "approval": {
+      "status": "proposed"
+     }
+    }
+   ]
   },
   {
    "id": "tool-result-ownership-and-content",
@@ -4862,22 +4916,22 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.mcp_tool_call->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.web_search->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.collab_tool_call->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.file_change->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     }
@@ -5217,22 +5271,22 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.mcp_tool_call->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.web_search->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.collab_tool_call->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.file_change->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     }
@@ -5527,22 +5581,22 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.mcp_tool_call->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.web_search->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.collab_tool_call->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.file_change->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
     }
@@ -5853,7 +5907,7 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.command_execution->tool_call.operation",
      "implementation": "CodexStreamMapper#map"
     }
@@ -5903,18 +5957,18 @@
    "claims": [
     {
      "id": "codex.exec-stream.standalone-operation-command",
-     "revision": 3,
-     "digest": "sha256:46baec3712601438c8e328c5e298429ebfcb83365c3dd129e4b7f3e55f6fe99b",
+     "revision": 4,
+     "digest": "sha256:d20680890d5f03b96b93c9d040d5827d3b36bab8010db1261d6905e0f4e9ad48",
      "digest_boundary": 2,
-     "statement": "A Codex CLI exec --json command_execution item is a standalone operation observation (tool_call activity 3): attribution 3 Unattributed because no wrapping call id is reported, operation uid = the stream-local item id, command_line = item.command exactly, reported_state, exit_code when integral and stdout = aggregated_output; tool_call_uid is absent. The command string is never parsed into argv and no operating-system effect is inferred from it.",
+     "statement": "A Codex CLI exec --json command_execution item is a standalone operation observation (tool_call activity 3): attribution 3 Unattributed because no wrapping call id is reported, operation uid = the stream-local item id, command_line = item.command exactly, reported_state, exit_code when integral and stdout = aggregated_output; tool_call_uid is absent. The command string is never parsed into argv and no operating-system effect is inferred from it. Its item.started and item.completed are two observations of that one operation (the same stream-local uid, reported_state in_progress then the reported outcome), never collapsed into one event and never multiplied: a command whose text runs grep, Python or a pipeline is still one reported operation, and no tool call, operation, argument vector or operating-system action is derived from its text, while an operation the source reports as its own item is recorded as its own observation.",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
       ],
       "contracts": [
-       "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype"
+       "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype"
       ],
-      "extension": "agentic_cli 0.8.0-prototype"
+      "extension": "agentic_cli 0.9.0-prototype"
      },
      "semantics": {
       "owner_scope": "no owning tool call: the operation is retained at its reported scope"
@@ -5927,7 +5981,8 @@
      ],
      "normative_examples": [
       "codex-command-line-live",
-      "codex-declined-command-synthetic"
+      "codex-declined-command-synthetic",
+      "codex-command-pipeline-synthetic"
      ],
      "evidence": [
       "codex-exec-0.160.1-types",
@@ -5937,14 +5992,16 @@
       "oracle:CodexStreamProfile/population.operations",
       "oracle:CodexStreamProfile/operation.values",
       "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
-      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
+      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects",
+      "junit:ToolClassificationTest#aShellCommandWithGrepAPipeAndPythonIsOneReportedInvocation",
+      "junit:IdentityClassificationControlTest#anInvocationOrOperationInventedFromAShellCommandsTextIsAPopulationDefect"
      ],
      "binding": {
       "rules": [
        "codex.stream.command_execution->tool_call.operation"
       ],
       "relevant_digest": "sha256:cad27d2bb758327529314a1b85e93161398093a590e96ad4dbdd3f88f20e28a7",
-      "digest": "sha256:063198c6e4278200f624dcb0652c071c74c3ad1e02feb2cb2761afe816d8e7dc"
+      "digest": "sha256:cb4d7c9c038b61acd972c654f6176c81a3e04d005ce05532a69e7e777c1138b2"
      },
      "replaces": "contract 0.2.0-prototype kept the command string only inside the retained record",
      "approval": {
@@ -5953,7 +6010,7 @@
        "revision": 1,
        "digest": "sha256:20ec664ec7b92885da540b870ce5495744acece6d2f60c9d5c996cb865ed4749",
        "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
-       "delta": "applicability only: extension agentic_cli 0.5.0-prototype -> 0.6.0-prototype and contract codex-cli/exec-json-stream/0.160.1/0.3.0-prototype -> 0.4.0-prototype; statement, semantics, destinations and normative examples unchanged; r3 moves the version pins out of the meaning (digest boundary 2): the statement names the route family without CLI version numbers, and routes, contract and extension pins with the relevant definitions and rules are the binding"
+       "delta": "applicability only: extension agentic_cli 0.5.0-prototype -> 0.6.0-prototype and contract codex-cli/exec-json-stream/0.160.1/0.3.0-prototype -> 0.4.0-prototype; statement, semantics, destinations and normative examples unchanged; r3 moves the version pins out of the meaning (digest boundary 2): the statement names the route family without CLI version numbers, and routes, contract and extension pins with the relevant definitions and rules are the binding; r4 (review closure, 2026-10-23) makes the no-shell-inference reading normative: the pipeline example (grep piped into Python, observed at start and completion) becomes a normative example, and the statement adds that the two observations are one operation, neither collapsed nor multiplied, with nothing derived from the command text"
       }
      }
     }
@@ -6131,7 +6188,7 @@
      "implementation": "MapperSupport#attribution"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.command_execution->tool_call.operation",
      "implementation": "MapperSupport#attribution"
     }
@@ -6357,7 +6414,7 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.command_execution->tool_call.operation",
      "implementation": "CodexStreamMapper#map"
     }
@@ -6412,9 +6469,9 @@
        "codex-cli/exec-json-stream/0.160.1"
       ],
       "contracts": [
-       "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype"
+       "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype"
       ],
-      "extension": "agentic_cli 0.8.0-prototype"
+      "extension": "agentic_cli 0.9.0-prototype"
      },
      "semantics": {
       "absence_default": "no exit code is reported for a declined command and none is recorded"
@@ -6441,7 +6498,7 @@
        "codex.stream.command_execution->tool_call.operation"
       ],
       "relevant_digest": "sha256:e5ed6c9387bb402d1a2d4edc4684b36b2a7daee01e8acce8c14df00d083364c2",
-      "digest": "sha256:277fc9f4a68185e876494380862a53e50b09fae439f4cb6d7116d65e9ba22d64"
+      "digest": "sha256:a7d0b84c10635b07ffdf4c8b54459cc60c98c844dbd4857149877458866dd683"
      },
      "replaces": "contract 0.2.0-prototype gave a declined command status 0 Unknown",
      "approval": {
@@ -7053,7 +7110,7 @@
      "implementation": "UsageTranches#codex"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.turn_completed->prompt_turn.completed",
      "implementation": "UsageTranches#codex"
     }
@@ -7230,18 +7287,18 @@
    "claims": [
     {
      "id": "codex.exec-stream.usage-components-inclusive",
-     "revision": 4,
-     "digest": "sha256:d13d98351588b9899f959361d579bede84815a580d5cd72f6e6ec36232c542e8",
+     "revision": 5,
+     "digest": "sha256:b7bd4ab4b17f4a36ec666a707d0ae6a9a58252b3acdc03b6e8bd872a927f8a8e",
      "digest_boundary": 2,
-     "statement": "The Codex CLI exec --json usage reports input_tokens inclusive of cached_input_tokens (its protocol computes non-cached input as input_tokens minus cached_input_tokens). Journal states the canonical disjoint tranches it can establish: cache_read_tokens = cached_input_tokens and cache_write_tokens = cache_write_input_tokens are copied; reasoning_tokens = reasoning_output_tokens is part of output_tokens (reasoning_relation_id 1). The uncached tranche is never established on this route: with non-zero cache writes the pinned source does not establish whether input_tokens includes them, so the tranche is unavailable with no formula, neither guessed nor clamped; with cache writes reported 0, which the pinned deserializer also writes when the provider omits the member, input_tokens minus cached_input_tokens is the uncached input only if that 0 was measured and both operands are complete, so the difference is the component's conditional_value (Unavailable, measurement_status_id 3 Conditional) and the canonical uncached_input_tokens stays absent. components[] states each tranche as Reported or Unavailable with RFC 6901 pointers into data, which keeps the native object exactly. Each component also states what the source establishes about its quantity (measurement_status_id): a 0 for an omitted cache write, cached input or reasoning count is Possibly default, and any other member of the running total is a Lower bound. The number is kept in every case. The same facts on Claude give equal copied tranches; Claude's reported uncached input equals the Codex conditional value only under the named assumptions (usage-equivalent pair).",
+     "statement": "The Codex CLI exec --json usage reports input_tokens inclusive of cached_input_tokens (its protocol computes non-cached input as input_tokens minus cached_input_tokens). Journal states the canonical disjoint tranches it can establish: cache_read_tokens = cached_input_tokens and cache_write_tokens = cache_write_input_tokens are copied; reasoning_tokens = reasoning_output_tokens is part of output_tokens (reasoning_relation_id 1). The uncached tranche is never established on this route: with non-zero cache writes the pinned source does not establish whether input_tokens includes them, so the tranche is unavailable with no formula, neither guessed nor clamped; with cache writes reported 0, which the pinned deserializer also writes when the provider omits the member, input_tokens minus cached_input_tokens is the uncached input only if that 0 was measured and both operands are complete, so the difference is the component's conditional_value (Unavailable, measurement_status_id 3 Conditional) and the canonical uncached_input_tokens stays absent. components[] states each tranche as Reported or Unavailable with RFC 6901 pointers into data, which keeps the native object exactly. Each component also states what the source establishes about its quantity (measurement_status_id): a 0 for an omitted cache write, cached input or reasoning count is Possibly default, and any other member of the running total is a Lower bound: the thread's quantity is at least the member and may exceed it. The number is kept in every case. Equal prices for uncached input and cache writes make the allocation of a possibly omitted cache write immaterial to their subtotal, but cannot recover a response whose usage never arrived, so a price estimate from these tranches is at most a lower bound, never an exact bill. The same facts on Claude give equal copied tranches; Claude's reported uncached input equals the Codex conditional value only under the named assumptions (usage-equivalent pair).",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
       ],
       "contracts": [
-       "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype"
+       "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype"
       ],
-      "extension": "agentic_cli 0.8.0-prototype"
+      "extension": "agentic_cli 0.9.0-prototype"
      },
      "semantics": {
       "grouping": "components of one observation; no derived total",
@@ -7260,7 +7317,8 @@
       "codex-usage-cache-write-unavailable-synthetic",
       "usage-equivalent-codex-synthetic",
       "codex-usage-established-zero-synthetic",
-      "codex-usage-absent-operand-synthetic"
+      "codex-usage-absent-operand-synthetic",
+      "codex-usage-reported-100-actual-150-synthetic"
      ],
      "evidence": [
       "codex-protocol-0.160.1-token-usage-info",
@@ -7276,16 +7334,18 @@
       "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
       "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects",
       "junit:SemanticExampleTest#equivalentClaudeAndCodexUsageStateEqualTranchesAndTheUnestablishedOneOnlyConditionally",
-      "junit:CodexExecStreamTest#anOffByOneUsageValueOrAMissingComponentIsAUsageValueDefect"
+      "junit:CodexExecStreamTest#anOffByOneUsageValueOrAMissingComponentIsAUsageValueDefect",
+      "junit:UsageUncertaintyControlTest#aConditionalValueWrittenAsTheCanonicalTrancheIsADefect",
+      "junit:UsageUncertaintyControlTest#equalPricesRemoveTheAllocationUncertaintyButNotTheMissingContributions"
      ],
      "binding": {
       "rules": [
        "codex.stream.turn_completed->prompt_turn.completed"
       ],
-      "relevant_digest": "sha256:55aead11412641ea41e4173192202d8bd1487d274bd6a038e10b45dc1e5f49cb",
-      "digest": "sha256:5cd50223ad7b318fa2f9dca0811ce69893f1720a8db9b82d39476b4e693681e7"
+      "relevant_digest": "sha256:8f1657149da545f4e396449e573e74ddb73424d7a1a81f5a8654661c0b52d3c0",
+      "digest": "sha256:71a01bff995e5b346b1491884ddfe32f42ac7253026e84fe8b88f66e5c02637c"
      },
-     "replaces": "r1 (proposed, not approved; the delegated decision required its revision): copied each vendor's components under their native meanings, Codex input_tokens inclusive",
+     "replaces": "r4 (proposed, never bound): named the running-total members Lower bounds without stating that the thread's quantity is at least them, and said nothing of prices; r1 (proposed, not approved; the delegated decision required its revision): copied each vendor's components under their native meanings, Codex input_tokens inclusive",
      "approval": {
       "status": "proposed"
      }
@@ -7303,7 +7363,7 @@
       "contracts": [
        "claude-code/stream-json/2.1.303/0.3.0-prototype"
       ],
-      "extension": "agentic_cli 0.8.0-prototype"
+      "extension": "agentic_cli 0.9.0-prototype"
      },
      "semantics": {
       "grouping": "one observation per usage object at its reported scope; never summed",
@@ -7341,8 +7401,8 @@
        "claude.stream.assistant->model_response",
        "claude.stream.result->prompt_turn.completed"
       ],
-      "relevant_digest": "sha256:4eab4b41c7557ee7bcb6ade64d4a9b74fd1563d51f61d99d620a12503e394548",
-      "digest": "sha256:7f05ec5da616a84cb2c67281534adf9429bdfea3ec6eddb6ed37a9cc60758b4a"
+      "relevant_digest": "sha256:65a5b19f2aec5daa52a06fbb4dad5462df61a32dba85e605dde59faf96e3aa02",
+      "digest": "sha256:68ac0d6901b78b4cd1ebfd774517b940d60a8522a0621a9547b1e04b47479e59"
      },
      "approval": {
       "status": "proposed"
@@ -7543,7 +7603,7 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.turn_completed->prompt_turn.completed",
      "implementation": "CodexStreamMapper#map"
     }
@@ -7868,7 +7928,7 @@
      "implementation": "MapperSupport#usage"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.turn_completed->prompt_turn.completed",
      "implementation": "MapperSupport#usage"
     }
@@ -7968,18 +8028,18 @@
    "claims": [
     {
      "id": "codex.exec-stream.thread-usage",
-     "revision": 4,
-     "digest": "sha256:2c599e9c2be7764c5250d8106fec4d274a8a0eb1fdd1ffc68d2fc35b255d754d",
+     "revision": 5,
+     "digest": "sha256:55631f2a6e7f91dea9d40df21bedc0e0e535f00e83afddb354e308943d12b6dc",
      "digest_boundary": 2,
-     "statement": "On the Codex CLI exec --json (stdout) route, the usage a turn.completed record carries is the thread's cumulative token usage at that turn's completion (ThreadTokenUsage.total), not a measurement of the turn. Journal records it once per run as a usage observation at scope 5 Session (the Codex thread is the session), status 2 Final for the run and aggregation 2 Cumulative snapshot, in the canonical tranches of codex.exec-stream.usage-components-inclusive, attached to the turn's completion event. The running total adds a response's usage only when that response's completion carried one, so it is at least the thread's usage, never established as complete. Final refers to the snapshot within this capture's group: it is not consumption during the capture, a completed thread, or a value to sum with another cumulative snapshot. Journal computes no per-turn delta and no cross-run sum; a later run of a resumed thread reports a larger cumulative total of its own.",
+     "statement": "On the Codex CLI exec --json (stdout) route, the usage a turn.completed record carries is the thread's cumulative token usage at that turn's completion (ThreadTokenUsage.total), not a measurement of the turn. Journal records it once per run as a usage observation at scope 5 Session (the Codex thread is the session), status 2 Final for the run and aggregation 2 Cumulative snapshot, in the canonical tranches of codex.exec-stream.usage-components-inclusive, attached to the turn's completion event. The running total adds a response's usage only when that response's completion carried one, so each value is a lower bound: the thread's actual usage is at least the reported value and may exceed it (a reported 100 is compatible with an actual 150), never established as complete. Final refers to the snapshot within this capture's group: it is not consumption during the capture, a completed thread, or a value to sum with another cumulative snapshot. Journal computes no per-turn delta and no cross-run sum; a later run of a resumed thread reports a larger cumulative total of its own.",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
       ],
       "contracts": [
-       "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype"
+       "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype"
       ],
-      "extension": "agentic_cli 0.8.0-prototype"
+      "extension": "agentic_cli 0.9.0-prototype"
      },
      "semantics": {
       "owner_scope": "the session (Codex thread) that thread.started names; the observation sits on the prompt_turn Turn completed event of the record",
@@ -8022,8 +8082,8 @@
       "rules": [
        "codex.stream.turn_completed->prompt_turn.completed"
       ],
-      "relevant_digest": "sha256:2de7358e63ebfdbb8d066078d435b79b17338c2fe889fc179aa790bbd4920a20",
-      "digest": "sha256:7268325f8ec3c62ba00dc330d36f1cb40958622b55d060494cccbbd5e0bd5e46"
+      "relevant_digest": "sha256:fa1d3b555cef95ce5d67744d5d8d491b1ace94ca9292d798957772cc4f3bbf74",
+      "digest": "sha256:997e316c7896be665ec2306df799ba707982e2c7c6bef843b77acdfaec7a69ea"
      },
      "replaces": "r1 (approved, contract 0.3.0-prototype): the same reading with vendor-dependent input_tokens and no aggregation facet; contract 0.2.0-prototype read turn.completed usage as scope 3 Prompt turn, never approved, refuted by the pinned emitter",
      "approval": {
@@ -8032,24 +8092,24 @@
        "revision": 1,
        "digest": "sha256:39cd69be58f09965e76734d4de577c022d3c97b3af5d99c5e5e7ee7bcf39c306",
        "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
-       "delta": "statement and semantics add the aggregation facet (aggregation_id 2 Cumulative snapshot), as the delegated decision asks; destinations input_tokens -> uncached_input_tokens plus aggregation_id; normative examples restated in canonical tranches (uncached 11082 and 500 derived instead of the inclusive 63434 and 2500); scope, finality and no-delta meaning unchanged; r3 moves the version pins out of the meaning (digest boundary 2): the statement names the route family without CLI version numbers, and routes, contract and extension pins with the relevant definitions and rules are the binding; r3 also states each usage component's measurement status (extension 0.7.0-prototype, codex.usage.component_measurement.v1): the normative examples gain component statuses; r4 (requirements reconciliation, 2026-10-23; extension 0.8.0-prototype, codex.usage.component_measurement.v2 and codex.usage.uncached_input.v2) rejects the assumption that a positive running-total member establishes every contribution: the thread total adds only the responses whose completion carried usage, so every member other than a zero defaultable one is 4 Lower bound, never 1 Measured, and the uncached difference is only the component's conditional_value (Unavailable, Conditional), never the canonical tranche; normative examples and statement restated accordingly"
+       "delta": "statement and semantics add the aggregation facet (aggregation_id 2 Cumulative snapshot), as the delegated decision asks; destinations input_tokens -> uncached_input_tokens plus aggregation_id; normative examples restated in canonical tranches (uncached 11082 and 500 derived instead of the inclusive 63434 and 2500); scope, finality and no-delta meaning unchanged; r3 moves the version pins out of the meaning (digest boundary 2): the statement names the route family without CLI version numbers, and routes, contract and extension pins with the relevant definitions and rules are the binding; r3 also states each usage component's measurement status (extension 0.7.0-prototype, codex.usage.component_measurement.v1): the normative examples gain component statuses; r4 (requirements reconciliation, 2026-10-23; extension 0.8.0-prototype, codex.usage.component_measurement.v2 and codex.usage.uncached_input.v2) rejects the assumption that a positive running-total member establishes every contribution: the thread total adds only the responses whose completion carried usage, so every member other than a zero defaultable one is 4 Lower bound, never 1 Measured, and the uncached difference is only the component's conditional_value (Unavailable, Conditional), never the canonical tranche; normative examples and statement restated accordingly; r5 (review closure, 2026-10-23; extension 0.9.0-prototype, contract 0.7.0-prototype) states the lower bound in its direction, which r4 (never bound) reversed in its wording: the thread's actual quantity is at least each reported value and may exceed it (a reported 100 is compatible with an actual 150), the value is never raised to a guessed total, and an estimate from it is at most a lower bound"
       }
      }
     },
     {
      "id": "codex.exec-stream.usage-measurement",
-     "revision": 4,
-     "digest": "sha256:05d91307c3fdc7c05bd41b17c99d199660fad7c22c21166e51619c44b17c6948",
+     "revision": 5,
+     "digest": "sha256:814960de2e444ddfde189af434a37502f75cd079c08fe3d9989cbe093863239d",
      "digest_boundary": 2,
-     "statement": "When every usage component a Codex CLI exec --json turn.completed reports is zero, the value may be the emitter's Usage::default(), which it writes when no token-usage update arrived; a measured zero is not established, so the observation's measurement_status_id is 2 Possibly default. When any component is non-zero an update arrived, but the thread running total adds a response's usage only when that response's completion carried one, so the observation is 4 Lower bound: each value is at least the thread's quantity, never established as complete. The components are preserved exactly in both cases; none is dropped or replaced. Separately, each component states its own measurement status: in an observation with a non-zero component, a zero cached input, cache write or reasoning count is Possibly default, because the pinned deserializer writes 0 when the provider omits that member, and every other component, a positive one or a zero input or output count (required members), is a Lower bound; with every component zero, each component is Possibly default. A positive value never establishes that every response reported the member.",
+     "statement": "When every usage component a Codex CLI exec --json turn.completed reports is zero, the value may be the emitter's Usage::default(), which it writes when no token-usage update arrived; a measured zero is not established, so the observation's measurement_status_id is 2 Possibly default. When any component is non-zero an update arrived, but the thread running total adds a response's usage only when that response's completion carried one, so the observation is 4 Lower bound: the thread's quantity is at least each value and may exceed it (a reported 100 is compatible with an actual 150); the value is kept as reported, never raised to a guessed total, and never established as complete. The components are preserved exactly in both cases; none is dropped or replaced. Separately, each component states its own measurement status: in an observation with a non-zero component, a zero cached input, cache write or reasoning count is Possibly default, because the pinned deserializer writes 0 when the provider omits that member, and every other component, a positive one or a zero input or output count (required members), is a Lower bound; with every component zero, each component is Possibly default. A positive value never establishes that every response reported the member.",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
       ],
       "contracts": [
-       "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype"
+       "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype"
       ],
-      "extension": "agentic_cli 0.8.0-prototype"
+      "extension": "agentic_cli 0.9.0-prototype"
      },
      "semantics": {
       "absence_default": "all-zero components are kept and marked Possibly default; a missing component stays absent, never zero; a positive running-total component is a Lower bound, not a measurement"
@@ -8063,7 +8123,8 @@
       "codex-usage-default-zero-synthetic",
       "codex-thread-usage-live-mcp",
       "codex-usage-established-zero-synthetic",
-      "codex-usage-running-total-lower-bound-synthetic"
+      "codex-usage-running-total-lower-bound-synthetic",
+      "codex-usage-reported-100-actual-150-synthetic"
      ],
      "evidence": [
       "codex-exec-0.160.1-emitter-usage",
@@ -8075,14 +8136,16 @@
      "checks": [
       "oracle:CodexStreamProfile/usage.values",
       "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
-      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
+      "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects",
+      "junit:UsageUncertaintyControlTest#aLowerBoundRelabelledMeasuredIsADefectThoughTheNumberIsUnchanged",
+      "junit:UsageUncertaintyControlTest#aLowerBoundRaisedToAnAssumedCompleteTotalIsADefect"
      ],
      "binding": {
       "rules": [
        "codex.stream.turn_completed->prompt_turn.completed"
       ],
-      "relevant_digest": "sha256:d020654485d7da175c9c3fd47264ba33b63cbf829ef0e49c46739c41cc66cc93",
-      "digest": "sha256:918e56ba5e4b9885e0885f412d913038af649de2c53df222cb9d152308b07d64"
+      "relevant_digest": "sha256:d300f1eb908290aa558d49759beabdb106c37914ea658527086ef81c32d0d678",
+      "digest": "sha256:cd6cba7e54db39092726299c955a7d1df5c7849b6da4d06b6b467911aa7dba51"
      },
      "approval": {
       "status": "proposed",
@@ -8090,7 +8153,7 @@
        "revision": 1,
        "digest": "sha256:2de474fb406dde2008bee42897611d4c6b4d155f9f6d26cbfeae622f95d59f0a",
        "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
-       "delta": "normative examples restated in canonical tranches (the all-zero example expects uncached_input_tokens 0, derived, in place of input_tokens 0; the live MCP example as in thread-usage r2); statement, semantics and destinations unchanged; r3 moves the version pins out of the meaning (digest boundary 2): the statement names the route family without CLI version numbers, and routes, contract and extension pins with the relevant definitions and rules are the binding; r3 also states each usage component's measurement status (extension 0.7.0-prototype, codex.usage.component_measurement.v1): the normative examples gain component statuses and the statement a component-level sentence; r4 (requirements reconciliation, 2026-10-23; extension 0.8.0-prototype, codex.usage.component_measurement.v2 and codex.usage.uncached_input.v2) rejects the assumption that a positive running-total member establishes every contribution: the thread total adds only the responses whose completion carried usage, so every member other than a zero defaultable one is 4 Lower bound, never 1 Measured, and the uncached difference is only the component's conditional_value (Unavailable, Conditional), never the canonical tranche; normative examples and statement restated accordingly"
+       "delta": "normative examples restated in canonical tranches (the all-zero example expects uncached_input_tokens 0, derived, in place of input_tokens 0; the live MCP example as in thread-usage r2); statement, semantics and destinations unchanged; r3 moves the version pins out of the meaning (digest boundary 2): the statement names the route family without CLI version numbers, and routes, contract and extension pins with the relevant definitions and rules are the binding; r3 also states each usage component's measurement status (extension 0.7.0-prototype, codex.usage.component_measurement.v1): the normative examples gain component statuses and the statement a component-level sentence; r4 (requirements reconciliation, 2026-10-23; extension 0.8.0-prototype, codex.usage.component_measurement.v2 and codex.usage.uncached_input.v2) rejects the assumption that a positive running-total member establishes every contribution: the thread total adds only the responses whose completion carried usage, so every member other than a zero defaultable one is 4 Lower bound, never 1 Measured, and the uncached difference is only the component's conditional_value (Unavailable, Conditional), never the canonical tranche; normative examples and statement restated accordingly; r5 (review closure, 2026-10-23; extension 0.9.0-prototype, contract 0.7.0-prototype) states the lower bound in its direction, which r4 (never bound) reversed in its wording: the thread's actual quantity is at least each reported value and may exceed it (a reported 100 is compatible with an actual 150), the value is never raised to a guessed total, and an estimate from it is at most a lower bound; the normative examples gain codex-usage-reported-100-actual-150-synthetic"
       }
      }
     }
@@ -9180,7 +9243,7 @@
       "contracts": [
        "claude-code/stream-json/2.1.303/0.3.0-prototype"
       ],
-      "extension": "agentic_cli 0.8.0-prototype"
+      "extension": "agentic_cli 0.9.0-prototype"
      },
      "semantics": {
       "owner_scope": "Run scope as reported; the attribution names the call",
@@ -9210,7 +9273,7 @@
        "claude.stream.result->prompt_turn.completed"
       ],
       "relevant_digest": "sha256:db101ddf9efdedbc98c29d88cc0398bf4b5890fed9ce144aa303ad9523389a51",
-      "digest": "sha256:918946407cb75ec62a2ca8ce0137831c6c56ee0475eb13fd6d9dfe8387a65cad"
+      "digest": "sha256:a35e4bfe37fa0f96a6ca4f7c075427ad85a22285804ce7730dbec340b4e12fd7"
      },
      "approval": {
       "status": "proposed",
@@ -9474,7 +9537,7 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.fallback->source_record",
      "implementation": "CodexStreamMapper#map"
     }
@@ -10653,7 +10716,7 @@
      "implementation": "SourceContext#sourceRef"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.command_execution->tool_call.operation",
      "implementation": "SourceContext#sourceRef"
     },
@@ -10786,10 +10849,10 @@
       "contracts": [
        "claude-code/stream-json/2.1.303/0.3.0-prototype",
        "claude-code/session-transcript/2.1.303/0.3.0-prototype",
-       "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+       "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
        "codex-cli/rollout/0.160.1/0.4.0-prototype"
       ],
-      "extension": "agentic_cli 0.8.0-prototype",
+      "extension": "agentic_cli 0.9.0-prototype",
       "condition": "every event of every contract"
      },
      "destinations": [
@@ -10811,7 +10874,7 @@
      "binding": {
       "rules": [],
       "relevant_digest": "sha256:ccaaa2f53fb3d54c68a28d9b7704073f5504b338ec7cd4621d7299bb91f9483e",
-      "digest": "sha256:b6206641428aecbaf70a977b55cb5b02ee121d0cbd40ddb5d1809de1800a3c21"
+      "digest": "sha256:422b07056d31e9bbccc11d38af4e297b00da947b16e5ef5a47a023d282d43f66"
      },
      "replaces": "extension 0.4.0-prototype and earlier stored the rule as OCSF unmapped.rule_id",
      "approval": {
@@ -11039,7 +11102,7 @@
      "implementation": "SourceContext#fallback"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.fallback->source_record",
      "implementation": "SourceContext#fallback"
     },
@@ -11396,7 +11459,7 @@
      "implementation": "SourceContext#opaque"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "common.opaque->source_record",
      "implementation": "LineFramer#end"
     }
@@ -11454,9 +11517,9 @@
        "codex-cli/exec-json-stream/0.160.1"
       ],
       "contracts": [
-       "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype"
+       "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype"
       ],
-      "extension": "agentic_cli 0.8.0-prototype"
+      "extension": "agentic_cli 0.9.0-prototype"
      },
      "semantics": {
       "identity": "the first id member (exec item id); the second (the search item's id) is preserved verbatim, not normalized",
@@ -11496,7 +11559,7 @@
        "codex.stream.web_search->tool_call.result"
       ],
       "relevant_digest": "sha256:b98ae933882188ee4295c1dd9be071c252d95cd384b3e8305f6f1ac5666aed76",
-      "digest": "sha256:b0909dc16606db00a048c2ceff542eb203ca0277fcd4889339bae5fc08a8d6d4"
+      "digest": "sha256:1a8971c0b68b79a5272cd2d5667c878b369b405bced3db157550c1a88652d564"
      },
      "replaces": "contract 0.2.0-prototype kept web_search lines only as opaque records",
      "approval": {
@@ -11721,7 +11784,7 @@
      "implementation": "CodexRolloutMapper#map"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.fallback->source_record",
      "implementation": "CodexStreamMapper#map"
     }
@@ -12252,7 +12315,7 @@
      "implementation": "SourceContext#timeFor"
     },
     {
-     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
+     "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.agent_message->model_response",
      "implementation": "SourceContext#timeFor"
     }

@@ -128,18 +128,25 @@ class RequirementsAccountingIT {
                 junit("OracleFullSourceTest#alteringAReportedSettingOrAddingAnUnreportedOneIsAContextValueDefect", "settings values exact"), live("Claude 2.1.304 reported by the stream on three runs")));
         CRITERIA.put("UC2-AC2", List.of(junit("CliCaptureTest#codexVersionIsDiscoveredOnceByTheDocumentedCommandAndTheThreadIdBecomesTheSession", STAND_IN + ": codex --version counted once; basis declared"),
                 live("Codex 0.160.1 discovered once on two runs")));
+        String pending = "labelled synthetic edits of committed recordings";
         CRITERIA.put("UC2-AC3", List.of(junit("LiveCaptureSeamTest#aStreamPipedToTheCaptureSeamIsRecordedWithItsReportedVersionAndJudgedAgainstTheBytes", "records before the version are persisted"),
-                junit("UntestedCompatibilityTest#aVersionNoEntryCoversIsRetainedFlaggedAndNotNormalized", "records_before_selection recorded"),
                 junit("WriterLifecycleTest#persistedPrefixIsReadableAndQueryableBeforeEof", "prefix persistence"),
-                junit("UntestedCompatibilityTest#aSupportedVersionReportedByTheStreamDeclaresThePendingSelectionThenTheTestedOne", "pending then tested selection history"),
-                junit("UntestedCompatibilityTest#aVersionNeverLearnedLeavesTheSelectionPendingAndUnresolved", "a version never learned stays pending, compatibility unresolved"),
-                note("records read while the version is pending are interpreted provisionally under the profile's mapper, labelled only at file level; whether to interpret them is an open product decision")));
+                junit("CompatibilityTest#theVersionBootstrapReadsOnlyTheVersionAndItsLocation", "the bootstrap reads only the version and its location"),
+                junit("UntestedCompatibilityTest#aSupportedInitRecordSelectsFirstAndIsThenNormalizedUnderTheSelection", "the init record selects, then is normalized under the selection"),
+                junit("UntestedCompatibilityTest#aRecordBeforeTheInitRecordStaysRetainedOnlyAndIsNotCredited", pending + ": earlier records retained unnormalized, owed no fact, two forged declarations refused"),
+                junit("UntestedCompatibilityTest#aVersionNeverLearnedRetainsEveryRecordUnnormalizedAndUnresolved", "a version never learned retains every record, compatibility unresolved"),
+                junit("PackageReaderTest#aPackageWrittenWithProvisionalPendingInterpretationStillReadsAndIsJudgedByTheCurrentPolicy", "a 0.8.0 package still reads; its provisional interpretation is not accepted")));
         CRITERIA.put("UC2-AC4", List.of(oracle("UC2-AC4", BOTH), junit("CompatibilityTest#exactTestedVersionsAndInclusiveBoundariesSelectTheOneEntry", "registry selection"),
                 junit("UntestedCompatibilityTest#aTestedVersionOnItsRouteIsSelectedAndVerified", "declaration in parent and child files")));
         CRITERIA.put("UC2-AC5", List.of(oracle("UC2-AC5", "labelled synthetic 2.1.999 Claude stream"), junit("UntestedCompatibilityTest#aVersionNoEntryCoversIsRetainedFlaggedAndNotNormalized", "retained, flagged, reader warns"),
                 junit("CompatibilityTest#outsideEveryRangeOrOffEveryKeyIsNoMatchAndTheNearestEntryIsNotSelected", "no nearest-entry selection"),
-                junit("UntestedCompatibilityTest#factsInterpretedBeforeANoMatchAreDeclaredProvisionalAndNeverCreditedAsSupport", "provisional facts before a no-match are never credited as support")));
+                junit("UntestedCompatibilityTest#aRecordBeforeTheVersionIsRetainedUnnormalizedThenNoMatchCreditsNothing", "a record before a no-match is retained, nothing is credited")));
         CRITERIA.put("UC2-AC6", List.of(junit("CompatibilityTest#overlappingEntriesAreRejectedWhenTheRegistryLoads", "overlap, inverted range, duplicate id rejected at load")));
+        CRITERIA.put("UC2-AC7", List.of(junit("CompatibilityTest#contradictoryVersionAssertionsAreAConflictThatSelectsNothing", "the conflict selection names no entry or version"),
+                junit("UntestedCompatibilityTest#contradictoryStreamAssertionsStopNormalizationAndKeepThePrefix", pending + ": two init records, prefix and child core kept, oracle unresolved"),
+                junit("UntestedCompatibilityTest#aLaunchDeclarationContradictedByTheStreamIsAConflict", pending + ": launch declaration against the stream"),
+                junit("UntestedCompatibilityTest#aLaunchProbeContradictedByARolloutRecordIsAConflict", pending + ": launch probe against a rollout record"),
+                junit("UntestedCompatibilityTest#anIdenticalRepeatedAssertionIsIdempotent", pending + ": an equal second assertion")));
         CRITERIA.put("UC3-AC1", List.of(oracle("UC3-AC1", BOTH)));
         CRITERIA.put("UC3-AC2", List.of(oracle("UC3-AC2", BOTH)));
         CRITERIA.put("UC3-AC3", List.of(oracle("UC3-AC3", BOTH)));
@@ -209,7 +216,7 @@ class RequirementsAccountingIT {
                 junit("OcsfOracleFixtureTest#sanitizedClaudeStreamWithChildCoreIsJudgedPerCoreWithoutDefect", "sanitized real 2.1.299 stream"),
                 note("not claimed (not observed on any tested route): media/multimodal blocks, redacted or encrypted reasoning, an interactively answered permission prompt (the bidirectional stream-json route), Codex sub-agents, Codex permission decisions, a live open request at interruption")));
         CRITERIA.put("UC5-AC8", List.of(junit("RequirementsRosterTest#everyRuleHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedRoster", "47 rules, strict"),
-                junit("RequirementsRosterTest#everyCriterionHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedCounts", "68 criteria, strict"),
+                junit("RequirementsRosterTest#everyCriterionHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedCounts", "70 criteria, strict"),
                 junit("NativeRequirementTest#everyNativeRfcSpecificationCarriesTheCompleteStatementAndThePromptRendersIt", "complete statements (Agent Judge 0.19.0)")));
         CRITERIA.put("UC5-AC9", List.of(oracle("UC5-AC9", "reporter controls computed on the real reports")));
         CRITERIA.put("UC5-AC10", List.of(separate("mutation sensitivity is measured by the pit profiles of both modules (threshold 70%, mutators and targets unchanged) in detached worktrees of the delivered revision, not in this build; killed, survived and uncovered counts are reported apart in the return")));
@@ -288,7 +295,9 @@ class RequirementsAccountingIT {
                 junit("UsageComponentMeasurementTest#aNonZeroCacheWriteIsALowerBoundAndTheUnprovenTrancheUnavailable", "Codex exec running total through the writer"),
                 junit("UsageComponentMeasurementProfileTest#theProfileReadsAPositiveRunningTotalAsALowerBoundNotAMeasurement", "the oracle profile's own reading"),
                 junit("UsageUncertaintyControlTest#aLowerBoundRelabelledMeasuredIsADefectThoughTheNumberIsUnchanged", uncertainty),
-                junit("SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes", examples + " (the two-response running total)"),
+                junit("UsageUncertaintyControlTest#aLowerBoundRaisedToAnAssumedCompleteTotalIsADefect", uncertainty + " (a value raised to an assumed total)"),
+                junit("UsageUncertaintyControlTest#equalPricesRemoveTheAllocationUncertaintyButNotTheMissingContributions", uncertainty + " (equal prices do not make the total exact)"),
+                junit("SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes", examples + " (the two-response running total; reported 100, actual 150)"),
                 junit("SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects", profiled)));
         CRITERIA.put("UC5-AC31", List.of(junit("ToolClassificationTest#aShellCommandWithGrepAPipeAndPythonIsOneReportedInvocation", "labelled synthetic Codex command and Claude Bash pipelines, writer"),
                 junit("IdentityClassificationControlTest#anInvocationOrOperationInventedFromAShellCommandsTextIsAPopulationDefect", "live Claude and Codex recordings with an invented inner invocation or operation, independent oracle"),
@@ -298,7 +307,10 @@ class RequirementsAccountingIT {
         CRITERIA.put("UC5-AC32", List.of(junit("ParityLedgerTest#everyPinnedFieldIsAccountedForExactlyOnce", "704 pinned fields, 87 facets"),
                 junit("ParityLedgerTest#eachCorruptionIsDetected", ledger + " (unassigned, duplicate, unknown, dropped from the denominator, exclusion re-tiered or accepted, route and vocabulary)"),
                 junit("ParityLedgerTest#theLedgerAndTheTopicExplanationAreGenerated", "executed verification per concept and route from the coverage summary, apart from the reviewed facet states"),
-                note("accounting and consistency only: facet states and the eleven proposed exclusions are reviewed proposals, not approved; no facet state is gated on executed evidence")));
+                note("accounting and consistency only: facet states and the eleven proposed exclusions are reviewed proposals, not approved; the agreement of facet parts with executed evidence is UC5-AC33")));
+        CRITERIA.put("UC5-AC33", List.of(junit("ParityLedgerTest#everyFacetAspectAgreesWithItsConceptsExecutedStatePerRoute", ledger + " (a role claimed on a route that does not report it, an unexercised role claimed, bytes claimed as meaning, a part removed or borrowing another's concept, a covered facet with an unsettled part)"),
+                junit("ParityLedgerTest#theLedgerAndTheTopicExplanationAreGenerated", "parts checked against this build's executed concept states per route"),
+                note("the parts of operation.unknown and content.roles are reviewed proposals; their agreement with executed states approves no meaning")));
     }
 
     /** Rule to the criteria and direct checks whose conjunction establishes its full obligation. */
@@ -316,7 +328,7 @@ class RequirementsAccountingIT {
         RULES.put("RULE-7", new RuleEvidence(List.of("UC2-AC1"), List.of(), ""));
         RULES.put("RULE-8", new RuleEvidence(List.of("UC2-AC2"), List.of(), ""));
         RULES.put("RULE-9", new RuleEvidence(List.of("UC2-AC3"), List.of(), ""));
-        RULES.put("RULE-10", new RuleEvidence(List.of("UC2-AC4", "UC2-AC6"), List.of(junit("CompatibilityTest#theBundledRegistryLoadsAndNamesContractsMappersAndSpecificationsThatExist", "every entry names an existing specification, schema, contract and mapper")), ""));
+        RULES.put("RULE-10", new RuleEvidence(List.of("UC2-AC4", "UC2-AC6", "UC2-AC7"), List.of(junit("CompatibilityTest#theBundledRegistryLoadsAndNamesContractsMappersAndSpecificationsThatExist", "every entry names an existing specification, schema, contract and mapper")), ""));
         RULES.put("RULE-11", new RuleEvidence(List.of("UC5-AC3", "UC5-AC11"), List.of(junit("PinsTest#bundledExtensionSourceListsEveryFileOfTheExtensionDirectory", "extension source complete")), ""));
         RULES.put("RULE-12", new RuleEvidence(List.of("UC3-AC4", "UC3-AC5", "UC3-AC7", "UC3-AC9", "UC3-AC15", "UC4-AC7", "UC5-AC29"), List.of(), ""));
         RULES.put("RULE-13", new RuleEvidence(List.of("UC3-AC1", "UC3-AC2", "UC3-AC3", "UC3-AC6", "UC3-AC10", "UC3-AC13"), List.of(), ""));
@@ -360,7 +372,7 @@ class RequirementsAccountingIT {
         RULES.put("RULE-44", new RuleEvidence(List.of("UC5-AC25", "UC5-AC26"), List.of(), ""));
         RULES.put("RULE-45", new RuleEvidence(List.of("UC5-AC24", "UC5-AC31"), List.of(), "no shell text is parsed: a command string is recorded verbatim (command_line), never split into argv or classified"));
         RULES.put("RULE-46", new RuleEvidence(List.of("UC5-AC26"), List.of(), ""));
-        RULES.put("RULE-47", new RuleEvidence(List.of("UC5-AC32"), List.of(junit("MappingCatalogSummaryTest#aMissingRequiredPropertyBlocksVerificationAndIsNamed", "executed verification needs every property"),
+        RULES.put("RULE-47", new RuleEvidence(List.of("UC5-AC32", "UC5-AC33"), List.of(junit("MappingCatalogSummaryTest#aMissingRequiredPropertyBlocksVerificationAndIsNamed", "executed verification needs every property"),
                 junit("MappingCatalogSummaryTest#anotherOwnersVerifiedResultCannotSatisfyAnExpectedChildsNotApplicable", "and every owner"),
                 junit("MappingCatalogSummaryTest#aValueResultCoveringFewerOccurrencesThanTheNativePopulationCannotVerify", "and every occurrence")),
                 "Tier 1 is the union of the pinned foundations; per-route availability is a separate fact"));
