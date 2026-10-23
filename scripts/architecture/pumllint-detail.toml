@@ -1,0 +1,14 @@
+# pumllint 0.33.0 rules for the detailed trace, docs/architecture/generated/observed-launch-sequence.puml, exported by
+# @appland/appmap (scripts/architecture-docs.sh runs it with --fail-on minor). Calibrated on 2026-10-23 against the export;
+# structural rules (declared participants, balanced activations and blocks, labels, paired returns) stay on.
+[rules]
+# Styling comes from the generator; there is no shared theme include to point at.
+inline-skinparam = false
+# AppMap's participant aliases are class names, a nested class as Outer_Inner.
+participant-naming = { pattern = "^[A-Z][A-Za-z0-9_]*$" }
+# The trace records real self-calls (a class calling its own entry methods); a note would misstate them.
+no-self-message = false
+# The detail is complete by design and linked from the overview, which carries the size limits.
+max-participants = false
+max-messages = false
+max-elements = false

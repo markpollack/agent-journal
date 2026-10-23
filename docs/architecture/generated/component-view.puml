@@ -26,8 +26,8 @@ package "journal-ocsf-writer\n(production writer)" {
 }
 package "journal-capture-tck\n(independent reader and oracle)" {
   [Package reader] as reader
-  [Source profiles] as profiles
   [Independent oracle] as oracle
+  [Source profiles] as profiles
   [Analysis views] as views
   [Reader command line] as reader_tool
   [Neutral JSON, bytes and check ledger] as neutral #EEEEEE

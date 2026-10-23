@@ -102,37 +102,48 @@ independent byte copy, not the package. Three of its inputs, however, come from 
 - A no-match compatibility expectation is taken from the writer's own compatibility declarations.
 
 `ExpectedSources` documents the manifest as "not derived from the candidate". For launched captures that holds for the bytes
-but not for these three facts. Committed fixtures carry their own committed manifests. The dependency is recorded here as
-found; this guide does not assess it.
+but not for these three facts. Committed fixtures carry their own committed manifests. This is an **open, bounded
+independence issue**, kept for the capture work it concerns. It is not evidence that any stored recording is wrong, and it
+has not been repaired.
 
 ## 4. Component-and-connector view: one observed run
 
 **Question:** what does one capture-then-check scenario actually call, and in what order?
 
-![Observed calls of one launching-capture replay test](generated/observed-launch-sequence.svg)
+![Observed calls of one launching-capture replay test, between components](generated/observed-launch-overview.svg)
 
-*Observed execution of one existing test,
+*Observed execution, overview. The calls of one existing test, drawn between the components of section 3. The test is
 [`CliCaptureTest#codexVersionIsDiscoveredOnceByTheDocumentedCommandAndTheThreadIdBecomesTheSession`](../../journal-ocsf-writer/src/test/java/io/github/markpollack/journal/ocsf/writer/CliCaptureTest.java).
-A stand-in shell script replays the labelled synthetic 12-record Codex exec stream `syn-codex-exec-stream` through the launching capture. The test then
-opens the package and runs the oracle. This is not a live CLI run, and it shows one path, not every path. Only the entry
-methods listed in [`appmap.yml`](../../scripts/architecture/appmap.yml) were recorded.*
+A stand-in shell script replays the labelled synthetic 12-record Codex exec stream `syn-codex-exec-stream` through the
+launching capture; the test then opens the package and runs the oracle. This is not a live CLI run, and it shows one path,
+not every path. Only the entry methods listed in [`appmap.yml`](../../scripts/architecture/appmap.yml) were recorded.
+[`sequence-overview.py`](../../scripts/architecture/sequence-overview.py) derives this overview from the same recording and
+the same component membership. Its header states the rules: calls inside a component are folded, repeated blocks become
+counted loops, and the reader thread is drawn as a `par` branch. Each message in the source names the recorded calls behind
+it. The [full recorded trace](generated/observed-launch-sequence.svg), one lifeline per class, is the linked detail.*
 
 What the recording shows:
 
 - `CliCapture.run` discovers the version once, opens the writer, declares the source (which selects the compatibility entry)
-  and flushes. It then polls `awaitEnd` while a separate pump thread reads the CLI's standard output.
-- On the pump thread, for each record: the compatibility bootstrap check (`Compatibility.bootstrap`),
-  `CodexStreamMapper.map`, `CoreWriter.append`, then a flush. By declared design the package is a readable prefix after each
-  flush. The exporter draws each thread as its own block. The recorded event order puts the pump thread's `map` calls
-  between the main thread's `awaitEnd` polls; [observed-launch-recording.json](generated/observed-launch-recording.json)
-  gives the event ids.
+  and flushes. It then polls `awaitEnd` while a separate reader thread (`CliCapture.Pump.run`) reads the CLI's standard
+  output.
+- On the reader thread, the stream arrives in read chunks. Each chunk is framed into lines, and for each record: the
+  compatibility bootstrap check (`Compatibility.bootstrap`), `CodexStreamMapper.map`, `CoreWriter.append`, then a flush. By
+  declared design the package is a readable prefix after each flush.
+- The two threads ran at the same time. The main thread's polls and the reader's `run()` are calls on one `Pump` object, and
+  the polls returned `false` until the reader ended
+  ([observed-launch-recording.json](generated/observed-launch-recording.json)). Neither diagram orders calls across threads.
+  The overview's `par` makes the concurrency explicit, and the detailed export's stacked thread blocks are layout, not time.
+  AppMap's event ids are no reliable order across threads either: one recording assigned the same id on both threads.
 - After end of input the capture archives the native session file, ends the source and completes the run through
   `CoreWriter.finish`, which by declared design hashes what is on disk. It then freezes `expected-sources.json`.
 - The test opens the package (`PackageReader`, `DeclaredFile`). `OcsfOracle.verify` reads the expected-sources manifest, then
   the native copy as bytes (`NativeArtifact`), then asks `CodexStreamProfile` for the expected facts. No recorded writer method appears in this phase. That the checker
   cannot call the writer at all is the boundary rules' job (section 3), not this recording's, which sees only listed methods.
 
-| Participant in the sequence | Component in section 3 |
+The detailed trace names classes; this is how they map onto the overview's components:
+
+| Participant in the detailed trace | Component in section 3 |
 |---|---|
 | `CliCapture`, `CliCapture$Pump` | Capture and replay entry points |
 | `OcsfRunWriter`, `OcsfRunWriter$Source` | Run writer |
@@ -233,16 +244,37 @@ replay, not a new live run.
 ## 9. Regenerating and checking this guide
 
 ```bash
-scripts/architecture-docs.sh            # component view and tool-call story, then SVG rendering
-scripts/architecture-docs.sh --appmap   # also re-records the observed run (opt-in; network for the AppMap CLI on first use)
+scripts/architecture-docs.sh            # component view and tool-call story, presentation checks, SVG rendering
+scripts/architecture-docs.sh --appmap   # also re-records the observed run and derives the overview (opt-in)
+scripts/architecture-docs.sh --docx     # also exports this guide and the tool-call story as one Word file
 ```
 
 The normal build (`./mvnw clean verify`) runs the boundary rules and the membership check. It also fails while
 `component-view.json`, `component-view.md`, `component-view.puml` or `tool-call-story.md` differ from what the current
-classes, evidence and oracle yield. The SVG files are rendered by the script and not compared. The AppMap
-recording is never part of the normal build or the default writer path. Recordings stay under `target/` and are ignored by
-git. A new recording can differ in polling counts, read chunks and timings; the committed sequence text is normalized only by removing the
-exporter's remote theme include and the elapsed times. Pinned tools: ArchUnit 1.5.0, PlantUML 1.2026.8 (rendering, layout
-`smetana`), AppMap Java agent 1.30.2, `@appland/appmap` 3.204.0.
+classes, evidence and oracle yield. The AppMap recording is never part of the normal build or the default writer path.
+Recordings stay under `target/` and are ignored by git. A new recording can differ in polling counts, read chunks and
+timings. The detailed trace is normalized only by removing the exporter's remote theme include and elapsed times and by
+writing participant declarations in PlantUML's `"Name" as Alias` order.
+
+**Presentation checks.** Every run of the script checks the committed diagram sources:
+
+- PlantUML's `-checkonly` syntax check on every `.puml`. It fails on a syntax error but accepts an unclosed block.
+- [pumllint](https://github.com/fdurieux/pumllint) with one profile per diagram kind, failing on any finding of minor
+  severity or above. It catches the unclosed block, undeclared or unused participants, unbalanced activations, unlabelled
+  messages and blocks, and unpaired returns. The [overview profile](../../scripts/architecture/pumllint-overview.toml)
+  also limits size (11 participants, 30 messages, 60 elements, default nesting depth) and allows self-messages only on the
+  three orchestrating components. The [detail profile](../../scripts/architecture/pumllint-detail.toml) turns off the size
+  limits and the self-message rule, because the trace records real self-calls. Both profiles turn off the inline-styling
+  rule, since the generators own the styling, and set the naming pattern to the aliases each generator writes.
+- The component view gets the syntax check only: pumllint 0.33.0 reads a component diagram as a sequence diagram, so its
+  findings there would be noise.
+
+These checks are not evidence of correctness or readability; inspect the SVGs and the Word export at reading size. The
+overview is about 1,430 by 1,500 pixels: readable at full size in a browser, with the detailed trace linked for zooming. In
+the Word export every diagram is fitted to the page width, so the sequence diagrams there need zoom. A landscape page does
+not help, because the overview is as tall as it is wide.
+
+Pinned tools: ArchUnit 1.5.0, PlantUML 1.2026.8 (rendering and syntax check, layout `smetana`), AppMap Java agent 1.30.2,
+`@appland/appmap` 3.204.0, pumllint 0.33.0 (through `uvx`), pandoc for the Word export.
 
 This prose is maintained by hand. Generated files carry a header saying so and are rewritten only by the commands above.

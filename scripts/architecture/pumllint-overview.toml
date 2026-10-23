@@ -1,0 +1,13 @@
+# pumllint 0.33.0 rules for the compact overview, docs/architecture/generated/observed-launch-overview.puml
+# (scripts/architecture-docs.sh runs it with --fail-on minor). Calibrated on 2026-10-23 against the generated file; every
+# departure from the defaults says why. Lint checks presentation conventions only, not readability or correctness.
+[rules]
+# Styling comes from the generators, one place per diagram kind; there is no shared theme include to point at.
+inline-skinparam = false
+# Participant aliases are the component ids of component-view.json (lower case, underscores).
+participant-naming = { pattern = "^[a-z][a-z0-9_]*$" }
+# Self-messages are an orchestrator's own recorded steps: the capture discovering the version, polling, archiving and freezing
+# the manifest; the reader reading declarations; the oracle reading the expected-sources manifest. Anywhere else they fire.
+no-self-message = { allowed = ["capture", "reader", "oracle"] }
+# The test plus the ten components one capture-and-check run crosses; readability at page width is checked by eye.
+max-participants = { max = 11 }

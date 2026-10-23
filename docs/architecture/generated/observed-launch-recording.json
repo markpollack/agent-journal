@@ -10,40 +10,44 @@
  },
  "exporter": "@appland/appmap@3.204.0 sequence-diagram --format plantuml --expand package:io/github/markpollack/journal/ocsf/writer --expand package:io/github/markpollack/journal/tck/ocsf",
  "recording": {
-  "sha256": "d2094142aec62fde0dff62ee606b32b96d3d811def0b05a87ae5979f2a972c2b",
-  "bytes": 97606,
-  "events": 202,
-  "calls": 101,
+  "sha256": "ac855c6be2de27fa42a35ca419756f6b99f9806e5adbcaccb58e3a7a65894c53",
+  "bytes": 95597,
+  "events": 196,
+  "calls": 98,
   "threads": 2
  },
- "thread_interleaving": {
-  "main_awaitEnd_call_ids": [
-   17,
-   31,
-   43,
-   55,
-   63,
-   79,
-   93,
-   113,
-   139,
-   159
+ "threads": {
+  "recorded": [
+   1,
+   52
   ],
-  "pump_map_call_ids": [
-   24,
-   36,
-   48,
-   60,
-   72,
-   84,
-   96,
-   106,
-   118,
-   132,
-   144,
-   154
-  ],
-  "meaning": "AppMap event ids are assigned in recording order across threads; the pump thread's map calls fall between the main thread's awaitEnd polls"
+  "main_thread": 1,
+  "reader_thread_root": {
+   "call": "CliCapture$Pump.run",
+   "thread": 52,
+   "receiver_object": 1708084589
+  },
+  "main_thread_polls": {
+   "call": "CliCapture$Pump.awaitEnd",
+   "count": 7,
+   "receiver_objects": [
+    1708084589
+   ],
+   "results_in_order": [
+    "false",
+    "false",
+    "false",
+    "false",
+    "false",
+    "false",
+    "true"
+   ]
+  },
+  "event_ids": {
+   "duplicated": [],
+   "array_in_id_order": false,
+   "meaning": "AppMap event ids are not a reliable order across threads: an id can be assigned on both threads; order is evidenced only within a thread"
+  }
  },
  "varies_between_recordings": "elapsed times, object ids, temporary paths, the number of awaitEnd polls and the read chunks standard output arrives in (scheduling); the calls of one run are fixed in its recording"
 }
