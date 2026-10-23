@@ -74,6 +74,33 @@
         "digest": {
          "type": "string",
          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "binding": {
+         "description": "For a boundary-2 claim: the relevant content and routes the decision bound, and the exact binding digest at the time.",
+         "type": "object",
+         "required": [
+          "relevant_digest",
+          "routes",
+          "digest"
+         ],
+         "additionalProperties": false,
+         "properties": {
+          "relevant_digest": {
+           "type": "string",
+           "pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "routes": {
+           "type": "array",
+           "minItems": 1,
+           "items": {
+            "type": "string"
+           }
+          },
+          "digest": {
+           "type": "string",
+           "pattern": "^sha256:[0-9a-f]{64}$"
+          }
+         }
         }
        }
       }

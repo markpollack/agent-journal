@@ -223,9 +223,9 @@ Tests: `SemanticClaimTest`, `SemanticExampleTest` (writer), `SemanticExampleProf
 Tests: `MappingCatalogSummaryTest`.
 
 ### RULE-41
-**MUST** require a new claim revision and a new Owner approval for any change to an approved meaning (its statement, applicability, semantics, destinations or normative examples), while data preservation and clearly labelled experimental verification of the pending revision continue.
-**Reason:** An approval binds a meaning, not a mapper; supporting evidence may grow without reapproval, but a changed meaning under an old approval would present an unreviewed interpretation as approved. Pending meanings still need their data kept and their candidate behaviour tested.
-Tests: `SemanticClaimTest` (the digest boundary: changed meaning refused, added evidence accepted).
+**MUST** require a new claim revision and a new approval for any change to an approved meaning (its statement, semantics, destinations or normative examples), and **MUST** refuse an approved binding whose relevant content (the extension definitions of the claim's destinations and the contract rules it names) changed; an approval **MAY** carry across a binding change that alters only version pins or example file bytes while that relevant content is unchanged, and **MUST NOT** extend to an added route before that route's binding is reviewed; data preservation and clearly labelled experimental verification of a pending meaning or binding continue.
+**Reason:** An approval binds a meaning, not a mapper; supporting evidence may grow without reapproval, but a changed meaning under an old approval would present an unreviewed interpretation as approved. Version pins inside the meaning made every unrelated schema bump reset unchanged meanings, while removing pins from all protection would let a changed definition or conversion ride an old approval. A new route is a new source version whose behaviour has not been reviewed. Pending meanings still need their data kept and their candidate behaviour tested.
+Tests: `SemanticClaimTest` (digest boundary 2: changed meaning refused, added evidence accepted, a pin-only bump carried, a changed definition or rule refused, an added route awaiting review, failed checks leaving an approval unverified).
 
 ## Exact addressing and canonical semantics
 
@@ -287,3 +287,8 @@ form there; canonical events repeat no member), RULE-43 (canonical usage tranche
 establishes it; aggregation apart from scope and finality), RULE-44 (source-local identity, never a call or response
 identity), RULE-45 (the reported lifecycle stage; name, family and classification apart) and RULE-46 (reasoning form;
 content observations are not invocations). No rule removed; `RequirementsRosterTest` pins 46 rules.
+
+2026-10-22, Tier 1 foundation wave. Retained identifier with changed meaning: RULE-41 now separates the approved
+meaning from its tested binding (digest boundary 2): a changed meaning still needs a new revision and approval; a binding
+whose relevant definitions or rules changed is refused; a pin-only binding change carries the approval; an added route
+awaits binding review. No rule added or removed; `RequirementsRosterTest` pins 46 rules.

@@ -56,7 +56,8 @@ final class SemanticClaims {
     }
 
     /** What the links of the claims resolve against: the compiled schema and this run's reports, contracts and registry. */
-    record Context(SchemaCatalog schema, Set<String> reportedProperties, Set<String> compatibilityEntries, Set<String> contractUids) {
+    record Context(SchemaCatalog schema, Set<String> reportedProperties, Set<String> compatibilityEntries, Set<String> contractUids, Definitions definitions,
+            Map<String, Json> contracts, Map<String, String> exampleFiles, String extension) {
     }
 
     static List<Claim> claims(Json catalog) {
@@ -132,14 +133,275 @@ final class SemanticClaims {
         return new Json.JObject(m);
     }
 
+    /** The digest of a claim's meaning under its declared boundary: 1 (meaning with version pins) or 2 (meaning apart from its binding). */
     static String digest(Json claim, Map<String, Json> examples) {
+        return sha256(canonical(boundary(claim) == 2 ? meaning(claim, examples) : normative(claim, examples)));
+    }
+
+    static int boundary(Json claim) {
+        Integer b = Event.integer(claim.member("digest_boundary"));
+        return b == null ? 1 : b;
+    }
+
+    static String sha256(String text) {
         try {
-            byte[] bytes = canonical(normative(claim, examples)).getBytes(StandardCharsets.UTF_8);
-            return "sha256:" + HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
+            return "sha256:" + HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(text.getBytes(StandardCharsets.UTF_8)));
         }
         catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    // ---- boundary 2: meaning and binding --------------------------------------------------------------------------
+
+    /**
+     * The meaning of a boundary-2 claim: statement, semantics, destinations and the normative examples (native input,
+     * expected values, counterexamples, absent events), with this claim's own binding identifiers (its routes,
+     * contract uids and extension version) replaced by role tokens wherever an example states one as a whole value.
+     * Version pins are therefore outside the meaning: they belong to the binding.
+     */
+    static Json meaning(Json claim, Map<String, Json> examples) {
+        Map<String, Json> m = new LinkedHashMap<>();
+        for (String k : List.of("statement", "semantics", "destinations")) {
+            if (claim.member(k) != null) {
+                m.put(k, claim.member(k));
+            }
+        }
+        Json normative = normative(claim, examples);
+        m.put("examples", substitute(normative.member("examples"), bindingTokens(claim)));
+        return new Json.JObject(m);
+    }
+
+    /** This claim's binding identifiers and the role token each becomes inside the meaning and the relevant content. */
+    static Map<String, String> bindingTokens(Json claim) {
+        Map<String, String> out = new LinkedHashMap<>();
+        Json app = claim.member("applicability");
+        for (Json r : app.member("routes").elements()) {
+            out.put(r.text(), "<binding:route>");
+        }
+        for (Json k : app.member("contracts") == null ? List.<Json>of() : app.member("contracts").elements()) {
+            out.put(k.text(), "<binding:contract>");
+        }
+        if (app.member("extension") != null) {
+            out.put(app.member("extension").text(), "<binding:extension>");
+        }
+        return out;
+    }
+
+    /** A copy with every string value equal to a key of {@code tokens} replaced by its token (whole values only). */
+    static Json substitute(Json v, Map<String, String> tokens) {
+        if (v instanceof Json.JString s) {
+            return tokens.containsKey(s.value()) ? new Json.JString(tokens.get(s.value())) : s;
+        }
+        if (v instanceof Json.JArray a) {
+            List<Json> out = new ArrayList<>();
+            a.elements().forEach(x -> out.add(substitute(x, tokens)));
+            return new Json.JArray(out);
+        }
+        if (v instanceof Json.JObject o) {
+            Map<String, Json> out = new LinkedHashMap<>();
+            o.members().forEach((k, x) -> out.put(k, substitute(x, tokens)));
+            return new Json.JObject(out);
+        }
+        return v;
+    }
+
+    /** The extension's source definitions: classes, objects and the attribute dictionary, by name. */
+    record Definitions(Map<String, Json> classes, Map<String, Json> objects, Map<String, Json> dictionary) {
+        static Definitions read(Path extension) {
+            Map<String, Json> classes = new TreeMap<>();
+            Map<String, Json> objects = new TreeMap<>();
+            try (Stream<Path> s = Files.walk(extension.resolve("events"))) {
+                for (Path p : s.filter(x -> x.toString().endsWith(".json")).toList()) {
+                    Json d = NeutralJson.readDocument(p);
+                    classes.put(SchemaCatalog.text(d, "name"), d);
+                }
+            }
+            catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+            try (Stream<Path> s = Files.list(extension.resolve("objects"))) {
+                for (Path p : s.filter(x -> x.toString().endsWith(".json")).toList()) {
+                    Json d = NeutralJson.readDocument(p);
+                    objects.put(SchemaCatalog.text(d, "name"), d);
+                }
+            }
+            catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+            Map<String, Json> dictionary = new TreeMap<>(((Json.JObject) NeutralJson.readDocument(extension.resolve("dictionary.json")).member("attributes")).members());
+            return new Definitions(classes, objects, dictionary);
+        }
+
+        Json container(String name) {
+            return classes.containsKey(name) ? classes.get(name) : objects.get(name);
+        }
+    }
+
+    /**
+     * What a destination path depends on in the extension: for each segment, its declaration in the containing class
+     * or object and its dictionary entry (type, description, enum captions); a path ending at an object-typed
+     * attribute includes that object's declarations with their dictionary entries; a segment the extension does not
+     * define is named as core (pinned by the OCSF core version of the binding). Versions and file names are excluded.
+     */
+    static Json destinationDefinition(String destination, Definitions defs, List<String> problems) {
+        List<Json> steps = new ArrayList<>();
+        String[] segs = destination.replace("[]", "").split("\\.");
+        Json container = defs.container(segs[0]);
+        if (container == null) {
+            problems.add("destination " + destination + ": " + segs[0] + " is neither an extension class nor an object");
+            return new Json.JArray(steps);
+        }
+        String containerName = segs[0];
+        for (int i = 1; i < segs.length; i++) {
+            String attr = segs[i];
+            Json declared = container == null ? null : container.path("attributes", attr);
+            Json dict = defs.dictionary().get(attr);
+            Map<String, Json> step = new LinkedHashMap<>();
+            step.put("container", new Json.JString(containerName));
+            step.put("attribute", new Json.JString(attr));
+            if (declared == null && dict == null) {
+                step.put("core", new Json.JBool(true));
+                steps.add(new Json.JObject(step));
+                break;
+            }
+            step.put("declared", declared == null ? Json.JNull.INSTANCE : declared);
+            step.put("dictionary", dict == null ? Json.JNull.INSTANCE : dict);
+            steps.add(new Json.JObject(step));
+            String type = dict == null ? null : SchemaCatalog.text(dict, "type");
+            container = type == null ? null : defs.objects().get(type);
+            containerName = type;
+            if (i == segs.length - 1 && container != null) {
+                // the path ends at an object: its declarations and their dictionary entries are part of what it means
+                Map<String, Json> members = new TreeMap<>();
+                for (Map.Entry<String, Json> a : ((Json.JObject) container.member("attributes")).members().entrySet()) {
+                    Json d = defs.dictionary().get(a.getKey());
+                    members.put(a.getKey(), new Json.JObject(Map.of("declared", a.getValue(), "dictionary", d == null ? Json.JNull.INSTANCE : d)));
+                }
+                steps.add(new Json.JObject(Map.of("object", new Json.JString(type), "attributes", new Json.JObject(members))));
+            }
+        }
+        return new Json.JArray(steps);
+    }
+
+    /**
+     * The relevant content a boundary-2 claim's binding protects: the extension definitions of its destinations and
+     * the contract rules (or contract tables, {@code table:<member>}) it names in {@code binding.rules}, taken from
+     * its applicable contracts, with binding identifiers replaced by role tokens.
+     */
+    static Json relevant(Json claim, Definitions defs, Map<String, Json> contracts, List<String> problems) {
+        Map<String, Json> m = new LinkedHashMap<>();
+        Map<String, Json> dests = new TreeMap<>();
+        for (Json d : claim.member("destinations").elements()) {
+            dests.put(d.text(), destinationDefinition(d.text(), defs, problems));
+        }
+        m.put("definitions", new Json.JObject(dests));
+        Map<String, Json> rules = new TreeMap<>();
+        Json app = claim.member("applicability");
+        List<Json> applicable = new ArrayList<>();
+        for (Json k : app.member("contracts") == null ? List.<Json>of() : app.member("contracts").elements()) {
+            Json c = contracts.get(k.text());
+            if (c != null) {
+                applicable.add(c);
+            }
+        }
+        Json named = claim.path("binding", "rules");
+        for (Json r : named == null ? List.<Json>of() : named.elements()) {
+            Json found = null;
+            for (Json c : applicable) {
+                if (r.text().startsWith("table:")) {
+                    found = found != null ? found : c.member(r.text().substring("table:".length()));
+                }
+                else {
+                    for (Json rule : c.member("rules").elements()) {
+                        if (r.text().equals(SchemaCatalog.text(rule, "id"))) {
+                            found = rule;
+                        }
+                    }
+                }
+            }
+            if (found == null) {
+                problems.add("binding rule " + r.text() + " is not in the claim's applicable contracts");
+            }
+            else {
+                rules.put(r.text(), found);
+            }
+        }
+        m.put("rules", new Json.JObject(rules));
+        return substitute(new Json.JObject(m), bindingTokens(claim));
+    }
+
+    /** The binding digest: applicability (routes and pins), the relevant-content digest and the bytes of each normative example. */
+    static String bindingDigest(Json claim, String relevantDigest, Map<String, String> exampleFiles) {
+        Map<String, Json> m = new LinkedHashMap<>();
+        m.put("applicability", claim.member("applicability"));
+        m.put("relevant_digest", new Json.JString(relevantDigest));
+        Map<String, Json> ex = new TreeMap<>();
+        for (Json id : claim.member("normative_examples").elements()) {
+            String sha = exampleFiles.get(id.text());
+            ex.put(id.text(), sha == null ? Json.JNull.INSTANCE : new Json.JString(sha));
+        }
+        m.put("examples", new Json.JObject(ex));
+        return sha256(canonical(new Json.JObject(m)));
+    }
+
+    /** Example id to the sha256 of its file's bytes. */
+    static Map<String, String> exampleFiles() {
+        Map<String, String> out = new TreeMap<>();
+        try (Stream<Path> s = Files.list(DIR.resolve("examples"))) {
+            for (Path p : s.filter(x -> x.toString().endsWith(".json")).sorted().toList()) {
+                out.put(SchemaCatalog.text(NeutralJson.readDocument(p), "id"), NeutralJson.sha256(p));
+            }
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        return out;
+    }
+
+    /** How an approved boundary-2 claim's current binding relates to the binding its approval recorded. */
+    enum BindingState {
+        /** the approval recorded exactly this binding */
+        EXACT,
+        /** only pins or example bytes changed: the relevant content is unchanged and every route was approved */
+        CARRIED,
+        /** relevant content unchanged, but routes were added that the approval did not cover */
+        ROUTES_PENDING,
+        /** the definitions or rules the meaning depends on changed: the approval does not carry */
+        CHANGED,
+        /** no approval, or a boundary-1 claim */
+        NONE
+    }
+
+    static BindingState bindingState(Json claim) {
+        Json a = claim.member("approval");
+        Json approved = a == null ? null : a.member("binding");
+        if (boundary(claim) != 2 || !"approved".equals(SchemaCatalog.text(a, "status")) || approved == null) {
+            return BindingState.NONE;
+        }
+        Json b = claim.member("binding");
+        if (!Objects.equals(SchemaCatalog.text(approved, "relevant_digest"), SchemaCatalog.text(b, "relevant_digest"))) {
+            return BindingState.CHANGED;
+        }
+        Set<String> routes = new TreeSet<>();
+        claim.path("applicability", "routes").elements().forEach(r -> routes.add(r.text()));
+        Set<String> approvedRoutes = new TreeSet<>();
+        approved.member("routes").elements().forEach(r -> approvedRoutes.add(r.text()));
+        if (!approvedRoutes.containsAll(routes)) {
+            return BindingState.ROUTES_PENDING;
+        }
+        return Objects.equals(SchemaCatalog.text(approved, "digest"), SchemaCatalog.text(b, "digest")) ? BindingState.EXACT : BindingState.CARRIED;
+    }
+
+    /** The routes of a claim that its approval does not cover (empty unless {@link BindingState#ROUTES_PENDING}). */
+    static Set<String> pendingRoutes(Json claim) {
+        Set<String> out = new TreeSet<>();
+        if (bindingState(claim) != BindingState.ROUTES_PENDING) {
+            return out;
+        }
+        claim.path("applicability", "routes").elements().forEach(r -> out.add(r.text()));
+        claim.path("approval", "binding").member("routes").elements().forEach(r -> out.remove(r.text()));
+        return out;
     }
 
     /** Canonical JSON: object keys sorted, no whitespace, numbers as spelled, only quote, backslash and control characters escaped. */
@@ -226,6 +488,9 @@ final class SemanticClaims {
             if (!computed.equals(c.digest())) {
                 problems.add(at + ": digest " + c.digest() + " does not match its normative content " + computed + " (a changed meaning needs a new revision)");
             }
+            if (boundary(c.json()) == 2) {
+                problems.addAll(bindingProblems(at, c.json(), ctx));
+            }
             problems.addAll(linkProblems(at, c.json(), examples, refs, ctx));
             problems.addAll(approvalProblems(at, c, decisionById, ids));
         }
@@ -235,6 +500,32 @@ final class SemanticClaims {
                     problems.add("example " + e.getKey() + ": authored_from " + r.text() + " is not a pinned reference");
                 }
             }
+        }
+        return problems;
+    }
+
+    /** A boundary-2 claim's stored relevant and binding digests must be what its current definitions, rules, pins and examples give. */
+    private static List<String> bindingProblems(String at, Json claim, Context ctx) {
+        List<String> problems = new ArrayList<>();
+        Json b = claim.member("binding");
+        if (b == null) {
+            problems.add(at + ": a boundary-2 claim states its binding (rules, relevant_digest, digest)");
+            return problems;
+        }
+        List<String> resolution = new ArrayList<>();
+        String relevant = sha256(canonical(relevant(claim, ctx.definitions(), ctx.contracts(), resolution)));
+        resolution.forEach(r -> problems.add(at + ": " + r));
+        if (!relevant.equals(SchemaCatalog.text(b, "relevant_digest"))) {
+            problems.add(at + ": binding relevant_digest " + SchemaCatalog.text(b, "relevant_digest") + " is not what its definitions and rules give " + relevant
+                    + " (the content the meaning depends on changed: restate the binding; an approval does not carry over it)");
+        }
+        String binding = bindingDigest(claim, relevant, ctx.exampleFiles());
+        String extension = SchemaCatalog.text(claim.member("applicability"), "extension");
+        if (extension != null && !extension.equals(ctx.extension())) {
+            problems.add(at + ": binding names " + extension + ", not the current " + ctx.extension());
+        }
+        if (!binding.equals(SchemaCatalog.text(b, "digest"))) {
+            problems.add(at + ": binding digest " + SchemaCatalog.text(b, "digest") + " is not what its pins, relevant content and example files give " + binding);
         }
         return problems;
     }
@@ -335,6 +626,28 @@ final class SemanticClaims {
         if (!listed) {
             problems.add(at + ": decision " + SchemaCatalog.text(a, "decision") + " does not approve this revision and digest");
         }
+        if (boundary(c.json()) == 2) {
+            Json approvedBinding = a.member("binding");
+            if (approvedBinding == null) {
+                problems.add(at + ": a boundary-2 approval records the binding it approved (relevant_digest, routes, digest)");
+            }
+            else {
+                boolean recorded = false;
+                for (Json x : decision.member("approves").elements()) {
+                    recorded |= c.id().equals(SchemaCatalog.text(x, "claim")) && x.member("binding") != null
+                            && Objects.equals(SchemaCatalog.text(x.member("binding"), "relevant_digest"), SchemaCatalog.text(approvedBinding, "relevant_digest"))
+                            && Objects.equals(x.member("binding").member("routes"), approvedBinding.member("routes"));
+                }
+                if (!recorded) {
+                    problems.add(at + ": decision " + SchemaCatalog.text(a, "decision") + " does not record the approved binding (relevant content and routes)");
+                }
+                if (bindingState(c.json()) == BindingState.CHANGED) {
+                    problems.add(at + ": approved binding refused: the definitions or rules this meaning depends on changed since the approval (relevant "
+                            + SchemaCatalog.text(approvedBinding, "relevant_digest") + " approved, " + SchemaCatalog.text(c.json().member("binding"), "relevant_digest")
+                            + " now); review the change before the approval can bind it");
+                }
+            }
+        }
         return problems;
     }
 
@@ -343,9 +656,11 @@ final class SemanticClaims {
      * Owner's approval of this exact revision and every check passing; passing checks alone are a candidate.
      */
     static String support(Claim c, boolean checksPassed, boolean approvalValid) {
-        boolean approved = "approved".equals(c.status()) && approvalValid;
+        boolean approved = "approved".equals(c.status()) && approvalValid && bindingState(c.json()) != BindingState.CHANGED;
         if (approved) {
-            return checksPassed ? "approved, verified" : "approved, not verified";
+            String routes = pendingRoutes(c.json()).isEmpty() ? "" : "; routes " + pendingRoutes(c.json()) + " await binding review";
+            String carried = bindingState(c.json()) == BindingState.CARRIED ? " (binding carried: pins changed, relevant content unchanged)" : "";
+            return (checksPassed ? "approved, verified" : "approved, not verified (the binding does not conform)") + carried + routes;
         }
         String status = c.status() == null ? "no approval record" : c.status();
         return (checksPassed ? "candidate verified" : "candidate not verified") + " (" + status + "; not approved support)";

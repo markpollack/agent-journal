@@ -332,6 +332,16 @@ Rule: RULE-44. Tests: `CodexStreamMapperTest#equalItemIdsOfTwoInvocationsAreTwoI
 When a source reports a reasoning summary and an answer as separate content items without the response they belong to, the writer and the oracle profile shall record two content observations in source order, the summary as a summary, and no response identity on either.
 Rule: RULE-46, RULE-44. Tests: `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`, `LiveFixtureFeaturesTest#theCodexRecordingExhibitsOperationsFailureRepetitionAndUsage`.
 
+### UC5-AC27: Carry an approved meaning across a pin-only binding change, never to an unreviewed route
+
+When an approved claim's binding changes only its version pins or example file bytes and the definitions and rules its meaning depends on are unchanged, validation shall keep the approval and report the binding as carried; if the binding adds a route, then the approval shall cover only the previously approved routes and the added route shall await binding review.
+Rule: RULE-41. Tests: `SemanticClaimTest#anUnrelatedVersionBumpCarriesAnApprovedMeaning`, `SemanticClaimTest#anExpandedRouteAwaitsBindingReviewWhileTheApprovedRouteStaysApproved`.
+
+### UC5-AC28: Refuse an approved binding whose relevant definition or rule changed
+
+If the extension definition of an approved claim's destination or a contract rule its binding names changes, then validation shall refuse the approval for the changed binding, and if checks of an approved, unchanged meaning fail, then the claim shall be reported approved but not verified.
+Rule: RULE-41, RULE-38. Tests: `SemanticClaimTest#aChangedDefinitionOrRuleRefusesTheApprovedBinding`, `SemanticClaimTest#anUnchangedMeaningWithAFailedImplementationIsApprovedButNotVerified`.
+
 ## Change log
 
 2026-10-21, consolidated event-file work order (REQ-1 amendment). Retained identifiers with changed
@@ -362,3 +372,8 @@ criterion removed; `RequirementsRosterTest` pins the per-use-case counts 7, 6, 1
 UC5-AC26 (equal usage facts as equal tranches, an unproven tranche unavailable; the reported stage, name, family and
 namespace of a tool activity; a stream-local id scoped to its invocation and artifact; a reasoning summary and an
 answer as two observations of unidentified responses); the counts are 7, 6, 15, 8 and 26.
+
+2026-10-22, Tier 1 foundation wave: added UC5-AC27 (a pin-only binding change carries an approved meaning; an added
+route awaits binding review) and UC5-AC28 (a changed definition or rule refuses the approved binding; failed checks
+leave an approval unverified). No criterion removed; `RequirementsRosterTest` pins the per-use-case counts 7, 6, 15, 8
+and 28.

@@ -703,6 +703,11 @@ class FoundationComparisonTest {
             m.put("concept", c.concept());
             m.put("revision", c.revision());
             m.put("digest", c.digest());
+            m.put("digest_boundary", SemanticClaims.boundary(c.json()));
+            if (c.json().member("binding") != null) {
+                m.put("binding_relevant_digest", SchemaCatalog.text(c.json().member("binding"), "relevant_digest"));
+                m.put("binding_digest", SchemaCatalog.text(c.json().member("binding"), "digest"));
+            }
             m.put("approval", c.status());
             m.put("decision", SchemaCatalog.text(c.json().member("approval"), "decision"));
             claims.add(m);

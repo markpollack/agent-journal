@@ -30,6 +30,13 @@
    "type": "string",
    "pattern": "^sha256:[0-9a-f]{64}$"
   },
+  "digest_boundary": {
+   "description": "Absent or 1: the digest covers statement, applicability (with version pins), semantics, destinations and normative examples. 2: the digest covers the meaning only (statement, semantics, destinations, normative examples with the claim's binding identifiers replaced by role tokens); routes, contract and extension pins and the relevant definitions and rules are the binding.",
+   "enum": [
+    1,
+    2
+   ]
+  },
   "statement": {
    "type": "string",
    "minLength": 40
@@ -179,6 +186,33 @@
        "type": "string"
       }
      }
+    },
+    "binding": {
+     "description": "Boundary 2: the binding the approval was given for; a later binding with the same relevant_digest and no new route carries the approval (pins changed only), a changed relevant_digest refuses it, an added route awaits binding review.",
+     "type": "object",
+     "required": [
+      "relevant_digest",
+      "routes",
+      "digest"
+     ],
+     "additionalProperties": false,
+     "properties": {
+      "relevant_digest": {
+       "type": "string",
+       "pattern": "^sha256:[0-9a-f]{64}$"
+      },
+      "routes": {
+       "type": "array",
+       "minItems": 1,
+       "items": {
+        "type": "string"
+       }
+      },
+      "digest": {
+       "type": "string",
+       "pattern": "^sha256:[0-9a-f]{64}$"
+      }
+     }
     }
    },
    "allOf": [
@@ -239,6 +273,52 @@
      }
     }
    ]
+  },
+  "binding": {
+   "description": "Boundary 2: what the meaning is bound to. rules names the contract rules (or table:<member> contract tables) the meaning depends on; relevant_digest covers the extension definitions of the destinations and those rules with binding identifiers replaced; digest covers applicability, relevant_digest and the bytes of each normative example.",
+   "type": "object",
+   "required": [
+    "rules",
+    "relevant_digest",
+    "digest"
+   ],
+   "additionalProperties": false,
+   "properties": {
+    "rules": {
+     "type": "array",
+     "items": {
+      "type": "string",
+      "minLength": 1
+     }
+    },
+    "relevant_digest": {
+     "type": "string",
+     "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "digest": {
+     "type": "string",
+     "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+   }
   }
- }
+ },
+ "allOf": [
+  {
+   "if": {
+    "properties": {
+     "digest_boundary": {
+      "const": 2
+     }
+    },
+    "required": [
+     "digest_boundary"
+    ]
+   },
+   "then": {
+    "required": [
+     "binding"
+    ]
+   }
+  }
+ ]
 }

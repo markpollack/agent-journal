@@ -247,6 +247,10 @@ class RequirementsAccountingIT {
         CRITERIA.put("UC5-AC26", List.of(junit("SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes", examples + " (reasoning summary and answer)"),
                 junit("SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects", profiled),
                 junit("LiveFixtureFeaturesTest#theCodexRecordingExhibitsOperationsFailureRepetitionAndUsage", "live Codex content items without response ids")));
+        CRITERIA.put("UC5-AC27", List.of(junit("SemanticClaimTest#anUnrelatedVersionBumpCarriesAnApprovedMeaning", claims),
+                junit("SemanticClaimTest#anExpandedRouteAwaitsBindingReviewWhileTheApprovedRouteStaysApproved", claims)));
+        CRITERIA.put("UC5-AC28", List.of(junit("SemanticClaimTest#aChangedDefinitionOrRuleRefusesTheApprovedBinding", claims),
+                junit("SemanticClaimTest#anUnchangedMeaningWithAFailedImplementationIsApprovedButNotVerified", claims)));
     }
 
     /** Rule to the criteria and direct checks whose conjunction establishes its full obligation. */
@@ -301,7 +305,7 @@ class RequirementsAccountingIT {
                 "approval is a recorded decision of the Owner, or of a reviewer the Owner explicitly delegated, naming the exact claim revision and digest"));
         RULES.put("RULE-39", new RuleEvidence(List.of("UC5-AC19", "UC5-AC20"), List.of(), ""));
         RULES.put("RULE-40", new RuleEvidence(List.of("UC5-AC14", "UC5-AC15"), List.of(), ""));
-        RULES.put("RULE-41", new RuleEvidence(List.of("UC5-AC17", "UC5-AC18"), List.of(), "the digest boundary is the catalog's semantic_claims.digest_boundary"));
+        RULES.put("RULE-41", new RuleEvidence(List.of("UC5-AC17", "UC5-AC18", "UC5-AC27", "UC5-AC28"), List.of(), "the digest boundaries are the catalog's semantic_claims.digest_boundary"));
         RULES.put("RULE-42", new RuleEvidence(List.of("UC5-AC22"), List.of(junit("CodexStreamMapperTest#onlyTheDeclaredWebSearchDuplicateIsInterpretedAndEveryOtherDuplicateStaysOpaque", "declared form retained verbatim, strict parsing unchanged")),
                 "a pointer locates a value; it establishes no meaning or ownership join"));
         RULES.put("RULE-43", new RuleEvidence(List.of("UC5-AC23"), List.of(), "tranche meanings are the extension's definitions; their claims await the managing reviewer's binding"));

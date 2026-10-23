@@ -51,7 +51,8 @@ class SemanticClaimTest {
         references = SemanticClaims.references();
         Set<String> reported = new TreeSet<>();
         MappingCatalogTest.reportedChecks(work).forEach(c -> reported.add(c.property()));
-        ctx = new SemanticClaims.Context(FieldDispositionTest.schema(work), reported, MappingCatalogTest.compatibilityEntries(), MappingCatalogTest.contractsByUid().keySet());
+        ctx = context(FieldDispositionTest.schema(work), reported, MappingCatalogTest.contractsByUid(), SemanticClaims.Definitions.read(FoundationComparisonTest.EXTENSION),
+                "agentic_cli " + SchemaCatalog.text(NeutralJson.readDocument(FoundationComparisonTest.EXTENSION.resolve("extension.json")), "version"));
         Json k = claim(APPROVED);
         Map<String, Json> control = new LinkedHashMap<>();
         control.put("id", new Json.JString(CONTROL_DECISION));
@@ -59,18 +60,43 @@ class SemanticClaimTest {
         control.put("approver", new Json.JString("Project Owner (markpollack)"));
         control.put("summary", new Json.JString("TEST CONTROL: approves one claim so the approval checks can be exercised"));
         control.put("record", new Json.JString("none: a test-local decision, never committed"));
-        control.put("approves", new Json.JArray(List.of(new Json.JObject(Map.of("claim", new Json.JString(APPROVED), "revision", k.member("revision"), "digest", k.member("digest"))))));
+        control.put("approves", new Json.JArray(List.of(new Json.JObject(Map.of("claim", new Json.JString(APPROVED), "revision", k.member("revision"), "digest", k.member("digest"),
+                "binding", approvedBinding(k))))));
         List<Json> ds = new ArrayList<>(decisions.member("decisions").elements());
         ds.add(new Json.JObject(control));
         approvedDecisions = with(decisions, "decisions", new Json.JArray(ds));
         approvedCatalog = claimChanged(catalog, APPROVED, c -> with(c, "approval", new Json.JObject(Map.of("status", new Json.JString("approved"), "revision", c.member("revision"),
-                "digest", c.member("digest"), "approver", new Json.JString("Project Owner (markpollack)"), "decision", new Json.JString(CONTROL_DECISION)))));
+                "digest", c.member("digest"), "approver", new Json.JString("Project Owner (markpollack)"), "decision", new Json.JString(CONTROL_DECISION),
+                "binding", approvedBinding(c)))));
+    }
+
+    static SemanticClaims.Context context(SchemaCatalog schema, Set<String> reported, Map<String, Json> contracts, SemanticClaims.Definitions defs, String extension) {
+        return new SemanticClaims.Context(schema, reported, MappingCatalogTest.compatibilityEntries(), contracts.keySet(), defs, contracts, SemanticClaims.exampleFiles(), extension);
+    }
+
+    /** The binding an approval of {@code claim} records: its current relevant digest, routes and binding digest. */
+    static Json approvedBinding(Json claim) {
+        return new Json.JObject(Map.of("relevant_digest", claim.path("binding", "relevant_digest"), "routes", claim.path("applicability", "routes"), "digest",
+                claim.path("binding", "digest")));
+    }
+
+    static List<String> problems(Json cat, Map<String, Json> exs, Json dec, SemanticClaims.Context c) {
+        return SemanticClaims.problems(cat, exs, dec, references, c);
+    }
+
+    /** The claim with its binding restated as an author would after a change: the relevant and binding digests recomputed under {@code c}. */
+    static Json restated(Json claim, SemanticClaims.Context c) {
+        List<String> ignored = new ArrayList<>();
+        String relevant = SemanticClaims.sha256(SemanticClaims.canonical(SemanticClaims.relevant(claim, c.definitions(), c.contracts(), ignored)));
+        Json binding = with(with(claim.member("binding"), "relevant_digest", new Json.JString(relevant)), "digest",
+                new Json.JString(SemanticClaims.bindingDigest(claim, relevant, c.exampleFiles())));
+        return with(claim, "binding", binding);
     }
 
     static final String CONTROL_DECISION = "OWNER-2026-10-22-TEST-CONTROL";
 
     static List<String> problems(Json cat, Map<String, Json> exs, Json dec) {
-        return SemanticClaims.problems(cat, exs, dec, references, ctx);
+        return problems(cat, exs, dec, ctx);
     }
 
     // ---- copies with one change -------------------------------------------------------------------------------------
@@ -118,7 +144,7 @@ class SemanticClaimTest {
 
     static final String APPROVED = "claude.stream.child-scope-prompt";
     /** The current revision of {@link #APPROVED} in the committed catalog. */
-    static final int REV = 2;
+    static final int REV = 3;
     static final String PROPOSED = "codex.exec-stream.mcp-tool-call";
 
     // ---- the committed data -----------------------------------------------------------------------------------------
@@ -192,7 +218,7 @@ class SemanticClaimTest {
         Map<String, Json> exs = new TreeMap<>(examples);
         Json ex = exs.get("codex-mcp-tool-call-live");
         exs.put("codex-mcp-tool-call-live", with(ex, "native", with(ex.member("native"), "sha256", new Json.JString("0".repeat(64)))));
-        assertThat(problems(catalog, exs, decisions)).anyMatch(p -> p.startsWith(id + " r2: digest"));
+        assertThat(problems(catalog, exs, decisions)).anyMatch(p -> p.startsWith(id + " r3: digest"));
     }
 
     // ---- RULE-38 / UC5-AC21: approval is a recorded decision, never a test result -------------------------------------
@@ -254,7 +280,7 @@ class SemanticClaimTest {
         SemanticClaims.Claim approved = SemanticClaims.claims(approvedCatalog).stream().filter(c -> APPROVED.equals(c.id())).findFirst().orElseThrow();
         assertThat(SemanticClaims.support(proposed, true, true)).startsWith("candidate verified").contains("not approved support");
         assertThat(SemanticClaims.support(approved, true, true)).isEqualTo("approved, verified");
-        assertThat(SemanticClaims.support(approved, false, true)).isEqualTo("approved, not verified");
+        assertThat(SemanticClaims.support(approved, false, true)).startsWith("approved, not verified");
         assertThat(SemanticClaims.support(approved, true, false)).startsWith("candidate verified");
         // a reviewed date on the catalog and a passing build are not approvals: no claim is approved without its approval record
         assertThat(SemanticClaims.claims(catalog)).filteredOn(c -> "approved".equals(c.status())).allMatch(c -> c.json().path("approval", "decision") != null);
@@ -269,7 +295,8 @@ class SemanticClaimTest {
         StringBuilder md = new StringBuilder("# Semantic claims (from the mapping catalog)\n\nGenerated by `SemanticClaimTest`. Each claim is one reviewed meaning: its revision, the digest of its normative content and its approval. ")
                 .append("`proposed` meanings have candidate code and tests and await the Project Owner's approval of the exact revision and digest; `approved` names the recorded decision. ")
                 .append("Behaviour verification is in CLI-COVERAGE.md and the requirements accounting; live exercise in LIVE-SCENARIOS.md. Do not edit; regenerate.\n\n")
-                .append("| Claim | Concept | Rev | Approval | Digest | Routes | Examples |\n|---|---|---|---|---|---|---|\n");
+                .append("Digest boundary 2: the digest is the meaning only; the binding (routes, contract and extension pins, the relevant definitions and rules, the example files) has its own digests, so a pin-only change carries an approval and a changed definition or rule refuses it.\n\n")
+                .append("| Claim | Concept | Rev | Approval | Meaning digest | Relevant / binding digest | Binding rules | Routes | Examples |\n|---|---|---|---|---|---|---|---|---|\n");
         for (SemanticClaims.Claim c : SemanticClaims.claims(catalog)) {
             Map<String, Object> r = new LinkedHashMap<>();
             r.put("id", c.id());
@@ -283,10 +310,17 @@ class SemanticClaimTest {
             r.put("normative_examples", c.json().member("normative_examples").elements().stream().map(Json::text).toList());
             r.put("evidence", c.json().member("evidence").elements().stream().map(Json::text).toList());
             r.put("checks", c.json().member("checks").elements().stream().map(Json::text).toList());
+            r.put("digest_boundary", SemanticClaims.boundary(c.json()));
+            if (c.json().member("binding") != null) {
+                r.put("binding", NeutralJson.write(c.json().member("binding")));
+            }
             rows.add(r);
             String decision = SchemaCatalog.text(c.json().member("approval"), "decision");
             md.append("| `").append(c.id()).append("` | ").append(c.concept()).append(" | ").append(c.revision()).append(" | ").append(c.status())
-                    .append(decision == null ? "" : " (" + decision + ")").append(" | `").append(c.digest(), 0, 19).append("…` | ")
+                    .append(decision == null ? "" : " (" + decision + ")").append(" | `").append(c.digest(), 0, 19).append("…` | ");
+            Json b = c.json().member("binding");
+            md.append(b == null ? "boundary 1" : "`" + SchemaCatalog.text(b, "relevant_digest").substring(0, 19) + "…` / `" + SchemaCatalog.text(b, "digest").substring(0, 19) + "…`")
+                    .append(" | ").append(b == null ? "" : String.join(", ", b.member("rules").elements().stream().map(Json::text).toList())).append(" | ")
                     .append(String.join(", ", (List<String>) r.get("routes"))).append(" | ").append(String.join(", ", (List<String>) r.get("normative_examples"))).append(" |\n");
         }
         Map<String, Object> doc = new LinkedHashMap<>();
@@ -304,6 +338,102 @@ class SemanticClaimTest {
         org.junit.jupiter.api.Assumptions.assumeTrue("true".equals(System.getProperty("claims.print")), "no -Dclaims.print=true");
         for (SemanticClaims.Claim c : SemanticClaims.claims(catalog)) {
             System.out.println("DIGEST " + c.id() + " " + SemanticClaims.digest(c.json(), examples));
+            if (SemanticClaims.boundary(c.json()) == 2) {
+                Json r = restated(c.json(), ctx);
+                System.out.println("BINDING " + c.id() + " " + SchemaCatalog.text(r.member("binding"), "relevant_digest") + " " + SchemaCatalog.text(r.member("binding"), "digest"));
+            }
         }
+    }
+
+    // ---- meaning apart from its binding (boundary 2) ----------------------------------------------------------------
+
+    /** The approved claim under a context whose contracts and extension version are renamed, content unchanged: a pin-only bump. */
+    static SemanticClaims.Context bumped() {
+        Map<String, Json> contracts = new LinkedHashMap<>(ctx.contracts());
+        String uid = claim(APPROVED).path("applicability", "contracts").elements().get(0).text();
+        contracts.put(uid.replaceAll("/[0-9.]+-prototype$", "/9.9.9-prototype"), with(contracts.get(uid), "contract_uid", new Json.JString(uid.replaceAll("/[0-9.]+-prototype$", "/9.9.9-prototype"))));
+        return new SemanticClaims.Context(ctx.schema(), ctx.reportedProperties(), ctx.compatibilityEntries(), contracts.keySet(), ctx.definitions(), contracts, ctx.exampleFiles(),
+                "agentic_cli 9.9.9-prototype");
+    }
+
+    static Json repinned(Json cat, SemanticClaims.Context c) {
+        return claimChanged(cat, APPROVED, k -> {
+            String uid = k.path("applicability", "contracts").elements().get(0).text();
+            Json app = with(with(k.member("applicability"), "contracts", new Json.JArray(List.of(new Json.JString(uid.replaceAll("/[0-9.]+-prototype$", "/9.9.9-prototype"))))),
+                    "extension", new Json.JString("agentic_cli 9.9.9-prototype"));
+            return restated(with(k, "applicability", app), c);
+        });
+    }
+
+    @Test
+    void anUnrelatedVersionBumpCarriesAnApprovedMeaning() {
+        SemanticClaims.Context c = bumped();
+        Json cat = repinned(approvedCatalog, c);
+        Json k = claimIn(cat, APPROVED);
+        // the meaning digest is unchanged by new pins; the binding digest changes, its relevant content does not
+        assertThat(SemanticClaims.digest(k, examples)).isEqualTo(SchemaCatalog.text(claim(APPROVED), "digest"));
+        assertThat(SchemaCatalog.text(k.member("binding"), "digest")).isNotEqualTo(SchemaCatalog.text(claim(APPROVED).member("binding"), "digest"));
+        // (the other claims still name the old pins under the bumped context; only the repinned claim is judged here)
+        assertThat(problems(cat, examples, approvedDecisions, c)).noneMatch(p -> p.startsWith(APPROVED + " "));
+        assertThat(SemanticClaims.bindingState(k)).isEqualTo(SemanticClaims.BindingState.CARRIED);
+        SemanticClaims.Claim carried = SemanticClaims.claims(cat).stream().filter(x -> APPROVED.equals(x.id())).findFirst().orElseThrow();
+        assertThat(SemanticClaims.support(carried, true, true)).startsWith("approved, verified").contains("binding carried");
+        // the same bump without restating the binding is caught: stale pins are not silently accepted
+        Json unstated = claimChanged(approvedCatalog, APPROVED, x -> with(x, "applicability", with(x.member("applicability"), "extension", new Json.JString("agentic_cli 9.9.9-prototype"))));
+        assertThat(problems(unstated, examples, approvedDecisions, c)).anyMatch(p -> p.contains("binding digest"));
+    }
+
+    @Test
+    void aChangedDefinitionOrRuleRefusesTheApprovedBinding() {
+        // the dictionary definition of a destination attribute changes (its meaning text): relevant content differs
+        Map<String, Json> dictionary = new TreeMap<>(ctx.definitions().dictionary());
+        String attr = "turn_uid";
+        dictionary.put(attr, with(dictionary.get(attr), "description", new Json.JString("A turn id Journal assigns when the source reports none.")));
+        SemanticClaims.Definitions changed = new SemanticClaims.Definitions(ctx.definitions().classes(), ctx.definitions().objects(), dictionary);
+        SemanticClaims.Context c = new SemanticClaims.Context(ctx.schema(), ctx.reportedProperties(), ctx.compatibilityEntries(), ctx.contractUids(), changed, ctx.contracts(),
+                ctx.exampleFiles(), ctx.extension());
+        assertThat(problems(approvedCatalog, examples, approvedDecisions, c)).anyMatch(p -> p.startsWith(APPROVED + " r" + REV + ": binding relevant_digest"));
+        Json restatedCat = claimChanged(approvedCatalog, APPROVED, k -> restated(k, c));
+        assertThat(problems(restatedCat, examples, approvedDecisions, c)).anyMatch(p -> p.startsWith(APPROVED + " r" + REV + ": approved binding refused"));
+        // a changed conversion in a named contract rule is refused the same way
+        Map<String, Json> contracts = new LinkedHashMap<>(ctx.contracts());
+        String uid = claim(APPROVED).path("applicability", "contracts").elements().get(0).text();
+        String rule = claim(APPROVED).path("binding", "rules").elements().get(0).text();
+        List<Json> rules = new ArrayList<>();
+        for (Json r : contracts.get(uid).member("rules").elements()) {
+            rules.add(rule.equals(SchemaCatalog.text(r, "id")) ? with(r, "owner", new Json.JString("the main thread's turn, inferred from the first child prompt")) : r);
+        }
+        contracts.put(uid, with(contracts.get(uid), "rules", new Json.JArray(rules)));
+        SemanticClaims.Context ruleChanged = new SemanticClaims.Context(ctx.schema(), ctx.reportedProperties(), ctx.compatibilityEntries(), ctx.contractUids(), ctx.definitions(),
+                contracts, ctx.exampleFiles(), ctx.extension());
+        Json restatedRule = claimChanged(approvedCatalog, APPROVED, k -> restated(k, ruleChanged));
+        assertThat(problems(restatedRule, examples, approvedDecisions, ruleChanged)).anyMatch(p -> p.startsWith(APPROVED + " r" + REV + ": approved binding refused"));
+        // a changed default in the meaning itself (semantics) is a changed meaning: the digest no longer matches
+        Json absence = claimChanged(approvedCatalog, APPROVED, k -> with(k, "semantics", with(k.member("semantics"), "absence_default", new Json.JString("the main thread's prompt defaults to the first child prompt"))));
+        assertThat(problems(absence, examples, approvedDecisions)).anyMatch(p -> p.startsWith(APPROVED + " r" + REV + ": digest"));
+    }
+
+    @Test
+    void anExpandedRouteAwaitsBindingReviewWhileTheApprovedRouteStaysApproved() {
+        String added = "claude-code/stream-json/2.1.303-sdk";
+        Json cat = claimChanged(approvedCatalog, APPROVED, k -> {
+            List<Json> routes = new ArrayList<>(k.path("applicability", "routes").elements());
+            routes.add(new Json.JString(added));
+            return restated(with(k, "applicability", with(k.member("applicability"), "routes", new Json.JArray(routes))), ctx);
+        });
+        Json k = claimIn(cat, APPROVED);
+        assertThat(SemanticClaims.digest(k, examples)).isEqualTo(SchemaCatalog.text(claim(APPROVED), "digest"));
+        assertThat(problems(cat, examples, approvedDecisions)).isEmpty();
+        assertThat(SemanticClaims.bindingState(k)).isEqualTo(SemanticClaims.BindingState.ROUTES_PENDING);
+        assertThat(SemanticClaims.pendingRoutes(k)).containsExactly(added);
+        SemanticClaims.Claim c = SemanticClaims.claims(cat).stream().filter(x -> APPROVED.equals(x.id())).findFirst().orElseThrow();
+        assertThat(SemanticClaims.support(c, true, true)).contains("await binding review").contains(added);
+    }
+
+    @Test
+    void anUnchangedMeaningWithAFailedImplementationIsApprovedButNotVerified() {
+        SemanticClaims.Claim approved = SemanticClaims.claims(approvedCatalog).stream().filter(c -> APPROVED.equals(c.id())).findFirst().orElseThrow();
+        assertThat(problems(approvedCatalog, examples, approvedDecisions)).isEmpty();
+        assertThat(SemanticClaims.support(approved, false, true)).startsWith("approved, not verified").contains("does not conform");
     }
 }

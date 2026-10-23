@@ -1343,9 +1343,10 @@
    "claims": [
     {
      "id": "claude.stream.child-scope-prompt",
-     "revision": 2,
-     "digest": "sha256:f0178cd7ebea0d53f91b3187475933179bbdfdd87d0a9516711ae7d17d5221ca",
-     "statement": "On Claude Code 2.1.304 stream-json (stdout), a user record whose parent_tool_use_id names a sub-agent spawn and which carries text and no tool_result is the prompt the stream echoes for that child scope. Journal records it as a prompt_turn Prompt submitted event in the child's core with its exact text. This applies only to an actually echoed child-scope prompt: no main-thread prompt and no turn id are invented.",
+     "revision": 3,
+     "digest": "sha256:12abd2d1322892a2b3e4bce965aa70978cddaa21941856d70438e26005b78a6e",
+     "digest_boundary": 2,
+     "statement": "On the Claude Code stream-json (stdout) route, a user record whose parent_tool_use_id names a sub-agent spawn and which carries text and no tool_result is the prompt the stream echoes for that child scope. Journal records it as a prompt_turn Prompt submitted event in the child's core with its exact text. This applies only to an actually echoed child-scope prompt: no main-thread prompt and no turn id are invented.",
      "applicability": {
       "routes": [
        "claude-code/stream-json/2.1.304-stdout"
@@ -1377,13 +1378,21 @@
       "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects",
       "junit:LiveFixtureFeaturesTest#theSubAgentPromptIsTheChildScopesVendorReportedPrompt"
      ],
+     "binding": {
+      "rules": [
+       "claude.stream.user.prompt->prompt_turn.submitted",
+       "table:owner_routing"
+      ],
+      "relevant_digest": "sha256:7ce9548d1baeb1fd6a6e6dcf7ed3576360accb1ad71becf387545fea0c5c2354",
+      "digest": "sha256:2a6773b5a88920573dd002ed3ab5e77a61a1d589672c4b77cbe1afd37eada5a1"
+     },
      "approval": {
       "status": "proposed",
       "previous": {
        "revision": 1,
        "digest": "sha256:05cdefb08d7b22120ad48f446a6195b8a0d8d73d54b10e206eec3b45df9165f1",
        "decision": "OWNER-2026-10-21-ACCEPT-1-6",
-       "delta": "applicability only: extension agentic_cli 0.5.0-prototype -> 0.6.0-prototype and contract claude-code/stream-json/2.1.303/0.2.0-prototype -> 0.3.0-prototype; statement, semantics, destinations and normative examples unchanged"
+       "delta": "applicability only: extension agentic_cli 0.5.0-prototype -> 0.6.0-prototype and contract claude-code/stream-json/2.1.303/0.2.0-prototype -> 0.3.0-prototype; statement, semantics, destinations and normative examples unchanged; r3 moves the version pins out of the meaning (digest boundary 2): the statement names the route family without CLI version numbers, and routes, contract and extension pins with the relevant definitions and rules are the binding"
       }
      }
     }
@@ -2463,9 +2472,10 @@
    "claims": [
     {
      "id": "codex.exec-stream.reasoning-summary",
-     "revision": 2,
-     "digest": "sha256:efc247247d0aae9cb0c248a91637e5760f2cf73ba5b11e3e2e03f36dfc8b4b5e",
-     "statement": "A Codex CLI 0.160.1 reasoning item.completed is a completed content item of some model response (model_response activity 3 Item completed, item_uid = the stream-local item id, identity_basis_id 2) with one content block: block_kind 2 Thought, reasoning_form_id 2 Summary (distinct from 1 Full reasoning and 3 Redacted), text and data = item.text exactly. The pinned processor builds that text from the reasoning summary parts joined by newlines and drops raw reasoning content; no signature is reported. Which model response or invocation the summary belongs to is not reported, so no response_uid is written. A summary and a later agent message are two content observations with their own ids, in source order: not two known model invocations, and not one inferred invocation.",
+     "revision": 3,
+     "digest": "sha256:dba4d80cac4898172eaab8e186e4bda9563acf5406b78d9a28cbd6aaff980ed7",
+     "digest_boundary": 2,
+     "statement": "A Codex CLI exec --json reasoning item.completed is a completed content item of some model response (model_response activity 3 Item completed, item_uid = the stream-local item id, identity_basis_id 2) with one content block: block_kind 2 Thought, reasoning_form_id 2 Summary (distinct from 1 Full reasoning and 3 Redacted), text and data = item.text exactly. The pinned processor builds that text from the reasoning summary parts joined by newlines and drops raw reasoning content; no signature is reported. Which model response or invocation the summary belongs to is not reported, so no response_uid is written. A summary and a later agent message are two content observations with their own ids, in source order: not two known model invocations, and not one inferred invocation.",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
@@ -2500,6 +2510,14 @@
       "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
       "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
      ],
+     "binding": {
+      "rules": [
+       "codex.stream.reasoning->model_response",
+       "table:block_kind_table"
+      ],
+      "relevant_digest": "sha256:4284555480c228a538976d097b2faccaada1679881ee379ee94f6980de66e63f",
+      "digest": "sha256:14bb8de65ae26b0e78251d261e56ed71ae7dafc9aae55b25ad03e4bf098f9d32"
+     },
      "replaces": "r1 (proposed): each reasoning item was a model_response Completed whose response_uid was the stream-local item id",
      "approval": {
       "status": "proposed"
@@ -4241,9 +4259,10 @@
    "claims": [
     {
      "id": "codex.exec-stream.stream-local-identity",
-     "revision": 2,
-     "digest": "sha256:c095ba88b935705dc10569f7782653801d84208bcc0041d109c9e593fcd18dba",
-     "statement": "Every item.id on Codex CLI 0.160.1 exec --json is minted by the exec processor for its own stream (item_N); the app-server item id is dropped (a web search's second id aside). It is unique only within that source artifact of one Journal invocation (journal.run_uid, journal.invocation_index, source_ref.artifact): an equal item_0 in another invocation is another item. Journal uses it as tool_call_uid, operation uid and, on agent-message and reasoning content items, item_uid, each with identity_basis_id 2 Stream-local item identifier. It is never the model-facing call id or the provider's response id, which this route does not report: no response_uid is written, and one content item is not one model invocation.",
+     "revision": 3,
+     "digest": "sha256:8c97a6c709924de6d60085dad73d8cf60185ea22812802343a2ff0eace2d4529",
+     "digest_boundary": 2,
+     "statement": "Every item.id on Codex CLI exec --json is minted by the exec processor for its own stream (item_N); the app-server item id is dropped (a web search's second id aside). It is unique only within that source artifact of one Journal invocation (journal.run_uid, journal.invocation_index, source_ref.artifact): an equal item_0 in another invocation is another item. Journal uses it as tool_call_uid, operation uid and, on agent-message and reasoning content items, item_uid, each with identity_basis_id 2 Stream-local item identifier. It is never the model-facing call id or the provider's response id, which this route does not report: no response_uid is written, and one content item is not one model invocation.",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
@@ -4283,6 +4302,18 @@
       "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects",
       "junit:CodexStreamMapperTest#equalItemIdsOfTwoInvocationsAreTwoItemsOfTheirOwnNamespaces"
      ],
+     "binding": {
+      "rules": [
+       "codex.stream.agent_message->model_response",
+       "codex.stream.reasoning->model_response",
+       "codex.stream.command_execution->tool_call.operation",
+       "codex.stream.mcp_tool_call->tool_call.requested",
+       "codex.stream.mcp_tool_call->tool_call.result",
+       "table:identity"
+      ],
+      "relevant_digest": "sha256:dfe00ee4784b259ba648619bc9fca1814cc5cc8d6636d8d6b006e8d661ce3b8a",
+      "digest": "sha256:bd24573c54d97e435e03219269de1c25c282c101dfce5a35f796ae9c9f62b1a4"
+     },
      "replaces": "r1 (proposed): the same ids, but agent messages and reasoning items took the stream-local id as response_uid",
      "approval": {
       "status": "proposed"
@@ -4290,9 +4321,10 @@
     },
     {
      "id": "codex.exec-stream.mcp-tool-call",
-     "revision": 2,
-     "digest": "sha256:f27e91090b2f77eff512f96d662e892b1908145463fb8cd2699cf4f25663fc94",
-     "statement": "A Codex CLI 0.160.1 mcp_tool_call item.started reports a started invocation (tool_call activity 4 Started), not the model's original request: no model response owner, model call id or permission approval follows from it. tool_name = item.tool, tool_namespace = item.server, tool_family = mcp_tool_call, arguments = item.arguments exactly, reported_state = item.status. Its item.completed is the result of the same stream-local id: tool_result.data = item.result.content exactly (JSON null when the result has no content), structured_result = item.result.structured_content when not null, and the reported completed or failed status is the outcome (status_id 1 or 2, error_reported false or true; an MCP isError arrives as failed). An item observed only at completion has only its result. The kind is 99 Other unless a reviewed binding of the exact server and tool exists (none does): a name such as exec, Read or web_search never inherits a built-in kind. item.error and result._meta stay in the retained record.",
+     "revision": 3,
+     "digest": "sha256:fb00f905980f073feae8cba7b0aea3832ea1d5132c9af4b451c45b64c562745e",
+     "digest_boundary": 2,
+     "statement": "A Codex CLI exec --json mcp_tool_call item.started reports a started invocation (tool_call activity 4 Started), not the model's original request: no model response owner, model call id or permission approval follows from it. tool_name = item.tool, tool_namespace = item.server, tool_family = mcp_tool_call, arguments = item.arguments exactly, reported_state = item.status. Its item.completed is the result of the same stream-local id: tool_result.data = item.result.content exactly (JSON null when the result has no content), structured_result = item.result.structured_content when not null, and the reported completed or failed status is the outcome (status_id 1 or 2, error_reported false or true; an MCP isError arrives as failed). An item observed only at completion has only its result. The kind is 99 Other unless a reviewed binding of the exact server and tool exists (none does): a name such as exec, Read or web_search never inherits a built-in kind. item.error and result._meta stay in the retained record.",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
@@ -4337,6 +4369,16 @@
       "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
       "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
      ],
+     "binding": {
+      "rules": [
+       "codex.stream.mcp_tool_call->tool_call.requested",
+       "codex.stream.mcp_tool_call->tool_call.result",
+       "table:family_kind_table",
+       "table:namespace_kind_bindings"
+      ],
+      "relevant_digest": "sha256:344fd108a23200241ee2efb475a02c9f7c885c6351f2b31030c2178f885bb0ef",
+      "digest": "sha256:3d8aba07fdd4c4ef2915e6e25afe7081dfec48018f7c9d3d4c9aa632160be8d3"
+     },
      "replaces": "r1 (proposed): item.started read as the model request (activity 1) and the kind taken from a table over bare tool names",
      "approval": {
       "status": "proposed"
@@ -4344,9 +4386,10 @@
     },
     {
      "id": "codex.exec-stream.collab-and-file-change",
-     "revision": 2,
-     "digest": "sha256:1d3bd790e431bb58e928db3d03ec9479a0e0b898953c3d98ba50e8408f1ca5f0",
-     "statement": "Codex CLI 0.160.1 collaboration and file-change items are tool activities at the stage the stream reports, under their stream-local ids: item.started is a started execution observation (activity 4), not the model's request or its arguments, and item.completed its observed result. A tool name is written only where the stream supplies one: collaboration items carry item.tool as labelled (spawn_agent, send_input, wait, close_agent; the pinned emitter writes wait for both ResumeAgent and Wait, so no unique underlying action is inferred), file changes carry none. The item type is tool_family (collab_tool_call, file_change), and the kind comes from the family table (file_change 2 edit, collaboration 99), never from a guessed tool such as apply_patch. reported_state is item.status and a completed or failed status is the outcome (the processor reports a declined patch as failed). Sender and receiver thread ids, prompt, agent states and the changed paths and kinds stay in the retained record; receivers are not linked as child runs.",
+     "revision": 3,
+     "digest": "sha256:0b7f9af701ca53eeb67437c2e036c63286dde9b702dfe20225a7f042f6d77ef8",
+     "digest_boundary": 2,
+     "statement": "Codex CLI exec --json collaboration and file-change items are tool activities at the stage the stream reports, under their stream-local ids: item.started is a started execution observation (activity 4), not the model's request or its arguments, and item.completed its observed result. A tool name is written only where the stream supplies one: collaboration items carry item.tool as labelled (spawn_agent, send_input, wait, close_agent; the pinned emitter writes wait for both ResumeAgent and Wait, so no unique underlying action is inferred), file changes carry none. The item type is tool_family (collab_tool_call, file_change), and the kind comes from the family table (file_change 2 edit, collaboration 99), never from a guessed tool such as apply_patch. reported_state is item.status and a completed or failed status is the outcome (the processor reports a declined patch as failed). Sender and receiver thread ids, prompt, agent states and the changed paths and kinds stay in the retained record; receivers are not linked as child runs.",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
@@ -4381,6 +4424,17 @@
       "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
       "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
      ],
+     "binding": {
+      "rules": [
+       "codex.stream.collab_tool_call->tool_call.requested",
+       "codex.stream.collab_tool_call->tool_call.result",
+       "codex.stream.file_change->tool_call.requested",
+       "codex.stream.file_change->tool_call.result",
+       "table:family_kind_table"
+      ],
+      "relevant_digest": "sha256:bcbb0734d9835b294580ff3cec3b16ce2f7362d79f65e256fb8a6a28eb392073",
+      "digest": "sha256:4c13d909a77dafa45bf04210248ba8a233c57b72d11eebee2a7c9e3005e81d76"
+     },
      "replaces": "r1 (proposed): the file-change item type written as tool_name and the start read as the model request",
      "approval": {
       "status": "proposed"
@@ -5849,9 +5903,10 @@
    "claims": [
     {
      "id": "codex.exec-stream.standalone-operation-command",
-     "revision": 2,
-     "digest": "sha256:7eec91b2c986b2c6b3154476698af983e161e761cec281e45dfe251a03038a93",
-     "statement": "A Codex CLI 0.160.1 command_execution item is a standalone operation observation (tool_call activity 3): attribution 3 Unattributed because no wrapping call id is reported, operation uid = the stream-local item id, command_line = item.command exactly, reported_state, exit_code when integral and stdout = aggregated_output; tool_call_uid is absent. The command string is never parsed into argv and no operating-system effect is inferred from it.",
+     "revision": 3,
+     "digest": "sha256:46baec3712601438c8e328c5e298429ebfcb83365c3dd129e4b7f3e55f6fe99b",
+     "digest_boundary": 2,
+     "statement": "A Codex CLI exec --json command_execution item is a standalone operation observation (tool_call activity 3): attribution 3 Unattributed because no wrapping call id is reported, operation uid = the stream-local item id, command_line = item.command exactly, reported_state, exit_code when integral and stdout = aggregated_output; tool_call_uid is absent. The command string is never parsed into argv and no operating-system effect is inferred from it.",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
@@ -5884,6 +5939,13 @@
       "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
       "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
      ],
+     "binding": {
+      "rules": [
+       "codex.stream.command_execution->tool_call.operation"
+      ],
+      "relevant_digest": "sha256:cad27d2bb758327529314a1b85e93161398093a590e96ad4dbdd3f88f20e28a7",
+      "digest": "sha256:f856f33d8c4516ddf0837fa2eddf74b5e66badd81e5a419d51f9ad29e3ea3bab"
+     },
      "replaces": "contract 0.2.0-prototype kept the command string only inside the retained record",
      "approval": {
       "status": "proposed",
@@ -5891,7 +5953,7 @@
        "revision": 1,
        "digest": "sha256:20ec664ec7b92885da540b870ce5495744acece6d2f60c9d5c996cb865ed4749",
        "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
-       "delta": "applicability only: extension agentic_cli 0.5.0-prototype -> 0.6.0-prototype and contract codex-cli/exec-json-stream/0.160.1/0.3.0-prototype -> 0.4.0-prototype; statement, semantics, destinations and normative examples unchanged"
+       "delta": "applicability only: extension agentic_cli 0.5.0-prototype -> 0.6.0-prototype and contract codex-cli/exec-json-stream/0.160.1/0.3.0-prototype -> 0.4.0-prototype; statement, semantics, destinations and normative examples unchanged; r3 moves the version pins out of the meaning (digest boundary 2): the statement names the route family without CLI version numbers, and routes, contract and extension pins with the relevant definitions and rules are the binding"
       }
      }
     }
@@ -6341,9 +6403,10 @@
    "claims": [
     {
      "id": "codex.exec-stream.declined-status",
-     "revision": 2,
-     "digest": "sha256:fbdcbdb7b1d03cb8e34a244a2fa8d6be53091f27b28d93ab6b7283c9e6efebd3",
-     "statement": "A Codex CLI 0.160.1 command_execution whose status is declined has status_id 99 with status \"Declined\" (basis Reported), distinct from 0 Unknown and from 2 Failure: the command did not run. It records the item's reported status only; it is not a permission decision, because the exec stream reports no approval request or decision, so no permission_decision is created.",
+     "revision": 3,
+     "digest": "sha256:de87c322d26173db40ed4f880cc9af606499857f6350726b309b05e0e9c5b91b",
+     "digest_boundary": 2,
+     "statement": "A Codex CLI exec --json command_execution whose status is declined has status_id 99 with status \"Declined\" (basis Reported), distinct from 0 Unknown and from 2 Failure: the command did not run. It records the item's reported status only; it is not a permission decision, because the exec stream reports no approval request or decision, so no permission_decision is created.",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
@@ -6373,6 +6436,13 @@
       "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
       "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
      ],
+     "binding": {
+      "rules": [
+       "codex.stream.command_execution->tool_call.operation"
+      ],
+      "relevant_digest": "sha256:e5ed6c9387bb402d1a2d4edc4684b36b2a7daee01e8acce8c14df00d083364c2",
+      "digest": "sha256:9b0bebbfbe54e595540eb8fc842f7f8572a16075aeeb85cda40e0b06dc23f4e0"
+     },
      "replaces": "contract 0.2.0-prototype gave a declined command status 0 Unknown",
      "approval": {
       "status": "proposed",
@@ -6380,7 +6450,7 @@
        "revision": 1,
        "digest": "sha256:6e7df5bad65e13bd278589c399f5e0be71adcfab5dd18a5296984251631c4a5a",
        "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
-       "delta": "applicability only: extension agentic_cli 0.5.0-prototype -> 0.6.0-prototype and contract codex-cli/exec-json-stream/0.160.1/0.3.0-prototype -> 0.4.0-prototype; statement, semantics, destinations and normative examples unchanged"
+       "delta": "applicability only: extension agentic_cli 0.5.0-prototype -> 0.6.0-prototype and contract codex-cli/exec-json-stream/0.160.1/0.3.0-prototype -> 0.4.0-prototype; statement, semantics, destinations and normative examples unchanged; r3 moves the version pins out of the meaning (digest boundary 2): the statement names the route family without CLI version numbers, and routes, contract and extension pins with the relevant definitions and rules are the binding"
       }
      }
     }
@@ -7160,9 +7230,10 @@
    "claims": [
     {
      "id": "codex.exec-stream.usage-components-inclusive",
-     "revision": 2,
-     "digest": "sha256:d43dc407d8be93c4756b5ef7f6274deaad23ace41d4a2354a32e88e83f3496c7",
-     "statement": "Codex CLI 0.160.1 reports input_tokens inclusive of cached_input_tokens (its protocol computes non-cached input as input_tokens minus cached_input_tokens). Journal states the canonical disjoint tranches: uncached_input_tokens is derived as input_tokens minus cached_input_tokens when cache_write_input_tokens is reported 0 and cached does not exceed input; with non-zero cache writes the pinned source does not establish whether input_tokens includes them, so the tranche is unavailable, neither guessed nor clamped. cache_read_tokens = cached_input_tokens and cache_write_tokens = cache_write_input_tokens are copied; reasoning_tokens = reasoning_output_tokens is part of output_tokens (reasoning_relation_id 1). components[] states each tranche as Reported, Derived or Unavailable with RFC 6901 pointers into data, which keeps the native object exactly. A reported cache write of 0 may be the deserializer's default for a provider that reports none. The same tranches on Claude are equal for the same facts (usage-equivalent pair).",
+     "revision": 3,
+     "digest": "sha256:7a97a41257293891cb392743fdd9f2fea7755252260233b01d28252ea318addd",
+     "digest_boundary": 2,
+     "statement": "The Codex CLI exec --json usage reports input_tokens inclusive of cached_input_tokens (its protocol computes non-cached input as input_tokens minus cached_input_tokens). Journal states the canonical disjoint tranches: uncached_input_tokens is derived as input_tokens minus cached_input_tokens when cache_write_input_tokens is reported 0 and cached does not exceed input; with non-zero cache writes the pinned source does not establish whether input_tokens includes them, so the tranche is unavailable, neither guessed nor clamped. cache_read_tokens = cached_input_tokens and cache_write_tokens = cache_write_input_tokens are copied; reasoning_tokens = reasoning_output_tokens is part of output_tokens (reasoning_relation_id 1). components[] states each tranche as Reported, Derived or Unavailable with RFC 6901 pointers into data, which keeps the native object exactly. A reported cache write of 0 may be the deserializer's default for a provider that reports none. The same tranches on Claude are equal for the same facts (usage-equivalent pair).",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
@@ -7202,6 +7273,13 @@
       "junit:SemanticExampleTest#equivalentClaudeAndCodexUsageNormalizeToTheSameTranches",
       "junit:CodexExecStreamTest#anOffByOneUsageValueOrAMissingComponentIsAUsageValueDefect"
      ],
+     "binding": {
+      "rules": [
+       "codex.stream.turn_completed->prompt_turn.completed"
+      ],
+      "relevant_digest": "sha256:067ab8ca74f5f4ca652f93d948c66e828fb40a44cfe3421fe71690a4999cecf6",
+      "digest": "sha256:b14a315af4435d31f9bb13356f19511d600a138184a60b5542f80ccbeb33d85d"
+     },
      "replaces": "r1 (proposed, not approved; the delegated decision required its revision): copied each vendor's components under their native meanings, Codex input_tokens inclusive",
      "approval": {
       "status": "proposed"
@@ -7209,9 +7287,10 @@
     },
     {
      "id": "claude.stream.usage-tranches",
-     "revision": 1,
-     "digest": "sha256:37fa33e627432b2eb558befea0fc1cd6ba914059c43a161848b6aadfb3f28f1a",
-     "statement": "On Claude Code 2.1.304 stream-json (stdout), every Anthropic usage object (an assistant message's usage and the result record's usage) is stated in the canonical disjoint tranches, each copied as reported: uncached_input_tokens = input_tokens (the tokens neither read from nor used to create a cache), cache_read_tokens = cache_read_input_tokens, cache_write_tokens = cache_creation_input_tokens with cache_write_tiers from the cache_creation members (parts of the writes, never additional), output_tokens, and reasoning_tokens = output_tokens_details.thinking_tokens as part of output (reasoning_relation_id 1). A message's usage is that one API message's own total (aggregation 1 Scope total; provisional until a stop reason is reported); the result's usage states no aggregation, because whether it covers the run's sub-agents is not established; each modelUsage entry is Claude Code's running total for that model (aggregation 2 Cumulative snapshot), with thinkingTokens already counted inside outputTokens. components[] names each tranche's native member; data keeps the native object.",
+     "revision": 2,
+     "digest": "sha256:80c5a68948b2dc190018e7bfaae5bc09e42683fc3353cd0e439a16848a605921",
+     "digest_boundary": 2,
+     "statement": "On the Claude Code stream-json (stdout) route, every Anthropic usage object (an assistant message's usage and the result record's usage) is stated in the canonical disjoint tranches, each copied as reported: uncached_input_tokens = input_tokens (the tokens neither read from nor used to create a cache), cache_read_tokens = cache_read_input_tokens, cache_write_tokens = cache_creation_input_tokens with cache_write_tiers from the cache_creation members (parts of the writes, never additional), output_tokens, and reasoning_tokens = output_tokens_details.thinking_tokens as part of output (reasoning_relation_id 1). A message's usage is that one API message's own total (aggregation 1 Scope total; provisional until a stop reason is reported); the result's usage states no aggregation, because whether it covers the run's sub-agents is not established; each modelUsage entry is Claude Code's running total for that model (aggregation 2 Cumulative snapshot), with thinkingTokens already counted inside outputTokens. components[] names each tranche's native member; data keeps the native object.",
      "applicability": {
       "routes": [
        "claude-code/stream-json/2.1.304-stdout"
@@ -7252,6 +7331,14 @@
       "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects",
       "junit:SemanticExampleTest#equivalentClaudeAndCodexUsageNormalizeToTheSameTranches"
      ],
+     "binding": {
+      "rules": [
+       "claude.stream.assistant->model_response",
+       "claude.stream.result->prompt_turn.completed"
+      ],
+      "relevant_digest": "sha256:7a5087484e357721a8907b2770861d190bc9fd4154735173a523de62bbc0dac5",
+      "digest": "sha256:8f692f24b0ed6993598edd08e0d70dbbe3d90a07602192e5f30315aa8241f60a"
+     },
      "approval": {
       "status": "proposed"
      }
@@ -7876,9 +7963,10 @@
    "claims": [
     {
      "id": "codex.exec-stream.thread-usage",
-     "revision": 2,
-     "digest": "sha256:4c841c7322689fffbda4420e41a000dbf30795cb7aa84a12d1d772117ea1adeb",
-     "statement": "On Codex CLI 0.160.1 exec --json (stdout), the usage a turn.completed record carries is the thread's cumulative token usage at that turn's completion (ThreadTokenUsage.total), not a measurement of the turn. Journal records it once per run as a usage observation at scope 5 Session (the Codex thread is the session), status 2 Final for the run and aggregation 2 Cumulative snapshot, in the canonical tranches of codex.exec-stream.usage-components-inclusive, attached to the turn's completion event. Final refers to the snapshot within this capture's group: it is not consumption during the capture, a completed thread, or a value to sum with another cumulative snapshot. Journal computes no per-turn delta and no cross-run sum; a later run of a resumed thread reports a larger cumulative total of its own.",
+     "revision": 3,
+     "digest": "sha256:d7ce798fbdc63059e50b18ce93e2ccdbaf271fea1dd4276e3b317468a550e3b2",
+     "digest_boundary": 2,
+     "statement": "On the Codex CLI exec --json (stdout) route, the usage a turn.completed record carries is the thread's cumulative token usage at that turn's completion (ThreadTokenUsage.total), not a measurement of the turn. Journal records it once per run as a usage observation at scope 5 Session (the Codex thread is the session), status 2 Final for the run and aggregation 2 Cumulative snapshot, in the canonical tranches of codex.exec-stream.usage-components-inclusive, attached to the turn's completion event. Final refers to the snapshot within this capture's group: it is not consumption during the capture, a completed thread, or a value to sum with another cumulative snapshot. Journal computes no per-turn delta and no cross-run sum; a later run of a resumed thread reports a larger cumulative total of its own.",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
@@ -7923,6 +8011,13 @@
       "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects",
       "junit:SemanticExampleTest#aPerTurnLabelOnTheCumulativeUsageIsRejectedThoughEveryComponentIsEqual"
      ],
+     "binding": {
+      "rules": [
+       "codex.stream.turn_completed->prompt_turn.completed"
+      ],
+      "relevant_digest": "sha256:3da8306e69ed2ce3a1f0fbe221f79bd2e8dad146180077b2c2157d1386efec22",
+      "digest": "sha256:3ae3721c008cbe8b6815652cf75f97131a942434ccbd09a05f22eed2fac8c487"
+     },
      "replaces": "r1 (approved, contract 0.3.0-prototype): the same reading with vendor-dependent input_tokens and no aggregation facet; contract 0.2.0-prototype read turn.completed usage as scope 3 Prompt turn, never approved, refuted by the pinned emitter",
      "approval": {
       "status": "proposed",
@@ -7930,15 +8025,16 @@
        "revision": 1,
        "digest": "sha256:39cd69be58f09965e76734d4de577c022d3c97b3af5d99c5e5e7ee7bcf39c306",
        "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
-       "delta": "statement and semantics add the aggregation facet (aggregation_id 2 Cumulative snapshot), as the delegated decision asks; destinations input_tokens -> uncached_input_tokens plus aggregation_id; normative examples restated in canonical tranches (uncached 11082 and 500 derived instead of the inclusive 63434 and 2500); scope, finality and no-delta meaning unchanged"
+       "delta": "statement and semantics add the aggregation facet (aggregation_id 2 Cumulative snapshot), as the delegated decision asks; destinations input_tokens -> uncached_input_tokens plus aggregation_id; normative examples restated in canonical tranches (uncached 11082 and 500 derived instead of the inclusive 63434 and 2500); scope, finality and no-delta meaning unchanged; r3 moves the version pins out of the meaning (digest boundary 2): the statement names the route family without CLI version numbers, and routes, contract and extension pins with the relevant definitions and rules are the binding"
       }
      }
     },
     {
      "id": "codex.exec-stream.usage-measurement",
-     "revision": 2,
-     "digest": "sha256:d1331eb5a6fa03d9a94b6d669db8e9b25979d6cde5c8ec782b9bb96ee195ba1d",
-     "statement": "When every usage component a Codex CLI 0.160.1 turn.completed reports is zero, the value may be the emitter's Usage::default(), which it writes when no token-usage update arrived; a measured zero is not established, so the observation's measurement_status_id is 2 Possibly default. When any component is non-zero an update was received and measurement_status_id is 1 Measured. The components are preserved exactly in both cases; none is dropped or replaced.",
+     "revision": 3,
+     "digest": "sha256:8cd1e9bf54404c2ec710db2de62f6aaf227df9a8b61e8f95da45bcc791139598",
+     "digest_boundary": 2,
+     "statement": "When every usage component a Codex CLI exec --json turn.completed reports is zero, the value may be the emitter's Usage::default(), which it writes when no token-usage update arrived; a measured zero is not established, so the observation's measurement_status_id is 2 Possibly default. When any component is non-zero an update was received and measurement_status_id is 1 Measured. The components are preserved exactly in both cases; none is dropped or replaced.",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
@@ -7968,13 +8064,20 @@
       "junit:SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes",
       "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"
      ],
+     "binding": {
+      "rules": [
+       "codex.stream.turn_completed->prompt_turn.completed"
+      ],
+      "relevant_digest": "sha256:bbab5e284be506676aeb5472d1ce59f0f7983993454252ff2d49bef2e71c042b",
+      "digest": "sha256:2a0782e0aab21d37ae9f99ddbedf68550f00f78360ec31cdd785a08467344911"
+     },
      "approval": {
       "status": "proposed",
       "previous": {
        "revision": 1,
        "digest": "sha256:2de474fb406dde2008bee42897611d4c6b4d155f9f6d26cbfeae622f95d59f0a",
        "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
-       "delta": "normative examples restated in canonical tranches (the all-zero example expects uncached_input_tokens 0, derived, in place of input_tokens 0; the live MCP example as in thread-usage r2); statement, semantics and destinations unchanged"
+       "delta": "normative examples restated in canonical tranches (the all-zero example expects uncached_input_tokens 0, derived, in place of input_tokens 0; the live MCP example as in thread-usage r2); statement, semantics and destinations unchanged; r3 moves the version pins out of the meaning (digest boundary 2): the statement names the route family without CLI version numbers, and routes, contract and extension pins with the relevant definitions and rules are the binding"
       }
      }
     }
@@ -9053,9 +9156,10 @@
    "claims": [
     {
      "id": "claude.stream.named-denial-attribution",
-     "revision": 2,
-     "digest": "sha256:b7f4f6565da5b99bd23f60d57ec7a0dca340f593ac71d05ceddc48fa0f1eef7d",
-     "statement": "On Claude Code 2.1.304 stream-json (stdout), a run-scope permission denial in the result record's permission_denials[] that names tool_use_id is linked to exactly that source-reported call id (attribution outcome 1 Unique, method 1 Reported identifier) and stays at its reported Run scope on the turn completion. A denial without an id, or one whose id is ambiguous, keeps its original scope and is not attached to a tool call by guess.",
+     "revision": 3,
+     "digest": "sha256:5727799b27d3bd6bd49d5ccedce23765a585aec07f4dbfd15e834519713e2f34",
+     "digest_boundary": 2,
+     "statement": "On the Claude Code stream-json (stdout) route, a run-scope permission denial in the result record's permission_denials[] that names tool_use_id is linked to exactly that source-reported call id (attribution outcome 1 Unique, method 1 Reported identifier) and stays at its reported Run scope on the turn completion. A denial without an id, or one whose id is ambiguous, keeps its original scope and is not attached to a tool call by guess.",
      "applicability": {
       "routes": [
        "claude-code/stream-json/2.1.304-stdout"
@@ -9088,13 +9192,20 @@
       "junit:SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects",
       "junit:LiveFixtureFeaturesTest#theDenialRecordingExhibitsAnObservedRejectionAtBothScopes"
      ],
+     "binding": {
+      "rules": [
+       "claude.stream.result->prompt_turn.completed"
+      ],
+      "relevant_digest": "sha256:db101ddf9efdedbc98c29d88cc0398bf4b5890fed9ce144aa303ad9523389a51",
+      "digest": "sha256:723bbda3a72599ff5b2a69c3fdee44907dc6ac5b3e66fbd307aad57e8cd4e0ab"
+     },
      "approval": {
       "status": "proposed",
       "previous": {
        "revision": 1,
        "digest": "sha256:28d7b4b615efc5b5e108bc3e36d171741f97850d815a5e6262a725ff761ef326",
        "decision": "OWNER-2026-10-21-ACCEPT-1-7",
-       "delta": "applicability only: extension agentic_cli 0.5.0-prototype -> 0.6.0-prototype and contract claude-code/stream-json/2.1.303/0.2.0-prototype -> 0.3.0-prototype; statement, semantics, destinations and normative examples unchanged"
+       "delta": "applicability only: extension agentic_cli 0.5.0-prototype -> 0.6.0-prototype and contract claude-code/stream-json/2.1.303/0.2.0-prototype -> 0.3.0-prototype; statement, semantics, destinations and normative examples unchanged; r3 moves the version pins out of the meaning (digest boundary 2): the statement names the route family without CLI version numbers, and routes, contract and extension pins with the relevant definitions and rules are the binding"
       }
      }
     }
@@ -10645,9 +10756,10 @@
    "claims": [
     {
      "id": "journal.mapping-rule-provenance",
-     "revision": 2,
-     "digest": "sha256:4fb94929db9c25ed7762325a38f407efb3d20cf09b5cf7c07566c63b22ed42c0",
-     "statement": "Every event Journal writes names the contract rule that produced it in journal.rule_uid (extension 0.5.0-prototype), beside journal.contract_uid. OCSF unmapped is left to its own purpose, source-specific data no OCSF attribute maps; Journal's provenance is not source data. Packages written with extension 0.4.0 or earlier carry the rule as unmapped.rule_id and remain readable from their own definitions.",
+     "revision": 3,
+     "digest": "sha256:bc2b55d4792307939ff394603d242f4cc79767b186ed1687594e82e28c224405",
+     "digest_boundary": 2,
+     "statement": "Every event Journal writes names the contract rule that produced it in journal.rule_uid (since extension 0.5.0-prototype), beside journal.contract_uid. OCSF unmapped is left to its own purpose, source-specific data no OCSF attribute maps; Journal's provenance is not source data. Packages written with extension 0.4.0 or earlier carry the rule as unmapped.rule_id and remain readable from their own definitions.",
      "applicability": {
       "routes": [
        "claude-code/stream-json/2.1.299-sdk",
@@ -10677,6 +10789,11 @@
       "junit:PinsTest#mappingContractsDeclareEveryRuleTheMappersExecute",
       "junit:LiveFixtureFeaturesTest#theSubAgentPromptIsTheChildScopesVendorReportedPrompt"
      ],
+     "binding": {
+      "rules": [],
+      "relevant_digest": "sha256:ccaaa2f53fb3d54c68a28d9b7704073f5504b338ec7cd4621d7299bb91f9483e",
+      "digest": "sha256:e632cd0d45bea2599340b890464eb22188e71ccc88fd89d415dac30e8c961379"
+     },
      "replaces": "extension 0.4.0-prototype and earlier stored the rule as OCSF unmapped.rule_id",
      "approval": {
       "status": "proposed",
@@ -10684,7 +10801,7 @@
        "revision": 1,
        "digest": "sha256:3b3650b6a57035f85cf184b3f58fffb09c1ded36d82357f012836bfa93d631ea",
        "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
-       "delta": "applicability: extension agentic_cli 0.5.0-prototype -> 0.6.0-prototype; normative example journal-rule-provenance: the expected /journal/contract_uid of the Codex event names contract 0.4.0-prototype and that MCP start event is activity 4 Started (was 0.3.0-prototype, activity 1); statement, semantics and destinations unchanged"
+       "delta": "applicability: extension agentic_cli 0.5.0-prototype -> 0.6.0-prototype; normative example journal-rule-provenance: the expected /journal/contract_uid of the Codex event names contract 0.4.0-prototype and that MCP start event is activity 4 Started (was 0.3.0-prototype, activity 1); statement, semantics and destinations unchanged; r3 moves the version pins out of the meaning (digest boundary 2): the statement names the route family without CLI version numbers, and routes, contract and extension pins with the relevant definitions and rules are the binding"
       }
      }
     }
@@ -11309,9 +11426,10 @@
    "claims": [
     {
      "id": "codex.exec-stream.web-search-duplicate-id",
-     "revision": 2,
-     "digest": "sha256:504136e56dc791a0d843d62ce5870ab0268e42f22acac7757d3de7edd4c92726",
-     "statement": "A Codex CLI 0.160.1 web_search line repeats the id member of its item: the exec item id, then the search item's own id (serde flattens WebSearchItem into ThreadItem), both inside the root's item object (RFC 6901 /item/id). Strict parsing refuses it, so the line is retained verbatim as an opaque record with both ids in raw_data. In exactly this declared form (the line's only repeated member is id, twice and both strings, in the root's one item object, on item.started or item.completed of item.type web_search) Journal also reads it as a web search under the first id: item.started a started search (activity 4), item.completed its result; no tool name is reported (tool_name absent, tool_family web_search), kind 5 search by the family table, arguments = item.action exactly, result data = item.results; no status is reported (status 0, not derivable). A repeat at any other location, including a root member literally named item.id, stays an opaque record without interpretation, and strict duplicate rejection is unchanged.",
+     "revision": 3,
+     "digest": "sha256:eb0606bf75ec3bbccdeea17f1ef7c9d86c991e5aa732473b0d18c64ed600f40d",
+     "digest_boundary": 2,
+     "statement": "A Codex CLI exec --json web_search line repeats the id member of its item: the exec item id, then the search item's own id (serde flattens WebSearchItem into ThreadItem), both inside the root's item object (RFC 6901 /item/id). Strict parsing refuses it, so the line is retained verbatim as an opaque record with both ids in raw_data. In exactly this declared form (the line's only repeated member is id, twice and both strings, in the root's one item object, on item.started or item.completed of item.type web_search) Journal also reads it as a web search under the first id: item.started a started search (activity 4), item.completed its result; no tool name is reported (tool_name absent, tool_family web_search), kind 5 search by the family table, arguments = item.action exactly, result data = item.results; no status is reported (status 0, not derivable). A repeat at any other location, including a root member literally named item.id, stays an opaque record without interpretation, and strict duplicate rejection is unchanged.",
      "applicability": {
       "routes": [
        "codex-cli/exec-json-stream/0.160.1"
@@ -11353,6 +11471,14 @@
       "junit:DuplicateMemberAddressingTest#theWholeOracleAcceptsTheDottedLiteralLineOnlyAsAnOpaqueRecord",
       "junit:CodexDuplicateMemberProfileTest#onlyTheExactDeclaredLocationStatesARequestAndEveryRepeatHasItsExactLocation"
      ],
+     "binding": {
+      "rules": [
+       "codex.stream.web_search->tool_call.requested",
+       "codex.stream.web_search->tool_call.result"
+      ],
+      "relevant_digest": "sha256:b98ae933882188ee4295c1dd9be071c252d95cd384b3e8305f6f1ac5666aed76",
+      "digest": "sha256:7509373c606105673d642be6ce3a3ad8211bf9d983ca5d7cf6be1f1b82f19dbd"
+     },
      "replaces": "contract 0.2.0-prototype kept web_search lines only as opaque records",
      "approval": {
       "status": "proposed",
@@ -11360,7 +11486,7 @@
        "revision": 1,
        "digest": "sha256:c3585862aa697483e47a8c7b0936582ea32130af81d8ea06b88cf12b326df57c",
        "decision": "OWNER-2026-10-22-SEM1-DELEGATED-ACCEPT",
-       "delta": "the meaning r1 intended, applied at the exact location: the declared form is the id member twice inside the root item object (RFC 6901 /item/id), so a root member literally named item.id is not it; the family/name decision applies (no tool_name, tool_family web_search, kind 5 by the family table) and item.started is a started search (activity 4, the model request is not observed); normative example and destinations change accordingly; applicability pins 0.6.0-prototype / contract 0.4.0-prototype"
+       "delta": "the meaning r1 intended, applied at the exact location: the declared form is the id member twice inside the root item object (RFC 6901 /item/id), so a root member literally named item.id is not it; the family/name decision applies (no tool_name, tool_family web_search, kind 5 by the family table) and item.started is a started search (activity 4, the model request is not observed); normative example and destinations change accordingly; applicability pins 0.6.0-prototype / contract 0.4.0-prototype; r3 moves the version pins out of the meaning (digest boundary 2): the statement names the route family without CLI version numbers, and routes, contract and extension pins with the relevant definitions and rules are the binding"
       }
      }
     }
@@ -13467,7 +13593,7 @@
  },
  "semantic_claims": {
   "meaning": "a concept's claims[] are its reviewed semantic meanings, each with a revision and a digest of its normative content; approval names that exact revision and digest, the Project Owner and a decision in owner-decisions.json. A claim without an approval record, a reviewed date, a source citation or a passing test is not approved; tested behaviour, semantic approval and live exercise are kept apart",
-  "digest_boundary": "sha256 over canonical JSON (object keys sorted, no whitespace, strings with only \\\", \\\\ and control characters escaped, numbers as spelled) of {statement, applicability, semantics, destinations, examples: [{id, native, expected, counterexamples without why}] in normative_examples order}. Evidence, checks, replaces, notes, approval, example descriptions and authored_from are outside it: adding supporting evidence or checks does not change the meaning; changing any normative member needs a new revision and approval",
+  "digest_boundary": "Boundary 2 (digest_boundary 2, every current claim): digest is sha256 over canonical JSON (object keys sorted, no whitespace, strings with only \\\", \\\\ and control characters escaped, numbers as spelled) of the meaning {statement, semantics, destinations, examples: [{id, native, expected, counterexamples without why, absent_events without why}] in normative_examples order}, with the claim's own binding identifiers (its routes, contract uids and extension version, as whole string values) replaced by <binding:route>, <binding:contract> and <binding:extension>. binding.relevant_digest covers the extension source definitions along each destination path (an object-valued end includes that object's declarations) and the contract rules or table:<member> tables named in binding.rules, with the same replacement; binding.digest covers applicability, relevant_digest and the sha256 of each normative example file. An approval names the revision, the meaning digest and the binding it was given for (relevant_digest, routes, digest): a later binding with the same relevant_digest and no new route carries it (pins changed only), a changed relevant_digest refuses it, an added route awaits binding review, and failing checks leave it approved but not verified. Boundary 1 (digest_boundary absent: revisions up to 2 and every recorded decision before 2026-10-22's Tier 1 wave) covered {statement, applicability, semantics, destinations, examples} with the version pins inside the meaning; those decisions stay verifiable against their own revisions in history. Evidence, checks, replaces, notes, approval, example descriptions and authored_from are outside both digests.",
   "owner_decisions": "owner-decisions.json",
   "references": "references.json",
   "examples": "examples/"
