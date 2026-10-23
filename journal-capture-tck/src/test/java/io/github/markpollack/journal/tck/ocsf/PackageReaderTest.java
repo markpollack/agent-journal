@@ -46,8 +46,8 @@ class PackageReaderTest {
         assertThat(fromEvents.standalone()).as("read from the file's declarations; run.json is ancillary").isTrue();
         assertThat(fromEvents.manifest.packageState()).isEqualTo("COMPLETED");
         assertThat(fromEvents.manifest.extensionUid()).isEqualTo(901);
-        assertThat(fromEvents.manifest.extensionVersion()).isEqualTo("0.7.0-prototype");
-        assertThat(fromEvents.manifest.contracts()).containsKey("codex-cli/rollout/0.160.1/0.3.0-prototype");
+        assertThat(fromEvents.manifest.extensionVersion()).isEqualTo("0.8.0-prototype");
+        assertThat(fromEvents.manifest.contracts()).containsKey("codex-cli/rollout/0.160.1/0.4.0-prototype");
     }
 
     @Test
@@ -93,7 +93,7 @@ class PackageReaderTest {
         assertThat(report.defects()).extracting(Check::property).containsOnly("population.usage", "operation.values", "population.responses");
         assertThat(report.missingRequired()).isEmpty();
         Path current = copy(OcsfFixtures.LIVE_CODEX, work.resolve("current"));
-        assertThat(open(current).manifest.extensionVersion()).isEqualTo("0.7.0-prototype");
+        assertThat(open(current).manifest.extensionVersion()).isEqualTo("0.8.0-prototype");
     }
 
     /**
@@ -131,7 +131,7 @@ class PackageReaderTest {
         OracleReport report = OcsfFixtures.verify(historical);
         assertThat(report.defects()).extracting(Check::property).containsOnly("population.responses", "request.values", "result.values", "usage.values");
         assertThat(report.check("request.values", "main/stream.jsonl").detail()).contains("activity_id 1 != 4");
-        assertThat(report.check("usage.values", "main/stream.jsonl").detail()).contains("uncached_input_tokens MISSING").contains("components[] has no entry for uncached_input_tokens");
+        assertThat(report.check("usage.values", "main/stream.jsonl").detail()).contains("measurement_status_id 1 != 4").contains("components[] has no entry for uncached_input_tokens");
         assertThat(report.missingRequired()).isEmpty();
     }
 
@@ -197,7 +197,7 @@ class PackageReaderTest {
         Path fixture = copy(CODEX, work);
         editDeclarations(pkg(fixture), decls -> {
             obj(declaration(decls, "definition:type/long_t").path("definition", "body")).members().put("caption", str("Synthetic"));
-            obj(declaration(decls, "contract:codex-cli/rollout/0.160.1/0.3.0-prototype").path("contract", "embedded")).members().put("tampered", str("yes"));
+            obj(declaration(decls, "contract:codex-cli/rollout/0.160.1/0.4.0-prototype").path("contract", "embedded")).members().put("tampered", str("yes"));
         });
         editManifest(pkg(fixture), run -> obj(run.path("semantic_contract", "declarations").elements().get(0)).members().put("tampered", str("yes")));
         OcsfPackage p = open(fixture);

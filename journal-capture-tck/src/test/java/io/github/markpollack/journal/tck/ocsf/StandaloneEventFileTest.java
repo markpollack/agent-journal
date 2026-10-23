@@ -181,7 +181,7 @@ class StandaloneEventFileTest {
         Path c = copy(CODEX, work.resolve("c"));
         editDeclarations(pkg(c), decls -> decls.removeIf(d -> SchemaCatalog.text(d.member("declaration"), "kind").equals("contract")));
         OcsfPackage pc = open(alone(pkg(c), work.resolve("c-alone")));
-        assertThat(pc.diagnosticsWithCode("CONTRACT_REF_UNRESOLVED").get(0).detail()).contains("codex-cli/rollout/0.160.1/0.3.0-prototype");
+        assertThat(pc.diagnosticsWithCode("CONTRACT_REF_UNRESOLVED").get(0).detail()).contains("codex-cli/rollout/0.160.1/0.4.0-prototype");
         assertThat(pc.diagnosticsWithCode("REFERENCE_BEFORE_DECLARATION")).isNotEmpty();
 
         // (d) the source declaration removed: every event's artifact reference is unresolved
@@ -246,9 +246,9 @@ class StandaloneEventFileTest {
         assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
         assertThat(p.events).hasSize(39);
         OracleReport report = OcsfOracle.verify(p, natives(fixture));
-        // the layout reads; under the 0.6.0 reading its usage predates the canonical tranches (no uncached tranche, no component bases)
+        // the layout reads; under the current reading its usage predates the canonical tranches (no component bases, no conditional uncached value)
         assertThat(report.defects()).as(report.toString()).extracting(Check::property).containsOnly("usage.values");
-        assertThat(report.check("usage.values", "main/rollout.jsonl").detail()).contains("uncached_input_tokens MISSING");
+        assertThat(report.check("usage.values", "main/rollout.jsonl").detail()).contains("components[] has no entry for uncached_input_tokens");
 
         Path alone = alone(pkg(fixture), work.resolve("hist-alone"));
         OcsfPackage detached = PackageReader.open(alone.resolve("events.jsonl"));

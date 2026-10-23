@@ -1,5 +1,5 @@
 {
-  "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
+  "contract_uid": "codex-cli/rollout/0.160.1/0.4.0-prototype",
   "applies_to": {
     "product": "Codex CLI",
     "version": "0.160.1",
@@ -187,7 +187,7 @@
       "target": "agentic_cli/session_context",
       "activity": "3 Accounting reported",
       "owner": "response_uid = payload.response_id; turn_uid = payload.turn_id",
-      "usage": "payload.usage -> scope 2 Model response status 2 Final (the cited response's own usage, reported once); payload.turn_token_usage -> scope 3 Prompt turn status 1 Provisional (cumulative so far); payload.thread_token_usage -> scope 5 Session status 1 Provisional (cumulative so far) (rule codex.rollout.token_usage_record.v1); canonical tranches from each TokenUsage as on the exec stream (codex.usage.uncached_input.v1: uncached = input_tokens - cached_input_tokens only with cache_write_input_tokens reported 0, else unavailable; cache reads, cache writes, output, reasoning Part of output by codex.usage.reasoning_in_output.v1, reported_total_tokens = total_tokens); no aggregation is stated on this experimental route",
+      "usage": "payload.usage -> scope 2 Model response status 2 Final (the cited response's own usage, reported once); payload.turn_token_usage -> scope 3 Prompt turn status 1 Provisional (cumulative so far); payload.thread_token_usage -> scope 5 Session status 1 Provisional (cumulative so far) (rule codex.rollout.token_usage_record.v1); canonical tranches from each TokenUsage as on the exec stream (codex.usage.uncached_input.v2: uncached_input_tokens is never written; with cache_write_input_tokens 0 (possibly the deserializer default) and cached not above input the component is 3 Unavailable, measurement_status_id 3 Conditional, conditional_value = input_tokens - cached_input_tokens, else 3 Unavailable with the reason; cache reads, cache writes, output, reasoning Part of output by codex.usage.reasoning_in_output.v1, reported_total_tokens = total_tokens); no aggregation is stated on this experimental route",
       "residual": "whole record in data"
     },
     {
@@ -198,7 +198,7 @@
       },
       "target": "agentic_cli/prompt_turn",
       "activity": "2 Turn completed",
-      "usage": "every event_msg token_count in the same turn before task_complete -> usage_observation scope 3 Prompt turn from info.total_token_usage; the last one is status 2 Final (rule codex.rollout.token_count.v1), earlier ones 1 Provisional; each cites its own record; canonical tranches from each TokenUsage as on the exec stream (codex.usage.uncached_input.v1: uncached = input_tokens - cached_input_tokens only with cache_write_input_tokens reported 0, else unavailable; cache reads, cache writes, output, reasoning Part of output by codex.usage.reasoning_in_output.v1, reported_total_tokens = total_tokens); no aggregation is stated on this experimental route (pointers under /total_token_usage)",
+      "usage": "every event_msg token_count in the same turn before task_complete -> usage_observation scope 3 Prompt turn from info.total_token_usage; the last one is status 2 Final (rule codex.rollout.token_count.v1), earlier ones 1 Provisional; each cites its own record; canonical tranches from each TokenUsage as on the exec stream (codex.usage.uncached_input.v2: uncached_input_tokens is never written; with cache_write_input_tokens 0 (possibly the deserializer default) and cached not above input the component is 3 Unavailable, measurement_status_id 3 Conditional, conditional_value = input_tokens - cached_input_tokens, else 3 Unavailable with the reason; cache reads, cache writes, output, reasoning Part of output by codex.usage.reasoning_in_output.v1, reported_total_tokens = total_tokens); no aggregation is stated on this experimental route (pointers under /total_token_usage)",
       "cost": "none: the rollout reports no monetary cost",
       "status": "0 Unknown with basis 3: task_complete carries no status and no error field"
     },

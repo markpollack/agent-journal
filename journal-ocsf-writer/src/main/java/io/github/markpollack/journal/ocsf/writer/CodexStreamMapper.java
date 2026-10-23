@@ -9,7 +9,7 @@ import static io.github.markpollack.journal.ocsf.writer.MapperSupport.TOOL_KIND;
 import static io.github.markpollack.journal.ocsf.writer.MapperSupport.text;
 
 /**
- * Codex CLI {@code exec --json} live output (contract {@code codex-cli-0.160.1-exec-stream}, 0.4.0-prototype, whose
+ * Codex CLI {@code exec --json} live output (contract {@code codex-cli-0.160.1-exec-stream}, 0.6.0-prototype, whose
  * revised meanings await the managing reviewer's binding). The exec processor assigns its own item ids ({@code item_N}):
  * they are stream-local, unique only within this artifact of this Journal invocation, never a model-facing call id or a
  * provider's response id, which the stream omits. Agent messages and reasoning items are completed content items of
@@ -22,7 +22,9 @@ import static io.github.markpollack.journal.ocsf.writer.MapperSupport.text;
  * {@code tool_family}, a tool name is written only where the item reports one, and the kind comes from the family, or for
  * MCP from a reviewed namespace binding (none: Other), never from a bare name ({@link CodexItems} reads each item).
  * {@code turn.completed} carries the thread's cumulative usage ({@code ThreadTokenUsage.total}) as a cumulative snapshot
- * in canonical tranches; all-zero components may be the emitter's default. A web_search line carries the item's
+ * in canonical tranches: each value is at least its quantity (the total adds only the responses whose usage arrived),
+ * a zero the deserializer also writes for an omitted member may be that default, and the uncached tranche is only a
+ * conditional value. A web_search line carries the item's
  * {@code id} twice (the exec item id, then the search item's own id); only that declared form is interpreted, and its
  * record is retained verbatim. {@code thread.started} states the thread id, the session identity of every later event.
  * The stream carries no timestamps, so every event uses the capture-start fallback.
@@ -168,7 +170,8 @@ final class CodexStreamMapper implements SourceMapper {
         Jv usage = o.member("usage");
         Jv.Obj ob = MapperSupport.usage(5, 2, "codex.stream.thread_usage.v2: turn.completed carries ThreadTokenUsage.total, the thread's cumulative usage as of this turn's completion,"
                 + " including earlier turns of a resumed thread; not a per-turn measurement; final for this run", ctx.sourceRef(r, null, null, false), null, usage);
-        UsageTranches.aggregation(ob, 2, "codex.stream.thread_usage_aggregation.v1: a running total of the thread up to this turn's completion; never summed with another snapshot");
+        UsageTranches.aggregation(ob, 2, "codex.stream.thread_usage_aggregation.v2: a running total of the thread up to this turn's completion that adds only the responses "
+                + "whose completion carried usage; never summed with another snapshot");
         UsageTranches.codex(ob, usage, "", true);
         Integer measurement = CodexItems.measurement(usage);
         if (measurement != null) {

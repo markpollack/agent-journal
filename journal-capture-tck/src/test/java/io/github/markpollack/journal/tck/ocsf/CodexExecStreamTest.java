@@ -98,12 +98,12 @@ class CodexExecStreamTest {
         Path fixture = copy(CODEX_STREAM, work);
         editEvents(pkg(fixture), events -> {
             Json u = at(events, "prompt_turn", 2, 12).member("usage_observations").elements().get(0);
-            // the exact uncached tranche is 2^53+1 - 24576 = 9007199254716417; one less is a value defect
-            obj(u).members().put("uncached_input_tokens", num("9007199254716416"));
+            // the uncached difference 2^53+1 - 24576 = 9007199254716417 is only the component's conditional value; one less is a defect
+            obj(u.member("components").elements().get(0)).members().put("conditional_value", num("9007199254716416"));
             obj(u).members().remove("reasoning_tokens");
         });
         String detail = verify(fixture).check("usage.values", STREAM).detail();
-        assertThat(detail).contains("uncached_input_tokens VALUE").contains("reasoning_tokens MISSING");
+        assertThat(detail).contains("uncached_input_tokens conditional_value 9007199254716416 != 9007199254716417").contains("reasoning_tokens MISSING");
     }
 
     @Test

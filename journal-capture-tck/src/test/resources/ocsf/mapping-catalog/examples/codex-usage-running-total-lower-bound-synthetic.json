@@ -1,0 +1,103 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "codex-usage-running-total-lower-bound-synthetic",
+  "concept": "usage-components-and-cache",
+  "description": "LABELLED SYNTHETIC, source-grounded: one turn whose command execution between two agent outputs shows at least two model responses. Suppose the first response's usage reported 60 cache-write tokens and the second omitted cache_write_tokens, which the deserializer writes as 0, or that a third response's completion carried no usage at all, which adds nothing to the running total (ResponseEvent::Completed.token_usage is an Option; Session::record_token_usage_info updates only Some). The printed thread total is then exactly these bytes, the same as when every response reported: a positive cumulative value cannot establish that every contribution was reported. Every positive member is a Lower bound (at least this value), the observation too; the numbers are kept. With non-zero cache writes whose inclusion in input is not established the uncached tranche is Unavailable with no formula, so no conditional value either.",
+  "authored_from": [
+    "codex-api-0.160.1-responses-usage-defaults",
+    "codex-exec-0.160.1-emitter-usage",
+    "codex-protocol-0.160.1-token-usage-info",
+    "codex-api-0.160.1-completed-usage-optional",
+    "codex-core-0.160.1-record-token-usage",
+    "agentic-cli-0.8.0-usage-uncertainty"
+  ],
+  "native": {
+    "evidence_kind": "synthetic",
+    "profile": "codex_stream",
+    "compatibility_entry": "codex-cli/exec-json-stream/0.160.1",
+    "run_spec_fixture": "syn-codex-exec-families-0.160.1",
+    "artifact": "stream.jsonl",
+    "lines": [
+      "{\"type\":\"thread.started\",\"thread_id\":\"00000000-0000-4000-8000-00000000fa41\"}",
+      "{\"type\":\"turn.started\"}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_0\",\"type\":\"command_execution\",\"command\":\"ls\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"command_execution\",\"command\":\"ls\",\"aggregated_output\":\"a.txt\\n\",\"exit_code\":0,\"status\":\"completed\"}}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"agent_message\",\"text\":\"SYNTHETIC: listed.\"}}",
+      "{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":2000,\"cached_input_tokens\":800,\"cache_write_input_tokens\":60,\"output_tokens\":90,\"reasoning_output_tokens\":10}}"
+    ]
+  },
+  "expected": [
+    {
+      "record": 6,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/aggregation_id": 2,
+        "/usage_observations/0/measurement_status_id": 4,
+        "/usage_observations/0/cache_read_tokens": 800,
+        "/usage_observations/0/cache_write_tokens": 60,
+        "/usage_observations/0/output_tokens": 90,
+        "/usage_observations/0/reasoning_tokens": 10,
+        "/usage_observations/0/components/0/name": "uncached_input_tokens",
+        "/usage_observations/0/components/0/component_basis_id": 3,
+        "/usage_observations/0/components/1/name": "cache_read_tokens",
+        "/usage_observations/0/components/1/measurement_status_id": 4,
+        "/usage_observations/0/components/2/name": "cache_write_tokens",
+        "/usage_observations/0/components/2/component_basis_id": 1,
+        "/usage_observations/0/components/2/measurement_status_id": 4,
+        "/usage_observations/0/components/3/name": "output_tokens",
+        "/usage_observations/0/components/3/measurement_status_id": 4,
+        "/usage_observations/0/components/4/name": "reasoning_tokens",
+        "/usage_observations/0/components/4/measurement_status_id": 4
+      },
+      "absent": [
+        "/usage_observations/0/uncached_input_tokens",
+        "/usage_observations/0/components/0/measurement_status_id",
+        "/usage_observations/0/components/0/conditional_value"
+      ]
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "positive-write-as-measured",
+      "record": 6,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/components/2/measurement_status_id": 1
+      },
+      "why": "The thread running total adds only the responses whose completion carried usage and writes 0 for an omitted member, so a positive total does not establish that every response's contribution was reported; it is at least this value, not a measurement of the whole."
+    },
+    {
+      "id": "positive-output-as-measured",
+      "record": 6,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/components/3/measurement_status_id": 1
+      },
+      "why": "output_tokens is required in each response's usage, so no response's output was defaulted; but a response whose completion carried no usage added nothing, so 90 is still only at least the thread's output."
+    },
+    {
+      "id": "observation-measured",
+      "record": 6,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/measurement_status_id": 1
+      },
+      "why": "A non-zero member shows that some update arrived, not that every response's usage did."
+    },
+    {
+      "id": "writes-ignored",
+      "record": 6,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/uncached_input_tokens": 1200
+      },
+      "why": "Assumes input_tokens excludes the cache writes, which the source does not state; a formula that balances is not evidence."
+    }
+  ]
+}

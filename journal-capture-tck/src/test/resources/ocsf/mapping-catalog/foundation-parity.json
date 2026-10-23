@@ -2050,7 +2050,7 @@
         "claude-code/stream-json/2.1.304-stdout": "mapped",
         "codex-cli/exec-json-stream/0.160.1": "mapped"
       },
-      "route_evidence": "Claude reports the tranches directly; Codex input_tokens is inclusive and uncached is derived (claim codex.exec-stream.usage-components-inclusive); since extension 0.7.0 a Codex uncached tranche derived from a possibly defaulted cache-write 0 is stated Conditional",
+      "route_evidence": "Claude reports the tranches directly; Codex input_tokens is inclusive (claim codex.exec-stream.usage-components-inclusive). Since extension 0.8.0 (candidate) the Codex uncached tranche is never written: its cache-write 0 may be the deserializer default, so input - cached is only the component's conditional_value (Unavailable, Conditional); cache reads and writes stay mapped, positive values as lower bounds of the running total",
       "evidence": [
         "claim:codex.exec-stream.usage-components-inclusive",
         "claim:claude.stream.usage-tranches"
@@ -2084,7 +2084,7 @@
         "claude-code/stream-json/2.1.304-stdout": "mapped",
         "codex-cli/exec-json-stream/0.160.1": "mapped"
       },
-      "route_evidence": "Claude cache_read_input_tokens; Codex cached_input_tokens, a 0 stated Possibly default (the provider may omit input_tokens_details) since extension 0.7.0",
+      "route_evidence": "Claude cache_read_input_tokens; Codex cached_input_tokens, a 0 stated Possibly default (the provider may omit input_tokens_details) since extension 0.7.0; since extension 0.8.0 (candidate) a positive Codex value is a Lower bound of the thread running total, which adds only the responses whose usage arrived",
       "evidence": [],
       "action": "Managing review of the component measurement policy (claims r3)"
     },
@@ -2116,7 +2116,7 @@
         "claude-code/stream-json/2.1.304-stdout": "mapped",
         "codex-cli/exec-json-stream/0.160.1": "mapped"
       },
-      "route_evidence": "Claude cache_creation_input_tokens with ephemeral 5m/1h tiers; Codex cache_write_input_tokens, serde-defaulted to 0 when the provider omits it (rust-v0.160.1), stated Possibly default since extension 0.7.0",
+      "route_evidence": "Claude cache_creation_input_tokens with ephemeral 5m/1h tiers; Codex cache_write_input_tokens, serde-defaulted to 0 when the provider omits it (rust-v0.160.1), stated Possibly default since extension 0.7.0; since extension 0.8.0 (candidate) a positive Codex value is a Lower bound of the thread running total, which adds only the responses whose usage arrived",
       "evidence": [],
       "action": "Managing review of the component measurement policy (claims r3)"
     },
@@ -2175,7 +2175,7 @@
         "claude-code/stream-json/2.1.304-stdout": "mapped",
         "codex-cli/exec-json-stream/0.160.1": "mapped"
       },
-      "route_evidence": "Both routes",
+      "route_evidence": "Both routes; since extension 0.8.0 (candidate) a positive Codex value is a Lower bound of the thread running total, which adds only the responses whose usage arrived",
       "evidence": [],
       "action": "none"
     },
@@ -2208,7 +2208,7 @@
         "claude-code/stream-json/2.1.304-stdout": "mapped",
         "codex-cli/exec-json-stream/0.160.1": "mapped"
       },
-      "route_evidence": "Claude result output_tokens_details.thinking_tokens and modelUsage thinkingTokens; Codex reasoning_output_tokens, a 0 stated Possibly default (output_tokens_details may be omitted) since extension 0.7.0",
+      "route_evidence": "Claude result output_tokens_details.thinking_tokens and modelUsage thinkingTokens; Codex reasoning_output_tokens, a 0 stated Possibly default (output_tokens_details may be omitted) since extension 0.7.0; since extension 0.8.0 (candidate) a positive Codex value is a Lower bound of the thread running total, which adds only the responses whose usage arrived",
       "evidence": [],
       "action": "Managing review of the component measurement policy (claims r3)"
     },

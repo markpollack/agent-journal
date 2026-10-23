@@ -100,7 +100,7 @@ Rule: RULE-13, RULE-17. Tests: `OcsfOracleMutationTest#largeIntegerAndHighPrecis
 
 ### UC3-AC4: Record usage as reported
 
-When the source reports token usage, the event shall record each component at its reported scope with its provisional or final status, and shall not derive a total or record absence as zero.
+When the source reports token usage, the event shall record each component at its reported scope with its provisional or final status, and shall not sum components or snapshots into a total, record absence as zero, or state a derived component except by a declared rule that names its basis and operands.
 Rule: RULE-12. Tests: `OcsfOracleMutationTest#provisionalUsageMarkedFinalIsADefect`, `OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero`, `AnalysisViewsTest#usageSelectsOneApplicableFinalPerGroupAndNeverSums`.
 
 ### UC3-AC5: Record cost as a reported total
@@ -125,7 +125,7 @@ Rule: RULE-21. Tests: `OcsfOracleMutationTest#ambiguousOperationAttributedToOneC
 
 ### UC3-AC9: Leave unreported fields absent
 
-If a portable field has no reported value in the selected input, then the event shall leave the field absent rather than defaulting or deriving it.
+If a portable field has no reported value in the selected input and no declared, source-grounded rule establishes it exactly from reported values, then the event shall leave the field absent rather than default it, derive it by an undeclared or merely assumed formula, or fill it from another artifact.
 Rule: RULE-12. Tests: `OcsfOracleValueCheckTest#responseContentPresentWhereTheSourceHasNoneIsADefect`, `OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero`.
 
 ### UC3-AC10: Preserve the original time and its basis
@@ -314,8 +314,8 @@ Rule: RULE-42. Tests: `DuplicateMemberAddressingTest#onlyTheExactDeclaredLocatio
 
 ### UC5-AC23: State equal usage facts as equal tranches and an unproven tranche as unavailable
 
-When two sources report the same usage facts in different representations, the writer and the oracle profile shall state equal canonical tranches with each component's basis, and if a source's reported components do not establish a tranche, then they shall state it unavailable and write no value for it.
-Rule: RULE-43. Tests: `SemanticExampleTest#equivalentClaudeAndCodexUsageNormalizeToTheSameTranches`, `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`, `CodexExecStreamTest#anOffByOneUsageValueOrAMissingComponentIsAUsageValueDefect`.
+When two sources report the same usage facts in different representations, the writer and the oracle profile shall state equal canonical tranches with each component's basis, and if a source's reported components do not establish a tranche exactly, then they shall state it unavailable and write no canonical value for it.
+Rule: RULE-43. Tests: `SemanticExampleTest#equivalentClaudeAndCodexUsageStateEqualTranchesAndTheUnestablishedOneOnlyConditionally`, `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`, `CodexExecStreamTest#anOffByOneUsageValueOrAMissingComponentIsAUsageValueDefect`.
 
 ### UC5-AC24: Keep the reported stage, name, family and namespace of a tool activity
 
@@ -342,10 +342,15 @@ Rule: RULE-41. Tests: `SemanticClaimTest#anUnrelatedVersionBumpCarriesAnApproved
 If the extension definition of an approved claim's destination or a contract rule its binding names changes, then validation shall refuse the approval for the changed binding, and if checks of an approved, unchanged meaning fail, then the claim shall be reported approved but not verified.
 Rule: RULE-41, RULE-38. Tests: `SemanticClaimTest#aChangedDefinitionOrRuleRefusesTheApprovedBinding`, `SemanticClaimTest#anUnchangedMeaningWithAFailedImplementationIsApprovedButNotVerified`.
 
-### UC5-AC29: State a possibly defaulted usage component and the tranche derived from it
+### UC5-AC29: State a possibly defaulted usage component and keep a formula that depends on it conditional
 
-If a source can emit a usage component's value as a default without a measurement, then the writer and the oracle profile shall state that component possibly default and a tranche derived from it conditional on it, keep every reported value, and state a zero in a required member of an observation that shows an update arrived as measured.
-Rule: RULE-43. Tests: `UsageComponentMeasurementTest`, `UsageComponentMeasurementProfileTest`, `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`.
+If a source can emit a usage component's value as a default without a measurement, then the writer and the oracle profile shall state a value that may be that default possibly default, keep every reported value, and state the result of a formula that depends on it only as that component's conditional value naming the assumption, with no canonical value for the tranche.
+Rule: RULE-43, RULE-12. Tests: `UsageComponentMeasurementTest#aPossiblyDefaultedZeroInsideNonZeroUsageIsMarkedAndItsDerivationConditional`, `UsageComponentMeasurementTest#aZeroRequiredMemberIsALowerBoundNotADefaultBesideDefaultedZeros`, `UsageComponentMeasurementProfileTest#theProfileMarksAPossiblyDefaultedZeroAndItsConditionalDerivation`, `UsageUncertaintyControlTest`, `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`.
+
+### UC5-AC30: Do not establish complete contributions from a positive cumulative value
+
+If a cumulative usage value sums contributions of which the source may have received only some, or for which it may have written its default, then the writer and the oracle profile shall state that value at least the quantity it reports (a lower bound) and not measured, however large it is, and shall keep the number.
+Rule: RULE-43. Tests: `UsageComponentMeasurementTest#aPositiveRunningTotalWithAnOmittedContributionIsALowerBoundNotAMeasurement`, `UsageComponentMeasurementProfileTest#theProfileReadsAPositiveRunningTotalAsALowerBoundNotAMeasurement`, `UsageUncertaintyControlTest`, `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`.
 
 ## Change log
 
@@ -383,3 +388,12 @@ route awaits binding review) and UC5-AC28 (a changed definition or rule refuses 
 leave an approval unverified) and UC5-AC29 (a possibly defaulted usage component is stated possibly default and a
 tranche derived from it conditional, the number kept). No criterion removed; `RequirementsRosterTest` pins the
 per-use-case counts 7, 6, 15, 8 and 29.
+
+2026-10-23, requirements consistency reconciliation. Retained identifiers with clarified wording: UC3-AC4 (no total from
+components or snapshots, no absence as zero, a derived component only by a declared rule naming its basis and operands;
+it no longer forbids every derivation) and UC3-AC9 (absent unless reported or established exactly by a declared rule;
+an assumed formula does not establish a value). UC5-AC23 is retained, now explicit that an inexactly established
+tranche has no canonical value. UC5-AC29 is retained with changed meaning: the result of a formula depending on a
+possibly default value is only that component's conditional value, never the canonical tranche, and a zero required
+member is no longer stated measured. Added UC5-AC30 (a positive cumulative value is a lower bound, not a measurement).
+No criterion removed; `RequirementsRosterTest` pins the per-use-case counts 7, 6, 15, 8 and 30.

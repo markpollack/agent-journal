@@ -3,14 +3,16 @@
   "format_version": "0.1",
   "id": "codex-usage-cache-write-unavailable-synthetic",
   "concept": "usage-components-and-cache",
-  "description": "LABELLED SYNTHETIC, source-grounded (TokenUsage at rust-v0.160.1 has cache_write_input_tokens; the vendor test parses_cache_write_token_usage reports one): a turn.completed with non-zero cache writes. input_tokens includes the cached tokens (non_cached_input), but the pinned source does not establish whether it also includes the 60 cache writes, so the uncached tranche is unavailable, not guessed: neither 1000 - 800 - 60 nor 1000 - 800. Cache reads, cache writes, output and its reasoning part are copied. Component measurement (extension 0.7.0): a non-zero cache write cannot be the deserializer's default, so it is Measured, as are the other non-zero members; the unavailable tranche has no value and no measurement status.",
+  "description": "LABELLED SYNTHETIC, source-grounded (TokenUsage at rust-v0.160.1 has cache_write_input_tokens; the vendor test parses_cache_write_token_usage reports one): a turn.completed with non-zero cache writes. input_tokens includes the cached tokens (non_cached_input), but the pinned source does not establish whether it also includes the 60 cache writes, so the uncached tranche is unavailable, not guessed: neither 1000 - 800 - 60 nor 1000 - 800. Cache reads, cache writes, output and its reasoning part are copied. Component measurement (extension 0.8.0): a non-zero cache write cannot be the deserializer's default, but the running total adds only the responses whose usage arrived, so the 60 and the other non-zero members are Lower bounds; the unavailable tranche has no value, no conditional value (the formula itself is not established) and no measurement status.",
   "authored_from": [
     "codex-protocol-0.160.1-token-usage-arithmetic",
     "codex-api-0.160.1-responses-usage",
     "codex-exec-0.160.1-emitter-usage",
     "codex-api-0.160.1-responses-usage-defaults",
     "codex-exec-0.160.1-types",
-    "agentic-cli-0.7.0-usage-component"
+    "codex-api-0.160.1-completed-usage-optional",
+    "codex-core-0.160.1-record-token-usage",
+    "agentic-cli-0.8.0-usage-uncertainty"
   ],
   "native": {
     "evidence_kind": "synthetic",
@@ -63,14 +65,15 @@
         "/usage_observations/0/components/4/native_pointers": [
           "/reasoning_output_tokens"
         ],
-        "/usage_observations/0/components/1/measurement_status_id": 1,
-        "/usage_observations/0/components/2/measurement_status_id": 1,
-        "/usage_observations/0/components/3/measurement_status_id": 1,
-        "/usage_observations/0/components/4/measurement_status_id": 1
+        "/usage_observations/0/components/1/measurement_status_id": 4,
+        "/usage_observations/0/components/2/measurement_status_id": 4,
+        "/usage_observations/0/components/3/measurement_status_id": 4,
+        "/usage_observations/0/components/4/measurement_status_id": 4
       },
       "absent": [
         "/usage_observations/0/uncached_input_tokens",
-        "/usage_observations/0/components/0/measurement_status_id"
+        "/usage_observations/0/components/0/measurement_status_id",
+        "/usage_observations/0/components/0/conditional_value"
       ]
     }
   ],
@@ -94,6 +97,16 @@
         "/usage_observations/0/uncached_input_tokens": 200
       },
       "why": "Assumes input_tokens excludes the cache writes, which the source does not state either; a formula that balances is not evidence."
+    },
+    {
+      "id": "positive-write-as-measured",
+      "record": 3,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/components/2/measurement_status_id": 1
+      },
+      "why": "The thread running total adds only the responses whose completion carried usage and writes 0 for an omitted member, so a positive total does not establish that every response's contribution was reported; it is at least this value, not a measurement of the whole."
     }
   ]
 }

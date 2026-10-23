@@ -749,7 +749,7 @@
     },
     "measurement_status_id": {
       "caption": "Measurement Status ID",
-      "description": "Whether the source establishes that the reported values are a measurement: of the whole usage observation, or (on a usage component) of that one component. Separate from how Journal obtained a component (component_basis_id). Absent when no declared rule states it.",
+      "description": "What the source establishes about the reported quantity: of the whole usage observation, or (on a usage component) of that one component's canonical quantity. Separate from how Journal obtained a component (component_basis_id). Absent when no declared rule states it.",
       "type": "integer_t",
       "sibling": "measurement_status",
       "enum": {
@@ -758,7 +758,7 @@
         },
         "1": {
           "caption": "Measured",
-          "description": "The source reports these exact values only from a measurement."
+          "description": "The source establishes this exact value as a measurement of the quantity; for a running total, of every contribution to it."
         },
         "2": {
           "caption": "Possibly default",
@@ -766,7 +766,11 @@
         },
         "3": {
           "caption": "Conditional",
-          "description": "On a derived usage component: derived exactly from operands of which at least one is Possibly default; the value has its canonical meaning only if those operands are measurements, which the component's derivation names. A price estimate from it is exact only where the applicable price schedule does not distinguish the possibly defaulted operand (for example no separate cache-write rate for the model)."
+          "description": "On a usage component whose canonical value the source does not establish: a declared formula gives a result from the reported operands that is the component's quantity only under assumptions the component's derivation names (for example that a possibly default operand, or one that is only a lower bound, is a complete measurement). The result is the component's conditional_value, never the canonical value, which stays absent. A price estimate from it holds only under the same assumptions; it is exact only where the applicable price schedule does not distinguish the uncertain operand (for example no separate cache-write rate for the model)."
+        },
+        "4": {
+          "caption": "Lower bound",
+          "description": "The quantity is at least this value, and that it equals the quantity is not established: the value sums measured contributions while a contribution the source did not receive, or for which it wrote its default, is missing (for example a running total that adds only the responses whose usage arrived and writes 0 for an omitted member). A positive running total therefore does not establish that every contribution was reported."
         }
       }
     },
@@ -774,6 +778,11 @@
       "caption": "Measurement Status",
       "description": "Caption sibling of measurement_status_id.",
       "type": "string_t"
+    },
+    "conditional_value": {
+      "caption": "Conditional Value",
+      "description": "The result of a usage component's declared formula when the source does not establish the component's canonical value and the formula gives that quantity only under assumptions the component's derivation names (measurement_status_id 3 Conditional). Not the canonical value, which stays absent; consumers that use it inherit the named assumptions.",
+      "type": "long_t"
     },
     "reasoning_form_id": {
       "caption": "Reasoning Form ID",
@@ -808,7 +817,7 @@
     },
     "uncached_input_tokens": {
       "caption": "Uncached Input Tokens",
-      "description": "Ordinary input tokens: input neither read from nor written to a prompt cache. Disjoint from cache_read_tokens and cache_write_tokens. Present only when the source reports this component or a declared rule derives it exactly from components whose arithmetic the source establishes (components[] names which); otherwise absent and, when the source's components cannot establish it, listed as unavailable. Replaces input_tokens of 0.5.0-prototype and earlier, whose meaning followed each vendor.",
+      "description": "Ordinary input tokens: input neither read from nor written to a prompt cache. Disjoint from cache_read_tokens and cache_write_tokens. Present only when the source reports this component or a declared rule derives it exactly from components whose arithmetic the source establishes (components[] names which); otherwise absent and, when the source's components cannot establish it, listed as unavailable. A formula result that is this quantity only under named assumptions is never this value; it is the component's conditional_value. Replaces input_tokens of 0.5.0-prototype and earlier, whose meaning followed each vendor.",
       "type": "long_t"
     },
     "cache_write_tiers": {

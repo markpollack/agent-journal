@@ -273,12 +273,12 @@ class ParityLedgerTest {
                     var it = e.path("values").fields();
                     while (it.hasNext()) {
                         var v = it.next();
-                        derivedInExamples |= v.getKey().endsWith("/component_basis_id") && v.getValue().asInt() == 2;
+                        derivedInExamples |= v.getKey().endsWith("/component_basis_id") && v.getValue().asInt() == 2 || v.getKey().endsWith("/conditional_value");
                     }
                 }
             }
         }
-        assertThat(derivedInExamples).as("a reviewed example shows a derived usage component").isTrue();
+        assertThat(derivedInExamples).as("a reviewed example shows a derived usage component or a conditional derivation").isTrue();
         for (JsonNode c : inputs().catalog().path("concepts")) {
             if (!"usage-components-and-cache".equals(c.path("id").asText())) {
                 continue;

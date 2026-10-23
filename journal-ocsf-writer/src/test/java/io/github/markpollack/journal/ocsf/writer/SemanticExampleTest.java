@@ -127,26 +127,32 @@ class SemanticExampleTest {
             }
         }
         assertThat(differing).containsExactly("/usage_observations/0/scope_id");
-        assertThat(((Jv.Obj) exp.member("values")).members().keySet()).contains("/usage_observations/0/uncached_input_tokens", "/usage_observations/0/cache_read_tokens",
+        assertThat(((Jv.Obj) exp.member("values")).members().keySet()).contains("/usage_observations/0/components/0/conditional_value", "/usage_observations/0/cache_read_tokens",
                 "/usage_observations/0/output_tokens", "/usage_observations/0/data");
     }
 
     /**
      * The decision's equal-scope example on both sources: Claude's reported 200 / 800 / 0 and Codex's inclusive 1000 with
-     * 800 cached and no writes, read back from each saved package, are the same canonical tranches; the Claude value is
-     * reported and the Codex one derived, and their aggregation differs (one message's own total, a thread's running
-     * snapshot), so equal tranches are comparable but not summable.
+     * 800 cached and cache writes 0, read back from each saved package. The tranches both sources state are equal (cache
+     * reads, cache writes, output). Claude reports the uncached 200; on Codex 1000 - 800 = 200 holds only if the cache-write
+     * 0 was measured and the running total is complete, so Codex states the tranche unavailable with 200 as its conditional
+     * value: equal under the named assumptions, never silently the same canonical value. Their aggregation differs too (one
+     * message's own total, a thread's running snapshot), so equal tranches are comparable but not summable.
      */
     @Test
-    void equivalentClaudeAndCodexUsageNormalizeToTheSameTranches(@TempDir Path work) throws IOException {
+    void equivalentClaudeAndCodexUsageStateEqualTranchesAndTheUnestablishedOneOnlyConditionally(@TempDir Path work) throws IOException {
         Jv claude = usageOf("usage-equivalent-claude-synthetic", work.resolve("claude"));
         Jv codex = usageOf("usage-equivalent-codex-synthetic", work.resolve("codex"));
-        for (String tranche : List.of("uncached_input_tokens", "cache_read_tokens", "cache_write_tokens", "output_tokens")) {
+        for (String tranche : List.of("cache_read_tokens", "cache_write_tokens", "output_tokens")) {
             assertThat(Jv.write(claude.member(tranche))).as(tranche).isEqualTo(Jv.write(codex.member(tranche)));
         }
         assertThat(Jv.write(claude.member("uncached_input_tokens"))).isEqualTo("200");
+        assertThat(codex.member("uncached_input_tokens")).as("the Codex sources do not establish the uncached tranche").isNull();
+        Jv codexUncached = codex.path("components").elements().get(0);
         assertThat(claude.path("components").elements().get(0).member("component_basis").text()).isEqualTo("Reported");
-        assertThat(codex.path("components").elements().get(0).member("component_basis").text()).isEqualTo("Derived");
+        assertThat(codexUncached.member("component_basis").text()).isEqualTo("Unavailable");
+        assertThat(codexUncached.member("measurement_status").text()).isEqualTo("Conditional");
+        assertThat(Jv.write(codexUncached.member("conditional_value"))).as("equal only under the named assumptions").isEqualTo(Jv.write(claude.member("uncached_input_tokens")));
         assertThat(claude.member("aggregation").text()).isEqualTo("Scope total");
         assertThat(codex.member("aggregation").text()).isEqualTo("Cumulative snapshot");
         assertThat(Jv.write(claude.member("data"))).as("each native object is kept as reported").contains("\"input_tokens\":200");

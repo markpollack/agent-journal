@@ -89,9 +89,10 @@ final class CodexItems {
     }
 
     /**
-     * codex.stream.usage_measurement.v1: any non-zero component proves a token-usage update arrived (the emitter's
-     * default is all zeros), so the values are measured (1); all reported components zero may be that default (2);
-     * no integral component, no statement.
+     * codex.stream.usage_measurement.v2: any non-zero component proves a token-usage update arrived (the emitter's
+     * default is all zeros), but the thread running total adds only the responses whose usage arrived, so its values are
+     * each at least their quantity (4 Lower bound), never established as complete; all reported components zero may be
+     * that default (2); no integral component, no statement.
      */
     static Integer measurement(Jv usage) {
         boolean any = false;
@@ -105,7 +106,7 @@ final class CodexItems {
         if (!any) {
             return null;
         }
-        return nonZero ? 1 : 2;
+        return nonZero ? 4 : 2;
     }
 
     /** The container of the one declared repeat: the root's first (and only) {@code item} member, RFC 6901 {@code /item}. */

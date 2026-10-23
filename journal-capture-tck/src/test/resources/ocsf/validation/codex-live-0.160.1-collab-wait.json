@@ -4,7 +4,7 @@
  "fixture": "codex-live-0.160.1-collab-wait",
  "core": "main",
  "events_jsonl": "fixtures/codex-live-0.160.1-collab-wait/package/events.jsonl",
- "events_jsonl_sha256": "df36f0f8e87b52dcaa3e1cedeb3217f407ce188562edfa0cc4354cfaf27b9a6f",
+ "events_jsonl_sha256": "8a86316ad3d1ba6f95add6d74d36b4a63ac56a04fe635fd40e460da1e64a574f",
  "execution_records": 7,
  "declarations_skipped": 40,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
@@ -14,7 +14,7 @@
   "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
   "exit_code": 0
  },
- "compiled_schema_sha256": "e440367136816d6e99e2aac0451a9a0d147ecbe9597b18df9d966c2bf43261a2",
+ "compiled_schema_sha256": "1d3b294a2df516385ea5f3bc468065727d8dfbdb251b6fe1496be09b6a719bff",
  "result": {
   "event_files_processed": 7,
   "error_events": 0,

@@ -201,6 +201,35 @@
    "path": "prototype/ocsf-acp/extension/agentic_cli/objects/usage_component.json",
    "symbol": "usage_component.measurement_status_id; measurement_status_id 3 Conditional",
    "evidence_kind": "specification"
+  },
+  {
+   "id": "codex-api-0.160.1-completed-usage-optional",
+   "source": "openai/codex",
+   "revision": "d27764b82f7118f674371e6d6e76271d9d606edb",
+   "path": "codex-rs/codex-api/src/sse/responses.rs",
+   "blob": "6b2a7ed47cb662f375f47bcac908b8c17bedc75e",
+   "symbol": "response.completed arm: resp_val.get(\"usage\").filter(|usage| !usage.is_null()); ResponseEvent::Completed { token_usage: resp.usage.map(Into::into) }; tests asserting token_usage.is_none() for a completed response without usage",
+   "evidence_kind": "source_inspection",
+   "note": "a response can complete without usage (token_usage None), in which case it contributes nothing to the running total; ResponseEvent::Completed.token_usage is declared Option<TokenUsage> in codex-rs/codex-api/src/common.rs (blob 8d0d929ad09a8299213c5b7552d9e2fca37eb7d5)"
+  },
+  {
+   "id": "codex-core-0.160.1-record-token-usage",
+   "source": "openai/codex",
+   "revision": "d27764b82f7118f674371e6d6e76271d9d606edb",
+   "path": "codex-rs/core/src/session/mod.rs",
+   "blob": "e08a0fa5a8d55c89bfdb0476fd0831d0b6079fe2",
+   "symbol": "Session::record_token_usage_info: if let Some(token_usage) = token_usage { state.update_token_info_from_usage(...) }",
+   "evidence_kind": "source_inspection",
+   "note": "the thread total (TokenUsageInfo::append_last_usage) is updated only for a response that reported usage"
+  },
+  {
+   "id": "agentic-cli-0.8.0-usage-uncertainty",
+   "source": "agent-journal",
+   "revision": "extension agentic_cli 0.8.0-prototype (compiled sha256 1d3b294a2df516385ea5f3bc468065727d8dfbdb251b6fe1496be09b6a719bff)",
+   "path": "prototype/ocsf-acp/extension/agentic_cli/objects/usage_component.json",
+   "symbol": "usage_component.conditional_value; measurement_status_id 4 Lower bound; 3 Conditional (a formula result kept apart from the canonical value)",
+   "evidence_kind": "specification",
+   "note": "candidate definitions of the requirements reconciliation, 2026-10-23"
   }
  ]
 }

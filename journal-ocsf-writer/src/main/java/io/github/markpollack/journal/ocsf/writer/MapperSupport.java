@@ -26,7 +26,7 @@ final class MapperSupport {
     static final Map<Integer, String> STATUS = Map.of(0, "Unknown", 1, "Success", 2, "Failure", 99, "Other");
     static final Map<Integer, String> STATUS_BASIS = Map.of(0, "Unknown", 1, "Reported", 2, "Derived", 3, "Not derivable");
     static final Map<Integer, String> IDENTITY_BASIS = Map.of(0, "Unknown", 1, "Model-facing call identifier", 2, "Stream-local item identifier", 99, "Other");
-    static final Map<Integer, String> MEASUREMENT_STATUS = Map.of(0, "Unknown", 1, "Measured", 2, "Possibly default");
+    static final Map<Integer, String> MEASUREMENT_STATUS = Map.of(0, "Unknown", 1, "Measured", 2, "Possibly default", 4, "Lower bound");
     static final Map<Integer, String> REASONING_FORM = Map.of(0, "Unknown", 1, "Full reasoning", 2, "Summary", 3, "Redacted", 99, "Other");
     static final Map<Integer, String> TIME_BASIS = Map.of(1, "Source record", 2, "Earliest available fallback", 3, "Capture observation");
     static final Map<Integer, String> PROVIDER_BASIS = Map.of(0, "Unknown", 1, "Reported", 2, "Derived", 3, "Unavailable");

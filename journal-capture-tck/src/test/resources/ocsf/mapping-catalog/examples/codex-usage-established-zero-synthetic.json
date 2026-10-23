@@ -3,12 +3,14 @@
   "format_version": "0.1",
   "id": "codex-usage-established-zero-synthetic",
   "concept": "usage-components-and-cache",
-  "description": "LABELLED SYNTHETIC, source-grounded: non-zero usage in which output_tokens, a required member of the provider usage, is 0 beside zeros in cached, cache-write and reasoning members that the pinned deserializer also writes when the provider omits them. The update is established (input is non-zero), so the output zero is a measured zero (Measured), while the cached, cache-write and reasoning zeros are Possibly default; the derived uncached 1200 depends on two possibly default operands and is Conditional: it is the input not read from cache, and the uncached tranche only if neither cache read nor cache write was omitted.",
+  "description": "LABELLED SYNTHETIC, source-grounded: non-zero usage in which output_tokens, a required member of the provider usage, is 0 beside zeros in cached, cache-write and reasoning members that the pinned deserializer also writes when the provider omits them. The two kinds of zero stay distinguishable: the output zero is not a default (every response whose usage arrived measured output 0), so it is a Lower bound of the running total, while the cached, cache-write and reasoning zeros are Possibly default. Neither is established as the thread's complete quantity, because the running total adds only the responses whose usage arrived. 1200 - 0 = 1200 depends on two possibly default operands: it is the uncached component's conditional value, and the canonical uncached tranche stays absent.",
   "authored_from": [
     "codex-api-0.160.1-responses-usage-defaults",
     "codex-exec-0.160.1-types",
     "codex-protocol-0.160.1-token-usage-arithmetic",
-    "agentic-cli-0.7.0-usage-component"
+    "codex-api-0.160.1-completed-usage-optional",
+    "codex-core-0.160.1-record-token-usage",
+    "agentic-cli-0.8.0-usage-uncertainty"
   ],
   "native": {
     "evidence_kind": "synthetic",
@@ -28,13 +30,12 @@
       "class": "prompt_turn",
       "activity_id": 2,
       "values": {
-        "/usage_observations/0/measurement_status_id": 1,
-        "/usage_observations/0/uncached_input_tokens": 1200,
+        "/usage_observations/0/measurement_status_id": 4,
         "/usage_observations/0/cache_read_tokens": 0,
         "/usage_observations/0/cache_write_tokens": 0,
         "/usage_observations/0/output_tokens": 0,
         "/usage_observations/0/components/0/name": "uncached_input_tokens",
-        "/usage_observations/0/components/0/component_basis_id": 2,
+        "/usage_observations/0/components/0/component_basis_id": 3,
         "/usage_observations/0/components/0/measurement_status_id": 3,
         "/usage_observations/0/components/1/name": "cache_read_tokens",
         "/usage_observations/0/components/1/component_basis_id": 1,
@@ -44,11 +45,15 @@
         "/usage_observations/0/components/2/measurement_status_id": 2,
         "/usage_observations/0/components/3/name": "output_tokens",
         "/usage_observations/0/components/3/component_basis_id": 1,
-        "/usage_observations/0/components/3/measurement_status_id": 1,
+        "/usage_observations/0/components/3/measurement_status_id": 4,
         "/usage_observations/0/components/4/name": "reasoning_tokens",
         "/usage_observations/0/components/4/component_basis_id": 1,
-        "/usage_observations/0/components/4/measurement_status_id": 2
-      }
+        "/usage_observations/0/components/4/measurement_status_id": 2,
+        "/usage_observations/0/components/0/conditional_value": 1200
+      },
+      "absent": [
+        "/usage_observations/0/uncached_input_tokens"
+      ]
     }
   ],
   "counterexamples": [
@@ -73,14 +78,34 @@
       "why": "input_tokens_details may be omitted, and then the deserializer writes cached 0."
     },
     {
-      "id": "uncached-dropped",
+      "id": "required-zero-as-measured",
       "record": 3,
       "class": "prompt_turn",
       "activity_id": 2,
       "values": {
-        "/usage_observations/0/uncached_input_tokens": null
+        "/usage_observations/0/components/3/measurement_status_id": 1
       },
-      "why": "The reported members still establish the input not read from cache; the uncertainty is stated, the number is kept."
+      "why": "The thread running total adds only the responses whose completion carried usage and writes 0 for an omitted member, so a positive total does not establish that every response's contribution was reported; it is at least this value, not a measurement of the whole."
+    },
+    {
+      "id": "conditional-as-canonical",
+      "record": 3,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/uncached_input_tokens": 1200
+      },
+      "why": "A formula result that holds only under the named assumptions is the component's conditional value, never the canonical uncached tranche: a consumer summing uncached_input_tokens would otherwise mix an exact quantity with an assumption."
+    },
+    {
+      "id": "conditional-value-dropped",
+      "record": 3,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/components/0/conditional_value": null
+      },
+      "why": "The reported members still give the formula's result under its stated assumptions; the uncertainty is stated and the number is kept apart, not discarded."
     }
   ]
 }

@@ -28,7 +28,13 @@ import java.util.Map;
  * {@code output_tokens_details} is omitted ({@code unwrap_or(0)}), while {@code input_tokens} and
  * {@code output_tokens} are required. So where any member is non-zero (an update arrived), a non-zero member or a zero
  * required member is measured and a zero cached, cache-write or reasoning member possibly default; where all are zero
- * ({@code Usage::default}) each is possibly default; a difference with a possibly default operand is conditional.</li>
+ * ({@code Usage::default}) each is possibly default. Version 2 of that reading (exec stream): the printed usage is the
+ * thread running total ({@code ThreadTokenUsage.total}), which adds a response's usage only when its completion carried one
+ * ({@code ResponseEvent::Completed.token_usage} is an {@code Option}, {@code TokenUsageInfo::append_last_usage}), so
+ * with an update any member other than a zero defaultable one is only a lower bound, a positive one included. The
+ * uncached difference is never the canonical tranche on any Codex reading: a cache-write 0 may be the default and non-zero
+ * writes leave their inclusion unknown, so with writes 0 and cached not above input the difference is only the
+ * component's conditional value.</li>
  * </ul>
  * Anthropic and Claude Code usage carry no measurement statuses: no pinned source establishes whether Claude Code
  * relays an omitted member as 0.
@@ -42,6 +48,7 @@ final class TrancheReading {
     static final int MEASURED = 1;
     static final int POSSIBLY_DEFAULT = 2;
     static final int CONDITIONAL = 3;
+    static final int LOWER_BOUND = 4;
     /** Codex members the pinned deserializer fills with 0 when the provider omits them. */
     static final List<String> FILLED_WHEN_OMITTED = List.of("cached_input_tokens", "cache_write_input_tokens", "reasoning_output_tokens");
 
@@ -55,6 +62,7 @@ final class TrancheReading {
         final Map<String, List<String>> pointers = new LinkedHashMap<>();
         final List<ExpectedFacts.Tier> tiers = new ArrayList<>();
         final Map<String, Integer> statuses = new LinkedHashMap<>();
+        final Map<String, Json> conditionals = new LinkedHashMap<>();
         Integer relation;
 
         boolean copy(Json usage, String prefix, String member, String canonical) {
@@ -69,7 +77,7 @@ final class TrancheReading {
         }
 
         ExpectedFacts.Tranches build() {
-            return new ExpectedFacts.Tranches(values, bases, pointers, tiers, relation, statuses);
+            return new ExpectedFacts.Tranches(values, bases, pointers, tiers, relation, statuses, conditionals);
         }
     }
 
@@ -125,10 +133,7 @@ final class TrancheReading {
             Json v = usage == null ? null : usage.member(m);
             anyNonZero |= SourceProfile.isIntegral(v) && SourceProfile.decimal(v).signum() != 0;
         }
-        uncached(b, usage, prefix, anyNonZero);
-        if (!measure) {
-            b.statuses.clear();
-        }
+        uncached(b, usage, prefix);
         String[][] table = {{"cached_input_tokens", "cache_read_tokens"}, {"cache_write_input_tokens", "cache_write_tokens"}, {"output_tokens", "output_tokens"},
             {"reasoning_output_tokens", "reasoning_tokens"}};
         for (String[] row : table) {
@@ -145,23 +150,19 @@ final class TrancheReading {
         return b.build();
     }
 
-    /** A difference is conditional when any of its operands is possibly default, otherwise measured. */
-    private static int derivedStatus(Json input, Json cached, Json writes, boolean anyNonZero) {
-        boolean conditional = status("input_tokens", input, anyNonZero) == POSSIBLY_DEFAULT || status("cached_input_tokens", cached, anyNonZero) == POSSIBLY_DEFAULT
-                || status("cache_write_input_tokens", writes, anyNonZero) == POSSIBLY_DEFAULT;
-        return conditional ? CONDITIONAL : MEASURED;
-    }
-
-    /** What the source establishes about one reported Codex member's quantity. */
+    /** What the exec stream's running total establishes about one member: possibly default, or at least the stated value. */
     private static int status(String member, Json value, boolean anyNonZero) {
         if (!anyNonZero) {
             return POSSIBLY_DEFAULT;
         }
-        return SourceProfile.decimal(value).signum() == 0 && FILLED_WHEN_OMITTED.contains(member) ? POSSIBLY_DEFAULT : MEASURED;
+        return SourceProfile.decimal(value).signum() == 0 && FILLED_WHEN_OMITTED.contains(member) ? POSSIBLY_DEFAULT : LOWER_BOUND;
     }
 
-    /** Codex's uncached tranche: input minus cached when the reported cache writes are 0 and cached does not exceed input; otherwise unavailable. */
-    private static void uncached(Builder b, Json usage, String prefix, boolean anyNonZero) {
+    /**
+     * Codex's uncached tranche, never established: with reported cache writes 0 and cached not above input the difference
+     * is the conditional value of an unavailable component (Conditional); otherwise the component is unavailable without one.
+     */
+    private static void uncached(Builder b, Json usage, String prefix) {
         Json input = usage == null ? null : usage.member("input_tokens");
         Json cached = usage == null ? null : usage.member("cached_input_tokens");
         Json writes = usage == null ? null : usage.member("cache_write_input_tokens");
@@ -172,10 +173,10 @@ final class TrancheReading {
         BigDecimal difference = all ? SourceProfile.decimal(input).subtract(SourceProfile.decimal(cached)) : null;
         boolean derivable = all && SourceProfile.decimal(writes).signum() == 0 && difference.signum() >= 0;
         if (derivable) {
-            b.values.put("uncached_input_tokens", new Json.JNumber(difference.toBigIntegerExact().toString()));
-            b.statuses.put("uncached_input_tokens", derivedStatus(input, cached, writes, anyNonZero));
+            b.conditionals.put("uncached_input_tokens", new Json.JNumber(difference.toBigIntegerExact().toString()));
+            b.statuses.put("uncached_input_tokens", CONDITIONAL);
         }
-        b.bases.put("uncached_input_tokens", derivable ? DERIVED : UNAVAILABLE);
+        b.bases.put("uncached_input_tokens", UNAVAILABLE);
         b.pointers.put("uncached_input_tokens", List.of(prefix + "/input_tokens", prefix + "/cached_input_tokens", prefix + "/cache_write_input_tokens"));
     }
 }

@@ -198,7 +198,7 @@ class RequirementsAccountingIT {
                 junit("OcsfOracleFixtureTest#sanitizedClaudeStreamWithChildCoreIsJudgedPerCoreWithoutDefect", "sanitized real 2.1.299 stream"),
                 note("not claimed (not observed on any tested route): media/multimodal blocks, redacted or encrypted reasoning, an interactively answered permission prompt (the bidirectional stream-json route), Codex sub-agents, Codex permission decisions, a live open request at interruption")));
         CRITERIA.put("UC5-AC8", List.of(junit("RequirementsRosterTest#everyRuleHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedRoster", "46 rules, strict"),
-                junit("RequirementsRosterTest#everyCriterionHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedCounts", "62 criteria, strict"),
+                junit("RequirementsRosterTest#everyCriterionHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedCounts", "66 criteria, strict"),
                 junit("NativeRequirementTest#everyNativeRfcSpecificationCarriesTheCompleteStatementAndThePromptRendersIt", "complete statements (Agent Judge 0.19.0)")));
         CRITERIA.put("UC5-AC9", List.of(oracle("UC5-AC9", "reporter controls computed on the real reports")));
         CRITERIA.put("UC5-AC10", List.of(separate("mutation sensitivity is measured by the pit profiles of both modules (threshold 70%, mutators and targets unchanged) in detached worktrees of the delivered revision, not in this build; killed, survived and uncovered counts are reported apart in the return")));
@@ -236,10 +236,11 @@ class RequirementsAccountingIT {
                 junit("CodexDuplicateMemberProfileTest#rootMembersLiterallyNamedItemIdAreNotTheDeclaredForm", "the review's form and the root pair alone, oracle profile")));
         String examples = "reviewed examples (live and labelled synthetic), writer side";
         String profiled = "reviewed examples, oracle profile side";
-        CRITERIA.put("UC5-AC23", List.of(junit("SemanticExampleTest#equivalentClaudeAndCodexUsageNormalizeToTheSameTranches", "the decision's equal-scope pair, read back from both packages"),
+        CRITERIA.put("UC5-AC23", List.of(junit("SemanticExampleTest#equivalentClaudeAndCodexUsageStateEqualTranchesAndTheUnestablishedOneOnlyConditionally", "the decision's equal-scope pair, read back from both packages"),
                 junit("SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes", examples + " (usage tranches, cache-write unavailable)"),
                 junit("SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects", profiled),
-                junit("CodexExecStreamTest#anOffByOneUsageValueOrAMissingComponentIsAUsageValueDefect", "an off-by-one uncached tranche is a value defect")));
+                junit("CodexExecStreamTest#anOffByOneUsageValueOrAMissingComponentIsAUsageValueDefect", "an off-by-one conditional uncached value is a defect"),
+                junit("UsageUncertaintyControlTest#aConditionalValueWrittenAsTheCanonicalTrancheIsADefect", "an unestablished tranche written as canonical, independent oracle")));
         CRITERIA.put("UC5-AC24", List.of(junit("SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes", examples + " (started stages, completed-only, MCP built-in names, families)"),
                 junit("SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects", profiled),
                 junit("PackageReaderTest#aPackageWrittenWithExtension050StillReadsAndShowsOnlyTheRevisedMeanings", "a 0.5.0 package's Requested stage is a defect under the revised reading")));
@@ -251,11 +252,23 @@ class RequirementsAccountingIT {
                 junit("SemanticClaimTest#anExpandedRouteAwaitsBindingReviewWhileTheApprovedRouteStaysApproved", claims)));
         CRITERIA.put("UC5-AC28", List.of(junit("SemanticClaimTest#aChangedDefinitionOrRuleRefusesTheApprovedBinding", claims),
                 junit("SemanticClaimTest#anUnchangedMeaningWithAFailedImplementationIsApprovedButNotVerified", claims)));
+        String uncertainty = "labelled synthetic Codex exec stream, one statement corrupted, every number unchanged, independent oracle";
         CRITERIA.put("UC5-AC29", List.of(junit("UsageComponentMeasurementTest#aPossiblyDefaultedZeroInsideNonZeroUsageIsMarkedAndItsDerivationConditional", "Codex exec usage through the writer"),
-                junit("UsageComponentMeasurementTest#aZeroRequiredMemberIsMeasuredBesideDefaultedZeros", "Codex exec usage through the writer"),
+                junit("UsageComponentMeasurementTest#aZeroRequiredMemberIsALowerBoundNotADefaultBesideDefaultedZeros", "Codex exec usage through the writer"),
+                junit("UsageComponentMeasurementTest#anAllZeroObservationHasOnlyPossiblyDefaultComponents", "Codex exec usage through the writer"),
+                junit("UsageComponentMeasurementTest#anAbsentOperandLeavesTheTrancheUnavailableAndTheComponentAbsent", "missing operand: no formula, no conditional value"),
                 junit("UsageComponentMeasurementProfileTest#theProfileMarksAPossiblyDefaultedZeroAndItsConditionalDerivation", "the oracle profile's own reading"),
-                junit("UsageComponentMeasurementProfileTest#theProfileReadsARequiredZeroAsMeasuredAndAllZerosAsDefault", "the oracle profile's own reading"),
-                junit("SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes", examples + " (component measurement)"),
+                junit("UsageComponentMeasurementProfileTest#theProfileReadsARequiredZeroAsALowerBoundAndAllZerosAsDefault", "the oracle profile's own reading"),
+                junit("UsageUncertaintyControlTest#aConditionalDerivationRelabelledReportedOrDerivedIsADefect", uncertainty),
+                junit("UsageUncertaintyControlTest#aConditionalStatusOrValueDroppedOrStatedMeasuredIsADefect", uncertainty),
+                junit("UsageUncertaintyControlTest#callerSuppliedDataPresentedAsASourceReportedSettingIsADefect", "a caller-supplied prompt added to the stream's reported settings, live Claude recording"),
+                junit("SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes", examples + " (component measurement, conditional values)"),
+                junit("SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects", profiled)));
+        CRITERIA.put("UC5-AC30", List.of(junit("UsageComponentMeasurementTest#aPositiveRunningTotalWithAnOmittedContributionIsALowerBoundNotAMeasurement", "Codex exec running total through the writer"),
+                junit("UsageComponentMeasurementTest#aNonZeroCacheWriteIsALowerBoundAndTheUnprovenTrancheUnavailable", "Codex exec running total through the writer"),
+                junit("UsageComponentMeasurementProfileTest#theProfileReadsAPositiveRunningTotalAsALowerBoundNotAMeasurement", "the oracle profile's own reading"),
+                junit("UsageUncertaintyControlTest#aLowerBoundRelabelledMeasuredIsADefectThoughTheNumberIsUnchanged", uncertainty),
+                junit("SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes", examples + " (the two-response running total)"),
                 junit("SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects", profiled)));
     }
 
@@ -276,7 +289,7 @@ class RequirementsAccountingIT {
         RULES.put("RULE-9", new RuleEvidence(List.of("UC2-AC3"), List.of(), ""));
         RULES.put("RULE-10", new RuleEvidence(List.of("UC2-AC4", "UC2-AC6"), List.of(junit("CompatibilityTest#theBundledRegistryLoadsAndNamesContractsMappersAndSpecificationsThatExist", "every entry names an existing specification, schema, contract and mapper")), ""));
         RULES.put("RULE-11", new RuleEvidence(List.of("UC5-AC3", "UC5-AC11"), List.of(junit("PinsTest#bundledExtensionSourceListsEveryFileOfTheExtensionDirectory", "extension source complete")), ""));
-        RULES.put("RULE-12", new RuleEvidence(List.of("UC3-AC4", "UC3-AC5", "UC3-AC7", "UC3-AC9", "UC3-AC15", "UC4-AC7"), List.of(), ""));
+        RULES.put("RULE-12", new RuleEvidence(List.of("UC3-AC4", "UC3-AC5", "UC3-AC7", "UC3-AC9", "UC3-AC15", "UC4-AC7", "UC5-AC29"), List.of(), ""));
         RULES.put("RULE-13", new RuleEvidence(List.of("UC3-AC1", "UC3-AC2", "UC3-AC3", "UC3-AC6", "UC3-AC10", "UC3-AC13"), List.of(), ""));
         RULES.put("RULE-14", new RuleEvidence(List.of("UC3-AC1"), List.of(junit("OcsfOracleMutationTest#identicalResultsSwappedBetweenOwnersAreADefect", "no value-search ownership"),
                 junit("OcsfOracleMutationTest#resultOwnedByAnIdQuotedInsideItsOwnTextIsADefect", "no id-in-text ownership"), junit("OcsfOracleMutationTest#largeIntegerAndHighPrecisionDecimalAreExact", "no thresholds")), ""));
@@ -314,7 +327,7 @@ class RequirementsAccountingIT {
         RULES.put("RULE-41", new RuleEvidence(List.of("UC5-AC17", "UC5-AC18", "UC5-AC27", "UC5-AC28"), List.of(), "the digest boundaries are the catalog's semantic_claims.digest_boundary"));
         RULES.put("RULE-42", new RuleEvidence(List.of("UC5-AC22"), List.of(junit("CodexStreamMapperTest#onlyTheDeclaredWebSearchDuplicateIsInterpretedAndEveryOtherDuplicateStaysOpaque", "declared form retained verbatim, strict parsing unchanged")),
                 "a pointer locates a value; it establishes no meaning or ownership join"));
-        RULES.put("RULE-43", new RuleEvidence(List.of("UC5-AC23", "UC5-AC29"), List.of(), "tranche meanings are the extension's definitions; their claims await the managing reviewer's binding"));
+        RULES.put("RULE-43", new RuleEvidence(List.of("UC5-AC23", "UC5-AC29", "UC5-AC30"), List.of(), "tranche meanings are the extension's definitions; their claims await the managing reviewer's binding"));
         RULES.put("RULE-44", new RuleEvidence(List.of("UC5-AC25", "UC5-AC26"), List.of(), ""));
         RULES.put("RULE-45", new RuleEvidence(List.of("UC5-AC24"), List.of(), ""));
         RULES.put("RULE-46", new RuleEvidence(List.of("UC5-AC26"), List.of(), ""));
@@ -339,6 +352,8 @@ class RequirementsAccountingIT {
                 "MappingCatalogSummaryTest#aValueResultCoveringFewerOccurrencesThanTheNativePopulationCannotVerify"));
         CONTROLS.put("stale approval or altered claim meaning", List.of("SemanticClaimTest#aChangedMeaningUnderAnOldApprovalIsRefused", "SemanticClaimTest#anApprovalNeedsARecordedDecisionThatListsTheExactRevisionAndDigest"));
         CONTROLS.put("removed evidence, example or result link", List.of("SemanticClaimTest#aRemovedOrAlteredLinkIsExposed"));
+        CONTROLS.put("conditional or lower-bound value stated as an established measurement", List.of("UsageUncertaintyControlTest#aConditionalValueWrittenAsTheCanonicalTrancheIsADefect",
+                "UsageUncertaintyControlTest#aLowerBoundRelabelledMeasuredIsADefectThoughTheNumberIsUnchanged", "UsageUncertaintyControlTest#callerSuppliedDataPresentedAsASourceReportedSettingIsADefect"));
         CONTROLS.put("shared misreading with equal numbers", List.of("SemanticExampleTest#aPerTurnLabelOnTheCumulativeUsageIsRejectedThoughEveryComponentIsEqual", "SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"));
         CONTROLS.put("missing, altered or late declarations", List.of("StandaloneEventFileTest#removingOrAlteringAMandatoryDeclarationFailsInterpretationExplicitly", "DeclaredFileDiagnosticsTest#malformedDuplicateUnknownAndConflictingDeclarationsAreEachReported", "DeclaredFileDiagnosticsTest#aContractDeclarationAlteredUnderItsHashAndAnAttributeUsedBeforeItsAmendmentAreDefects"));
     }

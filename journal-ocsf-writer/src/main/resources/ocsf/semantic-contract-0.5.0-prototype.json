@@ -1,11 +1,11 @@
 {
-  "uid": "agent-journal/semantic-contract/0.4.0-prototype",
+  "uid": "agent-journal/semantic-contract/0.5.0-prototype",
   "non_production": true,
   "operations_implementation": {
     "library": "journal-capture-tck",
     "package": "io.github.markpollack.journal.tck.ocsf",
     "operations_version": "0.2",
-    "note": "Each declaration names a SemanticOperation implemented in Java and the schema paths it reads. Paths are validated against the embedded definition closure when the package is opened. Prose explains; the operation name and targets are the testable specification. Version 0.2 adds SETTINGS_AND_CONTEXT and the Session scope owner (session_uid) in usage selection. Version 0.3 (extension 0.6.0-prototype) reads uncached_input_tokens instead of input_tokens among the usage components, and the Codex exec stream no longer reports response identities: its content items carry item_uid, so its response assembly is UNKNOWN rather than a stream-local guess. Version 0.4 (extension 0.7.0-prototype) names the Codex exec-stream contract 0.5.0-prototype, whose usage components state their measurement status; no operation changed."
+    "note": "Each declaration names a SemanticOperation implemented in Java and the schema paths it reads. Paths are validated against the embedded definition closure when the package is opened. Prose explains; the operation name and targets are the testable specification. Version 0.2 adds SETTINGS_AND_CONTEXT and the Session scope owner (session_uid) in usage selection. Version 0.3 (extension 0.6.0-prototype) reads uncached_input_tokens instead of input_tokens among the usage components, and the Codex exec stream no longer reports response identities: its content items carry item_uid, so its response assembly is UNKNOWN rather than a stream-local guess. Version 0.4 (extension 0.7.0-prototype) names the Codex exec-stream contract 0.5.0-prototype, whose usage components state their measurement status; no operation changed. Version 0.5 (extension 0.8.0-prototype) names the Codex exec-stream contract 0.6.0-prototype, whose usage components state a lower bound for a running total and keep a conditional formula result apart from the canonical value, and the Codex rollout contract 0.4.0-prototype, whose uncached input is likewise only a conditional value; no operation changed."
   },
   "declarations": [
     {
@@ -25,7 +25,7 @@
       "classifiers": [
         {
           "rule": "codex.user_role_context.v1",
-          "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/0.4.0-prototype",
           "target": "prompt_turn.content_blocks[].text",
           "first_block_starts_with": "<environment_context>",
           "label": "environment_context",
@@ -64,13 +64,13 @@
           "basis": "each transcript record carries one further content block of the same message id"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.3.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/0.4.0-prototype",
           "mode": "SNAPSHOT",
           "identity_scope": "run",
           "basis": "item_completed AgentMessage and response_item message repeat the full message with one id; snapshots must agree"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
           "mode": "UNKNOWN",
           "identity_scope": "artifact",
           "basis": "the exec stream reports completed content items (item_uid, stream-local), not response identities; which items belong to one model response is not reported, so no assembly is possible"

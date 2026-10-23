@@ -7,7 +7,7 @@
   "codex-cli/exec-json-stream/0.160.1"
  ],
  "specification": "schema/vendor/codex-cli/exec-json-stream/0.160.1.json",
- "contract": "codex-cli/exec-json-stream/0.160.1/0.5.0-prototype",
+ "contract": "codex-cli/exec-json-stream/0.160.1/0.6.0-prototype",
  "contract_file": "codex-cli-0.160.1-exec-stream",
  "evidence_fixtures": [
   "codex-live-0.160.1-collab-wait",

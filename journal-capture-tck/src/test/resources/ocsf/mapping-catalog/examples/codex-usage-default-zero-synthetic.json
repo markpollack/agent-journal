@@ -3,13 +3,15 @@
   "format_version": "0.1",
   "id": "codex-usage-default-zero-synthetic",
   "concept": "usage-scope-finality-and-repeats",
-  "description": "LABELLED SYNTHETIC, source-grounded: a turn.completed whose components are all zero. The pinned emitter writes Usage::default() (all zeros) when no ThreadTokenUsageUpdated arrived (the vendor test turn_completion_recovers_final_message_from_turn_items emits exactly that), so a measured zero is not established: the components are preserved and the measurement status is Possibly default. Component measurement (extension 0.7.0): every component is Possibly default and the derived uncached 0 is Conditional.",
+  "description": "LABELLED SYNTHETIC, source-grounded: a turn.completed whose components are all zero. The pinned emitter writes Usage::default() (all zeros) when no ThreadTokenUsageUpdated arrived (the vendor test turn_completion_recovers_final_message_from_turn_items emits exactly that), so a measured zero is not established: the components are preserved and the measurement status is Possibly default. Component measurement (extension 0.8.0): every component is Possibly default; 0 - 0 = 0 is only the uncached component's conditional value, and the canonical uncached tranche stays absent.",
   "authored_from": [
     "codex-exec-0.160.1-emitter-usage",
     "codex-exec-0.160.1-emitter-tests",
     "codex-api-0.160.1-responses-usage-defaults",
     "codex-exec-0.160.1-types",
-    "agentic-cli-0.7.0-usage-component"
+    "codex-api-0.160.1-completed-usage-optional",
+    "codex-core-0.160.1-record-token-usage",
+    "agentic-cli-0.8.0-usage-uncertainty"
   ],
   "native": {
     "evidence_kind": "synthetic",
@@ -32,15 +34,18 @@
       "values": {
         "/usage_observations/0/scope_id": 5,
         "/usage_observations/0/measurement_status_id": 2,
-        "/usage_observations/0/uncached_input_tokens": 0,
         "/usage_observations/0/output_tokens": 0,
-        "/usage_observations/0/components/0/component_basis_id": 2,
+        "/usage_observations/0/components/0/component_basis_id": 3,
         "/usage_observations/0/components/0/measurement_status_id": 3,
         "/usage_observations/0/components/1/measurement_status_id": 2,
         "/usage_observations/0/components/2/measurement_status_id": 2,
         "/usage_observations/0/components/3/measurement_status_id": 2,
-        "/usage_observations/0/components/4/measurement_status_id": 2
-      }
+        "/usage_observations/0/components/4/measurement_status_id": 2,
+        "/usage_observations/0/components/0/conditional_value": 0
+      },
+      "absent": [
+        "/usage_observations/0/uncached_input_tokens"
+      ]
     }
   ],
   "counterexamples": [
@@ -55,16 +60,6 @@
       "why": "All zeros is also the emitter's default without an update; claiming a measurement would turn missing usage into a zero."
     },
     {
-      "id": "dropped-components",
-      "record": 4,
-      "class": "prompt_turn",
-      "activity_id": 2,
-      "values": {
-        "/usage_observations/0/uncached_input_tokens": null
-      },
-      "why": "The source reported the components; the ambiguity is stated, the values are not discarded."
-    },
-    {
       "id": "components-measured",
       "record": 4,
       "class": "prompt_turn",
@@ -73,6 +68,26 @@
         "/usage_observations/0/components/3/measurement_status_id": 1
       },
       "why": "With every member zero no update is established, so no component, not even a required one, is a measured zero."
+    },
+    {
+      "id": "dropped-components",
+      "record": 4,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/output_tokens": null
+      },
+      "why": "The source reported the components; the ambiguity is stated, the values are not discarded."
+    },
+    {
+      "id": "conditional-as-canonical",
+      "record": 4,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/uncached_input_tokens": 0
+      },
+      "why": "A formula result that holds only under the named assumptions is the component's conditional value, never the canonical uncached tranche: a consumer summing uncached_input_tokens would otherwise mix an exact quantity with an assumption."
     }
   ]
 }

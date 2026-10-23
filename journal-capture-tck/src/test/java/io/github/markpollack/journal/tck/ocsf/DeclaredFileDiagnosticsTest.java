@@ -48,7 +48,7 @@ class DeclaredFileDiagnosticsTest {
 
         Path c = copy(CODEX, work.resolve("extension"));
         editManifest(pkg(c), run -> obj(run.get("extension")).members().put("version", str("0.9.0-prototype")));
-        assertThat(open(c).diagnosticsWithCode("MANIFEST_DISAGREES").get(0).detail()).contains("extension 901 0.9.0-prototype vs declared 901 0.7.0-prototype");
+        assertThat(open(c).diagnosticsWithCode("MANIFEST_DISAGREES").get(0).detail()).contains("extension 901 0.9.0-prototype vs declared 901 0.8.0-prototype");
 
         Path d = copy(CODEX, work.resolve("classes"));
         editManifest(pkg(d), run -> obj(run.path("extension", "classes")).members().remove("tool_call"));
@@ -195,7 +195,7 @@ class DeclaredFileDiagnosticsTest {
     @Test
     void aContractDeclarationAlteredUnderItsHashAndAnAttributeUsedBeforeItsAmendmentAreDefects(@TempDir Path work) {
         Path contract = copy(CODEX, work.resolve("contract"));
-        editDeclarations(pkg(contract), decls -> obj(declaration(decls, "contract:codex-cli/rollout/0.160.1/0.3.0-prototype").path("contract", "embedded")).members().put("tampered", str("yes")));
+        editDeclarations(pkg(contract), decls -> obj(declaration(decls, "contract:codex-cli/rollout/0.160.1/0.4.0-prototype").path("contract", "embedded")).members().put("tampered", str("yes")));
         List<Diagnostic> d = open(contract).diagnosticsWithCode("CONTRACT_HASH_MISMATCH");
         assertThat(d).as("reported once, by the declaration pass").hasSize(1);
         assertThat(d.get(0).detail()).contains("line ").contains("differs from its pin");

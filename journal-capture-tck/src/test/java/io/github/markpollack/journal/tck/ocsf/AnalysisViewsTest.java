@@ -99,7 +99,8 @@ class AnalysisViewsTest {
         assertThat(groups).as("turn-0001, turn-0002, the msg_a_3 response scope and the session scope from token_usage_record").hasSize(4);
         Json turn1 = groups.get(0);
         assertThat(turn1.member("owner").text()).isEqualTo("turn-0001-synthetic");
-        assertThat(turn1.path("applicable_final", "uncached_input_tokens").scalarText()).as("the uncached tranche of the last cumulative token_count (2100 - 1500 cached), not a sum").isEqualTo("600");
+        assertThat(turn1.path("applicable_final", "cache_read_tokens").scalarText()).as("the cache reads of the last cumulative token_count, not a sum").isEqualTo("1500");
+        assertThat(turn1.path("applicable_final", "uncached_input_tokens")).as("2100 - 1500 is only a conditional value, never the canonical tranche").isNull();
         assertThat(turn1.member("provisional_observations").scalarText()).isEqualTo("1");
         assertThat(turn1.member("final_observations").scalarText()).isEqualTo("1");
         assertThat(u.member("aggregation").text()).startsWith("none");
@@ -113,11 +114,11 @@ class AnalysisViewsTest {
         Json repeated = AnalysisViews.usage(open(fixture)).member("groups").elements().get(0);
         assertThat(repeated.member("final_observations").scalarText()).isEqualTo("2");
         assertThat(repeated.member("repeated_final_observations").scalarText()).isEqualTo("1");
-        assertThat(repeated.path("applicable_final", "uncached_input_tokens").scalarText()).isEqualTo("600");
+        assertThat(repeated.path("applicable_final", "cache_read_tokens").scalarText()).isEqualTo("1500");
         editEvents(pkg(fixture), events -> {
             Json turn = at(events, "prompt_turn", 2, 17);
             List<Json> obs = turn.member("usage_observations").elements();
-            obj(obs.get(obs.size() - 1)).members().put("uncached_input_tokens", num("601"));
+            obj(obs.get(obs.size() - 1)).members().put("cache_read_tokens", num("1501"));
         });
         Json conflict = AnalysisViews.usage(open(fixture)).member("groups").elements().get(0);
         assertThat(conflict.member("conflict")).isEqualTo(new Json.JBool(true));

@@ -1,7 +1,7 @@
 {
   "_authored": "By hand from the native rollout.jsonl records of this labelled synthetic fixture (record indexes cited), 2026-10-20; a subset pattern compared against AnalysisViews.all, not generated from the views, the adapter or the contract.",
   "_rationale": {
-    "usage_tranches": "0.6.0-prototype: each Codex TokenUsage reports input_tokens inclusive of cached_input_tokens with cache writes 0, so the uncached tranche is their difference, computed by hand: record 13 1000-500=500, record 16 2100-1500=600, record 30 3300-2500=800, record 35 usage 1200-1000=200, turn 3300-2500=800, thread 5400-4000=1400.",
+    "usage_tranches": "0.8.0-prototype: each Codex TokenUsage reports input_tokens inclusive of cached_input_tokens with cache writes 0, which may be the deserializer's default, so their difference is only the uncached component's conditional value and no view states a canonical uncached tranche (0.6.0 and 0.7.0 stated it); the differences, computed by hand: record 13 1000-500=500, record 16 2100-1500=600, record 30 3300-2500=800, record 35 usage 1200-1000=200, turn 3300-2500=800, thread 5400-4000=1400.",
     "submissions": "Record 3 is a user-role message whose text starts with <environment_context>: Codex writes it before the prompt; user role alone is not human authorship (classifier codex.user_role_context.v1). Records 5 (response_item message) and 6 (item_completed UserMessage) carry the same text in turn-0001: two representations of one submission. Records 20 and 21 carry identical text in turn-0002: a second submission.",
     "responses": "Each assistant message is written twice with one id: item_completed AgentMessage (block type Text) then response_item message (block type output_text). The text is equal; the native block structure is not. msg_a_3 (28/29) has the same text as msg_a_1 (7/8) and a different id: a separate response.",
     "usage": "Turn 1 token_count at record 13 (input 1000) is superseded by record 16 (input 2100) before task_complete 17: 16 is the applicable final, 13 provisional; they are not summed (3100 would be wrong). Turn 2 has one token_count (30, input 3300) before task_complete 31. Record 35 (token_usage_record, added 2026-10-21 in the shape of the real pair B records) reports the cited response msg_a_3 own usage (final at Model-response scope), the turn cumulative so far (provisional, a second observation of the turn-0002 group beside the token_count final) and the thread cumulative (provisional at Session scope, no final): three scopes, never summed.",
@@ -40,16 +40,16 @@
     "groups": [
       {"scope": "Prompt turn", "owner": "turn-0001-synthetic", "source": "rollout.jsonl", "final_observations": 1, "repeated_final_observations": 0,
        "provisional_observations": 1, "conflict": false,
-       "applicable_final": {"uncached_input_tokens": 600, "output_tokens": 25, "cache_read_tokens": 1500, "cache_write_tokens": 0, "reasoning_tokens": 0, "reported_total_tokens": 2125},
-       "observations": [{"record_index": 13, "status": "Provisional", "components": {"uncached_input_tokens": 500, "output_tokens": 20}}, {"record_index": 16, "status": "Final"}]},
+       "applicable_final": {"output_tokens": 25, "cache_read_tokens": 1500, "cache_write_tokens": 0, "reasoning_tokens": 0, "reported_total_tokens": 2125},
+       "observations": [{"record_index": 13, "status": "Provisional", "components": {"output_tokens": 20}}, {"record_index": 16, "status": "Final"}]},
       {"scope": "Prompt turn", "owner": "turn-0002-synthetic", "source": "rollout.jsonl", "final_observations": 1, "provisional_observations": 1,
-       "applicable_final": {"uncached_input_tokens": 800, "output_tokens": 31, "reported_total_tokens": 3331},
+       "applicable_final": {"output_tokens": 31, "reported_total_tokens": 3331},
        "observations": [{"record_index": 30, "status": "Final"}, {"record_index": 35, "status": "Provisional"}]},
       {"scope": "Model response", "owner": "msg_a_3", "source": "rollout.jsonl", "final_observations": 1, "provisional_observations": 0,
-       "applicable_final": {"uncached_input_tokens": 200, "output_tokens": 6, "cache_read_tokens": 1000, "cache_write_tokens": 0, "reasoning_tokens": 0, "reported_total_tokens": 1206},
+       "applicable_final": {"output_tokens": 6, "cache_read_tokens": 1000, "cache_write_tokens": 0, "reasoning_tokens": 0, "reported_total_tokens": 1206},
        "observations": [{"record_index": 35, "status": "Final"}]},
       {"scope": "Session", "owner": "11111111-2222-4333-8444-555555555555", "source": "rollout.jsonl", "final_observations": 0, "provisional_observations": 1,
-       "applicable_final": null, "observations": [{"record_index": 35, "status": "Provisional", "components": {"uncached_input_tokens": 1400, "reported_total_tokens": 5456}}]}
+       "applicable_final": null, "observations": [{"record_index": 35, "status": "Provisional", "components": {"reported_total_tokens": 5456}}]}
     ],
     "aggregation": "none: groups are never summed across scopes, sources, models or child runs"
   },

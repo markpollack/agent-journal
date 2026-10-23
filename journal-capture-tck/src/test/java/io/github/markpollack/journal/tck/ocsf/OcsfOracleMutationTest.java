@@ -126,8 +126,8 @@ class OcsfOracleMutationTest {
                 Json turn = at(events, "prompt_turn", 2, 17);
                 for (Json u : turn.member("usage_observations").elements()) {
                     if ("16".equals(u.path("source_ref", "record_index").scalarText())) {
-                        // the native inclusive input 2^53+1 with 1500 cached gives the exact uncached tranche 9007199254739493
-                        obj(u).members().put("uncached_input_tokens", num("9007199254739493"));
+                        // the native inclusive input 2^53+1 with 1500 cached gives the exact conditional uncached value 9007199254739493
+                        obj(u.member("components").elements().get(0)).members().put("conditional_value", num("9007199254739493"));
                         obj(u.member("data").member("total_token_usage")).members().put("input_tokens", num("9007199254740993"));
                     }
                 }
@@ -141,13 +141,13 @@ class OcsfOracleMutationTest {
                 Json turn = at(events, "prompt_turn", 2, 17);
                 for (Json u : turn.member("usage_observations").elements()) {
                     if ("16".equals(u.path("source_ref", "record_index").scalarText())) {
-                        obj(u).members().put("uncached_input_tokens", num("9007199254739492"));
+                        obj(u.member("components").elements().get(0)).members().put("conditional_value", num("9007199254739492"));
                     }
                 }
             });
             OracleReport off = verify(fixture);
             assertThat(off.outcome("usage.values", ROLLOUT)).isEqualTo(Outcome.DEFECTIVE);
-            assertThat(off.check("usage.values", ROLLOUT).detail()).contains("uncached_input_tokens VALUE");
+            assertThat(off.check("usage.values", ROLLOUT).detail()).contains("uncached_input_tokens conditional_value 9007199254739492 != 9007199254739493");
         }
 
         @Test

@@ -19,18 +19,23 @@ final class UsageTranches {
     static final Map<Integer, String> COMPONENT_BASIS = Map.of(0, "Unknown", 1, "Reported", 2, "Derived", 3, "Unavailable");
     static final Map<Integer, String> AGGREGATION = Map.of(0, "Unknown", 1, "Scope total", 2, "Cumulative snapshot");
     static final Map<Integer, String> REASONING_RELATION = Map.of(0, "Unknown", 1, "Part of output", 2, "Separate from output");
-    static final Map<Integer, String> MEASUREMENT = Map.of(0, "Unknown", 1, "Measured", 2, "Possibly default", 3, "Conditional");
+    static final Map<Integer, String> MEASUREMENT = Map.of(0, "Unknown", 1, "Measured", 2, "Possibly default", 3, "Conditional", 4, "Lower bound");
 
     /** Codex TokenUsage members the pinned emitter writes as 0 when the provider omits them. */
     static final Set<String> CODEX_DEFAULTED = Set.of("cached_input_tokens", "cache_write_input_tokens", "reasoning_output_tokens");
     /** The Codex TokenUsage members whose values decide whether an update arrived. */
     static final List<String> CODEX_MEMBERS = List.of("input_tokens", "cached_input_tokens", "cache_write_input_tokens", "output_tokens", "reasoning_output_tokens");
-    static final String CODEX_MEASUREMENT = "codex.usage.component_measurement.v1: at rust-v0.160.1 an omitted provider cache_write_tokens deserializes as 0 "
-            + "(#[serde(default)]), an omitted input_tokens_details as cached and cache-write 0 (unwrap_or_default) and an omitted output_tokens_details as "
-            + "reasoning 0 (unwrap_or(0)); input_tokens and output_tokens are required. With any non-zero member an update arrived: a non-zero member and a zero "
-            + "required member are Measured, a zero cached, cache-write or reasoning member is Possibly default; with every member zero (Usage::default) each is "
-            + "Possibly default; a component derived from a Possibly default operand is Conditional. A non-zero cumulative value assumes the provider reports the "
-            + "member on every response or on none";
+    static final String CODEX_MEASUREMENT = "codex.usage.component_measurement.v2: at rust-v0.160.1 the exec stream's usage is the thread running total "
+            + "(ThreadTokenUsage.total), the element-wise sum of the usage of each response whose completion carried one (TokenUsageInfo::append_last_usage); "
+            + "a completion without usage adds nothing (ResponseEvent::Completed.token_usage is an Option), and within a response an omitted cache_write_tokens, "
+            + "input_tokens_details or output_tokens_details is written as cache-write, cached or reasoning 0 (#[serde(default)], unwrap_or_default, "
+            + "unwrap_or(0)) while input_tokens and output_tokens are required. So no member establishes the thread's complete quantity, however large: with any "
+            + "non-zero member a zero cached, cache-write or reasoning member is Possibly default and every other member is a Lower bound; with every member zero "
+            + "(Usage::default, no update arrived) each is Possibly default";
+    static final String CODEX_UNCACHED = "codex.usage.uncached_input.v2: input_tokens - cached_input_tokens (input_tokens includes cached_input_tokens: "
+            + "TokenUsage::non_cached_input) is the uncached input only if cache_write_input_tokens is a measured 0, which the pinned deserializer does not "
+            + "establish because it also writes 0 when the provider omits cache_write_tokens, and only if input_tokens and cached_input_tokens are complete "
+            + "measurements of the same responses; the result is this component's conditional value, never the canonical tranche";
 
     /** Anthropic: output_tokens is the inclusive billed total; output_tokens_details.thinking_tokens is always at most it. */
     static final String ANTHROPIC_REASONING = "anthropic.usage.thinking_in_output.v1: OutputTokensDetails.thinking_tokens is always <= output_tokens, which remains the inclusive billed total";
@@ -79,9 +84,10 @@ final class UsageTranches {
 
     /**
      * A Codex TokenUsage ({@code prefix} is its pointer within the observation's data): input_tokens includes
-     * cached_input_tokens (TokenUsage::non_cached_input), so the uncached tranche is derived as their difference when the
-     * reported cache writes are 0; when cache writes are reported non-zero the source does not establish whether
-     * input_tokens includes them, and the tranche is unavailable rather than guessed. Reasoning is part of output.
+     * cached_input_tokens (TokenUsage::non_cached_input), but the uncached tranche is never established: with reported cache
+     * writes of 0, which may be the deserializer's default, their difference is kept only as the component's conditional
+     * value; with non-zero cache writes the source does not establish whether input_tokens includes them and nothing is
+     * derived. Reasoning is part of output.
      */
     static void codex(Jv.Obj into, Jv usage, String prefix) {
         codex(into, usage, prefix, false);
@@ -89,8 +95,8 @@ final class UsageTranches {
 
     /**
      * As {@link #codex(Jv.Obj, Jv, String)}; with {@code measure} each component also states what the source establishes
-     * about its quantity (codex.usage.component_measurement.v1, the exec stream route; the experimental rollout reading
-     * does not state it yet).
+     * about its quantity (codex.usage.component_measurement.v2, the exec stream route; the experimental rollout reading
+     * does not state it yet, apart from the conditional uncached value every Codex reading keeps).
      */
     static void codex(Jv.Obj into, Jv usage, String prefix, boolean measure) {
         CodexReading r = new CodexReading(into, new Jv.Arr(), usage, prefix, measure, measure && codexUpdated(usage));
@@ -102,14 +108,14 @@ final class UsageTranches {
             relation(into, 1);
         }
         reported(into, r.components(), usage, prefix, "total_tokens", "reported_total_tokens");
-        if (r.components().elements().stream().anyMatch(c -> ((Jv.Obj) c).has("measurement_status_id"))) {
+        if (measure && r.components().elements().stream().anyMatch(c -> ((Jv.Obj) c).has("measurement_status_id"))) {
             Jv basis = into.member("basis");
             into.put("basis", (basis == null ? "" : basis.text() + "; ") + CODEX_MEASUREMENT);
         }
         finish(into, r.components());
     }
 
-    /** Whether any Codex member is non-zero: then a usage update arrived (codex.usage.component_measurement.v1). */
+    /** Whether any Codex member is non-zero: then a usage update arrived (codex.usage.component_measurement.v2). */
     private static boolean codexUpdated(Jv usage) {
         for (String m : CODEX_MEMBERS) {
             Jv v = usage == null ? null : usage.member(m);
@@ -120,12 +126,16 @@ final class UsageTranches {
         return false;
     }
 
-    /** codex.usage.component_measurement.v1 for one reported member: 1 Measured or 2 Possibly default. */
+    /**
+     * codex.usage.component_measurement.v2 for one member of the exec stream's running total: 2 Possibly default when no
+     * update arrived or a member the deserializer defaults is 0; otherwise 4 Lower bound, since the total adds only the
+     * responses whose usage arrived and a positive value does not establish that every contribution was reported.
+     */
     static int codexMeasurement(String member, Jv.Num value, boolean updated) {
         if (!updated) {
             return 2;
         }
-        return value.value().signum() == 0 && CODEX_DEFAULTED.contains(member) ? 2 : 1;
+        return value.value().signum() == 0 && CODEX_DEFAULTED.contains(member) ? 2 : 4;
     }
 
     /** One Codex usage object being stated into an observation, with whether measurements are stated and whether an update arrived. */
@@ -135,7 +145,12 @@ final class UsageTranches {
             return usage == null ? null : usage.member(name);
         }
 
-        /** The uncached tranche: derived when cache writes are reported 0 and cached does not exceed input, else unavailable with the reason. */
+        /**
+         * The uncached tranche, which the pinned source never establishes exactly: its cache-write operand is either non-zero
+         * (inclusion in input unknown) or a 0 the deserializer also writes for an omitted member. With cache writes 0 and
+         * cached not above input the difference is kept as the component's conditional value (codex.usage.uncached_input.v2,
+         * on every Codex reading); otherwise the component is unavailable with the reason.
+         */
         void uncached() {
             Jv input = member("input_tokens");
             Jv cached = member("cached_input_tokens");
@@ -143,7 +158,7 @@ final class UsageTranches {
             List<String> operands = List.of(prefix + "/input_tokens", prefix + "/cached_input_tokens", prefix + "/cache_write_input_tokens");
             if (!(isIntegral(input) && isIntegral(cached) && isIntegral(writes))) {
                 if (input != null || cached != null) {
-                    components.add(component("uncached_input_tokens", 3, operands, "codex.usage.uncached_input.v1: an operand is not reported as an integer"));
+                    components.add(component("uncached_input_tokens", 3, operands, "codex.usage.uncached_input.v2: an operand is not reported as an integer"));
                 }
                 return;
             }
@@ -154,45 +169,20 @@ final class UsageTranches {
                 components.add(component("uncached_input_tokens", 3, operands, unavailable));
                 return;
             }
-            into.put("uncached_input_tokens", new Jv.Num(in.subtract(ca).toBigIntegerExact().toString()));
-            List<String> defaulted = defaultedOperands();
-            Jv.Obj c = component("uncached_input_tokens", 2, operands, "codex.usage.uncached_input.v1: input_tokens - cached_input_tokens, with cache_write_input_tokens reported 0 "
-                    + "(input_tokens includes cached_input_tokens: TokenUsage::non_cached_input)" + conditionText(defaulted));
-            if (measure) {
-                measured(c, defaulted.isEmpty() ? 1 : 3);
-            }
+            Jv.Obj c = component("uncached_input_tokens", 3, operands, CODEX_UNCACHED);
+            measured(c, 3, new Jv.Num(in.subtract(ca).toBigIntegerExact().toString()));
             components.add(c);
         }
 
         /** Why the uncached tranche cannot be derived from integral operands, or {@code null} when it can. */
         static String unavailable(BigDecimal input, BigDecimal cached, BigDecimal writes) {
             if (writes.signum() != 0) {
-                return "codex.usage.uncached_input.v1: cache_write_input_tokens is non-zero and the pinned source does not establish "
+                return "codex.usage.uncached_input.v2: cache_write_input_tokens is non-zero and the pinned source does not establish "
                         + "whether input_tokens includes cache writes; the uncached tranche is not derived";
             }
             return input.compareTo(cached) < 0
-                    ? "codex.usage.uncached_input.v1: cached_input_tokens exceeds input_tokens, which the inclusion the derivation relies on excludes; not clamped"
+                    ? "codex.usage.uncached_input.v2: cached_input_tokens exceeds input_tokens, which the inclusion the derivation relies on excludes; not clamped"
                     : null;
-        }
-
-        /** The operands of the uncached derivation that are Possibly default (none when measurements are not stated). */
-        List<String> defaultedOperands() {
-            List<String> out = new java.util.ArrayList<>();
-            for (String m : measure ? List.of("input_tokens", "cached_input_tokens", "cache_write_input_tokens") : List.<String>of()) {
-                if (codexMeasurement(m, (Jv.Num) member(m), updated) == 2) {
-                    out.add(m);
-                }
-            }
-            return out;
-        }
-
-        static String conditionText(List<String> defaulted) {
-            if (defaulted.isEmpty()) {
-                return "";
-            }
-            String names = String.join(" and ", defaulted);
-            String verb = defaulted.size() > 1 ? " are" : " is";
-            return "; " + names + verb + " Possibly default, so the value is the input not read from cache and is the uncached tranche only if " + names + verb + " measured";
         }
 
         /** A reported member copied as its canonical component, with its measurement status when stated. */
@@ -201,17 +191,21 @@ final class UsageTranches {
                 return false;
             }
             if (measure) {
-                measured((Jv.Obj) components.elements().get(components.elements().size() - 1), codexMeasurement(nativeMember, (Jv.Num) member(nativeMember), updated));
+                measured((Jv.Obj) components.elements().get(components.elements().size() - 1), codexMeasurement(nativeMember, (Jv.Num) member(nativeMember), updated), null);
             }
             return true;
         }
     }
 
-    /** States what the source establishes about a component's quantity, apart from how Journal obtained it (component_basis_id). */
-    private static void measured(Jv.Obj component, int status) {
+    /**
+     * States what the source establishes about a component's quantity, apart from how Journal obtained it
+     * (component_basis_id), with a Conditional formula result kept as {@code conditional_value}, never the canonical value.
+     */
+    private static void measured(Jv.Obj component, int status, Jv conditional) {
         Jv derivation = component.members().remove("derivation");
         Jv pointers = component.members().remove("native_pointers");
-        component.put("measurement_status_id", status).put("measurement_status", MEASUREMENT.get(status)).put("native_pointers", pointers).put("derivation", derivation);
+        component.put("measurement_status_id", status).put("measurement_status", MEASUREMENT.get(status)).put("conditional_value", conditional)
+                .put("native_pointers", pointers).put("derivation", derivation);
     }
 
     /** States the aggregation facet with its declared rule appended to the observation's basis. */

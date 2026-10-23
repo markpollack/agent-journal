@@ -197,15 +197,18 @@ class LiveFixtureFeaturesTest {
         assertThat(report.check("population.operations", MAIN).detail()).isEqualTo("8 expected, 8 observed");
         Event turn = p.events("prompt_turn", 2).get(0);
         Json usage = turn.elements("usage_observations").get(0);
-        // the reported inclusive input 79261 less the 74880 cached (cache writes 0) is the uncached tranche, derived exactly
-        assertThat(usage.member("uncached_input_tokens").scalarText()).isEqualTo("4381");
+        // the reported inclusive input 79261 less the 74880 cached is 4381 only if the cache-write 0 was measured and both running
+        // totals are complete: it is the uncached component's conditional value, and the canonical tranche stays absent
+        assertThat(usage.member("uncached_input_tokens")).isNull();
+        assertThat(usage.member("components").elements().get(0).member("conditional_value").scalarText()).isEqualTo("4381");
         assertThat(usage.member("cache_read_tokens").scalarText()).isEqualTo("74880");
         assertThat(usage.member("aggregation").text()).isEqualTo("Cumulative snapshot");
         assertThat(usage.path("data", "input_tokens").scalarText()).as("the native inclusive value stays in data").isEqualTo("79261");
         assertThat(usage.member("reasoning_tokens").scalarText()).isEqualTo("18");
         // the thread's cumulative usage at turn completion (SEM-1 candidate reading of contract 0.3.0; pending Owner approval)
         assertThat(usage.member("scope").text()).isEqualTo("Session");
-        assertThat(usage.member("measurement_status").text()).isEqualTo("Measured");
+        // an update arrived, but the running total adds only the responses whose usage arrived: at least these values
+        assertThat(usage.member("measurement_status").text()).isEqualTo("Lower bound");
         assertThat(turn.get("cost_observation")).as("the exec stream reports no cost; none is invented").isNull();
         assertThat(report.outcome("identity.values", MAIN)).isEqualTo(Outcome.VERIFIED);
         // two completed content items; the stream names no model response, so none carries a response id

@@ -6,7 +6,7 @@
  },
  "extension": {
   "name": "agentic_cli",
-  "version": "0.7.0-prototype"
+  "version": "0.8.0-prototype"
  },
  "purpose": "Comparison inventory only: for each attribute our extension defines, the upstream attribute it means, if any, and the verdict. It does not reshape the extension; our attributes and names are kept.",
  "evidence_class": "source-verified",
@@ -1539,7 +1539,7 @@
    "upstream": null,
    "upstream_file": null,
    "verdict": "no_counterpart",
-   "caveat": "Upstream counts carry no statement that a value is measured rather than a source default."
+   "caveat": "Upstream counts carry no statement that a value is measured, possibly a source default, only a lower bound, or a conditional formula result."
   },
   {
    "ours": "usage_observation.measurement_status",
@@ -1958,7 +1958,7 @@
    "upstream": null,
    "upstream_file": null,
    "verdict": "no_counterpart",
-   "caveat": "Upstream counts carry no statement that a component is measured, possibly a source default, or derived from one."
+   "caveat": "Upstream counts carry no statement that a value is measured, possibly a source default, only a lower bound, or a conditional formula result."
   },
   {
    "ours": "usage_component.measurement_status",
@@ -1967,6 +1967,14 @@
    "upstream_file": null,
    "verdict": "no_counterpart",
    "caveat": "Caption sibling of measurement_status_id, which has no counterpart."
+  },
+  {
+   "ours": "usage_component.conditional_value",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Upstream counts carry no formula result kept apart from the canonical count under named assumptions."
   },
   {
    "ours": "usage_component.native_pointers",

@@ -3,11 +3,13 @@
   "format_version": "0.1",
   "id": "codex-usage-absent-operand-synthetic",
   "concept": "usage-components-and-cache",
-  "description": "LABELLED SYNTHETIC (outside the pinned emitter, which always prints all five members; a robustness control): a usage object without cached_input_tokens. The uncached tranche cannot be derived and is Unavailable with no value, cache_read_tokens is absent rather than 0, and the members that are present keep their measurement status.",
+  "description": "LABELLED SYNTHETIC (outside the pinned emitter, which always prints all five members; a robustness control): a usage object without cached_input_tokens. The uncached tranche cannot be derived and is Unavailable with no value, cache_read_tokens is absent rather than 0, and the members that are present keep their measurement status: the cache-write 0 Possibly default, output 50 and reasoning 5 Lower bounds of the running total. With an operand missing there is no formula and no conditional value.",
   "authored_from": [
     "codex-exec-0.160.1-types",
     "codex-protocol-0.160.1-token-usage-arithmetic",
-    "agentic-cli-0.7.0-usage-component"
+    "codex-api-0.160.1-completed-usage-optional",
+    "codex-core-0.160.1-record-token-usage",
+    "agentic-cli-0.8.0-usage-uncertainty"
   ],
   "native": {
     "evidence_kind": "synthetic",
@@ -32,14 +34,15 @@
         "/usage_observations/0/components/1/name": "cache_write_tokens",
         "/usage_observations/0/components/1/measurement_status_id": 2,
         "/usage_observations/0/components/2/name": "output_tokens",
-        "/usage_observations/0/components/2/measurement_status_id": 1,
+        "/usage_observations/0/components/2/measurement_status_id": 4,
         "/usage_observations/0/components/3/name": "reasoning_tokens",
-        "/usage_observations/0/components/3/measurement_status_id": 1
+        "/usage_observations/0/components/3/measurement_status_id": 4
       },
       "absent": [
         "/usage_observations/0/uncached_input_tokens",
         "/usage_observations/0/cache_read_tokens",
-        "/usage_observations/0/components/0/measurement_status_id"
+        "/usage_observations/0/components/0/measurement_status_id",
+        "/usage_observations/0/components/0/conditional_value"
       ]
     }
   ],

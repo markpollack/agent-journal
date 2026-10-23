@@ -3,12 +3,15 @@
   "format_version": "0.1",
   "id": "codex-thread-usage-resumed-synthetic",
   "concept": "usage-scope-finality-and-repeats",
-  "description": "LABELLED SYNTHETIC, source-grounded: the second exec run of one thread (codex exec resume). The thread's first run reported a total of input 1000 (cached 0), output 25. The pinned emitter copies ThreadTokenUsage.total into this run's turn.completed, and the protocol accumulates every response into total_token_usage (TokenUsageInfo::append_last_usage), so 2500 input tokens is the thread's cumulative total; this turn alone used 1500 input tokens, a delta the writer must not compute. A per-turn reading would claim 2500 for this turn with exactly the same numbers.",
+  "description": "LABELLED SYNTHETIC, source-grounded: the second exec run of one thread (codex exec resume). The thread's first run reported a total of input 1000 (cached 0), output 25. The pinned emitter copies ThreadTokenUsage.total into this run's turn.completed, and the protocol accumulates every response into total_token_usage (TokenUsageInfo::append_last_usage), so 2500 input tokens is the thread's cumulative total; this turn alone used 1500 input tokens, a delta the writer must not compute. A per-turn reading would claim 2500 for this turn with exactly the same numbers. Measurement (0.8.0-prototype): the running total is only a Lower bound (it adds the responses whose usage arrived), and 2500 - 2000 = 500 is the uncached component's conditional value, never the canonical tranche, because the cache-write 0 may be the deserializer default.",
   "authored_from": [
     "codex-exec-0.160.1-emitter-usage",
     "codex-app-server-0.160.1-thread-token-usage",
     "codex-protocol-0.160.1-token-usage-info",
-    "codex-protocol-0.160.1-token-usage-arithmetic"
+    "codex-protocol-0.160.1-token-usage-arithmetic",
+    "codex-api-0.160.1-completed-usage-optional",
+    "codex-core-0.160.1-record-token-usage",
+    "agentic-cli-0.8.0-usage-uncertainty"
   ],
   "native": {
     "evidence_kind": "synthetic",
@@ -32,14 +35,16 @@
         "/usage_observations/0/scope_id": 5,
         "/usage_observations/0/usage_status_id": 2,
         "/usage_observations/0/aggregation_id": 2,
-        "/usage_observations/0/measurement_status_id": 1,
-        "/usage_observations/0/uncached_input_tokens": 500,
+        "/usage_observations/0/measurement_status_id": 4,
         "/usage_observations/0/cache_read_tokens": 2000,
-        "/usage_observations/0/output_tokens": 40
+        "/usage_observations/0/output_tokens": 40,
+        "/usage_observations/0/components/0/component_basis_id": 3,
+        "/usage_observations/0/components/0/conditional_value": 500
       },
       "absent": [
         "/usage_observations/1",
-        "/usage_observations/0/input_tokens"
+        "/usage_observations/0/input_tokens",
+        "/usage_observations/0/uncached_input_tokens"
       ]
     }
   ],

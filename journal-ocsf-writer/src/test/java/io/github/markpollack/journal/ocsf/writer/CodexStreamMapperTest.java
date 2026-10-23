@@ -80,8 +80,9 @@ class CodexStreamMapperTest {
         assertThat(((Jv.Num) turn.member("activity_id")).value().intValue()).isEqualTo(2);
         assertThat(turn.member("turn_uid")).as("the stream names no turn id").isNull();
         Jv usage = turn.member("usage_observations").elements().get(0);
-        // 2^53+1 inclusive input less 24576 cached (cache writes 0) is the exact uncached tranche; the reported value stays in data
-        assertThat(Jv.write(usage.member("uncached_input_tokens"))).isEqualTo("9007199254716417");
+        // 2^53+1 inclusive input less 24576 cached (cache writes 0) is kept exactly as a conditional value; the reported value stays in data
+        assertThat(usage.member("uncached_input_tokens")).as("only a conditional value: the cache-write 0 may be the deserializer default").isNull();
+        assertThat(Jv.write(usage.path("components").elements().get(0).member("conditional_value"))).isEqualTo("9007199254716417");
         assertThat(Jv.write(usage.path("data", "input_tokens"))).isEqualTo("9007199254740993");
         assertThat(usage.member("input_tokens")).isNull();
         assertThat(Jv.write(usage.member("cache_read_tokens"))).isEqualTo("24576");
@@ -94,7 +95,7 @@ class CodexStreamMapperTest {
         // the thread's cumulative usage at turn completion, session scope, final for the run (SEM-1 candidate, pending Owner approval)
         assertThat(((Jv.Num) usage.member("scope_id")).value().intValue()).isEqualTo(5);
         assertThat(((Jv.Num) usage.member("usage_status_id")).value().intValue()).isEqualTo(2);
-        assertThat(((Jv.Num) usage.member("measurement_status_id")).value().intValue()).as("a non-zero component: a measured update").isEqualTo(1);
+        assertThat(((Jv.Num) usage.member("measurement_status_id")).value().intValue()).as("a non-zero component: an update arrived into a running total, at least these values").isEqualTo(4);
         assertThat(((Jv.Num) turn.member("status_id")).value().intValue()).isEqualTo(0);
         assertThat(((Jv.Num) turn.member("status_basis_id")).value().intValue()).isEqualTo(3);
         // the family inventory the writer declares

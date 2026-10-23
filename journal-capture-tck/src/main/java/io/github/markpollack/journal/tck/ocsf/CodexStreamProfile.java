@@ -141,7 +141,10 @@ final class CodexStreamProfile implements SourceProfile {
         return new ExpectedFacts.Result(index, SourceProfile.text(item, "id"), content, isError, structured, null, state, STREAM_LOCAL, itemType);
     }
 
-    /** All-zero components may be the emitter's Usage::default(); a non-zero one shows an update was measured. */
+    /**
+     * All-zero components may be the emitter's Usage::default() (2); a non-zero one shows an update arrived, but the thread
+     * running total adds only the responses whose usage arrived, so its values are each only a lower bound (4).
+     */
     private static Integer measurement(Json usage) {
         boolean any = false;
         boolean nonZero = false;
@@ -152,7 +155,7 @@ final class CodexStreamProfile implements SourceProfile {
                 nonZero |= ((Json.JNumber) v).value().signum() != 0;
             }
         }
-        return !any ? null : nonZero ? 1 : 2;
+        return !any ? null : nonZero ? 4 : 2;
     }
 
     /** Where the emitter's repeat is: the member {@code id} of the root's one {@code item} object (RFC 6901 {@code /item/id}). */
