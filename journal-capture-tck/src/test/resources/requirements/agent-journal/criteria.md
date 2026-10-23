@@ -319,13 +319,13 @@ Rule: RULE-43. Tests: `SemanticExampleTest#equivalentClaudeAndCodexUsageStateEqu
 
 ### UC5-AC24: Keep the reported stage, name, family and namespace of a tool activity
 
-If a source reports a tool invocation as started, or only its completion, or an MCP tool whose name equals a built-in tool's, then the writer and the oracle profile shall record only the reported stages, the reported name and family apart, and the kind of a reviewed binding or Other, never a model request or a built-in kind.
-Rule: RULE-45. Tests: `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`, `PackageReaderTest#aPackageWrittenWithExtension050StillReadsAndShowsOnlyTheRevisedMeanings`.
+If a source reports a tool invocation as started, or only its completion, or an MCP tool whose name equals a built-in tool's, then the writer and the oracle profile shall record only the reported stages, the reported name and family apart, and the kind of a reviewed binding of the tool's exact namespace and name, or otherwise Other, never a model request or a built-in kind inferred from the bare name.
+Rule: RULE-45. Tests: `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`, `PackageReaderTest#aPackageWrittenWithExtension050StillReadsAndShowsOnlyTheRevisedMeanings`, `ToolClassificationTest#onlyAReviewedExactNamespaceAndNameBindingGivesAnMcpToolAKind`, `ToolClassificationTest#claudesExactNameTableDoesNotGiveAnMcpToolTheKindOfABuiltInWithTheSameShortName`, `IdentityClassificationControlTest#aBuiltInKindGivenToAnMcpToolWithoutAReviewedBindingIsADefect`. Status: no reviewed binding exists in the bundled contracts; the reviewed-binding case is exercised on the writer with a test contract only, and the independent profile has no binding reading yet, so it refuses any kind other than Other for MCP until a reviewed binding is added to both.
 
 ### UC5-AC25: Scope a stream-local identifier to its invocation and artifact
 
-When two invocations of one run report the same stream-local item identifier, the writer shall record two items, each with its stream-local identity basis and its own invocation and artifact, and shall write neither as a call or response identity.
-Rule: RULE-44. Tests: `CodexStreamMapperTest#equalItemIdsOfTwoInvocationsAreTwoItemsOfTheirOwnNamespaces`.
+When two invocations of one run report the same stream-local item identifier, the writer shall record two items, each with its stream-local identity basis and its own invocation and artifact, and shall present neither as a model-facing call identifier or a provider's response identifier.
+Rule: RULE-44. Tests: `CodexStreamMapperTest#equalItemIdsOfTwoInvocationsAreTwoItemsOfTheirOwnNamespaces`, `CodexStreamMapperTest#equalToolItemIdsOfTwoInvocationsAreTwoStreamLocalCallsNeverModelFacingOrResponses`, `IdentityClassificationControlTest#aForgedResponseIdentityOnAStreamLocalToolItemIsADefect`, `IdentityClassificationControlTest#aModelFacingIdentityBasisOnAStreamLocalToolItemIsADefect`.
 
 ### UC5-AC26: Record a reasoning summary and an answer as two observations of unidentified responses
 
@@ -352,6 +352,11 @@ Rule: RULE-43, RULE-12. Tests: `UsageComponentMeasurementTest#aPossiblyDefaulted
 If a cumulative usage value sums contributions of which the source may have received only some, or for which it may have written its default, then the writer and the oracle profile shall state that value at least the quantity it reports (a lower bound) and not measured, however large it is, and shall keep the number.
 Rule: RULE-43. Tests: `UsageComponentMeasurementTest#aPositiveRunningTotalWithAnOmittedContributionIsALowerBoundNotAMeasurement`, `UsageComponentMeasurementProfileTest#theProfileReadsAPositiveRunningTotalAsALowerBoundNotAMeasurement`, `UsageUncertaintyControlTest`, `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`.
 
+
+### UC5-AC31: Record one invocation for a shell command whatever its text runs
+
+When a source reports one command or shell tool invocation whose text runs further commands, pipelines or interpreters, the writer and the oracle shall record exactly the invocation and the operations the source reports, with the command text verbatim, and no additional tool call, operation, argument vector or operating-system action derived from that text.
+Rule: RULE-45. Tests: `ToolClassificationTest#aShellCommandWithGrepAPipeAndPythonIsOneReportedInvocation`, `IdentityClassificationControlTest#anInvocationOrOperationInventedFromAShellCommandsTextIsAPopulationDefect`, `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`.
 ## Change log
 
 2026-10-21, consolidated event-file work order (REQ-1 amendment). Retained identifiers with changed
@@ -396,4 +401,9 @@ an assumed formula does not establish a value). UC5-AC23 is retained, now explic
 tranche has no canonical value. UC5-AC29 is retained with changed meaning: the result of a formula depending on a
 possibly default value is only that component's conditional value, never the canonical tranche, and a zero required
 member is no longer stated measured. Added UC5-AC30 (a positive cumulative value is a lower bound, not a measurement).
-No criterion removed; `RequirementsRosterTest` pins the per-use-case counts 7, 6, 15, 8 and 30.
+UC5-AC24 is narrowed to its rule: the kind of a reviewed binding of the exact namespace and name, otherwise Other, never
+a built-in kind inferred from the bare name (it no longer reads as forbidding a reviewed binding's kind). UC5-AC25 is
+narrowed to its rule: a stream-local identifier is never presented as a model-facing call identifier or a provider's
+response identifier (it no longer forbids the stream-local call identity Journal states with its basis). Added UC5-AC31
+(one invocation for a shell command whatever its text runs). No criterion removed; `RequirementsRosterTest` pins the
+per-use-case counts 7, 6, 15, 8 and 31.

@@ -1,0 +1,98 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "claude-bash-pipeline-synthetic",
+  "concept": "tool-kind-classification",
+  "description": "LABELLED SYNTHETIC, source-grounded: one Bash tool_use whose command pipes grep into a Python interpreter, and its one tool_result. The source reports one tool invocation named Bash with its structured input; Journal records that request (kind Execute from the declared exact-name table) with the arguments verbatim and the one result, and invents no tool call, operation or operating-system action for grep, python3 or the pipeline.",
+  "authored_from": [
+    "claude-agent-sdk-0.3.304-types"
+  ],
+  "native": {
+    "evidence_kind": "synthetic",
+    "profile": "claude_stream",
+    "compatibility_entry": "claude-code/stream-json/2.1.304-stdout",
+    "run_spec_fixture": "claude-live-2.1.304-denial",
+    "artifact": "stream.jsonl",
+    "lines": [
+      "{\"type\":\"system\",\"subtype\":\"init\",\"cwd\":\"/work\",\"session_id\":\"00000000-0000-4000-8000-0000000000d1\",\"tools\":[\"Bash\"],\"model\":\"claude-haiku-5-5\",\"permissionMode\":\"default\",\"claude_code_version\":\"2.1.304\"}",
+      "{\"type\":\"assistant\",\"message\":{\"model\":\"claude-haiku-5-5\",\"id\":\"msg_SYNTHETIC_pipeline\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"tool_use\",\"id\":\"toolu_SYNTHETIC_pipeline\",\"name\":\"Bash\",\"input\":{\"command\":\"grep -rn TODO src | python3 -c 'import sys; print(len(sys.stdin.readlines()))'\",\"description\":\"SYNTHETIC: count TODO lines\"}}],\"stop_reason\":\"tool_use\",\"usage\":{\"input_tokens\":20,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"output_tokens\":30}},\"parent_tool_use_id\":null,\"session_id\":\"00000000-0000-4000-8000-0000000000d1\",\"uuid\":\"00000000-0000-4000-8000-0000000000d2\"}",
+      "{\"type\":\"user\",\"message\":{\"role\":\"user\",\"content\":[{\"type\":\"tool_result\",\"content\":\"3\",\"is_error\":false,\"tool_use_id\":\"toolu_SYNTHETIC_pipeline\"}]},\"parent_tool_use_id\":null,\"session_id\":\"00000000-0000-4000-8000-0000000000d1\",\"uuid\":\"00000000-0000-4000-8000-0000000000d3\"}"
+    ]
+  },
+  "expected": [
+    {
+      "record": 2,
+      "class": "tool_call",
+      "activity_id": 1,
+      "values": {
+        "/tool_call_uid": "toolu_SYNTHETIC_pipeline",
+        "/tool_name": "Bash",
+        "/tool_kind_id": 6,
+        "/arguments": {
+          "command": "grep -rn TODO src | python3 -c 'import sys; print(len(sys.stdin.readlines()))'",
+          "description": "SYNTHETIC: count TODO lines"
+        }
+      },
+      "absent": [
+        "/tool_operation"
+      ]
+    },
+    {
+      "record": 3,
+      "class": "tool_call",
+      "activity_id": 2,
+      "values": {
+        "/tool_call_uid": "toolu_SYNTHETIC_pipeline"
+      }
+    }
+  ],
+  "absent_events": [
+    {
+      "record": 2,
+      "class": "tool_call",
+      "activity_id": 3,
+      "why": "the stream reports no separate operation for a command inside the Bash text"
+    },
+    {
+      "record": 2,
+      "class": "tool_call",
+      "activity_id": 4,
+      "why": "no started invocation was reported"
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "invented-grep-request",
+      "record": 2,
+      "class": "tool_call",
+      "activity_id": 1,
+      "values": {
+        "/tool_name": "grep"
+      },
+      "why": "grep runs inside the Bash command; the model requested Bash."
+    },
+    {
+      "id": "search-kind-from-text",
+      "record": 2,
+      "class": "tool_call",
+      "activity_id": 1,
+      "values": {
+        "/tool_kind_id": 5
+      },
+      "why": "The kind comes from the declared name of the reported tool, not from a search command in its text."
+    },
+    {
+      "id": "parsed-command",
+      "record": 2,
+      "class": "tool_call",
+      "activity_id": 1,
+      "values": {
+        "/arguments": {
+          "command": "grep -rn TODO src",
+          "description": "SYNTHETIC: count TODO lines"
+        }
+      },
+      "why": "The arguments are the reported input, verbatim."
+    }
+  ]
+}

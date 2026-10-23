@@ -990,6 +990,10 @@ public final class OcsfOracle {
             if (r.responseUid() != null && !r.responseUid().equals(e.text("response_uid"))) {
                 problems.add(what + " response_uid " + e.text("response_uid") + " != " + r.responseUid());
             }
+            else if (r.responseUid() == null && r.identityBasisId() != null && e.text("response_uid") != null) {
+                // a stream-local item states its identity basis; the source names no response, so none may be attached (RULE-44)
+                problems.add(what + " response_uid " + e.text("response_uid") + " present, but the source names no response for this item");
+            }
             if (r.reportedState() != null && !r.reportedState().equals(e.text("reported_state"))) {
                 problems.add(what + " reported_state " + e.text("reported_state") + " != " + r.reportedState());
             }

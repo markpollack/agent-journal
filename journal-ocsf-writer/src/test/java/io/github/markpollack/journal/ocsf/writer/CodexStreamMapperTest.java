@@ -247,6 +247,35 @@ class CodexStreamMapperTest {
     @Test
     void equalItemIdsOfTwoInvocationsAreTwoItemsOfTheirOwnNamespaces(@TempDir Path work) {
         String line = "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"agent_message\",\"text\":\"SYNTHETIC\"}}";
+        List<String> namespaces = itemsOfTwoInvocations(work, line, e -> {
+            assertThat(e.member("item_uid").text()).isEqualTo("item_0");
+            assertThat(e.member("identity_basis").text()).isEqualTo("Stream-local item identifier");
+            assertThat(e.member("response_uid")).as("a stream item is not a response identity").isNull();
+            return e.member("item_uid").text();
+        });
+        assertThat(namespaces).doesNotHaveDuplicates().hasSize(2);
+    }
+
+    /**
+     * The same for a tool item: item_0 is the tool_call_uid of an MCP invocation in each of two invocations of one run, a
+     * call identity scoped to its stream with its stream-local basis, never a model-facing call identifier (basis 1) or a
+     * response identity, and the two calls stay distinct by invocation and artifact.
+     */
+    @Test
+    void equalToolItemIdsOfTwoInvocationsAreTwoStreamLocalCallsNeverModelFacingOrResponses(@TempDir Path work) {
+        String line = "{\"type\":\"item.started\",\"item\":{\"id\":\"item_0\",\"type\":\"mcp_tool_call\",\"server\":\"local\",\"tool\":\"exec\",\"arguments\":{},\"result\":null,\"error\":null,\"status\":\"in_progress\"}}";
+        List<String> namespaces = itemsOfTwoInvocations(work, line, e -> {
+            assertThat(e.member("tool_call_uid").text()).isEqualTo("item_0");
+            assertThat(((Jv.Num) e.member("identity_basis_id")).value().intValue()).as("stream-local, not a model-facing call id").isEqualTo(2);
+            assertThat(e.member("response_uid")).as("a stream item is not a response identity").isNull();
+            assertThat(((Jv.Num) e.member("tool_kind_id")).value().intValue()).as("no reviewed binding of local/exec: Other, not Execute").isEqualTo(99);
+            return e.member("tool_call_uid").text();
+        });
+        assertThat(namespaces).doesNotHaveDuplicates().hasSize(2);
+    }
+
+    /** Writes {@code line} as the only record of two invocations of one run; each first event's scoped identity, after {@code check}. */
+    static List<String> itemsOfTwoInvocations(Path work, String line, java.util.function.Function<Jv, String> check) {
         List<String> namespaces = new ArrayList<>();
         for (int invocation = 0; invocation < 2; invocation++) {
             RunDescriptor d = run(CODEX_STREAM);
@@ -263,11 +292,9 @@ class CodexStreamMapperTest {
                 events.add(Jv.parse(l));
             }
             Jv e = events.get(0);
-            assertThat(e.member("item_uid").text()).isEqualTo("item_0");
-            assertThat(e.member("identity_basis").text()).isEqualTo("Stream-local item identifier");
-            assertThat(e.member("response_uid")).as("a stream item is not a response identity").isNull();
-            namespaces.add(e.path("journal", "run_uid").text() + "/" + Jv.write(e.path("journal", "invocation_index")) + "/" + e.path("source_ref", "artifact").text() + "/" + e.member("item_uid").text());
+            String id = check.apply(e);
+            namespaces.add(e.path("journal", "run_uid").text() + "/" + Jv.write(e.path("journal", "invocation_index")) + "/" + e.path("source_ref", "artifact").text() + "/" + id);
         }
-        assertThat(namespaces).doesNotHaveDuplicates().hasSize(2);
+        return namespaces;
     }
 }

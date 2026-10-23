@@ -198,7 +198,7 @@ class RequirementsAccountingIT {
                 junit("OcsfOracleFixtureTest#sanitizedClaudeStreamWithChildCoreIsJudgedPerCoreWithoutDefect", "sanitized real 2.1.299 stream"),
                 note("not claimed (not observed on any tested route): media/multimodal blocks, redacted or encrypted reasoning, an interactively answered permission prompt (the bidirectional stream-json route), Codex sub-agents, Codex permission decisions, a live open request at interruption")));
         CRITERIA.put("UC5-AC8", List.of(junit("RequirementsRosterTest#everyRuleHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedRoster", "46 rules, strict"),
-                junit("RequirementsRosterTest#everyCriterionHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedCounts", "66 criteria, strict"),
+                junit("RequirementsRosterTest#everyCriterionHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedCounts", "67 criteria, strict"),
                 junit("NativeRequirementTest#everyNativeRfcSpecificationCarriesTheCompleteStatementAndThePromptRendersIt", "complete statements (Agent Judge 0.19.0)")));
         CRITERIA.put("UC5-AC9", List.of(oracle("UC5-AC9", "reporter controls computed on the real reports")));
         CRITERIA.put("UC5-AC10", List.of(separate("mutation sensitivity is measured by the pit profiles of both modules (threshold 70%, mutators and targets unchanged) in detached worktrees of the delivered revision, not in this build; killed, survived and uncovered counts are reported apart in the return")));
@@ -243,8 +243,17 @@ class RequirementsAccountingIT {
                 junit("UsageUncertaintyControlTest#aConditionalValueWrittenAsTheCanonicalTrancheIsADefect", "an unestablished tranche written as canonical, independent oracle")));
         CRITERIA.put("UC5-AC24", List.of(junit("SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes", examples + " (started stages, completed-only, MCP built-in names, families)"),
                 junit("SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects", profiled),
-                junit("PackageReaderTest#aPackageWrittenWithExtension050StillReadsAndShowsOnlyTheRevisedMeanings", "a 0.5.0 package's Requested stage is a defect under the revised reading")));
-        CRITERIA.put("UC5-AC25", List.of(junit("CodexStreamMapperTest#equalItemIdsOfTwoInvocationsAreTwoItemsOfTheirOwnNamespaces", "labelled synthetic item_0 in two invocations")));
+                junit("PackageReaderTest#aPackageWrittenWithExtension050StillReadsAndShowsOnlyTheRevisedMeanings", "a 0.5.0 package's Requested stage is a defect under the revised reading"),
+                junit("ToolClassificationTest#onlyAReviewedExactNamespaceAndNameBindingGivesAnMcpToolAKind", "bundled contract (no binding) and a test contract with one reviewed binding, writer"),
+                junit("ToolClassificationTest#claudesExactNameTableDoesNotGiveAnMcpToolTheKindOfABuiltInWithTheSameShortName", "Claude exact-name table, writer"),
+                junit("IdentityClassificationControlTest#aBuiltInKindGivenToAnMcpToolWithoutAReviewedBindingIsADefect", "live Codex MCP recording, independent oracle"),
+                note("no reviewed namespace binding exists; the reviewed-binding case runs on the writer with a test contract only, and the independent profile has no binding reading yet")));
+        String identity = "live Codex recordings, one identity statement corrupted, independent oracle";
+        CRITERIA.put("UC5-AC25", List.of(junit("CodexStreamMapperTest#equalItemIdsOfTwoInvocationsAreTwoItemsOfTheirOwnNamespaces", "labelled synthetic content item_0 in two invocations"),
+                junit("CodexStreamMapperTest#equalToolItemIdsOfTwoInvocationsAreTwoStreamLocalCallsNeverModelFacingOrResponses", "labelled synthetic MCP item_0 in two invocations"),
+                junit("IdentityClassificationControlTest#aForgedResponseIdentityOnAStreamLocalToolItemIsADefect", identity),
+                junit("IdentityClassificationControlTest#aModelFacingIdentityBasisOnAStreamLocalToolItemIsADefect", identity),
+                junit("IdentityClassificationControlTest#aCallIdentityGivenToAStandaloneOperationIsADefect", identity)));
         CRITERIA.put("UC5-AC26", List.of(junit("SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes", examples + " (reasoning summary and answer)"),
                 junit("SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects", profiled),
                 junit("LiveFixtureFeaturesTest#theCodexRecordingExhibitsOperationsFailureRepetitionAndUsage", "live Codex content items without response ids")));
@@ -269,6 +278,10 @@ class RequirementsAccountingIT {
                 junit("UsageComponentMeasurementProfileTest#theProfileReadsAPositiveRunningTotalAsALowerBoundNotAMeasurement", "the oracle profile's own reading"),
                 junit("UsageUncertaintyControlTest#aLowerBoundRelabelledMeasuredIsADefectThoughTheNumberIsUnchanged", uncertainty),
                 junit("SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes", examples + " (the two-response running total)"),
+                junit("SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects", profiled)));
+        CRITERIA.put("UC5-AC31", List.of(junit("ToolClassificationTest#aShellCommandWithGrepAPipeAndPythonIsOneReportedInvocation", "labelled synthetic Codex command and Claude Bash pipelines, writer"),
+                junit("IdentityClassificationControlTest#anInvocationOrOperationInventedFromAShellCommandsTextIsAPopulationDefect", "live Claude and Codex recordings with an invented inner invocation or operation, independent oracle"),
+                junit("SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes", examples + " (shell pipelines)"),
                 junit("SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects", profiled)));
     }
 
@@ -329,7 +342,7 @@ class RequirementsAccountingIT {
                 "a pointer locates a value; it establishes no meaning or ownership join"));
         RULES.put("RULE-43", new RuleEvidence(List.of("UC5-AC23", "UC5-AC29", "UC5-AC30"), List.of(), "tranche meanings are the extension's definitions; their claims await the managing reviewer's binding"));
         RULES.put("RULE-44", new RuleEvidence(List.of("UC5-AC25", "UC5-AC26"), List.of(), ""));
-        RULES.put("RULE-45", new RuleEvidence(List.of("UC5-AC24"), List.of(), ""));
+        RULES.put("RULE-45", new RuleEvidence(List.of("UC5-AC24", "UC5-AC31"), List.of(), "no shell text is parsed: a command string is recorded verbatim (command_line), never split into argv or classified"));
         RULES.put("RULE-46", new RuleEvidence(List.of("UC5-AC26"), List.of(), ""));
     }
 
@@ -354,6 +367,8 @@ class RequirementsAccountingIT {
         CONTROLS.put("removed evidence, example or result link", List.of("SemanticClaimTest#aRemovedOrAlteredLinkIsExposed"));
         CONTROLS.put("conditional or lower-bound value stated as an established measurement", List.of("UsageUncertaintyControlTest#aConditionalValueWrittenAsTheCanonicalTrancheIsADefect",
                 "UsageUncertaintyControlTest#aLowerBoundRelabelledMeasuredIsADefectThoughTheNumberIsUnchanged", "UsageUncertaintyControlTest#callerSuppliedDataPresentedAsASourceReportedSettingIsADefect"));
+        CONTROLS.put("forged identity or classification from a bare name or command text", List.of("IdentityClassificationControlTest#aForgedResponseIdentityOnAStreamLocalToolItemIsADefect",
+                "IdentityClassificationControlTest#aBuiltInKindGivenToAnMcpToolWithoutAReviewedBindingIsADefect", "IdentityClassificationControlTest#anInvocationOrOperationInventedFromAShellCommandsTextIsAPopulationDefect"));
         CONTROLS.put("shared misreading with equal numbers", List.of("SemanticExampleTest#aPerTurnLabelOnTheCumulativeUsageIsRejectedThoughEveryComponentIsEqual", "SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects"));
         CONTROLS.put("missing, altered or late declarations", List.of("StandaloneEventFileTest#removingOrAlteringAMandatoryDeclarationFailsInterpretationExplicitly", "DeclaredFileDiagnosticsTest#malformedDuplicateUnknownAndConflictingDeclarationsAreEachReported", "DeclaredFileDiagnosticsTest#aContractDeclarationAlteredUnderItsHashAndAnAttributeUsedBeforeItsAmendmentAreDefects"));
     }
