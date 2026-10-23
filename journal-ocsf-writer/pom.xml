@@ -62,6 +62,13 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- Architecture boundaries and the extracted component view (src/test/.../architecture): this is the one module whose
+             test classpath holds both the writer and the independent TCK. TEST SCOPE; nothing in main depends on it. -->
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- MAP-1 mapper-comparison experiment only (src/test/.../experiment): candidate transformation engines compared
              against the direct-Java mappers. TEST SCOPE; nothing in main depends on them. JSLT pulls jackson-databind
              (version governed by the parent's jackson-bom import); Dashjoin JSONata has no dependencies. -->

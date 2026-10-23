@@ -1,0 +1,49 @@
+{
+ "kind": "agent-journal/appmap-recording-manifest",
+ "status": "observed execution of one replayed test within the recording scope; the recording itself is not committed",
+ "test": "CliCaptureTest#codexVersionIsDiscoveredOnceByTheDocumentedCommandAndTheThreadIdBecomesTheSession",
+ "test_status": "succeeded",
+ "recorder": {
+  "agent": "com.appland:appmap-agent:1.30.2",
+  "jvm": "21.0.2+13-jvmci-23.1-b30",
+  "config_sha256": "c40ab24389d3de56562abc85bc282f7b424fac16a8bc4255120731ca9e8f6417"
+ },
+ "exporter": "@appland/appmap@3.204.0 sequence-diagram --format plantuml --expand package:io/github/markpollack/journal/ocsf/writer --expand package:io/github/markpollack/journal/tck/ocsf",
+ "recording": {
+  "sha256": "d2094142aec62fde0dff62ee606b32b96d3d811def0b05a87ae5979f2a972c2b",
+  "bytes": 97606,
+  "events": 202,
+  "calls": 101,
+  "threads": 2
+ },
+ "thread_interleaving": {
+  "main_awaitEnd_call_ids": [
+   17,
+   31,
+   43,
+   55,
+   63,
+   79,
+   93,
+   113,
+   139,
+   159
+  ],
+  "pump_map_call_ids": [
+   24,
+   36,
+   48,
+   60,
+   72,
+   84,
+   96,
+   106,
+   118,
+   132,
+   144,
+   154
+  ],
+  "meaning": "AppMap event ids are assigned in recording order across threads; the pump thread's map calls fall between the main thread's awaitEnd polls"
+ },
+ "varies_between_recordings": "elapsed times, object ids, temporary paths, the number of awaitEnd polls and the read chunks standard output arrives in (scheduling); the calls of one run are fixed in its recording"
+}

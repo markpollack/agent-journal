@@ -64,6 +64,7 @@
         <junit.version>5.14.4</junit.version>
         <assertj.version>3.27.7</assertj.version>
         <logback.version>1.6.3</logback.version>
+        <archunit.version>1.5.0</archunit.version>
 
         <!-- Plugin versions -->
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
@@ -158,6 +159,11 @@
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
                 <version>${logback.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tngtech.archunit</groupId>
+                <artifactId>archunit</artifactId>
+                <version>${archunit.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

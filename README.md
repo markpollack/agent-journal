@@ -35,6 +35,9 @@ plus a human-feedback API for judge calibration and golden datasets.
 | `antigravity-cli-capture` | Antigravity CLI → journal bridge: parses Antigravity's streaming JSON into an ordered tool trajectory | 17 | `journal-core` |
 | `junie-cli-capture` | Junie CLI → journal bridge: parses Junie's durable session `events.jsonl` into an ordered tool trajectory with per-call cost that reconciles to the session total | 17 | `journal-core` |
 
+The OCSF-based writer (`journal-ocsf-writer`) and its independent reader and oracle (`journal-capture-tck`) are
+non-production prototypes; the [architecture guide](docs/architecture/README.md) explains how they fit together.
+
 `journal-core` targets Java 17 and depends on nothing but Jackson. The Claude Code and
 capture modules bind vendor SDKs published as Java 21 bytecode and therefore
 require a Java 21 runtime. The Grok, Codex, Antigravity and Junie capture modules parse

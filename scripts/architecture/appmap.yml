@@ -1,0 +1,42 @@
+# AppMap Java agent recording scope for the architecture guide's observed-flow pilot (scripts/architecture-docs.sh --appmap).
+# Only the entry methods of each documentation component are instrumented: recording every internal call of one replay test
+# produced 666 MB. The test code, the JDK, libraries and every method not listed here are not recorded.
+name: agent-journal
+language: java
+packages:
+  - path: io.github.markpollack.journal.ocsf.writer
+    methods:
+      - class: CliCapture
+        name: run|discoverVersion|archiveNativeSessionFile|freezeExpectedSources
+      - class: CliCapture\$Pump
+        name: run|awaitEnd
+      - class: LiveCapture
+        name: run
+      - class: OcsfRunWriter
+        name: open|source|flush|complete|interrupt
+      - class: OcsfRunWriter\$Source
+        name: bytes|record|end|interpret|retainUnselected
+      - class: LineFramer
+        name: push|end
+      - class: Compatibility
+        name: select|bootstrap
+      - class: (ClaudeStream|ClaudeTranscript|CodexStream|CodexRollout|OpaqueText)Mapper
+        name: map|end
+      - class: CoreWriter
+        name: append|flush|finish
+  - path: io.github.markpollack.journal.tck.ocsf
+    methods:
+      - class: PackageReader
+        name: open
+      - class: DeclaredFile
+        name: read
+      - class: OcsfOracle
+        name: verify
+      - class: NativeArtifact
+        name: read
+      - class: ExpectedSources
+        name: read|beside
+      - class: (ClaudeStream|ClaudeTranscript|CodexStream|CodexRollout|Antigravity|OpaqueText)Profile
+        name: expected
+      - class: AnalysisViews
+        name: all
