@@ -2045,17 +2045,17 @@
       "tier": "1",
       "tier_reason": "Execution information represented by a Tier 1 foundation",
       "definition": "defined",
-      "state": "partial",
+      "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
         "codex-cli/exec-json-stream/0.160.1": "mapped"
       },
-      "route_evidence": "Claude reports the tranches directly; Codex input_tokens is inclusive and uncached is derived (claim codex.exec-stream.usage-components-inclusive). A Codex cache-write 0 may be a deserializer default (component-uncertainty repair)",
+      "route_evidence": "Claude reports the tranches directly; Codex input_tokens is inclusive and uncached is derived (claim codex.exec-stream.usage-components-inclusive); since extension 0.7.0 a Codex uncached tranche derived from a possibly defaulted cache-write 0 is stated Conditional",
       "evidence": [
         "claim:codex.exec-stream.usage-components-inclusive",
         "claim:claude.stream.usage-tranches"
       ],
-      "action": "Component-uncertainty repair (this wave); state the consumer derivation of the inclusive total"
+      "action": "Managing review of the component measurement policy (claims r3); the inclusive total is the sum of established tranches, derived by consumers"
     },
     {
       "id": "usage.cache-read",
@@ -2079,14 +2079,14 @@
       "tier": "1",
       "tier_reason": "Execution information represented by a Tier 1 foundation",
       "definition": "defined",
-      "state": "partial",
+      "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
         "codex-cli/exec-json-stream/0.160.1": "mapped"
       },
-      "route_evidence": "Claude cache_read_input_tokens; Codex cached_input_tokens (a 0 may be a default when the provider omits input_tokens_details)",
+      "route_evidence": "Claude cache_read_input_tokens; Codex cached_input_tokens, a 0 stated Possibly default (the provider may omit input_tokens_details) since extension 0.7.0",
       "evidence": [],
-      "action": "Component-uncertainty repair (this wave)"
+      "action": "Managing review of the component measurement policy (claims r3)"
     },
     {
       "id": "usage.cache-write",
@@ -2111,14 +2111,14 @@
       "tier": "1",
       "tier_reason": "Execution information represented by a Tier 1 foundation",
       "definition": "defined",
-      "state": "partial",
+      "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
         "codex-cli/exec-json-stream/0.160.1": "mapped"
       },
-      "route_evidence": "Claude cache_creation_input_tokens with ephemeral 5m/1h tiers; Codex cache_write_input_tokens is serde-defaulted to 0 when the provider omits it (rust-v0.160.1)",
+      "route_evidence": "Claude cache_creation_input_tokens with ephemeral 5m/1h tiers; Codex cache_write_input_tokens, serde-defaulted to 0 when the provider omits it (rust-v0.160.1), stated Possibly default since extension 0.7.0",
       "evidence": [],
-      "action": "Component-uncertainty repair (this wave)"
+      "action": "Managing review of the component measurement policy (claims r3)"
     },
     {
       "id": "usage.cache-input-ambiguous",
@@ -2203,14 +2203,14 @@
       "tier": "1",
       "tier_reason": "Execution information represented by a Tier 1 foundation",
       "definition": "defined",
-      "state": "partial",
+      "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
         "codex-cli/exec-json-stream/0.160.1": "mapped"
       },
-      "route_evidence": "Claude result output_tokens_details.thinking_tokens and modelUsage thinkingTokens; Codex reasoning_output_tokens (a 0 may be a default when output_tokens_details is omitted)",
+      "route_evidence": "Claude result output_tokens_details.thinking_tokens and modelUsage thinkingTokens; Codex reasoning_output_tokens, a 0 stated Possibly default (output_tokens_details may be omitted) since extension 0.7.0",
       "evidence": [],
-      "action": "Component-uncertainty repair (this wave)"
+      "action": "Managing review of the component measurement policy (claims r3)"
     },
     {
       "id": "usage.total",

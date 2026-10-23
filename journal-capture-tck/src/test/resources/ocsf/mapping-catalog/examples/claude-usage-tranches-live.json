@@ -3,7 +3,7 @@
   "format_version": "0.1",
   "id": "claude-usage-tranches-live",
   "concept": "usage-components-and-cache",
-  "description": "Claude Code 2.1.304 stdout (live recording): usage in canonical tranches. Record 4, a provisional assistant message: its own usage (one API message: scope total of the response) with uncached 2, cache reads 11228, cache writes 13295 split into tiers 5m 0 and 1h 13295 (parts of the writes, never additional). Record 18, the result: the run usage, uncached 8, reads 89843, writes 16376 (tier 1h 16376), output 839 of which 305 thinking (reasoning is part of output: thinking_tokens is always at most output_tokens, the inclusive billed total); its coverage of sub-agents is not established, so no aggregation is stated; and modelUsage for claude-haiku-5-5, Claude Code's running total per model (a cumulative snapshot), with thinkingTokens already counted inside outputTokens.",
+  "description": "Claude Code 2.1.304 stdout (live recording): usage in canonical tranches. Record 4, a provisional assistant message: its own usage (one API message: scope total of the response) with uncached 2, cache reads 11228, cache writes 13295 split into tiers 5m 0 and 1h 13295 (parts of the writes, never additional). Record 18, the result: the run usage, uncached 8, reads 89843, writes 16376 (tier 1h 16376), output 839 of which 305 thinking (reasoning is part of output: thinking_tokens is always at most output_tokens, the inclusive billed total); its coverage of sub-agents is not established, so no aggregation is stated; and modelUsage for claude-haiku-5-5, Claude Code's running total per model (a cumulative snapshot), with thinkingTokens already counted inside outputTokens. No component measurement status is stated (extension 0.7.0): no pinned source establishes whether Claude Code relays an omitted usage member as 0, so none is claimed.",
   "authored_from": [
     "anthropic-prompt-caching-2026-10-22",
     "anthropic-sdk-typescript-0.135.0-usage",
@@ -38,7 +38,8 @@
       },
       "absent": [
         "/usage_observations/0/reasoning_tokens",
-        "/usage_observations/0/cache_write_tiers/2"
+        "/usage_observations/0/cache_write_tiers/2",
+        "/usage_observations/0/components/0/measurement_status_id"
       ]
     },
     {

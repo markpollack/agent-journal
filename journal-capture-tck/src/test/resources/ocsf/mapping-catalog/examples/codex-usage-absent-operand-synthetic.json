@@ -1,0 +1,68 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "codex-usage-absent-operand-synthetic",
+  "concept": "usage-components-and-cache",
+  "description": "LABELLED SYNTHETIC (outside the pinned emitter, which always prints all five members; a robustness control): a usage object without cached_input_tokens. The uncached tranche cannot be derived and is Unavailable with no value, cache_read_tokens is absent rather than 0, and the members that are present keep their measurement status.",
+  "authored_from": [
+    "codex-exec-0.160.1-types",
+    "codex-protocol-0.160.1-token-usage-arithmetic",
+    "agentic-cli-0.7.0-usage-component"
+  ],
+  "native": {
+    "evidence_kind": "synthetic",
+    "profile": "codex_stream",
+    "compatibility_entry": "codex-cli/exec-json-stream/0.160.1",
+    "run_spec_fixture": "syn-codex-exec-families-0.160.1",
+    "artifact": "stream.jsonl",
+    "lines": [
+      "{\"type\":\"thread.started\",\"thread_id\":\"00000000-0000-4000-8000-00000000fa32\"}",
+      "{\"type\":\"turn.started\"}",
+      "{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1000,\"cache_write_input_tokens\":0,\"output_tokens\":50,\"reasoning_output_tokens\":5}}"
+    ]
+  },
+  "expected": [
+    {
+      "record": 3,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/components/0/name": "uncached_input_tokens",
+        "/usage_observations/0/components/0/component_basis_id": 3,
+        "/usage_observations/0/components/1/name": "cache_write_tokens",
+        "/usage_observations/0/components/1/measurement_status_id": 2,
+        "/usage_observations/0/components/2/name": "output_tokens",
+        "/usage_observations/0/components/2/measurement_status_id": 1,
+        "/usage_observations/0/components/3/name": "reasoning_tokens",
+        "/usage_observations/0/components/3/measurement_status_id": 1
+      },
+      "absent": [
+        "/usage_observations/0/uncached_input_tokens",
+        "/usage_observations/0/cache_read_tokens",
+        "/usage_observations/0/components/0/measurement_status_id"
+      ]
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "absent-as-zero",
+      "record": 3,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/cache_read_tokens": 0
+      },
+      "why": "An absent member is not a zero."
+    },
+    {
+      "id": "inclusive-as-uncached",
+      "record": 3,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/uncached_input_tokens": 1000
+      },
+      "why": "Without the cached operand the inclusive input cannot be split."
+    }
+  ]
+}

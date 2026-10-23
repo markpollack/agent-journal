@@ -103,7 +103,7 @@ final class CodexStreamProfile implements SourceProfile {
     }
 
     private static boolean turn(ExpectedFacts f, int index, Json o) {
-        f.usages.add(new ExpectedFacts.Usage(index, index, 5, 2, TrancheReading.codex(o.member("usage"), ""), null, null, measurement(o.member("usage")), 2));
+        f.usages.add(new ExpectedFacts.Usage(index, index, 5, 2, TrancheReading.codex(o.member("usage"), "", true), null, null, measurement(o.member("usage")), 2));
         f.completed.add(new ExpectedFacts.TurnCompleted(index, 0, null));
         return true;
     }

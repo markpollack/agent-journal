@@ -3,10 +3,13 @@
   "format_version": "0.1",
   "id": "usage-equivalent-codex-synthetic",
   "concept": "usage-components-and-cache",
-  "description": "LABELLED SYNTHETIC, the decision's equal-scope example: Codex reports inclusive input 1000, cached input 800, cache writes 0. The canonical tranches are uncached 200 (1000 - 800, derived), cache reads 800, cache writes 0, the same as usage-equivalent-claude-synthetic's reported 200 / 800 / 0. No total replaces them.",
+  "description": "LABELLED SYNTHETIC, the decision's equal-scope example: Codex reports inclusive input 1000, cached input 800, cache writes 0. The canonical tranches are uncached 200 (1000 - 800, derived), cache reads 800, cache writes 0, the same as usage-equivalent-claude-synthetic's reported 200 / 800 / 0. No total replaces them. Component measurement (extension 0.7.0): the tranches equal the Claude pair's, but here the uncached 200 is Conditional (its cache-write operand is Possibly default) where Claude's is copied as reported: comparable with the assumption explicit, not interchangeable.",
   "authored_from": [
     "codex-protocol-0.160.1-token-usage-arithmetic",
-    "codex-api-0.160.1-responses-usage"
+    "codex-api-0.160.1-responses-usage",
+    "codex-api-0.160.1-responses-usage-defaults",
+    "codex-exec-0.160.1-types",
+    "agentic-cli-0.7.0-usage-component"
   ],
   "native": {
     "evidence_kind": "synthetic",
@@ -30,7 +33,12 @@
         "/usage_observations/0/cache_read_tokens": 800,
         "/usage_observations/0/cache_write_tokens": 0,
         "/usage_observations/0/output_tokens": 50,
-        "/usage_observations/0/components/0/component_basis_id": 2
+        "/usage_observations/0/components/0/component_basis_id": 2,
+        "/usage_observations/0/components/0/measurement_status_id": 3,
+        "/usage_observations/0/components/1/measurement_status_id": 1,
+        "/usage_observations/0/components/2/measurement_status_id": 2,
+        "/usage_observations/0/components/3/measurement_status_id": 1,
+        "/usage_observations/0/components/4/measurement_status_id": 2
       },
       "absent": [
         "/usage_observations/0/reported_total_tokens"
@@ -47,6 +55,26 @@
         "/usage_observations/0/uncached_input_tokens": 1000
       },
       "why": "The Codex count includes the 800 cached tokens; the same spelling under another vendor's meaning is not normalized."
+    },
+    {
+      "id": "defaulted-zero-as-measured",
+      "record": 3,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/components/2/measurement_status_id": 1
+      },
+      "why": "The cache-write 0 may be the deserializer's default inside this non-zero usage; it is not established as measured."
+    },
+    {
+      "id": "conditional-stated-as-measured",
+      "record": 3,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/components/0/measurement_status_id": 1
+      },
+      "why": "The uncached 200 equals Claude's reported 200 only on the assumption that the cache-write 0 was measured; the equal number does not make the assumption true."
     }
   ]
 }

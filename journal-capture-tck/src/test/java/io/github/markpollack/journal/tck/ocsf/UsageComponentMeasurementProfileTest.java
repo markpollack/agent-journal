@@ -14,16 +14,40 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class UsageComponentMeasurementProfileTest {
 
+    static ExpectedFacts.Tranches read(String usage) {
+        return TrancheReading.codex(NeutralJson.parse(usage), "", true);
+    }
+
     /**
-     * Reproduction on the unchanged profile: it reads the possibly defaulted zeros as plain reported components and the
-     * uncached tranche as an unconditional derivation, agreeing with the writer, so neither side can tell the two source
-     * situations apart.
+     * Reproduced at ee0f6e0 on the unchanged profile (plain reported zeros, unconditional derivation). Repaired: the
+     * profile's own reading marks the zeros the deserializer also writes for an omitted member Possibly default and the
+     * derivation that uses one Conditional, keeping every value.
      */
     @Test
-    void reproductionTheProfileReadsAPossiblyDefaultedZeroAsAPlainReportedComponent() {
-        ExpectedFacts.Tranches t = TrancheReading.codex(NeutralJson.parse(
-                "{\"input_tokens\":1000,\"cached_input_tokens\":800,\"cache_write_input_tokens\":0,\"output_tokens\":50,\"reasoning_output_tokens\":0}"), "");
+    void theProfileMarksAPossiblyDefaultedZeroAndItsConditionalDerivation() {
+        ExpectedFacts.Tranches t = read("{\"input_tokens\":1000,\"cached_input_tokens\":800,\"cache_write_input_tokens\":0,\"output_tokens\":50,\"reasoning_output_tokens\":0}");
         assertThat(t.bases()).isEqualTo(Map.of("uncached_input_tokens", 2, "cache_read_tokens", 1, "cache_write_tokens", 1, "output_tokens", 1, "reasoning_tokens", 1));
         assertThat(t.values().get("uncached_input_tokens").scalarText()).isEqualTo("200");
+        assertThat(t.statuses()).isEqualTo(Map.of("uncached_input_tokens", 3, "cache_read_tokens", 1, "cache_write_tokens", 2, "output_tokens", 1, "reasoning_tokens", 2));
+    }
+
+    @Test
+    void theProfileReadsARequiredZeroAsMeasuredAndAllZerosAsDefault() {
+        assertThat(read("{\"input_tokens\":1200,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":0,\"reasoning_output_tokens\":0}").statuses())
+                .isEqualTo(Map.of("uncached_input_tokens", 3, "cache_read_tokens", 2, "cache_write_tokens", 2, "output_tokens", 1, "reasoning_tokens", 2));
+        assertThat(read("{\"input_tokens\":0,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":0,\"reasoning_output_tokens\":0}").statuses())
+                .isEqualTo(Map.of("uncached_input_tokens", 3, "cache_read_tokens", 2, "cache_write_tokens", 2, "output_tokens", 2, "reasoning_tokens", 2));
+    }
+
+    @Test
+    void theProfileLeavesAnUnprovenOrAbsentTrancheWithoutStatus() {
+        ExpectedFacts.Tranches writes = read("{\"input_tokens\":1000,\"cached_input_tokens\":800,\"cache_write_input_tokens\":60,\"output_tokens\":50,\"reasoning_output_tokens\":10}");
+        assertThat(writes.bases().get("uncached_input_tokens")).isEqualTo(3);
+        assertThat(writes.statuses()).doesNotContainKey("uncached_input_tokens").containsEntry("cache_write_tokens", 1);
+        ExpectedFacts.Tranches absent = read("{\"input_tokens\":1000,\"cache_write_input_tokens\":0,\"output_tokens\":50,\"reasoning_output_tokens\":5}");
+        assertThat(absent.bases()).containsEntry("uncached_input_tokens", 3).doesNotContainKey("cache_read_tokens");
+        assertThat(absent.statuses()).doesNotContainKeys("uncached_input_tokens", "cache_read_tokens").containsEntry("cache_write_tokens", 2);
+        // Anthropic usage: no declared rule, so no status at all
+        assertThat(TrancheReading.anthropic(NeutralJson.parse("{\"input_tokens\":200,\"cache_read_input_tokens\":800,\"cache_creation_input_tokens\":0,\"output_tokens\":50}")).statuses()).isEmpty();
     }
 }

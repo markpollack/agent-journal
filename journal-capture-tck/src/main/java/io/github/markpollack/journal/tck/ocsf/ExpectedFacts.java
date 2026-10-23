@@ -72,8 +72,12 @@ public final class ExpectedFacts {
      * component's exact value (absent when not established), how each named component is established (1 reported,
      * 2 derived, 3 unavailable) with the native pointers it is read from, the cache-write tiers, and whether reasoning is
      * part of output ({@code null} when not established).
+     *
+     * @param statuses for each component, what the source establishes about its quantity (1 Measured, 2 Possibly default,
+     *        3 Conditional on a possibly defaulted operand), only where a declared rule establishes it; absent otherwise
      */
-    public record Tranches(Map<String, Json> values, Map<String, Integer> bases, Map<String, List<String>> pointers, List<Tier> tiers, Integer reasoningRelationId) {
+    public record Tranches(Map<String, Json> values, Map<String, Integer> bases, Map<String, List<String>> pointers, List<Tier> tiers, Integer reasoningRelationId,
+            Map<String, Integer> statuses) {
     }
 
     /**

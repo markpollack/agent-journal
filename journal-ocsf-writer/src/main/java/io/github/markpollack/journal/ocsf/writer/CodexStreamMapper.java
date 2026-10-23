@@ -169,7 +169,7 @@ final class CodexStreamMapper implements SourceMapper {
         Jv.Obj ob = MapperSupport.usage(5, 2, "codex.stream.thread_usage.v2: turn.completed carries ThreadTokenUsage.total, the thread's cumulative usage as of this turn's completion,"
                 + " including earlier turns of a resumed thread; not a per-turn measurement; final for this run", ctx.sourceRef(r, null, null, false), null, usage);
         UsageTranches.aggregation(ob, 2, "codex.stream.thread_usage_aggregation.v1: a running total of the thread up to this turn's completion; never summed with another snapshot");
-        UsageTranches.codex(ob, usage, "");
+        UsageTranches.codex(ob, usage, "", true);
         Integer measurement = CodexItems.measurement(usage);
         if (measurement != null) {
             ob.put("measurement_status_id", measurement).put("measurement_status", MEASUREMENT_STATUS.get(measurement));

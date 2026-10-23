@@ -1,13 +1,15 @@
 {
   "caption": "Usage Component",
-  "description": "How one canonical usage component of an observation was established: reported (copied from one native member), derived exactly by a declared rule from named native members, or unavailable from what the source reported.",
+  "description": "How one canonical usage component of an observation was established: reported (copied from one native member), derived exactly by a declared rule from named native members, or unavailable from what the source reported; and, where a declared rule establishes it, what the source establishes about the component's quantity (measured, possibly the source's default, or conditional on a possibly default operand).",
   "extends": "object",
   "name": "usage_component",
   "attributes": {
     "name": {"description": "The canonical component attribute, for example uncached_input_tokens.", "requirement": "required"},
     "component_basis_id": {"requirement": "required"},
     "component_basis": {"requirement": "optional"},
+    "measurement_status_id": {"description": "What the source establishes about this component's quantity, apart from component_basis_id; absent when no declared rule states it.", "requirement": "optional"},
+    "measurement_status": {"requirement": "optional"},
     "native_pointers": {"requirement": "optional"},
-    "derivation": {"description": "The declared rule and its arithmetic for a derived component; why the component is unavailable otherwise.", "requirement": "optional"}
+    "derivation": {"description": "The declared rule and its arithmetic for a derived component, naming any possibly default operand it depends on; why the component is unavailable otherwise.", "requirement": "optional"}
   }
 }

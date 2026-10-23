@@ -37,10 +37,14 @@
     "name": "agentic_cli",
     "uid": 901,
     "uid_status": "PROVISIONAL, UNREGISTERED; alternate assignment 902 is compiled only to demonstrate reader refusal",
-    "version": "0.6.0-prototype",
-    "compiled_sha256_uid_901": "70aa97c9e4cb3bf2e26e2fadffc9b4010e5bb2325ce8a993946be091a311f35e",
+    "version": "0.7.0-prototype",
+    "compiled_sha256_uid_901": "e440367136816d6e99e2aac0451a9a0d147ecbe9597b18df9d966c2bf43261a2",
     "category": "agent_execution (uid 11 -> scoped 90111)",
     "previous_versions": [
+      {
+        "version": "0.6.0-prototype",
+        "compiled_sha256_uid_901": "70aa97c9e4cb3bf2e26e2fadffc9b4010e5bb2325ce8a993946be091a311f35e"
+      },
       {
         "version": "0.5.0-prototype",
         "compiled_sha256_uid_901": "b3393cac32fe5847aaf6cf5fc12dede0819efc9f82ef18a76ff2583901079fe1"

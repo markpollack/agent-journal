@@ -342,6 +342,11 @@ Rule: RULE-41. Tests: `SemanticClaimTest#anUnrelatedVersionBumpCarriesAnApproved
 If the extension definition of an approved claim's destination or a contract rule its binding names changes, then validation shall refuse the approval for the changed binding, and if checks of an approved, unchanged meaning fail, then the claim shall be reported approved but not verified.
 Rule: RULE-41, RULE-38. Tests: `SemanticClaimTest#aChangedDefinitionOrRuleRefusesTheApprovedBinding`, `SemanticClaimTest#anUnchangedMeaningWithAFailedImplementationIsApprovedButNotVerified`.
 
+### UC5-AC29: State a possibly defaulted usage component and the tranche derived from it
+
+If a source can emit a usage component's value as a default without a measurement, then the writer and the oracle profile shall state that component possibly default and a tranche derived from it conditional on it, keep every reported value, and state a zero in a required member of an observation that shows an update arrived as measured.
+Rule: RULE-43. Tests: `UsageComponentMeasurementTest`, `UsageComponentMeasurementProfileTest`, `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes`, `SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects`.
+
 ## Change log
 
 2026-10-21, consolidated event-file work order (REQ-1 amendment). Retained identifiers with changed
@@ -375,5 +380,6 @@ answer as two observations of unidentified responses); the counts are 7, 6, 15, 
 
 2026-10-22, Tier 1 foundation wave: added UC5-AC27 (a pin-only binding change carries an approved meaning; an added
 route awaits binding review) and UC5-AC28 (a changed definition or rule refuses the approved binding; failed checks
-leave an approval unverified). No criterion removed; `RequirementsRosterTest` pins the per-use-case counts 7, 6, 15, 8
-and 28.
+leave an approval unverified) and UC5-AC29 (a possibly defaulted usage component is stated possibly default and a
+tranche derived from it conditional, the number kept). No criterion removed; `RequirementsRosterTest` pins the
+per-use-case counts 7, 6, 15, 8 and 29.

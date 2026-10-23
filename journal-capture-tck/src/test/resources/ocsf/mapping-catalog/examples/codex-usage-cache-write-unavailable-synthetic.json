@@ -3,11 +3,14 @@
   "format_version": "0.1",
   "id": "codex-usage-cache-write-unavailable-synthetic",
   "concept": "usage-components-and-cache",
-  "description": "LABELLED SYNTHETIC, source-grounded (TokenUsage at rust-v0.160.1 has cache_write_input_tokens; the vendor test parses_cache_write_token_usage reports one): a turn.completed with non-zero cache writes. input_tokens includes the cached tokens (non_cached_input), but the pinned source does not establish whether it also includes the 60 cache writes, so the uncached tranche is unavailable, not guessed: neither 1000 - 800 - 60 nor 1000 - 800. Cache reads, cache writes, output and its reasoning part are copied.",
+  "description": "LABELLED SYNTHETIC, source-grounded (TokenUsage at rust-v0.160.1 has cache_write_input_tokens; the vendor test parses_cache_write_token_usage reports one): a turn.completed with non-zero cache writes. input_tokens includes the cached tokens (non_cached_input), but the pinned source does not establish whether it also includes the 60 cache writes, so the uncached tranche is unavailable, not guessed: neither 1000 - 800 - 60 nor 1000 - 800. Cache reads, cache writes, output and its reasoning part are copied. Component measurement (extension 0.7.0): a non-zero cache write cannot be the deserializer's default, so it is Measured, as are the other non-zero members; the unavailable tranche has no value and no measurement status.",
   "authored_from": [
     "codex-protocol-0.160.1-token-usage-arithmetic",
     "codex-api-0.160.1-responses-usage",
-    "codex-exec-0.160.1-emitter-usage"
+    "codex-exec-0.160.1-emitter-usage",
+    "codex-api-0.160.1-responses-usage-defaults",
+    "codex-exec-0.160.1-types",
+    "agentic-cli-0.7.0-usage-component"
   ],
   "native": {
     "evidence_kind": "synthetic",
@@ -59,10 +62,15 @@
         "/usage_observations/0/components/4/component_basis_id": 1,
         "/usage_observations/0/components/4/native_pointers": [
           "/reasoning_output_tokens"
-        ]
+        ],
+        "/usage_observations/0/components/1/measurement_status_id": 1,
+        "/usage_observations/0/components/2/measurement_status_id": 1,
+        "/usage_observations/0/components/3/measurement_status_id": 1,
+        "/usage_observations/0/components/4/measurement_status_id": 1
       },
       "absent": [
-        "/usage_observations/0/uncached_input_tokens"
+        "/usage_observations/0/uncached_input_tokens",
+        "/usage_observations/0/components/0/measurement_status_id"
       ]
     }
   ],

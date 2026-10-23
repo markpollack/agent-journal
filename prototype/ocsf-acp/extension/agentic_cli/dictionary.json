@@ -749,7 +749,7 @@
     },
     "measurement_status_id": {
       "caption": "Measurement Status ID",
-      "description": "Whether the source establishes that the reported components are a measurement. Absent when no declared rule states it.",
+      "description": "Whether the source establishes that the reported values are a measurement: of the whole usage observation, or (on a usage component) of that one component. Separate from how Journal obtained a component (component_basis_id). Absent when no declared rule states it.",
       "type": "integer_t",
       "sibling": "measurement_status",
       "enum": {
@@ -763,6 +763,10 @@
         "2": {
           "caption": "Possibly default",
           "description": "The source emits exactly these values also when it has no measurement (for example all-zero defaults); a measured value is not established."
+        },
+        "3": {
+          "caption": "Conditional",
+          "description": "On a derived usage component: derived exactly from operands of which at least one is Possibly default; the value has its canonical meaning only if those operands are measurements, which the component's derivation names. A price estimate from it is exact only where the applicable price schedule does not distinguish the possibly defaulted operand (for example no separate cache-write rate for the model)."
         }
       }
     },

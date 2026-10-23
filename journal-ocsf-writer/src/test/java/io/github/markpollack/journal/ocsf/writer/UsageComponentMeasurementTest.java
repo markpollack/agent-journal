@@ -53,22 +53,80 @@ class UsageComponentMeasurementTest {
         return ((Jv.Num) v).value().intValue();
     }
 
+    static int status(Jv observation, String name) {
+        Jv v = component(observation, name).member("measurement_status_id");
+        return v == null ? -1 : integer(v);
+    }
+
     /**
-     * Reproduction on the unchanged writer: non-zero usage with a cache-write 0 (and reasoning 0) is stated as a
-     * measured observation, the zero components as plain reported values and the uncached tranche as an unconditional
-     * derivation, so a provider that omitted cache writes and one that measured none produce the same canonical facts.
+     * Reproduced at ee0f6e0 on the unchanged writer: this input was stated as a measured observation with plain
+     * reported zeros and an unconditional uncached derivation. Repaired: the zeros the deserializer also writes for an
+     * omitted member are Possibly default, the derivation that uses one is Conditional, and every number is kept.
      */
     @Test
-    void reproductionAPossiblyDefaultedZeroInsideNonZeroUsageIsStatedLikeAMeasuredZero(@TempDir Path work) throws IOException {
+    void aPossiblyDefaultedZeroInsideNonZeroUsageIsMarkedAndItsDerivationConditional(@TempDir Path work) throws IOException {
         Jv o = usage(work, "{\"input_tokens\":1000,\"cached_input_tokens\":800,\"cache_write_input_tokens\":0,\"output_tokens\":50,\"reasoning_output_tokens\":0}");
-        assertThat(integer(o.member("measurement_status_id"))).isEqualTo(1);
-        Jv writes = component(o, "cache_write_tokens");
-        assertThat(integer(writes.member("component_basis_id"))).isEqualTo(1);
-        assertThat(writes.member("measurement_status_id")).as("no component-level measurement status").isNull();
-        Jv uncached = component(o, "uncached_input_tokens");
-        assertThat(integer(uncached.member("component_basis_id"))).isEqualTo(2);
-        assertThat(integer(o.member("uncached_input_tokens"))).isEqualTo(200);
-        assertThat(uncached.member("measurement_status_id")).as("the derivation is stated without its dependence on the possibly defaulted operand").isNull();
-        assertThat(component(o, "reasoning_tokens").member("measurement_status_id")).isNull();
+        assertThat(integer(o.member("measurement_status_id"))).as("an update arrived").isEqualTo(1);
+        assertThat(status(o, "cache_write_tokens")).isEqualTo(2);
+        assertThat(status(o, "reasoning_tokens")).isEqualTo(2);
+        assertThat(status(o, "cache_read_tokens")).isEqualTo(1);
+        assertThat(status(o, "output_tokens")).isEqualTo(1);
+        assertThat(integer(o.member("uncached_input_tokens"))).as("the number is kept").isEqualTo(200);
+        assertThat(integer(component(o, "uncached_input_tokens").member("component_basis_id"))).isEqualTo(2);
+        assertThat(status(o, "uncached_input_tokens")).isEqualTo(3);
+        assertThat(component(o, "uncached_input_tokens").member("derivation").text()).contains("cache_write_input_tokens is Possibly default").contains("input not read from cache");
+        assertThat(integer(o.member("cache_write_tokens"))).isZero();
+        assertThat(o.member("basis").text()).contains("codex.usage.component_measurement.v1");
+    }
+
+    /** A zero in a required member of an updated observation is a measured zero, beside defaulted zeros in the same observation. */
+    @Test
+    void aZeroRequiredMemberIsMeasuredBesideDefaultedZeros(@TempDir Path work) throws IOException {
+        Jv o = usage(work, "{\"input_tokens\":1200,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":0,\"reasoning_output_tokens\":0}");
+        assertThat(status(o, "output_tokens")).isEqualTo(1);
+        assertThat(status(o, "cache_read_tokens")).isEqualTo(2);
+        assertThat(status(o, "cache_write_tokens")).isEqualTo(2);
+        assertThat(status(o, "uncached_input_tokens")).isEqualTo(3);
+        assertThat(component(o, "uncached_input_tokens").member("derivation").text()).contains("cached_input_tokens and cache_write_input_tokens are Possibly default");
+    }
+
+    /** All zeros: no update is established, so every component, required or not, is Possibly default. */
+    @Test
+    void anAllZeroObservationHasOnlyPossiblyDefaultComponents(@TempDir Path work) throws IOException {
+        Jv o = usage(work, "{\"input_tokens\":0,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":0,\"reasoning_output_tokens\":0}");
+        assertThat(integer(o.member("measurement_status_id"))).isEqualTo(2);
+        for (String c : List.of("cache_read_tokens", "cache_write_tokens", "output_tokens", "reasoning_tokens")) {
+            assertThat(status(o, c)).as(c).isEqualTo(2);
+        }
+        assertThat(status(o, "uncached_input_tokens")).isEqualTo(3);
+    }
+
+    /** A non-zero cache write cannot be a default: it is measured, and with unknown inclusion the uncached tranche is unavailable without a status. */
+    @Test
+    void aNonZeroCacheWriteIsMeasuredAndTheUnprovenTrancheUnavailable(@TempDir Path work) throws IOException {
+        Jv o = usage(work, "{\"input_tokens\":1000,\"cached_input_tokens\":800,\"cache_write_input_tokens\":60,\"output_tokens\":50,\"reasoning_output_tokens\":10}");
+        assertThat(status(o, "cache_write_tokens")).isEqualTo(1);
+        assertThat(integer(component(o, "uncached_input_tokens").member("component_basis_id"))).isEqualTo(3);
+        assertThat(status(o, "uncached_input_tokens")).isEqualTo(-1);
+        assertThat(o.member("uncached_input_tokens")).isNull();
+    }
+
+    /** An absent operand: no uncached value, no cache-read component, present members keep their status. */
+    @Test
+    void anAbsentOperandLeavesTheTrancheUnavailableAndTheComponentAbsent(@TempDir Path work) throws IOException {
+        Jv o = usage(work, "{\"input_tokens\":1000,\"cache_write_input_tokens\":0,\"output_tokens\":50,\"reasoning_output_tokens\":5}");
+        assertThat(integer(component(o, "uncached_input_tokens").member("component_basis_id"))).isEqualTo(3);
+        assertThat(o.member("cache_read_tokens")).isNull();
+        assertThat(o.member("components").elements()).noneMatch(c -> "cache_read_tokens".equals(c.member("name").text()));
+        assertThat(status(o, "cache_write_tokens")).isEqualTo(2);
+        assertThat(status(o, "reasoning_tokens")).isEqualTo(1);
+    }
+
+    /** The experimental rollout reading keeps the components without measurement statuses (it follows in SESSION-1). */
+    @Test
+    void theRolloutReadingStatesNoComponentMeasurementYet() {
+        Jv.Obj into = new Jv.Obj();
+        UsageTranches.codex(into, Jv.parse("{\"input_tokens\":1000,\"cached_input_tokens\":800,\"cache_write_input_tokens\":0,\"output_tokens\":50,\"reasoning_output_tokens\":0,\"total_tokens\":1050}"), "");
+        assertThat(into.member("components").elements()).allMatch(c -> c.member("measurement_status_id") == null);
     }
 }

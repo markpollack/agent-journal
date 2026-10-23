@@ -3,7 +3,7 @@
   "format_version": "0.1",
   "id": "usage-equivalent-claude-synthetic",
   "concept": "usage-components-and-cache",
-  "description": "LABELLED SYNTHETIC, the decision's equal-scope example: Claude reports ordinary input 200 (input_tokens are the tokens neither read from nor used to create a cache), cache reads 800 and cache writes 0 in its own members. The canonical tranches are the same 200 / 800 / 0 as usage-equivalent-codex-synthetic's, all reported; the zero cache-write tiers are parts of the writes. The aggregation differs: one message's own total here, a thread's running snapshot there.",
+  "description": "LABELLED SYNTHETIC, the decision's equal-scope example: Claude reports ordinary input 200 (input_tokens are the tokens neither read from nor used to create a cache), cache reads 800 and cache writes 0 in its own members. The canonical tranches are the same 200 / 800 / 0 as usage-equivalent-codex-synthetic's, all reported; the zero cache-write tiers are parts of the writes. The aggregation differs: one message's own total here, a thread's running snapshot there. No component measurement status is stated (extension 0.7.0): no pinned source establishes whether Claude Code relays an omitted usage member as 0, so none is claimed.",
   "authored_from": [
     "anthropic-prompt-caching-2026-10-22",
     "anthropic-sdk-typescript-0.135.0-usage"
@@ -40,7 +40,8 @@
       },
       "absent": [
         "/usage_observations/0/reasoning_tokens",
-        "/usage_observations/0/reasoning_relation_id"
+        "/usage_observations/0/reasoning_relation_id",
+        "/usage_observations/0/components/0/measurement_status_id"
       ]
     }
   ],

@@ -251,6 +251,12 @@ class RequirementsAccountingIT {
                 junit("SemanticClaimTest#anExpandedRouteAwaitsBindingReviewWhileTheApprovedRouteStaysApproved", claims)));
         CRITERIA.put("UC5-AC28", List.of(junit("SemanticClaimTest#aChangedDefinitionOrRuleRefusesTheApprovedBinding", claims),
                 junit("SemanticClaimTest#anUnchangedMeaningWithAFailedImplementationIsApprovedButNotVerified", claims)));
+        CRITERIA.put("UC5-AC29", List.of(junit("UsageComponentMeasurementTest#aPossiblyDefaultedZeroInsideNonZeroUsageIsMarkedAndItsDerivationConditional", "Codex exec usage through the writer"),
+                junit("UsageComponentMeasurementTest#aZeroRequiredMemberIsMeasuredBesideDefaultedZeros", "Codex exec usage through the writer"),
+                junit("UsageComponentMeasurementProfileTest#theProfileMarksAPossiblyDefaultedZeroAndItsConditionalDerivation", "the oracle profile's own reading"),
+                junit("UsageComponentMeasurementProfileTest#theProfileReadsARequiredZeroAsMeasuredAndAllZerosAsDefault", "the oracle profile's own reading"),
+                junit("SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes", examples + " (component measurement)"),
+                junit("SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects", profiled)));
     }
 
     /** Rule to the criteria and direct checks whose conjunction establishes its full obligation. */
@@ -308,7 +314,7 @@ class RequirementsAccountingIT {
         RULES.put("RULE-41", new RuleEvidence(List.of("UC5-AC17", "UC5-AC18", "UC5-AC27", "UC5-AC28"), List.of(), "the digest boundaries are the catalog's semantic_claims.digest_boundary"));
         RULES.put("RULE-42", new RuleEvidence(List.of("UC5-AC22"), List.of(junit("CodexStreamMapperTest#onlyTheDeclaredWebSearchDuplicateIsInterpretedAndEveryOtherDuplicateStaysOpaque", "declared form retained verbatim, strict parsing unchanged")),
                 "a pointer locates a value; it establishes no meaning or ownership join"));
-        RULES.put("RULE-43", new RuleEvidence(List.of("UC5-AC23"), List.of(), "tranche meanings are the extension's definitions; their claims await the managing reviewer's binding"));
+        RULES.put("RULE-43", new RuleEvidence(List.of("UC5-AC23", "UC5-AC29"), List.of(), "tranche meanings are the extension's definitions; their claims await the managing reviewer's binding"));
         RULES.put("RULE-44", new RuleEvidence(List.of("UC5-AC25", "UC5-AC26"), List.of(), ""));
         RULES.put("RULE-45", new RuleEvidence(List.of("UC5-AC24"), List.of(), ""));
         RULES.put("RULE-46", new RuleEvidence(List.of("UC5-AC26"), List.of(), ""));

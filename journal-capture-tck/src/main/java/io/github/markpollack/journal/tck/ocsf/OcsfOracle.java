@@ -1322,6 +1322,7 @@ public final class OcsfOracle {
                 continue;
             }
             stated(key + " " + b.getKey() + " component_basis_id", b.getValue(), Event.integer(c.member("component_basis_id")), problems);
+            stated(key + " " + b.getKey() + " measurement_status_id", t.statuses().get(b.getKey()), Event.integer(c.member("measurement_status_id")), problems);
             stated(key + " " + b.getKey() + " native_pointers", t.pointers().get(b.getKey()), texts(c.member("native_pointers")), problems);
             if (b.getValue() == TrancheReading.UNAVAILABLE && o.member(b.getKey()) != null) {
                 problems.add(key + " " + b.getKey() + " present although the source does not establish it");

@@ -183,6 +183,24 @@
    "path": "https://www.rfc-editor.org/rfc/rfc6901",
    "symbol": "sections 3 and 4 (syntax, ~0 and ~1 escaping, evaluation); section 4 on duplicate members",
    "evidence_kind": "specification"
+  },
+  {
+   "id": "codex-api-0.160.1-responses-usage-defaults",
+   "source": "openai/codex",
+   "revision": "d27764b82f7118f674371e6d6e76271d9d606edb",
+   "path": "codex-rs/codex-api/src/sse/responses.rs",
+   "blob": "6b2a7ed47cb662f375f47bcac908b8c17bedc75e",
+   "symbol": "impl From<ResponseCompletedUsage> for TokenUsage (input_tokens_details.unwrap_or_default(); output_tokens_details.map(|d| d.reasoning_tokens).unwrap_or(0)); ResponseCompletedInputTokensDetails { cached_tokens, #[serde(default)] cache_write_tokens }; ResponseCompletedUsage { input_tokens, output_tokens required }",
+   "evidence_kind": "source_inspection",
+   "note": "an omitted cache_write_tokens, an omitted input_tokens_details (cached and cache write) and an omitted output_tokens_details (reasoning) all become 0; input_tokens and output_tokens have no default"
+  },
+  {
+   "id": "agentic-cli-0.7.0-usage-component",
+   "source": "markpollack/agent-journal",
+   "revision": "extension agentic_cli 0.7.0-prototype (compiled sha256 e440367136816d6e99e2aac0451a9a0d147ecbe9597b18df9d966c2bf43261a2)",
+   "path": "prototype/ocsf-acp/extension/agentic_cli/objects/usage_component.json",
+   "symbol": "usage_component.measurement_status_id; measurement_status_id 3 Conditional",
+   "evidence_kind": "specification"
   }
  ]
 }

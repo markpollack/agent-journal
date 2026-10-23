@@ -6,7 +6,7 @@
  },
  "extension": {
   "name": "agentic_cli",
-  "version": "0.6.0-prototype"
+  "version": "0.7.0-prototype"
  },
  "purpose": "Comparison inventory only: for each attribute our extension defines, the upstream attribute it means, if any, and the verdict. It does not reshape the extension; our attributes and names are kept.",
  "evidence_class": "source-verified",
@@ -1951,6 +1951,22 @@
    "upstream_file": null,
    "verdict": "no_counterpart",
    "caveat": "Caption sibling of component_basis_id, which has no counterpart."
+  },
+  {
+   "ours": "usage_component.measurement_status_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Upstream counts carry no statement that a component is measured, possibly a source default, or derived from one."
+  },
+  {
+   "ours": "usage_component.measurement_status",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of measurement_status_id, which has no counterpart."
   },
   {
    "ours": "usage_component.native_pointers",
