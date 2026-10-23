@@ -76,10 +76,10 @@
           "basis": "the exec stream reports completed content items (item_uid, stream-local), not response identities; which items belong to one model response is not reported, so no assembly is possible"
         },
         {
-          "contract_uid": "antigravity/stream-json/1.4.2/0.2.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
           "mode": "UNKNOWN",
           "identity_scope": "run",
-          "basis": "response ids are Journal-generated per step and the stream carries no content; assembly is not possible"
+          "basis": "the stream reports agent-response steps as content items (item_uid, the conversation's step index) whose text_delta fragments join into the step's text, never a response identity; which steps belong to one model response is not reported, so no response assembly is possible"
         }
       ],
       "cross_source": "when one identity has occurrences in several artifacts (live output and saved session file), each artifact is assembled separately and the assemblies are compared; a difference is reported, never reconciled"

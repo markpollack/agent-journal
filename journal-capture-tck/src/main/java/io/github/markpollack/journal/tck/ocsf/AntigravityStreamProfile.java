@@ -2,88 +2,170 @@ package io.github.markpollack.journal.tck.ocsf;
 
 import io.github.markpollack.journal.tck.verify.Json;
 
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Antigravity headless {@code stream-json} live output. The stream reports no text, no ids and no timestamps: a step
- * identity is {@code <conversation_id>#step<step_index>} (a Journal-generated id, declared as such); tool steps are
- * requests when ACTIVE and results when DONE (output only when present; DONE is a lifecycle state, not success);
- * agent-response steps carry usage the vendor does not mark provisional or final (Unknown); the {@code result}
- * line reports run usage once and run-scope denials without any step reference, whose candidates are derived from
- * the tool name the action maps to.
+ * Antigravity CLI headless {@code stream-json} live output, read from the vendor's headless-mode documentation
+ * (antigravity.google/docs/cli/headless, fetched 2026-10-23) and its public CHANGELOG at tag 1.4.6, never from the
+ * writer's mapper. No emitter source, typed schema or vendor test is published. The readings:
+ *
+ * <ul>
+ * <li>Every record reports its conversation id (top-level on {@code init}, inside {@code step_update} and {@code result}):
+ * the session of that record.</li>
+ * <li>A step is identified by its {@code step_index}, documented as the zero-based index of the step: the conversation's
+ * own numbering (identity basis 99 Other), neither a model-facing call id nor a stream-local item id.</li>
+ * <li>{@code init} reports the run configuration: cwd, permission mode, model and agent when overridden, the tool names.</li>
+ * <li>A DONE {@code user_input} step is a prompt submission without content.</li>
+ * <li>An {@code agent_response} step is a content item of a model response the stream does not identify: while ACTIVE a
+ * Partial view whose content is its {@code text_delta} fragment, when DONE an item completed with its last fragment
+ * and the step's own usage (documented as per-step usage).</li>
+ * <li>A tool step (and a {@code subagent} step completing an {@code invoke_subagent} call) is a started invocation while
+ * ACTIVE, with the tool name and parameters it reports; when DONE or ERROR a result whose content is the reported
+ * output, else the reported error, else (subagent step) the subagent_info. It failed only where {@code tool_info.error}
+ * is reported (documented as present when the tool fails); otherwise the outcome is not derivable, because a soft-denied
+ * command reports DONE without output or error.</li>
+ * <li>{@code result} completes the turn: its status word (SUCCESS, ERROR, or another documented value), the turn's own
+ * response text, the session's cumulative usage (scope Session, a cumulative snapshot) and each {@code denied_actions}
+ * entry as a run-scope denial that names a permission category, never a step, so it is unattributed with no
+ * candidates.</li>
+ * </ul>
+ * Usage: cache reads, output, thinking (as reasoning) and the total are reported; whether input includes cache reads,
+ * and whether thinking is part of output, is not stated, so the uncached tranche is unavailable and no relation is
+ * stated. Checkpoint, system_message and other steps are retained whole. The stream carries no timestamps.
  */
 final class AntigravityStreamProfile implements SourceProfile {
 
-    private record Step(String uid, String name) {
-    }
+    /** identity_basis_id of a step index: 99 Other (a conversation step index). */
+    private static final int STEP_INDEX = 99;
 
     @Override
     public ExpectedFacts expected(NativeArtifact artifact, Json source, Json scope) {
         ExpectedFacts f = new ExpectedFacts(SourceProfile.text(source, "artifact"));
-        List<Step> toolSteps = new ArrayList<>();
         for (NativeArtifact.Record r : artifact.records()) {
             f.owned.add(r.index());
             if (!r.parsed()) {
                 continue;
             }
-            Json o = r.json();
-            String event = SourceProfile.text(o, "event");
-            if ("step_update".equals(event)) {
-                Json s = o.member("step_update");
-                String conv = SourceProfile.text(s, "conversation_id");
-                Json idx = s.member("step_index");
-                String uid = conv + "#step" + (idx == null ? null : idx.scalarText());
-                String stepType = SourceProfile.text(s, "step_type");
-                String state = SourceProfile.text(s, "state");
-                if ("user_input".equals(stepType)) {
-                    f.normalized.add(r.index());
-                    f.prompts.add(new ExpectedFacts.Prompt(r.index(), null, null));
-                }
-                else if ("agent_response".equals(stepType)) {
-                    f.normalized.add(r.index());
-                    f.responses.add(new ExpectedFacts.Response(r.index(), uid, null, null, "DONE".equals(state), null));
-                    // Antigravity's input inclusion basis is not established: no uncached tranche is expected (no admitted route)
-                    f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 2, 0, SourceProfile.components(s.member("usage"),
-                            "output_tokens", "output_tokens", "cache_read_tokens", "cache_read_tokens",
-                            "thinking_tokens", "reasoning_tokens", "total_tokens", "reported_total_tokens"), null));
-                }
-                else if ("tool".equals(stepType)) {
-                    String name = SourceProfile.text(s, "tool_name");
-                    Json info = s.member("tool_info");
-                    if ("ACTIVE".equals(state)) {
-                        f.normalized.add(r.index());
-                        toolSteps.add(new Step(uid, name));
-                        f.requests.add(new ExpectedFacts.Request(r.index(), uid, name, info == null ? null : info.member("parameters"), null, "ACTIVE"));
-                    }
-                    else if ("DONE".equals(state)) {
-                        f.normalized.add(r.index());
-                        if (toolSteps.stream().noneMatch(t -> t.uid().equals(uid))) {
-                            toolSteps.add(new Step(uid, name));
-                        }
-                        f.results.add(new ExpectedFacts.Result(r.index(), uid, info == null ? null : info.member("output"), null, null, null, "DONE"));
-                    }
-                }
-            }
-            else if ("result".equals(event)) {
+            if (record(f, r.index(), r.json())) {
                 f.normalized.add(r.index());
-                Json res = o.member("result");
-                f.completed.add(new ExpectedFacts.TurnCompleted(r.index(), "SUCCESS".equals(SourceProfile.text(res, "status")) ? 1 : 2, null));
-                f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 4, 2, SourceProfile.components(res.member("usage"),
-                        "output_tokens", "output_tokens", "cache_read_tokens", "cache_read_tokens",
-                        "thinking_tokens", "reasoning_tokens", "total_tokens", "reported_total_tokens"), null));
-                for (Json d : res.member("denied_actions") == null ? List.<Json>of() : res.member("denied_actions").elements()) {
-                    String target = "command".equals(SourceProfile.text(d, "action")) ? "run_command" : null;
-                    List<String> candidates = new ArrayList<>();
-                    for (Step t : toolSteps) {
-                        if (target != null && target.equals(t.name())) {
-                            candidates.add(t.uid());
-                        }
-                    }
-                    f.decisions.add(new ExpectedFacts.Decision(r.index(), "denied (derived label: denied_actions entry)", 2, "cli", null, 4, 3, 2, candidates, null));
-                }
             }
         }
         return f;
+    }
+
+    /** The facts one parsed record states, with its session; {@code true} when a normalization rule covers it. */
+    private static boolean record(ExpectedFacts f, int index, Json o) {
+        String event = SourceProfile.text(o, "event");
+        Json payload = event == null ? null : o.member(event);
+        if (!(payload instanceof Json.JObject)) {
+            return false;
+        }
+        // init reports its conversation id beside the payload; step_update and result inside it
+        String conversation = SourceProfile.text("init".equals(event) ? o : payload, "conversation_id");
+        if (conversation != null) {
+            f.sessionOf.put(index, conversation);
+        }
+        return switch (event) {
+            case "init" -> init(f, index, payload);
+            case "step_update" -> step(f, index, payload);
+            case "result" -> result(f, index, payload);
+            default -> false;
+        };
+    }
+
+    private static boolean init(ExpectedFacts f, int index, Json init) {
+        Map<String, Json> settings = new LinkedHashMap<>();
+        put(settings, "working_directory", init.member("cwd"));
+        put(settings, "permission_mode", init.member("permission_mode"));
+        put(settings, "model", init.member("model"));
+        put(settings, "agent", init.member("agent"));
+        if (init.member("tools") instanceof Json.JArray) {
+            settings.put("tool_names", init.member("tools"));
+        }
+        f.contexts.add(new ExpectedFacts.Context(index, 1, "init", null, settings, null, null));
+        return true;
+    }
+
+    private static void put(Map<String, Json> settings, String name, Json value) {
+        if (value instanceof Json.JString) {
+            settings.put(name, value);
+        }
+    }
+
+    private static boolean step(ExpectedFacts f, int index, Json s) {
+        String type = SourceProfile.text(s, "step_type");
+        String state = SourceProfile.text(s, "state");
+        if ("user_input".equals(type) && "DONE".equals(state)) {
+            f.prompts.add(new ExpectedFacts.Prompt(index, null, null));
+            return true;
+        }
+        if ("agent_response".equals(type) && ("ACTIVE".equals(state) || "DONE".equals(state))) {
+            response(f, index, s, "DONE".equals(state));
+            return true;
+        }
+        // a subagent step reporting a tool name completes the invoke_subagent call of the same step
+        boolean toolStep = "tool".equals(type) || ("subagent".equals(type) && SourceProfile.text(s, "tool_name") != null);
+        return toolStep && tool(f, index, s, state, "subagent".equals(type));
+    }
+
+    /** A tool step: a started invocation while ACTIVE, a result when DONE or ERROR; {@code false} for any other state. */
+    private static boolean tool(ExpectedFacts f, int index, Json s, String state, boolean subagent) {
+        if ("ACTIVE".equals(state)) {
+            Json info = s.member("tool_info");
+            f.requests.add(new ExpectedFacts.Request(index, id(s), SourceProfile.text(s, "tool_name"), info == null ? null : info.member("parameters"), null, state, null, STEP_INDEX,
+                    4, null, null));
+            return true;
+        }
+        if ("DONE".equals(state) || "ERROR".equals(state)) {
+            toolResult(f, index, s, subagent);
+            return true;
+        }
+        return false;
+    }
+
+    private static void response(ExpectedFacts f, int index, Json s, boolean done) {
+        Json delta = s.member("text_delta");
+        f.responses.add(new ExpectedFacts.Response(index, id(s), delta instanceof Json.JString ? List.of(delta) : null, null, done, null, null, STEP_INDEX, done ? 3 : 1));
+        if (s.member("usage") instanceof Json.JObject usage) {
+            f.usages.add(new ExpectedFacts.Usage(index, index, 2, done ? 2 : 1, TrancheReading.antigravity(usage), null, null, null, 1));
+        }
+    }
+
+    /** A finished step's result: the reported output, else the error, else (subagent step) the subagent_info; failed only where the error is reported. */
+    private static void toolResult(ExpectedFacts f, int index, Json s, boolean subagent) {
+        Json info = s.member("tool_info");
+        Json output = info == null ? null : info.member("output");
+        Json error = info == null ? null : info.member("error");
+        Json content = output != null ? output : error;
+        if (content == null && subagent) {
+            content = s.member("subagent_info");
+        }
+        f.results.add(new ExpectedFacts.Result(index, id(s), content, error != null ? new Json.JBool(true) : null, null, null, SourceProfile.text(s, "state"), STEP_INDEX, null));
+    }
+
+    /** The step's index as decimal text, or {@code null} when the record reports none. */
+    private static String id(Json s) {
+        return s.member("step_index") instanceof Json.JNumber n && SourceProfile.isIntegral(n) ? n.value().toBigIntegerExact().toString() : null;
+    }
+
+    private static boolean result(ExpectedFacts f, int index, Json res) {
+        String status = SourceProfile.text(res, "status");
+        int statusId = status == null ? 0 : switch (status) {
+            case "SUCCESS" -> 1;
+            case "ERROR" -> 2;
+            default -> 99;
+        };
+        Json response = res.member("response");
+        f.completed.add(new ExpectedFacts.TurnCompleted(index, statusId, null, response instanceof Json.JString t ? List.of(t.value()) : null));
+        if (res.member("usage") instanceof Json.JObject usage) {
+            f.usages.add(new ExpectedFacts.Usage(index, index, 5, 2, TrancheReading.antigravity(usage), null, null, null, 2));
+        }
+        int denied = res.member("denied_actions") == null ? 0 : res.member("denied_actions").elements().size();
+        for (int i = 0; i < denied; i++) {
+            f.decisions.add(new ExpectedFacts.Decision(index, "denied", 2, null, null, 4, 3, 2, List.of(), null));
+        }
+        return true;
     }
 }

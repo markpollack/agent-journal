@@ -77,7 +77,10 @@ class VendorStreamInventoryTest {
                     // which the neutral reader refuses as malformed because they carry two "id" members (a defect to resolve)
                     Set.of("synthetic.unknown_event", "item.completed/synthetic_unknown_item", "(opaque:MALFORMED)")),
             new Profile("claude_stream", "schema/vendor/claude-code/stream-json/2.1.304-vendor-inventory.json", "claude.sdk",
-                    List.of(OcsfFixtures.LIVE_FEATURES, OcsfFixtures.LIVE_DENIAL, OcsfFixtures.LIVE_CANCELLED), List.of(), Set.of()));
+                    List.of(OcsfFixtures.LIVE_FEATURES, OcsfFixtures.LIVE_DENIAL, OcsfFixtures.LIVE_CANCELLED), List.of(), Set.of()),
+            // closed source: the pinned basis is the public CHANGELOG (git blob) and the fetched documentation pages (sha256)
+            new Profile("agy_stream", "schema/vendor/antigravity-cli/stream-json/1.4.6-vendor-inventory.json", "agy.checkout",
+                    List.of(OcsfFixtures.LIVE_AGY_FEATURES, OcsfFixtures.LIVE_AGY_DENIAL, OcsfFixtures.LIVE_AGY_INTERRUPT_OPEN, OcsfFixtures.LIVE_AGY_SUBAGENT), List.of(), Set.of()));
 
     static JsonNode inventory(Profile p) {
         try {

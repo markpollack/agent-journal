@@ -1,0 +1,33 @@
+{
+ "kind": "agent-journal/expected-sources",
+ "version": "0.1",
+ "run_uid": "antigravity-live-1.4.6-denial",
+ "complete": true,
+ "frozen": {
+  "at": "after sanitization, before any package was written or judged",
+  "by": "sha256, bytes and line count of the sanitized stream; no split core (the stream carries no child records)",
+  "basis": "SANITIZED REAL LIVE RECORDING: the live frozen manifest recorded sha256 32dc4098b78eef7659e5faa744a87c324406c71e668fcb9f4fe0ac74acfea31d over 3862 bytes; values were replaced as provenance.json lists, no record added or removed",
+  "live_process": {
+   "pid": 2971570,
+   "started": "2026-10-23T21:20:26.407400480Z",
+   "ended": "2026-10-23T21:20:38.422360290Z",
+   "how": "exited",
+   "exit_code": 0,
+   "exit_meaning": "0: the CLI reported success",
+   "stdout": "closed: EOF reached",
+   "stderr_bytes": 303,
+   "meaning": "the CLI process outcome; distinct from storage finalization (recording.state) and acquisition extent (acquisition.status): EOF never implies success"
+  }
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "profile": "agy_stream",
+   "sha256": "2ba182de66186317e245e71c18351a46f4c0b0a6bd58eaa6dba0114d24110894",
+   "bytes": 3481,
+   "records": 9,
+   "required": true
+  }
+ ],
+ "children": []
+}

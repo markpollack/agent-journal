@@ -14,7 +14,7 @@ import java.util.Map;
  * that produced the candidate and never calls a production parser.
  *
  * <p>The profile name is the one the package's source inventory declares ({@code claude_stream},
- * {@code claude_transcript}, {@code codex_rollout}, {@code codex_stream}, {@code agy_stream}, {@code opaque_text}).
+ * {@code claude_transcript}, {@code codex_rollout}, {@code codex_stream}, {@code agy_stream} (Antigravity CLI), {@code opaque_text}).
  */
 public interface SourceProfile {
 

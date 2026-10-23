@@ -1,0 +1,42 @@
+{
+ "kind": "agent-journal/fixture-provenance",
+ "fixture": "antigravity-live-1.4.6-interrupt-open",
+ "origin": "SANITIZED REAL LIVE RECORDING (not synthetic)",
+ "evidence_class": "recorded replay of a live stream; the live capture itself (unsanitized) is private steward evidence under plans/evidence/2026-10-23-antigravity-onboarding/",
+ "cli": "Antigravity CLI",
+ "cli_version": "1.4.6",
+ "cli_version_basis": "discovered once per run by the documented adapter path `agy --version` before launch, because the stream-json output reports no version; the native session file was not consulted",
+ "mode_and_route": "CliCapture launch (opt-in integration): raw stdout, independent byte copy, flush per record",
+ "capture_command": [
+  "agy",
+  "--print",
+  "Run the shell command: sleep 90 && echo finished . Wait for it to complete, then reply with its output.",
+  "--output-format",
+  "stream-json",
+  "--dangerously-skip-permissions"
+ ],
+ "scenario": "always-proceed mode: a run_command step (sleep 90 && echo finished) still ACTIVE when the capture cancelled the CLI 35 s after launch; on SIGTERM the CLI wrote a result with status ERROR and error interrupted and exited 1",
+ "live_run": "L3-interrupt-1",
+ "live_process": {
+  "pid": 2971890,
+  "started": "2026-10-23T21:20:49.838564939Z",
+  "ended": "2026-10-23T21:21:25.024426703Z",
+  "how": "cancelled",
+  "exit_code": 1,
+  "exit_meaning": "1: the CLI reported failure; whether its stream was completely acquired is judged separately",
+  "cancel_reason": "deliberate cancellation after 35000 ms",
+  "stdout": "closed: EOF reached",
+  "stderr_bytes": 81,
+  "meaning": "the CLI process outcome; distinct from storage finalization (recording.state) and acquisition extent (acquisition.status): EOF never implies success"
+ },
+ "original_sha256": "60181f5c6dee7ecc11af2efc84cb0de2fa5e4a28d834729e05a24793fafc3b34",
+ "original_bytes": 2448,
+ "sanitized_sha256": "6e5ad73eeec6c68f898a2ffde37d676ed3c737941cb603896e30e7d799968bf9",
+ "sanitized_bytes": 2318,
+ "records": 5,
+ "sanitization": [
+  "conversation id of the run -> stand-in 00000000-0000-4000-8000-000000000200",
+  "task directory path -> /work"
+ ],
+ "privacy_review": "local paths (task directory, session scratch, home directory) and conversation ids (the run and any spawned subagent) replaced by text substitution on the raw bytes; tool names, step indexes, token counts, durations and the built-in tool list kept; prompt text is the deliberate synthetic task; reviewed 2026-10-23"
+}

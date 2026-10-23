@@ -59,10 +59,12 @@ class FieldDispositionTest {
     /** Profile to (catalog, native fixtures whose stream artifact is inventoried). */
     static final Map<String, List<String>> PROFILE_FIXTURES = Map.of(
             "claude_stream", List.of(OcsfFixtures.CHILD, OcsfFixtures.INTERRUPTED, "syn-claude-untested-version", OcsfFixtures.LIVE_FEATURES, OcsfFixtures.LIVE_DENIAL, OcsfFixtures.LIVE_CANCELLED),
-            "codex_stream", List.of(OcsfFixtures.CODEX_STREAM, OcsfFixtures.LIVE_CODEX, OcsfFixtures.LIVE_CODEX_CANCELLED, OcsfFixtures.CODEX_FAMILIES, OcsfFixtures.CODEX_TURN_FAILED, OcsfFixtures.LIVE_CODEX_FILE_CHANGE, OcsfFixtures.LIVE_CODEX_MCP, OcsfFixtures.LIVE_CODEX_REASONING, OcsfFixtures.LIVE_CODEX_PLAN, OcsfFixtures.LIVE_CODEX_WEB_SEARCH, OcsfFixtures.LIVE_CODEX_COLLAB_WAIT, OcsfFixtures.LIVE_CODEX_INTERRUPT_OPEN, OcsfFixtures.LIVE_CODEX_SANDBOX_REFUSAL));
+            "codex_stream", List.of(OcsfFixtures.CODEX_STREAM, OcsfFixtures.LIVE_CODEX, OcsfFixtures.LIVE_CODEX_CANCELLED, OcsfFixtures.CODEX_FAMILIES, OcsfFixtures.CODEX_TURN_FAILED, OcsfFixtures.LIVE_CODEX_FILE_CHANGE, OcsfFixtures.LIVE_CODEX_MCP, OcsfFixtures.LIVE_CODEX_REASONING, OcsfFixtures.LIVE_CODEX_PLAN, OcsfFixtures.LIVE_CODEX_WEB_SEARCH, OcsfFixtures.LIVE_CODEX_COLLAB_WAIT, OcsfFixtures.LIVE_CODEX_INTERRUPT_OPEN, OcsfFixtures.LIVE_CODEX_SANDBOX_REFUSAL),
+            "agy_stream", List.of(OcsfFixtures.LIVE_AGY_FEATURES, OcsfFixtures.LIVE_AGY_DENIAL, OcsfFixtures.LIVE_AGY_INTERRUPT_OPEN, OcsfFixtures.LIVE_AGY_SUBAGENT));
     static final Map<String, String> CATALOGS = Map.of(
             "claude_stream", "schema/vendor/claude-code/stream-json/dispositions.json",
-            "codex_stream", "schema/vendor/codex-cli/exec-json-stream/dispositions.json");
+            "codex_stream", "schema/vendor/codex-cli/exec-json-stream/dispositions.json",
+            "agy_stream", "schema/vendor/antigravity-cli/stream-json/dispositions.json");
 
     record Entry(String variant, String path, boolean subtree, String disposition, List<String> destinations, String rule, String property, List<String> tests, String note, Json raw) {
         String key() {

@@ -219,6 +219,7 @@ class SemanticExampleTest {
         return switch (profile) {
             case "codex_stream" -> WriterTestSupport.codexStream();
             case "claude_stream" -> WriterTestSupport.claudeStreamStdout();
+            case "agy_stream" -> WriterTestSupport.agyStream();
             default -> throw new IllegalArgumentException("no example source for profile " + profile);
         };
     }

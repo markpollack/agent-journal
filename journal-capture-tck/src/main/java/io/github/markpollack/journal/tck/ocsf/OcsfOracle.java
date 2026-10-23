@@ -1665,9 +1665,27 @@ public final class OcsfOracle {
                 if (!Objects.equals(e.text("stop_reason"), t.stopReason())) {
                     problems.add("record " + t.recordIndex() + " stop_reason " + e.text("stop_reason") + " != " + t.stopReason());
                 }
+                turnContent(t, e, problems);
             }
         }
         valueCheck("turn.values", owner, examined, problems, null);
+    }
+
+    /** The turn's response text blocks against what the record reports; none reported means none may be written. */
+    private static void turnContent(ExpectedFacts.TurnCompleted t, Event e, List<String> problems) {
+        if (t.texts() == null) {
+            if (e.get("content_blocks") != null) {
+                problems.add("record " + t.recordIndex() + " reports no turn content but content_blocks present");
+            }
+            return;
+        }
+        List<String> texts = new ArrayList<>();
+        for (Json b : e.elements("content_blocks")) {
+            texts.add(SchemaCatalog.text(b, "text"));
+        }
+        if (!texts.equals(t.texts())) {
+            problems.add("record " + t.recordIndex() + " turn content block texts differ (" + texts.size() + " vs " + t.texts().size() + " reported)");
+        }
     }
 
     private void started(ExpectedFacts facts, List<Event> events, String owner) {

@@ -239,6 +239,43 @@
    "symbol": "measurement_status_id 4 Lower bound (the quantity is at least the value; a reported 100 is compatible with an actual 150) and 3 Conditional (equal prices make an allocation immaterial, never recover a missing contribution)",
    "evidence_kind": "specification",
    "note": "candidate definitions of the review closure, 2026-10-23"
+  },
+  {
+   "id": "agy-headless-docs-2026-10-23",
+   "source": "Antigravity CLI documentation (antigravity.google)",
+   "revision": "fetched 2026-10-23",
+   "path": "docs/cli/headless",
+   "symbol": "Streaming JSON (event table, init payload, step_update payload); Tool calls in the stream (tool_info, subagent_info); Read the results (response per turn, usage and num_turns cumulative over the session); Handle exit codes and errors (status values); Permissions in headless mode (soft denial)",
+   "locator": "https://antigravity.google/docs/cli/headless (html sha256 2ca1e619a7492a068c76aaa2201325324b7acef68e85c5dbe899c6e3f07407f8)",
+   "evidence_kind": "specification",
+   "note": "the published description of the stream-json output; closed source: no typed schema, SDK or vendor test is published; the step_type list is given as observed values"
+  },
+  {
+   "id": "agy-permissions-docs-2026-10-23",
+   "source": "Antigravity CLI documentation (antigravity.google)",
+   "revision": "fetched 2026-10-23",
+   "path": "docs/permissions?tab=cli",
+   "symbol": "Supported actions and matching rules (read_file, write_file, read_url, execute_url, command, mcp)",
+   "locator": "https://antigravity.google/docs/permissions/?tab=cli (html sha256 ad02742ced5300274c766ba897cdef579b0265c9b558a4308e7fd0a27227b9b8)",
+   "evidence_kind": "specification",
+   "note": "the permission action categories a denied_actions entry names; an action is a category, not a tool call"
+  },
+  {
+   "id": "agy-changelog-1.4.6",
+   "source": "google-antigravity/antigravity-cli",
+   "revision": "fd851f1da40e4347f1d05d211dcb45f94aede4c4",
+   "path": "CHANGELOG.md",
+   "blob": "a01e3682b978015ccc06187651e74cf7894aab09",
+   "symbol": "1.1.8 (stream-json with init, step_update, result; tool_info; subagent_info; cache_read_tokens); 1.1.27 (denied_actions in the JSON output); 1.2.6 (exit code 3 and AGY_ERROR on model or agent failure)",
+   "evidence_kind": "source_inspection",
+   "note": "the public repository holds README, CHANGELOG and examples only; the CHANGELOG dates the format by version"
+  },
+  {
+   "id": "agy-live-1.4.6-recordings",
+   "source": "Antigravity onboarding live runs (2026-10-23), CliCapture launch --cli antigravity",
+   "locator": "journal-capture-tck/src/test/resources/ocsf/fixtures/antigravity-live-1.4.6-{features,denial,interrupt-open,subagent}",
+   "evidence_kind": "live",
+   "note": "sanitized live recordings of Antigravity CLI 1.4.6 headless stream-json output; the unsanitized captures are private"
   }
  ]
 }

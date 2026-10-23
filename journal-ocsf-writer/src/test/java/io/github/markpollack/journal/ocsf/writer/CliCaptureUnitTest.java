@@ -65,7 +65,7 @@ class CliCaptureUnitTest {
         assertThat(main(new String[] {"launch", work.resolve("o1").toString(), "--prompt", "hi", "--cwd", work.toString()})).isEqualTo(64);
         assertThat(err).contains("--cli, --prompt and --cwd are required");
         assertThat(main(new String[] {"launch", work.resolve("o2").toString(), "--cli", "gemini", "--prompt", "hi", "--cwd", work.toString()})).isEqualTo(64);
-        assertThat(err).contains("--cli must be claude or codex");
+        assertThat(err).contains("--cli must be claude, codex or antigravity");
         assertThat(main(new String[] {"launch", work.resolve("o3").toString(), "--cli", "claude", "--bogus", "x"})).isEqualTo(64);
         assertThat(err).contains("unknown option --bogus");
         assertThat(Files.exists(work.resolve("o1"))).as("a refused launch creates nothing").isFalse();
@@ -133,9 +133,9 @@ class CliCaptureUnitTest {
 
     @Test
     void theVersionProbeParsesBothOutputFormsAndRefusesUnrecognizableOutput(@TempDir Path work) throws IOException {
-        assertThat(CliCapture.discoverVersion(List.of(script(work.resolve("v1.sh"), "echo 'codex-cli 0.160.1'\n").toString()), Duration.ofSeconds(5))).isEqualTo("0.160.1");
-        assertThat(CliCapture.discoverVersion(List.of(script(work.resolve("v2.sh"), "echo 'codex v1.2.3 (build 7)' >&2\n").toString()), Duration.ofSeconds(5))).as("stderr is read too").isEqualTo("1.2.3");
-        assertThatThrownBy(() -> CliCapture.discoverVersion(List.of(script(work.resolve("v3.sh"), "echo 'no version here'\n").toString()), Duration.ofSeconds(5)))
+        assertThat(CliCapture.discoverVersion(List.of(script(work.resolve("v1.sh"), "echo 'codex-cli 0.160.1'\n").toString()), Duration.ofSeconds(5), CliCapture.Cli.CODEX.versionPattern)).isEqualTo("0.160.1");
+        assertThat(CliCapture.discoverVersion(List.of(script(work.resolve("v2.sh"), "echo 'codex v1.2.3 (build 7)' >&2\n").toString()), Duration.ofSeconds(5), CliCapture.Cli.CODEX.versionPattern)).as("stderr is read too").isEqualTo("1.2.3");
+        assertThatThrownBy(() -> CliCapture.discoverVersion(List.of(script(work.resolve("v3.sh"), "echo 'no version here'\n").toString()), Duration.ofSeconds(5), CliCapture.Cli.CODEX.versionPattern))
                 .isInstanceOf(IOException.class).hasMessageContaining("printed no recognizable version").hasMessageContaining("no version here");
     }
 

@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CHILD;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX_STREAM;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_FEATURES;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_FEATURES;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.nativeOf;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.verify;
@@ -50,6 +51,8 @@ class CliCaptureTest {
     static final String CLAUDE_SESSION = "00000000-0000-4000-8000-0000000000a1";
     static final String LIVE_SPAWN = "toolu_01WBvs5eGudfYPm8YvrTYTQK";
     static final String CODEX_THREAD = "00000000-0000-4000-8000-0000000c0de5";
+    /** The conversation stand-in of the sanitized Antigravity feature recording. */
+    static final String AGY_CONVERSATION = "00000000-0000-4000-8000-000000000200";
 
     @Test
     void aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy(@TempDir Path work) throws Exception {
@@ -302,6 +305,38 @@ class CliCaptureTest {
     }
 
     @Test
+    void antigravityVersionIsDiscoveredOnceAndTheConversationStoreIsArchivedByBytes(@TempDir Path work) throws Exception {
+        Path task = Files.createDirectories(work.resolve("task"));
+        Path home = Files.createDirectories(work.resolve("home"));
+        Path counter = work.resolve("version-calls");
+        Path fake = fakeAntigravity(work, nativeOf(LIVE_AGY_FEATURES, "stream.jsonl"), counter);
+        Path store = home.resolve(".gemini/antigravity-cli/conversations").resolve(AGY_CONVERSATION + ".db");
+        Files.createDirectories(store.getParent());
+        Files.write(store, new byte[] {'S', 'Q', 'L', 'i', 't', 'e', 0, 1, 2, 3}); // opaque bytes: the store is never opened
+        Files.writeString(store.resolveSibling(AGY_CONVERSATION + ".db-wal"), "wal", StandardCharsets.UTF_8);
+        List<String> command = CliCapture.antigravityCommand(fake.toString(), "say hello", null, List.of("--dangerously-skip-permissions"));
+        assertThat(command).containsExactly(fake.toString(), "--print", "say hello", "--output-format", "stream-json", "--dangerously-skip-permissions");
+        CliCapture.Launch launch = new CliCapture.Launch(CliCapture.Cli.ANTIGRAVITY, command, task, "say hello", "agy-fake-1", work.resolve("out"), null, null, home, null, null, null);
+        CliCapture.Result r = new CliCapture(launch, options(work)).run();
+        assertThat(r.state()).isEqualTo(OcsfRunWriter.State.COMPLETED);
+        assertThat(Files.readString(counter).lines().count()).as("the discovery command ran exactly once").isEqualTo(1);
+        assertThat(r.cliVersion()).isEqualTo("1.4.6");
+        assertThat(r.sessionUid()).isEqualTo(AGY_CONVERSATION);
+        OcsfPackage p = PackageReader.open(r.packageDir().resolve("events.jsonl"));
+        assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).as(p.diagnostics.toString()).isEmpty();
+        assertThat(p.manifest.text("run", "cli", "version_basis")).contains("fake-agy.sh --version").contains("stream-json output reports no version");
+        assertThat(p.manifest.compatibility("stream.jsonl").member("entry_id").text()).isEqualTo("antigravity-cli/stream-json/1.4.6-stdout");
+        assertThat(r.archive().get("status").text()).isEqualTo("archived");
+        assertThat(r.archive().get("located_by").text()).contains("conversation id");
+        assertThat(Files.readAllBytes(work.resolve("out/archive").resolve(store.getFileName()))).isEqualTo(Files.readAllBytes(store));
+        assertThat(r.archive().get("sidecars").elements()).extracting(x -> x.member("artifact").text()).containsExactly(AGY_CONVERSATION + ".db-wal");
+        OracleReport report = verify(r.packageDir(), work.resolve("out/native"));
+        assertThat(report.defects()).as(report.toString()).isEmpty();
+        assertThat(report.outcome("request.values", "main/stream.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
+        assertThat(report.outcome("acquisition.complete", "main")).isEqualTo(Check.Outcome.VERIFIED);
+    }
+
+    @Test
     void theLaunchCommandLineRunsAStandInAndPrintsTheThreeFacts(@TempDir Path work) throws Exception {
         Path task = Files.createDirectories(work.resolve("task"));
         Path fake = fakeClaude(work, nativeOf(LIVE_FEATURES, "stream.jsonl"), 0, 0, false);
@@ -353,6 +388,16 @@ class CliCaptureTest {
                 + "while IFS= read -r line || [ -n \"$line\" ]; do printf '%s\\n' \"$line\"; done < '" + stream + "'\n"
                 + "exit 0\n";
         return executable(work.resolve("fake-codex.sh"), script);
+    }
+
+    /** A script that answers {@code --version} with the bare number (counted) and otherwise replays an Antigravity stream. */
+    static Path fakeAntigravity(Path work, Path stream, Path counter) throws IOException {
+        String script = "#!/bin/bash\n"
+                + "# TEST-ONLY stand-in CLI\n"
+                + "if [ \"$1\" = \"--version\" ]; then echo call >> '" + counter + "'; echo '1.4.6'; exit 0; fi\n"
+                + "while IFS= read -r line || [ -n \"$line\" ]; do printf '%s\\n' \"$line\"; done < '" + stream + "'\n"
+                + "exit 0\n";
+        return executable(work.resolve("fake-agy.sh"), script);
     }
 
     private static Path executable(Path file, String script) throws IOException {

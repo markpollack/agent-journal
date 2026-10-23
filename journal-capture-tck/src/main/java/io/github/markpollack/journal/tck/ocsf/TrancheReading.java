@@ -179,4 +179,23 @@ final class TrancheReading {
         b.bases.put("uncached_input_tokens", UNAVAILABLE);
         b.pointers.put("uncached_input_tokens", List.of(prefix + "/input_tokens", prefix + "/cached_input_tokens", prefix + "/cache_write_input_tokens"));
     }
+
+    /**
+     * An Antigravity usage object (headless documentation: input, output, thinking, cache-read and total tokens): cache
+     * reads, output, thinking as reasoning and the total are reported; no published source states whether input_tokens
+     * includes the cache reads or whether thinking is part of output, so the uncached tranche is unavailable and no
+     * relation is stated.
+     */
+    static ExpectedFacts.Tranches antigravity(Json usage) {
+        Builder b = new Builder();
+        if (usage != null && (usage.member("input_tokens") != null || usage.member("cache_read_tokens") != null)) {
+            b.bases.put("uncached_input_tokens", UNAVAILABLE);
+            b.pointers.put("uncached_input_tokens", List.of("/input_tokens", "/cache_read_tokens"));
+        }
+        b.copy(usage, "", "cache_read_tokens", "cache_read_tokens");
+        b.copy(usage, "", "output_tokens", "output_tokens");
+        b.copy(usage, "", "thinking_tokens", "reasoning_tokens");
+        b.copy(usage, "", "total_tokens", "reported_total_tokens");
+        return b.build();
+    }
 }

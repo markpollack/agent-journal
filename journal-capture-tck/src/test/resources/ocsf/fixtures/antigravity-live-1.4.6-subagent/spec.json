@@ -1,0 +1,34 @@
+{
+ "run_uid": "antigravity-live-1.4.6-subagent",
+ "invocation_index": 0,
+ "capture_start": "2026-10-23T21:21:37.836079139Z",
+ "cli": {
+  "name": "Antigravity CLI",
+  "vendor_name": "Google",
+  "type_id": 1,
+  "type": "Native",
+  "version": "1.4.6",
+  "version_basis": "declared from the live run, where it was discovered once per run by the documented adapter path `agy --version` before launch, because the stream-json output reports no version; the native session file was not consulted"
+ },
+ "launch_settings": {
+  "command": "replay of the sanitized live stream (original: agy --print <prompt> --output-format stream-json --dangerously-skip-permissions)",
+  "cwd": "/work",
+  "route": "stdout",
+  "model_requested": null,
+  "allowed_tools": null,
+  "original_route": "LIVE: CliCapture launch, raw stdout, independent byte copy"
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "kind": 1,
+   "profile": "agy_stream",
+   "route": "stdout",
+   "path": "<fixture>/native/antigravity-live-1.4.6-subagent/stream.jsonl"
+  }
+ ],
+ "synthetic": {
+  "label": "SANITIZED REAL LIVE RECORDING (Antigravity CLI 1.4.6, always-proceed mode: an invoke_subagent tool step whose DONE record has step_type subagent and subagent_info naming the child conversation, streamed answer fragments over two agent-response steps, an undocumented system_message step; normal completion), replayed through the writer to produce this package; the live package itself is private steward evidence",
+  "derived_from": "live run L4-subagent-1 (Antigravity onboarding, 2026-10-23)"
+ }
+}

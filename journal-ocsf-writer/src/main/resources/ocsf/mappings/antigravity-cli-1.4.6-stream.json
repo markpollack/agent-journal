@@ -1,0 +1,217 @@
+{
+  "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+  "applies_to": {
+    "product": "Antigravity CLI",
+    "version": "1.4.6",
+    "launch": "agy --print <prompt> --output-format stream-json (headless print mode), raw standard output",
+    "source_kind": "Live output",
+    "compatibility_entries": [
+      "antigravity-cli/stream-json/1.4.6-stdout"
+    ],
+    "selection": "route stdout; the stream reports no version: the capture discovers it once per run with agy --version (RULE-8) and declares the basis"
+  },
+  "interface_sources": {
+    "documented": "Antigravity CLI headless mode documentation (antigravity.google/docs/cli/headless, fetched 2026-10-23): one init event, step_update events, one result event per turn; the step_update, tool_info, subagent_info, init and result members; status values; usage, num_turns and duration_seconds of the result are cumulative over the session, response is the turn's own",
+    "changelog": "google-antigravity/antigravity-cli CHANGELOG.md at tag 1.4.6 (fd851f1da40e4347f1d05d211dcb45f94aede4c4): stream-json introduced in 1.1.8 with tool_info (canonical tool name, parameters, output) and subagent_info; denied_actions reported since 1.1.27",
+    "unavailable": "the emitter's source, a published typed schema or SDK, and vendor tests; the documented step_type list is stated as observed values, not a closed vocabulary"
+  },
+  "executor": "journal-ocsf-writer AntigravityStreamMapper (direct Java); one record at a time; no cross-record state",
+  "record_discriminator": "event, then step_update.step_type and step_update.state",
+  "time_policy": {
+    "reported": "none: the stream carries no timestamps (duration_seconds is a duration, not a time)",
+    "fallback": "capture start for every record"
+  },
+  "identity": "agy.stream.step_identity.v1: a step's identity is its step_index, the zero-based index of the step in its conversation (step_update.conversation_id, which every record reports), written as decimal text in tool_call_uid or item_uid with identity_basis_id 99 Other and the caption sibling identity_basis \"Conversation step index\" (the OCSF convention for an Other value); it is neither a model-facing call identifier (the stream reports none) nor a stream-local item identifier: the index belongs to the conversation, so a resumed conversation continues the numbering and the same index in another invocation of that conversation names the same step",
+  "tool_kind_table": {
+    "rule": "agy.tool_name_to_kind.v1",
+    "meaning": "a tool step is classified by the exact tool name the step reports (step_update.tool_name, documented as the canonical tool name); names absent from the table are 99 other",
+    "map": {
+      "read_file": 1,
+      "view_file": 1,
+      "list_dir": 1,
+      "write_file": 2,
+      "write_to_file": 2,
+      "replace_file_content": 2,
+      "multi_replace_file_content": 2,
+      "grep_search": 5,
+      "find_by_name": 5,
+      "run_command": 6,
+      "read_url_content": 8,
+      "search_web": 8
+    },
+    "default": 99,
+    "note": "Name table only. The kind describes the request; no operating-system effect is asserted, and a shell command's text is never read to choose a kind."
+  },
+  "block_kind_table": {
+    "rule": "agy.block_type_to_kind.v1",
+    "map": {
+      "text_delta": 1,
+      "response": 1
+    },
+    "default": 99
+  },
+  "rules": [
+    {
+      "id": "agy.stream.init->session_context.settings",
+      "selector": {
+        "event": "init"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "1 Settings reported",
+      "settings": "working_directory = init.cwd, permission_mode = init.permission_mode (request-review by default, always-proceed under --dangerously-skip-permissions), model = init.model and agent = init.agent only when reported, tool_names = init.tools exactly; session_uid = the record's conversation_id"
+    },
+    {
+      "id": "agy.stream.user_input->prompt_turn.submitted",
+      "selector": {
+        "event": "step_update",
+        "step_update.step_type": "user_input",
+        "step_update.state": "DONE"
+      },
+      "target": "agentic_cli/prompt_turn",
+      "activity": "1 Prompt submitted",
+      "content": "none: the stream reports that a user-input step happened, never its text; the prompt a capture passed is caller-supplied provenance in the run's launch settings, not vendor content"
+    },
+    {
+      "id": "agy.stream.agent_response.active->model_response.partial",
+      "selector": {
+        "event": "step_update",
+        "step_update.step_type": "agent_response",
+        "step_update.state": "ACTIVE"
+      },
+      "target": "agentic_cli/model_response",
+      "activity": "1 Partial",
+      "owner": "item_uid = step_index (agy.stream.step_identity.v1, identity_basis_id 99); no response_uid: the provider's response identifier is not reported, and whether one step is one model invocation is not established",
+      "content": "one block when text_delta is present: block_type text_delta, block_kind 1 Text, text = text_delta exactly (agy.stream.text_delta.v1: an increment of the step's response text; the step's text is the concatenation of its fragments in record order, as the documentation's jq -j example joins them)"
+    },
+    {
+      "id": "agy.stream.agent_response.done->model_response.item",
+      "selector": {
+        "event": "step_update",
+        "step_update.step_type": "agent_response",
+        "step_update.state": "DONE"
+      },
+      "target": "agentic_cli/model_response",
+      "activity": "3 Item completed",
+      "owner": "item_uid = step_index (identity_basis_id 99); the response the step belongs to is not identified",
+      "content": "the step's last text_delta fragment as one text_delta block when present; a step without text_delta has no content block (the stream does not project the response's tool requests or other content)",
+      "usage": "step_update.usage -> scope 2 Model response, status 2 Final (reported once, on the step's DONE record), aggregation 1 Scope total (agy.stream.step_usage.v1: documented as the step's own token usage); tranches by agy.usage.tranches.v1"
+    },
+    {
+      "id": "agy.stream.tool.active->tool_call.started",
+      "selector": {
+        "event": "step_update",
+        "step_update.step_type": [
+          "tool",
+          "subagent"
+        ],
+        "step_update.state": "ACTIVE"
+      },
+      "target": "agentic_cli/tool_call",
+      "activity": "4 Started",
+      "owner": "tool_call_uid = step_index (identity_basis_id 99)",
+      "request": "tool_name = step_update.tool_name, arguments = tool_info.parameters exactly (absent when not reported), reported_state = state; kind by agy.tool_name_to_kind.v1; a step that became active, not the model's own request: no response owner, model call id or permission decision follows from it (in request-review mode a command step becomes ACTIVE and is then soft-denied)"
+    },
+    {
+      "id": "agy.stream.tool.done->tool_call.result",
+      "selector": {
+        "event": "step_update",
+        "step_update.step_type": "tool",
+        "step_update.state": [
+          "DONE",
+          "ERROR"
+        ]
+      },
+      "target": "agentic_cli/tool_call",
+      "activity": "2 Result observed",
+      "owner": "tool_call_uid = step_index (identity_basis_id 99)",
+      "result": "tool_result.data = tool_info.output when reported, else tool_info.error when reported, else no result content; with tool_info.error (documented: present when the tool fails) error_reported true and status_id 2, basis 1 Reported; without it status_id 0, basis 3 Not derivable (agy.stream.tool_outcome.v1: DONE is a lifecycle state, and a missing error does not establish success: a soft-denied command reports DONE with neither output nor error); a command's exit status appears only inside the rendered output text and is not parsed; the record's own tool_name and tool_info.parameters stay in its retained data (the call's name, kind and arguments are on its start, joined by tool_call_uid)"
+    },
+    {
+      "id": "agy.stream.subagent.done->tool_call.result",
+      "selector": {
+        "event": "step_update",
+        "step_update.step_type": "subagent",
+        "step_update.state": [
+          "DONE",
+          "ERROR"
+        ],
+        "step_update.tool_name": "present"
+      },
+      "target": "agentic_cli/tool_call",
+      "activity": "2 Result observed",
+      "owner": "tool_call_uid = step_index (identity_basis_id 99): the same step whose ACTIVE record, as a tool step named invoke_subagent, started the call",
+      "result": "tool_result.data = tool_info.output or tool_info.error when reported, else step_update.subagent_info exactly (each spawned subagent's type_name, role, initial_prompt, conversation_id, log_uri, workspace_uris as reported); status as for tool steps (agy.stream.tool_outcome.v1); no child run is linked: the child conversation's records are not in this stream, and its log file is never read"
+    },
+    {
+      "id": "agy.stream.result->prompt_turn.completed",
+      "selector": {
+        "event": "result"
+      },
+      "target": "agentic_cli/prompt_turn",
+      "activity": "2 Turn completed",
+      "status": "result.status: SUCCESS 1 Success, ERROR 2 Failure, any other documented value (CANCELED, INTERRUPTED, INVALID, WAITING, RUNNING) 99 with the reported word as its label; basis 1 Reported",
+      "content": "result.response, documented as the turn's own response text, as one block (block_type response, block_kind 1 Text) when it is a string, including the empty string the CLI reports when no text was produced",
+      "usage": "result.usage -> scope 5 Session, status 2 Final for this run, aggregation 2 Cumulative snapshot (agy.stream.session_usage.v1: documented as cumulative over the session, so a resumed conversation's earlier turns are included); tranches by agy.usage.tranches.v1",
+      "permission": "each denied_actions[] entry -> one permission decision 2 Denied at scope 4 Run, reported_decision denied (the member name), attribution 3 Unattributed with no candidates, method 2 (agy.stream.denied_action_attribution.v1: an entry names a permission action category (for example command) and a display name, never a step index; it is not linked to a tool step by name, position or text); the entry is kept as the decision's data"
+    },
+    {
+      "id": "agy.stream.fallback->source_record",
+      "selector": "checkpoint, system_message and unknown step types, step states with no rule, unknown events",
+      "target": "agentic_cli/source_record",
+      "session": "session_uid = the record's own conversation_id when it reports one"
+    },
+    {
+      "id": "common.opaque->source_record",
+      "selector": "any line that is blank, not UTF-8, not one JSON object under strict duplicate-key parsing, or cut off by the end of the source",
+      "target": "agentic_cli/source_record",
+      "activity": "2 Opaque",
+      "residual": "raw_data (text) or raw_bytes_b64 (bytes); parse_status_id 5 Incomplete at source end when the source ended mid-record"
+    },
+    {
+      "id": "common.mapper_exception->source_record",
+      "selector": "a parsed record whose mapper threw",
+      "target": "agentic_cli/source_record",
+      "activity": "1 Parsed",
+      "residual": "whole record in data; basis names the exception. A defect of the writer is visible, never a lost record"
+    }
+  ],
+  "usage_tranches": {
+    "rule": "agy.usage.tranches.v1",
+    "meaning": "cache_read_tokens, output_tokens, thinking_tokens (as reasoning_tokens) and total_tokens (as reported_total_tokens) are copied as reported; input_tokens stays in data and the uncached tranche is unavailable: neither the documentation nor a published type states whether input_tokens includes cache_read_tokens; whether thinking_tokens is part of output_tokens is not stated either, so no reasoning relation is written; no member's measurement status is stated (whether the emitter writes 0 for an omitted member is not established)"
+  },
+  "unavailable_at_source": [
+    "the user prompt's text (a user_input step carries none)",
+    "model-facing tool call identifiers and provider response identifiers",
+    "the content of agent responses other than text_delta fragments (tool requests appear only as tool steps)",
+    "timestamps",
+    "a structured exit status of run_command (rendered into tool_info.output text)",
+    "the written content of write_file (its parameters report the path only)",
+    "the step a denied_actions entry refers to",
+    "a spawned subagent's own activity and usage (only the spawn's subagent_info is reported)"
+  ],
+  "retained_only_families": {
+    "reviewed": "2026-10-23 (Antigravity onboarding)",
+    "step_update/checkpoint": {
+      "meaning": "a documented step type whose purpose the documentation does not describe; it can report usage, which the result's session usage includes",
+      "disposition": "retained-only (meaning not established); its usage is not claimed as a model response's"
+    },
+    "step_update/system_message": {
+      "meaning": "an undocumented step type observed in 1.4.6 between agent-response steps of a run that spawned a subagent, DONE with a duration and no other content",
+      "disposition": "retained-only (meaning not established)"
+    }
+  },
+  "candidate": {
+    "status": "First Antigravity contract (2026-10-23), candidate for the managing reviewer: tested candidate behaviour, not approved support. Proposed meanings beyond existing definitions: a conversation step index as identity (written as identity basis 99 Other with the caption \"Conversation step index\"; a dedicated enum value is proposed) and a text_delta fragment as a Partial view of a step item"
+  },
+  "observed_behavior": {
+    "reviewed": "2026-10-23, 1.4.6 live captures",
+    "facts": [
+      "a tool step can end in state ERROR with tool_info.error {type, message} (read_file on a directory), although the documentation lists only ACTIVE and DONE",
+      "result.response joined the text_delta fragments of every agent-response step of the turn (two steps in the subagent run)",
+      "result.usage equalled the sum of the parent conversation's step usage; a spawned subagent's usage is not reported in this stream",
+      "on SIGTERM the CLI wrote a whole result record with status ERROR and error interrupted (not the documented INTERRUPTED) and exited 1",
+      "in request-review mode a command step became ACTIVE, then DONE with neither output nor error; the result reported SUCCESS, an empty response and denied_actions [{action: command, display_name: RunCommand}], and the run ended without the remaining requested steps",
+      "a tool step's tool_name (read_file, write_file) need not appear in init.tools (view_file, write_to_file)"
+    ]
+  }
+}

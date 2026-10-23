@@ -1,0 +1,34 @@
+{
+ "run_uid": "antigravity-live-1.4.6-interrupt-open",
+ "invocation_index": 0,
+ "capture_start": "2026-10-23T21:20:49.697803591Z",
+ "cli": {
+  "name": "Antigravity CLI",
+  "vendor_name": "Google",
+  "type_id": 1,
+  "type": "Native",
+  "version": "1.4.6",
+  "version_basis": "declared from the live run, where it was discovered once per run by the documented adapter path `agy --version` before launch, because the stream-json output reports no version; the native session file was not consulted"
+ },
+ "launch_settings": {
+  "command": "replay of the sanitized live stream (original: agy --print <prompt> --output-format stream-json --dangerously-skip-permissions)",
+  "cwd": "/work",
+  "route": "stdout",
+  "model_requested": null,
+  "allowed_tools": null,
+  "original_route": "LIVE: CliCapture launch, raw stdout, independent byte copy"
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "kind": 1,
+   "profile": "agy_stream",
+   "route": "stdout",
+   "path": "<fixture>/native/antigravity-live-1.4.6-interrupt-open/stream.jsonl"
+  }
+ ],
+ "synthetic": {
+  "label": "SANITIZED REAL LIVE RECORDING (Antigravity CLI 1.4.6, always-proceed mode: a run_command step (sleep 90 && echo finished) still ACTIVE when the capture cancelled the CLI 35 s after launch; on SIGTERM the CLI wrote a result with status ERROR and error interrupted and exited 1), replayed through the writer to produce this package; the live package itself is private steward evidence",
+  "derived_from": "live run L3-interrupt-1 (Antigravity onboarding, 2026-10-23)"
+ }
+}

@@ -25,7 +25,8 @@ class VendorSpecificationsTest {
             "claude-code/stream-json/2.1.303", "claude_stream",
             "claude-code/session-transcript/2.1.303", "claude_transcript",
             "codex-cli/exec-json-stream/0.160.1", "codex_stream",
-            "codex-cli/rollout/0.160.1", "codex_rollout");
+            "codex-cli/rollout/0.160.1", "codex_rollout",
+            "antigravity-cli/stream-json/1.4.6", "agy_stream");
 
     @Test
     void everyAcceptedSpecificationParsesCarriesProvenanceAndMatchesItsDerivedSchema() {
@@ -34,11 +35,15 @@ class VendorSpecificationsTest {
             assertThat(SchemaCatalog.text(spec, "profile")).isEqualTo(e.getValue());
             assertThat(SchemaCatalog.text(spec, "status")).startsWith("ACCEPTED 0.1.0");
             assertThat(SchemaCatalog.text(spec, "specification_version")).isEqualTo("0.1.0");
-            assertThat(SchemaCatalog.text(spec.member("applies_to"), "version")).isIn("2.1.303", "0.160.1");
+            assertThat(SchemaCatalog.text(spec.member("applies_to"), "version")).isIn("2.1.303", "0.160.1", "1.4.6");
             assertThat(SchemaCatalog.text(spec.member("applies_to"), "route_limit")).isNotBlank();
+            // one frozen complete source, or several when no single recording carries every variant (Antigravity 1.4.6): each hash-pinned
             List<Json> observed = spec.path("provenance", "observed_on").elements();
-            assertThat(observed).hasSize(1);
-            assertThat(SchemaCatalog.text(observed.get(0), "sha256")).hasSize(64);
+            assertThat(observed).isNotEmpty();
+            for (Json o : observed) {
+                assertThat(SchemaCatalog.text(o, "sha256")).hasSize(64);
+            }
+            assertThat(observed).hasSameSizeAs(spec.path("inventory", "observed_on").elements());
             assertThat(spec.member("limits").elements().size()).isGreaterThanOrEqualTo(5);
             Json variants = spec.path("inventory", "variants");
             assertThat(((Json.JObject) variants).members()).isNotEmpty();

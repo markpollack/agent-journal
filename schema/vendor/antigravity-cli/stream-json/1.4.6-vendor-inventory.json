@@ -1,0 +1,1250 @@
+{
+ "kind": "agent-journal/vendor-stream-inventory",
+ "version": "0.1",
+ "reviewed": "2026-10-23 (Antigravity onboarding)",
+ "cli": "Antigravity CLI",
+ "cli_version": "1.4.6",
+ "profile": "agy_stream",
+ "compatibility_entry": "antigravity-cli/stream-json/1.4.6-stdout",
+ "surface": "agy --print <prompt> --output-format stream-json standard output (headless print mode; init, step_update and result events); not stderr, the conversation SQLite store or the brain directory",
+ "source": {
+  "repository": "google-antigravity/antigravity-cli",
+  "tag": "1.4.6",
+  "commit": "fd851f1da40e4347f1d05d211dcb45f94aede4c4",
+  "files": {
+   "CHANGELOG.md": "a01e3682b978015ccc06187651e74cf7894aab09",
+   "https://antigravity.google/docs/cli/headless (fetched 2026-10-23)": "2ca1e619a7492a068c76aaa2201325324b7acef68e85c5dbe899c6e3f07407f8",
+   "https://antigravity.google/docs/permissions/?tab=cli (fetched 2026-10-23)": "ad02742ced5300274c766ba897cdef579b0265c9b558a4308e7fd0a27227b9b8",
+   "https://antigravity.google/docs/subagents/?tab=cli (fetched 2026-10-23)": "4692e5133899c8868f38ba4735e673af77284cfa74f2335fa8261155e76aa93f"
+  },
+  "method": "reviewed reading of the published interface: the CLI is closed source and no typed schema, SDK or vendor test of the stream-json output is published. The headless-mode documentation (html sha256 above) states the events, the step_update, tool_info, subagent_info and result members, the status values and the scope of the result counters; the public repository holds only README, CHANGELOG and examples, and its CHANGELOG at the pinned tag dates the format (stream-json, tool_info and subagent_info in 1.1.8, denied_actions in 1.1.27). The documentation calls its step_type list observed values, not a closed vocabulary, so the families below are documented plus observed on the 1.4.6 recordings; members only observed say so in their symbol. Completeness is not established: a family not declared here may exist."
+ },
+ "families": [
+  {
+   "variant": "init",
+   "emitted": "always",
+   "lifecycle": "once, at stream start",
+   "fields": [
+    {
+     "path": "event",
+     "type": "string",
+     "meaning": "event discriminator",
+     "availability": "always",
+     "values": [
+      "init"
+     ],
+     "symbol": "docs/cli/headless#Streaming JSON (event table)"
+    },
+    {
+     "path": "conversation_id",
+     "type": "string",
+     "meaning": "ID of the conversation, beside the payload",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Streaming JSON (example init line)"
+    },
+    {
+     "path": "init",
+     "type": "object",
+     "meaning": "the run configuration",
+     "availability": "always",
+     "symbol": "docs/cli/headless#init payload"
+    },
+    {
+     "path": "init.cwd",
+     "type": "string",
+     "meaning": "working directory",
+     "availability": "always",
+     "symbol": "docs/cli/headless#init payload"
+    },
+    {
+     "path": "init.tools",
+     "type": "array",
+     "meaning": "names of all available tools",
+     "availability": "always",
+     "symbol": "docs/cli/headless#init payload"
+    },
+    {
+     "path": "init.permission_mode",
+     "type": "string",
+     "meaning": "effective permission mode",
+     "availability": "always",
+     "values": [
+      "request-review",
+      "always-proceed"
+     ],
+     "symbol": "docs/cli/headless#init payload"
+    },
+    {
+     "path": "init.model",
+     "type": "string",
+     "meaning": "model in use, when overridden",
+     "availability": "conditional",
+     "condition": "only when set with --model",
+     "symbol": "docs/cli/headless#init payload"
+    },
+    {
+     "path": "init.agent",
+     "type": "string",
+     "meaning": "active agent, when overridden",
+     "availability": "conditional",
+     "condition": "only when set with --agent",
+     "symbol": "docs/cli/headless#init payload"
+    },
+    {
+     "path": "init.json_schema",
+     "type": "json",
+     "meaning": "enforced schema (user data)",
+     "availability": "conditional",
+     "condition": "only with --json-schema",
+     "symbol": "docs/cli/headless#init payload"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "normalized",
+    "rule": "agy.stream.init->session_context.settings",
+    "note": "session_context Settings reported: cwd, permission mode, model and agent when reported, tool names"
+   }
+  },
+  {
+   "variant": "step_update/user_input/DONE",
+   "emitted": "always",
+   "lifecycle": "once per user turn, first step of the turn",
+   "fields": [
+    {
+     "path": "event",
+     "type": "string",
+     "meaning": "event discriminator",
+     "availability": "always",
+     "values": [
+      "step_update"
+     ],
+     "symbol": "docs/cli/headless#Streaming JSON (event table)"
+    },
+    {
+     "path": "step_update",
+     "type": "object",
+     "meaning": "one step transition or text delta",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Streaming JSON (event table)"
+    },
+    {
+     "path": "step_update.conversation_id",
+     "type": "string",
+     "meaning": "ID of the conversation (the session)",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.step_index",
+     "type": "number",
+     "meaning": "zero-based index of the step in the conversation",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.state",
+     "type": "string",
+     "meaning": "step state",
+     "availability": "always",
+     "values": [
+      "DONE"
+     ],
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.step_type",
+     "type": "string",
+     "meaning": "step category",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "normalized",
+    "rule": "agy.stream.user_input->prompt_turn.submitted",
+    "note": "a prompt submission without content: the prompt text is not reported"
+   }
+  },
+  {
+   "variant": "step_update/agent_response/ACTIVE",
+   "emitted": "conditional",
+   "condition": "when the response streams in chunks",
+   "lifecycle": "one or more before the step's DONE, each with a text fragment",
+   "fields": [
+    {
+     "path": "event",
+     "type": "string",
+     "meaning": "event discriminator",
+     "availability": "always",
+     "values": [
+      "step_update"
+     ],
+     "symbol": "docs/cli/headless#Streaming JSON (event table)"
+    },
+    {
+     "path": "step_update",
+     "type": "object",
+     "meaning": "one step transition or text delta",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Streaming JSON (event table)"
+    },
+    {
+     "path": "step_update.conversation_id",
+     "type": "string",
+     "meaning": "ID of the conversation (the session)",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.step_index",
+     "type": "number",
+     "meaning": "zero-based index of the step in the conversation",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.state",
+     "type": "string",
+     "meaning": "step state",
+     "availability": "always",
+     "values": [
+      "ACTIVE"
+     ],
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.step_type",
+     "type": "string",
+     "meaning": "step category",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.text_delta",
+     "type": "string",
+     "meaning": "incremental response text",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "normalized",
+    "rule": "agy.stream.agent_response.active->model_response.partial",
+    "note": "model_response Partial of the step item with its text_delta block (proposed meaning)"
+   }
+  },
+  {
+   "variant": "step_update/agent_response/DONE",
+   "emitted": "always",
+   "lifecycle": "when an agent-response step finishes",
+   "fields": [
+    {
+     "path": "event",
+     "type": "string",
+     "meaning": "event discriminator",
+     "availability": "always",
+     "values": [
+      "step_update"
+     ],
+     "symbol": "docs/cli/headless#Streaming JSON (event table)"
+    },
+    {
+     "path": "step_update",
+     "type": "object",
+     "meaning": "one step transition or text delta",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Streaming JSON (event table)"
+    },
+    {
+     "path": "step_update.conversation_id",
+     "type": "string",
+     "meaning": "ID of the conversation (the session)",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.step_index",
+     "type": "number",
+     "meaning": "zero-based index of the step in the conversation",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.state",
+     "type": "string",
+     "meaning": "step state",
+     "availability": "always",
+     "values": [
+      "DONE"
+     ],
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.step_type",
+     "type": "string",
+     "meaning": "step category",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.duration_seconds",
+     "type": "number",
+     "meaning": "step duration, when known",
+     "availability": "conditional",
+     "condition": "when the step reports a known duration",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.text_delta",
+     "type": "string",
+     "meaning": "the last text fragment of the step",
+     "availability": "conditional",
+     "condition": "when the step produced text",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.usage",
+     "type": "object",
+     "meaning": "token usage",
+     "availability": "conditional",
+     "condition": "when the step reports usage",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.usage.input_tokens",
+     "type": "number",
+     "meaning": "input tokens (whether cache reads are included is not stated)",
+     "availability": "conditional",
+     "condition": "when the step reports usage",
+     "symbol": "docs/cli/headless#JSON envelope fields (usage: input_tokens, output_tokens, thinking_tokens, cache_read_tokens, total_tokens)"
+    },
+    {
+     "path": "step_update.usage.output_tokens",
+     "type": "number",
+     "meaning": "output tokens",
+     "availability": "conditional",
+     "condition": "when the step reports usage",
+     "symbol": "docs/cli/headless#JSON envelope fields (usage: input_tokens, output_tokens, thinking_tokens, cache_read_tokens, total_tokens)"
+    },
+    {
+     "path": "step_update.usage.thinking_tokens",
+     "type": "number",
+     "meaning": "thinking tokens (whether part of output is not stated)",
+     "availability": "conditional",
+     "condition": "when the step reports usage",
+     "symbol": "docs/cli/headless#JSON envelope fields (usage: input_tokens, output_tokens, thinking_tokens, cache_read_tokens, total_tokens)"
+    },
+    {
+     "path": "step_update.usage.cache_read_tokens",
+     "type": "number",
+     "meaning": "prompt-cache read tokens (CHANGELOG 1.1.8)",
+     "availability": "conditional",
+     "condition": "when the step reports usage",
+     "symbol": "docs/cli/headless#JSON envelope fields (usage: input_tokens, output_tokens, thinking_tokens, cache_read_tokens, total_tokens)"
+    },
+    {
+     "path": "step_update.usage.total_tokens",
+     "type": "number",
+     "meaning": "total tokens as reported",
+     "availability": "conditional",
+     "condition": "when the step reports usage",
+     "symbol": "docs/cli/headless#JSON envelope fields (usage: input_tokens, output_tokens, thinking_tokens, cache_read_tokens, total_tokens)"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "normalized",
+    "rule": "agy.stream.agent_response.done->model_response.item",
+    "note": "model_response Item completed (step identity) with the step usage"
+   }
+  },
+  {
+   "variant": "step_update/tool/ACTIVE",
+   "emitted": "conditional",
+   "condition": "when a tool step starts",
+   "lifecycle": "once per tool step, before its DONE or ERROR",
+   "fields": [
+    {
+     "path": "event",
+     "type": "string",
+     "meaning": "event discriminator",
+     "availability": "always",
+     "values": [
+      "step_update"
+     ],
+     "symbol": "docs/cli/headless#Streaming JSON (event table)"
+    },
+    {
+     "path": "step_update",
+     "type": "object",
+     "meaning": "one step transition or text delta",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Streaming JSON (event table)"
+    },
+    {
+     "path": "step_update.conversation_id",
+     "type": "string",
+     "meaning": "ID of the conversation (the session)",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.step_index",
+     "type": "number",
+     "meaning": "zero-based index of the step in the conversation",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.state",
+     "type": "string",
+     "meaning": "step state",
+     "availability": "always",
+     "values": [
+      "ACTIVE"
+     ],
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.step_type",
+     "type": "string",
+     "meaning": "step category",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.tool_name",
+     "type": "string",
+     "meaning": "canonical tool name, on tool steps",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.tool_info",
+     "type": "object",
+     "meaning": "tool invocation details",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Tool calls in the stream"
+    },
+    {
+     "path": "step_update.tool_info.name",
+     "type": "string",
+     "meaning": "tool name",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Tool calls in the stream"
+    },
+    {
+     "path": "step_update.tool_info.parameters",
+     "type": "json",
+     "meaning": "the tool's parameters (tool data)",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Tool calls in the stream"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "normalized",
+    "rule": "agy.stream.tool.active->tool_call.started",
+    "note": "tool_call Started: tool name, parameters as arguments, step identity"
+   }
+  },
+  {
+   "variant": "step_update/tool/DONE",
+   "emitted": "conditional",
+   "condition": "when a tool step finishes without a reported error",
+   "lifecycle": "once per tool step",
+   "fields": [
+    {
+     "path": "event",
+     "type": "string",
+     "meaning": "event discriminator",
+     "availability": "always",
+     "values": [
+      "step_update"
+     ],
+     "symbol": "docs/cli/headless#Streaming JSON (event table)"
+    },
+    {
+     "path": "step_update",
+     "type": "object",
+     "meaning": "one step transition or text delta",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Streaming JSON (event table)"
+    },
+    {
+     "path": "step_update.conversation_id",
+     "type": "string",
+     "meaning": "ID of the conversation (the session)",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.step_index",
+     "type": "number",
+     "meaning": "zero-based index of the step in the conversation",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.state",
+     "type": "string",
+     "meaning": "step state",
+     "availability": "always",
+     "values": [
+      "DONE"
+     ],
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.step_type",
+     "type": "string",
+     "meaning": "step category",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.duration_seconds",
+     "type": "number",
+     "meaning": "step duration, when known",
+     "availability": "conditional",
+     "condition": "when the step reports a known duration",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.tool_name",
+     "type": "string",
+     "meaning": "canonical tool name, on tool steps",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.tool_info",
+     "type": "object",
+     "meaning": "tool invocation details",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Tool calls in the stream"
+    },
+    {
+     "path": "step_update.tool_info.name",
+     "type": "string",
+     "meaning": "tool name",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Tool calls in the stream"
+    },
+    {
+     "path": "step_update.tool_info.parameters",
+     "type": "json",
+     "meaning": "the tool's parameters (tool data)",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Tool calls in the stream"
+    },
+    {
+     "path": "step_update.tool_info.output",
+     "type": "string",
+     "meaning": "the tool result as rendered text",
+     "availability": "conditional",
+     "condition": "when the tool reports output (a soft-denied command reports none)",
+     "symbol": "docs/cli/headless#Tool calls in the stream"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "normalized",
+    "rule": "agy.stream.tool.done->tool_call.result",
+    "note": "tool_call Result observed; outcome not derivable (DONE is a lifecycle state)"
+   }
+  },
+  {
+   "variant": "step_update/tool/ERROR",
+   "emitted": "conditional",
+   "condition": "when a tool step fails",
+   "lifecycle": "once per failed tool step",
+   "wire_note": "the documentation lists only ACTIVE and DONE as states; ERROR with tool_info.error was observed in 1.4.6 (and in 1.1.17)",
+   "fields": [
+    {
+     "path": "event",
+     "type": "string",
+     "meaning": "event discriminator",
+     "availability": "always",
+     "values": [
+      "step_update"
+     ],
+     "symbol": "docs/cli/headless#Streaming JSON (event table)"
+    },
+    {
+     "path": "step_update",
+     "type": "object",
+     "meaning": "one step transition or text delta",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Streaming JSON (event table)"
+    },
+    {
+     "path": "step_update.conversation_id",
+     "type": "string",
+     "meaning": "ID of the conversation (the session)",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.step_index",
+     "type": "number",
+     "meaning": "zero-based index of the step in the conversation",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.state",
+     "type": "string",
+     "meaning": "step state",
+     "availability": "always",
+     "values": [
+      "ERROR"
+     ],
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.step_type",
+     "type": "string",
+     "meaning": "step category",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.duration_seconds",
+     "type": "number",
+     "meaning": "step duration, when known",
+     "availability": "conditional",
+     "condition": "when the step reports a known duration",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.tool_name",
+     "type": "string",
+     "meaning": "canonical tool name, on tool steps",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.tool_info",
+     "type": "object",
+     "meaning": "tool invocation details",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Tool calls in the stream"
+    },
+    {
+     "path": "step_update.tool_info.name",
+     "type": "string",
+     "meaning": "tool name",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Tool calls in the stream"
+    },
+    {
+     "path": "step_update.tool_info.parameters",
+     "type": "json",
+     "meaning": "the tool's parameters (tool data)",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Tool calls in the stream"
+    },
+    {
+     "path": "step_update.tool_info.error",
+     "type": "object",
+     "meaning": "the tool failure",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Tool calls in the stream (error object when the tool fails)"
+    },
+    {
+     "path": "step_update.tool_info.error.type",
+     "type": "string",
+     "meaning": "failure type",
+     "availability": "always",
+     "values": [
+      "TOOL_ERROR"
+     ],
+     "symbol": "docs/cli/headless#Tool calls in the stream"
+    },
+    {
+     "path": "step_update.tool_info.error.message",
+     "type": "string",
+     "meaning": "failure message",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Tool calls in the stream"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "normalized",
+    "rule": "agy.stream.tool.done->tool_call.result",
+    "note": "tool_call Result observed with the reported error: status Failure"
+   }
+  },
+  {
+   "variant": "step_update/subagent/DONE",
+   "emitted": "conditional",
+   "condition": "when an invoke_subagent call completes",
+   "lifecycle": "the DONE of the step whose ACTIVE was a tool step named invoke_subagent",
+   "wire_note": "the documentation says steps that spawn subagents carry subagent_info; the step_type subagent and initial_prompt were observed in 1.4.6",
+   "fields": [
+    {
+     "path": "event",
+     "type": "string",
+     "meaning": "event discriminator",
+     "availability": "always",
+     "values": [
+      "step_update"
+     ],
+     "symbol": "docs/cli/headless#Streaming JSON (event table)"
+    },
+    {
+     "path": "step_update",
+     "type": "object",
+     "meaning": "one step transition or text delta",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Streaming JSON (event table)"
+    },
+    {
+     "path": "step_update.conversation_id",
+     "type": "string",
+     "meaning": "ID of the conversation (the session)",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.step_index",
+     "type": "number",
+     "meaning": "zero-based index of the step in the conversation",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.state",
+     "type": "string",
+     "meaning": "step state",
+     "availability": "always",
+     "values": [
+      "DONE"
+     ],
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.step_type",
+     "type": "string",
+     "meaning": "step category",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.duration_seconds",
+     "type": "number",
+     "meaning": "step duration, when known",
+     "availability": "conditional",
+     "condition": "when the step reports a known duration",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.tool_name",
+     "type": "string",
+     "meaning": "the tool that spawned the subagents",
+     "availability": "always",
+     "symbol": "observed (Antigravity CLI 1.4.6 live recordings; not in the headless documentation)"
+    },
+    {
+     "path": "step_update.subagent_info",
+     "type": "object",
+     "meaning": "subagent invocation details",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Tool calls in the stream (subagent_info)"
+    },
+    {
+     "path": "step_update.subagent_info.subagents",
+     "type": "array",
+     "meaning": "each spawned subagent",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Tool calls in the stream (subagent_info.subagents)"
+    },
+    {
+     "path": "step_update.subagent_info.subagents[].type_name",
+     "type": "string",
+     "meaning": "subagent type",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Tool calls in the stream (subagent_info.subagents)"
+    },
+    {
+     "path": "step_update.subagent_info.subagents[].role",
+     "type": "string",
+     "meaning": "subagent role",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Tool calls in the stream (subagent_info.subagents)"
+    },
+    {
+     "path": "step_update.subagent_info.subagents[].conversation_id",
+     "type": "string",
+     "meaning": "the child conversation's id",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Tool calls in the stream (subagent_info.subagents)"
+    },
+    {
+     "path": "step_update.subagent_info.subagents[].log_uri",
+     "type": "string",
+     "meaning": "location of the child's log",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Tool calls in the stream (subagent_info.subagents)"
+    },
+    {
+     "path": "step_update.subagent_info.subagents[].workspace_uris",
+     "type": "array",
+     "meaning": "the child's workspaces",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Tool calls in the stream (subagent_info.subagents)"
+    },
+    {
+     "path": "step_update.subagent_info.subagents[].initial_prompt",
+     "type": "string",
+     "meaning": "the prompt given to the subagent",
+     "availability": "always",
+     "symbol": "observed (Antigravity CLI 1.4.6 live recordings; not in the headless documentation)"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "normalized",
+    "rule": "agy.stream.subagent.done->tool_call.result",
+    "note": "tool_call Result observed of the invoke_subagent call with subagent_info as result content; no child run linked"
+   }
+  },
+  {
+   "variant": "step_update/checkpoint/DONE",
+   "emitted": "conditional",
+   "condition": "when the CLI records a checkpoint step",
+   "lifecycle": "documented example: after the final agent-response step",
+   "fields": [
+    {
+     "path": "event",
+     "type": "string",
+     "meaning": "event discriminator",
+     "availability": "always",
+     "values": [
+      "step_update"
+     ],
+     "symbol": "docs/cli/headless#Streaming JSON (event table)"
+    },
+    {
+     "path": "step_update",
+     "type": "object",
+     "meaning": "one step transition or text delta",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Streaming JSON (event table)"
+    },
+    {
+     "path": "step_update.conversation_id",
+     "type": "string",
+     "meaning": "ID of the conversation (the session)",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.step_index",
+     "type": "number",
+     "meaning": "zero-based index of the step in the conversation",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.state",
+     "type": "string",
+     "meaning": "step state",
+     "availability": "always",
+     "values": [
+      "DONE"
+     ],
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.step_type",
+     "type": "string",
+     "meaning": "step category",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.duration_seconds",
+     "type": "number",
+     "meaning": "step duration, when known",
+     "availability": "conditional",
+     "condition": "when the step reports a known duration",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.usage",
+     "type": "object",
+     "meaning": "token usage",
+     "availability": "conditional",
+     "condition": "when the step reports usage",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.usage.input_tokens",
+     "type": "number",
+     "meaning": "input tokens (whether cache reads are included is not stated)",
+     "availability": "conditional",
+     "condition": "when the step reports usage",
+     "symbol": "docs/cli/headless#JSON envelope fields (usage: input_tokens, output_tokens, thinking_tokens, cache_read_tokens, total_tokens)"
+    },
+    {
+     "path": "step_update.usage.output_tokens",
+     "type": "number",
+     "meaning": "output tokens",
+     "availability": "conditional",
+     "condition": "when the step reports usage",
+     "symbol": "docs/cli/headless#JSON envelope fields (usage: input_tokens, output_tokens, thinking_tokens, cache_read_tokens, total_tokens)"
+    },
+    {
+     "path": "step_update.usage.thinking_tokens",
+     "type": "number",
+     "meaning": "thinking tokens (whether part of output is not stated)",
+     "availability": "conditional",
+     "condition": "when the step reports usage",
+     "symbol": "docs/cli/headless#JSON envelope fields (usage: input_tokens, output_tokens, thinking_tokens, cache_read_tokens, total_tokens)"
+    },
+    {
+     "path": "step_update.usage.cache_read_tokens",
+     "type": "number",
+     "meaning": "prompt-cache read tokens (CHANGELOG 1.1.8)",
+     "availability": "conditional",
+     "condition": "when the step reports usage",
+     "symbol": "docs/cli/headless#JSON envelope fields (usage: input_tokens, output_tokens, thinking_tokens, cache_read_tokens, total_tokens)"
+    },
+    {
+     "path": "step_update.usage.total_tokens",
+     "type": "number",
+     "meaning": "total tokens as reported",
+     "availability": "conditional",
+     "condition": "when the step reports usage",
+     "symbol": "docs/cli/headless#JSON envelope fields (usage: input_tokens, output_tokens, thinking_tokens, cache_read_tokens, total_tokens)"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "agy.stream.fallback->source_record",
+    "note": "meaning not documented; its usage is included in the result's session usage"
+   }
+  },
+  {
+   "variant": "step_update/system_message/DONE",
+   "emitted": "conditional",
+   "condition": "observed between agent-response steps of a run that spawned a subagent",
+   "lifecycle": "observed once",
+   "wire_note": "undocumented step type, observed in 1.4.6",
+   "fields": [
+    {
+     "path": "event",
+     "type": "string",
+     "meaning": "event discriminator",
+     "availability": "always",
+     "values": [
+      "step_update"
+     ],
+     "symbol": "docs/cli/headless#Streaming JSON (event table)"
+    },
+    {
+     "path": "step_update",
+     "type": "object",
+     "meaning": "one step transition or text delta",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Streaming JSON (event table)"
+    },
+    {
+     "path": "step_update.conversation_id",
+     "type": "string",
+     "meaning": "ID of the conversation (the session)",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.step_index",
+     "type": "number",
+     "meaning": "zero-based index of the step in the conversation",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.state",
+     "type": "string",
+     "meaning": "step state",
+     "availability": "always",
+     "values": [
+      "DONE"
+     ],
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.step_type",
+     "type": "string",
+     "meaning": "step category",
+     "availability": "always",
+     "symbol": "docs/cli/headless#step_update payload"
+    },
+    {
+     "path": "step_update.duration_seconds",
+     "type": "number",
+     "meaning": "step duration, when known",
+     "availability": "conditional",
+     "condition": "when the step reports a known duration",
+     "symbol": "docs/cli/headless#step_update payload"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "retained-only",
+    "rule": "agy.stream.fallback->source_record",
+    "note": "undocumented step type without content"
+   }
+  },
+  {
+   "variant": "result",
+   "emitted": "always",
+   "lifecycle": "once per turn, at its end (also written on SIGTERM, status ERROR, error interrupted)",
+   "fields": [
+    {
+     "path": "event",
+     "type": "string",
+     "meaning": "event discriminator",
+     "availability": "always",
+     "values": [
+      "result"
+     ],
+     "symbol": "docs/cli/headless#Streaming JSON (event table)"
+    },
+    {
+     "path": "result",
+     "type": "object",
+     "meaning": "the turn's terminal envelope, same shape as the json output",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Streaming JSON (event table)"
+    },
+    {
+     "path": "result.conversation_id",
+     "type": "string",
+     "meaning": "ID of the conversation",
+     "availability": "always",
+     "symbol": "docs/cli/headless#JSON envelope fields"
+    },
+    {
+     "path": "result.status",
+     "type": "string",
+     "meaning": "terminal status of the run",
+     "availability": "always",
+     "values": [
+      "SUCCESS",
+      "ERROR",
+      "CANCELED",
+      "INTERRUPTED",
+      "INVALID",
+      "WAITING",
+      "RUNNING"
+     ],
+     "symbol": "docs/cli/headless#Handle exit codes and errors (status values)"
+    },
+    {
+     "path": "result.response",
+     "type": "string",
+     "meaning": "the turn's own free-text response",
+     "availability": "always",
+     "symbol": "docs/cli/headless#JSON envelope fields; #Read the results (response: the turn that emitted it)"
+    },
+    {
+     "path": "result.error",
+     "type": "string",
+     "meaning": "error message",
+     "availability": "conditional",
+     "condition": "present only on failure",
+     "symbol": "docs/cli/headless#JSON envelope fields"
+    },
+    {
+     "path": "result.duration_seconds",
+     "type": "number",
+     "meaning": "wall-clock duration, cumulative over the session",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Read the results (scope table)"
+    },
+    {
+     "path": "result.num_turns",
+     "type": "number",
+     "meaning": "user turns, cumulative over the session",
+     "availability": "always",
+     "symbol": "docs/cli/headless#Read the results (scope table)"
+    },
+    {
+     "path": "result.structured_output",
+     "type": "json",
+     "meaning": "parsed schema output (user data)",
+     "availability": "conditional",
+     "condition": "only with --json-schema",
+     "symbol": "docs/cli/headless#JSON envelope fields"
+    },
+    {
+     "path": "result.json_schema",
+     "type": "json",
+     "meaning": "the enforced schema (user data)",
+     "availability": "conditional",
+     "condition": "only with --json-schema",
+     "symbol": "docs/cli/headless#JSON envelope fields"
+    },
+    {
+     "path": "result.denied_actions",
+     "type": "array",
+     "meaning": "tool actions headless mode refused",
+     "availability": "conditional",
+     "condition": "when a tool required a permission headless mode could not obtain",
+     "symbol": "CHANGELOG.md#1.1.27 (denied_actions in the JSON output)"
+    },
+    {
+     "path": "result.denied_actions[].action",
+     "type": "string",
+     "meaning": "the permission action category (read_file, write_file, read_url, execute_url, command, mcp)",
+     "availability": "always",
+     "symbol": "docs/permissions?tab=cli#Supported actions and matching rules"
+    },
+    {
+     "path": "result.denied_actions[].display_name",
+     "type": "string",
+     "meaning": "a display name of the refused action",
+     "availability": "always",
+     "symbol": "observed (Antigravity CLI 1.4.6 live recordings; not in the headless documentation)"
+    },
+    {
+     "path": "result.usage",
+     "type": "object",
+     "meaning": "token usage",
+     "availability": "always",
+     "symbol": "docs/cli/headless#JSON envelope fields"
+    },
+    {
+     "path": "result.usage.input_tokens",
+     "type": "number",
+     "meaning": "input tokens (whether cache reads are included is not stated)",
+     "availability": "always",
+     "symbol": "docs/cli/headless#JSON envelope fields (usage: input_tokens, output_tokens, thinking_tokens, cache_read_tokens, total_tokens)"
+    },
+    {
+     "path": "result.usage.output_tokens",
+     "type": "number",
+     "meaning": "output tokens",
+     "availability": "always",
+     "symbol": "docs/cli/headless#JSON envelope fields (usage: input_tokens, output_tokens, thinking_tokens, cache_read_tokens, total_tokens)"
+    },
+    {
+     "path": "result.usage.thinking_tokens",
+     "type": "number",
+     "meaning": "thinking tokens (whether part of output is not stated)",
+     "availability": "always",
+     "symbol": "docs/cli/headless#JSON envelope fields (usage: input_tokens, output_tokens, thinking_tokens, cache_read_tokens, total_tokens)"
+    },
+    {
+     "path": "result.usage.cache_read_tokens",
+     "type": "number",
+     "meaning": "prompt-cache read tokens (CHANGELOG 1.1.8)",
+     "availability": "always",
+     "symbol": "docs/cli/headless#JSON envelope fields (usage: input_tokens, output_tokens, thinking_tokens, cache_read_tokens, total_tokens)"
+    },
+    {
+     "path": "result.usage.total_tokens",
+     "type": "number",
+     "meaning": "total tokens as reported",
+     "availability": "always",
+     "symbol": "docs/cli/headless#JSON envelope fields (usage: input_tokens, output_tokens, thinking_tokens, cache_read_tokens, total_tokens)"
+    }
+   ],
+   "vendor_tests": [],
+   "journal": {
+    "behavior": "normalized",
+    "rule": "agy.stream.result->prompt_turn.completed",
+    "note": "prompt_turn Turn completed: status, response text, session usage (cumulative snapshot), run-scope unattributed denials"
+   }
+  }
+ ],
+ "omitted_by_projection": [
+  {
+   "what": "the user prompt's text",
+   "applies_to": "step_update/user_input/DONE",
+   "consequence": "a prompt is reported only as a user_input step; the text a capture passed is caller-supplied provenance",
+   "symbol": "docs/cli/headless#step_update payload (no prompt member)"
+  },
+  {
+   "what": "model-facing tool call identifiers and provider response identifiers",
+   "applies_to": "step_update/tool/*, step_update/agent_response/*",
+   "consequence": "a step is identified only by its index within the conversation; it cannot be joined with a provider request or response id",
+   "symbol": "docs/cli/headless#step_update payload (step_index only)"
+  },
+  {
+   "what": "the content of agent responses other than text deltas",
+   "applies_to": "step_update/agent_response/*",
+   "consequence": "tool requests appear only as tool steps; reasoning appears only as thinking_tokens",
+   "symbol": "docs/cli/headless#step_update payload"
+  },
+  {
+   "what": "reasoning text",
+   "applies_to": "step_update/agent_response/DONE, result",
+   "consequence": "thinking is reported only as a token count",
+   "symbol": "docs/cli/headless#JSON envelope fields (usage)"
+  },
+  {
+   "what": "timestamps",
+   "applies_to": "every family",
+   "consequence": "events take the capture-start fallback time; durations are reported, instants are not",
+   "symbol": "docs/cli/headless#step_update payload"
+  },
+  {
+   "what": "monetary cost",
+   "applies_to": "result",
+   "consequence": "usage is token counts only",
+   "symbol": "docs/cli/headless#JSON envelope fields"
+  },
+  {
+   "what": "model identity unless overridden",
+   "applies_to": "init",
+   "consequence": "init.model appears only when --model is given; responses and usage name no model",
+   "symbol": "docs/cli/headless#init payload (model: when overridden)"
+  },
+  {
+   "what": "a structured exit status of run_command",
+   "applies_to": "step_update/tool/DONE",
+   "consequence": "the exit code appears only inside tool_info.output's rendered text",
+   "symbol": "docs/cli/headless#Tool calls in the stream (output)"
+  },
+  {
+   "what": "the written content of write_file",
+   "applies_to": "step_update/tool/*",
+   "consequence": "its parameters report the path only",
+   "symbol": "observed (Antigravity CLI 1.4.6 live recordings; not in the headless documentation)"
+  },
+  {
+   "what": "the step a denied_actions entry refers to",
+   "applies_to": "result",
+   "consequence": "a denial names a permission category and display name, never a step index",
+   "symbol": "CHANGELOG.md#1.1.27"
+  },
+  {
+   "what": "a structured tool result (tool_info.output is rendered text)",
+   "applies_to": "step_update/tool/DONE",
+   "consequence": "a tool result is one string; no typed or structured member accompanies it",
+   "symbol": "docs/cli/headless#Tool calls in the stream (output)"
+  },
+  {
+   "what": "separately reported operations of a tool call (each tool step is one call)",
+   "applies_to": "step_update/tool/*",
+   "consequence": "a run_command step is the call and its execution together; no inner operation records exist",
+   "symbol": "docs/cli/headless#Tool calls in the stream"
+  },
+  {
+   "what": "a spawned subagent's own activity and usage",
+   "applies_to": "step_update/subagent/DONE, result",
+   "consequence": "only the spawn's subagent_info is reported; result.usage sums the parent conversation's steps",
+   "symbol": "docs/cli/headless#Tool calls in the stream (subagent_info)"
+  }
+ ],
+ "reviewed_undeclared": []
+}

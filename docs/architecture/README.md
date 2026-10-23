@@ -61,7 +61,7 @@ A call trace cannot show why a definition was chosen, and a design narrative can
 
 **Question:** which code owns capture, mapping, persistence and independent checking, and what may depend on what?
 
-The diagram above groups the 83 top-level production classes of both modules into 19 components; 15 are drawn. The grouping
+The diagram above groups the 84 top-level production classes of both modules into 19 components; 15 are drawn. The grouping
 ([`ArchitectureComponents`](../../journal-ocsf-writer/src/test/java/io/github/markpollack/journal/architecture/ArchitectureComponents.java))
 is a design judgment made once. It uses package roots, implementations of `SourceMapper` and `SourceProfile`, and short
 explicit lists. A test fails when a class belongs to no component or to two. The responsibility of each component is in

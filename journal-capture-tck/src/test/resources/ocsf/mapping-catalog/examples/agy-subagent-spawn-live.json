@@ -1,0 +1,77 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "agy-subagent-spawn-live",
+  "concept": "child-runs",
+  "description": "SANITIZED LIVE RECORDING (Antigravity CLI 1.4.6, always-proceed mode): invoke_subagent starts as tool step 2 (ACTIVE, parameters Role and TypeName); the same step's DONE record has step_type subagent and reports subagent_info naming the child conversation, which is the call's result content. The child is another conversation: its records are not in this stream, so it is neither the parent's session nor a linked child run.",
+  "authored_from": [
+    "agy-headless-docs-2026-10-23",
+    "agy-live-1.4.6-recordings",
+    "agy-changelog-1.4.6"
+  ],
+  "native": {
+    "evidence_kind": "live",
+    "profile": "agy_stream",
+    "compatibility_entry": "antigravity-cli/stream-json/1.4.6-stdout",
+    "fixture": "antigravity-live-1.4.6-subagent",
+    "artifact": "stream.jsonl",
+    "sha256": "a6bf3491764bbf7e80f176c5a4702c8017aaeb3a911a822bcf2aa2ed724cfaed"
+  },
+  "expected": [
+    {
+      "record": 4,
+      "class": "tool_call",
+      "activity_id": 4,
+      "values": {
+        "/tool_call_uid": "2",
+        "/tool_name": "invoke_subagent",
+        "/tool_kind_id": 99,
+        "/arguments": {
+          "Role": "File Reader",
+          "TypeName": "research"
+        },
+        "/session_uid": "00000000-0000-4000-8000-000000000200"
+      }
+    },
+    {
+      "record": 5,
+      "class": "tool_call",
+      "activity_id": 2,
+      "values": {
+        "/tool_call_uid": "2",
+        "/session_uid": "00000000-0000-4000-8000-000000000200",
+        "/tool_result/data/subagents/0/conversation_id": "00000000-0000-4000-8000-000000000211",
+        "/tool_result/data/subagents/0/role": "File Reader",
+        "/status_id": 0,
+        "/status_basis_id": 3,
+        "/reported_state": "DONE"
+      },
+      "absent": [
+        "/tool_name",
+        "/tool_result/error_reported"
+      ]
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "child-conversation-as-the-session",
+      "record": 5,
+      "class": "tool_call",
+      "activity_id": 2,
+      "values": {
+        "/session_uid": "00000000-0000-4000-8000-000000000211"
+      },
+      "why": "The spawn belongs to the parent conversation; the child conversation is only named in subagent_info."
+    },
+    {
+      "id": "spawn-as-success",
+      "record": 5,
+      "class": "tool_call",
+      "activity_id": 2,
+      "values": {
+        "/status_id": 1
+      },
+      "why": "DONE without an error does not establish success."
+    }
+  ]
+}

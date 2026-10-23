@@ -12,6 +12,9 @@ import java.util.List;
 
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX_STREAM;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_FEATURES;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_SUBAGENT;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.agyStream;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.PAIR;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStream;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.codexRollout;
@@ -50,6 +53,19 @@ class PrefixReplayTest {
         List<String> summary = prefixes(work, PAIR, "stream.jsonl", claudeStream());
         assertThat(summary).as(String.join("\n", summary)).allMatch(s -> s.endsWith("OK"));
         assertThat(summary.size()).isEqualTo(27);
+    }
+
+    /**
+     * The sanitized live Antigravity 1.4.6 recordings: a started tool step is open until its DONE or ERROR record, an
+     * agent-response item is Partial until its DONE, and no prefix claims a result, completion or turn end ahead of its record.
+     */
+    @Test
+    void everyPrefixOfTheAntigravityLiveStreamsIsJudgedDefectFreeByTheOracle(@TempDir Path work) throws Exception {
+        for (String fixture : List.of(LIVE_AGY_FEATURES, LIVE_AGY_SUBAGENT)) {
+            List<String> summary = prefixes(work.resolve(fixture), fixture, "stream.jsonl", agyStream());
+            assertThat(summary).as(fixture + "\n" + String.join("\n", summary)).allMatch(s -> s.endsWith("OK"));
+            assertThat(summary).as(fixture).hasSize(20);
+        }
     }
 
     private static List<String> prefixes(Path work, String fixture, String artifact, SourceDescriptor descriptor) throws Exception {

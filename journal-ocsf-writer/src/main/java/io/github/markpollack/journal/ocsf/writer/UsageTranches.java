@@ -116,6 +116,25 @@ final class UsageTranches {
         finish(into, r.components());
     }
 
+    /**
+     * An Antigravity usage object (step and result usage of the headless stream): cache reads, output, thinking (as
+     * reasoning) and the reported total are copied; the uncached tranche is unavailable because no published source states
+     * whether input_tokens includes cache_read_tokens, and no reasoning relation is written because none states whether
+     * thinking_tokens is part of output_tokens (agy.usage.tranches.v1).
+     */
+    static void antigravity(Jv.Obj into, Jv usage) {
+        Jv.Arr components = new Jv.Arr();
+        if (usage != null && (usage.member("input_tokens") != null || usage.member("cache_read_tokens") != null)) {
+            components.add(component("uncached_input_tokens", 3, List.of("/input_tokens", "/cache_read_tokens"),
+                    "agy.usage.tranches.v1: neither the headless documentation nor a published type states whether input_tokens includes cache_read_tokens; not copied as the uncached tranche"));
+        }
+        reported(into, components, usage, "", "cache_read_tokens", "cache_read_tokens");
+        reported(into, components, usage, "", "output_tokens", "output_tokens");
+        reported(into, components, usage, "", "thinking_tokens", "reasoning_tokens");
+        reported(into, components, usage, "", "total_tokens", "reported_total_tokens");
+        finish(into, components);
+    }
+
     /** Whether any Codex member is non-zero: then a usage update arrived (codex.usage.component_measurement.v2). */
     private static boolean codexUpdated(Jv usage) {
         for (String m : CODEX_MEMBERS) {

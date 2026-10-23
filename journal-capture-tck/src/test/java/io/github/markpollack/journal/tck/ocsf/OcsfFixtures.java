@@ -47,6 +47,11 @@ final class OcsfFixtures {
     static final String LIVE_CODEX_INTERRUPT_OPEN = "codex-live-0.160.1-interrupt-open";
     static final String LIVE_CODEX_SANDBOX_REFUSAL = "codex-live-0.160.1-sandbox-refusal";
     static final String LIVE_SPAWN = "toolu_01WBvs5eGudfYPm8YvrTYTQK";
+    /** Sanitized live Antigravity CLI 1.4.6 recordings of the onboarding campaign (2026-10-23), replayed through the writer. */
+    static final String LIVE_AGY_FEATURES = "antigravity-live-1.4.6-features";
+    static final String LIVE_AGY_DENIAL = "antigravity-live-1.4.6-denial";
+    static final String LIVE_AGY_INTERRUPT_OPEN = "antigravity-live-1.4.6-interrupt-open";
+    static final String LIVE_AGY_SUBAGENT = "antigravity-live-1.4.6-subagent";
     /** The historical two-file layout, kept unchanged under {@code fixtures-historical/0.2.0-prototype/<name>/package}. */
     static final String HISTORICAL_0_2_0 = "0.2.0-prototype";
 

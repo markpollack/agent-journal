@@ -1,0 +1,41 @@
+{
+ "kind": "agent-journal/fixture-provenance",
+ "fixture": "antigravity-live-1.4.6-features",
+ "origin": "SANITIZED REAL LIVE RECORDING (not synthetic)",
+ "evidence_class": "recorded replay of a live stream; the live capture itself (unsanitized) is private steward evidence under plans/evidence/2026-10-23-antigravity-onboarding/",
+ "cli": "Antigravity CLI",
+ "cli_version": "1.4.6",
+ "cli_version_basis": "discovered once per run by the documented adapter path `agy --version` before launch, because the stream-json output reports no version; the native session file was not consulted",
+ "mode_and_route": "CliCapture launch (opt-in integration): raw stdout, independent byte copy, flush per record",
+ "capture_command": [
+  "agy",
+  "--print",
+  "Do these steps in order using your tools, then answer. 1) List the contents of the directory src with your directory-listing tool (not a shell command). 2) View the file src/a.txt. 3) Run the shell command: wc -l src/c.txt 4) Run the shell command: cat src/missing.txt (it will fail; continue). 5) Search for the word gamma in the src directory with your built-in search tool (not a shell command). 6) Write a new file src/out.txt containing exactly: hello journal. Finally reply with one line: the number of lines in src/c.txt.",
+  "--output-format",
+  "stream-json",
+  "--dangerously-skip-permissions"
+ ],
+ "scenario": "tool task in always-proceed mode (--dangerously-skip-permissions): a read_file of a directory that ends in state ERROR with tool_info.error, a file read, two run_command steps (wc -l and a failing cat whose rendered output reports exit code 1), a write_file, a streamed one-line answer, per-step and session usage; normal completion",
+ "live_run": "L1-features-2",
+ "live_process": {
+  "pid": 2970856,
+  "started": "2026-10-23T21:19:36.279626685Z",
+  "ended": "2026-10-23T21:20:19.205389196Z",
+  "how": "exited",
+  "exit_code": 0,
+  "exit_meaning": "0: the CLI reported success",
+  "stdout": "closed: EOF reached",
+  "stderr_bytes": 0,
+  "meaning": "the CLI process outcome; distinct from storage finalization (recording.state) and acquisition extent (acquisition.status): EOF never implies success"
+ },
+ "original_sha256": "511b19032839ea192f0a0429650ee565f1afaf588087b0d1ab75db20d797743f",
+ "original_bytes": 7579,
+ "sanitized_sha256": "8448827293f3b21a37dde7077dd53dd6da1777760808b375bd1c132c9fd06261",
+ "sanitized_bytes": 6676,
+ "records": 20,
+ "sanitization": [
+  "conversation id of the run -> stand-in 00000000-0000-4000-8000-000000000200",
+  "task directory path -> /work"
+ ],
+ "privacy_review": "local paths (task directory, session scratch, home directory) and conversation ids (the run and any spawned subagent) replaced by text substitution on the raw bytes; tool names, step indexes, token counts, durations and the built-in tool list kept; prompt text is the deliberate synthetic task; reviewed 2026-10-23"
+}

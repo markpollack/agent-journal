@@ -1,12 +1,16 @@
 {
   "kind": "agent-journal/compatibility-registry",
   "version": "0.2",
-  "reviewed": "2026-10-21 (ACCEPT-1; narrowed to exact tested version/route combinations in the ACCEPT-1 follow-up, Owner disposition 4); 2026-10-23 (selection before normalization: version bootstrap, retain-only pending records, contradictory assertions)",
+  "reviewed": "2026-10-23 (Antigravity 1.4.6 stdout entry; admission states); 2026-10-21 (ACCEPT-1; narrowed to exact tested version/route combinations in the ACCEPT-1 follow-up, Owner disposition 4); 2026-10-23 (selection before normalization: version bootstrap, retain-only pending records, contradictory assertions)",
   "selection_rule": "exactly one entry whose cli, profile and route match and whose inclusive [min_version, max_version] contains the CLI version selects the source description, contract and mapper; overlapping entries are a configuration error rejected at load; no match retains the acquired input under the untested-compatibility contract and flags it, never the numerically nearest entry; a version inside the range that is not listed under tested is reported in_range (reviewed range, not individually tested; no bundled entry currently has such a range: every entry is one exactly tested version on its tested route, and 2.1.300 to 2.1.302, 2.1.299 or 2.1.303 on stdout and 2.1.304 on sdk match no entry); a version not yet known is reported version_unknown, and every record that arrives meanwhile is retained whole and unnormalized; vendor normalization of a record requires a selected entry (tested or in_range): the version bootstrap below reads only the version and its location, selects, and then the record that carried the version is normalized under that selection; contradictory version assertions within one capture (the launch declaration and the stream, or two records) are status conflict: every assertion is kept with its origin, and normalization stops for the rest of the capture",
   "routes": {
     "stdout": "the CLI's raw standard output read by the capture process (no SDK stage)",
     "sdk": "stream lines delivered by a vendor SDK (claude-code-sdk rawJson); a filtered surface",
     "native_session_file": "the file the CLI wrote on its own account, read after the run"
+  },
+  "admission": {
+    "meaning": "the evidence state of each entry, apart from whether it selects a contract: admitted (a production stream route whose live captures, sanitized replay fixtures, inventories, dispositions, independent profile, mapping catalog route and column and live-scenario roster are all registered; MappingCatalogTest rejects an admitted entry that lacks one), experimental (combined-source or session-file evidence, archived rather than admitted under the stream-first policy), historical (a retired route kept so its labelled recordings replay as tested; never extended)",
+    "values": ["admitted", "experimental", "historical"]
   },
   "version_bootstrap": {
     "meaning": "the only vendor facts read before a compatibility entry is selected: which record reports the CLI version (record members that must equal the given strings) and the RFC 6901 location of the version in it; nothing else in that record or any other is interpreted until a selection allows it. A profile without a rule never learns its version from its records: the capture declares it at launch, or it stays unknown",
@@ -16,6 +20,7 @@
   "entries": [
     {
       "id": "claude-code/stream-json/2.1.299-sdk",
+      "admission": "historical",
       "retired": "2026-10-22 (Owner): the sdk route is historical evidence only, a filtered surface delivered by the Java claude-code-sdk in earlier milestones; raw stdout is the only production route; this entry stays so the labelled 2.1.299 recordings replay as tested on their route and is never extended",
       "cli": "Claude Code",
       "profile": "claude_stream",
@@ -33,6 +38,7 @@
     },
     {
       "id": "claude-code/stream-json/2.1.303-sdk",
+      "admission": "historical",
       "retired": "2026-10-22 (Owner): the sdk route is historical evidence only, a filtered surface delivered by the Java claude-code-sdk in earlier milestones; raw stdout is the only production route; this entry stays so the labelled 2.1.303 recordings replay as tested on their route and is never extended",
       "cli": "Claude Code",
       "profile": "claude_stream",
@@ -50,6 +56,7 @@
     },
     {
       "id": "claude-code/stream-json/2.1.304-stdout",
+      "admission": "admitted",
       "cli": "Claude Code",
       "profile": "claude_stream",
       "routes": ["stdout"],
@@ -66,6 +73,7 @@
     },
     {
       "id": "claude-code/session-transcript/2.1.299-session-file",
+      "admission": "experimental",
       "cli": "Claude Code",
       "profile": "claude_transcript",
       "routes": ["native_session_file"],
@@ -82,6 +90,7 @@
     },
     {
       "id": "claude-code/session-transcript/2.1.303-session-file",
+      "admission": "experimental",
       "cli": "Claude Code",
       "profile": "claude_transcript",
       "routes": ["native_session_file"],
@@ -97,7 +106,25 @@
       "note": "experimental combined-source evidence only; a streaming CLI's native session file is archived, not admitted, under the stream-first policy; exact tested version (2.1.300 to 2.1.302 match no entry)"
     },
     {
+      "id": "antigravity-cli/stream-json/1.4.6-stdout",
+      "admission": "admitted",
+      "cli": "Antigravity CLI",
+      "profile": "agy_stream",
+      "routes": ["stdout"],
+      "min_version": "1.4.6",
+      "max_version": "1.4.6",
+      "source_specification": {"path": "schema/vendor/antigravity-cli/stream-json/1.4.6.json", "specification_version": "0.1.0", "profile": "agy_stream"},
+      "schema": {"extension": "agentic_cli", "version": "0.9.0-prototype", "compiled_sha256": "9b77697bdc5b3f5433e3d064d25e4488c230634311abe634faf2f34745f6eb56"},
+      "contract": "antigravity-cli-1.4.6-stream",
+      "mapper": "io.github.markpollack.journal.ocsf.writer.AntigravityStreamMapper",
+      "tested": [
+        {"version": "1.4.6", "route": "stdout", "evidence": "Antigravity onboarding live runs (2026-10-23) through the integrated launch path (CliCapture --cli antigravity) and their sanitized fixtures antigravity-live-1.4.6-*"}
+      ],
+      "note": "the stream-json output reports no version; the documented discovery path is one `agy --version` per run; headless print mode (agy --print <prompt> --output-format stream-json), permission mode request-review by default and always-proceed under --dangerously-skip-permissions, both reported by the init event"
+    },
+    {
       "id": "codex-cli/exec-json-stream/0.160.1",
+      "admission": "admitted",
       "cli": "Codex CLI",
       "profile": "codex_stream",
       "routes": ["stdout"],
@@ -114,6 +141,7 @@
     },
     {
       "id": "codex-cli/rollout/0.160.1",
+      "admission": "experimental",
       "cli": "Codex CLI",
       "profile": "codex_rollout",
       "routes": ["native_session_file"],

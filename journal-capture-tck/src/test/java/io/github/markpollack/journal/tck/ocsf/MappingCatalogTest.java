@@ -1,5 +1,6 @@
 package io.github.markpollack.journal.tck.ocsf;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.github.markpollack.journal.tck.verify.Check;
@@ -91,7 +92,11 @@ class MappingCatalogTest {
             new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX_WEB_SEARCH, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording: web search)", "codex-cli/exec-json-stream/0.160.1"),
             new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX_COLLAB_WAIT, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording: collab wait)", "codex-cli/exec-json-stream/0.160.1"),
             new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX_INTERRUPT_OPEN, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording: cancelled with a command open)", "codex-cli/exec-json-stream/0.160.1"),
-            new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX_SANDBOX_REFUSAL, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording: sandbox refusal)", "codex-cli/exec-json-stream/0.160.1"));
+            new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX_SANDBOX_REFUSAL, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording: sandbox refusal)", "codex-cli/exec-json-stream/0.160.1"),
+            new Route("agy", "AntigravityStreamProfile", OcsfFixtures.LIVE_AGY_FEATURES, "stream.jsonl", "Antigravity CLI stream-json 1.4.6 stdout (sanitized live recording: tools, a failed tool, a failing command, answer)", "antigravity-cli/stream-json/1.4.6-stdout"),
+            new Route("agy", "AntigravityStreamProfile", OcsfFixtures.LIVE_AGY_DENIAL, "stream.jsonl", "Antigravity CLI stream-json 1.4.6 stdout (sanitized live recording: headless soft denial)", "antigravity-cli/stream-json/1.4.6-stdout"),
+            new Route("agy", "AntigravityStreamProfile", OcsfFixtures.LIVE_AGY_INTERRUPT_OPEN, "stream.jsonl", "Antigravity CLI stream-json 1.4.6 stdout (sanitized live recording: cancelled with a command open)", "antigravity-cli/stream-json/1.4.6-stdout"),
+            new Route("agy", "AntigravityStreamProfile", OcsfFixtures.LIVE_AGY_SUBAGENT, "stream.jsonl", "Antigravity CLI stream-json 1.4.6 stdout (sanitized live recording: subagent spawn)", "antigravity-cli/stream-json/1.4.6-stdout"));
 
     /** A coverage-table column: one admitted CLI/version/profile/route, or the historical sdk route, labelled so. */
     record Column(String entry, String label, String support) {
@@ -100,6 +105,7 @@ class MappingCatalogTest {
     static final List<Column> COLUMNS = List.of(
             new Column("claude-code/stream-json/2.1.304-stdout", "Claude Code 2.1.304, claude_stream, stdout", "admitted"),
             new Column("codex-cli/exec-json-stream/0.160.1", "Codex CLI 0.160.1, codex_stream, stdout", "admitted"),
+            new Column("antigravity-cli/stream-json/1.4.6-stdout", "Antigravity CLI 1.4.6, agy_stream, stdout", "admitted"),
             new Column("claude-code/stream-json/2.1.299-sdk", "Claude Code 2.1.299, claude_stream, sdk (historical evidence, retired route)", "historical"));
 
     static List<Route> recordings(String entry) {
@@ -589,6 +595,109 @@ class MappingCatalogTest {
         return out;
     }
 
+    /** One bundled compatibility entry as the admission check reads it: id, source profile, admission state and source specification path. */
+    record Registered(String id, String profile, String admission, String specification) {
+    }
+
+    static List<Registered> registered() {
+        List<Registered> out = new ArrayList<>();
+        for (Json e : NeutralJson.readDocument(COMPATIBILITY).member("entries").elements()) {
+            out.add(new Registered(SchemaCatalog.text(e, "id"), SchemaCatalog.text(e, "profile"), SchemaCatalog.text(e, "admission"),
+                    SchemaCatalog.text(e.member("source_specification"), "path")));
+        }
+        return out;
+    }
+
+    /**
+     * Each admitted compatibility entry is connected to every check an admitted route requires, and only admitted entries
+     * are admitted columns: an admitted coverage column, a sanitized live recording among the catalog's routes, a field
+     * disposition catalog naming the entry with its inventoried fixtures, a pinned vendor inventory of the entry, an accepted
+     * native-source specification, an independent oracle profile, roster applicability and a live attempt in the results.
+     * Experimental (combined-source or session-file) and historical (retired route) entries carry their own state and are
+     * never an admitted column; a test-only stand-in is not a registry entry at all. This is the existing registrations
+     * cross-checked, not another registry.
+     */
+    static List<String> admissionProblems(List<Registered> registry, List<Column> columns, List<Route> routes, JsonNode roster, JsonNode results) {
+        List<String> problems = new ArrayList<>();
+        Set<String> rosterRoutes = new TreeSet<>();
+        roster.path("applicability").forEach(a -> rosterRoutes.add(a.path("route").asText()));
+        Set<String> liveAttempts = new TreeSet<>();
+        results.path("attempts").forEach(a -> {
+            if ("live".equals(a.path("evidence_class").asText())) {
+                liveAttempts.add(a.path("route").asText());
+            }
+        });
+        Map<String, String> admissionById = new TreeMap<>();
+        for (Registered r : registry) {
+            admissionById.put(r.id(), r.admission());
+            if (!Set.of("admitted", "experimental", "historical").contains(String.valueOf(r.admission()))) {
+                problems.add(r.id() + ": admission " + r.admission() + " is not admitted, experimental or historical");
+                continue;
+            }
+            Column column = columns.stream().filter(c -> c.entry().equals(r.id())).findFirst().orElse(null);
+            if (!"admitted".equals(r.admission())) {
+                if (column != null && "admitted".equals(column.support())) {
+                    problems.add(r.id() + ": an " + r.admission() + " entry is an admitted coverage column");
+                }
+                continue;
+            }
+            String profile = r.profile();
+            if (column == null || !"admitted".equals(column.support())) {
+                problems.add(r.id() + ": admitted, but no admitted coverage column (MappingCatalogTest.COLUMNS)");
+            }
+            if (routes.stream().noneMatch(x -> x.entry().equals(r.id()) && "live".equals(LiveScenarioTest.fixtureClass(x.fixture())))) {
+                problems.add(r.id() + ": admitted, but no sanitized live recording among the catalog routes (MappingCatalogTest.ROUTES)");
+            }
+            String catalog = FieldDispositionTest.CATALOGS.get(profile);
+            if (catalog == null || !FieldDispositionTest.PROFILE_FIXTURES.containsKey(profile)
+                    || !NeutralJson.readDocument(PROJECT.resolve(catalog)).member("compatibility_entries").elements().stream().anyMatch(x -> r.id().equals(x.text()))) {
+                problems.add(r.id() + ": admitted, but no field disposition catalog naming it with inventoried fixtures (FieldDispositionTest.CATALOGS, PROFILE_FIXTURES)");
+            }
+            if (VendorStreamInventoryTest.PROFILES.stream().noneMatch(p -> p.profile().equals(profile) && r.id().equals(VendorStreamInventoryTest.inventory(p).path("compatibility_entry").asText()))) {
+                problems.add(r.id() + ": admitted, but no pinned vendor inventory of the entry (VendorStreamInventoryTest.PROFILES)");
+            }
+            String spec = r.specification() == null ? null : r.specification().replaceFirst("^schema/vendor/", "").replaceFirst("\\.json$", "");
+            if (spec == null || !profile.equals(VendorSpecificationsTest.SPECS.get(spec))) {
+                problems.add(r.id() + ": admitted, but its source specification " + r.specification() + " is not an accepted specification (VendorSpecificationsTest.SPECS)");
+            }
+            if (SourceProfile.forName(profile) == null || !CatalogCoverage.PROFILE_NAMES.containsValue(profile)) {
+                problems.add(r.id() + ": admitted, but profile " + profile + " has no independent oracle profile (SourceProfile.forName, CatalogCoverage.PROFILE_NAMES)");
+            }
+            if (!rosterRoutes.contains(r.id())) {
+                problems.add(r.id() + ": admitted, but the live-scenario roster has no applicability for it");
+            }
+            if (!liveAttempts.contains(r.id())) {
+                problems.add(r.id() + ": admitted, but the live-scenario results hold no live attempt on it");
+            }
+        }
+        for (Column c : columns) {
+            if ("admitted".equals(c.support()) && !"admitted".equals(admissionById.get(c.entry()))) {
+                problems.add("coverage column " + c.entry() + " is admitted, but the registry states " + admissionById.get(c.entry()));
+            }
+        }
+        return problems;
+    }
+
+    @Test
+    void everyAdmittedRouteIsConnectedToEveryRequiredCheck() {
+        assertThat(registered()).extracting(Registered::admission).as("every entry states its admission").doesNotContainNull();
+        assertThat(registered().stream().filter(r -> "admitted".equals(r.admission())).map(Registered::id))
+                .containsExactlyInAnyOrder("claude-code/stream-json/2.1.304-stdout", "codex-cli/exec-json-stream/0.160.1", "antigravity-cli/stream-json/1.4.6-stdout");
+        assertThat(admissionProblems(registered(), COLUMNS, ROUTES, LiveScenarioTest.read("roster.json"), LiveScenarioTest.read("results.json"))).isEmpty();
+    }
+
+    @Test
+    void anAdmittedRouteMissingARegistrationAndANonAdmittedEntryAsAnAdmittedColumnAreRejected() {
+        List<Registered> registry = new ArrayList<>(registered());
+        registry.add(new Registered("x-cli/stream-json/1.0.0-stdout", "x_stream", "admitted", "schema/vendor/x-cli/stream-json/1.0.0.json"));
+        List<String> problems = admissionProblems(registry, COLUMNS, ROUTES, LiveScenarioTest.read("roster.json"), LiveScenarioTest.read("results.json"));
+        assertThat(problems).filteredOn(p -> p.startsWith("x-cli/stream-json/1.0.0-stdout: admitted, but")).hasSize(8);
+        List<Column> columns = new ArrayList<>(COLUMNS);
+        columns.add(new Column("codex-cli/rollout/0.160.1", "Codex CLI 0.160.1, codex_rollout, session file", "admitted"));
+        assertThat(admissionProblems(registered(), columns, ROUTES, LiveScenarioTest.read("roster.json"), LiveScenarioTest.read("results.json")))
+                .contains("codex-cli/rollout/0.160.1: an experimental entry is an admitted coverage column", "coverage column codex-cli/rollout/0.160.1 is admitted, but the registry states experimental");
+    }
+
     static Set<String> compatibilityEntries() {
         Set<String> out = new TreeSet<>();
         for (Json e : NeutralJson.readDocument(COMPATIBILITY).member("entries").elements()) {
@@ -618,7 +727,7 @@ class MappingCatalogTest {
     static List<Check> reportedChecks(Path work) {
         List<Check> out = new ArrayList<>();
         for (String fixture : List.of(OcsfFixtures.CHILD, OcsfFixtures.CODEX, OcsfFixtures.CODEX_STREAM, OcsfFixtures.INTERRUPTED, OcsfFixtures.LIVE_FEATURES,
-                OcsfFixtures.LIVE_DENIAL, OcsfFixtures.LIVE_CODEX)) {
+                OcsfFixtures.LIVE_DENIAL, OcsfFixtures.LIVE_CODEX, OcsfFixtures.LIVE_AGY_FEATURES, OcsfFixtures.LIVE_AGY_DENIAL)) {
             out.addAll(OcsfFixtures.verify(OcsfFixtures.copy(fixture, work.resolve("p"))).checks());
         }
         // the pair fixture reports the transcript-side properties (reconstruction of parsed transcript records, contexts)

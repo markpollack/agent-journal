@@ -651,6 +651,209 @@
      "note": "read-only sandbox: structured payload recheck (SEM-1): the stream holds two agent messages and the turn completion only; no command_execution item, no declined status and no approval request; the refusal appears only in the model's own prose, which is not a reported decision. Unexercised, not a source absence: the pinned emitter maps CommandExecutionStatus::Declined"
     }
    ]
+  },
+  {
+   "id": "agy-features-2",
+   "route": "antigravity-cli/stream-json/1.4.6-stdout",
+   "cli_version": "1.4.6",
+   "evidence_class": "live",
+   "fixture": "antigravity-live-1.4.6-features",
+   "provenance": "Antigravity onboarding live run 2026-10-23 through CliCapture (sanitized fixture; private run under the steward's 2026-10-23-antigravity-onboarding evidence); attempt 1 ran while no registry entry matched 1.4.6 and is kept private",
+   "behaviors": [
+    {
+     "behavior": "LIVE-01",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:responses",
+       "min": 1
+      },
+      {
+       "scenario": "facts:turn_completed",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+     ],
+     "note": "the answer streams as text_delta fragments of an agent-response step and arrives whole as result.response; the -p prompt is not echoed (a user_input step without text)",
+     "canonical": [
+      "population.responses",
+      "response.values",
+      "population.turn_completed",
+      "turn.values"
+     ]
+    },
+    {
+     "behavior": "LIVE-02",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:requests",
+       "min": 4
+      },
+      {
+       "scenario": "facts:results",
+       "min": 4
+      }
+     ],
+     "assertions": [
+      "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+     ],
+     "note": "read_file (twice), run_command (twice) and write_file: tool steps with parameters and rendered output; write_file reports its path only",
+     "canonical": [
+      "population.requests",
+      "request.values",
+      "population.results",
+      "result.values"
+     ]
+    },
+    {
+     "behavior": "LIVE-03",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:requests",
+       "min": 2
+      }
+     ],
+     "assertions": [
+      "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+     ],
+     "note": "repeated tools (read_file and run_command, twice each) under distinct step indexes; parallel overlap not claimed",
+     "canonical": [
+      "population.requests",
+      "request.values"
+     ]
+    },
+    {
+     "behavior": "LIVE-04",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:results.failed",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+     ],
+     "note": "read_file of a directory ended in state ERROR with tool_info.error (status Failure), followed by successful steps; a failing cat's exit code 1 appears only in its rendered output (status not derivable)",
+     "canonical": [
+      "result.values"
+     ]
+    },
+    {
+     "behavior": "LIVE-09",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:usage",
+       "min": 2
+      }
+     ],
+     "assertions": [
+      "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations",
+      "AntigravityStreamTest#anUncachedTrancheOrAReasoningRelationTheSourceDoesNotEstablishIsAUsageDefect"
+     ],
+     "note": "per-step usage on DONE agent-response steps and the session's cumulative usage on the result; no cost is reported; reasoning appears only as thinking_tokens",
+     "canonical": [
+      "population.usage",
+      "usage.values"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "agy-denial-1",
+   "route": "antigravity-cli/stream-json/1.4.6-stdout",
+   "cli_version": "1.4.6",
+   "evidence_class": "live",
+   "fixture": "antigravity-live-1.4.6-denial",
+   "provenance": "Antigravity onboarding live run 2026-10-23 through CliCapture (sanitized fixture; private run under the steward's 2026-10-23-antigravity-onboarding evidence)",
+   "behaviors": [
+    {
+     "behavior": "LIVE-05",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:decisions",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "AntigravityStreamTest#aSoftDeniedCommandIsNeitherASuccessNorAttributedToItsDenial"
+     ],
+     "note": "default request-review mode: headless mode soft-denied the command permission; the run_command step reports DONE with neither output nor error and the result names the denial by permission category only (Run scope, Unattributed); the run then ended without its remaining steps",
+     "canonical": [
+      "population.decisions",
+      "decision.values",
+      "result.values"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "agy-interrupt-open-1",
+   "route": "antigravity-cli/stream-json/1.4.6-stdout",
+   "cli_version": "1.4.6",
+   "evidence_class": "live",
+   "fixture": "antigravity-live-1.4.6-interrupt-open",
+   "provenance": "Antigravity onboarding live run 2026-10-23 through CliCapture (sanitized fixture; private run under the steward's 2026-10-23-antigravity-onboarding evidence)",
+   "behaviors": [
+    {
+     "behavior": "LIVE-08",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "run:incomplete",
+       "min": 1
+      },
+      {
+       "scenario": "facts:open_requests",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "AntigravityStreamTest#aFabricatedResultForTheOpenToolOfTheInterruptedRunIsDetected"
+     ],
+     "note": "cancelled 35 s after launch while sleep 90 was running: the run_command step ACTIVE without its DONE; on SIGTERM the CLI still wrote a whole result (status ERROR, error interrupted) and exited 1; frozen incomplete; storage INTERRUPTED",
+     "canonical": [
+      "population.requests",
+      "request.values",
+      "acquisition.complete",
+      "package.state"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "agy-subagent-1",
+   "route": "antigravity-cli/stream-json/1.4.6-stdout",
+   "cli_version": "1.4.6",
+   "evidence_class": "live",
+   "fixture": "antigravity-live-1.4.6-subagent",
+   "provenance": "Antigravity onboarding live run 2026-10-23 through CliCapture (sanitized fixture; private run under the steward's 2026-10-23-antigravity-onboarding evidence)",
+   "behaviors": [
+    {
+     "behavior": "LIVE-07",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "value:step_update.step_type=subagent",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "AntigravityStreamTest#aChangedChildConversationOfTheSubagentSpawnIsDetected"
+     ],
+     "note": "invoke_subagent started a research subagent; its DONE (step_type subagent) reports subagent_info with the child conversation id, role, prompt and log location; the child's own activity and usage are not in this stream (no child run is linked or imported)",
+     "canonical": [
+      "population.results",
+      "result.values"
+     ]
+    }
+   ]
   }
  ]
 }

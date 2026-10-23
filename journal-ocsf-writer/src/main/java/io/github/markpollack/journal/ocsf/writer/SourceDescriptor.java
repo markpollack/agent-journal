@@ -9,7 +9,7 @@ package io.github.markpollack.journal.ocsf.writer;
  *
  * @param artifact the artifact name within the run's source inventory (unique per run)
  * @param kind 1 live output, 2 saved session file
- * @param profile the mapper: {@code claude_stream}, {@code claude_transcript}, {@code codex_rollout}, {@code codex_stream}, {@code opaque_text}
+ * @param profile the mapper: {@code claude_stream}, {@code claude_transcript}, {@code codex_rollout}, {@code codex_stream}, {@code agy_stream}, {@code opaque_text}
  * @param route the launch route or mode: {@code stdout} (raw standard output), {@code sdk} (SDK-delivered lines),
  * {@code native_session_file}; {@code null} is recorded as unspecified and matches no compatibility entry
  * @param surface what the bytes represent (capture route), stated honestly

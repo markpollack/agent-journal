@@ -50,6 +50,11 @@ final class WriterTestSupport {
     static final String LIVE_CODEX_COLLAB_WAIT = "codex-live-0.160.1-collab-wait";
     static final String LIVE_CODEX_INTERRUPT_OPEN = "codex-live-0.160.1-interrupt-open";
     static final String LIVE_CODEX_SANDBOX_REFUSAL = "codex-live-0.160.1-sandbox-refusal";
+    /** Sanitized live Antigravity CLI 1.4.6 recordings of the onboarding campaign (2026-10-23), replayed through the writer. */
+    static final String LIVE_AGY_FEATURES = "antigravity-live-1.4.6-features";
+    static final String LIVE_AGY_DENIAL = "antigravity-live-1.4.6-denial";
+    static final String LIVE_AGY_INTERRUPT_OPEN = "antigravity-live-1.4.6-interrupt-open";
+    static final String LIVE_AGY_SUBAGENT = "antigravity-live-1.4.6-subagent";
     static final String SPAWN = "toolu_01BnEuCUmZ2Vu1LpADzksmrJ";
 
     private WriterTestSupport() {
@@ -92,6 +97,10 @@ final class WriterTestSupport {
 
     static SourceDescriptor codexStream() {
         return new SourceDescriptor("stream.jsonl", 1, "codex_stream", "stdout", "fixture exec --json stream replayed (labelled synthetic)", null);
+    }
+
+    static SourceDescriptor agyStream() {
+        return new SourceDescriptor("stream.jsonl", 1, "agy_stream", "stdout", "fixture stream-json output replayed as raw standard output", null);
     }
 
     /** Writes a frozen expected-source manifest for the artifacts in {@code nativeDir} (the test's own labelled inputs). */

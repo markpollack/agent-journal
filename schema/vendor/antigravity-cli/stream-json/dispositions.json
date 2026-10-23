@@ -1,0 +1,1122 @@
+{
+ "kind": "agent-journal/field-dispositions",
+ "version": "0.1",
+ "reviewed": "2026-10-23 (Antigravity onboarding)",
+ "profile": "agy_stream",
+ "compatibility_entries": [
+  "antigravity-cli/stream-json/1.4.6-stdout"
+ ],
+ "specification": "schema/vendor/antigravity-cli/stream-json/1.4.6.json",
+ "contract": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+ "contract_file": "antigravity-cli-1.4.6-stream",
+ "evidence_fixtures": [
+  "antigravity-live-1.4.6-denial",
+  "antigravity-live-1.4.6-features",
+  "antigravity-live-1.4.6-interrupt-open",
+  "antigravity-live-1.4.6-subagent"
+ ],
+ "rule_of_coverage": "see claude-code/stream-json/dispositions.json; the same FieldDispositionTest applies",
+ "entries": [
+  {
+   "variant": "*",
+   "path": "event",
+   "disposition": "normalized",
+   "destination": [
+    "*.class_uid",
+    "*.journal.rule_uid",
+    "source_record.record_type"
+   ],
+   "rule": "record_discriminator",
+   "evidence": {
+    "property": "whole_record.class"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "the event discriminator selects the rule and class"
+  },
+  {
+   "variant": "*",
+   "path": "step_update.step_type",
+   "disposition": "normalized",
+   "destination": [
+    "*.class_uid",
+    "*.journal.rule_uid",
+    "source_record.record_type"
+   ],
+   "rule": "record_discriminator",
+   "evidence": {
+    "property": "whole_record.class"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "with state, selects the rule: tool steps, agent-response items, a prompt submission or whole-record retention"
+  },
+  {
+   "variant": "*",
+   "path": "step_update.state",
+   "disposition": "normalized",
+   "destination": [
+    "*.activity_id",
+    "tool_call.reported_state",
+    "source_record.record_type"
+   ],
+   "rule": "record_discriminator",
+   "evidence": {
+    "property": "whole_record.class"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "selects the activity (ACTIVE: Started or Partial; DONE or ERROR: Result observed or Item completed); a tool step's state is also its reported_state"
+  },
+  {
+   "variant": "*",
+   "path": "init",
+   "subtree": true,
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "subtree default for members not named below: the whole record is the event's data"
+  },
+  {
+   "variant": "*",
+   "path": "step_update",
+   "subtree": true,
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "subtree default for members not named below: the whole record is the event's data"
+  },
+  {
+   "variant": "*",
+   "path": "result",
+   "subtree": true,
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "subtree default for members not named below: the whole record is the event's data"
+  },
+  {
+   "variant": "init",
+   "path": "conversation_id",
+   "disposition": "normalized",
+   "destination": [
+    "*.session_uid"
+   ],
+   "rule": "agy.stream.init->session_context.settings",
+   "evidence": {
+    "property": "identity.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "the session id the init event reports beside its payload"
+  },
+  {
+   "variant": "init",
+   "path": "init.cwd",
+   "disposition": "normalized",
+   "destination": [
+    "session_context.settings.working_directory"
+   ],
+   "rule": "agy.stream.init->session_context.settings",
+   "evidence": {
+    "property": "context.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ]
+  },
+  {
+   "variant": "init",
+   "path": "init.permission_mode",
+   "disposition": "normalized",
+   "destination": [
+    "session_context.settings.permission_mode"
+   ],
+   "rule": "agy.stream.init->session_context.settings",
+   "evidence": {
+    "property": "context.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "request-review by default, always-proceed under --dangerously-skip-permissions"
+  },
+  {
+   "variant": "init",
+   "path": "init.tools",
+   "disposition": "normalized",
+   "destination": [
+    "session_context.settings.tool_names"
+   ],
+   "rule": "agy.stream.init->session_context.settings",
+   "evidence": {
+    "property": "context.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "the advertised tool names exactly; a step's tool_name need not be one of them"
+  },
+  {
+   "variant": "init",
+   "path": "init.model",
+   "disposition": "normalized",
+   "destination": [
+    "session_context.settings.model"
+   ],
+   "rule": "agy.stream.init->session_context.settings",
+   "evidence": {
+    "property": "context.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "only when --model overrides it (unexercised)",
+   "vendor_declared": true
+  },
+  {
+   "variant": "init",
+   "path": "init.agent",
+   "disposition": "normalized",
+   "destination": [
+    "session_context.settings.agent"
+   ],
+   "rule": "agy.stream.init->session_context.settings",
+   "evidence": {
+    "property": "context.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "only when --agent overrides it (unexercised)",
+   "vendor_declared": true
+  },
+  {
+   "variant": "init",
+   "path": "init.json_schema",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "a --json-schema run's schema (user data; unexercised)",
+   "vendor_declared": true
+  },
+  {
+   "variant": "step_update/user_input/DONE",
+   "path": "step_update.conversation_id",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.session_uid"
+   ],
+   "rule": "agy.stream.user_input->prompt_turn.submitted",
+   "evidence": {
+    "property": "identity.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ]
+  },
+  {
+   "variant": "step_update/user_input/DONE",
+   "path": "step_update.step_index",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "no event of this step carries an id"
+  },
+  {
+   "variant": "step_update/agent_response/ACTIVE",
+   "path": "step_update.conversation_id",
+   "disposition": "normalized",
+   "destination": [
+    "*.session_uid"
+   ],
+   "rule": "agy.stream.agent_response.active->model_response.partial",
+   "evidence": {
+    "property": "identity.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ]
+  },
+  {
+   "variant": "step_update/agent_response/ACTIVE",
+   "path": "step_update.step_index",
+   "disposition": "normalized",
+   "destination": [
+    "model_response.item_uid"
+   ],
+   "rule": "agy.stream.agent_response.active->model_response.partial",
+   "evidence": {
+    "property": "population.responses"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations",
+    "AntigravityStreamTest#aChangedArgumentAnInventedResponseIdOrAnAlteredFragmentIsDetected"
+   ],
+   "note": "the conversation step index as the content item id (identity basis 99); no response_uid"
+  },
+  {
+   "variant": "step_update/agent_response/ACTIVE",
+   "path": "step_update.text_delta",
+   "disposition": "normalized",
+   "destination": [
+    "model_response.content_blocks[].text",
+    "model_response.content_blocks[].data"
+   ],
+   "rule": "agy.stream.agent_response.active->model_response.partial",
+   "evidence": {
+    "property": "response.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#aChangedArgumentAnInventedResponseIdOrAnAlteredFragmentIsDetected"
+   ],
+   "note": "one text_delta block (agy.stream.text_delta.v1: a fragment; the step text is its fragments joined in record order)"
+  },
+  {
+   "variant": "step_update/agent_response/DONE",
+   "path": "step_update.duration_seconds",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "a reported step duration (retained-only, known meaning: no common duration attribute)"
+  },
+  {
+   "variant": "step_update/agent_response/DONE",
+   "path": "step_update.conversation_id",
+   "disposition": "normalized",
+   "destination": [
+    "*.session_uid"
+   ],
+   "rule": "agy.stream.agent_response.done->model_response.item",
+   "evidence": {
+    "property": "identity.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ]
+  },
+  {
+   "variant": "step_update/agent_response/DONE",
+   "path": "step_update.step_index",
+   "disposition": "normalized",
+   "destination": [
+    "model_response.item_uid"
+   ],
+   "rule": "agy.stream.agent_response.done->model_response.item",
+   "evidence": {
+    "property": "population.responses"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations",
+    "AntigravityStreamTest#aChangedArgumentAnInventedResponseIdOrAnAlteredFragmentIsDetected"
+   ],
+   "note": "the conversation step index as the content item id (identity basis 99); no response_uid"
+  },
+  {
+   "variant": "step_update/agent_response/DONE",
+   "path": "step_update.text_delta",
+   "disposition": "normalized",
+   "destination": [
+    "model_response.content_blocks[].text",
+    "model_response.content_blocks[].data"
+   ],
+   "rule": "agy.stream.agent_response.done->model_response.item",
+   "evidence": {
+    "property": "response.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#aChangedArgumentAnInventedResponseIdOrAnAlteredFragmentIsDetected"
+   ],
+   "note": "one text_delta block (agy.stream.text_delta.v1: a fragment; the step text is its fragments joined in record order)"
+  },
+  {
+   "variant": "step_update/agent_response/DONE",
+   "path": "step_update.usage.output_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "model_response.usage_observations[].output_tokens"
+   ],
+   "rule": "agy.stream.agent_response.done->model_response.item",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations",
+    "AntigravityStreamTest#anUncachedTrancheOrAReasoningRelationTheSourceDoesNotEstablishIsAUsageDefect"
+   ],
+   "note": "copied as reported (agy.usage.tranches.v1)"
+  },
+  {
+   "variant": "step_update/agent_response/DONE",
+   "path": "step_update.usage.cache_read_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "model_response.usage_observations[].cache_read_tokens"
+   ],
+   "rule": "agy.stream.agent_response.done->model_response.item",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations",
+    "AntigravityStreamTest#anUncachedTrancheOrAReasoningRelationTheSourceDoesNotEstablishIsAUsageDefect"
+   ],
+   "note": "copied as reported (agy.usage.tranches.v1)"
+  },
+  {
+   "variant": "step_update/agent_response/DONE",
+   "path": "step_update.usage.thinking_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "model_response.usage_observations[].reasoning_tokens"
+   ],
+   "rule": "agy.stream.agent_response.done->model_response.item",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations",
+    "AntigravityStreamTest#anUncachedTrancheOrAReasoningRelationTheSourceDoesNotEstablishIsAUsageDefect"
+   ],
+   "note": "copied as reported (agy.usage.tranches.v1); no reasoning relation is stated"
+  },
+  {
+   "variant": "step_update/agent_response/DONE",
+   "path": "step_update.usage.total_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "model_response.usage_observations[].reported_total_tokens"
+   ],
+   "rule": "agy.stream.agent_response.done->model_response.item",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations",
+    "AntigravityStreamTest#anUncachedTrancheOrAReasoningRelationTheSourceDoesNotEstablishIsAUsageDefect"
+   ],
+   "note": "copied as reported (agy.usage.tranches.v1)"
+  },
+  {
+   "variant": "step_update/agent_response/DONE",
+   "path": "step_update.usage.input_tokens",
+   "disposition": "unresolved",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#anUncachedTrancheOrAReasoningRelationTheSourceDoesNotEstablishIsAUsageDefect"
+   ],
+   "note": "open question: whether input_tokens includes cache_read_tokens is not stated by any published source, so it is not the uncached tranche; it stays in the observation's data and components[] states the tranche unavailable"
+  },
+  {
+   "variant": "step_update/tool/ACTIVE",
+   "path": "step_update.conversation_id",
+   "disposition": "normalized",
+   "destination": [
+    "*.session_uid"
+   ],
+   "rule": "agy.stream.tool.active->tool_call.started",
+   "evidence": {
+    "property": "identity.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ]
+  },
+  {
+   "variant": "step_update/tool/ACTIVE",
+   "path": "step_update.step_index",
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_call_uid"
+   ],
+   "rule": "agy.stream.tool.active->tool_call.started",
+   "evidence": {
+    "property": "population.requests"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations",
+    "AntigravityStreamTest#aFabricatedResultForTheOpenToolOfTheInterruptedRunIsDetected"
+   ],
+   "note": "the conversation step index as decimal text (identity basis 99 Other): neither a model-facing call id nor a stream-local item id"
+  },
+  {
+   "variant": "step_update/tool/ACTIVE",
+   "path": "step_update.tool_name",
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_name",
+    "tool_call.tool_kind_id"
+   ],
+   "rule": "agy.stream.tool.active->tool_call.started",
+   "evidence": {
+    "property": "request.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "the canonical tool name as reported (it need not appear in init.tools); kind by the exact-name table"
+  },
+  {
+   "variant": "step_update/tool/ACTIVE",
+   "path": "step_update.tool_info.parameters",
+   "subtree": true,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.arguments"
+   ],
+   "rule": "agy.stream.tool.active->tool_call.started",
+   "evidence": {
+    "property": "request.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#aChangedArgumentAnInventedResponseIdOrAnAlteredFragmentIsDetected"
+   ],
+   "note": "the parameters exactly (tool data)"
+  },
+  {
+   "variant": "step_update/tool/ACTIVE",
+   "path": "step_update.tool_info.name",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "the same name as step_update.tool_name, kept in data"
+  },
+  {
+   "variant": "step_update/tool/DONE",
+   "path": "step_update.duration_seconds",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "a reported step duration (retained-only, known meaning: no common duration attribute)"
+  },
+  {
+   "variant": "step_update/tool/DONE",
+   "path": "step_update.conversation_id",
+   "disposition": "normalized",
+   "destination": [
+    "*.session_uid"
+   ],
+   "rule": "agy.stream.tool.done->tool_call.result",
+   "evidence": {
+    "property": "identity.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ]
+  },
+  {
+   "variant": "step_update/tool/DONE",
+   "path": "step_update.step_index",
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_call_uid"
+   ],
+   "rule": "agy.stream.tool.done->tool_call.result",
+   "evidence": {
+    "property": "population.results"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations",
+    "AntigravityStreamTest#aFabricatedResultForTheOpenToolOfTheInterruptedRunIsDetected"
+   ],
+   "note": "the conversation step index as decimal text (identity basis 99 Other): neither a model-facing call id nor a stream-local item id"
+  },
+  {
+   "variant": "step_update/tool/DONE",
+   "path": "step_update.tool_name",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "the start carries the normalized name; the result's copy stays in data (joined by tool_call_uid)"
+  },
+  {
+   "variant": "step_update/tool/DONE",
+   "path": "step_update.tool_info.parameters",
+   "subtree": true,
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "the start carries the normalized arguments; the result's copy stays in data"
+  },
+  {
+   "variant": "step_update/tool/DONE",
+   "path": "step_update.tool_info.name",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "kept in data"
+  },
+  {
+   "variant": "step_update/tool/DONE",
+   "path": "step_update.tool_info.output",
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_result.data"
+   ],
+   "rule": "agy.stream.tool.done->tool_call.result",
+   "evidence": {
+    "property": "result.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations",
+    "AntigravityStreamTest#aSoftDeniedCommandIsNeitherASuccessNorAttributedToItsDenial"
+   ],
+   "note": "the rendered output exactly; a command's exit code inside it is not parsed; absent output is no result content and the outcome is not derivable"
+  },
+  {
+   "variant": "step_update/tool/ERROR",
+   "path": "step_update.duration_seconds",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "a reported step duration (retained-only, known meaning: no common duration attribute)"
+  },
+  {
+   "variant": "step_update/tool/ERROR",
+   "path": "step_update.conversation_id",
+   "disposition": "normalized",
+   "destination": [
+    "*.session_uid"
+   ],
+   "rule": "agy.stream.tool.done->tool_call.result",
+   "evidence": {
+    "property": "identity.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ]
+  },
+  {
+   "variant": "step_update/tool/ERROR",
+   "path": "step_update.step_index",
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_call_uid"
+   ],
+   "rule": "agy.stream.tool.done->tool_call.result",
+   "evidence": {
+    "property": "population.results"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations",
+    "AntigravityStreamTest#aFabricatedResultForTheOpenToolOfTheInterruptedRunIsDetected"
+   ],
+   "note": "the conversation step index as decimal text (identity basis 99 Other): neither a model-facing call id nor a stream-local item id"
+  },
+  {
+   "variant": "step_update/tool/ERROR",
+   "path": "step_update.tool_name",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "the start carries the normalized name; the result's copy stays in data (joined by tool_call_uid)"
+  },
+  {
+   "variant": "step_update/tool/ERROR",
+   "path": "step_update.tool_info.parameters",
+   "subtree": true,
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "the start carries the normalized arguments; the result's copy stays in data"
+  },
+  {
+   "variant": "step_update/tool/ERROR",
+   "path": "step_update.tool_info.name",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "kept in data"
+  },
+  {
+   "variant": "step_update/tool/ERROR",
+   "path": "step_update.tool_info.error",
+   "subtree": true,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_result.data",
+    "tool_call.status_id"
+   ],
+   "rule": "agy.stream.tool.done->tool_call.result",
+   "evidence": {
+    "property": "result.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "the reported error is the result content with error_reported true and status Failure"
+  },
+  {
+   "variant": "step_update/tool/ERROR",
+   "path": "step_update.tool_info.error.type",
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_result.data",
+    "tool_call.status_id"
+   ],
+   "rule": "agy.stream.tool.done->tool_call.result",
+   "evidence": {
+    "property": "result.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "the reported error is the result content with error_reported true and status Failure"
+  },
+  {
+   "variant": "step_update/tool/ERROR",
+   "path": "step_update.tool_info.error.message",
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_result.data",
+    "tool_call.status_id"
+   ],
+   "rule": "agy.stream.tool.done->tool_call.result",
+   "evidence": {
+    "property": "result.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "the reported error is the result content with error_reported true and status Failure"
+  },
+  {
+   "variant": "step_update/subagent/DONE",
+   "path": "step_update.duration_seconds",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "a reported step duration (retained-only, known meaning: no common duration attribute)"
+  },
+  {
+   "variant": "step_update/subagent/DONE",
+   "path": "step_update.conversation_id",
+   "disposition": "normalized",
+   "destination": [
+    "*.session_uid"
+   ],
+   "rule": "agy.stream.subagent.done->tool_call.result",
+   "evidence": {
+    "property": "identity.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ]
+  },
+  {
+   "variant": "step_update/subagent/DONE",
+   "path": "step_update.step_index",
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_call_uid"
+   ],
+   "rule": "agy.stream.subagent.done->tool_call.result",
+   "evidence": {
+    "property": "population.results"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations",
+    "AntigravityStreamTest#aFabricatedResultForTheOpenToolOfTheInterruptedRunIsDetected"
+   ],
+   "note": "the conversation step index as decimal text (identity basis 99 Other): neither a model-facing call id nor a stream-local item id"
+  },
+  {
+   "variant": "step_update/subagent/DONE",
+   "path": "step_update.tool_name",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "the start carries the normalized name; the result's copy stays in data (joined by tool_call_uid)"
+  },
+  {
+   "variant": "step_update/subagent/DONE",
+   "path": "step_update.subagent_info",
+   "subtree": true,
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_result.data"
+   ],
+   "rule": "agy.stream.subagent.done->tool_call.result",
+   "evidence": {
+    "property": "result.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#aChangedChildConversationOfTheSubagentSpawnIsDetected"
+   ],
+   "note": "the reported subagent_info exactly as the result content (child conversation ids, roles, prompts, log locations); no child run is linked: the child's records are not in this stream"
+  },
+  {
+   "variant": "step_update/checkpoint/DONE",
+   "path": "step_update.duration_seconds",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "a reported step duration (retained-only, known meaning: no common duration attribute)",
+   "vendor_declared": true
+  },
+  {
+   "variant": "step_update/checkpoint/DONE",
+   "path": "step_update.conversation_id",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "the fallback event carries it as session_uid; the step itself is not normalized",
+   "vendor_declared": true
+  },
+  {
+   "variant": "step_update/checkpoint/DONE",
+   "path": "step_update.step_index",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "no event of this step carries an id",
+   "vendor_declared": true
+  },
+  {
+   "variant": "step_update/checkpoint/DONE",
+   "path": "step_update.usage",
+   "subtree": true,
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "a checkpoint step's usage (retained-only: the step's meaning is not documented; the result's session usage includes it)",
+   "vendor_declared": true
+  },
+  {
+   "variant": "step_update/system_message/DONE",
+   "path": "step_update.duration_seconds",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "a reported step duration (retained-only, known meaning: no common duration attribute)"
+  },
+  {
+   "variant": "step_update/system_message/DONE",
+   "path": "step_update.conversation_id",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "the fallback event carries it as session_uid; the step itself is not normalized"
+  },
+  {
+   "variant": "step_update/system_message/DONE",
+   "path": "step_update.step_index",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "no event of this step carries an id"
+  },
+  {
+   "variant": "result",
+   "path": "result.conversation_id",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.session_uid"
+   ],
+   "rule": "agy.stream.result->prompt_turn.completed",
+   "evidence": {
+    "property": "identity.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ]
+  },
+  {
+   "variant": "result",
+   "path": "result.status",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.status_id",
+    "prompt_turn.status"
+   ],
+   "rule": "agy.stream.result->prompt_turn.completed",
+   "evidence": {
+    "property": "turn.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "SUCCESS 1, ERROR 2, any other documented word 99 with the word as label (Reported)"
+  },
+  {
+   "variant": "result",
+   "path": "result.response",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.content_blocks[].text",
+    "prompt_turn.content_blocks[].data"
+   ],
+   "rule": "agy.stream.result->prompt_turn.completed",
+   "evidence": {
+    "property": "turn.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#aChangedArgumentAnInventedResponseIdOrAnAlteredFragmentIsDetected"
+   ],
+   "note": "the turn's own response text as one block (documented: the turn that emitted it)"
+  },
+  {
+   "variant": "result",
+   "path": "result.error",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "the failure message (observed: interrupted on SIGTERM); the status carries the outcome"
+  },
+  {
+   "variant": "result",
+   "path": "result.duration_seconds",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "wall-clock duration, cumulative over the session (retained-only, known meaning)"
+  },
+  {
+   "variant": "result",
+   "path": "result.num_turns",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "user turns, cumulative over the session (retained-only, known meaning)"
+  },
+  {
+   "variant": "result",
+   "path": "result.structured_output",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "a --json-schema run's structured output (user data; unexercised)",
+   "vendor_declared": true
+  },
+  {
+   "variant": "result",
+   "path": "result.json_schema",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
+   ],
+   "note": "a --json-schema run's schema (user data; unexercised)",
+   "vendor_declared": true
+  },
+  {
+   "variant": "result",
+   "path": "result.denied_actions",
+   "subtree": true,
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.permission_decisions[].decision_id",
+    "prompt_turn.permission_decisions[].data"
+   ],
+   "rule": "agy.stream.result->prompt_turn.completed",
+   "evidence": {
+    "property": "decision.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#aSoftDeniedCommandIsNeitherASuccessNorAttributedToItsDenial"
+   ],
+   "note": "each entry one Denied decision at Run scope, Unattributed with no candidates (it names a permission category and display name, never a step); the entry is the decision's data"
+  },
+  {
+   "variant": "result",
+   "path": "result.usage.output_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.usage_observations[].output_tokens"
+   ],
+   "rule": "agy.stream.result->prompt_turn.completed",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations",
+    "AntigravityStreamTest#anUncachedTrancheOrAReasoningRelationTheSourceDoesNotEstablishIsAUsageDefect"
+   ],
+   "note": "copied as reported (agy.usage.tranches.v1)"
+  },
+  {
+   "variant": "result",
+   "path": "result.usage.cache_read_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.usage_observations[].cache_read_tokens"
+   ],
+   "rule": "agy.stream.result->prompt_turn.completed",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations",
+    "AntigravityStreamTest#anUncachedTrancheOrAReasoningRelationTheSourceDoesNotEstablishIsAUsageDefect"
+   ],
+   "note": "copied as reported (agy.usage.tranches.v1)"
+  },
+  {
+   "variant": "result",
+   "path": "result.usage.thinking_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.usage_observations[].reasoning_tokens"
+   ],
+   "rule": "agy.stream.result->prompt_turn.completed",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations",
+    "AntigravityStreamTest#anUncachedTrancheOrAReasoningRelationTheSourceDoesNotEstablishIsAUsageDefect"
+   ],
+   "note": "copied as reported (agy.usage.tranches.v1); no reasoning relation is stated"
+  },
+  {
+   "variant": "result",
+   "path": "result.usage.total_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.usage_observations[].reported_total_tokens"
+   ],
+   "rule": "agy.stream.result->prompt_turn.completed",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations",
+    "AntigravityStreamTest#anUncachedTrancheOrAReasoningRelationTheSourceDoesNotEstablishIsAUsageDefect"
+   ],
+   "note": "copied as reported (agy.usage.tranches.v1)"
+  },
+  {
+   "variant": "result",
+   "path": "result.usage.input_tokens",
+   "disposition": "unresolved",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "AntigravityStreamTest#anUncachedTrancheOrAReasoningRelationTheSourceDoesNotEstablishIsAUsageDefect"
+   ],
+   "note": "open question: whether input_tokens includes cache_read_tokens is not stated by any published source, so it is not the uncached tranche; it stays in the observation's data and components[] states the tranche unavailable"
+  }
+ ],
+ "vendor_inventory": "1.4.6-vendor-inventory.json"
+}

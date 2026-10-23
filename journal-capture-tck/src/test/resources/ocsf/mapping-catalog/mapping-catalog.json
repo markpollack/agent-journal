@@ -246,6 +246,13 @@
      "records": "1",
      "field": "thread_id (thread.started)",
      "availability": "present"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-*",
+     "field": "conversation_id on every record (init beside the payload; step_update and result inside it)",
+     "availability": "present"
     }
    ],
    "mapping": [
@@ -268,6 +275,11 @@
      "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.fallback->source_record",
      "implementation": "CodexStreamMapper#map"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.init->session_context.settings",
+     "implementation": "AntigravityStreamMapper#init"
     }
    ],
    "oracle": [
@@ -294,6 +306,13 @@
      "properties": [
       "identity.values"
      ]
+    },
+    {
+     "profile": "AntigravityStreamProfile",
+     "family": "owned",
+     "properties": [
+      "identity.values"
+     ]
     }
    ],
    "views": [
@@ -303,7 +322,8 @@
    "tests": [
     "SchemaCatalogTest#savedValuesAreCheckedAgainstDeclaredTypesEnumsAndRequirements",
     "PackageReaderTest#typeMismatchAndMissingRequiredAreDefects",
-    "OracleFullSourceTest#controlVerifiesEveryFamilyOfBothSourcesWithNonEmptyPopulations"
+    "OracleFullSourceTest#controlVerifiesEveryFamilyOfBothSourcesWithNonEmptyPopulations",
+    "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
    "disposition": "normalized",
    "decision": {
@@ -598,6 +618,13 @@
      "records": "2,15",
      "field": "turn.started (type only), turn.completed (usage)",
      "availability": "partial"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-*",
+     "field": "result (one per turn, no turn id)",
+     "availability": "partial"
     }
    ],
    "mapping": [
@@ -630,6 +657,11 @@
      "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.turn_completed->prompt_turn.completed",
      "implementation": "CodexStreamMapper#map"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.result->prompt_turn.completed",
+     "implementation": "AntigravityStreamMapper#result"
     }
    ],
    "oracle": [
@@ -667,6 +699,14 @@
     },
     {
      "profile": "CodexStreamProfile",
+     "family": "TurnCompleted",
+     "properties": [
+      "population.turn_completed",
+      "turn.values"
+     ]
+    },
+    {
+     "profile": "AntigravityStreamProfile",
      "family": "TurnCompleted",
      "properties": [
       "population.turn_completed",
@@ -990,6 +1030,15 @@
       "package.state",
       "whole_record.coverage"
      ]
+    },
+    {
+     "profile": "AntigravityStreamProfile",
+     "family": "owned",
+     "properties": [
+      "package.readable",
+      "package.state",
+      "whole_record.coverage"
+     ]
     }
    ],
    "views": [
@@ -1233,6 +1282,13 @@
      "scenario": "facts:prompts",
      "vendor_omission": "user prompt (UserMessage items) and hook prompts",
      "basis": "vendor source (exec projection omits it) and the route's recordings: exec does not project UserMessage items"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-*",
+     "field": "step_update user_input DONE (a prompt submission without its text)",
+     "availability": "partial"
     }
    ],
    "mapping": [
@@ -1255,6 +1311,11 @@
      "contract_uid": "codex-cli/rollout/0.160.1/0.4.0-prototype",
      "rule_id": "codex.rollout.item_completed.UserMessage->prompt_turn.submitted",
      "implementation": "CodexRolloutMapper#map"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.user_input->prompt_turn.submitted",
+     "implementation": "AntigravityStreamMapper#step"
     }
    ],
    "oracle": [
@@ -1276,6 +1337,15 @@
     },
     {
      "profile": "ClaudeStreamProfile",
+     "family": "Prompt",
+     "properties": [
+      "population.prompts",
+      "prompt.values"
+     ],
+     "scenario": "facts:prompts"
+    },
+    {
+     "profile": "AntigravityStreamProfile",
      "family": "Prompt",
      "properties": [
       "population.prompts",
@@ -1585,6 +1655,24 @@
      "scenario": "path:item.response_id",
      "vendor_omission": "original item id (app-server item id; for tools the model-facing call id)",
      "basis": "vendor source (exec_events.rs ThreadItem carries only the id the processor mints; map_item_with_id drops the original ids, and no response id exists in the projection) and the route's recordings: agent-message and reasoning items are content items of unidentified responses, recorded as item_uid with no response_uid (SEM-CLOSE, codex.exec-stream.stream-local-identity r2)"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-*",
+     "field": "step_index of agent_response steps: the conversation step index (identity basis 99), not a response identity",
+     "availability": "absent"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "route": "antigravity-cli/stream-json/1.4.6-stdout",
+     "records": "every committed recording of the route",
+     "field": "model response identity",
+     "availability": "absent",
+     "scenario": "path:step_update.response_id",
+     "vendor_omission": "model-facing tool call identifiers and provider response identifiers",
+     "basis": "documented interface (headless docs, CHANGELOG at 1.4.6) and the route's recordings; closed source: the emitter itself was not inspected, so absence is bounded by the published interface and the four 1.4.6 recordings"
     }
    ],
    "mapping": [
@@ -1612,6 +1700,11 @@
      "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.agent_message->model_response",
      "implementation": "CodexStreamMapper#map"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.agent_response.done->model_response.item",
+     "implementation": "AntigravityStreamMapper#response"
     }
    ],
    "oracle": [
@@ -1942,6 +2035,13 @@
      "records": "3,14",
      "field": "item.text (a single text, not a block array)",
      "availability": "partial"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-*",
+     "field": "step_update.text_delta fragments (ACTIVE and DONE agent_response) and result.response",
+     "availability": "partial"
     }
    ],
    "mapping": [
@@ -1969,6 +2069,16 @@
      "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.agent_message->model_response",
      "implementation": "CodexStreamMapper#map"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.agent_response.active->model_response.partial",
+     "implementation": "AntigravityStreamMapper#response"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.agent_response.done->model_response.item",
+     "implementation": "AntigravityStreamMapper#response"
     }
    ],
    "oracle": [
@@ -1999,6 +2109,13 @@
      "properties": [
       "response.values"
      ]
+    },
+    {
+     "profile": "AntigravityStreamProfile",
+     "family": "Response",
+     "properties": [
+      "response.values"
+     ]
     }
    ],
    "views": [
@@ -2008,7 +2125,8 @@
    "tests": [
     "OcsfOracleValueCheckTest#responseActivityStopReasonModelAndBlocksAreEachChecked",
     "OcsfOracleValueCheckTest#responseContentPresentWhereTheSourceHasNoneIsADefect",
-    "AnalysisViewsTest#claudeResponsesAppendBlocksAndTheChildCoreIsAssembledOnItsOwn"
+    "AnalysisViewsTest#claudeResponsesAppendBlocksAndTheChildCoreIsAssembledOnItsOwn",
+    "AntigravityStreamTest#aChangedArgumentAnInventedResponseIdOrAnAlteredFragmentIsDetected"
    ],
    "disposition": "normalized",
    "decision": {
@@ -2316,6 +2434,17 @@
      "records": "1-15",
      "field": "reasoning item",
      "availability": "absent"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "route": "antigravity-cli/stream-json/1.4.6-stdout",
+     "records": "every committed recording of the route",
+     "field": "reasoning text",
+     "availability": "absent",
+     "scenario": "path:step_update.thinking",
+     "vendor_omission": "reasoning text",
+     "basis": "documented interface (headless docs, CHANGELOG at 1.4.6) and the route's recordings; closed source: the emitter itself was not inspected, so absence is bounded by the published interface and the four 1.4.6 recordings"
     }
    ],
    "mapping": [
@@ -3404,6 +3533,13 @@
      "records": "3,14,15",
      "field": "item.completed agent_message (Completed), turn.completed (no stop reason)",
      "availability": "partial"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-*",
+     "field": "step state DONE ends an agent-response step; no stop reason is reported",
+     "availability": "partial"
     }
    ],
    "mapping": [
@@ -3431,6 +3567,11 @@
      "contract_uid": "codex-cli/rollout/0.160.1/0.4.0-prototype",
      "rule_id": "codex.rollout.task_complete->prompt_turn.completed",
      "implementation": "CodexRolloutMapper#map"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.agent_response.done->model_response.item",
+     "implementation": "AntigravityStreamMapper#response"
     }
    ],
    "oracle": [
@@ -3464,6 +3605,13 @@
     },
     {
      "profile": "CodexStreamProfile",
+     "family": "Response",
+     "properties": [
+      "response.values"
+     ]
+    },
+    {
+     "profile": "AntigravityStreamProfile",
      "family": "Response",
      "properties": [
       "response.values"
@@ -3713,6 +3861,13 @@
      "records": "1-39",
      "field": "token-level text/argument deltas (none: stream-json emits whole blocks per record)",
      "availability": "absent"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-*",
+     "field": "one or more ACTIVE text_delta fragments, then the DONE of the same step_index",
+     "availability": "present"
     }
    ],
    "mapping": [
@@ -3735,6 +3890,11 @@
      "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.agent_message->model_response",
      "implementation": "CodexStreamMapper#map"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.agent_response.active->model_response.partial",
+     "implementation": "AntigravityStreamMapper#response"
     }
    ],
    "oracle": [
@@ -3756,6 +3916,14 @@
     },
     {
      "profile": "CodexStreamProfile",
+     "family": "Population",
+     "properties": [
+      "population.responses",
+      "response.values"
+     ]
+    },
+    {
+     "profile": "AntigravityStreamProfile",
      "family": "Population",
      "properties": [
       "population.responses",
@@ -4048,6 +4216,13 @@
      "records": "1-15",
      "field": "call id / request record (none; the stream has only command_execution items)",
      "availability": "absent"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-*",
+     "field": "tool step ACTIVE: step_index, tool_name, tool_info.parameters (a started invocation, not the model request)",
+     "availability": "partial"
     }
    ],
    "mapping": [
@@ -4085,6 +4260,11 @@
      "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.file_change->tool_call.requested",
      "implementation": "CodexStreamMapper#toolCall"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.tool.active->tool_call.started",
+     "implementation": "AntigravityStreamMapper#tool"
     }
    ],
    "oracle": [
@@ -4120,6 +4300,15 @@
       "request.values"
      ],
      "scenario": "facts:requests"
+    },
+    {
+     "profile": "AntigravityStreamProfile",
+     "family": "Request",
+     "properties": [
+      "population.requests",
+      "request.values"
+     ],
+     "scenario": "facts:requests"
     }
    ],
    "views": [
@@ -4129,7 +4318,8 @@
    "tests": [
     "OcsfOracleMutationTest#requestArgumentsAndToolKindAreExact",
     "OcsfOracleValueCheckTest#requestNameResponseLinkAndReportedStateAreEachChecked",
-    "OcsfOracleMutationTest#missingDuplicatedAndReorderedRowsAreDefects"
+    "OcsfOracleMutationTest#missingDuplicatedAndReorderedRowsAreDefects",
+    "AntigravityStreamTest#aChangedArgumentAnInventedResponseIdOrAnAlteredFragmentIsDetected"
    ],
    "disposition": "normalized",
    "decision": {
@@ -4597,6 +4787,13 @@
      "records": "1-15",
      "field": "tool name (none: command_execution items carry a command string, no tool name)",
      "availability": "absent"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-*",
+     "field": "tool_name (exact-name table agy.tool_name_to_kind.v1)",
+     "availability": "present"
     }
    ],
    "mapping": [
@@ -4634,6 +4831,11 @@
      "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.file_change->tool_call.requested",
      "implementation": "MappingContracts#toolKind"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.tool.active->tool_call.started",
+     "implementation": "MappingContracts#toolKind"
     }
    ],
    "oracle": [
@@ -4653,6 +4855,14 @@
     },
     {
      "profile": "CodexStreamProfile",
+     "family": "Request",
+     "properties": [
+      "request.values"
+     ],
+     "scenario": "facts:requests"
+    },
+    {
+     "profile": "AntigravityStreamProfile",
      "family": "Request",
      "properties": [
       "request.values"
@@ -4897,6 +5107,13 @@
      "records": "1-15",
      "field": "result keyed by call id (none)",
      "availability": "absent"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-*",
+     "field": "tool step DONE or ERROR of the same step_index: tool_info.output, tool_info.error or (subagent step) subagent_info",
+     "availability": "present"
     }
    ],
    "mapping": [
@@ -4934,6 +5151,16 @@
      "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.file_change->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.tool.done->tool_call.result",
+     "implementation": "AntigravityStreamMapper#tool"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.subagent.done->tool_call.result",
+     "implementation": "AntigravityStreamMapper#toolResult"
     }
    ],
    "oracle": [
@@ -4973,6 +5200,16 @@
       "result.owner"
      ],
      "scenario": "facts:results"
+    },
+    {
+     "profile": "AntigravityStreamProfile",
+     "family": "Result",
+     "properties": [
+      "population.results",
+      "result.values",
+      "result.owner"
+     ],
+     "scenario": "facts:results"
     }
    ],
    "views": [
@@ -4986,7 +5223,8 @@
     "AnalysisViewsTest#identicalResultContentUnderTwoOwnersIsKeptSeparate",
     "OcsfOracleValueCheckTest#resultStructuredDetailAndMissingResultAreEachChecked",
     "OracleFullSourceTest#swappingResultOwnersBetweenRecordsIsAnOwnershipDefectOnBothSources",
-    "CodexExecStreamTest#claudePairCountsRunScopedIdentitiesLogicallyAndSeparatesRepeatsFromIdenticalContent"
+    "CodexExecStreamTest#claudePairCountsRunScopedIdentitiesLogicallyAndSeparatesRepeatsFromIdenticalContent",
+    "AntigravityStreamTest#aChangedChildConversationOfTheSubagentSpawnIsDetected"
    ],
    "disposition": "normalized",
    "decision": {
@@ -5252,6 +5490,17 @@
      "records": "1-15",
      "field": "tool result (none: the exec stream reports operations, not results)",
      "availability": "absent"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "route": "antigravity-cli/stream-json/1.4.6-stdout",
+     "records": "every committed recording of the route",
+     "field": "structured tool result",
+     "availability": "absent",
+     "scenario": "facts:results.structured",
+     "vendor_omission": "a structured tool result (tool_info.output is rendered text)",
+     "basis": "documented interface (headless docs, CHANGELOG at 1.4.6) and the route's recordings; closed source: the emitter itself was not inspected, so absence is bounded by the published interface and the four 1.4.6 recordings"
     }
    ],
    "mapping": [
@@ -5562,6 +5811,13 @@
      "records": "1-15",
      "field": "tool result error flag (none: no result records)",
      "availability": "absent"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-*",
+     "field": "state ERROR with tool_info.error (failure); DONE without an error is not a success (a soft-denied command reports DONE with neither output nor error)",
+     "availability": "partial"
     }
    ],
    "mapping": [
@@ -5599,6 +5855,11 @@
      "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.file_change->tool_call.result",
      "implementation": "CodexStreamMapper#toolCall"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.tool.done->tool_call.result",
+     "implementation": "AntigravityStreamMapper#outcome"
     }
    ],
    "oracle": [
@@ -5623,6 +5884,14 @@
       "result.values"
      ],
      "scenario": "facts:results.failed"
+    },
+    {
+     "profile": "AntigravityStreamProfile",
+     "family": "Result",
+     "properties": [
+      "result.values"
+     ],
+     "scenario": "facts:results.failed"
     }
    ],
    "views": [
@@ -5630,7 +5899,8 @@
    ],
    "tests": [
     "OcsfOracleMutationTest#resultContentErrorFlagAndStatusAreExact",
-    "OcsfOracleValueCheckTest#resultStructuredDetailAndMissingResultAreEachChecked"
+    "OcsfOracleValueCheckTest#resultStructuredDetailAndMissingResultAreEachChecked",
+    "AntigravityStreamTest#aSoftDeniedCommandIsNeitherASuccessNorAttributedToItsDenial"
    ],
    "disposition": "normalized",
    "decision": {
@@ -5898,6 +6168,17 @@
      "records": "1-39",
      "field": "separately reported operation (none; one result per call)",
      "availability": "absent"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "route": "antigravity-cli/stream-json/1.4.6-stdout",
+     "records": "every committed recording of the route",
+     "field": "separately reported operations",
+     "availability": "absent",
+     "scenario": "facts:operations",
+     "vendor_omission": "separately reported operations of a tool call (each tool step is one call)",
+     "basis": "documented interface (headless docs, CHANGELOG at 1.4.6) and the route's recordings; closed source: the emitter itself was not inspected, so absence is bounded by the published interface and the four 1.4.6 recordings"
     }
    ],
    "mapping": [
@@ -6179,6 +6460,17 @@
      "records": "all",
      "field": "separately reported operation (none: Claude reports one result per call, so there is no operation to attribute)",
      "availability": "absent"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "route": "antigravity-cli/stream-json/1.4.6-stdout",
+     "records": "every committed recording of the route",
+     "field": "operation attribution",
+     "availability": "absent",
+     "scenario": "facts:operations",
+     "vendor_omission": "separately reported operations of a tool call (each tool step is one call)",
+     "basis": "documented interface (headless docs, CHANGELOG at 1.4.6) and the route's recordings; closed source: the emitter itself was not inspected, so absence is bounded by the published interface and the four 1.4.6 recordings"
     }
    ],
    "mapping": [
@@ -6400,6 +6692,13 @@
      "records": "6,8,14,16,33",
      "field": "request lifecycle state (none reported on tool_use blocks)",
      "availability": "absent"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-*",
+     "field": "step_update.state ACTIVE, DONE, ERROR as reported_state",
+     "availability": "present"
     }
    ],
    "mapping": [
@@ -6417,6 +6716,16 @@
      "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.command_execution->tool_call.operation",
      "implementation": "CodexStreamMapper#map"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.tool.active->tool_call.started",
+     "implementation": "AntigravityStreamMapper#tool"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.tool.done->tool_call.result",
+     "implementation": "AntigravityStreamMapper#tool"
     }
    ],
    "oracle": [
@@ -6439,6 +6748,14 @@
      "family": "Operation",
      "properties": [
       "operation.values"
+     ]
+    },
+    {
+     "profile": "AntigravityStreamProfile",
+     "family": "Request",
+     "properties": [
+      "request.values",
+      "result.values"
      ]
     }
    ],
@@ -6676,6 +6993,13 @@
      "records": "1-15",
      "field": "interruption (none: turn.completed present)",
      "availability": "absent"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-*",
+     "field": "a run_command step ACTIVE without its DONE before the capture cancelled the CLI (antigravity-live-1.4.6-interrupt-open); the CLI still wrote a result with status ERROR, error interrupted",
+     "availability": "present"
     }
    ],
    "mapping": [
@@ -6712,6 +7036,17 @@
       "whole_record.bytes"
      ],
      "scenario": "run:incomplete"
+    },
+    {
+     "profile": "AntigravityStreamProfile",
+     "family": "owned",
+     "properties": [
+      "package.state",
+      "acquisition.complete",
+      "whole_record.framing",
+      "whole_record.bytes"
+     ],
+     "scenario": "run:incomplete"
     }
    ],
    "views": [
@@ -6723,7 +7058,8 @@
     "WriterLifecycleTest#interruptionEndsOpenSourcesAndFinalizesWhatWasAcquired",
     "WriterLifecycleTest#injectedWriteFailureLeavesAnHonestFailedPackage",
     "OracleFullSourceTest#anOpenPackageIsJudgedAsAPrefixAndNeverAccepted",
-    "OcsfReaderToolTest#verifyExitsFourWhenAMandatoryPropertyIsUnresolvedEvenWithoutDefects"
+    "OcsfReaderToolTest#verifyExitsFourWhenAMandatoryPropertyIsUnresolvedEvenWithoutDefects",
+    "AntigravityStreamTest#aFabricatedResultForTheOpenToolOfTheInterruptedRunIsDetected"
    ],
    "disposition": "normalized",
    "decision": {
@@ -7076,6 +7412,13 @@
      "records": "15",
      "field": "usage.{input_tokens, output_tokens, cached_input_tokens, cache_write_input_tokens} (no total)",
      "availability": "present"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-*",
+     "field": "usage.{input_tokens, output_tokens, thinking_tokens, cache_read_tokens, total_tokens} on DONE agent_response steps and the result; whether input includes cache reads is not stated (uncached tranche unavailable)",
+     "availability": "partial"
     }
    ],
    "mapping": [
@@ -7113,6 +7456,16 @@
      "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.turn_completed->prompt_turn.completed",
      "implementation": "UsageTranches#codex"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.agent_response.done->model_response.item",
+     "implementation": "UsageTranches#antigravity"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.result->prompt_turn.completed",
+     "implementation": "UsageTranches#antigravity"
     }
    ],
    "oracle": [
@@ -7147,6 +7500,14 @@
       "population.usage",
       "usage.values"
      ]
+    },
+    {
+     "profile": "AntigravityStreamProfile",
+     "family": "Usage",
+     "properties": [
+      "population.usage",
+      "usage.values"
+     ]
     }
    ],
    "views": [
@@ -7157,7 +7518,8 @@
     "OcsfOracleMutationTest#jo01WrongNormalizedUsageAmountWithUnchangedRetainedSourceIsDefective",
     "OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero",
     "OcsfOracleValueCheckTest#usageNativeObjectMustBeRetained",
-    "OcsfOracleMutationTest#largeIntegerAndHighPrecisionDecimalAreExact"
+    "OcsfOracleMutationTest#largeIntegerAndHighPrecisionDecimalAreExact",
+    "AntigravityStreamTest#anUncachedTrancheOrAReasoningRelationTheSourceDoesNotEstablishIsAUsageDefect"
    ],
    "disposition": "normalized",
    "decision": {
@@ -7584,6 +7946,13 @@
      "records": "15",
      "field": "usage.reasoning_output_tokens",
      "availability": "present"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-*",
+     "field": "usage.thinking_tokens (no stated relation to output_tokens)",
+     "availability": "present"
     }
    ],
    "mapping": [
@@ -7606,6 +7975,11 @@
      "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.turn_completed->prompt_turn.completed",
      "implementation": "CodexStreamMapper#map"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.agent_response.done->model_response.item",
+     "implementation": "UsageTranches#antigravity"
     }
    ],
    "oracle": [
@@ -7635,6 +8009,14 @@
     },
     {
      "profile": "CodexStreamProfile",
+     "family": "Usage",
+     "properties": [
+      "usage.values"
+     ],
+     "scenario": "facts:usage.reasoning"
+    },
+    {
+     "profile": "AntigravityStreamProfile",
      "family": "Usage",
      "properties": [
       "usage.values"
@@ -7894,6 +8276,13 @@
      "records": "15",
      "field": "usage -> scope 5 Session Final for the run: ThreadTokenUsage.total, the thread's cumulative usage at turn completion (SEM-1 candidate, contract 0.3.0-prototype; was scope 3 Prompt turn under 0.2.0-prototype, a reading the pinned emitter refutes)",
      "availability": "present"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-*",
+     "field": "step usage: scope 2 Model response, Final, scope total; result usage: scope 5 Session, Final, cumulative snapshot (documented: cumulative over the session; it excludes a spawned subagent's usage)",
+     "availability": "present"
     }
    ],
    "mapping": [
@@ -7931,6 +8320,11 @@
      "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.turn_completed->prompt_turn.completed",
      "implementation": "MapperSupport#usage"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.result->prompt_turn.completed",
+     "implementation": "MapperSupport#usage"
     }
    ],
    "oracle": [
@@ -7960,6 +8354,14 @@
     },
     {
      "profile": "CodexStreamProfile",
+     "family": "Usage",
+     "properties": [
+      "population.usage",
+      "usage.values"
+     ]
+    },
+    {
+     "profile": "AntigravityStreamProfile",
      "family": "Usage",
      "properties": [
       "population.usage",
@@ -8353,6 +8755,17 @@
      "scenario": "facts:cost",
      "vendor_omission": "per-update token usage, per-turn last usage, cost",
      "basis": "vendor source (exec projection omits it) and the route's recordings: turn.completed carries token counts only"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "route": "antigravity-cli/stream-json/1.4.6-stdout",
+     "records": "every committed recording of the route",
+     "field": "monetary cost",
+     "availability": "absent",
+     "scenario": "facts:cost",
+     "vendor_omission": "monetary cost",
+     "basis": "documented interface (headless docs, CHANGELOG at 1.4.6) and the route's recordings; closed source: the emitter itself was not inspected, so absence is bounded by the published interface and the four 1.4.6 recordings"
     }
    ],
    "mapping": [
@@ -8685,6 +9098,17 @@
      "scenario": "path:model",
      "vendor_omission": "session configuration beyond thread_id (model, cwd, sandbox and approval policy, provider)",
      "basis": "vendor source (exec projection omits it) and the route's recordings: thread.started carries only thread_id; a model reroute appears only as text inside an error item"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "route": "antigravity-cli/stream-json/1.4.6-stdout",
+     "records": "every committed recording of the route",
+     "field": "model id (init.model only when --model overrides it)",
+     "availability": "absent",
+     "scenario": "path:init.model",
+     "vendor_omission": "model identity unless overridden",
+     "basis": "documented interface (headless docs, CHANGELOG at 1.4.6) and the route's recordings; closed source: the emitter itself was not inspected, so absence is bounded by the published interface and the four 1.4.6 recordings"
     }
    ],
    "mapping": [
@@ -9071,6 +9495,13 @@
      ],
      "scenario": "value:item.status=declined",
      "basis": "vendor source declares it on the exec stream (codex-rs/exec/src/exec_events.rs at rust-v0.160.1); Journal retains the records whole and does not normalize them: the declined command status survives only as the operation's reported_state with status Unknown; no permission_decision is normalized"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-denial",
+     "field": "result.denied_actions[] {action, display_name}: a run-scope soft denial naming a permission category, never a step",
+     "availability": "partial"
     }
    ],
    "mapping": [
@@ -9093,6 +9524,11 @@
      "contract_uid": "codex-cli/rollout/0.160.1/0.4.0-prototype",
      "rule_id": "codex.rollout.turn_context->session_context.settings",
      "implementation": "CodexRolloutMapper#map"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.result->prompt_turn.completed",
+     "implementation": "AntigravityStreamMapper#denials"
     }
    ],
    "oracle": [
@@ -9121,6 +9557,15 @@
       "population.decisions"
      ],
      "scenario": "facts:decisions"
+    },
+    {
+     "profile": "AntigravityStreamProfile",
+     "family": "Decision",
+     "properties": [
+      "population.decisions",
+      "decision.values"
+     ],
+     "scenario": "facts:decisions"
     }
    ],
    "views": [
@@ -9130,7 +9575,8 @@
    "tests": [
     "OcsfOracleMutationTest#permissionDecisionValuesAndScopeAreExact",
     "OcsfOracleValueCheckTest#decisionSourceReasonCandidatesAndMethodAreEachChecked",
-    "AnalysisViewsTest#associationsSeparateCandidateCountFromEvidenceMethod"
+    "AnalysisViewsTest#associationsSeparateCandidateCountFromEvidenceMethod",
+    "AntigravityStreamTest#aSoftDeniedCommandIsNeitherASuccessNorAttributedToItsDenial"
    ],
    "disposition": "normalized",
    "decision": {
@@ -9513,6 +9959,13 @@
      "scenario": "facts:contexts",
      "vendor_omission": "session configuration beyond thread_id (model, cwd, sandbox and approval policy, provider)",
      "basis": "vendor source (exec projection omits it) and the route's recordings: thread.started carries only thread_id"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-*",
+     "field": "init {cwd, tools, permission_mode} (model, agent and json_schema only when overridden)",
+     "availability": "present"
     }
    ],
    "mapping": [
@@ -9540,6 +9993,11 @@
      "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.fallback->source_record",
      "implementation": "CodexStreamMapper#map"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.init->session_context.settings",
+     "implementation": "AntigravityStreamMapper#init"
     }
    ],
    "oracle": [
@@ -9553,6 +10011,14 @@
     },
     {
      "profile": "CodexRolloutProfile",
+     "family": "Context",
+     "properties": [
+      "population.contexts",
+      "context.values"
+     ]
+    },
+    {
+     "profile": "AntigravityStreamProfile",
      "family": "Context",
      "properties": [
       "population.contexts",
@@ -10349,6 +10815,26 @@
      ],
      "scenario": "value:item.type=collab_tool_call",
      "basis": "vendor source declares it on the exec stream (codex-rs/exec/src/exec_events.rs at rust-v0.160.1); Journal retains the records whole and does not normalize them: the spawn relationship is retained only; child-thread items are omitted by the projection"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-subagent",
+     "field": "step_update subagent DONE with subagent_info naming the child conversation (antigravity-live-1.4.6-subagent)",
+     "availability": "partial"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "route": "antigravity-cli/stream-json/1.4.6-stdout",
+     "records": "every committed recording of the route",
+     "field": "a subagent spawn: its subagent_info (child conversation id, role, prompt, log location) is normalized as the result content of the invoke_subagent call; no child run is linked because the child's own records are not in this stream",
+     "availability": "supported",
+     "vendor_families": [
+      "step_update/subagent/DONE"
+     ],
+     "scenario": "value:step_update.step_type=subagent",
+     "basis": "documented (headless docs: subagent_info) and observed on 1.4.6; Journal keeps the spawn details as the call's result data and links no child run"
     }
    ],
    "mapping": [
@@ -10361,6 +10847,11 @@
      "contract_uid": "claude-code/stream-json/2.1.303/0.3.0-prototype",
      "rule_id": "claude.stream.user.tool_result->tool_call.result",
      "implementation": "OcsfRunWriter#childLinks"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.subagent.done->tool_call.result",
+     "implementation": "AntigravityStreamMapper#toolResult"
     }
    ],
    "oracle": [
@@ -10387,7 +10878,8 @@
     "IsolatedBootstrapTest#aCopiedCoreWithItsChildBootstrapsWithoutAnythingElse",
     "WriterLifecycleTest#childRecordsAreRoutedToTheirOwnCoreAsTheyArrive",
     "OcsfOracleMutationTest#aChildLinkedToTheWrongSpawnOrDroppedIsADefect",
-    "StandaloneEventFileTest#theChildEventFileAloneCarriesItsOwnDeclarationsAndIsJudgedOnItsOwn"
+    "StandaloneEventFileTest#theChildEventFileAloneCarriesItsOwnDeclarationsAndIsJudgedOnItsOwn",
+    "AntigravityStreamTest#aChangedChildConversationOfTheSubagentSpawnIsDetected"
    ],
    "disposition": "normalized",
    "decision": {
@@ -10697,6 +11189,13 @@
      "records": "1-15",
      "field": "no timestamps; item.id on items",
      "availability": "partial"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-*",
+     "field": "no timestamps; step_index on every step record",
+     "availability": "partial"
     }
    ],
    "mapping": [
@@ -10724,6 +11223,11 @@
      "contract_uid": "common/opaque-text/0.2.0-prototype",
      "rule_id": "text.parsed->source_record",
      "implementation": "OpaqueTextMapper#map"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.tool.active->tool_call.started",
+     "implementation": "SourceContext#sourceRef"
     }
    ],
    "oracle": [
@@ -10764,6 +11268,19 @@
     },
     {
      "profile": "CodexStreamProfile",
+     "family": "owned",
+     "properties": [
+      "whole_record.coverage",
+      "whole_record.framing",
+      "source.denominator",
+      "source.expected",
+      "source.extent",
+      "source.state",
+      "acquisition.complete"
+     ]
+    },
+    {
+     "profile": "AntigravityStreamProfile",
      "family": "owned",
      "properties": [
       "whole_record.coverage",
@@ -11078,6 +11595,13 @@
      "records": "1",
      "field": "one opaque text line (byte-exact promise)",
      "availability": "present"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-*",
+     "field": "every record (the Go encoder writes \\u0026 for &: parsed records reconstruct by value, not always by bytes)",
+     "availability": "present"
     }
    ],
    "mapping": [
@@ -11110,6 +11634,11 @@
      "contract_uid": "common/opaque-text/0.2.0-prototype",
      "rule_id": "common.opaque->source_record",
      "implementation": "SourceContext#opaque"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.fallback->source_record",
+     "implementation": "SourceContext#fallback"
     }
    ],
    "oracle": [
@@ -11152,6 +11681,14 @@
     },
     {
      "profile": "CodexStreamProfile",
+     "family": "owned",
+     "properties": [
+      "whole_record.coverage",
+      "reconstruction.coverage"
+     ]
+    },
+    {
+     "profile": "AntigravityStreamProfile",
      "family": "owned",
      "properties": [
       "whole_record.coverage",
@@ -11462,6 +11999,11 @@
      "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "common.opaque->source_record",
      "implementation": "LineFramer#end"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "common.opaque->source_record",
+     "implementation": "LineFramer#end"
     }
    ],
    "oracle": [
@@ -11485,6 +12027,13 @@
     },
     {
      "profile": "CodexStreamProfile",
+     "family": "owned",
+     "properties": [
+      "whole_record.bytes"
+     ]
+    },
+    {
+     "profile": "AntigravityStreamProfile",
      "family": "owned",
      "properties": [
       "whole_record.bytes"
@@ -12046,6 +12595,13 @@
      "records": "1",
      "field": "stderr text line (retained byte-exact; content meaning not interpreted)",
      "availability": "present"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-subagent",
+     "field": "step_update system_message DONE (undocumented step type) and checkpoint (documented, meaning not described)",
+     "availability": "present"
     }
    ],
    "mapping": [
@@ -12063,6 +12619,11 @@
      "contract_uid": "common/opaque-text/0.2.0-prototype",
      "rule_id": "common.opaque->source_record",
      "implementation": "OpaqueTextMapper#map"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.fallback->source_record",
+     "implementation": "AntigravityStreamMapper#step"
     }
    ],
    "oracle": [
@@ -12097,6 +12658,15 @@
       "whole_record.class"
      ],
      "scenario": "value:item.type=synthetic_unknown_item"
+    },
+    {
+     "profile": "AntigravityStreamProfile",
+     "family": "Retention",
+     "properties": [
+      "whole_record.coverage",
+      "whole_record.class"
+     ],
+     "scenario": "value:step_update.step_type=system_message"
     }
    ],
    "views": [],
@@ -12296,6 +12866,13 @@
      "records": "1-15",
      "field": "no timestamps -> basis 2 (capture start)",
      "availability": "absent"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-*",
+     "field": "no timestamps -> basis 2 (capture start)",
+     "availability": "absent"
     }
    ],
    "mapping": [
@@ -12317,6 +12894,11 @@
     {
      "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",
      "rule_id": "codex.stream.agent_message->model_response",
+     "implementation": "SourceContext#timeFor"
+    },
+    {
+     "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+     "rule_id": "agy.stream.agent_response.done->model_response.item",
      "implementation": "SourceContext#timeFor"
     }
    ],
@@ -12344,6 +12926,13 @@
     },
     {
      "profile": "CodexStreamProfile",
+     "family": "nativeTime",
+     "properties": [
+      "time.basis"
+     ]
+    },
+    {
+     "profile": "AntigravityStreamProfile",
      "family": "nativeTime",
      "properties": [
       "time.basis"
@@ -12575,6 +13164,13 @@
      "scenario": "path:item.duration_ms",
      "vendor_omission": "command cwd, process id, source, parsed command actions, duration, plugin id, script path",
      "basis": "vendor source (exec projection omits it) and the route's recordings: no duration on any exec item (MCP duration is omitted too)"
+    },
+    {
+     "cli": "agy",
+     "artifact": "stream.jsonl",
+     "records": "antigravity-live-1.4.6-*",
+     "field": "step_update.duration_seconds and result.duration_seconds (cumulative over the session), retained",
+     "availability": "present"
     }
    ],
    "mapping": [
@@ -12613,6 +13209,14 @@
      "family": "Operation",
      "properties": [
       "operation.values"
+     ]
+    },
+    {
+     "profile": "AntigravityStreamProfile",
+     "family": "owned",
+     "properties": [
+      "whole_record.structure_value",
+      "reconstruction.structure_value"
      ]
     }
    ],

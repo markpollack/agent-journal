@@ -71,11 +71,11 @@ class RequirementsReporterReproductionTest {
         assertThat(evidence.properties()).contains("result.owner");
         Judgment control = judge("UC3-AC1", evidence, corpus);
         assertThat(control.status()).as(control.reasoning()).isEqualTo(JudgmentStatus.PASS);
-        assertThat(control.checks()).as("every property on every owner of the matched fixtures: 5 properties x 10 owners (codex synthetic 1, claude child 2, interrupted 1, live features 2, live denial 1, live cancelled 1, live codex 1, live codex cancelled 1); the untested-version fixture is outside the scenario").hasSize(50);
+        assertThat(control.checks()).as("every property on every owner of the matched fixtures: 5 properties x 14 owners (codex synthetic 1, claude child 2, interrupted 1, live features 2, live denial 1, live cancelled 1, live codex 1, live codex cancelled 1, antigravity features, denial, interrupt-open and subagent 1 each); the untested-version fixture is outside the scenario").hasSize(70);
 
         Judgment missingProperty = judge("UC3-AC1", evidence, corpus.with(map(corpus.reports(), r -> r.filtered(c -> !c.property().equals("result.owner")))));
         assertThat(missingProperty.status()).as("REPAIRED: result.owner never appears").isEqualTo(JudgmentStatus.ERROR);
-        assertThat(missingProperty.reasoning()).contains("10 required check(s) missing").contains("result.owner [main/stream.jsonl]");
+        assertThat(missingProperty.reasoning()).contains("14 required check(s) missing").contains("result.owner [main/stream.jsonl]");
 
         assertThat(corpus.reports().get(CLAUDE_CHILD).checks()).anyMatch(c -> c.owner().equals(CHILD_OWNER));
         Judgment missingOwner = judge("UC3-AC1", evidence, corpus.with(map(corpus.reports(), r -> r.filtered(c -> !c.owner().equals(CHILD_OWNER)))));

@@ -34,6 +34,13 @@ public final class RawInventory {
     private RawInventory() {
     }
 
+    /**
+     * Data-keyed paths of the profiles described by data alone: Antigravity's tool parameters are the tool's own arguments,
+     * and a --json-schema run's schema and structured output are user data (headless documentation, stream-json).
+     */
+    static final Map<String, Set<String>> DATA_KEYED = Map.of("agy_stream",
+            Set.of("step_update.tool_info.parameters", "init.json_schema", "result.json_schema", "result.structured_output"));
+
     /** Per-profile discriminator and the data-keyed / map-keyed paths; the profile names are the oracle's. */
     public record ProfileRules(String profile, Set<String> dataKeyed, Set<String> mapKeyed) {
 
@@ -53,12 +60,15 @@ public final class RawInventory {
                         Set.of("item.arguments", "item.result.content", "item.result.structured_content", "item.result._meta", "item.results"),
                         Set.of("item.agents_states"));
                 case "codex_rollout" -> new ProfileRules(profile, Set.of("payload.output"), Set.of());
-                default -> new ProfileRules(profile == null ? "(unknown)" : profile, Set.of(), Set.of());
+                default -> new ProfileRules(profile == null ? "(unknown)" : profile, DATA_KEYED.getOrDefault(String.valueOf(profile), Set.of()), Set.of());
             };
         }
 
         /** The variant name of a parsed record under this profile, with the discriminator values that produced it. */
         public Map<String, String> discriminators(Json o) {
+            if ("agy_stream".equals(profile)) {
+                return agyDiscriminators(o);
+            }
             Map<String, String> d = new LinkedHashMap<>();
             String type = text(o, "type");
             d.put("type", type);
@@ -97,6 +107,17 @@ public final class RawInventory {
                 }
                 default -> {
                 }
+            }
+            return d;
+        }
+
+        /** Antigravity's documented discriminator is event; a step_update is further discriminated by its step type and state. */
+        private static Map<String, String> agyDiscriminators(Json o) {
+            Map<String, String> d = new LinkedHashMap<>();
+            d.put("event", text(o, "event"));
+            if (o.member("step_update") != null) {
+                d.put("step_update.step_type", text(o, "step_update", "step_type"));
+                d.put("step_update.state", text(o, "step_update", "state"));
             }
             return d;
         }

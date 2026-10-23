@@ -47,16 +47,23 @@ public final class ExpectedFacts {
      * {@code blocks} are the native block values in order, or {@code null} when the source carries no content;
      * {@code reasoningForm} is the reasoning_form_id every block must carry, or {@code null} when the profile states none.
      * When {@code itemIdentityBasisId} is set, {@code id} is the source's own content-item id ({@code item_uid} of that
-     * basis), the model response is not identified (no {@code response_uid}) and the activity is 3 Item completed.
+     * basis), the model response is not identified (no {@code response_uid}) and the activity is 3 Item completed, unless
+     * the profile states another: {@code statedActivity} 1 Partial for a non-final view of such an item (an Antigravity
+     * agent-response step still ACTIVE, with one text fragment).
      */
-    public record Response(int recordIndex, String id, List<Json> blocks, String stopReason, boolean terminal, String model, Integer reasoningForm, Integer itemIdentityBasisId) {
+    public record Response(int recordIndex, String id, List<Json> blocks, String stopReason, boolean terminal, String model, Integer reasoningForm, Integer itemIdentityBasisId,
+            Integer statedActivity) {
         public Response(int recordIndex, String id, List<Json> blocks, String stopReason, boolean terminal, String model) {
-            this(recordIndex, id, blocks, stopReason, terminal, model, null, null);
+            this(recordIndex, id, blocks, stopReason, terminal, model, null, null, null);
+        }
+
+        public Response(int recordIndex, String id, List<Json> blocks, String stopReason, boolean terminal, String model, Integer reasoningForm, Integer itemIdentityBasisId) {
+            this(recordIndex, id, blocks, stopReason, terminal, model, reasoningForm, itemIdentityBasisId, null);
         }
 
         /** The activity the event must carry. */
         public int activityId() {
-            return itemIdentityBasisId != null ? 3 : terminal ? 2 : 1;
+            return statedActivity != null ? statedActivity : itemIdentityBasisId != null ? 3 : terminal ? 2 : 1;
         }
     }
 
@@ -129,7 +136,14 @@ public final class ExpectedFacts {
         }
     }
 
-    public record TurnCompleted(int recordIndex, int statusId, String stopReason) {
+    /**
+     * @param texts the turn's response text blocks the record reports, in order (an Antigravity result's response), or
+     *        {@code null} when it reports none: the event must then carry no content blocks
+     */
+    public record TurnCompleted(int recordIndex, int statusId, String stopReason, List<String> texts) {
+        public TurnCompleted(int recordIndex, int statusId, String stopReason) {
+            this(recordIndex, statusId, stopReason, null);
+        }
     }
 
     public record TurnStarted(int recordIndex, String turnUid) {

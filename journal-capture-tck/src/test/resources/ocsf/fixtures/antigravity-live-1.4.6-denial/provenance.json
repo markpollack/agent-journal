@@ -1,0 +1,40 @@
+{
+ "kind": "agent-journal/fixture-provenance",
+ "fixture": "antigravity-live-1.4.6-denial",
+ "origin": "SANITIZED REAL LIVE RECORDING (not synthetic)",
+ "evidence_class": "recorded replay of a live stream; the live capture itself (unsanitized) is private steward evidence under plans/evidence/2026-10-23-antigravity-onboarding/",
+ "cli": "Antigravity CLI",
+ "cli_version": "1.4.6",
+ "cli_version_basis": "discovered once per run by the documented adapter path `agy --version` before launch, because the stream-json output reports no version; the native session file was not consulted",
+ "mode_and_route": "CliCapture launch (opt-in integration): raw stdout, independent byte copy, flush per record",
+ "capture_command": [
+  "agy",
+  "--print",
+  "Do these steps in order using your tools, then answer. 1) View the file src/a.txt. 2) Run the shell command: cat src/b.txt 3) Write a new file src/out.txt containing exactly: hello journal. Finally reply with one line: done.",
+  "--output-format",
+  "stream-json"
+ ],
+ "scenario": "default request-review mode: a file read, then a run_command step that headless mode soft-denies (DONE with neither output nor error); the result reports SUCCESS, an empty response and denied_actions [{action: command, display_name: RunCommand}]",
+ "live_run": "L2-denial-1",
+ "live_process": {
+  "pid": 2971570,
+  "started": "2026-10-23T21:20:26.407400480Z",
+  "ended": "2026-10-23T21:20:38.422360290Z",
+  "how": "exited",
+  "exit_code": 0,
+  "exit_meaning": "0: the CLI reported success",
+  "stdout": "closed: EOF reached",
+  "stderr_bytes": 303,
+  "meaning": "the CLI process outcome; distinct from storage finalization (recording.state) and acquisition extent (acquisition.status): EOF never implies success"
+ },
+ "original_sha256": "32dc4098b78eef7659e5faa744a87c324406c71e668fcb9f4fe0ac74acfea31d",
+ "original_bytes": 3862,
+ "sanitized_sha256": "2ba182de66186317e245e71c18351a46f4c0b0a6bd58eaa6dba0114d24110894",
+ "sanitized_bytes": 3481,
+ "records": 9,
+ "sanitization": [
+  "conversation id of the run -> stand-in 00000000-0000-4000-8000-000000000200",
+  "task directory path -> /work"
+ ],
+ "privacy_review": "local paths (task directory, session scratch, home directory) and conversation ids (the run and any spawned subagent) replaced by text substitution on the raw bytes; tool names, step indexes, token counts, durations and the built-in tool list kept; prompt text is the deliberate synthetic task; reviewed 2026-10-23"
+}

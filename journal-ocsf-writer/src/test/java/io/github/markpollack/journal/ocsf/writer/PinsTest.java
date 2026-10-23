@@ -68,11 +68,12 @@ class PinsTest {
     @Test
     void mappingContractsDeclareEveryRuleTheMappersExecute() throws Exception {
         MappingContracts c = new MappingContracts();
-        for (String name : List.of(ClaudeStreamMapper.CONTRACT, ClaudeTranscriptMapper.CONTRACT, CodexRolloutMapper.CONTRACT, CodexStreamMapper.CONTRACT, OpaqueTextMapper.CONTRACT)) {
+        for (String name : List.of(ClaudeStreamMapper.CONTRACT, ClaudeTranscriptMapper.CONTRACT, CodexRolloutMapper.CONTRACT, CodexStreamMapper.CONTRACT, AntigravityStreamMapper.CONTRACT,
+                OpaqueTextMapper.CONTRACT)) {
             // the Codex exec-stream contract is 0.7.0 (the lower bound in its direction, review closure), the rollout contract 0.4.0 (conditional
-            // uncached value), the Claude contracts 0.3.0 (SEM-CLOSE tranches); opaque text is unchanged
+            // uncached value), the Claude contracts 0.3.0 (SEM-CLOSE tranches), the Antigravity contract 0.1.0 (first onboarding); opaque text is unchanged
             assertThat(c.uid(name)).endsWith(CodexStreamMapper.CONTRACT.equals(name) ? "/0.7.0-prototype" : CodexRolloutMapper.CONTRACT.equals(name) ? "/0.4.0-prototype"
-                    : OpaqueTextMapper.CONTRACT.equals(name) ? "/0.2.0-prototype" : "/0.3.0-prototype");
+                    : AntigravityStreamMapper.CONTRACT.equals(name) ? "/0.1.0-prototype" : OpaqueTextMapper.CONTRACT.equals(name) ? "/0.2.0-prototype" : "/0.3.0-prototype");
             c.rule(name, "common.opaque->source_record");
             c.rule(name, "common.mapper_exception->source_record");
         }
@@ -87,7 +88,8 @@ class PinsTest {
         assertThat(retention).containsExactlyInAnyOrder("compat.version_pending->source_record", "compat.conflict->source_record", "compat.no_match->source_record");
         // every rule id string literal used by a mapper class is declared in its contract
         for (Map.Entry<String, String> m : Map.of("ClaudeStreamMapper.java", ClaudeStreamMapper.CONTRACT, "ClaudeTranscriptMapper.java", ClaudeTranscriptMapper.CONTRACT,
-                "CodexRolloutMapper.java", CodexRolloutMapper.CONTRACT, "CodexStreamMapper.java", CodexStreamMapper.CONTRACT, "CodexItems.java", CodexStreamMapper.CONTRACT).entrySet()) {
+                "CodexRolloutMapper.java", CodexRolloutMapper.CONTRACT, "CodexStreamMapper.java", CodexStreamMapper.CONTRACT, "CodexItems.java", CodexStreamMapper.CONTRACT,
+                "AntigravityStreamMapper.java", AntigravityStreamMapper.CONTRACT).entrySet()) {
             String src = Files.readString(Path.of("src/main/java/io/github/markpollack/journal/ocsf/writer/" + m.getKey()), StandardCharsets.UTF_8);
             java.util.regex.Matcher mt = java.util.regex.Pattern.compile("\"([a-z]+\\.[a-z_.A-Z]+->[a-z_.]+)\"").matcher(src);
             int found = 0;

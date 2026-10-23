@@ -1,0 +1,2242 @@
+{
+ "kind": "agent-journal/native-source-specification",
+ "version": "0.1",
+ "status": "ACCEPTED 0.1.0 (2026-10-23, Antigravity onboarding): baseline inventory of the four sanitized live 1.4.6 recordings; drift reports propose changes, review accepts them by editing this file and bumping specification_version",
+ "specification_version": "0.1.0",
+ "profile": "agy_stream",
+ "applies_to": {
+  "cli": "Antigravity CLI",
+  "version": "1.4.6",
+  "launch_mode": "agy --print \"<prompt>\" --output-format stream-json [--dangerously-skip-permissions] < /dev/null (headless print mode)",
+  "source_kind": "live output",
+  "capture_route": "stdout read by CliCapture (launch --cli antigravity), independent byte copy",
+  "route_limit": "stdout only; stderr (soft-deny notices, background-task notices) is a separate artifact; the conversation SQLite store and the brain directory are native session files, archived and never read"
+ },
+ "provenance": {
+  "observed_on": [
+   {
+    "artifact": "stream.jsonl of antigravity-live-1.4.6-features",
+    "sha256": "8448827293f3b21a37dde7077dd53dd6da1777760808b375bd1c132c9fd06261",
+    "records": 20,
+    "bytes": 6676,
+    "frozen_in": "journal-capture-tck/src/test/resources/ocsf/fixtures/antigravity-live-1.4.6-features/native/expected-sources.json"
+   },
+   {
+    "artifact": "stream.jsonl of antigravity-live-1.4.6-denial",
+    "sha256": "2ba182de66186317e245e71c18351a46f4c0b0a6bd58eaa6dba0114d24110894",
+    "records": 9,
+    "bytes": 3481,
+    "frozen_in": "journal-capture-tck/src/test/resources/ocsf/fixtures/antigravity-live-1.4.6-denial/native/expected-sources.json"
+   },
+   {
+    "artifact": "stream.jsonl of antigravity-live-1.4.6-interrupt-open",
+    "sha256": "6e5ad73eeec6c68f898a2ffde37d676ed3c737941cb603896e30e7d799968bf9",
+    "records": 5,
+    "bytes": 2318,
+    "frozen_in": "journal-capture-tck/src/test/resources/ocsf/fixtures/antigravity-live-1.4.6-interrupt-open/native/expected-sources.json"
+   },
+   {
+    "artifact": "stream.jsonl of antigravity-live-1.4.6-subagent",
+    "sha256": "a6bf3491764bbf7e80f176c5a4702c8017aaeb3a911a822bcf2aa2ed724cfaed",
+    "records": 20,
+    "bytes": 5842,
+    "frozen_in": "journal-capture-tck/src/test/resources/ocsf/fixtures/antigravity-live-1.4.6-subagent/native/expected-sources.json"
+   }
+  ],
+  "produced_by": "journal-capture-tck NativeInventoryTool draft (RawInventory 0.1, agy_stream rules)",
+  "reviewed": "2026-10-23 Antigravity onboarding; managing review at the onboarding checkpoint"
+ },
+ "limits": [
+  "one CLI version (1.4.6) and one launch mode (headless print, stream-json) on this profile: the inventory is an observed shape, not a vendor promise",
+  "a field observed in one record is not universal; a field absent from a specimen is not removed; nullability is what was seen",
+  "variants are discriminated by event and, for step_update, by step_type and state; a new step type or state is a new variant, not an error",
+  "data-keyed subtrees (tool parameters, a --json-schema schema and structured output) are tool or user data: only value kinds are recorded",
+  "a change of meaning under an unchanged shape is not visible to this inventory; the semantic oracle judges values",
+  "the stream carries no timestamps; a step is identified only by its index within the conversation; the documentation lists step_type values as observed examples, not a closed vocabulary",
+  "four recordings in two permission modes (always-proceed and request-review): documented members not observed here (init.model, init.agent, init.json_schema, result.structured_output, result.json_schema, the checkpoint step) are declared by the vendor inventory only"
+ ],
+ "external_cross_checks": [
+  {
+   "name": "Antigravity CLI headless mode documentation",
+   "locator": "https://antigravity.google/docs/cli/headless (fetched 2026-10-23, html sha256 2ca1e619a7492a068c76aaa2201325324b7acef68e85c5dbe899c6e3f07407f8)",
+   "role": "published interface description",
+   "use": "events, step_update/tool_info/subagent_info/result members and status values compared by review; no machine-readable schema is published, so no path-level comparison was run"
+  },
+  {
+   "name": "google-antigravity/antigravity-cli CHANGELOG.md",
+   "commit": "1.4.6 fd851f1da40e4347f1d05d211dcb45f94aede4c4",
+   "role": "vendor release notes",
+   "use": "introduction and changes of the stream-json format, tool_info, subagent_info, denied_actions and exit codes, by version"
+  }
+ ],
+ "open_variants": [],
+ "inventory": {
+  "observed_on": [
+   {
+    "artifact": "stream.jsonl",
+    "sha256": "8448827293f3b21a37dde7077dd53dd6da1777760808b375bd1c132c9fd06261",
+    "bytes": 6676,
+    "records": 20
+   },
+   {
+    "artifact": "stream.jsonl",
+    "sha256": "2ba182de66186317e245e71c18351a46f4c0b0a6bd58eaa6dba0114d24110894",
+    "bytes": 3481,
+    "records": 9
+   },
+   {
+    "artifact": "stream.jsonl",
+    "sha256": "6e5ad73eeec6c68f898a2ffde37d676ed3c737941cb603896e30e7d799968bf9",
+    "bytes": 2318,
+    "records": 5
+   },
+   {
+    "artifact": "stream.jsonl",
+    "sha256": "a6bf3491764bbf7e80f176c5a4702c8017aaeb3a911a822bcf2aa2ed724cfaed",
+    "bytes": 5842,
+    "records": 20
+   }
+  ],
+  "data_keyed": [
+   "init.json_schema",
+   "result.json_schema",
+   "result.structured_output",
+   "step_update.tool_info.parameters"
+  ],
+  "map_keyed": [],
+  "variants": {
+   "init": {
+    "discriminators": {
+     "event": "init"
+    },
+    "records": 4,
+    "evidence": [
+     "stream.jsonl:1",
+     "stream.jsonl:1",
+     "stream.jsonl:1",
+     "stream.jsonl:1"
+    ],
+    "paths": {
+     "conversation_id": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:1",
+       "stream.jsonl:1",
+       "stream.jsonl:1",
+       "stream.jsonl:1"
+      ]
+     },
+     "event": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:1",
+       "stream.jsonl:1",
+       "stream.jsonl:1",
+       "stream.jsonl:1"
+      ]
+     },
+     "init": {
+      "kinds": {
+       "object": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:1",
+       "stream.jsonl:1",
+       "stream.jsonl:1",
+       "stream.jsonl:1"
+      ]
+     },
+     "init.cwd": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:1",
+       "stream.jsonl:1",
+       "stream.jsonl:1",
+       "stream.jsonl:1"
+      ]
+     },
+     "init.permission_mode": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:1",
+       "stream.jsonl:1",
+       "stream.jsonl:1",
+       "stream.jsonl:1"
+      ]
+     },
+     "init.tools": {
+      "kinds": {
+       "array": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:1",
+       "stream.jsonl:1",
+       "stream.jsonl:1",
+       "stream.jsonl:1"
+      ]
+     },
+     "init.tools[]": {
+      "kinds": {
+       "string": 240
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 240,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:1",
+       "stream.jsonl:1",
+       "stream.jsonl:1",
+       "stream.jsonl:1"
+      ]
+     }
+    }
+   },
+   "result": {
+    "discriminators": {
+     "event": "result"
+    },
+    "records": 4,
+    "evidence": [
+     "stream.jsonl:20",
+     "stream.jsonl:9",
+     "stream.jsonl:5",
+     "stream.jsonl:20"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:20",
+       "stream.jsonl:9",
+       "stream.jsonl:5",
+       "stream.jsonl:20"
+      ]
+     },
+     "result": {
+      "kinds": {
+       "object": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:20",
+       "stream.jsonl:9",
+       "stream.jsonl:5",
+       "stream.jsonl:20"
+      ]
+     },
+     "result.conversation_id": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:20",
+       "stream.jsonl:9",
+       "stream.jsonl:5",
+       "stream.jsonl:20"
+      ]
+     },
+     "result.denied_actions": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:9"
+      ]
+     },
+     "result.denied_actions[]": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:9"
+      ]
+     },
+     "result.denied_actions[].action": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:9"
+      ]
+     },
+     "result.denied_actions[].display_name": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:9"
+      ]
+     },
+     "result.duration_seconds": {
+      "kinds": {
+       "decimal": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:20",
+       "stream.jsonl:9",
+       "stream.jsonl:5",
+       "stream.jsonl:20"
+      ]
+     },
+     "result.error": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "result.num_turns": {
+      "kinds": {
+       "integer": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:20",
+       "stream.jsonl:9",
+       "stream.jsonl:5",
+       "stream.jsonl:20"
+      ]
+     },
+     "result.response": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:20",
+       "stream.jsonl:9",
+       "stream.jsonl:5",
+       "stream.jsonl:20"
+      ]
+     },
+     "result.status": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:20",
+       "stream.jsonl:9",
+       "stream.jsonl:5",
+       "stream.jsonl:20"
+      ]
+     },
+     "result.usage": {
+      "kinds": {
+       "object": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:20",
+       "stream.jsonl:9",
+       "stream.jsonl:5",
+       "stream.jsonl:20"
+      ]
+     },
+     "result.usage.cache_read_tokens": {
+      "kinds": {
+       "integer": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:20",
+       "stream.jsonl:9",
+       "stream.jsonl:5",
+       "stream.jsonl:20"
+      ]
+     },
+     "result.usage.input_tokens": {
+      "kinds": {
+       "integer": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:20",
+       "stream.jsonl:9",
+       "stream.jsonl:5",
+       "stream.jsonl:20"
+      ]
+     },
+     "result.usage.output_tokens": {
+      "kinds": {
+       "integer": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:20",
+       "stream.jsonl:9",
+       "stream.jsonl:5",
+       "stream.jsonl:20"
+      ]
+     },
+     "result.usage.thinking_tokens": {
+      "kinds": {
+       "integer": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:20",
+       "stream.jsonl:9",
+       "stream.jsonl:5",
+       "stream.jsonl:20"
+      ]
+     },
+     "result.usage.total_tokens": {
+      "kinds": {
+       "integer": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:20",
+       "stream.jsonl:9",
+       "stream.jsonl:5",
+       "stream.jsonl:20"
+      ]
+     }
+    }
+   },
+   "step_update/agent_response/ACTIVE": {
+    "discriminators": {
+     "event": "step_update",
+     "step_update.step_type": "agent_response",
+     "step_update.state": "ACTIVE"
+    },
+    "records": 12,
+    "evidence": [
+     "stream.jsonl:18",
+     "stream.jsonl:6",
+     "stream.jsonl:7",
+     "stream.jsonl:8",
+     "stream.jsonl:9",
+     "stream.jsonl:10",
+     "stream.jsonl:11",
+     "stream.jsonl:12",
+     "stream.jsonl:13",
+     "stream.jsonl:14",
+     "stream.jsonl:15",
+     "stream.jsonl:18"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "string": 12
+      },
+      "present_in_records": 12,
+      "absent_in_records": 0,
+      "occurrences": 12,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:18",
+       "stream.jsonl:6",
+       "stream.jsonl:7",
+       "stream.jsonl:8",
+       "stream.jsonl:9",
+       "stream.jsonl:10",
+       "stream.jsonl:11",
+       "stream.jsonl:12",
+       "stream.jsonl:13",
+       "stream.jsonl:14",
+       "stream.jsonl:15",
+       "stream.jsonl:18"
+      ]
+     },
+     "step_update": {
+      "kinds": {
+       "object": 12
+      },
+      "present_in_records": 12,
+      "absent_in_records": 0,
+      "occurrences": 12,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:18",
+       "stream.jsonl:6",
+       "stream.jsonl:7",
+       "stream.jsonl:8",
+       "stream.jsonl:9",
+       "stream.jsonl:10",
+       "stream.jsonl:11",
+       "stream.jsonl:12",
+       "stream.jsonl:13",
+       "stream.jsonl:14",
+       "stream.jsonl:15",
+       "stream.jsonl:18"
+      ]
+     },
+     "step_update.conversation_id": {
+      "kinds": {
+       "string": 12
+      },
+      "present_in_records": 12,
+      "absent_in_records": 0,
+      "occurrences": 12,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:18",
+       "stream.jsonl:6",
+       "stream.jsonl:7",
+       "stream.jsonl:8",
+       "stream.jsonl:9",
+       "stream.jsonl:10",
+       "stream.jsonl:11",
+       "stream.jsonl:12",
+       "stream.jsonl:13",
+       "stream.jsonl:14",
+       "stream.jsonl:15",
+       "stream.jsonl:18"
+      ]
+     },
+     "step_update.state": {
+      "kinds": {
+       "string": 12
+      },
+      "present_in_records": 12,
+      "absent_in_records": 0,
+      "occurrences": 12,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:18",
+       "stream.jsonl:6",
+       "stream.jsonl:7",
+       "stream.jsonl:8",
+       "stream.jsonl:9",
+       "stream.jsonl:10",
+       "stream.jsonl:11",
+       "stream.jsonl:12",
+       "stream.jsonl:13",
+       "stream.jsonl:14",
+       "stream.jsonl:15",
+       "stream.jsonl:18"
+      ]
+     },
+     "step_update.step_index": {
+      "kinds": {
+       "integer": 12
+      },
+      "present_in_records": 12,
+      "absent_in_records": 0,
+      "occurrences": 12,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:18",
+       "stream.jsonl:6",
+       "stream.jsonl:7",
+       "stream.jsonl:8",
+       "stream.jsonl:9",
+       "stream.jsonl:10",
+       "stream.jsonl:11",
+       "stream.jsonl:12",
+       "stream.jsonl:13",
+       "stream.jsonl:14",
+       "stream.jsonl:15",
+       "stream.jsonl:18"
+      ]
+     },
+     "step_update.step_type": {
+      "kinds": {
+       "string": 12
+      },
+      "present_in_records": 12,
+      "absent_in_records": 0,
+      "occurrences": 12,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:18",
+       "stream.jsonl:6",
+       "stream.jsonl:7",
+       "stream.jsonl:8",
+       "stream.jsonl:9",
+       "stream.jsonl:10",
+       "stream.jsonl:11",
+       "stream.jsonl:12",
+       "stream.jsonl:13",
+       "stream.jsonl:14",
+       "stream.jsonl:15",
+       "stream.jsonl:18"
+      ]
+     },
+     "step_update.text_delta": {
+      "kinds": {
+       "string": 12
+      },
+      "present_in_records": 12,
+      "absent_in_records": 0,
+      "occurrences": 12,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:18",
+       "stream.jsonl:6",
+       "stream.jsonl:7",
+       "stream.jsonl:8",
+       "stream.jsonl:9",
+       "stream.jsonl:10",
+       "stream.jsonl:11",
+       "stream.jsonl:12",
+       "stream.jsonl:13",
+       "stream.jsonl:14",
+       "stream.jsonl:15",
+       "stream.jsonl:18"
+      ]
+     }
+    }
+   },
+   "step_update/agent_response/DONE": {
+    "discriminators": {
+     "event": "step_update",
+     "step_update.step_type": "agent_response",
+     "step_update.state": "DONE"
+    },
+    "records": 12,
+    "evidence": [
+     "stream.jsonl:3",
+     "stream.jsonl:6",
+     "stream.jsonl:9",
+     "stream.jsonl:12",
+     "stream.jsonl:15",
+     "stream.jsonl:19",
+     "stream.jsonl:3",
+     "stream.jsonl:6",
+     "stream.jsonl:3",
+     "stream.jsonl:3",
+     "stream.jsonl:16",
+     "stream.jsonl:19"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "string": 12
+      },
+      "present_in_records": 12,
+      "absent_in_records": 0,
+      "occurrences": 12,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:9",
+       "stream.jsonl:12",
+       "stream.jsonl:15",
+       "stream.jsonl:19",
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:3",
+       "stream.jsonl:3",
+       "stream.jsonl:16",
+       "stream.jsonl:19"
+      ]
+     },
+     "step_update": {
+      "kinds": {
+       "object": 12
+      },
+      "present_in_records": 12,
+      "absent_in_records": 0,
+      "occurrences": 12,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:9",
+       "stream.jsonl:12",
+       "stream.jsonl:15",
+       "stream.jsonl:19",
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:3",
+       "stream.jsonl:3",
+       "stream.jsonl:16",
+       "stream.jsonl:19"
+      ]
+     },
+     "step_update.conversation_id": {
+      "kinds": {
+       "string": 12
+      },
+      "present_in_records": 12,
+      "absent_in_records": 0,
+      "occurrences": 12,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:9",
+       "stream.jsonl:12",
+       "stream.jsonl:15",
+       "stream.jsonl:19",
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:3",
+       "stream.jsonl:3",
+       "stream.jsonl:16",
+       "stream.jsonl:19"
+      ]
+     },
+     "step_update.duration_seconds": {
+      "kinds": {
+       "decimal": 12
+      },
+      "present_in_records": 12,
+      "absent_in_records": 0,
+      "occurrences": 12,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:9",
+       "stream.jsonl:12",
+       "stream.jsonl:15",
+       "stream.jsonl:19",
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:3",
+       "stream.jsonl:3",
+       "stream.jsonl:16",
+       "stream.jsonl:19"
+      ]
+     },
+     "step_update.state": {
+      "kinds": {
+       "string": 12
+      },
+      "present_in_records": 12,
+      "absent_in_records": 0,
+      "occurrences": 12,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:9",
+       "stream.jsonl:12",
+       "stream.jsonl:15",
+       "stream.jsonl:19",
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:3",
+       "stream.jsonl:3",
+       "stream.jsonl:16",
+       "stream.jsonl:19"
+      ]
+     },
+     "step_update.step_index": {
+      "kinds": {
+       "integer": 12
+      },
+      "present_in_records": 12,
+      "absent_in_records": 0,
+      "occurrences": 12,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:9",
+       "stream.jsonl:12",
+       "stream.jsonl:15",
+       "stream.jsonl:19",
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:3",
+       "stream.jsonl:3",
+       "stream.jsonl:16",
+       "stream.jsonl:19"
+      ]
+     },
+     "step_update.step_type": {
+      "kinds": {
+       "string": 12
+      },
+      "present_in_records": 12,
+      "absent_in_records": 0,
+      "occurrences": 12,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:9",
+       "stream.jsonl:12",
+       "stream.jsonl:15",
+       "stream.jsonl:19",
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:3",
+       "stream.jsonl:3",
+       "stream.jsonl:16",
+       "stream.jsonl:19"
+      ]
+     },
+     "step_update.text_delta": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 6,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:19",
+       "stream.jsonl:16",
+       "stream.jsonl:19"
+      ]
+     },
+     "step_update.usage": {
+      "kinds": {
+       "object": 12
+      },
+      "present_in_records": 12,
+      "absent_in_records": 0,
+      "occurrences": 12,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:9",
+       "stream.jsonl:12",
+       "stream.jsonl:15",
+       "stream.jsonl:19",
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:3",
+       "stream.jsonl:3",
+       "stream.jsonl:16",
+       "stream.jsonl:19"
+      ]
+     },
+     "step_update.usage.cache_read_tokens": {
+      "kinds": {
+       "integer": 12
+      },
+      "present_in_records": 12,
+      "absent_in_records": 0,
+      "occurrences": 12,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:9",
+       "stream.jsonl:12",
+       "stream.jsonl:15",
+       "stream.jsonl:19",
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:3",
+       "stream.jsonl:3",
+       "stream.jsonl:16",
+       "stream.jsonl:19"
+      ]
+     },
+     "step_update.usage.input_tokens": {
+      "kinds": {
+       "integer": 12
+      },
+      "present_in_records": 12,
+      "absent_in_records": 0,
+      "occurrences": 12,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:9",
+       "stream.jsonl:12",
+       "stream.jsonl:15",
+       "stream.jsonl:19",
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:3",
+       "stream.jsonl:3",
+       "stream.jsonl:16",
+       "stream.jsonl:19"
+      ]
+     },
+     "step_update.usage.output_tokens": {
+      "kinds": {
+       "integer": 12
+      },
+      "present_in_records": 12,
+      "absent_in_records": 0,
+      "occurrences": 12,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:9",
+       "stream.jsonl:12",
+       "stream.jsonl:15",
+       "stream.jsonl:19",
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:3",
+       "stream.jsonl:3",
+       "stream.jsonl:16",
+       "stream.jsonl:19"
+      ]
+     },
+     "step_update.usage.thinking_tokens": {
+      "kinds": {
+       "integer": 12
+      },
+      "present_in_records": 12,
+      "absent_in_records": 0,
+      "occurrences": 12,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:9",
+       "stream.jsonl:12",
+       "stream.jsonl:15",
+       "stream.jsonl:19",
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:3",
+       "stream.jsonl:3",
+       "stream.jsonl:16",
+       "stream.jsonl:19"
+      ]
+     },
+     "step_update.usage.total_tokens": {
+      "kinds": {
+       "integer": 12
+      },
+      "present_in_records": 12,
+      "absent_in_records": 0,
+      "occurrences": 12,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:9",
+       "stream.jsonl:12",
+       "stream.jsonl:15",
+       "stream.jsonl:19",
+       "stream.jsonl:3",
+       "stream.jsonl:6",
+       "stream.jsonl:3",
+       "stream.jsonl:3",
+       "stream.jsonl:16",
+       "stream.jsonl:19"
+      ]
+     }
+    }
+   },
+   "step_update/subagent/DONE": {
+    "discriminators": {
+     "event": "step_update",
+     "step_update.step_type": "subagent",
+     "step_update.state": "DONE"
+    },
+    "records": 1,
+    "evidence": [
+     "stream.jsonl:5"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.conversation_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.duration_seconds": {
+      "kinds": {
+       "decimal": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.state": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.step_index": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.step_type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.subagent_info": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.subagent_info.subagents": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.subagent_info.subagents[]": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.subagent_info.subagents[].conversation_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.subagent_info.subagents[].initial_prompt": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.subagent_info.subagents[].log_uri": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.subagent_info.subagents[].role": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.subagent_info.subagents[].type_name": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.subagent_info.subagents[].workspace_uris": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.subagent_info.subagents[].workspace_uris[]": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.tool_name": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     }
+    }
+   },
+   "step_update/system_message/DONE": {
+    "discriminators": {
+     "event": "step_update",
+     "step_update.step_type": "system_message",
+     "step_update.state": "DONE"
+    },
+    "records": 1,
+    "evidence": [
+     "stream.jsonl:17"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:17"
+      ]
+     },
+     "step_update": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:17"
+      ]
+     },
+     "step_update.conversation_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:17"
+      ]
+     },
+     "step_update.duration_seconds": {
+      "kinds": {
+       "decimal": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:17"
+      ]
+     },
+     "step_update.state": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:17"
+      ]
+     },
+     "step_update.step_index": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:17"
+      ]
+     },
+     "step_update.step_type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:17"
+      ]
+     }
+    }
+   },
+   "step_update/tool/ACTIVE": {
+    "discriminators": {
+     "event": "step_update",
+     "step_update.step_type": "tool",
+     "step_update.state": "ACTIVE"
+    },
+    "records": 9,
+    "evidence": [
+     "stream.jsonl:4",
+     "stream.jsonl:7",
+     "stream.jsonl:10",
+     "stream.jsonl:13",
+     "stream.jsonl:16",
+     "stream.jsonl:4",
+     "stream.jsonl:7",
+     "stream.jsonl:4",
+     "stream.jsonl:4"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "string": 9
+      },
+      "present_in_records": 9,
+      "absent_in_records": 0,
+      "occurrences": 9,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:10",
+       "stream.jsonl:13",
+       "stream.jsonl:16",
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:4",
+       "stream.jsonl:4"
+      ]
+     },
+     "step_update": {
+      "kinds": {
+       "object": 9
+      },
+      "present_in_records": 9,
+      "absent_in_records": 0,
+      "occurrences": 9,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:10",
+       "stream.jsonl:13",
+       "stream.jsonl:16",
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:4",
+       "stream.jsonl:4"
+      ]
+     },
+     "step_update.conversation_id": {
+      "kinds": {
+       "string": 9
+      },
+      "present_in_records": 9,
+      "absent_in_records": 0,
+      "occurrences": 9,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:10",
+       "stream.jsonl:13",
+       "stream.jsonl:16",
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:4",
+       "stream.jsonl:4"
+      ]
+     },
+     "step_update.state": {
+      "kinds": {
+       "string": 9
+      },
+      "present_in_records": 9,
+      "absent_in_records": 0,
+      "occurrences": 9,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:10",
+       "stream.jsonl:13",
+       "stream.jsonl:16",
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:4",
+       "stream.jsonl:4"
+      ]
+     },
+     "step_update.step_index": {
+      "kinds": {
+       "integer": 9
+      },
+      "present_in_records": 9,
+      "absent_in_records": 0,
+      "occurrences": 9,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:10",
+       "stream.jsonl:13",
+       "stream.jsonl:16",
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:4",
+       "stream.jsonl:4"
+      ]
+     },
+     "step_update.step_type": {
+      "kinds": {
+       "string": 9
+      },
+      "present_in_records": 9,
+      "absent_in_records": 0,
+      "occurrences": 9,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:10",
+       "stream.jsonl:13",
+       "stream.jsonl:16",
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:4",
+       "stream.jsonl:4"
+      ]
+     },
+     "step_update.tool_info": {
+      "kinds": {
+       "object": 9
+      },
+      "present_in_records": 9,
+      "absent_in_records": 0,
+      "occurrences": 9,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:10",
+       "stream.jsonl:13",
+       "stream.jsonl:16",
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:4",
+       "stream.jsonl:4"
+      ]
+     },
+     "step_update.tool_info.name": {
+      "kinds": {
+       "string": 9
+      },
+      "present_in_records": 9,
+      "absent_in_records": 0,
+      "occurrences": 9,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:10",
+       "stream.jsonl:13",
+       "stream.jsonl:16",
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:4",
+       "stream.jsonl:4"
+      ]
+     },
+     "step_update.tool_info.parameters": {
+      "kinds": {
+       "object": 9
+      },
+      "present_in_records": 9,
+      "absent_in_records": 0,
+      "occurrences": 9,
+      "null": 0,
+      "empty": 0,
+      "distinct_data_keys": 2,
+      "evidence": [
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:10",
+       "stream.jsonl:13",
+       "stream.jsonl:16",
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:4",
+       "stream.jsonl:4"
+      ]
+     },
+     "step_update.tool_info.parameters.{*}": {
+      "kinds": {
+       "string": 10
+      },
+      "present_in_records": 9,
+      "absent_in_records": 0,
+      "occurrences": 10,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:10",
+       "stream.jsonl:13",
+       "stream.jsonl:16",
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:4",
+       "stream.jsonl:4"
+      ]
+     },
+     "step_update.tool_name": {
+      "kinds": {
+       "string": 9
+      },
+      "present_in_records": 9,
+      "absent_in_records": 0,
+      "occurrences": 9,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:10",
+       "stream.jsonl:13",
+       "stream.jsonl:16",
+       "stream.jsonl:4",
+       "stream.jsonl:7",
+       "stream.jsonl:4",
+       "stream.jsonl:4"
+      ]
+     }
+    }
+   },
+   "step_update/tool/DONE": {
+    "discriminators": {
+     "event": "step_update",
+     "step_update.step_type": "tool",
+     "step_update.state": "DONE"
+    },
+    "records": 6,
+    "evidence": [
+     "stream.jsonl:8",
+     "stream.jsonl:11",
+     "stream.jsonl:14",
+     "stream.jsonl:17",
+     "stream.jsonl:5",
+     "stream.jsonl:8"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:8",
+       "stream.jsonl:11",
+       "stream.jsonl:14",
+       "stream.jsonl:17",
+       "stream.jsonl:5",
+       "stream.jsonl:8"
+      ]
+     },
+     "step_update": {
+      "kinds": {
+       "object": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:8",
+       "stream.jsonl:11",
+       "stream.jsonl:14",
+       "stream.jsonl:17",
+       "stream.jsonl:5",
+       "stream.jsonl:8"
+      ]
+     },
+     "step_update.conversation_id": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:8",
+       "stream.jsonl:11",
+       "stream.jsonl:14",
+       "stream.jsonl:17",
+       "stream.jsonl:5",
+       "stream.jsonl:8"
+      ]
+     },
+     "step_update.duration_seconds": {
+      "kinds": {
+       "decimal": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:8",
+       "stream.jsonl:11",
+       "stream.jsonl:14",
+       "stream.jsonl:17",
+       "stream.jsonl:5",
+       "stream.jsonl:8"
+      ]
+     },
+     "step_update.state": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:8",
+       "stream.jsonl:11",
+       "stream.jsonl:14",
+       "stream.jsonl:17",
+       "stream.jsonl:5",
+       "stream.jsonl:8"
+      ]
+     },
+     "step_update.step_index": {
+      "kinds": {
+       "integer": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:8",
+       "stream.jsonl:11",
+       "stream.jsonl:14",
+       "stream.jsonl:17",
+       "stream.jsonl:5",
+       "stream.jsonl:8"
+      ]
+     },
+     "step_update.step_type": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:8",
+       "stream.jsonl:11",
+       "stream.jsonl:14",
+       "stream.jsonl:17",
+       "stream.jsonl:5",
+       "stream.jsonl:8"
+      ]
+     },
+     "step_update.tool_info": {
+      "kinds": {
+       "object": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:8",
+       "stream.jsonl:11",
+       "stream.jsonl:14",
+       "stream.jsonl:17",
+       "stream.jsonl:5",
+       "stream.jsonl:8"
+      ]
+     },
+     "step_update.tool_info.name": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:8",
+       "stream.jsonl:11",
+       "stream.jsonl:14",
+       "stream.jsonl:17",
+       "stream.jsonl:5",
+       "stream.jsonl:8"
+      ]
+     },
+     "step_update.tool_info.output": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 2,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:8",
+       "stream.jsonl:11",
+       "stream.jsonl:14",
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.tool_info.parameters": {
+      "kinds": {
+       "object": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "distinct_data_keys": 2,
+      "evidence": [
+       "stream.jsonl:8",
+       "stream.jsonl:11",
+       "stream.jsonl:14",
+       "stream.jsonl:17",
+       "stream.jsonl:5",
+       "stream.jsonl:8"
+      ]
+     },
+     "step_update.tool_info.parameters.{*}": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:8",
+       "stream.jsonl:11",
+       "stream.jsonl:14",
+       "stream.jsonl:17",
+       "stream.jsonl:5",
+       "stream.jsonl:8"
+      ]
+     },
+     "step_update.tool_name": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:8",
+       "stream.jsonl:11",
+       "stream.jsonl:14",
+       "stream.jsonl:17",
+       "stream.jsonl:5",
+       "stream.jsonl:8"
+      ]
+     }
+    }
+   },
+   "step_update/tool/ERROR": {
+    "discriminators": {
+     "event": "step_update",
+     "step_update.step_type": "tool",
+     "step_update.state": "ERROR"
+    },
+    "records": 1,
+    "evidence": [
+     "stream.jsonl:5"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.conversation_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.duration_seconds": {
+      "kinds": {
+       "decimal": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.state": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.step_index": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.step_type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.tool_info": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.tool_info.error": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.tool_info.error.message": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.tool_info.error.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.tool_info.name": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.tool_info.parameters": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "distinct_data_keys": 1,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.tool_info.parameters.{*}": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     },
+     "step_update.tool_name": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:5"
+      ]
+     }
+    }
+   },
+   "step_update/user_input/DONE": {
+    "discriminators": {
+     "event": "step_update",
+     "step_update.step_type": "user_input",
+     "step_update.state": "DONE"
+    },
+    "records": 4,
+    "evidence": [
+     "stream.jsonl:2",
+     "stream.jsonl:2",
+     "stream.jsonl:2",
+     "stream.jsonl:2"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:2",
+       "stream.jsonl:2",
+       "stream.jsonl:2",
+       "stream.jsonl:2"
+      ]
+     },
+     "step_update": {
+      "kinds": {
+       "object": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:2",
+       "stream.jsonl:2",
+       "stream.jsonl:2",
+       "stream.jsonl:2"
+      ]
+     },
+     "step_update.conversation_id": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:2",
+       "stream.jsonl:2",
+       "stream.jsonl:2",
+       "stream.jsonl:2"
+      ]
+     },
+     "step_update.state": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:2",
+       "stream.jsonl:2",
+       "stream.jsonl:2",
+       "stream.jsonl:2"
+      ]
+     },
+     "step_update.step_index": {
+      "kinds": {
+       "integer": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:2",
+       "stream.jsonl:2",
+       "stream.jsonl:2",
+       "stream.jsonl:2"
+      ]
+     },
+     "step_update.step_type": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:2",
+       "stream.jsonl:2",
+       "stream.jsonl:2",
+       "stream.jsonl:2"
+      ]
+     }
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,111 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "agy-soft-denied-command-live",
+  "concept": "tool-result-error-and-status",
+  "description": "SANITIZED LIVE RECORDING (Antigravity CLI 1.4.6, default request-review mode): headless mode soft-denied the command permission. The run_command step (index 4) became ACTIVE, then DONE with neither output nor error: DONE is a lifecycle state, so the outcome is not derivable, and the call is not a success. The result reports SUCCESS for the run and one denied_actions entry {action: command, display_name: RunCommand}, which names a permission category, never a step: one Denied decision at Run scope, Unattributed, with no candidates.",
+  "authored_from": [
+    "agy-headless-docs-2026-10-23",
+    "agy-live-1.4.6-recordings",
+    "agy-permissions-docs-2026-10-23",
+    "agy-changelog-1.4.6"
+  ],
+  "native": {
+    "evidence_kind": "live",
+    "profile": "agy_stream",
+    "compatibility_entry": "antigravity-cli/stream-json/1.4.6-stdout",
+    "fixture": "antigravity-live-1.4.6-denial",
+    "artifact": "stream.jsonl",
+    "sha256": "2ba182de66186317e245e71c18351a46f4c0b0a6bd58eaa6dba0114d24110894"
+  },
+  "expected": [
+    {
+      "record": 7,
+      "class": "tool_call",
+      "activity_id": 4,
+      "values": {
+        "/tool_call_uid": "4",
+        "/identity_basis_id": 99,
+        "/identity_basis": "Conversation step index",
+        "/tool_name": "run_command",
+        "/tool_kind_id": 6,
+        "/arguments": {
+          "CommandLine": "cat src/b.txt"
+        },
+        "/reported_state": "ACTIVE"
+      },
+      "absent": [
+        "/response_uid",
+        "/permission_decision"
+      ]
+    },
+    {
+      "record": 8,
+      "class": "tool_call",
+      "activity_id": 2,
+      "values": {
+        "/tool_call_uid": "4",
+        "/identity_basis_id": 99,
+        "/reported_state": "DONE",
+        "/status_id": 0,
+        "/status_basis_id": 3
+      },
+      "absent": [
+        "/tool_result",
+        "/permission_decision"
+      ]
+    },
+    {
+      "record": 9,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/status_id": 1,
+        "/content_blocks/0/text": "",
+        "/permission_decisions/0/decision_id": 2,
+        "/permission_decisions/0/reported_decision": "denied",
+        "/permission_decisions/0/scope_id": 4,
+        "/permission_decisions/0/attribution/outcome_id": 3,
+        "/permission_decisions/0/attribution/method_id": 2,
+        "/permission_decisions/0/attribution/candidates": []
+      },
+      "absent": [
+        "/permission_decisions/1"
+      ]
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "denied-command-as-success",
+      "record": 8,
+      "class": "tool_call",
+      "activity_id": 2,
+      "values": {
+        "/status_id": 1
+      },
+      "why": "DONE is a lifecycle state; the command was soft-denied and never ran, so no success is established."
+    },
+    {
+      "id": "denial-attributed-to-the-command-step",
+      "record": 9,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/permission_decisions/0/attribution/candidates": [
+          "4"
+        ]
+      },
+      "why": "The entry names a permission category and a display name, never a step; linking it to step 4 by name or position would invent an association."
+    },
+    {
+      "id": "denial-on-the-tool-call",
+      "record": 8,
+      "class": "tool_call",
+      "activity_id": 2,
+      "values": {
+        "/permission_decision/decision_id": 2
+      },
+      "why": "The run-scope denial is reported on the result record; the step reports no decision."
+    }
+  ]
+}

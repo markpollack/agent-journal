@@ -1,0 +1,44 @@
+{
+ "kind": "agent-journal/fixture-provenance",
+ "fixture": "antigravity-live-1.4.6-subagent",
+ "origin": "SANITIZED REAL LIVE RECORDING (not synthetic)",
+ "evidence_class": "recorded replay of a live stream; the live capture itself (unsanitized) is private steward evidence under plans/evidence/2026-10-23-antigravity-onboarding/",
+ "cli": "Antigravity CLI",
+ "cli_version": "1.4.6",
+ "cli_version_basis": "discovered once per run by the documented adapter path `agy --version` before launch, because the stream-json output reports no version; the native session file was not consulted",
+ "mode_and_route": "CliCapture launch (opt-in integration): raw stdout, independent byte copy, flush per record",
+ "capture_command": [
+  "agy",
+  "--print",
+  "Use your subagent tool to delegate this task to one subagent: read the file src/a.txt and report its exact content. Wait for the subagent to finish, then reply with one line: the content it reported.",
+  "--output-format",
+  "stream-json",
+  "--dangerously-skip-permissions"
+ ],
+ "scenario": "always-proceed mode: an invoke_subagent tool step whose DONE record has step_type subagent and subagent_info naming the child conversation, streamed answer fragments over two agent-response steps, an undocumented system_message step; normal completion",
+ "live_run": "L4-subagent-1",
+ "live_process": {
+  "pid": 2972520,
+  "started": "2026-10-23T21:21:37.981251612Z",
+  "ended": "2026-10-23T21:22:01.687270321Z",
+  "how": "exited",
+  "exit_code": 0,
+  "exit_meaning": "0: the CLI reported success",
+  "stdout": "closed: EOF reached",
+  "stderr_bytes": 0,
+  "meaning": "the CLI process outcome; distinct from storage finalization (recording.state) and acquisition extent (acquisition.status): EOF never implies success"
+ },
+ "original_sha256": "8088a9d45bb9498245559a87292abe82c362f1f6f4c835f74184b66df2493f94",
+ "original_bytes": 6487,
+ "sanitized_sha256": "a6bf3491764bbf7e80f176c5a4702c8017aaeb3a911a822bcf2aa2ed724cfaed",
+ "sanitized_bytes": 5842,
+ "records": 20,
+ "sanitization": [
+  "local paths split across a step's text_delta fragments -> /work or /home/user in the joined text, the replacement in the fragment where the match starts (later fragments of the match shortened, possibly to \"\")",
+  "conversation id of the run -> stand-in 00000000-0000-4000-8000-000000000200",
+  "conversation id of a spawned subagent -> stand-in 00000000-0000-4000-8000-000000000211",
+  "task directory path -> /work",
+  "home directory -> /home/user"
+ ],
+ "privacy_review": "local paths (task directory, session scratch, home directory) and conversation ids (the run and any spawned subagent) replaced by text substitution on the raw bytes; tool names, step indexes, token counts, durations and the built-in tool list kept; prompt text is the deliberate synthetic task; reviewed 2026-10-23"
+}

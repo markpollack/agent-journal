@@ -1,0 +1,114 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "agy-text-delta-step-item-live",
+  "concept": "response-update-assembly",
+  "description": "SANITIZED LIVE RECORDING (Antigravity CLI 1.4.6, always-proceed mode): the answer streams as text_delta fragments of agent-response step 11. The ACTIVE record is a Partial view of that step item with its fragment \"4\"; the DONE record completes the item with its last fragment and the step's own usage; the result carries the turn's whole response \"4\\n\" and the session's cumulative usage. The step index is the item's identity (99, Conversation step index), never a provider response id; whether input includes cache reads and whether thinking is part of output are not stated, so no uncached tranche and no reasoning relation is written.",
+  "authored_from": [
+    "agy-headless-docs-2026-10-23",
+    "agy-live-1.4.6-recordings"
+  ],
+  "native": {
+    "evidence_kind": "live",
+    "profile": "agy_stream",
+    "compatibility_entry": "antigravity-cli/stream-json/1.4.6-stdout",
+    "fixture": "antigravity-live-1.4.6-features",
+    "artifact": "stream.jsonl",
+    "sha256": "8448827293f3b21a37dde7077dd53dd6da1777760808b375bd1c132c9fd06261"
+  },
+  "expected": [
+    {
+      "record": 18,
+      "class": "model_response",
+      "activity_id": 1,
+      "values": {
+        "/item_uid": "11",
+        "/identity_basis_id": 99,
+        "/identity_basis": "Conversation step index",
+        "/content_blocks/0/block_type": "text_delta",
+        "/content_blocks/0/text": "4",
+        "/content_blocks/0/data": "4"
+      },
+      "absent": [
+        "/response_uid",
+        "/usage_observations"
+      ]
+    },
+    {
+      "record": 19,
+      "class": "model_response",
+      "activity_id": 3,
+      "values": {
+        "/item_uid": "11",
+        "/content_blocks/0/data": "\n",
+        "/usage_observations/0/scope_id": 2,
+        "/usage_observations/0/usage_status_id": 2,
+        "/usage_observations/0/output_tokens": 47,
+        "/usage_observations/0/reasoning_tokens": 42,
+        "/usage_observations/0/cache_read_tokens": 6015
+      },
+      "absent": [
+        "/response_uid",
+        "/usage_observations/0/uncached_input_tokens",
+        "/usage_observations/0/reasoning_relation_id"
+      ]
+    },
+    {
+      "record": 20,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/status_id": 1,
+        "/content_blocks/0/text": "4\n",
+        "/usage_observations/0/scope_id": 5,
+        "/usage_observations/0/aggregation_id": 2,
+        "/usage_observations/0/output_tokens": 977
+      },
+      "absent": [
+        "/usage_observations/0/uncached_input_tokens"
+      ]
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "step-index-as-provider-response-id",
+      "record": 18,
+      "class": "model_response",
+      "activity_id": 1,
+      "values": {
+        "/response_uid": "11"
+      },
+      "why": "The step index belongs to the conversation; the provider's response identifier is not reported."
+    },
+    {
+      "id": "input-as-uncached-tranche",
+      "record": 19,
+      "class": "model_response",
+      "activity_id": 3,
+      "values": {
+        "/usage_observations/0/uncached_input_tokens": 2425
+      },
+      "why": "No published source states whether input_tokens includes cache_read_tokens."
+    },
+    {
+      "id": "thinking-inside-output",
+      "record": 19,
+      "class": "model_response",
+      "activity_id": 3,
+      "values": {
+        "/usage_observations/0/reasoning_relation_id": 1
+      },
+      "why": "No published source states whether thinking_tokens is part of output_tokens."
+    },
+    {
+      "id": "session-usage-as-turn-scope",
+      "record": 20,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/scope_id": 3
+      },
+      "why": "The result's usage is documented as cumulative over the session, not the turn's."
+    }
+  ]
+}

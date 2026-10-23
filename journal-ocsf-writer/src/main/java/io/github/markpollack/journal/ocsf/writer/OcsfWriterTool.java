@@ -38,7 +38,7 @@ public final class OcsfWriterTool {
         if (args.length < 3 || !"replay".equals(args[0])) {
             System.err.println("usage: replay <spec.json> <out-dir> [--chunk N] [--flush-every N] [--base DIR] [--stop-after ARTIFACT:RECORDS]");
             System.err.println("       capture <spec.json> <out-dir> [--artifact NAME] [--profile PROFILE] [--route ROUTE] [--surface TEXT] [--flush-every N] [--interrupt-flag FILE]  (stdin: the live stream)");
-            System.err.println("       launch <out-dir> --cli claude|codex --prompt TEXT --cwd DIR [--run-uid X] [--model M] [--allowed-tools A,B] [--sandbox MODE] [--executable PATH] [--home DIR] [--cancel-after-records N] [--cancel-after-ms N] [--arg EXTRA]...  (launches the CLI itself)");
+            System.err.println("       launch <out-dir> --cli claude|codex|antigravity --prompt TEXT --cwd DIR [--run-uid X] [--model M] [--allowed-tools A,B] [--sandbox MODE] [--executable PATH] [--home DIR] [--cancel-after-records N] [--cancel-after-ms N] [--arg EXTRA]...  (launches the CLI itself)");
             System.exit(64);
         }
         int chunk = 4096;

@@ -33,7 +33,7 @@ import java.util.stream.Stream;
  * the process outcome, cancellation, input failure and persistence failure into the recording lifecycle, archives the
  * CLI's native session file unchanged beside the package, and freezes the expected-source manifest from the
  * independent copy after acquisition. Defaults of the production recorders are untouched; this is the intended
- * stream-first path for Claude Code and Codex behind an explicit launch.
+ * stream-first path for Claude Code, Codex and Antigravity behind an explicit launch.
  *
  * <p>Three facts stay distinct in the result and in the package: storage finalization ({@code COMPLETED},
  * {@code INTERRUPTED}, {@code FAILED}), acquisition extent (every byte to EOF, or an interrupted prefix, with the
@@ -42,25 +42,32 @@ import java.util.stream.Stream;
  * non-zero after a complete stream is a completely acquired failed run.
  *
  * <p>Version policy (RULE-7, RULE-8): Claude Code's stream reports its version, so none is given at launch and no
- * version command runs; Codex's {@code exec --json} stream reports none, so the documented discovery path
- * {@code codex --version} runs exactly once per run before launch and its basis is declared. The native session
+ * version command runs; Codex's {@code exec --json} stream and Antigravity's stream-json output report none, so the documented discovery path
+ * ({@code codex --version}, {@code agy --version}) runs exactly once per run before launch and its basis is declared. The native session
  * file is located by the session id the stream reported and copied by bytes with its hash; it is never opened,
  * parsed or used for enrichment or version discovery (RULE-4, RULE-5).
  */
 public final class CliCapture {
 
     public enum Cli {
-        CLAUDE("Claude Code", "Anthropic", "claude_stream"),
-        CODEX("Codex CLI", "OpenAI", "codex_stream");
+        CLAUDE("Claude Code", "Anthropic", "claude_stream", "claude", null),
+        CODEX("Codex CLI", "OpenAI", "codex_stream", "codex", Pattern.compile("codex(?:-cli)?\\s+v?(\\d+(?:\\.\\d+)+)")),
+        /** Antigravity CLI ({@code agy}): its stream-json output reports no version, and {@code agy --version} prints the bare number. */
+        ANTIGRAVITY("Antigravity CLI", "Google", "agy_stream", "agy", Pattern.compile("(?m)^\\s*v?(\\d+(?:\\.\\d+)+)\\s*$"));
 
         final String product;
         final String vendor;
         final String profile;
+        final String executable;
+        /** How the once-per-run version command's output states the version, or {@code null} when the stream reports it. */
+        final Pattern versionPattern;
 
-        Cli(String product, String vendor, String profile) {
+        Cli(String product, String vendor, String profile, String executable, Pattern versionPattern) {
             this.product = product;
             this.vendor = vendor;
             this.profile = profile;
+            this.executable = executable;
+            this.versionPattern = versionPattern;
         }
     }
 
@@ -106,7 +113,6 @@ public final class CliCapture {
         }
     }
 
-    static final Pattern CODEX_VERSION = Pattern.compile("codex(?:-cli)?\\s+v?(\\d+(?:\\.\\d+)+)");
     /** How often supervision looks at the clock and the process while standard output is open. */
     static final long POLL_MILLIS = 20;
     /** How often the CLI's descendants are noted while it is alive, so they can be cleaned up once it is gone. */
@@ -179,6 +185,17 @@ public final class CliCapture {
         return c;
     }
 
+    /** The Antigravity CLI headless streaming invocation: print mode with stream-json output; the prompt is the print flag's value. */
+    public static List<String> antigravityCommand(String executable, String prompt, String model, List<String> extra) {
+        List<String> c = new ArrayList<>(List.of(executable, "--print", prompt, "--output-format", "stream-json"));
+        if (model != null) {
+            c.add("--model");
+            c.add(model);
+        }
+        c.addAll(extra == null ? List.of() : extra);
+        return c;
+    }
+
     /** The Codex streaming invocation. */
     public static List<String> codexCommand(String executable, String prompt, String model, String sandbox, Path workDir, List<String> extra) {
         List<String> c = new ArrayList<>(List.of(executable, "exec", "--json", "--skip-git-repo-check"));
@@ -211,14 +228,14 @@ public final class CliCapture {
         Path copyFile = out.resolve("native").resolve("stream.jsonl");
         Path stderrFile = out.resolve("native").resolve("stderr.txt");
 
-        // version: Claude's stream reports it (none at launch); Codex's does not: the documented discovery path runs once
+        // version: Claude's stream reports it (none at launch); Codex's and Antigravity's do not: the documented discovery path runs once
         String version = null;
         String versionBasis = null;
-        if (launch.cli() == Cli.CODEX) {
+        if (launch.cli().versionPattern != null) {
             List<String> vc = launch.versionCommand() != null ? launch.versionCommand() : List.of(launch.command().get(0), "--version");
-            version = discoverVersion(vc, limits.versionProbeTimeout());
+            version = discoverVersion(vc, limits.versionProbeTimeout(), launch.cli().versionPattern);
             versionBasis = "discovered once per run by the documented adapter path `" + String.join(" ", vc)
-                    + "` before launch, because the exec --json stream reports no version; the native session file was not consulted";
+                    + "` before launch, because " + (launch.cli() == Cli.CODEX ? "the exec --json stream" : "the stream-json output") + " reports no version; the native session file was not consulted";
         }
         Instant captureStart = clock.instant();
         Jv.Obj settings = new Jv.Obj().put("command", Jv.arr(launch.command().toArray(String[]::new))).put("cwd", launch.workDir().toString())
@@ -563,7 +580,7 @@ public final class CliCapture {
      * Runs the discovery command once, bounded, and parses its version; the command's own output is the basis. A
      * probe that has not ended within the bound is killed and reported as a failure, never waited for.
      */
-    static String discoverVersion(List<String> command, Duration timeout) throws IOException {
+    static String discoverVersion(List<String> command, Duration timeout, Pattern versionPattern) throws IOException {
         ProcessBuilder pb = new ProcessBuilder(command).redirectErrorStream(true).redirectInput(ProcessBuilder.Redirect.from(devNull()));
         Process p = pb.start();
         java.io.ByteArrayOutputStream collected = new java.io.ByteArrayOutputStream();
@@ -595,7 +612,7 @@ public final class CliCapture {
             throw new IOException(what + " was interrupted", e);
         }
         String text = collected.toString(StandardCharsets.UTF_8);
-        Matcher m = CODEX_VERSION.matcher(text);
+        Matcher m = versionPattern.matcher(text);
         if (!m.find()) {
             throw new IOException("version discovery `" + String.join(" ", command) + "` printed no recognizable version: " + text.strip());
         }
@@ -614,26 +631,7 @@ public final class CliCapture {
         List<Path> candidates = new ArrayList<>();
         List<String> searched = new ArrayList<>();
         Path home = launch.home() != null ? launch.home() : Path.of(System.getProperty("user.home"));
-        if (launch.cli() == Cli.CLAUDE) {
-            String absolute = launch.workDir().toAbsolutePath().normalize().toString();
-            for (String enc : List.of(absolute.replace('/', '-'), absolute.replace('/', '-').replace('.', '-'))) {
-                Path f = home.resolve(".claude").resolve("projects").resolve(enc).resolve(sessionUid + ".jsonl");
-                searched.add(f.toString());
-                if (Files.isRegularFile(f) && !candidates.contains(f)) {
-                    candidates.add(f);
-                }
-            }
-        }
-        else {
-            Path sessions = home.resolve(".codex").resolve("sessions");
-            searched.add(sessions + "/**/rollout-*-" + sessionUid + ".jsonl");
-            if (Files.isDirectory(sessions)) {
-                try (Stream<Path> s = Files.walk(sessions)) {
-                    s.filter(f -> Files.isRegularFile(f) && f.getFileName().toString().startsWith("rollout-") && f.getFileName().toString().endsWith("-" + sessionUid + ".jsonl"))
-                            .forEach(candidates::add);
-                }
-            }
-        }
+        locate(home, sessionUid, searched, candidates);
         a.put("session_uid", sessionUid).put("searched", Jv.arr(searched.toArray(String[]::new)));
         if (candidates.isEmpty()) {
             return a.put("status", "not located").put("detail", "no native session file for this session id under " + home + "; reported separately from stream acquisition");
@@ -644,8 +642,64 @@ public final class CliCapture {
         byte[] data = Files.readAllBytes(target);
         String sha = sha256(data);
         Files.writeString(archiveDir.resolve(source.getFileName() + ".sha256"), sha + "  " + source.getFileName() + "\n", StandardCharsets.UTF_8);
-        return a.put("status", "archived").put("artifact", target.getFileName().toString()).put("located_at", source.toString()).put("bytes", data.length).put("sha256", sha)
-                .put("located_by", launch.cli() == Cli.CLAUDE ? "the session id the stream reported, under <home>/.claude/projects/<encoded cwd>/" : "the thread id the stream reported, matched against <home>/.codex/sessions/**/rollout-*-<thread>.jsonl");
+        a.put("status", "archived").put("artifact", target.getFileName().toString()).put("located_at", source.toString()).put("bytes", data.length).put("sha256", sha)
+                .put("located_by", switch (launch.cli()) {
+                    case CLAUDE -> "the session id the stream reported, under <home>/.claude/projects/<encoded cwd>/";
+                    case CODEX -> "the thread id the stream reported, matched against <home>/.codex/sessions/**/rollout-*-<thread>.jsonl";
+                    case ANTIGRAVITY -> "the conversation id the stream reported, as <home>/.gemini/antigravity-cli/conversations/<conversation>.db (the conversation's SQLite store, copied by bytes)";
+                });
+        return launch.cli() == Cli.ANTIGRAVITY ? a.put("sidecars", sqliteSidecars(source, archiveDir)) : a;
+    }
+
+    /** Adds the native session file paths searched for this CLI and the existing ones among them. */
+    private void locate(Path home, String sessionUid, List<String> searched, List<Path> candidates) throws IOException {
+        switch (launch.cli()) {
+            case CLAUDE -> {
+                String absolute = launch.workDir().toAbsolutePath().normalize().toString();
+                for (String enc : List.of(absolute.replace('/', '-'), absolute.replace('/', '-').replace('.', '-'))) {
+                    Path f = home.resolve(".claude").resolve("projects").resolve(enc).resolve(sessionUid + ".jsonl");
+                    searched.add(f.toString());
+                    if (Files.isRegularFile(f) && !candidates.contains(f)) {
+                        candidates.add(f);
+                    }
+                }
+            }
+            case ANTIGRAVITY -> {
+                Path f = home.resolve(".gemini").resolve("antigravity-cli").resolve("conversations").resolve(sessionUid + ".db");
+                searched.add(f.toString());
+                if (Files.isRegularFile(f)) {
+                    candidates.add(f);
+                }
+            }
+            case CODEX -> {
+                Path sessions = home.resolve(".codex").resolve("sessions");
+                searched.add(sessions + "/**/rollout-*-" + sessionUid + ".jsonl");
+                if (Files.isDirectory(sessions)) {
+                    try (Stream<Path> s = Files.walk(sessions)) {
+                        s.filter(f -> Files.isRegularFile(f) && f.getFileName().toString().startsWith("rollout-") && f.getFileName().toString().endsWith("-" + sessionUid + ".jsonl"))
+                                .forEach(candidates::add);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * A SQLite write-ahead log or shared-memory file beside an Antigravity conversation store belongs to it: each present
+     * is copied by bytes too, so the archive is not missing committed pages.
+     */
+    private static Jv.Arr sqliteSidecars(Path source, Path archiveDir) throws IOException {
+        Jv.Arr sidecars = new Jv.Arr();
+        for (String suffix : List.of("-wal", "-shm")) {
+            Path side = source.resolveSibling(source.getFileName() + suffix);
+            if (Files.isRegularFile(side)) {
+                Path copy = archiveDir.resolve(side.getFileName().toString());
+                Files.copy(side, copy, StandardCopyOption.REPLACE_EXISTING);
+                byte[] sideData = Files.readAllBytes(copy);
+                sidecars.add(new Jv.Obj().put("artifact", copy.getFileName().toString()).put("bytes", sideData.length).put("sha256", sha256(sideData)));
+            }
+        }
+        return sidecars;
     }
 
     /**
@@ -715,14 +769,14 @@ public final class CliCapture {
 
     /**
      * <pre>
-     *   launch &lt;out-dir&gt; --cli claude|codex --prompt TEXT --cwd DIR [--run-uid X] [--model M] [--allowed-tools A,B] [--sandbox MODE]
+     *   launch &lt;out-dir&gt; --cli claude|codex|antigravity --prompt TEXT --cwd DIR [--run-uid X] [--model M] [--allowed-tools A,B] [--sandbox MODE]
      *          [--executable PATH] [--home DIR] [--cancel-after-records N] [--cancel-after-ms N] [--arg EXTRA]...
      * </pre>
      * Prints the three facts and exits 0 on COMPLETED or INTERRUPTED (the package is honest either way), 1 on FAILED.
      */
     static int main(String[] args, java.io.PrintStream out, java.io.PrintStream err) throws IOException {
         if (args.length < 2) {
-            err.println("usage: launch <out-dir> --cli claude|codex --prompt TEXT --cwd DIR [--run-uid X] [--model M] [--allowed-tools A,B] [--sandbox MODE] [--executable PATH] [--home DIR] [--cancel-after-records N] [--cancel-after-ms N] [--arg EXTRA]...");
+            err.println("usage: launch <out-dir> --cli claude|codex|antigravity --prompt TEXT --cwd DIR [--run-uid X] [--model M] [--allowed-tools A,B] [--sandbox MODE] [--executable PATH] [--home DIR] [--cancel-after-records N] [--cancel-after-ms N] [--arg EXTRA]...");
             return 64;
         }
         Path outDir = Path.of(args[1]);
@@ -755,14 +809,23 @@ public final class CliCapture {
             err.println("--cli, --prompt and --cwd are required");
             return 64;
         }
-        Cli cli = "claude".equals(cliName) ? Cli.CLAUDE : "codex".equals(cliName) ? Cli.CODEX : null;
+        Cli cli = switch (cliName) {
+            case "claude" -> Cli.CLAUDE;
+            case "codex" -> Cli.CODEX;
+            case "antigravity", "agy" -> Cli.ANTIGRAVITY;
+            default -> null;
+        };
         if (cli == null) {
-            err.println("--cli must be claude or codex");
+            err.println("--cli must be claude, codex or antigravity");
             return 64;
         }
         Path workDir = Path.of(cwd).toAbsolutePath().normalize();
-        String exe = executable != null ? executable : cli == Cli.CLAUDE ? "claude" : "codex";
-        List<String> command = cli == Cli.CLAUDE ? claudeCommand(exe, prompt, model, allowed, extra) : codexCommand(exe, prompt, model, sandbox, workDir, extra);
+        String exe = executable != null ? executable : cli.executable;
+        List<String> command = switch (cli) {
+            case CLAUDE -> claudeCommand(exe, prompt, model, allowed, extra);
+            case CODEX -> codexCommand(exe, prompt, model, sandbox, workDir, extra);
+            case ANTIGRAVITY -> antigravityCommand(exe, prompt, model, extra);
+        };
         Jv.Obj notes = new Jv.Obj();
         if (model != null) {
             notes.put("model_requested", model);

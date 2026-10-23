@@ -35,6 +35,11 @@ import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_C
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_DENIAL;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_FEATURES;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.UNTESTED;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_DENIAL;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_FEATURES;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_INTERRUPT_OPEN;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_SUBAGENT;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.agyStream;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStream;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStreamStdout;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeTranscript;
@@ -74,6 +79,10 @@ class PublicFixtureRegenerationTest {
         write(LIVE_CODEX_COLLAB_WAIT, List.of(codexStream()), List.of("stream.jsonl"));
         writeCancelled(LIVE_CODEX_INTERRUPT_OPEN, codexStream());
         write(LIVE_CODEX_SANDBOX_REFUSAL, List.of(codexStream()), List.of("stream.jsonl"));
+        write(LIVE_AGY_FEATURES, List.of(agyStream()), List.of("stream.jsonl"));
+        write(LIVE_AGY_DENIAL, List.of(agyStream()), List.of("stream.jsonl"));
+        writeCancelled(LIVE_AGY_INTERRUPT_OPEN, agyStream());
+        write(LIVE_AGY_SUBAGENT, List.of(agyStream()), List.of("stream.jsonl"));
     }
 
     /**

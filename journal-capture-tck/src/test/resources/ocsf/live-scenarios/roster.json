@@ -106,6 +106,25 @@
     }
    ],
    "basis": "0.160.1-vendor-inventory.json: commands, file changes, MCP, web search, todo lists, reasoning summaries and agent messages are declared; LIVE-05 only as a declined command status (approval requests are not projected); LIVE-07 only as collab tool calls, which need the multi-agent feature; no cost (LIVE-09 covers usage and reasoning only)"
+  },
+  {
+   "route": "antigravity-cli/stream-json/1.4.6-stdout",
+   "applicable": [
+    "LIVE-01",
+    "LIVE-02",
+    "LIVE-03",
+    "LIVE-04",
+    "LIVE-05",
+    "LIVE-07",
+    "LIVE-08",
+    "LIVE-09"
+   ],
+   "conditional": [
+    "LIVE-06",
+    "LIVE-10"
+   ],
+   "not_applicable": [],
+   "basis": "1.4.6-vendor-inventory.json (headless documentation, CHANGELOG at 1.4.6, the 1.4.6 recordings): agent-response text deltas, tool steps with parameters, output or error, run-scope denied_actions in request-review mode, subagent spawns (subagent_info), step and session usage; LIVE-06 needs a configured MCP server (call_mcp_tool is advertised; none is configured on this host); LIVE-10 has no documented media or redacted content member (rich tool payloads stay tool data); no cost (LIVE-09 covers usage only)"
   }
  ]
 }
