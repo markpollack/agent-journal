@@ -358,7 +358,7 @@ final class CatalogCoverage {
                     n += occurrences(SchemaCatalog.text(c, "scenario"), route, natives, expected);
                 }
             }
-            return "unsupported (vendor-supported " + String.join(", ", supported) + "; retained whole, not normalized; "
+            return "unsupported (vendor-supported " + String.join(", ", supported) + "; not normalized for this concept (a family may be normalized for another); "
                     + (n > 0 ? n + " occurrence(s) on this recording" : "no occurrence on this recording") + ")";
         }
         if (!claims.isEmpty() && claims.stream().allMatch(n -> "absent".equals(SchemaCatalog.text(n, "availability")))) {

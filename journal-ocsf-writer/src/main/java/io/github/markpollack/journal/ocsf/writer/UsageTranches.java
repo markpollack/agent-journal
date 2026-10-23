@@ -116,17 +116,27 @@ final class UsageTranches {
         finish(into, r.components());
     }
 
+    static final String AGY_UNCACHED = "agy.usage.uncached_input.v1: input_tokens excludes cache reads (cache_read_tokens exceeds input_tokens on 9 of the "
+            + "16 usage objects of the 1.4.6 recordings and in the headless documentation's own example, input 278 with cache_read 30214, which "
+            + "inclusion would make impossible); it is the uncached input only if it includes no cache writes, which the stream never reports, "
+            + "so it is this component's conditional value, never the canonical tranche";
+
     /**
      * An Antigravity usage object (step and result usage of the headless stream): cache reads, output, thinking (as
-     * reasoning) and the reported total are copied; the uncached tranche is unavailable because no published source states
-     * whether input_tokens includes cache_read_tokens, and no reasoning relation is written because none states whether
-     * thinking_tokens is part of output_tokens (agy.usage.tranches.v1).
+     * reasoning) and the reported total are copied; input_tokens, which excludes cache reads, is the uncached tranche only
+     * if it holds no cache writes, which the stream does not report, so it is kept as the component's conditional value
+     * (agy.usage.uncached_input.v1); no reasoning relation is written because no source states whether thinking_tokens is
+     * part of output_tokens (agy.usage.tranches.v1).
      */
     static void antigravity(Jv.Obj into, Jv usage) {
         Jv.Arr components = new Jv.Arr();
-        if (usage != null && (usage.member("input_tokens") != null || usage.member("cache_read_tokens") != null)) {
-            components.add(component("uncached_input_tokens", 3, List.of("/input_tokens", "/cache_read_tokens"),
-                    "agy.usage.tranches.v1: neither the headless documentation nor a published type states whether input_tokens includes cache_read_tokens; not copied as the uncached tranche"));
+        Jv input = usage == null ? null : usage.member("input_tokens");
+        if (input != null) {
+            Jv.Obj c = component("uncached_input_tokens", 3, List.of("/input_tokens"), AGY_UNCACHED);
+            if (isIntegral(input)) {
+                measured(c, 3, input);
+            }
+            components.add(c);
         }
         reported(into, components, usage, "", "cache_read_tokens", "cache_read_tokens");
         reported(into, components, usage, "", "output_tokens", "output_tokens");

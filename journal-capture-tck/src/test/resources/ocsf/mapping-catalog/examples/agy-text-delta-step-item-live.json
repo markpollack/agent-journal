@@ -3,7 +3,7 @@
   "format_version": "0.1",
   "id": "agy-text-delta-step-item-live",
   "concept": "response-update-assembly",
-  "description": "SANITIZED LIVE RECORDING (Antigravity CLI 1.4.6, always-proceed mode): the answer streams as text_delta fragments of agent-response step 11. The ACTIVE record is a Partial view of that step item with its fragment \"4\"; the DONE record completes the item with its last fragment and the step's own usage; the result carries the turn's whole response \"4\\n\" and the session's cumulative usage. The step index is the item's identity (99, Conversation step index), never a provider response id; whether input includes cache reads and whether thinking is part of output are not stated, so no uncached tranche and no reasoning relation is written.",
+  "description": "SANITIZED LIVE RECORDING (Antigravity CLI 1.4.6, always-proceed mode): the answer streams as text_delta fragments of agent-response step 11. The ACTIVE record is a Partial view of that step item with its fragment \"4\"; the DONE record completes the item with its last fragment and the step's own usage; the result carries the turn's whole response \"4\\n\" and the session's cumulative usage. The step index is the item's identity (99, Conversation step index), never a provider response id; input_tokens cannot include cache reads (6015 cache reads against 2425 input on this step), but no cache writes are reported, so it is only the uncached component's conditional value, never the canonical tranche; whether thinking is part of output is not stated, so no reasoning relation is written.",
   "authored_from": [
     "agy-headless-docs-2026-10-23",
     "agy-live-1.4.6-recordings"
@@ -45,7 +45,14 @@
         "/usage_observations/0/usage_status_id": 2,
         "/usage_observations/0/output_tokens": 47,
         "/usage_observations/0/reasoning_tokens": 42,
-        "/usage_observations/0/cache_read_tokens": 6015
+        "/usage_observations/0/cache_read_tokens": 6015,
+        "/usage_observations/0/components/0/name": "uncached_input_tokens",
+        "/usage_observations/0/components/0/component_basis_id": 3,
+        "/usage_observations/0/components/0/native_pointers": [
+          "/input_tokens"
+        ],
+        "/usage_observations/0/components/0/measurement_status_id": 3,
+        "/usage_observations/0/components/0/conditional_value": 2425
       },
       "absent": [
         "/response_uid",
@@ -88,7 +95,7 @@
       "values": {
         "/usage_observations/0/uncached_input_tokens": 2425
       },
-      "why": "No published source states whether input_tokens includes cache_read_tokens."
+      "why": "input_tokens excludes cache reads, but the stream reports no cache writes: it is the uncached input only conditionally, so it is the component's conditional value, not the canonical tranche."
     },
     {
       "id": "thinking-inside-output",

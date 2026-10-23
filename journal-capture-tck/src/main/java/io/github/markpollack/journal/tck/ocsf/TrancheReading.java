@@ -182,15 +182,21 @@ final class TrancheReading {
 
     /**
      * An Antigravity usage object (headless documentation: input, output, thinking, cache-read and total tokens): cache
-     * reads, output, thinking as reasoning and the total are reported; no published source states whether input_tokens
-     * includes the cache reads or whether thinking is part of output, so the uncached tranche is unavailable and no
-     * relation is stated.
+     * reads, output, thinking as reasoning and the total are reported. input_tokens cannot include the cache reads (the
+     * documentation's own example reports input 278 with cache_read 30214), but the stream reports no cache writes, so it is
+     * the uncached input only conditionally: its value is the unavailable component's conditional value. Whether thinking is
+     * part of output is not stated, so no relation is stated.
      */
     static ExpectedFacts.Tranches antigravity(Json usage) {
         Builder b = new Builder();
-        if (usage != null && (usage.member("input_tokens") != null || usage.member("cache_read_tokens") != null)) {
+        Json input = usage == null ? null : usage.member("input_tokens");
+        if (input != null) {
             b.bases.put("uncached_input_tokens", UNAVAILABLE);
-            b.pointers.put("uncached_input_tokens", List.of("/input_tokens", "/cache_read_tokens"));
+            b.pointers.put("uncached_input_tokens", List.of("/input_tokens"));
+            if (SourceProfile.isIntegral(input)) {
+                b.statuses.put("uncached_input_tokens", CONDITIONAL);
+                b.conditionals.put("uncached_input_tokens", input);
+            }
         }
         b.copy(usage, "", "cache_read_tokens", "cache_read_tokens");
         b.copy(usage, "", "output_tokens", "output_tokens");

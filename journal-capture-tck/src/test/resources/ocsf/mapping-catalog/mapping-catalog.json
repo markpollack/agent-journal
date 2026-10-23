@@ -7417,7 +7417,7 @@
      "cli": "agy",
      "artifact": "stream.jsonl",
      "records": "antigravity-live-1.4.6-*",
-     "field": "usage.{input_tokens, output_tokens, thinking_tokens, cache_read_tokens, total_tokens} on DONE agent_response steps and the result; whether input includes cache reads is not stated (uncached tranche unavailable)",
+     "field": "usage.{input_tokens, output_tokens, thinking_tokens, cache_read_tokens, total_tokens} on DONE agent_response steps and the result; input excludes cache reads (cache_read exceeds it on 9 of 16 objects) but cache writes are not reported, so the uncached tranche is only a conditional value",
      "availability": "partial"
     }
    ],
@@ -8281,7 +8281,7 @@
      "cli": "agy",
      "artifact": "stream.jsonl",
      "records": "antigravity-live-1.4.6-*",
-     "field": "step usage: scope 2 Model response, Final, scope total; result usage: scope 5 Session, Final, cumulative snapshot (documented: cumulative over the session; it excludes a spawned subagent's usage)",
+     "field": "step usage: scope 2 Model response, Final, scope total; result usage: scope 5 Session, Final, cumulative snapshot (documented: cumulative over the session of one process; on the completed subagent run it equalled the parent's step usage)",
      "availability": "present"
     }
    ],

@@ -468,7 +468,7 @@ class MappingCatalogTest {
         String unsupported = null;
         for (Map.Entry<String, String> e : perRecording.entrySet()) {
             if (e.getValue().startsWith("unsupported")) {
-                unsupported = e.getValue().substring(0, e.getValue().indexOf("; retained whole") + "; retained whole, not normalized".length());
+                unsupported = e.getValue().substring(0, e.getValue().indexOf("; not normalized for this concept") + "; not normalized for this concept (a family may be normalized for another)".length());
                 if (!e.getValue().contains("no occurrence")) {
                     exercising.add(e.getKey());
                 }

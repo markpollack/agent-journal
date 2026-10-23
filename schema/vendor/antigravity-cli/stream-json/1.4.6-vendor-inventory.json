@@ -17,7 +17,7 @@
    "https://antigravity.google/docs/permissions/?tab=cli (fetched 2026-10-23)": "ad02742ced5300274c766ba897cdef579b0265c9b558a4308e7fd0a27227b9b8",
    "https://antigravity.google/docs/subagents/?tab=cli (fetched 2026-10-23)": "4692e5133899c8868f38ba4735e673af77284cfa74f2335fa8261155e76aa93f"
   },
-  "method": "reviewed reading of the published interface: the CLI is closed source and no typed schema, SDK or vendor test of the stream-json output is published. The headless-mode documentation (html sha256 above) states the events, the step_update, tool_info, subagent_info and result members, the status values and the scope of the result counters; the public repository holds only README, CHANGELOG and examples, and its CHANGELOG at the pinned tag dates the format (stream-json, tool_info and subagent_info in 1.1.8, denied_actions in 1.1.27). The documentation calls its step_type list observed values, not a closed vocabulary, so the families below are documented plus observed on the 1.4.6 recordings; members only observed say so in their symbol. Completeness is not established: a family not declared here may exist."
+  "method": "reviewed reading of the published interface: the CLI is closed source and no typed schema, SDK or vendor test of the stream-json output is published. The headless-mode documentation (html sha256 above) states the events, the step_update, tool_info, subagent_info and result members, the status values and the scope of the result counters; the public repository holds only README, CHANGELOG and examples, and its CHANGELOG at the pinned tag dates the format (stream-json, tool_info and subagent_info in 1.1.8, denied_actions in 1.1.27). The documentation calls its step_type list observed values, not a closed vocabulary, so the families below are documented plus observed on the 1.4.6 recordings; members only observed say so in their symbol. The CHANGELOG (1.1.8) calls step_type a stable, closed vocabulary, but its members are not published. Completeness is not established: a family not declared here may exist."
  },
  "families": [
   {
@@ -316,7 +316,7 @@
     {
      "path": "step_update.usage.input_tokens",
      "type": "number",
-     "meaning": "input tokens (whether cache reads are included is not stated)",
+     "meaning": "input tokens; excludes cache reads (cache_read_tokens exceeds it in the documentation example and on the 1.4.6 recordings); cache writes are not reported",
      "availability": "conditional",
      "condition": "when the step reports usage",
      "symbol": "docs/cli/headless#JSON envelope fields (usage: input_tokens, output_tokens, thinking_tokens, cache_read_tokens, total_tokens)"
@@ -603,7 +603,7 @@
      "values": [
       "ERROR"
      ],
-     "symbol": "docs/cli/headless#step_update payload"
+     "symbol": "docs/cli/headless#step_update payload (member documented as ACTIVE or DONE; the value ERROR observed in 1.4.6)"
     },
     {
      "path": "step_update.step_type",
@@ -663,7 +663,7 @@
      "values": [
       "TOOL_ERROR"
      ],
-     "symbol": "docs/cli/headless#Tool calls in the stream"
+     "symbol": "docs/cli/headless#Tool calls in the stream (member documented; the value TOOL_ERROR observed in 1.4.6)"
     },
     {
      "path": "step_update.tool_info.error.message",
@@ -887,7 +887,7 @@
     {
      "path": "step_update.usage.input_tokens",
      "type": "number",
-     "meaning": "input tokens (whether cache reads are included is not stated)",
+     "meaning": "input tokens; excludes cache reads (cache_read_tokens exceeds it in the documentation example and on the 1.4.6 recordings); cache writes are not reported",
      "availability": "conditional",
      "condition": "when the step reports usage",
      "symbol": "docs/cli/headless#JSON envelope fields (usage: input_tokens, output_tokens, thinking_tokens, cache_read_tokens, total_tokens)"
@@ -1125,7 +1125,7 @@
     {
      "path": "result.usage.input_tokens",
      "type": "number",
-     "meaning": "input tokens (whether cache reads are included is not stated)",
+     "meaning": "input tokens; excludes cache reads (cache_read_tokens exceeds it in the documentation example and on the 1.4.6 recordings); cache writes are not reported",
      "availability": "always",
      "symbol": "docs/cli/headless#JSON envelope fields (usage: input_tokens, output_tokens, thinking_tokens, cache_read_tokens, total_tokens)"
     },
@@ -1242,7 +1242,7 @@
   {
    "what": "a spawned subagent's own activity and usage",
    "applies_to": "step_update/subagent/DONE, result",
-   "consequence": "only the spawn's subagent_info is reported; result.usage sums the parent conversation's steps",
+   "consequence": "only the spawn's subagent_info is reported; on the completed subagent run result.usage equalled the parent conversation's step usage",
    "symbol": "docs/cli/headless#Tool calls in the stream (subagent_info)"
   }
  ],

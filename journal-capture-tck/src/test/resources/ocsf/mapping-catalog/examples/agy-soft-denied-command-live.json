@@ -3,7 +3,7 @@
   "format_version": "0.1",
   "id": "agy-soft-denied-command-live",
   "concept": "tool-result-error-and-status",
-  "description": "SANITIZED LIVE RECORDING (Antigravity CLI 1.4.6, default request-review mode): headless mode soft-denied the command permission. The run_command step (index 4) became ACTIVE, then DONE with neither output nor error: DONE is a lifecycle state, so the outcome is not derivable, and the call is not a success. The result reports SUCCESS for the run and one denied_actions entry {action: command, display_name: RunCommand}, which names a permission category, never a step: one Denied decision at Run scope, Unattributed, with no candidates.",
+  "description": "SANITIZED LIVE RECORDING (Antigravity CLI 1.4.6, default request-review mode): headless mode soft-denied the command permission (stderr notice). The run_command step (index 4) became ACTIVE, then DONE with neither output nor error: DONE is a lifecycle state and no error is reported, so the call's outcome is not derivable and it is not a success. The result reports SUCCESS for the run and one denied_actions entry {action: command, display_name: RunCommand}. The entry names a permission category, never a step: that step 4 is the denied call is consistent with the evidence (it is the only command step, and it has no output) but is not reported, so the decision is Denied at Run scope, Unattributed, with no candidates.",
   "authored_from": [
     "agy-headless-docs-2026-10-23",
     "agy-live-1.4.6-recordings",
@@ -83,7 +83,7 @@
       "values": {
         "/status_id": 1
       },
-      "why": "DONE is a lifecycle state; the command was soft-denied and never ran, so no success is established."
+      "why": "DONE without output or error does not establish success, and the run reports a denied command permission."
     },
     {
       "id": "denial-attributed-to-the-command-step",
@@ -95,7 +95,7 @@
           "4"
         ]
       },
-      "why": "The entry names a permission category and a display name, never a step; linking it to step 4 by name or position would invent an association."
+      "why": "The entry names a permission category and a display name, never a step; linking it to step 4 would turn a consistent reading into a reported association."
     },
     {
       "id": "denial-on-the-tool-call",

@@ -30,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * material reading is detected on its owning property: a soft-denied command reported as a success or tied to its
  * run-scope denial, a changed tool argument, an invented response identity, an altered text fragment or turn response,
  * a fabricated result for the open tool of the interrupted run, a changed child conversation of a subagent spawn, and
- * an uncached tranche or reasoning relation the source does not establish.
+ * an uncached tranche, a wrong conditional uncached value or a reasoning relation the source does not establish.
  */
 class AntigravityStreamTest {
 
@@ -140,8 +140,10 @@ class AntigravityStreamTest {
             Json.JObject u = obj(at(events, "prompt_turn", 2, 20).member("usage_observations").elements().get(0));
             u.members().put("uncached_input_tokens", u.path("data", "input_tokens"));
             u.members().put("reasoning_relation_id", num("1"));
+            // input 18690 excludes cache reads but may hold unreported cache writes: it is only the component's conditional value
+            obj(u.member("components").elements().get(0)).members().put("conditional_value", num("18691"));
         });
         String detail = verify(fixture).check("usage.values", STREAM).detail();
-        assertThat(detail).contains("uncached_input_tokens present").contains("reasoning_relation_id");
+        assertThat(detail).contains("uncached_input_tokens present").contains("reasoning_relation_id").contains("uncached_input_tokens conditional_value 18691 != 18690");
     }
 }

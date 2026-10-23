@@ -428,14 +428,18 @@
   {
    "variant": "step_update/agent_response/DONE",
    "path": "step_update.usage.input_tokens",
-   "disposition": "unresolved",
+   "disposition": "normalized",
+   "destination": [
+    "model_response.usage_observations[].components[].conditional_value"
+   ],
+   "rule": "agy.stream.agent_response.done->model_response.item",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "usage.values"
    },
    "tests": [
     "AntigravityStreamTest#anUncachedTrancheOrAReasoningRelationTheSourceDoesNotEstablishIsAUsageDefect"
    ],
-   "note": "open question: whether input_tokens includes cache_read_tokens is not stated by any published source, so it is not the uncached tranche; it stays in the observation's data and components[] states the tranche unavailable"
+   "note": "agy.usage.uncached_input.v1: input_tokens excludes cache reads (cache_read_tokens exceeds it on 9 of 16 usage objects and in the documentation example), but no cache writes are reported, so it is the uncached component's conditional value (measurement status 3), never the canonical tranche"
   },
   {
    "variant": "step_update/tool/ACTIVE",
@@ -1108,14 +1112,18 @@
   {
    "variant": "result",
    "path": "result.usage.input_tokens",
-   "disposition": "unresolved",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.usage_observations[].components[].conditional_value"
+   ],
+   "rule": "agy.stream.result->prompt_turn.completed",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "usage.values"
    },
    "tests": [
     "AntigravityStreamTest#anUncachedTrancheOrAReasoningRelationTheSourceDoesNotEstablishIsAUsageDefect"
    ],
-   "note": "open question: whether input_tokens includes cache_read_tokens is not stated by any published source, so it is not the uncached tranche; it stays in the observation's data and components[] states the tranche unavailable"
+   "note": "agy.usage.uncached_input.v1: input_tokens excludes cache reads (cache_read_tokens exceeds it on 9 of 16 usage objects and in the documentation example), but no cache writes are reported, so it is the uncached component's conditional value (measurement status 3), never the canonical tranche"
   }
  ],
  "vendor_inventory": "1.4.6-vendor-inventory.json"
