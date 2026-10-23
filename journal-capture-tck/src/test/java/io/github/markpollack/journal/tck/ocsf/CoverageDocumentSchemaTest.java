@@ -43,6 +43,8 @@ class CoverageDocumentSchemaTest {
         m.put(LiveScenarioTest.DIR.resolve("results.json"), "live-scenario-results.schema.json");
         m.put(FoundationComparisonTest.CATALOG_DIR.resolve("foundation-pins.json"), "foundation-pins.schema.json");
         m.put(FoundationComparisonTest.CATALOG_DIR.resolve("foundation-inventory.json"), "foundation-inventory.schema.json");
+        m.put(FoundationComparisonTest.CATALOG_DIR.resolve("foundation-fields.json"), "foundation-fields.schema.json");
+        m.put(FoundationComparisonTest.CATALOG_DIR.resolve("foundation-parity.json"), "foundation-parity.schema.json");
         return m;
     }
 

@@ -1,0 +1,160 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "urn:agent-journal:foundation-fields:0.1",
+ "title": "Pinned field inventory of the Tier 1 foundations",
+ "type": "object",
+ "required": [
+  "kind",
+  "version",
+  "meaning",
+  "derived_by",
+  "foundations"
+ ],
+ "properties": {
+  "kind": {
+   "const": "agent-journal/foundation-fields"
+  },
+  "version": {
+   "const": "0.1"
+  },
+  "meaning": {
+   "type": "string",
+   "minLength": 1
+  },
+  "derived_by": {
+   "type": "string",
+   "minLength": 1
+  },
+  "foundations": {
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "type": "object",
+    "required": [
+     "foundation",
+     "revision",
+     "files",
+     "boundary",
+     "excluded",
+     "counts",
+     "total",
+     "fields"
+    ],
+    "properties": {
+     "foundation": {
+      "type": "string",
+      "minLength": 1
+     },
+     "revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+     },
+     "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+       "type": "object",
+       "required": [
+        "path",
+        "blob"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "path": {
+         "type": "string",
+         "minLength": 1
+        },
+        "blob": {
+         "type": "string",
+         "pattern": "^[0-9a-f]{40}$"
+        }
+       }
+      }
+     },
+     "boundary": {
+      "type": "string",
+      "minLength": 1
+     },
+     "excluded": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "required": [
+        "what",
+        "reason"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "what": {
+         "type": "string",
+         "minLength": 1
+        },
+        "reason": {
+         "type": "string",
+         "minLength": 1
+        }
+       }
+      }
+     },
+     "counts": {
+      "type": "object",
+      "additionalProperties": {
+       "type": "integer",
+       "minimum": 1
+      }
+     },
+     "total": {
+      "type": "integer",
+      "minimum": 1
+     },
+     "fields": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+       "type": "object",
+       "required": [
+        "id",
+        "kind",
+        "name",
+        "locator"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "id": {
+         "type": "string",
+         "minLength": 1
+        },
+        "kind": {
+         "type": "string",
+         "minLength": 1
+        },
+        "name": {
+         "type": "string",
+         "minLength": 1
+        },
+        "locator": {
+         "type": "string",
+         "minLength": 1
+        },
+        "type": {
+         "type": "string"
+        },
+        "stability": {
+         "type": "string"
+        },
+        "brief": {
+         "type": "string"
+        },
+        "detail": {
+         "type": "object"
+        }
+       }
+      }
+     }
+    },
+    "additionalProperties": false
+   }
+  }
+ },
+ "additionalProperties": false
+}

@@ -1,6 +1,6 @@
 {
  "kind": "agent-journal/mapping-catalog",
- "version": "0.5.0",
+ "version": "0.6.0",
  "reviewed": "2026-10-22",
  "property_scopes": {
   "meaning": "the owner an oracle property is reported for: root (once, by the root core), core (each core: main and every child), otherwise source (each core's artifacts, '<core>/<artifact>'); the coverage summary owes a result for every such owner the frozen expected sources establish",
@@ -61,6 +61,12 @@
    "id": "session-identity",
    "concept": "Session identity (native conversation id)",
    "question": "Which native session does every event belong to, and is that id reported by the CLI rather than assigned by Journal?",
+   "topic": {
+    "group": "identity",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "The conversation id every fact belongs to; Tier 1 conversation-id facet."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -388,6 +394,12 @@
    "id": "prompt-turn-identity",
    "concept": "Prompt turn identity and lifecycle (submitted, started, completed)",
    "question": "Which prompt turn does a record belong to, and which records mark the turn's submission, start and completion?",
+   "topic": {
+    "group": "identity",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "Turn boundaries and turn ids where the source reports them."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -798,6 +810,12 @@
    "id": "journal-run-and-invocation",
    "concept": "Journal run and invocation identity (Journal-assigned, distinct from native ids)",
    "question": "Which Journal run and CLI invocation owns an event, and can a reader tell Journal's identifiers from the CLI's?",
+   "topic": {
+    "group": "identity",
+    "nature": "mixed",
+    "disposition": "keep",
+    "reason": "Execution: the run is the top-level agent invocation; assurance: Journal's own run/invocation ids kept apart from the CLI's."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -1014,6 +1032,12 @@
    "id": "user-submission",
    "concept": "User submission (user-role message that is a human prompt) and its repeated representations",
    "question": "What submissions occurred, and which records are repeat representations, history or injected context rather than new submissions?",
+   "topic": {
+    "group": "content",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "What the user submitted, apart from echoes, history and injected context."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -1369,6 +1393,12 @@
    "id": "model-response-identity",
    "concept": "Model response identity (native response/message id) and the model that produced it",
    "question": "How many model responses were observed, each under which native id and reported model, with every occurrence addressable?",
+   "topic": {
+    "group": "identity",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "Model responses and their provider ids; Codex reports none (source-limited)."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -1430,7 +1460,7 @@
      "absence": "recommended, may be absent",
      "differences": "One final span per request; individual native records that make up the response are not addressable.",
      "decision": "adapt",
-     "reason": "Same id and model meaning; Journal keeps every occurrence addressable under one response_uid.",
+     "reason": "Same id and model meaning; Journal keeps every occurrence addressable under one response_uid where the source reports a response id (Claude), while Codex content items carry a stream-local item_uid and no response id.",
      "evidence_class": "source-verified",
      "evidence": []
     },
@@ -1713,6 +1743,12 @@
    "id": "ordered-content-blocks",
    "concept": "Ordered content blocks of a message (text, thought, tool call, tool result, image, other) with exact native block data",
    "question": "What did each message contain, in native order, with every block's exact native representation retrievable?",
+   "topic": {
+    "group": "content",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "Message content in native order, exact representation retrievable."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -2095,6 +2131,12 @@
    "id": "reasoning-blocks-and-signature",
    "concept": "Reported reasoning (thinking) blocks with their opaque signature",
    "question": "Where did the model report reasoning, in what order relative to text and tool use, and is the provider-owned signature preserved verbatim?",
+   "topic": {
+    "group": "content",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "Reasoning content, its form and order, and provider signatures verbatim."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -2469,6 +2511,12 @@
    "id": "redacted-or-encrypted-reasoning",
    "concept": "Redacted or encrypted reasoning payloads (provider-owned, no readable text)",
    "question": "When a provider returns reasoning without readable text, is the opaque payload retained and distinguishable from an empty thought?",
+   "topic": {
+    "group": "content",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "A facet of reasoning kept separate because its exercise status differs (unexercised on both routes)."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -2705,6 +2753,12 @@
    "id": "media-and-multimodal-blocks",
    "concept": "Media blocks (images, attachments) in prompts, responses or tool results",
    "question": "Are image or other media blocks preserved exactly and ordered with the text, in prompts, responses and tool results?",
+   "topic": {
+    "group": "content",
+    "nature": "execution",
+    "disposition": "decompose",
+    "reason": "Needs canonical media part attributes (MIME type, modality, URI or file reference) beside the retained block; Tier 1 media facet."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -2939,6 +2993,12 @@
    "id": "unknown-block-kinds",
    "concept": "Unknown or provider-specific block types (server tool use, future kinds)",
    "question": "When a message contains a block type the mapping does not know, is it retained exactly with its position and marked as unknown rather than dropped or guessed?",
+   "topic": {
+    "group": "content",
+    "nature": "mixed",
+    "disposition": "keep",
+    "reason": "Execution content of unknown kind and the assurance that it is retained and marked, never guessed."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -3150,6 +3210,12 @@
    "id": "response-stop-reason-and-completion",
    "concept": "Response completion state and reported stop reason (response scope and turn scope)",
    "question": "Which responses reached a terminal state, with which reported stop reason, and which records are non-final views?",
+   "topic": {
+    "group": "content",
+    "nature": "execution",
+    "disposition": "decompose",
+    "reason": "Separate the verbatim stop reason, a normalized finish category and the response outcome state (Tier 1 facets)."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -3456,6 +3522,12 @@
    "id": "response-update-assembly",
    "concept": "Response updates: append-blocks, deltas, snapshots and complete-over-delta replacement",
    "question": "How many records make up one response, in which update mode, and does assembling them keep every original occurrence and index?",
+   "topic": {
+    "group": "content",
+    "nature": "mixed",
+    "disposition": "keep",
+    "reason": "Execution lifecycle of partial/complete updates and the assurance that every occurrence stays addressable."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -3774,6 +3846,12 @@
    "id": "tool-request-identity-and-arguments",
    "concept": "Tool request: stable native call id, exact tool name and structured arguments",
    "question": "Which tool was requested, under which native call id, by which response, with exactly which arguments?",
+   "topic": {
+    "group": "tools",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "Tool name, call identity with basis, exact arguments, owning response."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -3839,7 +3917,7 @@
      "absence": "arguments opt-in; a serialized string SHOULD be deserialized to an object",
      "differences": "Deserialization loses argument spelling; the requesting response is linked only by span context or ids.",
      "decision": "adapt",
-     "reason": "Same id/name/arguments meaning; Journal keeps the exact native arguments and the owning response_uid.",
+     "reason": "Same id/name/arguments meaning; Journal keeps the exact native arguments and the owning response_uid where the source reports one.",
      "evidence_class": "source-verified",
      "evidence": []
     },
@@ -4314,6 +4392,12 @@
    "id": "tool-kind-classification",
    "concept": "ACP tool kind of the tool activity (a declared name, family or namespace table; no OS-effect claim)",
    "question": "What kind of activity did each tool request describe, by which declared rule, without asserting what happened on the operating system?",
+   "topic": {
+    "group": "tools",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "Journal-owned activity classification by declared rule; whether a separate tool-mechanism class is needed is an open Tier 1 decision."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -4541,6 +4625,12 @@
    "id": "tool-result-ownership-and-content",
    "concept": "Tool result: model-visible content under the call id the result record itself names",
    "question": "Which result belongs to which request, by reported id, with exact content, including identical results under different owners?",
+   "topic": {
+    "group": "tools",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "Result ownership by reported id and exact content."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -4907,6 +4997,12 @@
    "id": "structured-tool-result-detail",
    "concept": "Structured result detail reported beside the model-visible content",
    "question": "What structured (non-text) result detail did the CLI report for a call, and are its JSON kinds and values exact?",
+   "topic": {
+    "group": "tools",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "Structured (non-text) result detail with exact JSON kinds."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -5192,6 +5288,12 @@
    "id": "tool-result-error-and-status",
    "concept": "Tool result error flag and derived success/failure status with its basis",
    "question": "Did the source flag a result as an error, and is the status Reported, Derived or Not derivable rather than assumed?",
+   "topic": {
+    "group": "tools",
+    "nature": "execution",
+    "disposition": "decompose",
+    "reason": "Tool error flags are covered; a reported error class for responses, turns and attempts is a Tier 1 gap."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -5511,6 +5613,12 @@
    "id": "observed-operations",
    "concept": "Separately reported operations inside one tool call (one call, many commands)",
    "question": "Which concrete operations (command, exit code, outputs, state) were reported for a tool call, each with its own identity?",
+   "topic": {
+    "group": "tools",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "Concrete operations (command line, exit code, outputs) reported for a call."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -5793,6 +5901,12 @@
    "id": "operation-attribution",
    "concept": "Attribution of an operation to its wrapping call: reported identifier versus derived candidates",
    "question": "On what evidence is an operation linked to a tool call, how many candidates were there, and is a derived link ever presented as a reported one?",
+   "topic": {
+    "group": "tools",
+    "nature": "assurance",
+    "disposition": "keep",
+    "reason": "Evidence and method linking an operation to a call; never a guessed link."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -5999,6 +6113,12 @@
    "id": "operation-and-request-reported-state",
    "concept": "Vendor lifecycle state strings on requests, results and operations (in_progress, completed, failed)",
    "question": "What lifecycle state did the source report for each request, result or operation, kept apart from Journal's status and from timing?",
+   "topic": {
+    "group": "tools",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "Reported lifecycle states kept verbatim beside Journal status."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -6270,6 +6390,12 @@
    "id": "interrupted-run-and-never-observed-result",
    "concept": "Interrupted capture: open operations, missing results and partial records at termination",
    "question": "When a run is interrupted or a source ends early, which requests have no observed result, what partial data survived, and is the acquisition boundary stated rather than implied?",
+   "topic": {
+    "group": "tools",
+    "nature": "mixed",
+    "disposition": "keep",
+    "reason": "Execution outcome of interrupted work and the assurance that the acquisition boundary is stated."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -6573,6 +6699,12 @@
    "id": "usage-components-and-cache",
    "concept": "Reported token usage components (input, output, cache read, cache write, reported total) with the native usage object",
    "question": "Which usage components did each source report, with exact values, absent components absent and totals only when reported as totals?",
+   "topic": {
+    "group": "usage",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "Disjoint economic tranches; component-uncertainty repair in this wave."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -6638,7 +6770,7 @@
      "absence": "optional components recommended only when available and non-zero, so a reported zero is omitted",
      "differences": "input_tokens SHOULD include cache tokens and for Anthropic is computed as input + cache_read + cache_write; no reported-total attribute; v1.41.1 names the write counter cache_creation.input_tokens.",
      "decision": "adapt",
-     "reason": "Journal keeps reported components exactly, never sums them, and keeps zero apart from absent.",
+     "reason": "Journal keeps disjoint tranches with each component's basis (reported, or exactly derived such as the Codex uncached tranche), never stores a summed input total, and keeps zero apart from absent.",
      "evidence_class": "source-verified",
      "evidence": []
     },
@@ -6654,7 +6786,7 @@
      "absence": "not specified",
      "differences": "prompt includes cache; for providers that exclude cache (Anthropic) instrumentations fold cache read/write back into prompt and total.",
      "decision": "adapt",
-     "reason": "Journal keeps the reported exclusive value and the reported total only when the vendor reports one.",
+     "reason": "Journal keeps disjoint tranches (reported or exactly derived, with their basis) and a total only when the vendor reports one.",
      "evidence_class": "specification-only",
      "evidence": [
       "competitor-refresh-2026-10-19:row-16"
@@ -6672,7 +6804,7 @@
      "absence": "absent attribute becomes 0, so absent and zero are indistinguishable",
      "differences": "Plugin writes input as uncached + cache_read + cache_creation; ingest reads only gen_ai.usage.cache_creation.input_tokens, not the development-head cache_write name.",
      "decision": "adapt",
-     "reason": "Journal never derives uncached input by subtraction and keeps absent components absent.",
+     "reason": "Journal records disjoint tranches, each with its basis: a reported uncached tranche is copied (Claude) and an inclusive input is split only by an exact source-established subtraction (Codex: input_tokens - cached_input_tokens when cache writes are reported 0); absent components stay absent, never 0.",
      "evidence_class": "source-verified",
      "evidence": [
       "weave-refresh-2026-10-19:W12",
@@ -7130,6 +7262,12 @@
    "id": "reasoning-token-counts",
    "concept": "Reported reasoning/thinking token counts",
    "question": "Where did a source report reasoning tokens, at which scope, and are they absent (not zero) where the source reports none?",
+   "topic": {
+    "group": "usage",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "Reasoning tokens with their relation to output."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -7399,6 +7537,12 @@
    "id": "usage-scope-finality-and-repeats",
    "concept": "Usage observation scope, provisional/final status, repeated snapshots and cumulative versus per-turn meanings",
    "question": "Which reported usage figures are the applicable final values, at which scope and owner, and how many provisional or repeated observations exist beside them without being summed?",
+   "topic": {
+    "group": "usage",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "Scope, finality, aggregation and measurement status of usage observations."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -7840,6 +7984,12 @@
    "id": "reported-cost",
    "concept": "Reported monetary cost as a total with currency, scope, basis and source",
    "question": "What cost did the source itself report, at which scope, and is it kept apart from any calculated estimate?",
+   "topic": {
+    "group": "usage",
+    "nature": "execution",
+    "disposition": "decompose",
+    "reason": "Reported total cost is covered; per-component and per-model cost and estimates (PRICE-1) are Tier 1 gaps."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -8129,6 +8279,12 @@
    "id": "model-identity-and-provider",
    "concept": "Model identity (exact reported model id) and provider information with its basis",
    "question": "Which model did each response, usage figure and session setting report, and is provider information reported, derived or unavailable?",
+   "topic": {
+    "group": "context",
+    "nature": "execution",
+    "disposition": "decompose",
+    "reason": "Response model, configured model and provider route are separate facets; provider vocabulary is open."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -8517,6 +8673,12 @@
    "id": "permission-decisions",
    "concept": "Permission decisions at their reported scope (tool call or run), with source, reason and attribution",
    "question": "Which permissions were decided, how (allow/deny, by whom, why), at which scope, and is a run-scope decision ever attached to a tool call by guess?",
+   "topic": {
+    "group": "context",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "Permission decisions at their reported scope."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -8942,6 +9104,12 @@
    "id": "launch-and-session-settings",
    "concept": "Launch and session settings reported by native records (working directory, model, provider, version, permission mode, approval and sandbox policy, tools, git branch)",
    "question": "Which settings did each record report, at session or turn scope, without merging records or inferring defaults?",
+   "topic": {
+    "group": "context",
+    "nature": "execution",
+    "disposition": "decompose",
+    "reason": "Settings covered; request parameters, tool definitions, skills and MCP server lists are Tier 1 gaps."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -9253,6 +9421,12 @@
    "id": "injected-context",
    "concept": "Context injected into the model's input (attachments, system reminders, developer messages, environment context)",
    "question": "What non-user content was rendered into the model's input, under which role and kind, and is it kept distinct from user submissions?",
+   "topic": {
+    "group": "content",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "Non-user content rendered into model input, apart from submissions."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -9522,6 +9696,12 @@
    "id": "session-accounting",
    "concept": "Session- or response-scope accounting records (cumulative usage, cost state, token counts) as supporting facts",
    "question": "Which accounting records did the session file write, which usage/cost groups do they feed, and which are retained whole because their usage rides elsewhere?",
+   "topic": {
+    "group": "usage",
+    "nature": "vendor_detail",
+    "disposition": "defer",
+    "reason": "Native session-file accounting records; relevant to explicit offline import (SESSION-1), unavailable on the stream routes."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -9794,6 +9974,12 @@
    "id": "child-runs",
    "concept": "Child runs (sub-agents, sidechains) linked to the spawning tool call, with their own core",
    "question": "Which child activity belongs to which spawning call, is the child's content held in its own core, and are parent and child never summed or mixed?",
+   "topic": {
+    "group": "identity",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "Child activity linked to its spawning call, never mixed or summed with the parent."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -10134,6 +10320,12 @@
    "id": "source-occurrence-provenance",
    "concept": "Source occurrence identity: artifact, one-based record index, native id and time, framing, producing contract",
    "question": "Which native artifact and record occurrence supplied each fact, through which mapping contract, in what order, with repeated native ids and absent ids still distinguishable?",
+   "topic": {
+    "group": "assurance",
+    "nature": "assurance",
+    "disposition": "keep",
+    "reason": "Where each fact came from, through which contract and rule, in source order."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -10502,6 +10694,12 @@
    "id": "whole-record-residual-and-reconstruction",
    "concept": "Whole-record residual on every normalized event and per-source reconstruction under declared comparators",
    "question": "Can each frozen source be reconstructed from the core alone, and under which promise: structure/value, lexical representation, or exact bytes and framing?",
+   "topic": {
+    "group": "assurance",
+    "nature": "assurance",
+    "disposition": "keep",
+    "reason": "Preservation guarantee of every acquired record (enabling infrastructure)."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -10867,6 +11065,12 @@
    "id": "opaque-malformed-and-blank-records",
    "concept": "Opaque records: blank lines, non-UTF-8 bytes, malformed or duplicate-key JSON, non-JSON text artifacts",
    "question": "Is every line that is not one strict JSON object retained verbatim with its framing, without stopping the inventory or being discarded?",
+   "topic": {
+    "group": "assurance",
+    "nature": "assurance",
+    "disposition": "keep",
+    "reason": "Non-JSON lines retained verbatim (enabling infrastructure)."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -11166,6 +11370,12 @@
    "id": "retained-only-known-meaning-families",
    "concept": "Vendor record families retained whole with a known meaning but no normalized destination",
    "question": "Which native families survive only as whole records, what do they mean, and is each one source-addressable without the native file?",
+   "topic": {
+    "group": "assurance",
+    "nature": "vendor_detail",
+    "disposition": "vendor_residual",
+    "reason": "Families kept whole with documented meaning; several are Tier 1 mapper gaps (durations, latencies, service tier, compaction)."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -11475,6 +11685,12 @@
    "id": "retained-only-unresolved-families",
    "concept": "Vendor record families retained whole whose meaning no cited document establishes",
    "question": "Which retained records have unresolved meaning, so that preservation can pass while semantic coverage honestly reports them as unresolved?",
+   "topic": {
+    "group": "assurance",
+    "nature": "vendor_detail",
+    "disposition": "vendor_residual",
+    "reason": "Families kept whole whose meaning is unresolved; honest semantic coverage."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -11692,6 +11908,12 @@
    "id": "time-basis",
    "concept": "Event time basis: source-reported time versus fallback versus capture observation, with the original timestamp text verbatim",
    "question": "For every event, is its time the record's own reported time (kept verbatim), a declared fallback, or Journal's observation time, never a re-import or preceding-event time advertised as execution time?",
+   "topic": {
+    "group": "assurance",
+    "nature": "mixed",
+    "disposition": "keep",
+    "reason": "Execution time where reported and the basis of every event time."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -11963,6 +12185,12 @@
    "id": "reported-durations",
    "concept": "Vendor-reported durations and latencies (run, API, tool, turn, command)",
    "question": "Which durations did the sources report, and are they kept as vendor values rather than recomputed from event times?",
+   "topic": {
+    "group": "assurance",
+    "nature": "execution",
+    "disposition": "decompose",
+    "reason": "Reported durations and latencies are Tier 1 facets now retained only; need canonical observations."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -12248,6 +12476,12 @@
    "id": "api-request-attempts",
    "concept": "API request attempts, retries and API errors reported by the CLI",
    "question": "For each model request, how many attempts did the CLI report, with which per-attempt ids and errors, and did retries exhaust?",
+   "topic": {
+    "group": "tools",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "Pending: model request attempts, retries and their errors (Tier 1 error-type and exception facets)."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -12405,6 +12639,12 @@
    "id": "payload-size-and-truncation",
    "concept": "Content size limits, truncation and silent drops along the capture path",
    "question": "Was any value truncated or dropped for size by the source, the capture integration or the store, and is the original length or a truncation marker recorded?",
+   "topic": {
+    "group": "assurance",
+    "nature": "assurance",
+    "disposition": "defer",
+    "reason": "Pending: truncation by source, integration or store; Journal-specific assurance (Tier 2)."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -12585,6 +12825,12 @@
    "id": "session-resume-linkage",
    "concept": "Session resume and continuation linkage",
    "question": "When a session is resumed or continued, which earlier session does it continue, as reported by the CLI?",
+   "topic": {
+    "group": "identity",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "Pending: which session a resumed session continues (Tier 1 response-chaining facet)."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -12715,6 +12961,12 @@
    "id": "child-run-metadata",
    "concept": "Sub-agent descriptor and lifecycle metadata (agent type, description, spawn depth, launch mode, finished)",
    "question": "What kind of sub-agent was spawned, with which description, at which depth, launched foreground or in the background, and did it finish?",
+   "topic": {
+    "group": "identity",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "Pending: invoked sub-agent identity and launch metadata (Tier 1 invoked-agent facet)."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -12871,6 +13123,12 @@
    "id": "context-compaction",
    "concept": "Conversation context compaction events",
    "question": "When did the CLI compact the conversation context, triggered how, and with what reported before/after size?",
+   "topic": {
+    "group": "context",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "Pending: compaction events with explicit units (Tier 1 compaction facet)."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -13002,6 +13260,12 @@
    "id": "hook-executions",
    "concept": "User-configured hook executions and their outcomes",
    "question": "Which configured hooks ran, at which lifecycle point, with what outcome, and did any block or alter an operation?",
+   "topic": {
+    "group": "context",
+    "nature": "execution",
+    "disposition": "keep",
+    "reason": "Pending: hook executions and outcomes (Tier 1 guardrail/hook facet)."
+   },
    "foundations": [
     {
      "foundation": "spring_ai.release",
@@ -13175,6 +13439,30 @@
    "retained-only-unresolved",
    "optional-unexercised",
    "pending"
+  ]
+ },
+ "topic_classification": {
+  "meaning": "concepts[].topic explains each catalog topic for the Tier 1 audit: its plain-language group, the nature of what it records (execution information, vendor detail, assurance infrastructure, consumer analysis, or mixed) and a reviewed disposition (keep, decompose into finer facets, keep as vendor residual, defer). Tier and per-field coverage live in foundation-parity.json; a topic with no claim can be modelled, mapped and tested, and a claim covers only its own statement.",
+  "groups": {
+   "identity": "Identity and structure: sessions, turns, runs, responses, children",
+   "content": "Messages and content",
+   "tools": "Tools and operations",
+   "usage": "Usage and cost",
+   "context": "Model, settings and context",
+   "assurance": "Preservation, provenance and time"
+  },
+  "nature": [
+   "execution",
+   "vendor_detail",
+   "assurance",
+   "consumer",
+   "mixed"
+  ],
+  "disposition": [
+   "keep",
+   "decompose",
+   "vendor_residual",
+   "defer"
   ]
  },
  "semantic_claims": {

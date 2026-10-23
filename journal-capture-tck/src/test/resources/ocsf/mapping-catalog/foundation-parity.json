@@ -1,0 +1,3173 @@
+{
+  "kind": "agent-journal/foundation-parity",
+  "version": "0.1",
+  "reviewed": "2026-10-22",
+  "meaning": "The Tier 1 parity ledger: every field of foundation-fields.json is assigned to exactly one facet, a Journal correspondence with its tier, semantic-definition state, per-route availability and the concrete next action. Facets reference mapping-catalog concept ids or name a proposed concept; they are reviewed claims, not executed tests. ParityLedgerTest joins them with the catalog, the claims and this build's CLI coverage calculation and generates PARITY.md and parity.json. Tiers: 1 foundational parity, 2 Journal improvement, 3 consumer analysis, out_of_scope_proposed an exclusion awaiting review.",
+  "inventory": "foundation-fields.json",
+  "routes": [
+    "claude-code/stream-json/2.1.304-stdout",
+    "codex-cli/exec-json-stream/0.160.1"
+  ],
+  "vocabularies": {
+    "tier": [
+      "1",
+      "2",
+      "3",
+      "out_of_scope_proposed"
+    ],
+    "definition": [
+      "defined",
+      "partial",
+      "missing",
+      "unresolved"
+    ],
+    "state": [
+      "covered",
+      "partial",
+      "not_exercised",
+      "source_limited",
+      "derivable",
+      "mapper_missing",
+      "definition_missing",
+      "definition_unresolved",
+      "excluded_proposed",
+      "tier3_consumer"
+    ],
+    "relation": [
+      "equivalent",
+      "adapted",
+      "finer",
+      "coarser",
+      "different",
+      "none"
+    ],
+    "route": [
+      "mapped",
+      "unexercised",
+      "retained_only",
+      "source_limited",
+      "not_applicable"
+    ]
+  },
+  "facets": [
+    {
+      "id": "identity.session",
+      "group": "identity",
+      "summary": "The conversation (session, thread) every operation belongs to",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.conversation.id",
+        "openinference.semconv:attribute:session.id",
+        "weave.agents_schema:field:AgentSpanSchema.conversation_id",
+        "weave.agents_schema:ingest_attribute:weave.conversation.id"
+      ],
+      "concepts": [
+        "session-identity"
+      ],
+      "proposal": null,
+      "destinations": [
+        "model_response.session_uid",
+        "prompt_turn.session_uid",
+        "tool_call.session_uid",
+        "session_context.session_uid",
+        "source_record.session_uid"
+      ],
+      "relation": "adapted",
+      "differences": "Same meaning; Journal requires the CLI-reported native id on every event and never assigns one (OTel: MUST NOT fabricate; OI/Weave: whatever the instrumentation sets).",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "covered",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Claude: session_id on every record; Codex: thread.started.thread_id",
+      "evidence": [],
+      "action": "none"
+    },
+    {
+      "id": "identity.session-name",
+      "group": "identity",
+      "summary": "A human-readable conversation name or title",
+      "fields": [
+        "weave.agents_schema:field:AgentSpanSchema.conversation_name",
+        "weave.agents_schema:ingest_attribute:weave.conversation.name"
+      ],
+      "concepts": [],
+      "proposal": {
+        "id": "session-display-name",
+        "question": "Did the source report a human-readable name for the session?"
+      },
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal has no session title attribute.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation (Weave)",
+      "definition": "missing",
+      "state": "definition_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "source_limited",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Neither pinned stream inventory has a session title family (Claude stream-json 2.1.304, Codex exec 0.160.1); native session summaries are SESSION-1 import territory, never stream enrichment",
+      "evidence": [],
+      "action": "Define an optional reported session display name (reported only, never generated); record route limitation"
+    },
+    {
+      "id": "identity.main-agent",
+      "group": "identity",
+      "summary": "The top-level agent (the CLI product) running the execution",
+      "fields": [
+        "otel_genai.semconv:entity:gen_ai.main_agent",
+        "otel_genai.semconv:attribute:gen_ai.main_agent.id",
+        "otel_genai.semconv:attribute:gen_ai.main_agent.name",
+        "otel_genai.semconv:attribute:gen_ai.main_agent.description"
+      ],
+      "concepts": [
+        "session-identity"
+      ],
+      "proposal": null,
+      "destinations": [
+        "cli_agent.name",
+        "cli_agent.version",
+        "cli_agent.uid",
+        "cli_agent.instance_uid",
+        "cli_agent.product"
+      ],
+      "relation": "adapted",
+      "differences": "cli_agent separates product name, CLI version, a stable logical agent id (only when the source reports one) and instance; OTel main_agent has id/name/description. No source reports a main-agent description.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "partial",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Claude: system/init claude_code_version; Codex: version from the launch probe (exec stream reports none); neither reports a stable agent id or description",
+      "evidence": [],
+      "action": "Keep; description and stable id stay source-limited on both routes"
+    },
+    {
+      "id": "identity.invoked-agent",
+      "group": "identity",
+      "summary": "Identity of an invoked (sub-)agent: name/type, id, version, description",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.agent.id",
+        "otel_genai.semconv:attribute:gen_ai.agent.name",
+        "otel_genai.semconv:attribute:gen_ai.agent.version",
+        "otel_genai.semconv:attribute:gen_ai.agent.description",
+        "openinference.semconv:attribute:agent.name",
+        "weave.agents_schema:field:AgentSpanSchema.agent_id",
+        "weave.agents_schema:field:AgentSpanSchema.agent_name",
+        "weave.agents_schema:field:AgentSpanSchema.agent_version",
+        "weave.agents_schema:field:AgentSpanSchema.agent_description",
+        "weave.agents_schema:field:AgentChatMessage.agent_name",
+        "weave.agents_schema:field:AgentChatMessage.agent_version",
+        "weave.agents_schema:ingest_attribute:weave.agent.id",
+        "weave.agents_schema:ingest_attribute:weave.agent.name",
+        "weave.agents_schema:ingest_attribute:weave.agent.version",
+        "weave.agents_schema:ingest_attribute:weave.agent.description"
+      ],
+      "concepts": [
+        "child-runs",
+        "child-run-metadata"
+      ],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal links a child run to its spawning call but has no canonical sub-agent identity (type, id, description); the pending child-run-metadata concept owns it.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "mapper_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "retained_only",
+        "codex-cli/exec-json-stream/0.160.1": "retained_only"
+      },
+      "route_evidence": "Claude: assistant/user agent_id, subagent_type, task_description and system/task_started subagent_type, description, spawn_depth retained (live); Codex: collab_tool_call receiver_thread_ids, agents_states retained (live)",
+      "evidence": [],
+      "action": "SEM-2: define child-run agent identity (reported type, id, description) and map Claude task/agent fields and Codex collab receivers"
+    },
+    {
+      "id": "identity.response",
+      "group": "identity",
+      "summary": "The provider response identifier",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.response.id",
+        "weave.agents_schema:field:AgentSpanSchema.response_id",
+        "weave.agents_schema:ingest_attribute:weave.response.id"
+      ],
+      "concepts": [
+        "model-response-identity"
+      ],
+      "proposal": null,
+      "destinations": [
+        "model_response.response_uid"
+      ],
+      "relation": "equivalent",
+      "differences": "Same meaning since extension 0.6.0: response_uid is only a provider response id.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "covered",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude: assistant.message.id; Codex exec items carry stream-local ids only (claim codex.exec-stream.stream-local-identity: model response identity unavailable at source)",
+      "evidence": [
+        "claim:codex.exec-stream.stream-local-identity"
+      ],
+      "action": "none"
+    },
+    {
+      "id": "identity.content-item",
+      "group": "identity",
+      "summary": "A provider-assigned identifier of one content item (for example a Responses reasoning item)",
+      "fields": [
+        "openinference.semconv:attribute:message_content.id"
+      ],
+      "concepts": [
+        "model-response-identity",
+        "ordered-content-blocks"
+      ],
+      "proposal": null,
+      "destinations": [
+        "model_response.item_uid",
+        "model_response.identity_basis_id"
+      ],
+      "relation": "different",
+      "differences": "Journal records the identifier the source reports with its identity basis: Codex exec item ids are stream-local (basis 2), not provider item ids; Claude content blocks carry no id.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "source_limited",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "source_limited",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Codex exec emits item.id (stream-local), not the provider id; Claude content blocks have no id except tool_use ids",
+      "evidence": [],
+      "action": "none"
+    },
+    {
+      "id": "identity.hierarchy",
+      "group": "identity",
+      "summary": "Parent/child structure of operations (trace, span and parent links; execution graph)",
+      "fields": [
+        "weave.agents_schema:field:AgentSpanSchema.trace_id",
+        "weave.agents_schema:field:AgentSpanSchema.span_id",
+        "weave.agents_schema:field:AgentSpanSchema.parent_span_id",
+        "weave.agents_schema:field:AgentChatMessage.span_id",
+        "openinference.semconv:attribute:graph.node.id",
+        "openinference.semconv:attribute:graph.node.name",
+        "openinference.semconv:attribute:graph.node.parent_id"
+      ],
+      "concepts": [
+        "prompt-turn-identity",
+        "child-runs",
+        "source-occurrence-provenance"
+      ],
+      "proposal": null,
+      "destinations": [
+        "tool_call.response_uid",
+        "tool_call.turn_uid",
+        "model_response.turn_uid",
+        "journal_provenance.run_uid",
+        "journal_provenance.sequence",
+        "source_ref.record_index"
+      ],
+      "relation": "different",
+      "differences": "Journal mints no span ids: structure is the reported owner keys (turn, response, call), child runs linked to their spawning call, and source occurrence order. A full tree is derivable where the source reports the links.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "partial",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "retained_only"
+      },
+      "route_evidence": "Claude: parent_tool_use_id routes child records (verified); Codex: collab_tool_call children not linked (child-runs unsupported on the route; receivers retained)",
+      "evidence": [],
+      "action": "Codex collab child linkage with SEM-2 child-run work; keep span ids out of the model"
+    },
+    {
+      "id": "identity.user",
+      "group": "identity",
+      "summary": "The end user or account on whose behalf the execution ran",
+      "fields": [
+        "openinference.semconv:attribute:user.id",
+        "weave.agents_schema:field:AgentSpanSchema.wb_user_id"
+      ],
+      "concepts": [],
+      "proposal": {
+        "id": "reported-user-identity",
+        "question": "Which user or account did the source report the execution ran for?"
+      },
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal has no user attribute. Account identity is sensitive; only a source-reported value could be recorded.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "definition_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "source_limited",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude system/init apiKeySource names an auth source, not a user; Codex exec reports none",
+      "evidence": [],
+      "action": "Define an optional source-reported user/account reference with privacy rules, or propose exclusion for review"
+    },
+    {
+      "id": "identity.hosted-project",
+      "group": "hosting",
+      "summary": "The hosted project or storage partition the spans were written to",
+      "fields": [
+        "weave.agents_schema:field:AgentSpanSchema.project_id",
+        "openinference.semconv:attribute:openinference.project.name"
+      ],
+      "concepts": [
+        "session-identity"
+      ],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "A partition of the observability backend chosen by the exporter configuration, not an execution fact; the nearest execution fact is session_settings.working_directory.",
+      "tier": "out_of_scope_proposed",
+      "tier_reason": "Hosting/storage partition of a backend; proposed exclusion pending review",
+      "definition": "missing",
+      "state": "excluded_proposed",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "not_applicable",
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+      },
+      "route_evidence": "Not an execution fact on any route",
+      "evidence": [],
+      "action": "Review the proposed exclusion"
+    },
+    {
+      "id": "operation.kind",
+      "group": "operations",
+      "summary": "Which kind of execution step a record describes",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.operation.name",
+        "weave.agents_schema:field:AgentSpanSchema.operation_name",
+        "weave.agents_schema:field:AgentChatMessage.type",
+        "weave.agents_schema:ingest_attribute:weave.operation.name",
+        "openinference.semconv:attribute:openinference.span.kind"
+      ],
+      "concepts": [
+        "model-response-identity",
+        "tool-request-identity-and-arguments",
+        "prompt-turn-identity"
+      ],
+      "proposal": null,
+      "destinations": [
+        "model_response.activity_id",
+        "tool_call.activity_id",
+        "prompt_turn.activity_id",
+        "session_context.activity_id",
+        "source_record.activity_id"
+      ],
+      "relation": "adapted",
+      "differences": "Journal encodes the kind as the event class (model_response, tool_call, prompt_turn, session_context, source_record) with an activity; no free-text operation name.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "covered",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Every mapped record has a class and activity on both routes",
+      "evidence": [],
+      "action": "none"
+    },
+    {
+      "id": "operation.user-turn",
+      "group": "operations",
+      "summary": "A user submission and the work it starts",
+      "fields": [
+        "weave.agents_schema:enum_member:AgentChatMessageType=user_message",
+        "weave.agents_schema:field:AgentChatMessage.user_message"
+      ],
+      "concepts": [
+        "user-submission",
+        "prompt-turn-identity"
+      ],
+      "proposal": null,
+      "destinations": [
+        "prompt_turn.content_blocks[].text",
+        "prompt_turn.turn_uid",
+        "prompt_turn.activity_id"
+      ],
+      "relation": "adapted",
+      "differences": "Journal records the submission as prompt_turn events with turn identity where reported.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "covered",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude echoes child-scope prompts only (claim claude.stream.child-scope-prompt); Codex exec does not echo the prompt (user-submission unavailable at source)",
+      "evidence": [
+        "claim:claude.stream.child-scope-prompt"
+      ],
+      "action": "Caller-supplied prompt with caller provenance remains an open capture-integration option"
+    },
+    {
+      "id": "operation.inference",
+      "group": "operations",
+      "summary": "A model inference (chat/generation) call",
+      "fields": [
+        "otel_genai.semconv:enum_member:gen_ai.operation.name=chat",
+        "otel_genai.semconv:enum_member:gen_ai.operation.name=generate_content",
+        "otel_genai.semconv:enum_member:gen_ai.operation.name=text_completion",
+        "otel_genai.semconv:span:gen_ai.client.inference",
+        "otel_genai.semconv:event:gen_ai.client.inference.operation.details",
+        "openinference.semconv:enum_member:OpenInferenceSpanKindValues=LLM",
+        "weave.agents_schema:enum_member:AgentChatMessageType=assistant_message",
+        "weave.agents_schema:field:AgentChatMessage.assistant_message"
+      ],
+      "concepts": [
+        "model-response-identity",
+        "response-update-assembly"
+      ],
+      "proposal": null,
+      "destinations": [
+        "model_response.response_uid",
+        "model_response.item_uid",
+        "model_response.content_blocks[].block_index"
+      ],
+      "relation": "adapted",
+      "differences": "One model_response per reported response (Claude) or per completed content item (Codex); the provider API flavour (chat, generate_content, text completion) is not reported by CLI streams.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "covered",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Claude assistant records; Codex agent_message/reasoning items (no response grouping at source)",
+      "evidence": [
+        "claim:codex.exec-stream.stream-local-identity"
+      ],
+      "action": "none"
+    },
+    {
+      "id": "operation.tool-execution",
+      "group": "operations",
+      "summary": "A tool execution step",
+      "fields": [
+        "otel_genai.semconv:enum_member:gen_ai.operation.name=execute_tool",
+        "otel_genai.semconv:span:gen_ai.execute_tool.internal",
+        "openinference.semconv:enum_member:OpenInferenceSpanKindValues=TOOL",
+        "weave.agents_schema:enum_member:AgentChatMessageType=tool_call",
+        "weave.agents_schema:field:AgentChatMessage.tool_call",
+        "otel_genai.semconv:message_property:ToolCallRequestPart.type",
+        "otel_genai.semconv:message_property:ToolCallResponsePart.type"
+      ],
+      "concepts": [
+        "tool-request-identity-and-arguments",
+        "tool-result-ownership-and-content"
+      ],
+      "proposal": null,
+      "destinations": [
+        "tool_call.activity_id",
+        "tool_call.tool_call_uid",
+        "model_response.content_blocks[].block_kind_id",
+        "content_block.tool_call_uid"
+      ],
+      "relation": "adapted",
+      "differences": "Journal records request, started, result and operation stages as tool_call activities rather than one span; a tool request inside a message is a content block of kind Tool call that names the call.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "covered",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Claude tool_use/tool_result; Codex command, MCP, file change, web search, collaboration items",
+      "evidence": [],
+      "action": "none"
+    },
+    {
+      "id": "operation.agent-invocation",
+      "group": "operations",
+      "summary": "An agent invocation (the run, or a sub-agent)",
+      "fields": [
+        "otel_genai.semconv:enum_member:gen_ai.operation.name=invoke_agent",
+        "otel_genai.semconv:span:gen_ai.invoke_agent.client",
+        "otel_genai.semconv:span:gen_ai.invoke_agent.internal",
+        "openinference.semconv:enum_member:OpenInferenceSpanKindValues=AGENT",
+        "weave.agents_schema:enum_member:AgentChatMessageType=agent_start",
+        "weave.agents_schema:field:AgentChatMessage.agent_start"
+      ],
+      "concepts": [
+        "journal-run-and-invocation",
+        "child-runs"
+      ],
+      "proposal": null,
+      "destinations": [
+        "journal_provenance.run_uid",
+        "journal_provenance.invocation_index",
+        "tool_call.tool_call_uid"
+      ],
+      "relation": "adapted",
+      "differences": "The Journal run is the top-level invocation; a child run is linked to its spawning call. Remote agent invocation (client span) has no CLI counterpart.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "partial",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "retained_only"
+      },
+      "route_evidence": "Claude sub-agents verified on the features recording; Codex collab children retained, not linked (child-runs unsupported)",
+      "evidence": [],
+      "action": "Codex collaboration children (SEM-2 child-run batch)"
+    },
+    {
+      "id": "operation.agent-handoff",
+      "group": "operations",
+      "summary": "A hand-off of control from one agent to another",
+      "fields": [
+        "weave.agents_schema:enum_member:AgentChatMessageType=agent_handoff",
+        "weave.agents_schema:field:AgentChatMessage.agent_handoff"
+      ],
+      "concepts": [
+        "child-runs"
+      ],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "Weave declares the timeline type with an empty payload \"for a future agent-to-agent handoff event\"; no fields to compare.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "unresolved",
+      "state": "definition_unresolved",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "source_limited",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "No admitted route reports a hand-off distinct from a spawn or collaboration call",
+      "evidence": [],
+      "action": "Revisit when a foundation defines the payload; no Journal change now"
+    },
+    {
+      "id": "operation.agent-creation",
+      "group": "operations",
+      "summary": "Creating (provisioning) a hosted agent resource",
+      "fields": [
+        "otel_genai.semconv:enum_member:gen_ai.operation.name=create_agent",
+        "otel_genai.semconv:span:gen_ai.create_agent.client"
+      ],
+      "concepts": [],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "OTel: \"usually applicable when working with remote agent services\"; a CLI spawning a sub-agent is an invocation, not provisioning.",
+      "tier": "out_of_scope_proposed",
+      "tier_reason": "Remote agent-service provisioning, not CLI execution; proposed exclusion pending review",
+      "definition": "missing",
+      "state": "excluded_proposed",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "not_applicable",
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+      },
+      "route_evidence": "No admitted route provisions agents",
+      "evidence": [],
+      "action": "Review the proposed exclusion"
+    },
+    {
+      "id": "operation.workflow",
+      "group": "operations",
+      "summary": "A coordinated workflow or chain of steps above single agent invocations",
+      "fields": [
+        "otel_genai.semconv:enum_member:gen_ai.operation.name=invoke_workflow",
+        "otel_genai.semconv:span:gen_ai.invoke_workflow.internal",
+        "otel_genai.semconv:attribute:gen_ai.workflow.name",
+        "openinference.semconv:enum_member:OpenInferenceSpanKindValues=CHAIN"
+      ],
+      "concepts": [],
+      "proposal": {
+        "id": "workflow-scope",
+        "question": "Which reported workflow, if any, did an agent invocation belong to?"
+      },
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal has no workflow scope above the run.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "definition_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "retained_only",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude system/task_started.workflow_name retained (unexercised); Codex exec reports none",
+      "evidence": [],
+      "action": "Define a reported workflow name/scope only when a source reports one (Claude task workflow_name); do not infer workflows"
+    },
+    {
+      "id": "operation.planning",
+      "group": "operations",
+      "summary": "A planning or task-decomposition step",
+      "fields": [
+        "otel_genai.semconv:enum_member:gen_ai.operation.name=plan",
+        "otel_genai.semconv:span:gen_ai.plan.internal"
+      ],
+      "concepts": [],
+      "proposal": {
+        "id": "plan-updates",
+        "question": "Which plan or task list did the agent report, and how did it change?"
+      },
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal records planning only as ordinary tool calls (Claude TodoWrite/ExitPlanMode) or retained records (Codex todo_list).",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "mapper_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "retained_only"
+      },
+      "route_evidence": "Claude planning tools are tool_call events (no plan concept); Codex item.started/updated/completed todo_list retained (live plan recording)",
+      "evidence": [],
+      "action": "Define a plan/todo observation (items, completion state, updates) and map Codex todo_list"
+    },
+    {
+      "id": "operation.mcp",
+      "group": "tools",
+      "summary": "MCP operations an agent performs (tool calls, resource reads, prompt fetches, sampling, elicitation)",
+      "fields": [
+        "otel_genai.semconv:span:mcp.client",
+        "otel_genai.semconv:attribute:mcp.method.name",
+        "otel_genai.semconv:attribute:mcp.resource.uri",
+        "otel_genai.semconv:enum_member:mcp.method.name=tools/call",
+        "otel_genai.semconv:enum_member:mcp.method.name=resources/read",
+        "otel_genai.semconv:enum_member:mcp.method.name=resources/list",
+        "otel_genai.semconv:enum_member:mcp.method.name=resources/templates/list",
+        "otel_genai.semconv:enum_member:mcp.method.name=prompts/get",
+        "otel_genai.semconv:enum_member:mcp.method.name=prompts/list",
+        "otel_genai.semconv:enum_member:mcp.method.name=tools/list",
+        "otel_genai.semconv:enum_member:mcp.method.name=completion/complete",
+        "otel_genai.semconv:enum_member:mcp.method.name=sampling/createMessage",
+        "otel_genai.semconv:enum_member:mcp.method.name=elicitation/create",
+        "otel_genai.semconv:enum_member:mcp.method.name=roots/list"
+      ],
+      "concepts": [
+        "tool-request-identity-and-arguments",
+        "tool-kind-classification"
+      ],
+      "proposal": null,
+      "destinations": [
+        "tool_call.tool_namespace",
+        "tool_call.tool_name",
+        "tool_call.tool_family"
+      ],
+      "relation": "adapted",
+      "differences": "An MCP tool call is a tool_call with the reported server as tool_namespace; the MCP method is not a field (only tools/call is observed).",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "partial",
+      "state": "partial",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "retained_only",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Codex mcp_tool_call server/tool mapped (live, claim codex.exec-stream.mcp-tool-call); Claude MCP tools arrive as tool_use names mcp__server__tool (namespace never derived from a name) and mcp_tool_use.server_name is unexercised; Claude system/elicitation_complete retained",
+      "evidence": [
+        "claim:codex.exec-stream.mcp-tool-call"
+      ],
+      "action": "Map Claude mcp_tool_use.server_name when exercised; record the MCP method when a source reports it"
+    },
+    {
+      "id": "operation.mcp-protocol",
+      "group": "hosting",
+      "summary": "MCP protocol lifecycle and notifications (initialize, ping, progress, subscriptions, logging)",
+      "fields": [
+        "otel_genai.semconv:enum_member:mcp.method.name=notifications/cancelled",
+        "otel_genai.semconv:enum_member:mcp.method.name=initialize",
+        "otel_genai.semconv:enum_member:mcp.method.name=notifications/initialized",
+        "otel_genai.semconv:enum_member:mcp.method.name=notifications/progress",
+        "otel_genai.semconv:enum_member:mcp.method.name=ping",
+        "otel_genai.semconv:enum_member:mcp.method.name=notifications/resources/list_changed",
+        "otel_genai.semconv:enum_member:mcp.method.name=resources/subscribe",
+        "otel_genai.semconv:enum_member:mcp.method.name=resources/unsubscribe",
+        "otel_genai.semconv:enum_member:mcp.method.name=notifications/resources/updated",
+        "otel_genai.semconv:enum_member:mcp.method.name=notifications/prompts/list_changed",
+        "otel_genai.semconv:enum_member:mcp.method.name=notifications/tools/list_changed",
+        "otel_genai.semconv:enum_member:mcp.method.name=logging/setLevel",
+        "otel_genai.semconv:enum_member:mcp.method.name=notifications/message",
+        "otel_genai.semconv:enum_member:mcp.method.name=notifications/roots/list_changed",
+        "otel_genai.semconv:span:mcp.server",
+        "otel_genai.semconv:attribute:mcp.session.id",
+        "otel_genai.semconv:attribute:mcp.protocol.version",
+        "otel_genai.semconv:referenced_attribute:jsonrpc.protocol.version",
+        "otel_genai.semconv:referenced_attribute:jsonrpc.request.id",
+        "otel_genai.semconv:referenced_attribute:network.protocol.name",
+        "otel_genai.semconv:referenced_attribute:network.protocol.version",
+        "otel_genai.semconv:referenced_attribute:network.transport",
+        "otel_genai.semconv:referenced_attribute:rpc.response.status_code",
+        "otel_genai.semconv:referenced_attribute:client.address",
+        "otel_genai.semconv:referenced_attribute:client.port",
+        "otel_genai.semconv:metric:mcp.server.operation.duration",
+        "otel_genai.semconv:metric:mcp.client.session.duration",
+        "otel_genai.semconv:metric:mcp.server.session.duration"
+      ],
+      "concepts": [],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "Transport/session instrumentation of an MCP client or server; CLI streams report MCP servers (Claude init mcp_servers) but not protocol messages.",
+      "tier": "out_of_scope_proposed",
+      "tier_reason": "Protocol transport and server-side instrumentation, not agent actions; proposed exclusion pending review",
+      "definition": "missing",
+      "state": "excluded_proposed",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "not_applicable",
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+      },
+      "route_evidence": "Claude system/init mcp_servers (server status) retained; no protocol messages on either stream",
+      "evidence": [],
+      "action": "Review the proposed exclusion; server availability stays in settings"
+    },
+    {
+      "id": "operation.guardrail-hooks",
+      "group": "operations",
+      "summary": "Guardrail and hook checks around operations",
+      "fields": [
+        "openinference.semconv:enum_member:OpenInferenceSpanKindValues=GUARDRAIL"
+      ],
+      "concepts": [
+        "hook-executions",
+        "permission-decisions"
+      ],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal records permission decisions (verified) but hook executions are a pending concept.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "mapper_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "retained_only",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude system/hook_started, hook_response (outcome, exit_code, stdout/stderr) retained (unexercised); Codex exec reports none",
+      "evidence": [],
+      "action": "Define hook executions (pending concept) and exercise a Claude hook"
+    },
+    {
+      "id": "operation.unknown",
+      "group": "operations",
+      "summary": "A step whose kind the instrumentation does not know",
+      "fields": [
+        "openinference.semconv:enum_member:OpenInferenceSpanKindValues=UNKNOWN"
+      ],
+      "concepts": [
+        "retained-only-unresolved-families",
+        "opaque-malformed-and-blank-records"
+      ],
+      "proposal": null,
+      "destinations": [
+        "source_record.record_type",
+        "source_record.data"
+      ],
+      "relation": "adapted",
+      "differences": "Journal keeps unknown native families whole as source_record with their discriminator, flagged unresolved.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "covered",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Unmapped families on both routes are source_record events",
+      "evidence": [],
+      "action": "none"
+    },
+    {
+      "id": "model.response-model",
+      "group": "model",
+      "summary": "The model that produced a response",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.response.model",
+        "openinference.semconv:attribute:llm.response.model_name",
+        "openinference.semconv:attribute:llm.model_name",
+        "weave.agents_schema:field:AgentSpanSchema.response_model",
+        "weave.agents_schema:field:AgentChatAssistantMessage.model",
+        "weave.agents_schema:ingest_attribute:weave.response.model"
+      ],
+      "concepts": [
+        "model-identity-and-provider"
+      ],
+      "proposal": null,
+      "destinations": [
+        "model_response.model_ref.name",
+        "usage_observation.model_ref.name"
+      ],
+      "relation": "equivalent",
+      "differences": "Same meaning: the model the source reports for the response.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "covered",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude assistant.message.model; Codex exec reports no model (unavailable at source)",
+      "evidence": [],
+      "action": "none"
+    },
+    {
+      "id": "model.request-model",
+      "group": "model",
+      "summary": "The model requested or configured for the session",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.request.model",
+        "openinference.semconv:attribute:llm.request.model_name",
+        "weave.agents_schema:field:AgentSpanSchema.request_model",
+        "weave.agents_schema:field:AgentChatAgentStart.model",
+        "weave.agents_schema:ingest_attribute:weave.request.model"
+      ],
+      "concepts": [
+        "launch-and-session-settings",
+        "model-identity-and-provider"
+      ],
+      "proposal": null,
+      "destinations": [
+        "session_context.settings.model"
+      ],
+      "relation": "adapted",
+      "differences": "Journal records the configured session model at its reported scope, not a per-request model.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "covered",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude system/init model; Codex exec reports none",
+      "evidence": [],
+      "action": "none"
+    },
+    {
+      "id": "model.provider",
+      "group": "model",
+      "summary": "The provider (organization or API route) serving the model",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.provider.name",
+        "otel_genai.semconv:enum_member:gen_ai.provider.name=openai",
+        "otel_genai.semconv:enum_member:gen_ai.provider.name=gcp.gen_ai",
+        "otel_genai.semconv:enum_member:gen_ai.provider.name=gcp.vertex_ai",
+        "otel_genai.semconv:enum_member:gen_ai.provider.name=gcp.gemini",
+        "otel_genai.semconv:enum_member:gen_ai.provider.name=anthropic",
+        "otel_genai.semconv:enum_member:gen_ai.provider.name=cohere",
+        "otel_genai.semconv:enum_member:gen_ai.provider.name=azure.ai.inference",
+        "otel_genai.semconv:enum_member:gen_ai.provider.name=azure.ai.openai",
+        "otel_genai.semconv:enum_member:gen_ai.provider.name=ibm.watsonx.ai",
+        "otel_genai.semconv:enum_member:gen_ai.provider.name=aws.bedrock",
+        "otel_genai.semconv:enum_member:gen_ai.provider.name=perplexity",
+        "otel_genai.semconv:enum_member:gen_ai.provider.name=x_ai",
+        "otel_genai.semconv:enum_member:gen_ai.provider.name=deepseek",
+        "otel_genai.semconv:enum_member:gen_ai.provider.name=groq",
+        "otel_genai.semconv:enum_member:gen_ai.provider.name=mistral",
+        "otel_genai.semconv:enum_member:gen_ai.provider.name=moonshot_ai",
+        "openinference.semconv:attribute:llm.provider",
+        "openinference.semconv:attribute:llm.system",
+        "openinference.semconv:enum_member:OpenInferenceLLMProviderValues=openai",
+        "openinference.semconv:enum_member:OpenInferenceLLMProviderValues=anthropic",
+        "openinference.semconv:enum_member:OpenInferenceLLMProviderValues=cohere",
+        "openinference.semconv:enum_member:OpenInferenceLLMProviderValues=mistralai",
+        "openinference.semconv:enum_member:OpenInferenceLLMProviderValues=google",
+        "openinference.semconv:enum_member:OpenInferenceLLMProviderValues=azure",
+        "openinference.semconv:enum_member:OpenInferenceLLMProviderValues=aws",
+        "openinference.semconv:enum_member:OpenInferenceLLMProviderValues=xai",
+        "openinference.semconv:enum_member:OpenInferenceLLMProviderValues=deepseek",
+        "openinference.semconv:enum_member:OpenInferenceLLMProviderValues=groq",
+        "openinference.semconv:enum_member:OpenInferenceLLMProviderValues=fireworks",
+        "openinference.semconv:enum_member:OpenInferenceLLMProviderValues=moonshot",
+        "openinference.semconv:enum_member:OpenInferenceLLMProviderValues=cerebras",
+        "openinference.semconv:enum_member:OpenInferenceLLMProviderValues=perplexity",
+        "openinference.semconv:enum_member:OpenInferenceLLMProviderValues=together",
+        "openinference.semconv:enum_member:OpenInferenceLLMProviderValues=ollama",
+        "openinference.semconv:enum_member:OpenInferenceLLMProviderValues=meta",
+        "openinference.semconv:enum_member:OpenInferenceLLMProviderValues=zai",
+        "openinference.semconv:enum_member:OpenInferenceLLMProviderValues=minimax",
+        "openinference.semconv:enum_member:OpenInferenceLLMProviderValues=oracle",
+        "openinference.semconv:enum_member:OpenInferenceLLMProviderValues=typesafe",
+        "openinference.semconv:enum_member:OpenInferenceLLMSystemValues=openai",
+        "openinference.semconv:enum_member:OpenInferenceLLMSystemValues=anthropic",
+        "openinference.semconv:enum_member:OpenInferenceLLMSystemValues=cohere",
+        "openinference.semconv:enum_member:OpenInferenceLLMSystemValues=mistralai",
+        "openinference.semconv:enum_member:OpenInferenceLLMSystemValues=vertexai",
+        "openinference.semconv:enum_member:OpenInferenceLLMSystemValues=typesafe",
+        "openinference.semconv:spec_value:llm.system=xai",
+        "openinference.semconv:spec_value:llm.system=deepseek",
+        "openinference.semconv:spec_value:llm.system=amazon",
+        "openinference.semconv:spec_value:llm.system=meta",
+        "openinference.semconv:spec_value:llm.system=ai21",
+        "weave.agents_schema:field:AgentSpanSchema.provider_name",
+        "weave.agents_schema:ingest_attribute:weave.provider.name",
+        "weave.agents_schema:ingest_attribute:weave.system"
+      ],
+      "concepts": [
+        "model-identity-and-provider"
+      ],
+      "proposal": null,
+      "destinations": [
+        "model_ref.provider_kind",
+        "model_ref.provider_basis_id",
+        "session_context.settings.provider"
+      ],
+      "relation": "different",
+      "differences": "Journal records the provider classification the source reports with its basis and never infers an organization from a model name; there is no normalized provider vocabulary.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "partial",
+      "state": "partial",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude result modelUsage.{*}.provider (for example firstParty) mapped as provider_kind; Codex exec reports none",
+      "evidence": [],
+      "action": "Define a reviewed mapping from reported provider routes to an organization vocabulary (firstParty, bedrock, vertex) without inference from model names"
+    },
+    {
+      "id": "model.service-tier",
+      "group": "model",
+      "summary": "The service/priority tier that served the request (affects price)",
+      "fields": [
+        "otel_genai.semconv:attribute:openai.request.service_tier",
+        "otel_genai.semconv:attribute:openai.response.service_tier",
+        "otel_genai.semconv:enum_member:openai.request.service_tier=auto",
+        "otel_genai.semconv:enum_member:openai.request.service_tier=default"
+      ],
+      "concepts": [
+        "reported-cost",
+        "usage-components-and-cache"
+      ],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "No Journal attribute; economics needs it to select applicable rates.",
+      "tier": "1",
+      "tier_reason": "Economically material context for Tier 1 usage/cost (tier changes the rate)",
+      "definition": "missing",
+      "state": "mapper_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "retained_only",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude result usage.service_tier and usage.speed retained (live); Codex exec reports none",
+      "evidence": [],
+      "action": "PRICE-1 applicability: define reported service tier on the usage/cost context and map Claude usage.service_tier"
+    },
+    {
+      "id": "model.vendor-environment",
+      "group": "model",
+      "summary": "Provider-specific API and environment attributes (fingerprint, API flavour, cloud resource ids)",
+      "fields": [
+        "otel_genai.semconv:attribute:openai.response.system_fingerprint",
+        "otel_genai.semconv:attribute:openai.api.type",
+        "otel_genai.semconv:attribute:aws.bedrock.guardrail.id",
+        "otel_genai.semconv:attribute:aws.bedrock.knowledge_base.id",
+        "otel_genai.semconv:enum_member:openai.api.type=chat_completions",
+        "otel_genai.semconv:enum_member:openai.api.type=responses",
+        "otel_genai.semconv:referenced_attribute:azure.resource_provider.namespace",
+        "otel_genai.semconv:span_refinement:openai.gen_ai.client.inference",
+        "otel_genai.semconv:span_refinement:openai.fetch_response.client",
+        "otel_genai.semconv:span_refinement:azure.ai.gen_ai.client.inference",
+        "otel_genai.semconv:span_refinement:anthropic.gen_ai.client.inference",
+        "otel_genai.semconv:span_refinement:aws.bedrock.gen_ai.client.inference"
+      ],
+      "concepts": [
+        "retained-only-known-meaning-families"
+      ],
+      "proposal": null,
+      "destinations": [
+        "source_record.data"
+      ],
+      "relation": "coarser",
+      "differences": "Provider-namespaced refinements of the cross-provider model; Journal keeps such source facts as vendor residual with known meaning when a source reports them.",
+      "tier": "2",
+      "tier_reason": "Provider-specific extension attributes beyond the cross-provider union; their cross-provider counterparts are Tier 1 facets",
+      "definition": "partial",
+      "state": "source_limited",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "source_limited",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Neither stream reports system fingerprint, API type or cloud resource ids (Claude inference_geo, a different fact, is retained)",
+      "evidence": [],
+      "action": "None now; map a provider attribute if an admitted route reports it"
+    },
+    {
+      "id": "request.sampling",
+      "group": "request",
+      "summary": "Sampling and generation limits requested (temperature, top-p/k, max tokens, penalties, seed, stops, choices)",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.request.temperature",
+        "otel_genai.semconv:attribute:gen_ai.request.top_p",
+        "otel_genai.semconv:attribute:gen_ai.request.top_k",
+        "otel_genai.semconv:attribute:gen_ai.request.max_tokens",
+        "otel_genai.semconv:attribute:gen_ai.request.frequency_penalty",
+        "otel_genai.semconv:attribute:gen_ai.request.presence_penalty",
+        "otel_genai.semconv:attribute:gen_ai.request.seed",
+        "otel_genai.semconv:attribute:gen_ai.request.stop_sequences",
+        "otel_genai.semconv:attribute:gen_ai.request.choice.count",
+        "openinference.semconv:attribute:llm.invocation_parameters",
+        "weave.agents_schema:field:AgentSpanSchema.request_temperature",
+        "weave.agents_schema:field:AgentSpanSchema.request_max_tokens",
+        "weave.agents_schema:field:AgentSpanSchema.request_top_p",
+        "weave.agents_schema:field:AgentSpanSchema.request_frequency_penalty",
+        "weave.agents_schema:field:AgentSpanSchema.request_presence_penalty",
+        "weave.agents_schema:field:AgentSpanSchema.request_seed",
+        "weave.agents_schema:field:AgentSpanSchema.request_stop_sequences",
+        "weave.agents_schema:field:AgentSpanSchema.request_choice_count",
+        "weave.agents_schema:ingest_attribute:weave.request.temperature",
+        "weave.agents_schema:ingest_attribute:weave.request.max_tokens",
+        "weave.agents_schema:ingest_attribute:weave.request.top_p",
+        "weave.agents_schema:ingest_attribute:weave.request.frequency_penalty",
+        "weave.agents_schema:ingest_attribute:weave.request.presence_penalty",
+        "weave.agents_schema:ingest_attribute:weave.request.seed",
+        "weave.agents_schema:ingest_attribute:weave.request.stop_sequences",
+        "weave.agents_schema:ingest_attribute:weave.request.choice.count"
+      ],
+      "concepts": [
+        "launch-and-session-settings"
+      ],
+      "proposal": {
+        "id": "request-parameters",
+        "question": "Which generation parameters did the source report for a model request or session?"
+      },
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal has no request-parameter object.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "definition_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "source_limited",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude system/init carries no sampling parameters (modelUsage maxOutputTokens is a model limit, retained); Codex exec reports none",
+      "evidence": [],
+      "action": "Define an optional reported request-parameters object (verbatim values, reported scope); record both routes as source-limited"
+    },
+    {
+      "id": "request.reasoning-effort",
+      "group": "request",
+      "summary": "Requested reasoning/thinking effort",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.request.reasoning.level"
+      ],
+      "concepts": [
+        "launch-and-session-settings"
+      ],
+      "proposal": {
+        "id": "request-parameters",
+        "question": "Which generation parameters did the source report for a model request or session?"
+      },
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal has no reasoning-effort setting.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "definition_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "retained_only",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude system/init effort retained (Remote Control init frames only, unexercised); Codex exec reports none",
+      "evidence": [],
+      "action": "Define with the request-parameters proposal"
+    },
+    {
+      "id": "request.output-type",
+      "group": "request",
+      "summary": "The requested output type (text, JSON, image, speech)",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.output.type",
+        "otel_genai.semconv:enum_member:gen_ai.output.type=text",
+        "otel_genai.semconv:enum_member:gen_ai.output.type=json",
+        "otel_genai.semconv:enum_member:gen_ai.output.type=image",
+        "otel_genai.semconv:enum_member:gen_ai.output.type=speech",
+        "weave.agents_schema:field:AgentSpanSchema.output_type",
+        "weave.agents_schema:ingest_attribute:weave.output.type"
+      ],
+      "concepts": [],
+      "proposal": {
+        "id": "request-parameters",
+        "question": "Which generation parameters did the source report for a model request or session?"
+      },
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal has no requested-output-type attribute.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "definition_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "retained_only",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude result structured_output retained (with a JSON schema request; unexercised); Codex exec reports none",
+      "evidence": [],
+      "action": "Define with the request-parameters proposal"
+    },
+    {
+      "id": "request.streaming",
+      "group": "request",
+      "summary": "Whether the model request was streamed",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.request.stream"
+      ],
+      "concepts": [],
+      "proposal": {
+        "id": "request-parameters",
+        "question": "Which generation parameters did the source report for a model request or session?"
+      },
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal records the CLI output route (stream-json/exec JSON), not whether the CLI streamed its model requests.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "definition_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "source_limited",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Neither stream reports the model request mode",
+      "evidence": [],
+      "action": "Define with the request-parameters proposal"
+    },
+    {
+      "id": "request.response-chaining",
+      "group": "request",
+      "summary": "Links to a previous response or stream cursor a request continued from",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.request.previous_response.id",
+        "otel_genai.semconv:attribute:gen_ai.request.stream_cursor"
+      ],
+      "concepts": [
+        "session-resume-linkage"
+      ],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal has no request-continuation link (session resume linkage is a pending concept).",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "definition_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "retained_only",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude assistant/result resume_reason and supersedes retained (unexercised); Codex exec reports none",
+      "evidence": [],
+      "action": "Define with session-resume-linkage (pending concept)"
+    },
+    {
+      "id": "content.input-history",
+      "group": "content",
+      "summary": "The full input (chat history) sent to the model on a call",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.input.messages",
+        "otel_genai.semconv:message_property:ChatMessage.parts",
+        "openinference.semconv:attribute:llm.input_messages",
+        "weave.agents_schema:field:AgentSpanSchema.input_messages",
+        "weave.agents_schema:ingest_attribute:weave.input.messages"
+      ],
+      "concepts": [
+        "user-submission",
+        "ordered-content-blocks",
+        "injected-context"
+      ],
+      "proposal": null,
+      "destinations": [
+        "prompt_turn.content_blocks[].text",
+        "model_response.content_blocks[].text",
+        "session_context.content_blocks[].text"
+      ],
+      "relation": "different",
+      "differences": "Journal records each message once at its occurrence (prompts, responses, results, injected context); the exact per-call input after history assembly or compaction is not reported by CLI streams. A consumer can derive the conversation order.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "partial",
+      "state": "source_limited",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "source_limited",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Neither stream reports the assembled per-call input; recorded messages are verified (ordered-content-blocks)",
+      "evidence": [],
+      "action": "State the derivation rule for consumers; keep the per-call input source-limited"
+    },
+    {
+      "id": "content.output-messages",
+      "group": "content",
+      "summary": "The messages a model returned",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.output.messages",
+        "otel_genai.semconv:message_property:OutputMessage.parts",
+        "openinference.semconv:attribute:llm.output_messages",
+        "openinference.semconv:attribute:llm.choices",
+        "openinference.semconv:attribute:completion.text",
+        "weave.agents_schema:field:AgentSpanSchema.output_messages",
+        "weave.agents_schema:ingest_attribute:weave.output.messages",
+        "weave.agents_schema:ingest_attribute:weave.completion"
+      ],
+      "concepts": [
+        "ordered-content-blocks",
+        "response-update-assembly"
+      ],
+      "proposal": null,
+      "destinations": [
+        "model_response.content_blocks[].text",
+        "model_response.content_blocks[].block_index"
+      ],
+      "relation": "adapted",
+      "differences": "Journal records the response content blocks in native order with exact native representation.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "covered",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Claude assistant content; Codex agent_message/reasoning items",
+      "evidence": [],
+      "action": "none"
+    },
+    {
+      "id": "content.system-instructions",
+      "group": "content",
+      "summary": "System instructions given separately from the chat history",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.system_instructions",
+        "weave.agents_schema:field:AgentSpanSchema.system_instructions",
+        "weave.agents_schema:field:AgentChatAgentStart.system_instructions",
+        "weave.agents_schema:ingest_attribute:weave.system_instructions"
+      ],
+      "concepts": [
+        "injected-context"
+      ],
+      "proposal": null,
+      "destinations": [
+        "session_context.content_blocks[].text",
+        "session_context.rendered_role",
+        "session_context.context_kind"
+      ],
+      "relation": "adapted",
+      "differences": "Injected context (including a system role) is a session_context event when a source reports it.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "source_limited",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "source_limited",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude stream-json does not carry the system prompt (output_style retained); Codex base instructions appear only in the rollout file (SESSION-1), not the exec stream",
+      "evidence": [],
+      "action": "none"
+    },
+    {
+      "id": "content.roles",
+      "group": "content",
+      "summary": "Who produced a message (user, assistant, tool, system)",
+      "fields": [
+        "otel_genai.semconv:message_property:ChatMessage.role",
+        "otel_genai.semconv:message_property:OutputMessage.role",
+        "otel_genai.semconv:message_type:Role",
+        "openinference.semconv:attribute:message.role",
+        "weave.agents_schema:field:NormalizedMessage.role"
+      ],
+      "concepts": [
+        "user-submission",
+        "injected-context"
+      ],
+      "proposal": null,
+      "destinations": [
+        "prompt_turn.content_blocks[].text",
+        "session_context.rendered_role"
+      ],
+      "relation": "adapted",
+      "differences": "Journal encodes the role in the event class (prompt_turn, model_response, tool result) and keeps a rendered role for injected context.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "covered",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Both routes",
+      "evidence": [],
+      "action": "none"
+    },
+    {
+      "id": "content.participant-name",
+      "group": "content",
+      "summary": "The name of a message participant",
+      "fields": [
+        "otel_genai.semconv:message_property:ChatMessage.name",
+        "otel_genai.semconv:message_property:OutputMessage.name",
+        "openinference.semconv:attribute:message.name"
+      ],
+      "concepts": [],
+      "proposal": {
+        "id": "participant-name",
+        "question": "Which named participant did the source say produced a message?"
+      },
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal has no participant name.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "definition_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "source_limited",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Neither stream reports message participant names",
+      "evidence": [],
+      "action": "Define only if a route reports one; record source limitation"
+    },
+    {
+      "id": "content.text",
+      "group": "content",
+      "summary": "Text content parts and their representation",
+      "fields": [
+        "otel_genai.semconv:message_property:TextPart.type",
+        "otel_genai.semconv:message_property:TextPart.content",
+        "openinference.semconv:attribute:message.content",
+        "openinference.semconv:attribute:message.contents",
+        "openinference.semconv:attribute:message_content.type",
+        "openinference.semconv:attribute:message_content.text",
+        "openinference.semconv:attribute:input.value",
+        "openinference.semconv:attribute:output.value",
+        "openinference.semconv:attribute:input.mime_type",
+        "openinference.semconv:attribute:output.mime_type",
+        "openinference.semconv:attribute:llm.prompts",
+        "openinference.semconv:attribute:prompt.text",
+        "openinference.semconv:enum_member:OpenInferenceMimeTypeValues=text/plain",
+        "openinference.semconv:enum_member:OpenInferenceMimeTypeValues=application/json",
+        "weave.agents_schema:field:NormalizedMessage.content",
+        "weave.agents_schema:field:AgentChatUserMessage.text",
+        "weave.agents_schema:field:AgentChatAssistantMessage.text"
+      ],
+      "concepts": [
+        "ordered-content-blocks",
+        "user-submission"
+      ],
+      "proposal": null,
+      "destinations": [
+        "model_response.content_blocks[].text",
+        "model_response.content_blocks[].block_type",
+        "prompt_turn.content_blocks[].text",
+        "model_response.content_blocks[].data"
+      ],
+      "relation": "adapted",
+      "differences": "Exact text per block in native order; JSON values stay structured (no stringified JSON plus mime type).",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "covered",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Both routes (Codex prompt text is not echoed: see operation.user-turn)",
+      "evidence": [],
+      "action": "none"
+    },
+    {
+      "id": "content.reasoning",
+      "group": "content",
+      "summary": "Reasoning or thinking content the model reported",
+      "fields": [
+        "otel_genai.semconv:message_property:ReasoningPart.type",
+        "otel_genai.semconv:message_property:ReasoningPart.content",
+        "weave.agents_schema:field:AgentSpanSchema.reasoning_content",
+        "weave.agents_schema:field:AgentChatAssistantMessage.reasoning_content",
+        "weave.agents_schema:ingest_attribute:weave.reasoning_content"
+      ],
+      "concepts": [
+        "reasoning-blocks-and-signature"
+      ],
+      "proposal": null,
+      "destinations": [
+        "model_response.content_blocks[].reasoning_form_id",
+        "model_response.content_blocks[].text"
+      ],
+      "relation": "finer",
+      "differences": "Journal distinguishes full reasoning, summary and redacted forms and keeps their order relative to text and tool use.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "covered",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Claude thinking blocks (Full); Codex reasoning items (Summary)",
+      "evidence": [
+        "claim:codex.exec-stream.reasoning-summary"
+      ],
+      "action": "none"
+    },
+    {
+      "id": "content.reasoning-opaque",
+      "group": "content",
+      "summary": "Opaque reasoning payloads: signatures, redacted data, encrypted content",
+      "fields": [
+        "openinference.semconv:attribute:message_content.signature",
+        "openinference.semconv:attribute:message_content.data",
+        "openinference.semconv:attribute:message_content.encrypted_content",
+        "openinference.semconv:attribute:tool_call.reasoning_signature"
+      ],
+      "concepts": [
+        "reasoning-blocks-and-signature",
+        "redacted-or-encrypted-reasoning"
+      ],
+      "proposal": null,
+      "destinations": [
+        "model_response.content_blocks[].data",
+        "model_response.content_blocks[].reasoning_form_id"
+      ],
+      "relation": "adapted",
+      "differences": "Kept verbatim in the block data with a reasoning form; never empty-thought.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "not_exercised",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude thinking signature verified; redacted_thinking data unexercised; Codex exec emits no encrypted_content; no admitted route emits a Gemini thought signature",
+      "evidence": [],
+      "action": "Exercise Claude redacted thinking when obtainable"
+    },
+    {
+      "id": "content.media",
+      "group": "content",
+      "summary": "Image, audio, video, file and URI parts with their MIME type and modality",
+      "fields": [
+        "otel_genai.semconv:message_property:BlobPart.type",
+        "otel_genai.semconv:message_property:BlobPart.mime_type",
+        "otel_genai.semconv:message_property:BlobPart.modality",
+        "otel_genai.semconv:message_property:BlobPart.content",
+        "otel_genai.semconv:message_property:FilePart.type",
+        "otel_genai.semconv:message_property:FilePart.mime_type",
+        "otel_genai.semconv:message_property:FilePart.modality",
+        "otel_genai.semconv:message_property:FilePart.file_id",
+        "otel_genai.semconv:message_property:UriPart.type",
+        "otel_genai.semconv:message_property:UriPart.mime_type",
+        "otel_genai.semconv:message_property:UriPart.modality",
+        "otel_genai.semconv:message_property:UriPart.uri",
+        "otel_genai.semconv:message_type:Modality",
+        "openinference.semconv:attribute:input.images",
+        "openinference.semconv:attribute:output.images",
+        "openinference.semconv:attribute:image.url",
+        "openinference.semconv:attribute:audio.url",
+        "openinference.semconv:attribute:audio.mime_type",
+        "openinference.semconv:attribute:audio.transcript",
+        "openinference.semconv:attribute:video.url",
+        "openinference.semconv:attribute:message_content.image",
+        "openinference.semconv:attribute:message_content.audio",
+        "openinference.semconv:attribute:message_content.video"
+      ],
+      "concepts": [
+        "media-and-multimodal-blocks"
+      ],
+      "proposal": null,
+      "destinations": [
+        "model_response.content_blocks[].block_kind_id",
+        "model_response.content_blocks[].data",
+        "prompt_turn.content_blocks[].data"
+      ],
+      "relation": "coarser",
+      "differences": "Journal keeps a media block whole (kind Image or Other, native data) but has no canonical MIME type, modality, URI or file-reference attributes.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "partial",
+      "state": "partial",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "unexercised",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude user content source (image) and container_upload file_id declared, unexercised; Codex exec reports no media parts",
+      "evidence": [],
+      "action": "Define media part attributes (mime type, modality, uri/file reference) and exercise a Claude image prompt"
+    },
+    {
+      "id": "content.generic-part",
+      "group": "content",
+      "summary": "A part type the model does not enumerate",
+      "fields": [
+        "otel_genai.semconv:message_property:GenericPart.type"
+      ],
+      "concepts": [
+        "unknown-block-kinds"
+      ],
+      "proposal": null,
+      "destinations": [
+        "model_response.content_blocks[].block_type",
+        "model_response.content_blocks[].data"
+      ],
+      "relation": "equivalent",
+      "differences": "Unknown kinds are kept with their type and position and marked unknown.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "not_exercised",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "unexercised",
+        "codex-cli/exec-json-stream/0.160.1": "unexercised"
+      },
+      "route_evidence": "Verified on the historical 2.1.299 sdk route; not exercised on either admitted route",
+      "evidence": [],
+      "action": "none"
+    },
+    {
+      "id": "content.server-tools",
+      "group": "tools",
+      "summary": "Provider-side (server) tool calls and their responses",
+      "fields": [
+        "otel_genai.semconv:message_property:ServerToolCallPart.type",
+        "otel_genai.semconv:message_property:ServerToolCallPart.id",
+        "otel_genai.semconv:message_property:ServerToolCallPart.name",
+        "otel_genai.semconv:message_property:ServerToolCallPart.server_tool_call",
+        "otel_genai.semconv:message_property:ServerToolCallResponsePart.type",
+        "otel_genai.semconv:message_property:ServerToolCallResponsePart.id",
+        "otel_genai.semconv:message_property:ServerToolCallResponsePart.server_tool_call_response",
+        "otel_genai.semconv:message_property:GenericServerToolCall.type",
+        "otel_genai.semconv:message_property:GenericServerToolCallResponse.type"
+      ],
+      "concepts": [
+        "tool-request-identity-and-arguments",
+        "tool-result-ownership-and-content"
+      ],
+      "proposal": null,
+      "destinations": [
+        "tool_call.tool_family",
+        "tool_call.tool_call_uid",
+        "tool_call.tool_result.data"
+      ],
+      "relation": "adapted",
+      "differences": "A server-side tool is a tool_call with its family; Journal does not separate server-executed from client-executed tools as a field.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "partial",
+      "state": "partial",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "unexercised",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Codex web_search items mapped (claim codex.exec-stream.web-search-duplicate-id); Claude server_tool_use and web_search_tool_result blocks declared, unexercised",
+      "evidence": [
+        "claim:codex.exec-stream.web-search-duplicate-id"
+      ],
+      "action": "Exercise Claude server tools; decide whether execution locus (server/client) is a field"
+    },
+    {
+      "id": "content.finish-reason",
+      "group": "content",
+      "summary": "Why the model stopped generating",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.response.finish_reasons",
+        "otel_genai.semconv:message_property:OutputMessage.finish_reason",
+        "otel_genai.semconv:message_type:FinishReason",
+        "openinference.semconv:attribute:llm.finish_reason",
+        "weave.agents_schema:field:AgentSpanSchema.finish_reasons",
+        "weave.agents_schema:field:NormalizedMessage.finish_reason",
+        "weave.agents_schema:ingest_attribute:weave.response.finish_reasons"
+      ],
+      "concepts": [
+        "response-stop-reason-and-completion"
+      ],
+      "proposal": null,
+      "destinations": [
+        "model_response.stop_reason",
+        "prompt_turn.stop_reason"
+      ],
+      "relation": "different",
+      "differences": "Journal keeps the reported stop reason verbatim; OTel defines a cross-provider vocabulary (stop, length, content_filter, tool_call, error) that Journal does not normalize to.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "partial",
+      "state": "partial",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude assistant.message.stop_reason and result.stop_reason mapped verbatim; Codex exec items report no stop reason",
+      "evidence": [],
+      "action": "SEM-2: define a normalized finish category beside the verbatim value with reviewed per-vendor mappings and examples"
+    },
+    {
+      "id": "content.storage-references",
+      "group": "hosting",
+      "summary": "References to content, artifacts or objects stored in the hosting service",
+      "fields": [
+        "weave.agents_schema:field:AgentSpanSchema.content_refs",
+        "weave.agents_schema:field:AgentSpanSchema.artifact_refs",
+        "weave.agents_schema:field:AgentSpanSchema.object_refs",
+        "weave.agents_schema:field:AgentChatUserMessage.content_refs",
+        "weave.agents_schema:field:AgentChatAssistantMessage.content_refs",
+        "weave.agents_schema:field:AgentChatToolCall.content_refs",
+        "weave.agents_schema:ingest_attribute:weave.content_refs",
+        "weave.agents_schema:ingest_attribute:weave.artifact_refs",
+        "weave.agents_schema:ingest_attribute:weave.object_refs"
+      ],
+      "concepts": [
+        "whole-record-residual-and-reconstruction"
+      ],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "W&B storage references for offloaded content; Journal keeps content inline and archives native files by hash.",
+      "tier": "out_of_scope_proposed",
+      "tier_reason": "Backend storage indirection, not execution information; proposed exclusion pending review",
+      "definition": "missing",
+      "state": "excluded_proposed",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "not_applicable",
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+      },
+      "route_evidence": "Not an execution fact",
+      "evidence": [],
+      "action": "Review the proposed exclusion"
+    },
+    {
+      "id": "content.raw-record",
+      "group": "content",
+      "summary": "The raw source record behind a normalized row",
+      "fields": [
+        "weave.agents_schema:field:AgentSpanSchema.raw_span_dump"
+      ],
+      "concepts": [
+        "whole-record-residual-and-reconstruction"
+      ],
+      "proposal": null,
+      "destinations": [
+        "model_response.data",
+        "tool_call.data",
+        "source_record.data"
+      ],
+      "relation": "finer",
+      "differences": "Journal keeps every acquired record in data (or source_record) with its source address, plus the raw stdout copy.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "covered",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Both routes (whole-record residual verified)",
+      "evidence": [],
+      "action": "none"
+    },
+    {
+      "id": "tool.name",
+      "group": "tools",
+      "summary": "The name of the tool requested",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.tool.name",
+        "otel_genai.semconv:message_property:ToolCallRequestPart.name",
+        "openinference.semconv:attribute:tool.name",
+        "openinference.semconv:attribute:tool_call.function.name",
+        "openinference.semconv:attribute:message.function_call_name",
+        "weave.agents_schema:field:AgentSpanSchema.tool_name",
+        "weave.agents_schema:field:AgentChatToolCall.tool_name",
+        "weave.agents_schema:ingest_attribute:weave.tool.name"
+      ],
+      "concepts": [
+        "tool-request-identity-and-arguments"
+      ],
+      "proposal": null,
+      "destinations": [
+        "tool_call.tool_name",
+        "tool_call.tool_family"
+      ],
+      "relation": "adapted",
+      "differences": "tool_name only where the source reports a name; the item family is tool_family (Codex file_change and web_search report no name).",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "covered",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Claude tool_use.name; Codex command/MCP/collab names, family for file change and web search",
+      "evidence": [
+        "claim:codex.exec-stream.collab-and-file-change"
+      ],
+      "action": "none"
+    },
+    {
+      "id": "tool.call-id",
+      "group": "tools",
+      "summary": "The identifier linking a tool request to its result",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.tool.call.id",
+        "otel_genai.semconv:message_property:ToolCallRequestPart.id",
+        "otel_genai.semconv:message_property:ToolCallResponsePart.id",
+        "openinference.semconv:attribute:tool_call.id",
+        "openinference.semconv:attribute:message.tool_call_id",
+        "openinference.semconv:attribute:tool.id",
+        "weave.agents_schema:field:AgentSpanSchema.tool_call_id",
+        "weave.agents_schema:ingest_attribute:weave.tool.call.id"
+      ],
+      "concepts": [
+        "tool-request-identity-and-arguments",
+        "tool-result-ownership-and-content"
+      ],
+      "proposal": null,
+      "destinations": [
+        "tool_call.tool_call_uid",
+        "tool_call.identity_basis_id"
+      ],
+      "relation": "finer",
+      "differences": "Journal states the identity basis: a model-facing call id (Claude) or a stream-local item id (Codex), never joined across artifacts.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "covered",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Claude tool_use.id/tool_result.tool_use_id; Codex item.id",
+      "evidence": [
+        "claim:codex.exec-stream.stream-local-identity"
+      ],
+      "action": "none"
+    },
+    {
+      "id": "tool.arguments",
+      "group": "tools",
+      "summary": "The exact arguments of a tool call",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.tool.call.arguments",
+        "otel_genai.semconv:message_schema:gen-ai-tool-call-arguments",
+        "otel_genai.semconv:message_property:ToolCallRequestPart.arguments",
+        "openinference.semconv:attribute:tool_call.function.arguments",
+        "openinference.semconv:attribute:message.function_call_arguments_json",
+        "openinference.semconv:attribute:llm.function_call",
+        "openinference.semconv:attribute:message.tool_calls",
+        "weave.agents_schema:field:AgentSpanSchema.tool_call_arguments",
+        "weave.agents_schema:field:AgentChatToolCall.tool_arguments",
+        "weave.agents_schema:ingest_attribute:weave.tool.call.arguments"
+      ],
+      "concepts": [
+        "tool-request-identity-and-arguments"
+      ],
+      "proposal": null,
+      "destinations": [
+        "tool_call.arguments"
+      ],
+      "relation": "finer",
+      "differences": "Structured JSON with exact kinds, not a JSON string.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "covered",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Both routes",
+      "evidence": [],
+      "action": "none"
+    },
+    {
+      "id": "tool.result",
+      "group": "tools",
+      "summary": "The result a tool call returned",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.tool.call.result",
+        "otel_genai.semconv:message_schema:gen-ai-tool-call-result",
+        "otel_genai.semconv:message_property:ToolCallResponsePart.response",
+        "weave.agents_schema:field:AgentSpanSchema.tool_call_result",
+        "weave.agents_schema:field:AgentChatToolCall.tool_result",
+        "weave.agents_schema:ingest_attribute:weave.tool.call.result"
+      ],
+      "concepts": [
+        "tool-result-ownership-and-content",
+        "structured-tool-result-detail"
+      ],
+      "proposal": null,
+      "destinations": [
+        "tool_call.tool_result.data",
+        "tool_call.tool_result.structured_result"
+      ],
+      "relation": "finer",
+      "differences": "Exact content per owner, including identical results under different owners; OTel records a result only \"if execution was successful\", Journal records error results too.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "covered",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Both routes",
+      "evidence": [],
+      "action": "none"
+    },
+    {
+      "id": "tool.type",
+      "group": "tools",
+      "summary": "The mechanism of a tool (function, extension, datastore)",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.tool.type",
+        "weave.agents_schema:field:AgentSpanSchema.tool_type",
+        "weave.agents_schema:ingest_attribute:weave.tool.type"
+      ],
+      "concepts": [
+        "tool-kind-classification"
+      ],
+      "proposal": null,
+      "destinations": [
+        "tool_call.tool_kind_id",
+        "tool_call.tool_family",
+        "tool_call.tool_namespace"
+      ],
+      "relation": "different",
+      "differences": "OTel/Weave tool type is the mechanism (examples function, extension, datastore); Journal has ACP activity kinds, the source family and the MCP namespace. The upstream value set is open and loosely defined.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "unresolved",
+      "state": "definition_unresolved",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Families and namespaces are mapped on both routes; no mechanism field",
+      "evidence": [],
+      "action": "Decide whether a tool mechanism classification (built-in, MCP, server-side, delegation) is needed beside the ACP kind; do not copy the ambiguous upstream values"
+    },
+    {
+      "id": "tool.description",
+      "group": "tools",
+      "summary": "The description of a tool",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.tool.description",
+        "openinference.semconv:attribute:tool.description",
+        "weave.agents_schema:field:AgentSpanSchema.tool_description",
+        "weave.agents_schema:ingest_attribute:weave.tool.description"
+      ],
+      "concepts": [
+        "launch-and-session-settings"
+      ],
+      "proposal": {
+        "id": "tool-definitions",
+        "question": "Which tools, with which descriptions and parameter schemas, did the source report as available?"
+      },
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal records available tool names only.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "definition_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "source_limited",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude system/init tools lists names only; Codex exec reports no tool list",
+      "evidence": [],
+      "action": "Define with tool definitions"
+    },
+    {
+      "id": "tool.definitions",
+      "group": "tools",
+      "summary": "The tool definitions (name, description, parameter schema) available to the model",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.tool.definitions",
+        "otel_genai.semconv:message_property:FunctionToolDefinition.type",
+        "otel_genai.semconv:message_property:FunctionToolDefinition.name",
+        "otel_genai.semconv:message_property:FunctionToolDefinition.description",
+        "otel_genai.semconv:message_property:FunctionToolDefinition.parameters",
+        "otel_genai.semconv:message_property:GenericToolDefinition.type",
+        "otel_genai.semconv:message_property:GenericToolDefinition.name",
+        "openinference.semconv:attribute:llm.tools",
+        "openinference.semconv:attribute:tool.json_schema",
+        "openinference.semconv:attribute:tool.parameters",
+        "weave.agents_schema:field:AgentSpanSchema.tool_definitions",
+        "weave.agents_schema:field:AgentChatAgentStart.tool_definitions",
+        "weave.agents_schema:ingest_attribute:weave.tool.definitions"
+      ],
+      "concepts": [
+        "launch-and-session-settings"
+      ],
+      "proposal": {
+        "id": "tool-definitions",
+        "question": "Which tools, with which descriptions and parameter schemas, did the source report as available?"
+      },
+      "destinations": [
+        "session_context.settings.tool_names"
+      ],
+      "relation": "coarser",
+      "differences": "Journal records the reported tool names in order; descriptions and parameter schemas are not reported.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "partial",
+      "state": "partial",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude system/init tools mapped (names); mcp_servers, skills, agents, slash_commands retained; Codex exec reports no tool list",
+      "evidence": [],
+      "action": "Define tool definitions (names, descriptions, schemas when reported); map Claude init MCP servers/skills/agents lists"
+    },
+    {
+      "id": "tool.command",
+      "group": "tools",
+      "summary": "A tool call that executes commands: executable and exit code",
+      "fields": [
+        "otel_genai.semconv:span_refinement:gen_ai.execute_tool.command.internal",
+        "otel_genai.semconv:referenced_attribute:process.executable.name",
+        "otel_genai.semconv:referenced_attribute:process.executable.path",
+        "otel_genai.semconv:referenced_attribute:process.exit.code"
+      ],
+      "concepts": [
+        "observed-operations"
+      ],
+      "proposal": null,
+      "destinations": [
+        "tool_call.tool_operation.command_line",
+        "tool_call.tool_operation.argv",
+        "tool_call.tool_operation.exit_code"
+      ],
+      "relation": "different",
+      "differences": "Journal records the reported command string verbatim (no shell parsing, so no derived executable) and the reported exit code.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "partial",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "source_limited",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Codex command_execution command and exit_code mapped (claim codex.exec-stream.standalone-operation-command); Claude Bash results report no exit code",
+      "evidence": [
+        "claim:codex.exec-stream.standalone-operation-command"
+      ],
+      "action": "Keep executable name underived (decision); Claude exit code source-limited"
+    },
+    {
+      "id": "tool.skills",
+      "group": "tools",
+      "summary": "Loading and using an agent skill and its resources",
+      "fields": [
+        "otel_genai.semconv:span_refinement:gen_ai.execute_tool.load_skill.internal",
+        "otel_genai.semconv:span_refinement:gen_ai.execute_tool.read_skill_resource.internal",
+        "otel_genai.semconv:attribute:gen_ai.skill.name",
+        "otel_genai.semconv:attribute:gen_ai.skill.description",
+        "otel_genai.semconv:attribute:gen_ai.skill.source.uri",
+        "otel_genai.semconv:attribute:gen_ai.skill.resource.name"
+      ],
+      "concepts": [
+        "tool-request-identity-and-arguments"
+      ],
+      "proposal": {
+        "id": "skill-use",
+        "question": "Which skill did the agent load or use, from which source?"
+      },
+      "destinations": [
+        "tool_call.tool_name",
+        "tool_call.arguments"
+      ],
+      "relation": "coarser",
+      "differences": "A Claude Skill invocation is an ordinary tool call; the skill name stays in its arguments and the available skills list is retained.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "mapper_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "retained_only",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude Skill tool_use arguments (skill name) and system/init skills retained; Codex exec reports no skill operations",
+      "evidence": [],
+      "action": "Define skill facets on tool calls and settings; map Claude Skill calls and init skills"
+    },
+    {
+      "id": "usage.input-inclusive",
+      "group": "usage",
+      "summary": "Total input tokens, including cached tokens",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.usage.input_tokens",
+        "openinference.semconv:attribute:llm.token_count.prompt",
+        "weave.agents_schema:field:AgentSpanSchema.input_tokens",
+        "weave.agents_schema:field:AgentChatAssistantMessage.input_tokens",
+        "weave.agents_schema:ingest_attribute:weave.usage.input_tokens"
+      ],
+      "concepts": [
+        "usage-components-and-cache"
+      ],
+      "proposal": null,
+      "destinations": [
+        "usage_observation.uncached_input_tokens",
+        "usage_observation.cache_read_tokens",
+        "usage_observation.cache_write_tokens"
+      ],
+      "relation": "finer",
+      "differences": "Journal stores disjoint tranches (uncached, cache read, cache write); the inclusive total is their sum when every tranche is established, never stored as the primary quantity (Owner decision).",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "partial",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Claude reports the tranches directly; Codex input_tokens is inclusive and uncached is derived (claim codex.exec-stream.usage-components-inclusive). A Codex cache-write 0 may be a deserializer default (component-uncertainty repair)",
+      "evidence": [
+        "claim:codex.exec-stream.usage-components-inclusive",
+        "claim:claude.stream.usage-tranches"
+      ],
+      "action": "Component-uncertainty repair (this wave); state the consumer derivation of the inclusive total"
+    },
+    {
+      "id": "usage.cache-read",
+      "group": "usage",
+      "summary": "Input tokens read from a prompt cache",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.usage.cache_read.input_tokens",
+        "openinference.semconv:attribute:llm.token_count.prompt_details.cache_read",
+        "weave.agents_schema:field:AgentSpanSchema.cache_read_input_tokens",
+        "weave.agents_schema:ingest_attribute:weave.usage.cache_read.input_tokens"
+      ],
+      "concepts": [
+        "usage-components-and-cache"
+      ],
+      "proposal": null,
+      "destinations": [
+        "usage_observation.cache_read_tokens"
+      ],
+      "relation": "equivalent",
+      "differences": "Same meaning.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "partial",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Claude cache_read_input_tokens; Codex cached_input_tokens (a 0 may be a default when the provider omits input_tokens_details)",
+      "evidence": [],
+      "action": "Component-uncertainty repair (this wave)"
+    },
+    {
+      "id": "usage.cache-write",
+      "group": "usage",
+      "summary": "Input tokens written to a prompt cache, with tiers",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.usage.cache_write.input_tokens",
+        "openinference.semconv:attribute:llm.token_count.prompt_details.cache_write",
+        "weave.agents_schema:field:AgentSpanSchema.cache_creation_input_tokens",
+        "weave.agents_schema:ingest_attribute:weave.usage.cache_creation.input_tokens"
+      ],
+      "concepts": [
+        "usage-components-and-cache"
+      ],
+      "proposal": null,
+      "destinations": [
+        "usage_observation.cache_write_tokens",
+        "usage_observation.cache_write_tiers"
+      ],
+      "relation": "finer",
+      "differences": "Journal adds retention/pricing tiers as parts of the total; Weave 0.53.12 reads only the older cache_creation name.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "partial",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Claude cache_creation_input_tokens with ephemeral 5m/1h tiers; Codex cache_write_input_tokens is serde-defaulted to 0 when the provider omits it (rust-v0.160.1)",
+      "evidence": [],
+      "action": "Component-uncertainty repair (this wave)"
+    },
+    {
+      "id": "usage.cache-input-ambiguous",
+      "group": "usage",
+      "summary": "OpenInference \"cached prompt tokens\" (cache_input) beside cache_read and cache_write",
+      "fields": [
+        "openinference.semconv:attribute:llm.token_count.prompt_details.cache_input",
+        "openinference.semconv:attribute:llm.cost.prompt_details.cache_input"
+      ],
+      "concepts": [
+        "usage-components-and-cache"
+      ],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "The convention does not say whether cache_input means tokens read from cache, written to it, or both; mapping it would copy an ambiguous meaning.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "unresolved",
+      "state": "definition_unresolved",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "not_applicable",
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+      },
+      "route_evidence": "No route needs it: both routes report read and write separately",
+      "evidence": [],
+      "action": "Keep unmapped; record the ambiguity; revisit if OpenInference defines it"
+    },
+    {
+      "id": "usage.output",
+      "group": "usage",
+      "summary": "Output tokens",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.usage.output_tokens",
+        "openinference.semconv:attribute:llm.token_count.completion",
+        "weave.agents_schema:field:AgentSpanSchema.output_tokens",
+        "weave.agents_schema:field:AgentChatAssistantMessage.output_tokens",
+        "weave.agents_schema:ingest_attribute:weave.usage.output_tokens"
+      ],
+      "concepts": [
+        "usage-components-and-cache"
+      ],
+      "proposal": null,
+      "destinations": [
+        "usage_observation.output_tokens"
+      ],
+      "relation": "equivalent",
+      "differences": "Same meaning; reasoning is part of output on both routes.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "covered",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Both routes",
+      "evidence": [],
+      "action": "none"
+    },
+    {
+      "id": "usage.reasoning",
+      "group": "usage",
+      "summary": "Reasoning (thinking) tokens",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.usage.reasoning.output_tokens",
+        "openinference.semconv:attribute:llm.token_count.completion_details.reasoning",
+        "weave.agents_schema:field:AgentSpanSchema.reasoning_tokens",
+        "weave.agents_schema:field:AgentChatAssistantMessage.reasoning_tokens",
+        "weave.agents_schema:ingest_attribute:weave.usage.reasoning_tokens"
+      ],
+      "concepts": [
+        "reasoning-token-counts"
+      ],
+      "proposal": null,
+      "destinations": [
+        "usage_observation.reasoning_tokens",
+        "usage_observation.reasoning_relation_id"
+      ],
+      "relation": "finer",
+      "differences": "Journal states whether reasoning is part of output (relation) from the source arithmetic.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "partial",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Claude result output_tokens_details.thinking_tokens and modelUsage thinkingTokens; Codex reasoning_output_tokens (a 0 may be a default when output_tokens_details is omitted)",
+      "evidence": [],
+      "action": "Component-uncertainty repair (this wave)"
+    },
+    {
+      "id": "usage.total",
+      "group": "usage",
+      "summary": "Total tokens (prompt plus completion)",
+      "fields": [
+        "openinference.semconv:attribute:llm.token_count.total"
+      ],
+      "concepts": [
+        "usage-components-and-cache"
+      ],
+      "proposal": null,
+      "destinations": [
+        "usage_observation.reported_total_tokens"
+      ],
+      "relation": "adapted",
+      "differences": "Journal records a total only when the source reports it as a total; otherwise a consumer derives it from established tranches.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "derivable",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "source_limited",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Neither stream reports a total (the Codex rollout does)",
+      "evidence": [],
+      "action": "none"
+    },
+    {
+      "id": "usage.modality",
+      "group": "usage",
+      "summary": "Token counts per modality (text, image, audio) for input, output and cache reads",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.usage.text.input_tokens",
+        "otel_genai.semconv:attribute:gen_ai.usage.image.input_tokens",
+        "otel_genai.semconv:attribute:gen_ai.usage.audio.input_tokens",
+        "otel_genai.semconv:attribute:gen_ai.usage.text.output_tokens",
+        "otel_genai.semconv:attribute:gen_ai.usage.image.output_tokens",
+        "otel_genai.semconv:attribute:gen_ai.usage.audio.output_tokens",
+        "otel_genai.semconv:attribute:gen_ai.usage.text.cache_read.input_tokens",
+        "otel_genai.semconv:attribute:gen_ai.usage.image.cache_read.input_tokens",
+        "otel_genai.semconv:attribute:gen_ai.usage.audio.cache_read.input_tokens",
+        "otel_genai.semconv:attribute:gen_ai.token.modality",
+        "otel_genai.semconv:enum_member:gen_ai.token.modality=text",
+        "otel_genai.semconv:enum_member:gen_ai.token.modality=image",
+        "otel_genai.semconv:enum_member:gen_ai.token.modality=audio",
+        "otel_genai.semconv:enum_member:gen_ai.token.modality=unknown",
+        "openinference.semconv:attribute:llm.token_count.prompt_details",
+        "openinference.semconv:attribute:llm.token_count.prompt_details.audio",
+        "openinference.semconv:attribute:llm.token_count.completion_details.audio"
+      ],
+      "concepts": [
+        "usage-components-and-cache"
+      ],
+      "proposal": {
+        "id": "usage-modality-parts",
+        "question": "How did a source split a usage tranche by modality?"
+      },
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal has no modality breakdown of tranches.",
+      "tier": "1",
+      "tier_reason": "Economically material (modalities are priced differently)",
+      "definition": "missing",
+      "state": "definition_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "source_limited",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Neither stream reports per-modality counts",
+      "evidence": [],
+      "action": "Define optional modality parts of each tranche (parts, never additional); record source limitation"
+    },
+    {
+      "id": "usage.cost-reported",
+      "group": "usage",
+      "summary": "Total cost of a call or run",
+      "fields": [
+        "openinference.semconv:attribute:llm.cost.total",
+        "weave.agents_schema:field:AgentSpanSchema.total_cost_usd",
+        "weave.agents_schema:field:AgentChatAssistantMessage.total_cost_usd"
+      ],
+      "concepts": [
+        "reported-cost"
+      ],
+      "proposal": null,
+      "destinations": [
+        "cost_observation.total_cost",
+        "cost_observation.currency",
+        "cost_observation.scope_id",
+        "cost_observation.cost_basis"
+      ],
+      "relation": "different",
+      "differences": "Journal records source-reported cost with scope and basis, apart from any estimate; Weave costs are computed at query time and OpenInference costs carry no provenance.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "partial",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude result total_cost_usd mapped; Codex exec reports no cost. Estimated cost awaits PRICE-1",
+      "evidence": [],
+      "action": "PRICE-1: estimates with rate provenance kept apart from reported cost"
+    },
+    {
+      "id": "usage.cost-components",
+      "group": "usage",
+      "summary": "Cost per usage component (input, cache read/write, output, reasoning, audio)",
+      "fields": [
+        "openinference.semconv:attribute:llm.cost.prompt",
+        "openinference.semconv:attribute:llm.cost.completion",
+        "openinference.semconv:attribute:llm.cost.prompt_details",
+        "openinference.semconv:attribute:llm.cost.prompt_details.input",
+        "openinference.semconv:attribute:llm.cost.prompt_details.cache_read",
+        "openinference.semconv:attribute:llm.cost.prompt_details.cache_write",
+        "openinference.semconv:attribute:llm.cost.prompt_details.audio",
+        "openinference.semconv:attribute:llm.cost.completion_details",
+        "openinference.semconv:attribute:llm.cost.completion_details.output",
+        "openinference.semconv:attribute:llm.cost.completion_details.reasoning",
+        "openinference.semconv:attribute:llm.cost.completion_details.audio",
+        "weave.agents_schema:field:AgentSpanSchema.input_cost_usd",
+        "weave.agents_schema:field:AgentSpanSchema.output_cost_usd",
+        "weave.agents_schema:field:AgentSpanSchema.cache_read_cost_usd",
+        "weave.agents_schema:field:AgentSpanSchema.cache_creation_cost_usd",
+        "weave.agents_schema:field:AgentChatAssistantMessage.input_cost_usd",
+        "weave.agents_schema:field:AgentChatAssistantMessage.output_cost_usd"
+      ],
+      "concepts": [
+        "reported-cost"
+      ],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal has no per-component cost; PRICE-1 owns estimates by tranche with rate provenance.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "definition_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "retained_only",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude result modelUsage.{*}.costUSD (per model, reported) retained (live); no per-component cost on either stream",
+      "evidence": [],
+      "action": "PRICE-1: component estimates with rate provenance; map Claude per-model reported cost"
+    },
+    {
+      "id": "usage.metrics",
+      "group": "usage",
+      "summary": "Aggregated token metrics",
+      "fields": [
+        "otel_genai.semconv:metric:gen_ai.client.inference.usage.input_tokens",
+        "otel_genai.semconv:metric:gen_ai.client.inference.usage.output_tokens",
+        "otel_genai.semconv:metric:gen_ai.client.inference.usage.cache_read.input_tokens",
+        "otel_genai.semconv:metric:gen_ai.client.inference.usage.cache_write.input_tokens",
+        "otel_genai.semconv:metric:gen_ai.client.inference.usage.reasoning.output_tokens",
+        "otel_genai.semconv:metric:gen_ai.client.inference.operation.input_tokens",
+        "otel_genai.semconv:metric:gen_ai.client.inference.operation.output_tokens",
+        "otel_genai.semconv:metric_refinement:openai.gen_ai.client.inference.usage.input_tokens",
+        "otel_genai.semconv:metric_refinement:openai.gen_ai.client.inference.usage.output_tokens",
+        "otel_genai.semconv:metric_refinement:openai.gen_ai.client.inference.usage.cache_read.input_tokens",
+        "otel_genai.semconv:metric_refinement:openai.gen_ai.client.inference.usage.cache_write.input_tokens",
+        "otel_genai.semconv:metric_refinement:openai.gen_ai.client.inference.usage.reasoning.output_tokens",
+        "otel_genai.semconv:metric_refinement:openai.gen_ai.client.inference.operation.input_tokens",
+        "otel_genai.semconv:metric_refinement:openai.gen_ai.client.inference.operation.output_tokens"
+      ],
+      "concepts": [
+        "usage-scope-finality-and-repeats"
+      ],
+      "proposal": null,
+      "destinations": [
+        "usage_observation.scope_id",
+        "usage_observation.aggregation_id"
+      ],
+      "relation": "coarser",
+      "differences": "Metrics aggregate per-observation usage; Journal records the observations with scope, finality and aggregation so a consumer can aggregate without double counting.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "derivable",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Usage observations verified on both routes",
+      "evidence": [],
+      "action": "none"
+    },
+    {
+      "id": "status.operation-status",
+      "group": "status",
+      "summary": "Success/error status of an operation",
+      "fields": [
+        "weave.agents_schema:field:AgentSpanSchema.status_code",
+        "weave.agents_schema:field:AgentSpanSchema.status_message",
+        "weave.agents_schema:field:AgentChatMessage.status_code",
+        "weave.agents_schema:field:AgentChatMessage.status_message",
+        "weave.agents_schema:field:AgentChatAssistantMessage.status",
+        "weave.agents_schema:field:AgentChatToolCall.status",
+        "weave.agents_schema:field:AgentChatAgentStart.status",
+        "weave.agents_schema:enum_member:StatusCodeLiteral=UNSET",
+        "weave.agents_schema:enum_member:StatusCodeLiteral=OK",
+        "weave.agents_schema:enum_member:StatusCodeLiteral=ERROR"
+      ],
+      "concepts": [
+        "tool-result-error-and-status",
+        "operation-and-request-reported-state",
+        "interrupted-run-and-never-observed-result"
+      ],
+      "proposal": null,
+      "destinations": [
+        "tool_call.status_id",
+        "tool_call.status_basis_id",
+        "tool_call.reported_state",
+        "prompt_turn.status_id"
+      ],
+      "relation": "different",
+      "differences": "Journal keeps the reported state verbatim and a status with its basis (reported, derived, not derivable) per call and turn; it has no per-inference error status.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "partial",
+      "state": "partial",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Tool and turn status verified on both routes; Claude assistant.error retained (unexercised); Codex turn.failed retained (synthetic only)",
+      "evidence": [],
+      "action": "Map per-response errors with the error-type facet"
+    },
+    {
+      "id": "status.error-type",
+      "group": "status",
+      "summary": "The class of error an operation ended with",
+      "fields": [
+        "otel_genai.semconv:referenced_attribute:error.type",
+        "weave.agents_schema:field:AgentSpanSchema.error_type",
+        "weave.agents_schema:field:AgentChatMessage.error_type",
+        "weave.agents_schema:ingest_attribute:weave.error.type"
+      ],
+      "concepts": [
+        "tool-result-error-and-status",
+        "api-request-attempts"
+      ],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal has error_reported on tool results but no error type for model calls or runs.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "mapper_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "retained_only",
+        "codex-cli/exec-json-stream/0.160.1": "retained_only"
+      },
+      "route_evidence": "Claude result api_error_status (live), result errors[] and assistant.error, system/api_retry error_status retained; Codex turn.failed.error and error items retained (synthetic)",
+      "evidence": [],
+      "action": "Define a reported error class on responses, turns and attempts (pending api-request-attempts) and map both routes"
+    },
+    {
+      "id": "status.exception",
+      "group": "status",
+      "summary": "An exception raised during a client operation",
+      "fields": [
+        "otel_genai.semconv:event:gen_ai.client.operation.exception",
+        "otel_genai.semconv:referenced_attribute:exception.type",
+        "otel_genai.semconv:referenced_attribute:exception.message",
+        "otel_genai.semconv:referenced_attribute:exception.stacktrace",
+        "openinference.semconv:spec_attribute:exception.escaped",
+        "openinference.semconv:spec_attribute:exception.message",
+        "openinference.semconv:spec_attribute:exception.stacktrace",
+        "openinference.semconv:spec_attribute:exception.type"
+      ],
+      "concepts": [
+        "api-request-attempts"
+      ],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "CLI streams report error messages, not exceptions with stack traces.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "mapper_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "retained_only",
+        "codex-cli/exec-json-stream/0.160.1": "retained_only"
+      },
+      "route_evidence": "Claude result errors[] and system/api_retry error retained; Codex error/turn.failed messages retained (synthetic)",
+      "evidence": [],
+      "action": "Define with the error-type facet; stack traces stay source-limited"
+    },
+    {
+      "id": "status.response-status",
+      "group": "status",
+      "summary": "Lifecycle status of a generated response (queued, in progress, completed, incomplete, failed, cancelled)",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.response.status",
+        "otel_genai.semconv:enum_member:gen_ai.response.status=queued",
+        "otel_genai.semconv:enum_member:gen_ai.response.status=in_progress",
+        "otel_genai.semconv:enum_member:gen_ai.response.status=completed",
+        "otel_genai.semconv:enum_member:gen_ai.response.status=incomplete",
+        "otel_genai.semconv:enum_member:gen_ai.response.status=failed",
+        "otel_genai.semconv:enum_member:gen_ai.response.status=cancelled"
+      ],
+      "concepts": [
+        "response-stop-reason-and-completion",
+        "interrupted-run-and-never-observed-result"
+      ],
+      "proposal": null,
+      "destinations": [
+        "model_response.activity_id",
+        "model_response.reported_state"
+      ],
+      "relation": "coarser",
+      "differences": "Journal distinguishes partial versus completed responses (and completed items) and interrupted runs; failed, cancelled and incomplete are not response-level states.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "partial",
+      "state": "partial",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Claude activity Partial/Completed from stop_reason; Codex Item completed; interruption verified on cancelled recordings",
+      "evidence": [],
+      "action": "SEM-2: define response-level outcome states and map max_tokens/refusal/interruption evidence"
+    },
+    {
+      "id": "time.start-end",
+      "group": "time",
+      "summary": "When an operation started and ended",
+      "fields": [
+        "weave.agents_schema:field:AgentSpanSchema.started_at",
+        "weave.agents_schema:field:AgentSpanSchema.ended_at",
+        "weave.agents_schema:field:AgentChatMessage.started_at"
+      ],
+      "concepts": [
+        "time-basis"
+      ],
+      "proposal": null,
+      "destinations": [
+        "journal_provenance.time_basis_id",
+        "source_ref.native_time",
+        "journal_provenance.capture_time"
+      ],
+      "relation": "different",
+      "differences": "Journal records each record's own reported time (or a declared fallback/observation time) with its basis; an operation's start and end are the times of its request and result events.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "partial",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude records carry timestamp (Source record basis); Codex exec records carry no time, so only capture observation time exists",
+      "evidence": [],
+      "action": "none (Codex execution time is source-limited)"
+    },
+    {
+      "id": "time.durations",
+      "group": "time",
+      "summary": "Reported durations of operations, inferences, agent and tool executions",
+      "fields": [
+        "weave.agents_schema:field:AgentChatAssistantMessage.duration_ms",
+        "weave.agents_schema:field:AgentChatToolCall.duration_ms",
+        "otel_genai.semconv:metric:gen_ai.client.operation.duration",
+        "otel_genai.semconv:metric:gen_ai.client.inference.duration",
+        "otel_genai.semconv:metric:gen_ai.server.request.duration",
+        "otel_genai.semconv:metric:gen_ai.invoke_agent.duration",
+        "otel_genai.semconv:metric:gen_ai.execute_tool.duration",
+        "otel_genai.semconv:metric:gen_ai.invoke_workflow.duration",
+        "otel_genai.semconv:metric:mcp.client.operation.duration",
+        "otel_genai.semconv:metric_refinement:openai.client.operation.duration",
+        "otel_genai.semconv:metric_refinement:openai.gen_ai.client.inference.duration"
+      ],
+      "concepts": [
+        "reported-durations"
+      ],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal retains reported durations whole (retained-only known meaning) and does not recompute durations from event times.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "mapper_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "retained_only",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude result duration_ms and duration_api_ms (live), tool_progress elapsed_time_seconds (unexercised) and compact_metadata.duration_ms retained; Codex exec reports none",
+      "evidence": [],
+      "action": "Define reported duration observations (scope, unit, what the interval covers) and map Claude result durations"
+    },
+    {
+      "id": "time.first-token",
+      "group": "time",
+      "summary": "Time to first token/chunk and per-chunk latency",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.response.time_to_first_chunk",
+        "otel_genai.semconv:metric:gen_ai.client.inference.time_to_first_chunk",
+        "otel_genai.semconv:metric:gen_ai.client.inference.time_per_output_chunk",
+        "otel_genai.semconv:metric:gen_ai.server.time_to_first_token",
+        "otel_genai.semconv:metric:gen_ai.server.time_per_output_token"
+      ],
+      "concepts": [
+        "reported-durations"
+      ],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal has no latency attributes.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "mapper_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "retained_only",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude result ttft_ms, ttft_stream_ms, time_to_request_ms, first_content_frame_ms retained (live); Codex exec reports none",
+      "evidence": [],
+      "action": "Define reported latency observations with the durations facet and map Claude result latencies"
+    },
+    {
+      "id": "time.call-counts",
+      "group": "time",
+      "summary": "Counts of inference and tool calls per agent invocation",
+      "fields": [
+        "otel_genai.semconv:metric:gen_ai.invoke_agent.inference_calls",
+        "otel_genai.semconv:metric:gen_ai.invoke_agent.tool_calls"
+      ],
+      "concepts": [
+        "model-response-identity",
+        "tool-request-identity-and-arguments"
+      ],
+      "proposal": null,
+      "destinations": [
+        "model_response.response_uid",
+        "tool_call.tool_call_uid"
+      ],
+      "relation": "coarser",
+      "differences": "A consumer counts responses and tool calls per run; Claude also reports num_turns (retained).",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "defined",
+      "state": "derivable",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "mapped",
+        "codex-cli/exec-json-stream/0.160.1": "mapped"
+      },
+      "route_evidence": "Counted from recorded events; Codex counts content items, not responses",
+      "evidence": [],
+      "action": "none"
+    },
+    {
+      "id": "context.compaction",
+      "group": "context",
+      "summary": "Context compaction: when it happened, the summary, and sizes before and after",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.conversation.compacted",
+        "otel_genai.semconv:message_property:CompactionPart.type",
+        "otel_genai.semconv:message_property:CompactionPart.id",
+        "otel_genai.semconv:message_property:CompactionPart.content",
+        "weave.agents_schema:field:AgentSpanSchema.compaction_summary",
+        "weave.agents_schema:field:AgentSpanSchema.compaction_items_before",
+        "weave.agents_schema:field:AgentSpanSchema.compaction_items_after",
+        "weave.agents_schema:field:AgentChatContextCompacted.compaction_summary",
+        "weave.agents_schema:field:AgentChatContextCompacted.compaction_items_before",
+        "weave.agents_schema:field:AgentChatContextCompacted.compaction_items_after",
+        "weave.agents_schema:field:AgentChatMessage.context_compacted",
+        "weave.agents_schema:enum_member:AgentChatMessageType=context_compacted",
+        "weave.agents_schema:ingest_attribute:weave.compaction.summary",
+        "weave.agents_schema:ingest_attribute:weave.compaction.items_before",
+        "weave.agents_schema:ingest_attribute:weave.compaction.items_after"
+      ],
+      "concepts": [
+        "context-compaction"
+      ],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "Pending concept; Weave counts items, Claude reports token sizes: different units.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "definition_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "retained_only",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude system/compact_boundary (trigger, pre_tokens, post_tokens, duration_ms) and compaction blocks retained (unexercised); Codex exec reports none",
+      "evidence": [],
+      "action": "SEM-2: define compaction events with explicit units; exercise a Claude compaction"
+    },
+    {
+      "id": "context.memory",
+      "group": "context",
+      "summary": "Agent memory operations and memory stores",
+      "fields": [
+        "otel_genai.semconv:enum_member:gen_ai.operation.name=search_memory",
+        "otel_genai.semconv:enum_member:gen_ai.operation.name=create_memory",
+        "otel_genai.semconv:enum_member:gen_ai.operation.name=update_memory",
+        "otel_genai.semconv:enum_member:gen_ai.operation.name=upsert_memory",
+        "otel_genai.semconv:enum_member:gen_ai.operation.name=delete_memory",
+        "otel_genai.semconv:enum_member:gen_ai.operation.name=create_memory_store",
+        "otel_genai.semconv:enum_member:gen_ai.operation.name=delete_memory_store",
+        "otel_genai.semconv:span:gen_ai.memory.client",
+        "otel_genai.semconv:attribute:gen_ai.memory.store.id",
+        "otel_genai.semconv:attribute:gen_ai.memory.record.id",
+        "otel_genai.semconv:attribute:gen_ai.memory.record.count",
+        "otel_genai.semconv:attribute:gen_ai.memory.query.text",
+        "otel_genai.semconv:attribute:gen_ai.memory.records",
+        "otel_genai.semconv:message_property:MemoryRecord.content",
+        "otel_genai.semconv:message_property:MemoryRecord.id",
+        "otel_genai.semconv:message_property:MemoryRecord.metadata",
+        "otel_genai.semconv:message_property:MemoryRecord.score"
+      ],
+      "concepts": [],
+      "proposal": {
+        "id": "memory-operations",
+        "question": "Which memories did the agent recall or write, from which store?"
+      },
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal has no memory-operation concept.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "definition_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "retained_only",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude system/memory_recall (mode, memories) retained (unexercised); Codex exec reports none",
+      "evidence": [],
+      "action": "Define memory recall/write observations when a route exercises them"
+    },
+    {
+      "id": "context.prompt-templates",
+      "group": "context",
+      "summary": "Prompt templates: name, version, variables, origin",
+      "fields": [
+        "otel_genai.semconv:attribute:gen_ai.prompt.name",
+        "otel_genai.semconv:attribute:gen_ai.prompt.version",
+        "otel_genai.semconv:attribute:gen_ai.prompt.variable",
+        "openinference.semconv:attribute:llm.prompt_template.template",
+        "openinference.semconv:attribute:llm.prompt_template.variables",
+        "openinference.semconv:attribute:llm.prompt_template.version",
+        "openinference.semconv:attribute:prompt.vendor",
+        "openinference.semconv:attribute:prompt.id",
+        "openinference.semconv:attribute:prompt.url",
+        "openinference.semconv:enum_member:OpenInferenceSpanKindValues=PROMPT"
+      ],
+      "concepts": [
+        "user-submission"
+      ],
+      "proposal": {
+        "id": "prompt-template-use",
+        "question": "Which named prompt template or command produced a submission?"
+      },
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal has no prompt-template concept; CLI slash/custom commands are the nearest source fact.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "definition_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "retained_only",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Claude system/init slash_commands and result local_command retained; Codex exec reports none",
+      "evidence": [],
+      "action": "Define reported command/template use if a route reports which template produced a prompt"
+    },
+    {
+      "id": "metadata.caller",
+      "group": "metadata",
+      "summary": "Caller-supplied metadata, tags and custom attributes",
+      "fields": [
+        "openinference.semconv:attribute:metadata",
+        "openinference.semconv:attribute:tag.tags",
+        "weave.agents_schema:field:AgentSpanSchema.custom_attrs_string",
+        "weave.agents_schema:field:AgentSpanSchema.custom_attrs_int",
+        "weave.agents_schema:field:AgentSpanSchema.custom_attrs_float",
+        "weave.agents_schema:field:AgentSpanSchema.custom_attrs_bool"
+      ],
+      "concepts": [
+        "journal-run-and-invocation"
+      ],
+      "proposal": {
+        "id": "caller-run-labels",
+        "question": "Which labels did the capturing caller attach to the run?"
+      },
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal has no caller-label attribute; such labels are caller provenance, never source facts.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "definition_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "not_applicable",
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+      },
+      "route_evidence": "Supplied by the capturing caller, not by either stream",
+      "evidence": [],
+      "action": "Define caller-supplied run labels in Journal provenance (agent-client integration), kept apart from source facts"
+    },
+    {
+      "id": "metadata.endpoint",
+      "group": "metadata",
+      "summary": "The API endpoint (server address and port) that served a call",
+      "fields": [
+        "otel_genai.semconv:referenced_attribute:server.address",
+        "otel_genai.semconv:referenced_attribute:server.port",
+        "weave.agents_schema:field:AgentSpanSchema.server_address",
+        "weave.agents_schema:field:AgentSpanSchema.server_port",
+        "weave.agents_schema:ingest_attribute:weave.server.address",
+        "weave.agents_schema:ingest_attribute:weave.server.port"
+      ],
+      "concepts": [
+        "model-identity-and-provider"
+      ],
+      "proposal": {
+        "id": "serving-endpoint",
+        "question": "Which endpoint or region did the source report served the call?"
+      },
+      "destinations": [],
+      "relation": "none",
+      "differences": "Journal has no endpoint attribute.",
+      "tier": "1",
+      "tier_reason": "Execution information represented by a Tier 1 foundation",
+      "definition": "missing",
+      "state": "definition_missing",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "source_limited",
+        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+      },
+      "route_evidence": "Neither stream reports the API endpoint (Claude usage.inference_geo, a region fact, is retained)",
+      "evidence": [],
+      "action": "Define only if a route reports an endpoint; record source limitation"
+    },
+    {
+      "id": "evaluation.results",
+      "group": "evaluation",
+      "summary": "Evaluations, annotations, scores and feedback about outputs",
+      "fields": [
+        "otel_genai.semconv:event:gen_ai.evaluation.result",
+        "otel_genai.semconv:attribute:gen_ai.evaluation.name",
+        "otel_genai.semconv:attribute:gen_ai.evaluation.score.value",
+        "otel_genai.semconv:attribute:gen_ai.evaluation.score.label",
+        "otel_genai.semconv:attribute:gen_ai.evaluation.explanation",
+        "openinference.semconv:attribute:annotations",
+        "openinference.semconv:attribute:evaluations",
+        "openinference.semconv:attribute:trace.annotations",
+        "openinference.semconv:attribute:trace.evaluations",
+        "openinference.semconv:attribute:session.annotations",
+        "openinference.semconv:attribute:session.evaluations",
+        "openinference.semconv:attribute:annotation.name",
+        "openinference.semconv:attribute:annotation.score",
+        "openinference.semconv:attribute:annotation.label",
+        "openinference.semconv:attribute:annotation.explanation",
+        "openinference.semconv:attribute:annotation.annotator_kind",
+        "openinference.semconv:attribute:annotation.identifier",
+        "openinference.semconv:attribute:annotation.metadata",
+        "openinference.semconv:attribute:evaluation.name",
+        "openinference.semconv:attribute:evaluation.score",
+        "openinference.semconv:attribute:evaluation.label",
+        "openinference.semconv:attribute:evaluation.explanation",
+        "openinference.semconv:attribute:evaluation.annotator_kind",
+        "openinference.semconv:attribute:evaluation.identifier",
+        "openinference.semconv:attribute:evaluation.metadata",
+        "openinference.semconv:enum_member:OpenInferenceAnnotatorKindValues=HUMAN",
+        "openinference.semconv:enum_member:OpenInferenceAnnotatorKindValues=LLM",
+        "openinference.semconv:enum_member:OpenInferenceAnnotatorKindValues=CODE",
+        "openinference.semconv:enum_member:OpenInferenceSpanKindValues=EVALUATOR",
+        "weave.agents_schema:field:AgentSpanSchema.eval_run_id",
+        "weave.agents_schema:field:AgentSpanSchema.eval_predict_and_score_call_id",
+        "weave.agents_schema:field:AgentSpanSchema.eval_kind",
+        "weave.agents_schema:field:AgentSpanSchema.eval_row_digest",
+        "weave.agents_schema:field:AgentSpanSchema.eval_example_id",
+        "weave.agents_schema:field:AgentSpanSchema.eval_trial_index",
+        "weave.agents_schema:field:AgentSpanSchema.eval_evaluation_name",
+        "weave.agents_schema:field:AgentChatMessage.feedback",
+        "weave.agents_schema:field:AgentChatFeedback.id",
+        "weave.agents_schema:field:AgentChatFeedback.feedback_type",
+        "weave.agents_schema:field:AgentChatFeedback.weave_ref",
+        "weave.agents_schema:field:AgentChatFeedback.payload",
+        "weave.agents_schema:field:AgentChatFeedback.creator",
+        "weave.agents_schema:field:AgentChatFeedback.created_at",
+        "weave.agents_schema:field:AgentChatFeedback.wb_user_id",
+        "weave.agents_schema:field:AgentChatFeedback.runnable_ref",
+        "weave.agents_schema:field:AgentChatFeedback.call_ref",
+        "weave.agents_schema:field:AgentChatFeedback.trigger_ref",
+        "weave.agents_schema:field:AgentChatFeedback.annotation_ref",
+        "weave.agents_schema:field:AgentChatFeedback.scorer_tags",
+        "weave.agents_schema:field:AgentChatFeedback.scorer_tag_reasons",
+        "weave.agents_schema:field:AgentChatFeedback.scorer_tag_confidences",
+        "weave.agents_schema:field:AgentChatFeedback.scorer_ratings",
+        "weave.agents_schema:field:AgentChatFeedback.scorer_rating_reasons",
+        "weave.agents_schema:field:AgentChatFeedback.scorer_rating_confidences",
+        "weave.agents_schema:ingest_attribute:weave.eval.run_id",
+        "weave.agents_schema:ingest_attribute:weave.eval.predict_and_score_call_id",
+        "weave.agents_schema:ingest_attribute:weave.eval.kind",
+        "weave.agents_schema:ingest_attribute:weave.eval.row_digest",
+        "weave.agents_schema:ingest_attribute:weave.eval.example_id",
+        "weave.agents_schema:ingest_attribute:weave.eval.trial_index",
+        "weave.agents_schema:ingest_attribute:weave.eval.evaluation_name"
+      ],
+      "concepts": [],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "Judgments about execution are consumer-owned (Agent Judge, ACT); Journal would keep a source-reported score as a vendor observation with provenance.",
+      "tier": "3",
+      "tier_reason": "Scoring and conclusions belong to consumers (VISION boundaries)",
+      "definition": "missing",
+      "state": "tier3_consumer",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "not_applicable",
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+      },
+      "route_evidence": "Neither stream reports evaluations",
+      "evidence": [],
+      "action": "None for Journal; consumer-owned"
+    },
+    {
+      "id": "rag.embeddings",
+      "group": "application",
+      "summary": "Embedding requests and vectors",
+      "fields": [
+        "otel_genai.semconv:enum_member:gen_ai.operation.name=embeddings",
+        "otel_genai.semconv:span:gen_ai.embeddings.client",
+        "otel_genai.semconv:attribute:gen_ai.embeddings.dimension.count",
+        "otel_genai.semconv:attribute:gen_ai.request.encoding_formats",
+        "openinference.semconv:enum_member:OpenInferenceSpanKindValues=EMBEDDING",
+        "openinference.semconv:attribute:embedding.embeddings",
+        "openinference.semconv:attribute:embedding.invocation_parameters",
+        "openinference.semconv:attribute:embedding.model_name",
+        "openinference.semconv:attribute:embedding.text",
+        "openinference.semconv:attribute:embedding.vector"
+      ],
+      "concepts": [],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "Application RAG operations; agentic CLI streams do not report embedding calls.",
+      "tier": "out_of_scope_proposed",
+      "tier_reason": "Application retrieval infrastructure outside agentic CLI execution; proposed exclusion pending review",
+      "definition": "missing",
+      "state": "excluded_proposed",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "not_applicable",
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+      },
+      "route_evidence": "No admitted route",
+      "evidence": [],
+      "action": "Review the proposed exclusion"
+    },
+    {
+      "id": "rag.retrieval",
+      "group": "application",
+      "summary": "Retrieval from a data source and the retrieved documents",
+      "fields": [
+        "otel_genai.semconv:enum_member:gen_ai.operation.name=retrieval",
+        "otel_genai.semconv:span:gen_ai.retrieval.client",
+        "otel_genai.semconv:attribute:gen_ai.retrieval.documents",
+        "otel_genai.semconv:attribute:gen_ai.retrieval.query.text",
+        "otel_genai.semconv:attribute:gen_ai.retrieval.top_k",
+        "otel_genai.semconv:attribute:gen_ai.data_source.id",
+        "otel_genai.semconv:message_property:RetrievalDocument.id",
+        "otel_genai.semconv:message_property:RetrievalDocument.score",
+        "openinference.semconv:enum_member:OpenInferenceSpanKindValues=RETRIEVER",
+        "openinference.semconv:attribute:retrieval.documents",
+        "openinference.semconv:attribute:document.id",
+        "openinference.semconv:attribute:document.score",
+        "openinference.semconv:attribute:document.content",
+        "openinference.semconv:attribute:document.metadata"
+      ],
+      "concepts": [],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "Application retrieval spans; a CLI's search tools remain tool calls with exact results.",
+      "tier": "out_of_scope_proposed",
+      "tier_reason": "Application retrieval infrastructure; a CLI search is covered as a tool call. Proposed exclusion pending review",
+      "definition": "missing",
+      "state": "excluded_proposed",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "not_applicable",
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+      },
+      "route_evidence": "No admitted route",
+      "evidence": [],
+      "action": "Review the proposed exclusion"
+    },
+    {
+      "id": "rag.reranker",
+      "group": "application",
+      "summary": "Reranking of documents",
+      "fields": [
+        "openinference.semconv:enum_member:OpenInferenceSpanKindValues=RERANKER",
+        "openinference.semconv:attribute:reranker.input_documents",
+        "openinference.semconv:attribute:reranker.output_documents",
+        "openinference.semconv:attribute:reranker.query",
+        "openinference.semconv:attribute:reranker.model_name",
+        "openinference.semconv:attribute:reranker.top_k"
+      ],
+      "concepts": [],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "Application retrieval step.",
+      "tier": "out_of_scope_proposed",
+      "tier_reason": "Application retrieval infrastructure; proposed exclusion pending review",
+      "definition": "missing",
+      "state": "excluded_proposed",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "not_applicable",
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+      },
+      "route_evidence": "No admitted route",
+      "evidence": [],
+      "action": "Review the proposed exclusion"
+    },
+    {
+      "id": "api.decision-models",
+      "group": "application",
+      "summary": "Typed decision-model API calls (TypeSafe/OpenAI Decisions)",
+      "fields": [
+        "openinference.semconv:enum_member:OpenInferenceSpanKindValues=DECISION",
+        "openinference.semconv:attribute:decision.model_name",
+        "openinference.semconv:attribute:decision.request.model_name",
+        "openinference.semconv:attribute:decision.response.model_name",
+        "openinference.semconv:attribute:decision.provider",
+        "openinference.semconv:attribute:decision.system",
+        "openinference.semconv:attribute:decision.token_count.input",
+        "openinference.semconv:attribute:decision.token_count.output",
+        "openinference.semconv:enum_member:OpenInferenceDecisionSystemValues=typesafe",
+        "openinference.semconv:enum_member:OpenInferenceDecisionSystemValues=openai",
+        "openinference.semconv:enum_member:OpenInferenceDecisionProviderValues=typesafe",
+        "openinference.semconv:enum_member:OpenInferenceDecisionProviderValues=openai"
+      ],
+      "concepts": [
+        "model-response-identity"
+      ],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "A specific API ecosystem no admitted route uses; an inference call from it would still be a model_response with usage.",
+      "tier": "out_of_scope_proposed",
+      "tier_reason": "API ecosystem outside agentic CLI routes; generic inference facets would cover a call; proposed exclusion pending review",
+      "definition": "missing",
+      "state": "excluded_proposed",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "not_applicable",
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+      },
+      "route_evidence": "No admitted route",
+      "evidence": [],
+      "action": "Review the proposed exclusion"
+    },
+    {
+      "id": "api.fetch-response",
+      "group": "application",
+      "summary": "Fetching a stored model response by id",
+      "fields": [
+        "otel_genai.semconv:enum_member:gen_ai.operation.name=fetch_response",
+        "otel_genai.semconv:span:gen_ai.fetch_response.client"
+      ],
+      "concepts": [],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "Reading back a stored response is a client API operation, not an execution step of the agent.",
+      "tier": "out_of_scope_proposed",
+      "tier_reason": "Provider storage API; proposed exclusion pending review",
+      "definition": "missing",
+      "state": "excluded_proposed",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "not_applicable",
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+      },
+      "route_evidence": "No admitted route",
+      "evidence": [],
+      "action": "Review the proposed exclusion"
+    },
+    {
+      "id": "hosting.weave-linkage",
+      "group": "hosting",
+      "summary": "Links to W&B runs, steps and Weave op calls",
+      "fields": [
+        "weave.agents_schema:field:AgentSpanSchema.wb_run_id",
+        "weave.agents_schema:field:AgentSpanSchema.wb_run_step",
+        "weave.agents_schema:field:AgentSpanSchema.wb_run_step_end",
+        "weave.agents_schema:field:AgentSpanSchema.parent_call_id",
+        "weave.agents_schema:field:AgentSpanSchema.parent_call_trace_id",
+        "weave.agents_schema:ingest_attribute:weave.parent_call.id",
+        "weave.agents_schema:ingest_attribute:weave.parent_call.trace_id"
+      ],
+      "concepts": [],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "Linkage into the hosting SDK's own run and op model.",
+      "tier": "out_of_scope_proposed",
+      "tier_reason": "Hosting-product linkage; proposed exclusion pending review",
+      "definition": "missing",
+      "state": "excluded_proposed",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "not_applicable",
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+      },
+      "route_evidence": "Not an execution fact of the CLI",
+      "evidence": [],
+      "action": "Review the proposed exclusion"
+    },
+    {
+      "id": "tracing.span-naming",
+      "group": "hosting",
+      "summary": "OTel span names and transport span kinds",
+      "fields": [
+        "weave.agents_schema:field:AgentSpanSchema.span_name",
+        "weave.agents_schema:field:AgentSpanSchema.span_kind",
+        "weave.agents_schema:enum_member:SpanKindLiteral=UNSPECIFIED",
+        "weave.agents_schema:enum_member:SpanKindLiteral=INTERNAL",
+        "weave.agents_schema:enum_member:SpanKindLiteral=SERVER",
+        "weave.agents_schema:enum_member:SpanKindLiteral=CLIENT",
+        "weave.agents_schema:enum_member:SpanKindLiteral=PRODUCER",
+        "weave.agents_schema:enum_member:SpanKindLiteral=CONSUMER"
+      ],
+      "concepts": [
+        "model-response-identity"
+      ],
+      "proposal": null,
+      "destinations": [],
+      "relation": "none",
+      "differences": "Instrumentation conventions: the display name is derived from operation and model; the span kind (CLIENT, INTERNAL, ...) is the tracing transport role. The execution kind they encode is operation.kind.",
+      "tier": "out_of_scope_proposed",
+      "tier_reason": "Tracing conventions, not execution data; their information is in operation.kind; proposed exclusion pending review",
+      "definition": "missing",
+      "state": "excluded_proposed",
+      "routes": {
+        "claude-code/stream-json/2.1.304-stdout": "not_applicable",
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+      },
+      "route_evidence": "Not an execution fact",
+      "evidence": [],
+      "action": "Review the proposed exclusion"
+    }
+  ]
+}

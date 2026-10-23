@@ -53,6 +53,13 @@
             <version>1.5.7</version>
             <scope>test</scope>
         </dependency>
+        <!-- test scope only: reads the pinned OTel GenAI semantic-convention YAML when the foundation field inventory is
+             re-derived from the pinned upstream files (FoundationFieldsTest, gated); version from the Jackson BOM -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>io.github.markpollack</groupId>
             <artifactId>agent-judge-ai-core</artifactId>
