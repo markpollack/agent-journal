@@ -5640,6 +5640,11 @@
    "note": "emitted by Claude Code 2.1.304 and observed on its committed recordings; the published sdk.d.ts omits it (a CLI-internal member: blank lines inside the type body); reviewed as a vendor-envelope field and dispositioned in dispositions.json"
   },
   {
+   "variant": "assistant",
+   "path": "tool_use_meta",
+   "note": "emitted by Claude Code 2.1.304 on assistant records carrying an MCP tool_use block and observed on its committed MCP recording (claude-live-2.1.304-mcp, 2026-10-23): an array of {id, display_name, server_display_name, tool_name}; the published sdk.d.ts omits it; reviewed as a vendor-envelope field and dispositioned in dispositions.json"
+  },
+  {
    "variant": "rate_limit_event",
    "path": "rate_limit_info.unifiedWindows",
    "note": "emitted by Claude Code 2.1.304 and observed on its committed recordings; the published sdk.d.ts omits it (a CLI-internal member: blank lines inside the type body); reviewed as a vendor-envelope field and dispositioned in dispositions.json"

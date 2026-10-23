@@ -39,10 +39,14 @@
     "name": "agentic_cli",
     "uid": 901,
     "uid_status": "PROVISIONAL, UNREGISTERED; alternate assignment 902 is compiled only to demonstrate reader refusal",
-    "version": "0.9.0-prototype",
-    "compiled_sha256_uid_901": "9b77697bdc5b3f5433e3d064d25e4488c230634311abe634faf2f34745f6eb56",
+    "version": "0.10.0-prototype",
+    "compiled_sha256_uid_901": "133b83dac641ced0f0553344a5783eab1922f5d4f29ec025b221ac60dbf5a728",
     "category": "agent_execution (uid 11 -> scoped 90111)",
     "previous_versions": [
+      {
+        "version": "0.9.0-prototype",
+        "compiled_sha256_uid_901": "9b77697bdc5b3f5433e3d064d25e4488c230634311abe634faf2f34745f6eb56"
+      },
       {
         "version": "0.8.0-prototype",
         "compiled_sha256_uid_901": "1d3b294a2df516385ea5f3bc468065727d8dfbdb251b6fe1496be09b6a719bff"
@@ -76,7 +80,7 @@
         "compiled_sha256_uid_901": "3c37c8d887c31cff656783480be35e130c920574b49f731d24e0f816892d8c9f"
       }
     ],
-    "bundled_excerpt": "journal-ocsf-writer/src/main/resources/ocsf/compiled-excerpt-agentic_cli-0.9.0-prototype.json (derived by SchemaExcerpt from the whole compiled.json; carries source_compiled_schema.sha256)"
+    "bundled_excerpt": "journal-ocsf-writer/src/main/resources/ocsf/compiled-excerpt-agentic_cli-0.10.0-prototype.json (derived by SchemaExcerpt from the whole compiled.json; carries source_compiled_schema.sha256)"
   },
   "java_reader": {
     "module": "journal-capture-tck",

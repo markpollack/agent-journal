@@ -7,13 +7,14 @@
   "antigravity-cli/stream-json/1.4.6-stdout"
  ],
  "specification": "schema/vendor/antigravity-cli/stream-json/1.4.6.json",
- "contract": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+ "contract": "antigravity-cli/stream-json/1.4.6/0.2.0-prototype",
  "contract_file": "antigravity-cli-1.4.6-stream",
  "evidence_fixtures": [
   "antigravity-live-1.4.6-denial",
   "antigravity-live-1.4.6-features",
   "antigravity-live-1.4.6-interrupt-open",
-  "antigravity-live-1.4.6-subagent"
+  "antigravity-live-1.4.6-subagent",
+  "antigravity-live-1.4.6-mcp-denied"
  ],
  "rule_of_coverage": "see claude-code/stream-json/dispositions.json; the same FieldDispositionTest applies",
  "entries": [
@@ -439,7 +440,7 @@
    "tests": [
     "AntigravityStreamTest#anUncachedTrancheOrAReasoningRelationTheSourceDoesNotEstablishIsAUsageDefect"
    ],
-   "note": "agy.usage.uncached_input.v1: input_tokens excludes cache reads (cache_read_tokens exceeds it on 9 of 16 usage objects and in the documentation example), but no cache writes are reported, so it is the uncached component's conditional value (measurement status 3), never the canonical tranche"
+   "note": "agy.usage.uncached_input.v1: input_tokens excludes cache reads (cache_read_tokens exceeds it on 9 of 18 usage objects and in the documentation example), but no cache writes are reported, so it is the uncached component's conditional value (measurement status 3), never the canonical tranche"
   },
   {
    "variant": "step_update/tool/ACTIVE",
@@ -1123,7 +1124,7 @@
    "tests": [
     "AntigravityStreamTest#anUncachedTrancheOrAReasoningRelationTheSourceDoesNotEstablishIsAUsageDefect"
    ],
-   "note": "agy.usage.uncached_input.v1: input_tokens excludes cache reads (cache_read_tokens exceeds it on 9 of 16 usage objects and in the documentation example), but no cache writes are reported, so it is the uncached component's conditional value (measurement status 3), never the canonical tranche"
+   "note": "agy.usage.uncached_input.v1: input_tokens excludes cache reads (cache_read_tokens exceeds it on 9 of 18 usage objects and in the documentation example), but no cache writes are reported, so it is the uncached component's conditional value (measurement status 3), never the canonical tranche"
   }
  ],
  "vendor_inventory": "1.4.6-vendor-inventory.json"

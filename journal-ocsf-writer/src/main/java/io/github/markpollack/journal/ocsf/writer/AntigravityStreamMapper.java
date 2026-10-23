@@ -7,13 +7,15 @@ import static io.github.markpollack.journal.ocsf.writer.MapperSupport.text;
 
 /**
  * Antigravity CLI headless {@code --output-format stream-json} live output (contract {@code antigravity-cli-1.4.6-stream},
- * 0.1.0-prototype, a candidate for the managing reviewer), read from the documented interface (one {@code init} event,
+ * 0.2.0-prototype, a candidate for the managing reviewer), read from the documented interface (one {@code init} event,
  * {@code step_update} events, one {@code result} event per turn) and the 1.4.6 recordings. Every record reports its
  * conversation id, the session identity. A step is identified by its {@code step_index}, the conversation's own step
  * numbering (identity basis 99 Other: neither a model-facing call id nor a stream-local item id). The init event is the
  * session's reported settings; a DONE user-input step is a prompt submission whose text the stream never carries; an
  * agent-response step is a content item of an unidentified model response, Partial while ACTIVE with its
- * {@code text_delta} fragment and Item completed when DONE with the step's own usage; a tool step is a started invocation
+ * {@code text_delta} fragment (an Increment of the step's text) and Item completed when DONE with its last fragment and the
+ * step's own usage, at scope 99 Other "Conversation step" (a step is not established as one model invocation); a tool
+ * step is a started invocation
  * when ACTIVE and a result when DONE or ERROR, failed only where {@code tool_info.error} is reported (DONE is a lifecycle
  * state: a soft-denied command reports DONE without output or error); a subagent step completes the invoke_subagent call
  * of the same step with the reported subagent_info as its result content (no child run is linked: the child's records are
@@ -28,6 +30,8 @@ final class AntigravityStreamMapper implements SourceMapper {
     private static final String IDENTITY = "agy.stream.step_identity.v1";
     /** The caption of identity_basis_id 99 Other for a step index: per OCSF, an Other value names the specific basis in its sibling. */
     static final String STEP_INDEX_BASIS = "Conversation step index";
+    /** The caption of scope_id 99 Other for a step's own usage: the unit is the step the enclosing event identifies. */
+    static final String STEP_SCOPE = "Conversation step";
 
     @Override
     public String contractName() {
@@ -117,13 +121,16 @@ final class AntigravityStreamMapper implements SourceMapper {
         if (s.member("text_delta") instanceof Jv.Str delta) {
             Jv.Obj block = new Jv.Obj().put("block_index", 0).put("block_type", "text_delta").put("block_kind_id", 1).put("block_kind", "Text")
                     .put("basis", "agy.stream.text_delta.v1: an increment of the step's response text; the step's text is its fragments joined in record order")
-                    .put("text", delta.value()).put("data", delta);
+                    .put("text", delta.value()).put("text_update_id", 1).put("text_update", MapperSupport.TEXT_UPDATE.get(1)).put("data", delta);
             ev.put("content_blocks", new Jv.Arr(List.of(block)));
         }
         if (s.member("usage") instanceof Jv.Obj usage) {
-            Jv.Obj ob = MapperSupport.usage(2, done ? 2 : 1, "agy.stream.step_usage.v1: step_update.usage is documented as the step's own token usage; "
-                    + (done ? "reported on the step's DONE record" : "reported on a record of a step still ACTIVE"), ctx.sourceRef(r, null, null, false), null, usage);
-            UsageTranches.aggregation(ob, 1, "agy.stream.step_usage_aggregation.v1: the total of this one step");
+            Jv.Obj ob = MapperSupport.usage(99, done ? 2 : 1, "agy.stream.step_usage.v2: step_update.usage is documented as the step's own token usage, so its unit "
+                    + "is the conversation step this event identifies (scope 99 Other), not a model response: one step is not established as one model invocation; "
+                    + (done ? "reported on the step's DONE record" : "reported on a record of a step still ACTIVE"), ctx.sourceRef(r, null, null, false), null, usage)
+                    .put("scope", STEP_SCOPE);
+            UsageTranches.aggregation(ob, 1, "agy.stream.step_usage_aggregation.v2: the total of this one conversation step, disjoint from other steps' totals; "
+                    + "the result's session usage covers the steps and is never added to them, and a run can report session usage beyond its emitted steps");
             UsageTranches.antigravity(ob, usage);
             ev.put("usage_observations", new Jv.Arr(List.of(ob)));
         }

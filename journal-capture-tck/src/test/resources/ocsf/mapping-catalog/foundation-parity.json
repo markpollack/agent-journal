@@ -1,12 +1,13 @@
 {
   "kind": "agent-journal/foundation-parity",
   "version": "0.1",
-  "reviewed": "2026-10-22",
+  "reviewed": "2026-10-23",
   "meaning": "The Tier 1 parity ledger: every field of foundation-fields.json is assigned to exactly one facet, a Journal correspondence with its tier, semantic-definition state, per-route availability and the concrete next action. Facets reference mapping-catalog concept ids or name a proposed concept; they are reviewed claims, not executed tests. ParityLedgerTest joins them with the catalog, the claims and this build's CLI coverage calculation and generates PARITY.md and parity.json. Tiers: 1 foundational parity, 2 Journal improvement, 3 consumer analysis, out_of_scope_proposed an exclusion awaiting review.",
   "inventory": "foundation-fields.json",
   "routes": [
     "claude-code/stream-json/2.1.304-stdout",
-    "codex-cli/exec-json-stream/0.160.1"
+    "codex-cli/exec-json-stream/0.160.1",
+    "antigravity-cli/stream-json/1.4.6-stdout"
   ],
   "vocabularies": {
     "tier": [
@@ -79,9 +80,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Claude: session_id on every record; Codex: thread.started.thread_id",
+      "route_evidence": "Claude: session_id on every record; Codex: thread.started.thread_id; Antigravity: conversation_id on every record",
       "evidence": [],
       "action": "none"
     },
@@ -107,9 +109,10 @@
       "state": "definition_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "source_limited",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Neither pinned stream inventory has a session title family (Claude stream-json 2.1.304, Codex exec 0.160.1); native session summaries are SESSION-1 import territory, never stream enrichment",
+      "route_evidence": "Neither pinned stream inventory has a session title family (Claude stream-json 2.1.304, Codex exec 0.160.1); native session summaries are SESSION-1 import territory, never stream enrichment; Antigravity: no conversation title in the documented payloads or the recordings; the documented inventory's completeness is not established (absence not established)",
       "evidence": [],
       "action": "Define an optional reported session display name (reported only, never generated); record route limitation"
     },
@@ -142,9 +145,10 @@
       "state": "partial",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Claude: system/init claude_code_version; Codex: version from the launch probe (exec stream reports none); neither reports a stable agent id or description",
+      "route_evidence": "Claude: system/init claude_code_version; Codex: version from the launch probe (exec stream reports none); neither reports a stable agent id or description; Antigravity: version from the launch probe agy --version (the stream reports none); init reports cwd, permission mode and tools",
       "evidence": [],
       "action": "Keep; description and stable id stay source-limited on both routes"
     },
@@ -183,9 +187,10 @@
       "state": "mapper_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "retained_only",
-        "codex-cli/exec-json-stream/0.160.1": "retained_only"
+        "codex-cli/exec-json-stream/0.160.1": "retained_only",
+        "antigravity-cli/stream-json/1.4.6-stdout": "retained_only"
       },
-      "route_evidence": "Claude: assistant/user agent_id, subagent_type, task_description and system/task_started subagent_type, description, spawn_depth retained (live); Codex: collab_tool_call receiver_thread_ids, agents_states retained (live)",
+      "route_evidence": "Claude: assistant/user agent_id, subagent_type, task_description and system/task_started subagent_type, description, spawn_depth retained (live); Codex: collab_tool_call receiver_thread_ids, agents_states retained (live); Antigravity: a subagent step's subagent_info (type_name, role, child conversation id) is kept as the spawn's result content; no child run is linked",
       "evidence": [],
       "action": "SEM-2: define child-run agent identity (reported type, id, description) and map Claude task/agent fields and Codex collab receivers"
     },
@@ -213,9 +218,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "source_limited"
       },
-      "route_evidence": "Claude: assistant.message.id; Codex exec items carry stream-local ids only (claim codex.exec-stream.stream-local-identity: model response identity unavailable at source)",
+      "route_evidence": "Claude: assistant.message.id; Codex exec items carry stream-local ids only (claim codex.exec-stream.stream-local-identity: model response identity unavailable at source); Antigravity: steps carry the conversation's step index, never a provider response id",
       "evidence": [
         "claim:codex.exec-stream.stream-local-identity"
       ],
@@ -245,9 +251,10 @@
       "state": "source_limited",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "source_limited",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "source_limited"
       },
-      "route_evidence": "Codex exec emits item.id (stream-local), not the provider id; Claude content blocks have no id except tool_use ids",
+      "route_evidence": "Codex exec emits item.id (stream-local), not the provider id; Claude content blocks have no id except tool_use ids; Antigravity: the step index is the conversation's own numbering, not a provider item id",
       "evidence": [],
       "action": "none"
     },
@@ -286,9 +293,10 @@
       "state": "partial",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "retained_only"
+        "codex-cli/exec-json-stream/0.160.1": "retained_only",
+        "antigravity-cli/stream-json/1.4.6-stdout": "retained_only"
       },
-      "route_evidence": "Claude: parent_tool_use_id routes child records (verified); Codex: collab_tool_call children not linked (child-runs unsupported on the route; receivers retained)",
+      "route_evidence": "Claude: parent_tool_use_id routes child records (verified); Codex: collab_tool_call children not linked (child-runs unsupported on the route; receivers retained); Antigravity: the child conversation id is retained in subagent_info; the child's records are not in this stream",
       "evidence": [],
       "action": "Codex collab child linkage with SEM-2 child-run work; keep span ids out of the model"
     },
@@ -314,9 +322,10 @@
       "state": "definition_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "source_limited",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Claude system/init apiKeySource names an auth source, not a user; Codex exec reports none",
+      "route_evidence": "Claude system/init apiKeySource names an auth source, not a user; Codex exec reports none; Antigravity: no user or account in the documented payloads or the recordings; the documented inventory's completeness is not established (absence not established)",
       "evidence": [],
       "action": "Define an optional source-reported user/account reference with privacy rules, or propose exclusion for review"
     },
@@ -341,9 +350,10 @@
       "state": "excluded_proposed",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "not_applicable",
-        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable",
+        "antigravity-cli/stream-json/1.4.6-stdout": "not_applicable"
       },
-      "route_evidence": "Not an execution fact on any route",
+      "route_evidence": "Not an execution fact on any route; Antigravity: not an execution fact",
       "evidence": [],
       "action": "Review the proposed exclusion"
     },
@@ -379,9 +389,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Every mapped record has a class and activity on both routes",
+      "route_evidence": "Every mapped record has a class and activity on both routes; Antigravity: every step type with a rule has a class and activity",
       "evidence": [],
       "action": "none"
     },
@@ -411,9 +422,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Claude echoes child-scope prompts only (claim claude.stream.child-scope-prompt); Codex exec does not echo the prompt (user-submission unavailable at source)",
+      "route_evidence": "Claude echoes child-scope prompts only (claim claude.stream.child-scope-prompt); Codex exec does not echo the prompt (user-submission unavailable at source); Antigravity: a DONE user_input step is a prompt submission (its text is not in the stream)",
       "evidence": [
         "claim:claude.stream.child-scope-prompt"
       ],
@@ -451,9 +463,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Claude assistant records; Codex agent_message/reasoning items (no response grouping at source)",
+      "route_evidence": "Claude assistant records; Codex agent_message/reasoning items (no response grouping at source); Antigravity: agent_response steps as content items (no response grouping at source)",
       "evidence": [
         "claim:codex.exec-stream.stream-local-identity"
       ],
@@ -491,9 +504,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Claude tool_use/tool_result; Codex command, MCP, file change, web search, collaboration items",
+      "route_evidence": "Claude tool_use/tool_result; Codex command, MCP, file change, web search, collaboration items; Antigravity: tool steps, started and finished",
       "evidence": [],
       "action": "none"
     },
@@ -527,9 +541,10 @@
       "state": "partial",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "retained_only"
+        "codex-cli/exec-json-stream/0.160.1": "retained_only",
+        "antigravity-cli/stream-json/1.4.6-stdout": "retained_only"
       },
-      "route_evidence": "Claude sub-agents verified on the features recording; Codex collab children retained, not linked (child-runs unsupported)",
+      "route_evidence": "Claude sub-agents verified on the features recording; Codex collab children retained, not linked (child-runs unsupported); Antigravity: invoke_subagent spawns are tool calls; child runs not linked (child-runs unsupported)",
       "evidence": [],
       "action": "Codex collaboration children (SEM-2 child-run batch)"
     },
@@ -554,9 +569,10 @@
       "state": "definition_unresolved",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "source_limited",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "No admitted route reports a hand-off distinct from a spawn or collaboration call",
+      "route_evidence": "No admitted route reports a hand-off distinct from a spawn or collaboration call; Antigravity: no hand-off distinct from a subagent spawn documented or observed; the documented inventory's completeness is not established (absence not established)",
       "evidence": [],
       "action": "Revisit when a foundation defines the payload; no Journal change now"
     },
@@ -579,9 +595,10 @@
       "state": "excluded_proposed",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "not_applicable",
-        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable",
+        "antigravity-cli/stream-json/1.4.6-stdout": "not_applicable"
       },
-      "route_evidence": "No admitted route provisions agents",
+      "route_evidence": "No admitted route provisions agents; Antigravity: no admitted route provisions agents",
       "evidence": [],
       "action": "Review the proposed exclusion"
     },
@@ -609,9 +626,10 @@
       "state": "definition_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "retained_only",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Claude system/task_started.workflow_name retained (unexercised); Codex exec reports none",
+      "route_evidence": "Claude system/task_started.workflow_name retained (unexercised); Codex exec reports none; Antigravity: no workflow family documented or observed; the documented inventory's completeness is not established (absence not established)",
       "evidence": [],
       "action": "Define a reported workflow name/scope only when a source reports one (Claude task workflow_name); do not infer workflows"
     },
@@ -637,9 +655,10 @@
       "state": "mapper_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "retained_only"
+        "codex-cli/exec-json-stream/0.160.1": "retained_only",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Claude planning tools are tool_call events (no plan concept); Codex item.started/updated/completed todo_list retained (live plan recording)",
+      "route_evidence": "Claude planning tools are tool_call events (no plan concept); Codex item.started/updated/completed todo_list retained (live plan recording); Antigravity: no planning family documented or observed; absence not established",
       "evidence": [],
       "action": "Define a plan/todo observation (items, completion state, updates) and map Codex todo_list"
     },
@@ -681,9 +700,10 @@
       "state": "partial",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "retained_only",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "retained_only"
       },
-      "route_evidence": "Codex mcp_tool_call server/tool mapped (live, claim codex.exec-stream.mcp-tool-call); Claude MCP tools arrive as tool_use names mcp__server__tool (namespace never derived from a name) and mcp_tool_use.server_name is unexercised; Claude system/elicitation_complete retained",
+      "route_evidence": "Codex mcp_tool_call server/tool mapped (live, claim codex.exec-stream.mcp-tool-call); Claude MCP tools arrive as tool_use names mcp__server__tool (namespace never derived from a name) and mcp_tool_use.server_name is unexercised; Claude system/elicitation_complete retained; Antigravity: MCP calls arrive as the dispatcher tool call_mcp_tool whose arguments name ServerName and ToolName (kept exactly, never lifted into a namespace); live call soft-denied in request-review mode, no MCP result on the permitted route",
       "evidence": [
         "claim:codex.exec-stream.mcp-tool-call"
       ],
@@ -734,9 +754,10 @@
       "state": "excluded_proposed",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "not_applicable",
-        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable",
+        "antigravity-cli/stream-json/1.4.6-stdout": "not_applicable"
       },
-      "route_evidence": "Claude system/init mcp_servers (server status) retained; no protocol messages on either stream",
+      "route_evidence": "Claude system/init mcp_servers (server status) retained; no protocol messages on either stream; Antigravity: no protocol messages on the stream",
       "evidence": [],
       "action": "Review the proposed exclusion; server availability stays in settings"
     },
@@ -761,9 +782,10 @@
       "state": "mapper_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "retained_only",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Claude system/hook_started, hook_response (outcome, exit_code, stdout/stderr) retained (unexercised); Codex exec reports none",
+      "route_evidence": "Claude system/hook_started, hook_response (outcome, exit_code, stdout/stderr) retained (unexercised); Codex exec reports none; Antigravity: hooks are a documented CLI feature, but no hook family is documented or observed on the stream",
       "evidence": [],
       "action": "Define hook executions (pending concept) and exercise a Claude hook"
     },
@@ -790,9 +812,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Both routes: unresolved families are source_record events whose retention checks are established (executed state retained-only); their meaning is not claimed",
+      "route_evidence": "Both routes: unresolved families are source_record events whose retention checks are established (executed state retained-only); their meaning is not claimed; Antigravity: checkpoint, system_message and unknown steps are source_record events whose retention checks are established (executed state retained-only); their meaning is not claimed",
       "evidence": [],
       "action": "none",
       "excludes": "What the unknown operation did: its semantics stay unresolved and are never inferred from the retained bytes, so the catalog concept remains retained-only and exact retention is not semantic parity. Unparseable lines are not operations; they are accounted under opaque-malformed-and-blank-records.",
@@ -808,7 +831,8 @@
           ],
           "routes": {
             "claude-code/stream-json/2.1.304-stdout": "mapped",
-            "codex-cli/exec-json-stream/0.160.1": "mapped"
+            "codex-cli/exec-json-stream/0.160.1": "mapped",
+            "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
           }
         }
       ]
@@ -841,9 +865,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "source_limited"
       },
-      "route_evidence": "Claude assistant.message.model; Codex exec reports no model (unavailable at source)",
+      "route_evidence": "Claude assistant.message.model; Codex exec reports no model (unavailable at source); Antigravity: steps report no model",
       "evidence": [],
       "action": "none"
     },
@@ -874,9 +899,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Claude system/init model; Codex exec reports none",
+      "route_evidence": "Claude system/init model; Codex exec reports none; Antigravity: init reports model only when --model overrides it; not exercised",
       "evidence": [],
       "action": "none"
     },
@@ -957,9 +983,10 @@
       "state": "partial",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Claude result modelUsage.{*}.provider (for example firstParty) mapped as provider_kind; Codex exec reports none",
+      "route_evidence": "Claude result modelUsage.{*}.provider (for example firstParty) mapped as provider_kind; Codex exec reports none; Antigravity: no provider in the documented payloads or the recordings; the documented inventory's completeness is not established (absence not established)",
       "evidence": [],
       "action": "Define a reviewed mapping from reported provider routes to an organization vocabulary (firstParty, bedrock, vertex) without inference from model names"
     },
@@ -987,9 +1014,10 @@
       "state": "mapper_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "retained_only",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Claude result usage.service_tier and usage.speed retained (live); Codex exec reports none",
+      "route_evidence": "Claude result usage.service_tier and usage.speed retained (live); Codex exec reports none; Antigravity: no service tier in the documented payloads or the recordings; the documented inventory's completeness is not established (absence not established)",
       "evidence": [],
       "action": "PRICE-1 applicability: define reported service tier on the usage/cost context and map Claude usage.service_tier"
     },
@@ -1026,9 +1054,10 @@
       "state": "source_limited",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "source_limited",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Neither stream reports system fingerprint, API type or cloud resource ids (Claude inference_geo, a different fact, is retained)",
+      "route_evidence": "Neither stream reports system fingerprint, API type or cloud resource ids (Claude inference_geo, a different fact, is retained); Antigravity: no fingerprint, API flavour or resource ids in the documented payloads or the recordings; the documented inventory's completeness is not established (absence not established)",
       "evidence": [],
       "action": "None now; map a provider attribute if an admitted route reports it"
     },
@@ -1080,9 +1109,10 @@
       "state": "definition_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "source_limited",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Claude system/init carries no sampling parameters (modelUsage maxOutputTokens is a model limit, retained); Codex exec reports none",
+      "route_evidence": "Claude system/init carries no sampling parameters (modelUsage maxOutputTokens is a model limit, retained); Codex exec reports none; Antigravity: no sampling parameters in the documented payloads or the recordings; the documented inventory's completeness is not established (absence not established)",
       "evidence": [],
       "action": "Define an optional reported request-parameters object (verbatim values, reported scope); record both routes as source-limited"
     },
@@ -1109,9 +1139,10 @@
       "state": "definition_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "retained_only",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Claude system/init effort retained (Remote Control init frames only, unexercised); Codex exec reports none",
+      "route_evidence": "Claude system/init effort retained (Remote Control init frames only, unexercised); Codex exec reports none; Antigravity: no reasoning effort in the documented payloads or the recordings; the documented inventory's completeness is not established (absence not established)",
       "evidence": [],
       "action": "Define with the request-parameters proposal"
     },
@@ -1142,9 +1173,10 @@
       "state": "definition_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "retained_only",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Claude result structured_output retained (with a JSON schema request; unexercised); Codex exec reports none",
+      "route_evidence": "Claude result structured_output retained (with a JSON schema request; unexercised); Codex exec reports none; Antigravity: --json-schema output requests not exercised",
       "evidence": [],
       "action": "Define with the request-parameters proposal"
     },
@@ -1169,9 +1201,10 @@
       "state": "definition_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "source_limited",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Neither stream reports the model request mode",
+      "route_evidence": "Neither stream reports the model request mode; Antigravity: no model request mode in the documented payloads or the recordings; the documented inventory's completeness is not established (absence not established)",
       "evidence": [],
       "action": "Define with the request-parameters proposal"
     },
@@ -1196,9 +1229,10 @@
       "state": "definition_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "retained_only",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Claude assistant/result resume_reason and supersedes retained (unexercised); Codex exec reports none",
+      "route_evidence": "Claude assistant/result resume_reason and supersedes retained (unexercised); Codex exec reports none; Antigravity: no resume or previous-response member documented or observed; resume was never captured and continuity is not established",
       "evidence": [],
       "action": "Define with session-resume-linkage (pending concept)"
     },
@@ -1232,9 +1266,10 @@
       "state": "source_limited",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "source_limited",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Neither stream reports the assembled per-call input; recorded messages are verified (ordered-content-blocks)",
+      "route_evidence": "Neither stream reports the assembled per-call input; recorded messages are verified (ordered-content-blocks); Antigravity: no assembled per-call input in the documented payloads or the recordings; the documented inventory's completeness is not established (absence not established)",
       "evidence": [],
       "action": "State the derivation rule for consumers; keep the per-call input source-limited"
     },
@@ -1269,9 +1304,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Claude assistant content; Codex agent_message/reasoning items",
+      "route_evidence": "Claude assistant content; Codex agent_message/reasoning items; Antigravity: text_delta fragments of agent_response steps and the turn's response",
       "evidence": [],
       "action": "none"
     },
@@ -1302,9 +1338,10 @@
       "state": "source_limited",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "source_limited",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Claude stream-json does not carry the system prompt (output_style retained); Codex base instructions appear only in the rollout file (SESSION-1), not the exec stream",
+      "route_evidence": "Claude stream-json does not carry the system prompt (output_style retained); Codex base instructions appear only in the rollout file (SESSION-1), not the exec stream; Antigravity: no system prompt in the documented payloads or the recordings; the documented inventory's completeness is not established (absence not established)",
       "evidence": [],
       "action": "none"
     },
@@ -1340,9 +1377,10 @@
       "state": "partial",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Per role (aspects): each aspect's route state agrees with its own concept's executed state on that route",
+      "route_evidence": "Per role (aspects): each aspect's route state agrees with its own concept's executed state on that route; Antigravity: per role (aspects)",
       "evidence": [],
       "action": "Exercise an injected-context record with a rendered role on the Claude stream route (a recording and an independent ClaudeStreamProfile check), or establish from pinned source that the route does not report one",
       "aspects": [
@@ -1355,7 +1393,8 @@
           ],
           "routes": {
             "claude-code/stream-json/2.1.304-stdout": "mapped",
-            "codex-cli/exec-json-stream/0.160.1": "source_limited"
+            "codex-cli/exec-json-stream/0.160.1": "source_limited",
+            "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
           }
         },
         {
@@ -1367,7 +1406,8 @@
           ],
           "routes": {
             "claude-code/stream-json/2.1.304-stdout": "mapped",
-            "codex-cli/exec-json-stream/0.160.1": "mapped"
+            "codex-cli/exec-json-stream/0.160.1": "mapped",
+            "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
           }
         },
         {
@@ -1379,7 +1419,8 @@
           ],
           "routes": {
             "claude-code/stream-json/2.1.304-stdout": "mapped",
-            "codex-cli/exec-json-stream/0.160.1": "mapped"
+            "codex-cli/exec-json-stream/0.160.1": "mapped",
+            "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
           }
         },
         {
@@ -1391,7 +1432,8 @@
           ],
           "routes": {
             "claude-code/stream-json/2.1.304-stdout": "unexercised",
-            "codex-cli/exec-json-stream/0.160.1": "source_limited"
+            "codex-cli/exec-json-stream/0.160.1": "source_limited",
+            "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
           }
         }
       ]
@@ -1419,9 +1461,10 @@
       "state": "definition_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "source_limited",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Neither stream reports message participant names",
+      "route_evidence": "Neither stream reports message participant names; Antigravity: no participant names in the documented payloads or the recordings; the documented inventory's completeness is not established (absence not established)",
       "evidence": [],
       "action": "Define only if a route reports one; record source limitation"
     },
@@ -1467,9 +1510,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Both routes (Codex prompt text is not echoed: see operation.user-turn)",
+      "route_evidence": "Both routes (Codex prompt text is not echoed: see operation.user-turn); Antigravity: text_delta Increment blocks and result.response (the prompt text is not echoed)",
       "evidence": [],
       "action": "none"
     },
@@ -1500,9 +1544,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "source_limited"
       },
-      "route_evidence": "Claude thinking blocks (Full); Codex reasoning items (Summary)",
+      "route_evidence": "Claude thinking blocks (Full); Codex reasoning items (Summary); Antigravity: reasoning text is not projected (thinking token counts only)",
       "evidence": [
         "claim:codex.exec-stream.reasoning-summary"
       ],
@@ -1535,9 +1580,10 @@
       "state": "not_exercised",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "source_limited"
       },
-      "route_evidence": "Claude thinking signature verified; redacted_thinking data unexercised; Codex exec emits no encrypted_content; no admitted route emits a Gemini thought signature",
+      "route_evidence": "Claude thinking signature verified; redacted_thinking data unexercised; Codex exec emits no encrypted_content; no admitted route emits a Gemini thought signature; Antigravity: no reasoning payloads, signatures or redacted data in the stream",
       "evidence": [],
       "action": "Exercise Claude redacted thinking when obtainable"
     },
@@ -1587,9 +1633,10 @@
       "state": "partial",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "unexercised",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Claude user content source (image) and container_upload file_id declared, unexercised; Codex exec reports no media parts",
+      "route_evidence": "Claude user content source (image) and container_upload file_id declared, unexercised; Codex exec reports no media parts; Antigravity: rich content not exercised (LIVE-10 not run)",
       "evidence": [],
       "action": "Define media part attributes (mime type, modality, uri/file reference) and exercise a Claude image prompt"
     },
@@ -1616,9 +1663,10 @@
       "state": "not_exercised",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "unexercised",
-        "codex-cli/exec-json-stream/0.160.1": "unexercised"
+        "codex-cli/exec-json-stream/0.160.1": "unexercised",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Verified on the historical 2.1.299 sdk route; not exercised on either admitted route",
+      "route_evidence": "Verified on the historical 2.1.299 sdk route; not exercised on either admitted route; Antigravity: no unknown content part observed",
       "evidence": [],
       "action": "none"
     },
@@ -1655,9 +1703,10 @@
       "state": "partial",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "unexercised",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Codex web_search items mapped (claim codex.exec-stream.web-search-duplicate-id); Claude server_tool_use and web_search_tool_result blocks declared, unexercised",
+      "route_evidence": "Codex web_search items mapped (claim codex.exec-stream.web-search-duplicate-id); Claude server_tool_use and web_search_tool_result blocks declared, unexercised; Antigravity: search_web and read_url_content are agent tool steps; whether any is provider-side is not established",
       "evidence": [
         "claim:codex.exec-stream.web-search-duplicate-id"
       ],
@@ -1692,9 +1741,10 @@
       "state": "partial",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Claude assistant.message.stop_reason and result.stop_reason mapped verbatim; Codex exec items report no stop reason",
+      "route_evidence": "Claude assistant.message.stop_reason and result.stop_reason mapped verbatim; Codex exec items report no stop reason; Antigravity: steps report a lifecycle state and result.status the turn's outcome; no stop reason member is documented or observed; the documented inventory's completeness is not established (absence not established)",
       "evidence": [],
       "action": "SEM-2: define a normalized finish category beside the verbatim value with reviewed per-vendor mappings and examples"
     },
@@ -1726,9 +1776,10 @@
       "state": "excluded_proposed",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "not_applicable",
-        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable",
+        "antigravity-cli/stream-json/1.4.6-stdout": "not_applicable"
       },
-      "route_evidence": "Not an execution fact",
+      "route_evidence": "Not an execution fact; Antigravity: not an execution fact",
       "evidence": [],
       "action": "Review the proposed exclusion"
     },
@@ -1756,9 +1807,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Both routes (whole-record residual verified)",
+      "route_evidence": "Both routes (whole-record residual verified); Antigravity: whole-record residual verified",
       "evidence": [],
       "action": "none"
     },
@@ -1792,9 +1844,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Claude tool_use.name; Codex command/MCP/collab names, family for file change and web search",
+      "route_evidence": "Claude tool_use.name; Codex command/MCP/collab names, family for file change and web search; Antigravity: step_update.tool_name",
       "evidence": [
         "claim:codex.exec-stream.collab-and-file-change"
       ],
@@ -1831,9 +1884,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Claude tool_use.id/tool_result.tool_use_id; Codex item.id",
+      "route_evidence": "Claude tool_use.id/tool_result.tool_use_id; Codex item.id; Antigravity: the step index (identity basis 99, scoped to its artifact)",
       "evidence": [
         "claim:codex.exec-stream.stream-local-identity"
       ],
@@ -1870,9 +1924,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Both routes",
+      "route_evidence": "Both routes; Antigravity: tool_info.parameters exactly",
       "evidence": [],
       "action": "none"
     },
@@ -1905,9 +1960,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Both routes",
+      "route_evidence": "Both routes; Antigravity: tool_info.output, else tool_info.error, else subagent_info",
       "evidence": [],
       "action": "none"
     },
@@ -1937,9 +1993,10 @@
       "state": "definition_unresolved",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Families and namespaces are mapped on both routes; no mechanism field",
+      "route_evidence": "Families and namespaces are mapped on both routes; no mechanism field; Antigravity: exact-name kind table",
       "evidence": [],
       "action": "Decide whether a tool mechanism classification (built-in, MCP, server-side, delegation) is needed beside the ACP kind; do not copy the ambiguous upstream values"
     },
@@ -1969,9 +2026,10 @@
       "state": "definition_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "source_limited",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "source_limited"
       },
-      "route_evidence": "Claude system/init tools lists names only; Codex exec reports no tool list",
+      "route_evidence": "Claude system/init tools lists names only; Codex exec reports no tool list; Antigravity: init.tools lists names only",
       "evidence": [],
       "action": "Define with tool definitions"
     },
@@ -2012,9 +2070,10 @@
       "state": "partial",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Claude system/init tools mapped (names); mcp_servers, skills, agents, slash_commands retained; Codex exec reports no tool list",
+      "route_evidence": "Claude system/init tools mapped (names); mcp_servers, skills, agents, slash_commands retained; Codex exec reports no tool list; Antigravity: init.tools names mapped as settings",
       "evidence": [],
       "action": "Define tool definitions (names, descriptions, schemas when reported); map Claude init MCP servers/skills/agents lists"
     },
@@ -2045,9 +2104,10 @@
       "state": "partial",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "source_limited",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "source_limited"
       },
-      "route_evidence": "Codex command_execution command and exit_code mapped (claim codex.exec-stream.standalone-operation-command); Claude Bash results report no exit code",
+      "route_evidence": "Codex command_execution command and exit_code mapped (claim codex.exec-stream.standalone-operation-command); Claude Bash results report no exit code; Antigravity: run_command reports its command in parameters; the exit status is only rendered text",
       "evidence": [
         "claim:codex.exec-stream.standalone-operation-command"
       ],
@@ -2084,9 +2144,10 @@
       "state": "mapper_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "retained_only",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Claude Skill tool_use arguments (skill name) and system/init skills retained; Codex exec reports no skill operations",
+      "route_evidence": "Claude Skill tool_use arguments (skill name) and system/init skills retained; Codex exec reports no skill operations; Antigravity: skills are a documented CLI feature; no skill activity documented or observed on the stream",
       "evidence": [],
       "action": "Define skill facets on tool calls and settings; map Claude Skill calls and init skills"
     },
@@ -2118,9 +2179,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "source_limited"
       },
-      "route_evidence": "Claude reports the tranches directly; Codex input_tokens is inclusive (claim codex.exec-stream.usage-components-inclusive). Since extension 0.8.0 (candidate) the Codex uncached tranche is never written: its cache-write 0 may be the deserializer default, so input - cached is only the component's conditional_value (Unavailable, Conditional); cache reads and writes stay mapped, positive values as lower bounds of the running total",
+      "route_evidence": "Claude reports the tranches directly; Codex input_tokens is inclusive (claim codex.exec-stream.usage-components-inclusive). Since extension 0.8.0 (candidate) the Codex uncached tranche is never written: its cache-write 0 may be the deserializer default, so input - cached is only the component's conditional_value (Unavailable, Conditional); cache reads and writes stay mapped, positive values as lower bounds of the running total; Antigravity: input_tokens excludes cache reads and cache writes are not reported: the inclusive input is only conditional",
       "evidence": [
         "claim:codex.exec-stream.usage-components-inclusive",
         "claim:claude.stream.usage-tranches"
@@ -2152,9 +2214,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Claude cache_read_input_tokens; Codex cached_input_tokens, a 0 stated Possibly default (the provider may omit input_tokens_details) since extension 0.7.0; since extension 0.8.0 (candidate) a positive Codex value is a Lower bound of the thread running total, which adds only the responses whose usage arrived",
+      "route_evidence": "Claude cache_read_input_tokens; Codex cached_input_tokens, a 0 stated Possibly default (the provider may omit input_tokens_details) since extension 0.7.0; since extension 0.8.0 (candidate) a positive Codex value is a Lower bound of the thread running total, which adds only the responses whose usage arrived; Antigravity: cache_read_tokens",
       "evidence": [],
       "action": "Managing review of the component measurement policy (claims r3)"
     },
@@ -2184,9 +2247,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "source_limited"
       },
-      "route_evidence": "Claude cache_creation_input_tokens with ephemeral 5m/1h tiers; Codex cache_write_input_tokens, serde-defaulted to 0 when the provider omits it (rust-v0.160.1), stated Possibly default since extension 0.7.0; since extension 0.8.0 (candidate) a positive Codex value is a Lower bound of the thread running total, which adds only the responses whose usage arrived",
+      "route_evidence": "Claude cache_creation_input_tokens with ephemeral 5m/1h tiers; Codex cache_write_input_tokens, serde-defaulted to 0 when the provider omits it (rust-v0.160.1), stated Possibly default since extension 0.7.0; since extension 0.8.0 (candidate) a positive Codex value is a Lower bound of the thread running total, which adds only the responses whose usage arrived; Antigravity: no cache writes reported",
       "evidence": [],
       "action": "Managing review of the component measurement policy (claims r3)"
     },
@@ -2211,9 +2275,10 @@
       "state": "definition_unresolved",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "not_applicable",
-        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable",
+        "antigravity-cli/stream-json/1.4.6-stdout": "not_applicable"
       },
-      "route_evidence": "No route needs it: both routes report read and write separately",
+      "route_evidence": "No route needs it: both routes report read and write separately; Antigravity: cache reads reported separately",
       "evidence": [],
       "action": "Keep unmapped; record the ambiguity; revisit if OpenInference defines it"
     },
@@ -2243,9 +2308,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Both routes; since extension 0.8.0 (candidate) a positive Codex value is a Lower bound of the thread running total, which adds only the responses whose usage arrived",
+      "route_evidence": "Both routes; since extension 0.8.0 (candidate) a positive Codex value is a Lower bound of the thread running total, which adds only the responses whose usage arrived; Antigravity: output_tokens; whether thinking is inside it is unresolved",
       "evidence": [],
       "action": "none"
     },
@@ -2276,9 +2342,10 @@
       "state": "covered",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Claude result output_tokens_details.thinking_tokens and modelUsage thinkingTokens; Codex reasoning_output_tokens, a 0 stated Possibly default (output_tokens_details may be omitted) since extension 0.7.0; since extension 0.8.0 (candidate) a positive Codex value is a Lower bound of the thread running total, which adds only the responses whose usage arrived",
+      "route_evidence": "Claude result output_tokens_details.thinking_tokens and modelUsage thinkingTokens; Codex reasoning_output_tokens, a 0 stated Possibly default (output_tokens_details may be omitted) since extension 0.7.0; since extension 0.8.0 (candidate) a positive Codex value is a Lower bound of the thread running total, which adds only the responses whose usage arrived; Antigravity: thinking_tokens as reasoning_tokens, no relation to output stated",
       "evidence": [],
       "action": "Managing review of the component measurement policy (claims r3)"
     },
@@ -2304,9 +2371,10 @@
       "state": "derivable",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "source_limited",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Neither stream reports a total (the Codex rollout does)",
+      "route_evidence": "Neither stream reports a total (the Codex rollout does); Antigravity: total_tokens as reported_total_tokens (equals input plus output on the recordings)",
       "evidence": [],
       "action": "none"
     },
@@ -2349,9 +2417,10 @@
       "state": "definition_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "source_limited",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Neither stream reports per-modality counts",
+      "route_evidence": "Neither stream reports per-modality counts; Antigravity: no per-modality counts in the documented usage object or the recordings; the documented inventory's completeness is not established (absence not established)",
       "evidence": [],
       "action": "Define optional modality parts of each tranche (parts, never additional); record source limitation"
     },
@@ -2382,9 +2451,10 @@
       "state": "partial",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "source_limited"
       },
-      "route_evidence": "Claude result total_cost_usd mapped; Codex exec reports no cost. Estimated cost awaits PRICE-1",
+      "route_evidence": "Claude result total_cost_usd mapped; Codex exec reports no cost. Estimated cost awaits PRICE-1; Antigravity: no cost reported (missing cost is not zero)",
       "evidence": [],
       "action": "PRICE-1: estimates with rate provenance kept apart from reported cost"
     },
@@ -2424,9 +2494,10 @@
       "state": "definition_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "retained_only",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "source_limited"
       },
-      "route_evidence": "Claude result modelUsage.{*}.costUSD (per model, reported) retained (live); no per-component cost on either stream",
+      "route_evidence": "Claude result modelUsage.{*}.costUSD (per model, reported) retained (live); no per-component cost on either stream; Antigravity: no cost reported",
       "evidence": [],
       "action": "PRICE-1: component estimates with rate provenance; map Claude per-model reported cost"
     },
@@ -2466,9 +2537,10 @@
       "state": "derivable",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Usage observations verified on both routes",
+      "route_evidence": "Usage observations verified on both routes; Antigravity: step usage at its own unit (scope 99 Conversation step) and the session's cumulative snapshot, never summed",
       "evidence": [],
       "action": "none"
     },
@@ -2508,9 +2580,10 @@
       "state": "partial",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Tool and turn status verified on both routes; Claude assistant.error retained (unexercised); Codex turn.failed retained (synthetic only)",
+      "route_evidence": "Tool and turn status verified on both routes; Claude assistant.error retained (unexercised); Codex turn.failed retained (synthetic only); Antigravity: tool failure only where tool_info.error is reported; turn status from result.status",
       "evidence": [],
       "action": "Map per-response errors with the error-type facet"
     },
@@ -2538,9 +2611,10 @@
       "state": "mapper_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "retained_only",
-        "codex-cli/exec-json-stream/0.160.1": "retained_only"
+        "codex-cli/exec-json-stream/0.160.1": "retained_only",
+        "antigravity-cli/stream-json/1.4.6-stdout": "retained_only"
       },
-      "route_evidence": "Claude result api_error_status (live), result errors[] and assistant.error, system/api_retry error_status retained; Codex turn.failed.error and error items retained (synthetic)",
+      "route_evidence": "Claude result api_error_status (live), result errors[] and assistant.error, system/api_retry error_status retained; Codex turn.failed.error and error items retained (synthetic); Antigravity: tool_info.error.type is result content; result.error (interrupted) retained",
       "evidence": [],
       "action": "Define a reported error class on responses, turns and attempts (pending api-request-attempts) and map both routes"
     },
@@ -2571,9 +2645,10 @@
       "state": "mapper_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "retained_only",
-        "codex-cli/exec-json-stream/0.160.1": "retained_only"
+        "codex-cli/exec-json-stream/0.160.1": "retained_only",
+        "antigravity-cli/stream-json/1.4.6-stdout": "retained_only"
       },
-      "route_evidence": "Claude result errors[] and system/api_retry error retained; Codex error/turn.failed messages retained (synthetic)",
+      "route_evidence": "Claude result errors[] and system/api_retry error retained; Codex error/turn.failed messages retained (synthetic); Antigravity: result.error retained",
       "evidence": [],
       "action": "Define with the error-type facet; stack traces stay source-limited"
     },
@@ -2607,9 +2682,10 @@
       "state": "partial",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "mapped"
       },
-      "route_evidence": "Claude activity Partial/Completed from stop_reason; Codex Item completed; interruption verified on cancelled recordings",
+      "route_evidence": "Claude activity Partial/Completed from stop_reason; Codex Item completed; interruption verified on cancelled recordings; Antigravity: Partial and Item completed per step; interrupted turn ERROR verified",
       "evidence": [],
       "action": "SEM-2: define response-level outcome states and map max_tokens/refusal/interruption evidence"
     },
@@ -2639,9 +2715,10 @@
       "state": "partial",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "source_limited"
       },
-      "route_evidence": "Claude records carry timestamp (Source record basis); Codex exec records carry no time, so only capture observation time exists",
+      "route_evidence": "Claude records carry timestamp (Source record basis); Codex exec records carry no time, so only capture observation time exists; Antigravity: the stream carries no timestamps (capture observation time only)",
       "evidence": [],
       "action": "none (Codex execution time is source-limited)"
     },
@@ -2675,9 +2752,10 @@
       "state": "mapper_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "retained_only",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "retained_only"
       },
-      "route_evidence": "Claude result duration_ms and duration_api_ms (live), tool_progress elapsed_time_seconds (unexercised) and compact_metadata.duration_ms retained; Codex exec reports none",
+      "route_evidence": "Claude result duration_ms and duration_api_ms (live), tool_progress elapsed_time_seconds (unexercised) and compact_metadata.duration_ms retained; Codex exec reports none; Antigravity: step and result duration_seconds retained",
       "evidence": [],
       "action": "Define reported duration observations (scope, unit, what the interval covers) and map Claude result durations"
     },
@@ -2705,9 +2783,10 @@
       "state": "mapper_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "retained_only",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Claude result ttft_ms, ttft_stream_ms, time_to_request_ms, first_content_frame_ms retained (live); Codex exec reports none",
+      "route_evidence": "Claude result ttft_ms, ttft_stream_ms, time_to_request_ms, first_content_frame_ms retained (live); Codex exec reports none; Antigravity: no latency members in the documented payloads or the recordings; the documented inventory's completeness is not established (absence not established)",
       "evidence": [],
       "action": "Define reported latency observations with the durations facet and map Claude result latencies"
     },
@@ -2736,9 +2815,10 @@
       "state": "derivable",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "mapped",
-        "codex-cli/exec-json-stream/0.160.1": "mapped"
+        "codex-cli/exec-json-stream/0.160.1": "mapped",
+        "antigravity-cli/stream-json/1.4.6-stdout": "source_limited"
       },
-      "route_evidence": "Counted from recorded events; Codex counts content items, not responses",
+      "route_evidence": "Counted from recorded events; Codex counts content items, not responses; Antigravity: tool calls are countable from tool steps, inference calls are not: a step is not established as one model invocation and no response identity is reported",
       "evidence": [],
       "action": "none"
     },
@@ -2776,9 +2856,10 @@
       "state": "definition_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "retained_only",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Claude system/compact_boundary (trigger, pre_tokens, post_tokens, duration_ms) and compaction blocks retained (unexercised); Codex exec reports none",
+      "route_evidence": "Claude system/compact_boundary (trigger, pre_tokens, post_tokens, duration_ms) and compaction blocks retained (unexercised); Codex exec reports none; Antigravity: checkpoint steps (meaning undocumented) retained; none observed",
       "evidence": [],
       "action": "SEM-2: define compaction events with explicit units; exercise a Claude compaction"
     },
@@ -2819,9 +2900,10 @@
       "state": "definition_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "retained_only",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Claude system/memory_recall (mode, memories) retained (unexercised); Codex exec reports none",
+      "route_evidence": "Claude system/memory_recall (mode, memories) retained (unexercised); Codex exec reports none; Antigravity: no memory family documented or observed",
       "evidence": [],
       "action": "Define memory recall/write observations when a route exercises them"
     },
@@ -2857,9 +2939,10 @@
       "state": "definition_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "retained_only",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Claude system/init slash_commands and result local_command retained; Codex exec reports none",
+      "route_evidence": "Claude system/init slash_commands and result local_command retained; Codex exec reports none; Antigravity: no template or workflow invocation documented or observed on the stream",
       "evidence": [],
       "action": "Define reported command/template use if a route reports which template produced a prompt"
     },
@@ -2891,9 +2974,10 @@
       "state": "definition_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "not_applicable",
-        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable",
+        "antigravity-cli/stream-json/1.4.6-stdout": "not_applicable"
       },
-      "route_evidence": "Supplied by the capturing caller, not by either stream",
+      "route_evidence": "Supplied by the capturing caller, not by either stream; Antigravity: caller-supplied, not reported by the stream",
       "evidence": [],
       "action": "Define caller-supplied run labels in Journal provenance (agent-client integration), kept apart from source facts"
     },
@@ -2925,9 +3009,10 @@
       "state": "definition_missing",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "source_limited",
-        "codex-cli/exec-json-stream/0.160.1": "source_limited"
+        "codex-cli/exec-json-stream/0.160.1": "source_limited",
+        "antigravity-cli/stream-json/1.4.6-stdout": "unexercised"
       },
-      "route_evidence": "Neither stream reports the API endpoint (Claude usage.inference_geo, a region fact, is retained)",
+      "route_evidence": "Neither stream reports the API endpoint (Claude usage.inference_geo, a region fact, is retained); Antigravity: no API endpoint in the documented payloads or the recordings; the documented inventory's completeness is not established (absence not established)",
       "evidence": [],
       "action": "Define only if a route reports an endpoint; record source limitation"
     },
@@ -3009,9 +3094,10 @@
       "state": "tier3_consumer",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "not_applicable",
-        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable",
+        "antigravity-cli/stream-json/1.4.6-stdout": "not_applicable"
       },
-      "route_evidence": "Neither stream reports evaluations",
+      "route_evidence": "Neither stream reports evaluations; Antigravity: no evaluations",
       "evidence": [],
       "action": "None for Journal; consumer-owned"
     },
@@ -3042,9 +3128,10 @@
       "state": "excluded_proposed",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "not_applicable",
-        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable",
+        "antigravity-cli/stream-json/1.4.6-stdout": "not_applicable"
       },
-      "route_evidence": "No admitted route",
+      "route_evidence": "No admitted route; Antigravity: no admitted route",
       "evidence": [],
       "action": "Review the proposed exclusion"
     },
@@ -3079,9 +3166,10 @@
       "state": "excluded_proposed",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "not_applicable",
-        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable",
+        "antigravity-cli/stream-json/1.4.6-stdout": "not_applicable"
       },
-      "route_evidence": "No admitted route",
+      "route_evidence": "No admitted route; Antigravity: no admitted route",
       "evidence": [],
       "action": "Review the proposed exclusion"
     },
@@ -3108,9 +3196,10 @@
       "state": "excluded_proposed",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "not_applicable",
-        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable",
+        "antigravity-cli/stream-json/1.4.6-stdout": "not_applicable"
       },
-      "route_evidence": "No admitted route",
+      "route_evidence": "No admitted route; Antigravity: no admitted route",
       "evidence": [],
       "action": "Review the proposed exclusion"
     },
@@ -3145,9 +3234,10 @@
       "state": "excluded_proposed",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "not_applicable",
-        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable",
+        "antigravity-cli/stream-json/1.4.6-stdout": "not_applicable"
       },
-      "route_evidence": "No admitted route",
+      "route_evidence": "No admitted route; Antigravity: no admitted route",
       "evidence": [],
       "action": "Review the proposed exclusion"
     },
@@ -3170,9 +3260,10 @@
       "state": "excluded_proposed",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "not_applicable",
-        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable",
+        "antigravity-cli/stream-json/1.4.6-stdout": "not_applicable"
       },
-      "route_evidence": "No admitted route",
+      "route_evidence": "No admitted route; Antigravity: no admitted route",
       "evidence": [],
       "action": "Review the proposed exclusion"
     },
@@ -3200,9 +3291,10 @@
       "state": "excluded_proposed",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "not_applicable",
-        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable",
+        "antigravity-cli/stream-json/1.4.6-stdout": "not_applicable"
       },
-      "route_evidence": "Not an execution fact of the CLI",
+      "route_evidence": "Not an execution fact of the CLI; Antigravity: not an execution fact of the CLI",
       "evidence": [],
       "action": "Review the proposed exclusion"
     },
@@ -3233,9 +3325,10 @@
       "state": "excluded_proposed",
       "routes": {
         "claude-code/stream-json/2.1.304-stdout": "not_applicable",
-        "codex-cli/exec-json-stream/0.160.1": "not_applicable"
+        "codex-cli/exec-json-stream/0.160.1": "not_applicable",
+        "antigravity-cli/stream-json/1.4.6-stdout": "not_applicable"
       },
-      "route_evidence": "Not an execution fact",
+      "route_evidence": "Not an execution fact; Antigravity: not an execution fact",
       "evidence": [],
       "action": "Review the proposed exclusion"
     }

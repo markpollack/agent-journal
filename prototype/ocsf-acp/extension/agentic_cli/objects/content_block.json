@@ -12,6 +12,8 @@
     "reasoning_form_id": {"requirement": "optional"},
     "reasoning_form": {"requirement": "optional"},
     "text": {"requirement": "optional"},
+    "text_update_id": {"requirement": "optional"},
+    "text_update": {"requirement": "optional"},
     "tool_call_uid": {"requirement": "optional"},
     "data": {"description": "The native block exactly as reported.", "requirement": "required"}
   }

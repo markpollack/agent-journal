@@ -377,7 +377,9 @@ class ParityLedgerTest {
         corruptions.put("is not a catalog concept", in -> ((ArrayNode) facet(in, "usage.output").path("concepts")).add("no-such-concept"));
         corruptions.put("does not resolve", in -> ((ArrayNode) facet(in, "usage.output").path("destinations")).add("usage_observation.input_tokens"));
         corruptions.put("covered needs", in -> ((ObjectNode) facet(in, "usage.output").path("routes")).put("codex-cli/exec-json-stream/0.160.1", "retained_only"));
-        corruptions.put("mapper_missing needs", in -> ((ObjectNode) facet(in, "time.durations").path("routes")).put("claude-code/stream-json/2.1.304-stdout", "source_limited"));
+        // both routes that retain durations (Claude result duration_ms, Antigravity duration_seconds) relabelled source-limited
+        corruptions.put("mapper_missing needs", in -> ((ObjectNode) facet(in, "time.durations").path("routes")).put("claude-code/stream-json/2.1.304-stdout", "source_limited")
+                .put("antigravity-cli/stream-json/1.4.6-stdout", "source_limited"));
         corruptions.put("a proposed exclusion has state", in -> ((ObjectNode) facet(in, "rag.embeddings")).put("state", "source_limited"));
         corruptions.put("names no catalog claim", in -> ((ArrayNode) facet(in, "usage.output").path("evidence")).add("claim:no.such.claim"));
         corruptions.put("not in the vocabulary", in -> ((ObjectNode) facet(in, "usage.output")).put("tier", "1.5"));

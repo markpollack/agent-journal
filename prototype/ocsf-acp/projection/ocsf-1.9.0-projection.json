@@ -6,7 +6,7 @@
  },
  "extension": {
   "name": "agentic_cli",
-  "version": "0.9.0-prototype"
+  "version": "0.10.0-prototype"
  },
  "purpose": "Comparison inventory only: for each attribute our extension defines, the upstream attribute it means, if any, and the verdict. It does not reshape the extension; our attributes and names are kept.",
  "evidence_class": "source-verified",
@@ -900,6 +900,22 @@
    "upstream_file": null,
    "verdict": "no_counterpart",
    "caveat": "Caption sibling of reasoning_form_id, which has no counterpart."
+  },
+  {
+   "ours": "content_block.text_update_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream statement of whether a block's text is an increment of an item's text or a snapshot replacing it; upstream message text is already assembled."
+  },
+  {
+   "ours": "content_block.text_update",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "Caption sibling of text_update_id, which has no counterpart."
   },
   {
    "ours": "content_block.block_kind",

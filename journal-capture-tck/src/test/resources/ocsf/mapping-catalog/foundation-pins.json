@@ -225,6 +225,14 @@
    "readback_status": "Sanitized live recordings (and one labelled synthetic stream) replayed through the current writer; the persisted event files are read back by the independent oracle. Derived from the CLI coverage calculation."
   },
   {
+   "id": "journal.antigravity-cli-1.4.6-stdout",
+   "name": "Journal OCSF writer, Antigravity CLI 1.4.6 raw stdout",
+   "current": true,
+   "derived_from": "antigravity-cli/stream-json/1.4.6-stdout",
+   "evidence_class": "replay-observed",
+   "readback_status": "Sanitized live recordings replayed through the current writer; the persisted event files are read back by the independent oracle. Derived from the CLI coverage calculation."
+  },
+  {
    "id": "weave.plugin-0.4.0.otlp-export",
    "name": "Weave Claude Code plugin OTLP export",
    "versions": {

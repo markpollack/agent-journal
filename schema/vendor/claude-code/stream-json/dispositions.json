@@ -14,7 +14,8 @@
  "evidence_fixtures": [
   "claude-child-2.1.299",
   "claude-live-2.1.304-features",
-  "claude-live-2.1.304-denial"
+  "claude-live-2.1.304-denial",
+  "claude-live-2.1.304-mcp"
  ],
  "rule_of_coverage": "every path the accepted specification or a committed fixture of this profile observes (vendor envelope; tool and user data subtrees are dispositioned as whole payloads) has exactly one disposition: normalized (a portable destination, the contract rule, and an oracle property that was VERIFIED with an occurrence on an evidence fixture in the same test run), retained (whole-record retention VERIFIED on the evidence fixture), omitted (a reviewed tested rule; none exists), or unresolved (retained, with the open question stated). FieldDispositionTest fails on a missing or duplicate disposition, a stale entry, an unresolvable destination, an undeclared rule, an unexercised normalized claim or a test reference that does not exist.",
  "entries": [
@@ -420,6 +421,19 @@
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
    "note": "data-keyed: the wire form of tool inputs; a repeat representation of content[].input kept whole, never used as the argument value"
+  },
+  {
+   "variant": "assistant",
+   "path": "tool_use_meta",
+   "subtree": true,
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "display metadata the CLI attaches to an MCP tool_use block (live 2.1.304 MCP recording): per block id, the MCP tool's own name, a humanized display name and the server's self-reported name (serverInfo.name, here journal-mcp-test-server), which differs from the configured server key that prefixes the tool name (mcp__journal_echo__); kept whole, not used to set tool_namespace or to classify the tool"
   },
   {
    "variant": "user",

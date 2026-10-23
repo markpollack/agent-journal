@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.github.markpollack</groupId>
+        <artifactId>agent-journal-parent</artifactId>
+        <version>1.12.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>journal-mcp-test-server</artifactId>
+    <packaging>jar</packaging>
+
+    <name>Journal MCP Test Server</name>
+    <description>Deterministic stdio MCP server for live CLI capture tests (test tooling, never a writer dependency)</description>
+
+    <properties>
+        <!-- MCP Java SDK, the portfolio pin (agent-client, claude-agent-sdk-java): core plus its Jackson 3 JSON binding,
+             programmatic configuration only, no Spring artifacts -->
+        <mcp-sdk.version>2.0.1</mcp-sdk.version>
+        <!-- test tooling: built and tested with the reactor, never published -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <!-- java-guardrails JaCoCo floors: measured 2026-10-23 less 2 points (config/guardrails/decisions.md); the
+             stdio round trip runs the server in a child JVM, which the in-process agent does not measure -->
+        <jacoco.minimum.line>0.55</jacoco.minimum.line>
+        <jacoco.minimum.branch>0.75</jacoco.minimum.branch>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.modelcontextprotocol.sdk</groupId>
+            <artifactId>mcp-core</artifactId>
+            <version>${mcp-sdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.modelcontextprotocol.sdk</groupId>
+            <artifactId>mcp-json-jackson3</artifactId>
+            <version>${mcp-sdk.version}</version>
+        </dependency>
+        <!-- the SDK logs through SLF4J; standard output is the MCP channel and standard error stays quiet -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>journal-mcp-test-server</finalName>
+        <plugins>
+            <!-- java -jar target/journal-mcp-test-server.jar: the runtime closure is copied to target/lib and named in the manifest -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-runtime-closure</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeScope>runtime</includeScope>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>io.github.markpollack.journal.mcptest.EchoMcpServer</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

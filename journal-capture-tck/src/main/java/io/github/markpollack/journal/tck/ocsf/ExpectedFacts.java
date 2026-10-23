@@ -49,16 +49,18 @@ public final class ExpectedFacts {
      * When {@code itemIdentityBasisId} is set, {@code id} is the source's own content-item id ({@code item_uid} of that
      * basis), the model response is not identified (no {@code response_uid}) and the activity is 3 Item completed, unless
      * the profile states another: {@code statedActivity} 1 Partial for a non-final view of such an item (an Antigravity
-     * agent-response step still ACTIVE, with one text fragment).
+     * agent-response step still ACTIVE, with one text fragment). {@code textUpdate} is the text_update_id every block must
+     * carry (1 Increment for an Antigravity text fragment), or {@code null} when the profile states none, and then no block
+     * may carry one.
      */
     public record Response(int recordIndex, String id, List<Json> blocks, String stopReason, boolean terminal, String model, Integer reasoningForm, Integer itemIdentityBasisId,
-            Integer statedActivity) {
+            Integer statedActivity, Integer textUpdate) {
         public Response(int recordIndex, String id, List<Json> blocks, String stopReason, boolean terminal, String model) {
-            this(recordIndex, id, blocks, stopReason, terminal, model, null, null, null);
+            this(recordIndex, id, blocks, stopReason, terminal, model, null, null, null, null);
         }
 
         public Response(int recordIndex, String id, List<Json> blocks, String stopReason, boolean terminal, String model, Integer reasoningForm, Integer itemIdentityBasisId) {
-            this(recordIndex, id, blocks, stopReason, terminal, model, reasoningForm, itemIdentityBasisId, null);
+            this(recordIndex, id, blocks, stopReason, terminal, model, reasoningForm, itemIdentityBasisId, null, null);
         }
 
         /** The activity the event must carry. */
@@ -95,21 +97,27 @@ public final class ExpectedFacts {
      * @param components normalized component name to exact native number
      * @param aggregationId 1 scope total, 2 cumulative snapshot, or {@code null} when the profile establishes none
      * @param tranches the component bases, tiers and reasoning relation, or {@code null} when the profile states none
+     * @param scopeName at scope 99 Other, the source-defined unit the scope caption must name (for example Conversation step)
      */
     public record Usage(int eventRecordIndex, int recordIndex, int scopeId, int statusId, Map<String, Json> components, String model, String provider, Integer measurementStatusId,
-            Integer aggregationId, Tranches tranches) {
+            Integer aggregationId, Tranches tranches, String scopeName) {
         /** A usage whose record reports no provider (the provider must then be absent on the observation, never inferred). */
         public Usage(int eventRecordIndex, int recordIndex, int scopeId, int statusId, Map<String, Json> components, String model) {
-            this(eventRecordIndex, recordIndex, scopeId, statusId, components, model, null, null, null, null);
+            this(eventRecordIndex, recordIndex, scopeId, statusId, components, model, null, null, null, null, null);
         }
 
         public Usage(int eventRecordIndex, int recordIndex, int scopeId, int statusId, Map<String, Json> components, String model, String provider) {
-            this(eventRecordIndex, recordIndex, scopeId, statusId, components, model, provider, null, null, null);
+            this(eventRecordIndex, recordIndex, scopeId, statusId, components, model, provider, null, null, null, null);
         }
 
         /** A usage stated in canonical tranches. */
         public Usage(int eventRecordIndex, int recordIndex, int scopeId, int statusId, Tranches tranches, String model, String provider, Integer measurementStatusId, Integer aggregationId) {
-            this(eventRecordIndex, recordIndex, scopeId, statusId, tranches.values(), model, provider, measurementStatusId, aggregationId, tranches);
+            this(eventRecordIndex, recordIndex, scopeId, statusId, tranches.values(), model, provider, measurementStatusId, aggregationId, tranches, null);
+        }
+
+        /** A usage in canonical tranches at scope 99 Other, whose caption names the source-defined unit. */
+        public Usage(int eventRecordIndex, int recordIndex, String scopeName, int statusId, Tranches tranches, Integer aggregationId) {
+            this(eventRecordIndex, recordIndex, 99, statusId, tranches.values(), null, null, null, aggregationId, tranches, scopeName);
         }
     }
 

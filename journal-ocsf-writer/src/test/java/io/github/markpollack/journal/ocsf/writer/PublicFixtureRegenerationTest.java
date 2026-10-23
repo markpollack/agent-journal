@@ -33,11 +33,13 @@ import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_C
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CODEX_SANDBOX_REFUSAL;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CODEX_CANCELLED;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_DENIAL;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_MCP;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_FEATURES;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.UNTESTED;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_DENIAL;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_FEATURES;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_INTERRUPT_OPEN;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_MCP_DENIED;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_SUBAGENT;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.agyStream;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStream;
@@ -66,6 +68,7 @@ class PublicFixtureRegenerationTest {
         write(UNTESTED, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
         write(LIVE_FEATURES, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
         write(LIVE_DENIAL, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
+        write(LIVE_MCP, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
         write(LIVE_CODEX, List.of(codexStream()), List.of("stream.jsonl"));
         writeCancelled(LIVE_CANCELLED, claudeStreamStdout());
         writeCancelled(LIVE_CODEX_CANCELLED, codexStream());
@@ -83,6 +86,7 @@ class PublicFixtureRegenerationTest {
         write(LIVE_AGY_DENIAL, List.of(agyStream()), List.of("stream.jsonl"));
         writeCancelled(LIVE_AGY_INTERRUPT_OPEN, agyStream());
         write(LIVE_AGY_SUBAGENT, List.of(agyStream()), List.of("stream.jsonl"));
+        write(LIVE_AGY_MCP_DENIED, List.of(agyStream()), List.of("stream.jsonl"));
     }
 
     /**

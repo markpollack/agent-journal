@@ -1,0 +1,128 @@
+{
+  "kind": "agent-journal/semantic-example",
+  "format_version": "0.1",
+  "id": "agy-step-and-session-usage-interrupted-live",
+  "concept": "usage-scope-finality-and-repeats",
+  "description": "SANITIZED LIVE RECORDING (Antigravity CLI 1.4.6, always-proceed mode, interrupted by SIGTERM while a command step was open): step 1 reports its own usage (input 6925, output 192) and the result, written on interruption with status ERROR, reports the session's cumulative usage (input 9422, output 238). The step's total is stated for its unit, the conversation step (scope 99 Other, \"Conversation step\", aggregation 1 Scope total), and the session's as a cumulative snapshot (scope 5, aggregation 2). The two overlap: the session covers the step, so they are never added. They are not reconciled either: the session exceeds the only emitted step by usage that no emitted step reports (the stream does not say where it came from), so the steps' sum is never substituted for the session total and the difference is not turned into an invented step. Input is only the uncached component's conditional value in both (no cache writes are reported).",
+  "authored_from": [
+    "agy-headless-docs-2026-10-23",
+    "agy-live-1.4.6-recordings"
+  ],
+  "native": {
+    "evidence_kind": "live",
+    "profile": "agy_stream",
+    "compatibility_entry": "antigravity-cli/stream-json/1.4.6-stdout",
+    "fixture": "antigravity-live-1.4.6-interrupt-open",
+    "artifact": "stream.jsonl",
+    "sha256": "6e5ad73eeec6c68f898a2ffde37d676ed3c737941cb603896e30e7d799968bf9"
+  },
+  "expected": [
+    {
+      "record": 3,
+      "class": "model_response",
+      "activity_id": 3,
+      "values": {
+        "/item_uid": "1",
+        "/identity_basis_id": 99,
+        "/usage_observations/0/scope_id": 99,
+        "/usage_observations/0/scope": "Conversation step",
+        "/usage_observations/0/usage_status_id": 2,
+        "/usage_observations/0/aggregation_id": 1,
+        "/usage_observations/0/output_tokens": 192,
+        "/usage_observations/0/reasoning_tokens": 143,
+        "/usage_observations/0/cache_read_tokens": 0,
+        "/usage_observations/0/reported_total_tokens": 7117,
+        "/usage_observations/0/components/0/name": "uncached_input_tokens",
+        "/usage_observations/0/components/0/measurement_status_id": 3,
+        "/usage_observations/0/components/0/conditional_value": 6925
+      },
+      "absent": [
+        "/response_uid",
+        "/usage_observations/0/uncached_input_tokens",
+        "/usage_observations/1"
+      ]
+    },
+    {
+      "record": 5,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/status_id": 2,
+        "/usage_observations/0/scope_id": 5,
+        "/usage_observations/0/usage_status_id": 2,
+        "/usage_observations/0/aggregation_id": 2,
+        "/usage_observations/0/output_tokens": 238,
+        "/usage_observations/0/reasoning_tokens": 158,
+        "/usage_observations/0/cache_read_tokens": 4871,
+        "/usage_observations/0/reported_total_tokens": 9660,
+        "/usage_observations/0/components/0/conditional_value": 9422
+      },
+      "absent": [
+        "/usage_observations/0/uncached_input_tokens",
+        "/usage_observations/1"
+      ]
+    }
+  ],
+  "counterexamples": [
+    {
+      "id": "step-usage-as-model-response",
+      "record": 3,
+      "class": "model_response",
+      "activity_id": 3,
+      "values": {
+        "/usage_observations/0/scope_id": 2
+      },
+      "why": "A conversation step is not established as one model invocation."
+    },
+    {
+      "id": "step-total-as-cumulative",
+      "record": 3,
+      "class": "model_response",
+      "activity_id": 3,
+      "values": {
+        "/usage_observations/0/aggregation_id": 2
+      },
+      "why": "The step's usage is documented as that step's own, a disjoint total of its unit, not a running total."
+    },
+    {
+      "id": "session-as-scope-total",
+      "record": 5,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/aggregation_id": 1
+      },
+      "why": "result.usage is cumulative over the session; as a disjoint total it would invite adding it to the steps it covers."
+    },
+    {
+      "id": "step-added-to-covering-session",
+      "record": 5,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/output_tokens": 430
+      },
+      "why": "Adding the step's 192 to the session's 238 that already covers it double counts the step."
+    },
+    {
+      "id": "session-replaced-by-emitted-steps",
+      "record": 5,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/0/components/0/conditional_value": 6925
+      },
+      "why": "The session reported 9422 input, more than the only emitted step's 6925; the difference is usage no emitted step reports. The steps' sum is not the session total."
+    },
+    {
+      "id": "invented-missing-step",
+      "record": 5,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/usage_observations/1/scope_id": 99
+      },
+      "why": "The difference between the session and the emitted steps is not a step: no step record reported it, so no step observation is invented."
+    }
+  ]
+}

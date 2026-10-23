@@ -4,7 +4,7 @@
  "fixture": "codex-live-0.160.1-web-search",
  "core": "main",
  "events_jsonl": "fixtures/codex-live-0.160.1-web-search/package/events.jsonl",
- "events_jsonl_sha256": "6dcae8e12e09ac39f62fe59670b246b07254f088d6d62e5671c4546c4dfd7df5",
+ "events_jsonl_sha256": "42b7f53f4b3b2077fb5bd4539a57f24f96e0e4beb8ca03dae6c0bf61f3e35a7d",
  "execution_records": 9,
  "declarations_skipped": 41,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
@@ -14,7 +14,7 @@
   "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
   "exit_code": 0
  },
- "compiled_schema_sha256": "9b77697bdc5b3f5433e3d064d25e4488c230634311abe634faf2f34745f6eb56",
+ "compiled_schema_sha256": "133b83dac641ced0f0553344a5783eab1922f5d4f29ec025b221ac60dbf5a728",
  "result": {
   "event_files_processed": 9,
   "error_events": 0,

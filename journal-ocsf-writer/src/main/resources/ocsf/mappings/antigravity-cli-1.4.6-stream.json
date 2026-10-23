@@ -1,5 +1,5 @@
 {
-  "contract_uid": "antigravity-cli/stream-json/1.4.6/0.1.0-prototype",
+  "contract_uid": "antigravity-cli/stream-json/1.4.6/0.2.0-prototype",
   "applies_to": {
     "product": "Antigravity CLI",
     "version": "1.4.6",
@@ -21,7 +21,7 @@
     "reported": "none: the stream carries no timestamps (duration_seconds is a duration, not a time)",
     "fallback": "capture start for every record"
   },
-  "identity": "agy.stream.step_identity.v1: a step's identity is its step_index, documented as the zero-based index of the step in its conversation (step_update.conversation_id, which every record reports), written as decimal text in tool_call_uid or item_uid with identity_basis_id 99 Other and the caption sibling identity_basis \"Conversation step index\" (the OCSF convention for an Other value); it is neither a model-facing call identifier (the stream reports none) nor an identifier the output stream assigns to its own items; in one stdin session the numbering continues across turns (documented), whether a resumed conversation (--continue or --conversation, a new process) continues it is not established",
+  "identity": "agy.stream.step_identity.v1: a step's identity is its step_index, documented as the zero-based index of the step in its conversation (step_update.conversation_id, which every record reports), written as decimal text in tool_call_uid or item_uid with identity_basis_id 99 Other and the caption sibling identity_basis \"Conversation step index\" (the OCSF convention for an Other value); it is neither a model-facing call identifier (the stream reports none) nor an identifier the output stream assigns to its own items; in one stdin session the numbering continues across turns (documented), whether a resumed conversation (--continue or --conversation, a new process) continues it is not established. Scope: a step index identifies a step only within its source artifact (journal.run_uid, journal.invocation_index, source_ref.artifact) and conversation (session_uid); an equal index in another artifact, run or conversation is another step, and no continuity across resumed processes is asserted",
   "tool_kind_table": {
     "rule": "agy.tool_name_to_kind.v1",
     "meaning": "a tool step is classified by the exact tool name the step reports (step_update.tool_name, documented as the canonical tool name); names absent from the table are 99 other",
@@ -81,7 +81,7 @@
       "target": "agentic_cli/model_response",
       "activity": "1 Partial",
       "owner": "item_uid = step_index (agy.stream.step_identity.v1, identity_basis_id 99); no response_uid: the provider's response identifier is not reported, and whether one step is one model invocation is not established",
-      "content": "one block when text_delta is present: block_type text_delta, block_kind 1 Text, text = text_delta exactly (agy.stream.text_delta.v1: an increment of the step's response text; the step's text is the concatenation of its fragments in record order, as the documentation's jq -j example joins them)"
+      "content": "one block when text_delta is present: block_type text_delta, block_kind 1 Text, text = text_delta exactly, text_update_id 1 Increment (agy.stream.text_delta.v1: an increment of the step's response text; the step's text is the concatenation of its fragments in record order, as the documentation's jq -j example joins them)"
     },
     {
       "id": "agy.stream.agent_response.done->model_response.item",
@@ -93,8 +93,8 @@
       "target": "agentic_cli/model_response",
       "activity": "3 Item completed",
       "owner": "item_uid = step_index (identity_basis_id 99); the response the step belongs to is not identified",
-      "content": "the step's last text_delta fragment as one text_delta block when present; a step without text_delta has no content block (the stream does not project the response's tool requests or other content)",
-      "usage": "step_update.usage -> scope 2 Model response, status 2 Final (reported once, on the step's DONE record), aggregation 1 Scope total (agy.stream.step_usage.v1: documented as the step's own token usage); tranches by agy.usage.tranches.v1"
+      "content": "the step's last text_delta fragment as one text_delta block when present, text_update_id 1 Increment like every fragment (it ends, never restates, the step's text); a step without text_delta has no content block (the stream does not project the response's tool requests or other content)",
+      "usage": "step_update.usage -> scope 99 Other with scope \"Conversation step\" (the unit is the step this event identifies by item_uid), status 2 Final (reported once, on the step's DONE record), aggregation 1 Scope total of that step (agy.stream.step_usage.v2: documented as the step's own token usage; one step is not established as one model invocation, so the usage is never stated at scope 2 Model response); distinct steps' totals are disjoint, the result's session usage covers them and is never added to them; tranches by agy.usage.tranches.v1"
     },
     {
       "id": "agy.stream.tool.active->tool_call.started",
@@ -150,8 +150,8 @@
       "target": "agentic_cli/prompt_turn",
       "activity": "2 Turn completed",
       "status": "result.status: SUCCESS 1 Success, ERROR 2 Failure, any other documented value (CANCELED, INTERRUPTED, INVALID, WAITING, RUNNING) 99 with the reported word as its label; basis 1 Reported",
-      "content": "result.response, documented as the turn's own response text, as one block (block_type response, block_kind 1 Text) when it is a string, including the empty string the CLI reports when no text was produced",
-      "usage": "result.usage -> scope 5 Session, status 2 Final for this run, aggregation 2 Cumulative snapshot (agy.stream.session_usage.v1: documented as cumulative over the session of one process; a conversation resumed by a new process is not covered by the documentation or the recordings); tranches by agy.usage.tranches.v1",
+      "content": "result.response, documented as the turn's own response text, as one block (block_type response, block_kind 1 Text, no text_update: it is the turn's whole text, not an update of a step item, and is never concatenated with the steps' assembled text) when it is a string, including the empty string the CLI reports when no text was produced",
+      "usage": "result.usage -> scope 5 Session, status 2 Final for this run, aggregation 2 Cumulative snapshot (agy.stream.session_usage.v1: documented as cumulative over the session of one process; a conversation resumed by a new process is not covered by the documentation or the recordings). It covers the step totals of the conversation and is never added to them; it can exceed their sum (on an interrupted run it reported usage that no emitted step reports), and the steps' sum is never substituted for it; tranches by agy.usage.tranches.v1",
       "permission": "each denied_actions[] entry -> one permission decision 2 Denied at scope 4 Run, reported_decision denied (the member name), attribution 3 Unattributed with no candidates, method 2 (agy.stream.denied_action_attribution.v1: an entry names a permission action category (for example command) and a display name, never a step index; it is not linked to a tool step by name, position or text); the entry is kept as the decision's data"
     },
     {
@@ -177,7 +177,7 @@
   ],
   "usage_tranches": {
     "rule": "agy.usage.tranches.v1",
-    "meaning": "cache_read_tokens, output_tokens, thinking_tokens (as reasoning_tokens) and total_tokens (as reported_total_tokens) are copied as reported; input_tokens cannot include cache reads (cache_read_tokens exceeds it on 9 of the 16 usage objects of the 1.4.6 recordings and in the documentation's own example), but the stream reports no cache writes, so it is the uncached input only conditionally: the uncached component is unavailable with measurement status 3 Conditional and conditional_value = input_tokens (agy.usage.uncached_input.v1), never the canonical tranche; whether thinking_tokens is part of output_tokens is not stated, so no reasoning relation is written; no member's measurement status is stated otherwise"
+    "meaning": "cache_read_tokens, output_tokens, thinking_tokens (as reasoning_tokens) and total_tokens (as reported_total_tokens) are copied as reported; input_tokens cannot include cache reads (cache_read_tokens exceeds it on 9 of the 18 usage objects of the 1.4.6 recordings and in the documentation's own example), but the stream reports no cache writes, so it is the uncached input only conditionally: the uncached component is unavailable with measurement status 3 Conditional and conditional_value = input_tokens (agy.usage.uncached_input.v1), never the canonical tranche; whether thinking_tokens is part of output_tokens is not stated, so no reasoning relation is written; no member's measurement status is stated otherwise"
   },
   "unavailable_at_source": [
     "the user prompt's text (a user_input step carries none)",
@@ -201,18 +201,18 @@
     }
   },
   "candidate": {
-    "status": "First Antigravity contract (2026-10-23), candidate for the managing reviewer: tested candidate behaviour, not approved support. Proposed meanings beyond existing definitions: a conversation step index as identity (written as identity basis 99 Other with the caption \"Conversation step index\"; a dedicated enum value is proposed) and a text_delta fragment as a Partial view of a step item"
+    "status": "Antigravity contract 0.2.0-prototype (2026-10-23 close-out), candidate for the managing reviewer: tested candidate behaviour, not approved support. Changed from 0.1.0-prototype: a step's own usage is stated at scope 99 Other \"Conversation step\" instead of 2 Model response, and every text_delta block states text_update_id 1 Increment (extension 0.10.0-prototype). Retained meanings: a conversation step index as identity (identity basis 99 Other with the caption \"Conversation step index\"; no dedicated enum value), scoped to its artifact and conversation"
   },
   "observed_behavior": {
     "reviewed": "2026-10-23, 1.4.6 live captures",
     "facts": [
       "a tool step can end in state ERROR with tool_info.error {type, message} (read_file on a directory), although the documentation lists only ACTIVE and DONE",
       "result.response joined the text_delta fragments of every agent-response step of the turn (two steps in the subagent run)",
-      "on the three completed runs result.usage equalled the sum of the parent conversation's step usage (a spawned subagent's usage is not reported in this stream); on the interrupted run it exceeded the reported steps (input 9422 against 6925), usage of work whose step record never arrived",
+      "on the four completed runs result.usage equalled the sum of the parent conversation's agent-response step usage (a spawned subagent's usage is not reported in this stream); on the interrupted run it exceeded the reported steps (input 9422 against 6925): usage that no emitted step reports, whose origin the stream does not report",
       "on SIGTERM the CLI wrote a whole result record with status ERROR and error interrupted (not the documented INTERRUPTED) and exited 1",
       "in request-review mode a command step became ACTIVE, then DONE with neither output nor error; the result reported SUCCESS, an empty response and denied_actions [{action: command, display_name: RunCommand}], and the run ended without the remaining requested steps",
       "a tool step's tool_name (read_file, write_file) need not appear in init.tools (view_file, write_to_file)",
-      "cache_read_tokens exceeded input_tokens on 9 of 16 usage objects, so input_tokens excludes cache reads; total_tokens equalled input_tokens + output_tokens on every record"
+      "cache_read_tokens exceeded input_tokens on 9 of 18 usage objects, so input_tokens excludes cache reads; total_tokens equalled input_tokens + output_tokens on every record"
     ]
   }
 }

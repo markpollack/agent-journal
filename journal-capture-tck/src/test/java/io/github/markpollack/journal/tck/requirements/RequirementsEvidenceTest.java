@@ -79,8 +79,10 @@ class RequirementsEvidenceTest {
     static final String LIVE_AGY_DENIAL = "antigravity-live-1.4.6-denial";
     static final String LIVE_AGY_INTERRUPT_OPEN = "antigravity-live-1.4.6-interrupt-open";
     static final String LIVE_AGY_SUBAGENT = "antigravity-live-1.4.6-subagent";
+    static final String LIVE_AGY_MCP_DENIED = "antigravity-live-1.4.6-mcp-denied";
+    static final String LIVE_MCP = "claude-live-2.1.304-mcp";
     static final List<String> FIXTURES = List.of(CODEX_STREAM, CLAUDE_CHILD, CLAUDE_INTERRUPTED, CLAUDE_UNTESTED, LIVE_FEATURES, LIVE_DENIAL, LIVE_CANCELLED, LIVE_CODEX, LIVE_CODEX_CANCELLED,
-            LIVE_AGY_FEATURES, LIVE_AGY_DENIAL, LIVE_AGY_INTERRUPT_OPEN, LIVE_AGY_SUBAGENT);
+            LIVE_AGY_FEATURES, LIVE_AGY_DENIAL, LIVE_AGY_INTERRUPT_OPEN, LIVE_AGY_SUBAGENT, LIVE_AGY_MCP_DENIED, LIVE_MCP);
 
     /** The scenario a criterion's fixtures must exercise, decided from each fixture's frozen manifest, not from the report. */
     enum Scenario {

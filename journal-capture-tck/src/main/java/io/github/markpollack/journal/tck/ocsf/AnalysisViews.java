@@ -19,7 +19,7 @@ import java.util.TreeMap;
 public final class AnalysisViews {
 
     static final Map<String, String> SCOPE = Map.of("0", "Unknown", "1", "Tool call", "2", "Model response",
-            "3", "Prompt turn", "4", "Run", "5", "Session", "6", "Model", "7", "Child run");
+            "3", "Prompt turn", "4", "Run", "5", "Session", "6", "Model", "7", "Child run", "99", "Other");
     static final Map<String, String> OUTCOME = Map.of("0", "Unknown", "1", "Unique", "2", "Ambiguous", "3", "Unattributed");
     static final Map<String, String> METHOD = Map.of("0", "Unknown", "1", "Reported identifier", "2", "Derived by rule");
     static final Map<String, String> STATUS = Map.of("0", "Unknown", "1", "Provisional", "2", "Final");
@@ -308,8 +308,86 @@ public final class AnalysisViews {
                 : unresolved > 0 ? "unavailable: " + unresolved + " response(s) without an id cannot be counted as distinct or as repeats"
                 : "unavailable: " + artifactScoped + " artifact-scoped identit(ies) are not linked to the " + runScoped + " run-scoped one(s) by any supported identity rule; equal text is not identity"));
         out.put("rows", new Json.JArray(rows));
+        out.put("items", items(pkg));
         out.put("rule", str(SchemaCatalog.text(decl, "id")));
         return new Json.JObject(out);
+    }
+
+    /**
+     * Content items, apart from responses: the model_response events that report an item_uid, grouped by (artifact,
+     * item_uid), each item's text assembled from its blocks' declared text_update_id alone (Increment texts
+     * concatenated in sequence, a Snapshot replacing the text so far). A text block that states no update mode leaves
+     * the item's text unavailable; no vendor block type is read and no text of another class is added.
+     */
+    static Json items(OcsfPackage pkg) {
+        Map<String, List<Event>> groups = new LinkedHashMap<>();
+        for (Event e : pkg.events("model_response")) {
+            Json item = e.get("item_uid");
+            if (item != null && !item.isNull()) {
+                groups.computeIfAbsent(e.runUid() + "|" + e.artifact() + "|" + item.text(), k -> new ArrayList<>()).add(e);
+            }
+        }
+        List<Json> rows = new ArrayList<>();
+        for (List<Event> events : groups.values()) {
+            rows.add(itemRow(events));
+        }
+        Map<String, Json> out = new LinkedHashMap<>();
+        out.put("item_count", num(rows.size()));
+        out.put("identity_units", str("source-scoped: one item per (run, artifact, item_uid); an item is not a model response"));
+        out.put("rows", new Json.JArray(rows));
+        return new Json.JObject(out);
+    }
+
+    private static Json itemRow(List<Event> events) {
+        Event first = events.get(0);
+        ItemText text = new ItemText();
+        List<Json> occurrences = new ArrayList<>();
+        for (Event e : events) {
+            occurrences.add(str(e.occurrence()));
+            for (Json b : e.elements("content_blocks")) {
+                text.add(b, e.occurrence());
+            }
+        }
+        Map<String, Json> row = new LinkedHashMap<>();
+        row.put("artifact", str(first.artifact()));
+        row.put("item_uid", first.get("item_uid"));
+        row.put("identity_basis", first.get("identity_basis") == null ? Json.JNull.INSTANCE : first.get("identity_basis"));
+        row.put("occurrences", new Json.JArray(occurrences));
+        row.put("assembled_text", text.unavailable == null ? str(text.text.toString()) : Json.JNull.INSTANCE);
+        row.put("assembly", str(text.describe()));
+        return new Json.JObject(row);
+    }
+
+    /** One item's text, assembled from its blocks' declared update modes in sequence. */
+    private static final class ItemText {
+        final StringBuilder text = new StringBuilder();
+        String unavailable;
+        int increments;
+        int snapshots;
+
+        void add(Json block, String occurrence) {
+            String t = SchemaCatalog.text(block, "text");
+            if (t == null) {
+                return;
+            }
+            String mode = scalar(block.member("text_update_id"));
+            if ("1".equals(mode)) {
+                text.append(t);
+                increments++;
+            }
+            else if ("2".equals(mode)) {
+                text.setLength(0);
+                text.append(t);
+                snapshots++;
+            }
+            else if (unavailable == null) {
+                unavailable = "unavailable: the text block at " + occurrence + " states no text_update_id";
+            }
+        }
+
+        String describe() {
+            return unavailable != null ? unavailable : "from " + increments + " Increment and " + snapshots + " Snapshot block(s)";
+        }
     }
 
     private static List<String> blockTexts(List<Json> blocks) {
@@ -350,20 +428,25 @@ public final class AnalysisViews {
             }
             for (Json u : e.elements("usage_observations")) {
                 String scope = scalar(u.member("scope_id"));
+                // at Other scope the unit is named by the scope caption and owned by the enclosing event's own item
+                boolean other = "99".equals(scope);
+                String unit = other ? SchemaCatalog.text(u, "scope") : null;
                 String owner = switch (scope == null ? "" : scope) {
                     case "2" -> e.text("response_uid");
                     case "3" -> e.text("turn_uid");
                     case "5" -> e.text("session_uid");
+                    case "99" -> e.text("item_uid") != null ? "item " + e.text("item_uid") : e.text("tool_call_uid") != null ? "tool call " + e.text("tool_call_uid") : null;
                     default -> e.runUid();
                 };
-                final String fOwner = owner == null ? ("3".equals(scope) ? "turn" : "owner") + " unidentified in " + e.artifact() : owner;
+                final String fOwner = owner != null ? owner
+                        : other ? "item unidentified at " + e.occurrence() : ("3".equals(scope) ? "turn" : "owner") + " unidentified in " + e.artifact();
                 owner = fOwner;
                 String model = SchemaCatalog.text(u.member("model_ref"), "name");
                 String artifact = SchemaCatalog.text(u.member("source_ref"), "artifact");
-                String key = scope + "|" + owner + "|" + model + "|" + artifact;
+                String key = scope + "|" + unit + "|" + owner + "|" + model + "|" + artifact;
                 groups.computeIfAbsent(key, k -> {
                     Map<String, Json> g = new LinkedHashMap<>();
-                    g.put("scope", str(SCOPE.getOrDefault(scope, scope)));
+                    g.put("scope", str(other ? "Other: " + unit : SCOPE.getOrDefault(scope, scope)));
                     g.put("owner", str(fOwner));
                     g.put("model", model == null ? Json.JNull.INSTANCE : str(model));
                     g.put("source", str(artifact));
@@ -567,10 +650,17 @@ public final class AnalysisViews {
                 continue;
             }
             Json uid = e.get("tool_call_uid");
-            String owner = uid == null || uid.isNull() ? "(no owner) " + e.occurrence() : uid.text();
+            // an identifier that is not the model's own call id (a stream-local item id, a step index) owns only within its artifact
+            String basis = scalar(e.get("identity_basis_id"));
+            boolean sourceScoped = uid != null && !uid.isNull() && basis != null && !"1".equals(basis);
+            String uidText = uid == null || uid.isNull() ? "(no owner) " + e.occurrence() : uid.text();
+            String owner = sourceScoped ? e.artifact() + "|" + uidText : uidText;
             Map<String, Json> call = calls.computeIfAbsent(owner, k -> {
                 Map<String, Json> c = new LinkedHashMap<>();
-                c.put("tool_call_uid", str(owner));
+                c.put("tool_call_uid", str(uidText));
+                if (sourceScoped) {
+                    c.put("owner_scope", str("artifact " + e.artifact()));
+                }
                 c.put("requests", new Json.JArray(List.of()));
                 c.put("results", new Json.JArray(List.of()));
                 return c;

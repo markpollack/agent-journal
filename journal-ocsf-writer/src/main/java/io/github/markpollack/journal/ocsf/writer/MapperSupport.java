@@ -18,7 +18,8 @@ final class MapperSupport {
             Map.entry(3, "delete"), Map.entry(4, "move"), Map.entry(5, "search"), Map.entry(6, "execute"), Map.entry(7, "think"),
             Map.entry(8, "fetch"), Map.entry(9, "switch_mode"), Map.entry(99, "other"));
     static final Map<Integer, String> BLOCK_KIND = Map.of(0, "Unknown", 1, "Text", 2, "Thought", 3, "Tool call", 4, "Tool result", 5, "Image", 99, "Other");
-    static final Map<Integer, String> SCOPE = Map.of(0, "Unknown", 1, "Tool call", 2, "Model response", 3, "Prompt turn", 4, "Run", 5, "Session", 6, "Model", 7, "Child run");
+    static final Map<Integer, String> SCOPE = Map.of(0, "Unknown", 1, "Tool call", 2, "Model response", 3, "Prompt turn", 4, "Run", 5, "Session", 6, "Model", 7, "Child run",
+            99, "Other");
     static final Map<Integer, String> USAGE_STATUS = Map.of(0, "Unknown", 1, "Provisional", 2, "Final");
     static final Map<Integer, String> OUTCOME = Map.of(0, "Unknown", 1, "Unique", 2, "Ambiguous", 3, "Unattributed");
     static final Map<Integer, String> METHOD = Map.of(0, "Unknown", 1, "Reported identifier", 2, "Derived by rule");
@@ -28,6 +29,7 @@ final class MapperSupport {
     static final Map<Integer, String> IDENTITY_BASIS = Map.of(0, "Unknown", 1, "Model-facing call identifier", 2, "Stream-local item identifier", 99, "Other");
     static final Map<Integer, String> MEASUREMENT_STATUS = Map.of(0, "Unknown", 1, "Measured", 2, "Possibly default", 4, "Lower bound");
     static final Map<Integer, String> REASONING_FORM = Map.of(0, "Unknown", 1, "Full reasoning", 2, "Summary", 3, "Redacted", 99, "Other");
+    static final Map<Integer, String> TEXT_UPDATE = Map.of(0, "Unknown", 1, "Increment", 2, "Snapshot", 99, "Other");
     static final Map<Integer, String> TIME_BASIS = Map.of(1, "Source record", 2, "Earliest available fallback", 3, "Capture observation");
     static final Map<Integer, String> PROVIDER_BASIS = Map.of(0, "Unknown", 1, "Reported", 2, "Derived", 3, "Unavailable");
 
@@ -73,6 +75,7 @@ final class MapperSupport {
         return m.put("provider_basis_id", providerBasis).put("provider_basis", PROVIDER_BASIS.get(providerBasis));
     }
 
+    /** At scope 99 Other the caller replaces the caption with the name of the source-defined unit (for example Conversation step). */
     static Jv.Obj usage(int scope, int status, String basis, Jv sourceRef, Jv.Obj modelRef, Jv data) {
         Jv.Obj u = new Jv.Obj().put("scope_id", scope).put("scope", SCOPE.get(scope))
                 .put("usage_status_id", status).put("usage_status", USAGE_STATUS.get(status)).put("basis", basis).put("source_ref", sourceRef);

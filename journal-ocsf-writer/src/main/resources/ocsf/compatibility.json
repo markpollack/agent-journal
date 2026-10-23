@@ -28,7 +28,7 @@
       "min_version": "2.1.299",
       "max_version": "2.1.299",
       "source_specification": {"path": "schema/vendor/claude-code/stream-json/2.1.303.json", "specification_version": "0.1.0", "profile": "claude_stream"},
-      "schema": {"extension": "agentic_cli", "version": "0.9.0-prototype", "compiled_sha256": "9b77697bdc5b3f5433e3d064d25e4488c230634311abe634faf2f34745f6eb56"},
+      "schema": {"extension": "agentic_cli", "version": "0.10.0-prototype", "compiled_sha256": "133b83dac641ced0f0553344a5783eab1922f5d4f29ec025b221ac60dbf5a728"},
       "contract": "claude-code-2.1.303-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper",
       "tested": [
@@ -46,7 +46,7 @@
       "min_version": "2.1.303",
       "max_version": "2.1.303",
       "source_specification": {"path": "schema/vendor/claude-code/stream-json/2.1.303.json", "specification_version": "0.1.0", "profile": "claude_stream"},
-      "schema": {"extension": "agentic_cli", "version": "0.9.0-prototype", "compiled_sha256": "9b77697bdc5b3f5433e3d064d25e4488c230634311abe634faf2f34745f6eb56"},
+      "schema": {"extension": "agentic_cli", "version": "0.10.0-prototype", "compiled_sha256": "133b83dac641ced0f0553344a5783eab1922f5d4f29ec025b221ac60dbf5a728"},
       "contract": "claude-code-2.1.303-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper",
       "tested": [
@@ -63,11 +63,11 @@
       "min_version": "2.1.304",
       "max_version": "2.1.304",
       "source_specification": {"path": "schema/vendor/claude-code/stream-json/2.1.303.json", "specification_version": "0.1.0", "profile": "claude_stream"},
-      "schema": {"extension": "agentic_cli", "version": "0.9.0-prototype", "compiled_sha256": "9b77697bdc5b3f5433e3d064d25e4488c230634311abe634faf2f34745f6eb56"},
+      "schema": {"extension": "agentic_cli", "version": "0.10.0-prototype", "compiled_sha256": "133b83dac641ced0f0553344a5783eab1922f5d4f29ec025b221ac60dbf5a728"},
       "contract": "claude-code-2.1.303-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper",
       "tested": [
-        {"version": "2.1.304", "route": "stdout", "evidence": "C3 live runs (steward evidence 2026-10-21-c3-live-claude); ACCEPT-1 live runs through the integrated launch path (CliCapture) and their sanitized fixtures claude-live-2.1.304-features, -denial, -cancelled"}
+        {"version": "2.1.304", "route": "stdout", "evidence": "C3 live runs (steward evidence 2026-10-21-c3-live-claude); ACCEPT-1 live runs through the integrated launch path (CliCapture) and their sanitized fixtures claude-live-2.1.304-features, -denial, -cancelled; the live MCP run of 2026-10-23 (retained 2.1.304 binary, Java SDK MCP test server) and its fixture claude-live-2.1.304-mcp"}
       ],
       "note": "exact tested combination: 2.1.304 on raw stdout launched by CliCapture; 2.1.304 on the sdk route matches no entry"
     },
@@ -80,7 +80,7 @@
       "min_version": "2.1.299",
       "max_version": "2.1.299",
       "source_specification": {"path": "schema/vendor/claude-code/session-transcript/2.1.303.json", "specification_version": "0.1.0", "profile": "claude_transcript"},
-      "schema": {"extension": "agentic_cli", "version": "0.9.0-prototype", "compiled_sha256": "9b77697bdc5b3f5433e3d064d25e4488c230634311abe634faf2f34745f6eb56"},
+      "schema": {"extension": "agentic_cli", "version": "0.10.0-prototype", "compiled_sha256": "133b83dac641ced0f0553344a5783eab1922f5d4f29ec025b221ac60dbf5a728"},
       "contract": "claude-code-2.1.303-transcript",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeTranscriptMapper",
       "tested": [
@@ -97,7 +97,7 @@
       "min_version": "2.1.303",
       "max_version": "2.1.303",
       "source_specification": {"path": "schema/vendor/claude-code/session-transcript/2.1.303.json", "specification_version": "0.1.0", "profile": "claude_transcript"},
-      "schema": {"extension": "agentic_cli", "version": "0.9.0-prototype", "compiled_sha256": "9b77697bdc5b3f5433e3d064d25e4488c230634311abe634faf2f34745f6eb56"},
+      "schema": {"extension": "agentic_cli", "version": "0.10.0-prototype", "compiled_sha256": "133b83dac641ced0f0553344a5783eab1922f5d4f29ec025b221ac60dbf5a728"},
       "contract": "claude-code-2.1.303-transcript",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeTranscriptMapper",
       "tested": [
@@ -114,11 +114,11 @@
       "min_version": "1.4.6",
       "max_version": "1.4.6",
       "source_specification": {"path": "schema/vendor/antigravity-cli/stream-json/1.4.6.json", "specification_version": "0.1.0", "profile": "agy_stream"},
-      "schema": {"extension": "agentic_cli", "version": "0.9.0-prototype", "compiled_sha256": "9b77697bdc5b3f5433e3d064d25e4488c230634311abe634faf2f34745f6eb56"},
+      "schema": {"extension": "agentic_cli", "version": "0.10.0-prototype", "compiled_sha256": "133b83dac641ced0f0553344a5783eab1922f5d4f29ec025b221ac60dbf5a728"},
       "contract": "antigravity-cli-1.4.6-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.AntigravityStreamMapper",
       "tested": [
-        {"version": "1.4.6", "route": "stdout", "evidence": "Antigravity onboarding live runs (2026-10-23) through the integrated launch path (CliCapture --cli antigravity) and their sanitized fixtures antigravity-live-1.4.6-*"}
+        {"version": "1.4.6", "route": "stdout", "evidence": "Antigravity onboarding live runs (2026-10-23) through the integrated launch path (CliCapture --cli antigravity) and their sanitized fixtures antigravity-live-1.4.6-features, -denial, -interrupt-open, -subagent; the live MCP attempt of 2026-10-23 in request-review mode and its fixture antigravity-live-1.4.6-mcp-denied (the call was soft-denied: no MCP result is established on this route)"}
       ],
       "note": "the stream-json output reports no version; the documented discovery path is one `agy --version` per run; headless print mode (agy --print <prompt> --output-format stream-json), permission mode request-review by default and always-proceed under --dangerously-skip-permissions, both reported by the init event"
     },
@@ -131,7 +131,7 @@
       "min_version": "0.160.1",
       "max_version": "0.160.1",
       "source_specification": {"path": "schema/vendor/codex-cli/exec-json-stream/0.160.1.json", "specification_version": "0.1.0", "profile": "codex_stream"},
-      "schema": {"extension": "agentic_cli", "version": "0.9.0-prototype", "compiled_sha256": "9b77697bdc5b3f5433e3d064d25e4488c230634311abe634faf2f34745f6eb56"},
+      "schema": {"extension": "agentic_cli", "version": "0.10.0-prototype", "compiled_sha256": "133b83dac641ced0f0553344a5783eab1922f5d4f29ec025b221ac60dbf5a728"},
       "contract": "codex-cli-0.160.1-exec-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.CodexStreamMapper",
       "tested": [
@@ -148,7 +148,7 @@
       "min_version": "0.160.1",
       "max_version": "0.160.1",
       "source_specification": {"path": "schema/vendor/codex-cli/rollout/0.160.1.json", "specification_version": "0.1.0", "profile": "codex_rollout"},
-      "schema": {"extension": "agentic_cli", "version": "0.9.0-prototype", "compiled_sha256": "9b77697bdc5b3f5433e3d064d25e4488c230634311abe634faf2f34745f6eb56"},
+      "schema": {"extension": "agentic_cli", "version": "0.10.0-prototype", "compiled_sha256": "133b83dac641ced0f0553344a5783eab1922f5d4f29ec025b221ac60dbf5a728"},
       "contract": "codex-cli-0.160.1-rollout",
       "mapper": "io.github.markpollack.journal.ocsf.writer.CodexRolloutMapper",
       "tested": [

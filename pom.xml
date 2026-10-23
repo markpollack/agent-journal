@@ -113,6 +113,7 @@
         <module>codex-cli-capture</module>
         <module>antigravity-cli-capture</module>
         <module>junie-cli-capture</module>
+        <module>journal-mcp-test-server</module>
     </modules>
 
     <dependencyManagement>

@@ -3,7 +3,7 @@
   "format_version": "0.1",
   "id": "agy-text-delta-step-item-live",
   "concept": "response-update-assembly",
-  "description": "SANITIZED LIVE RECORDING (Antigravity CLI 1.4.6, always-proceed mode): the answer streams as text_delta fragments of agent-response step 11. The ACTIVE record is a Partial view of that step item with its fragment \"4\"; the DONE record completes the item with its last fragment and the step's own usage; the result carries the turn's whole response \"4\\n\" and the session's cumulative usage. The step index is the item's identity (99, Conversation step index), never a provider response id; input_tokens cannot include cache reads (6015 cache reads against 2425 input on this step), but no cache writes are reported, so it is only the uncached component's conditional value, never the canonical tranche; whether thinking is part of output is not stated, so no reasoning relation is written.",
+  "description": "SANITIZED LIVE RECORDING (Antigravity CLI 1.4.6, always-proceed mode): the answer streams as text_delta fragments of agent-response step 11. The ACTIVE record is a Partial view of that step item with its fragment \"4\"; the DONE record completes the item with its last fragment and the step's own usage; every fragment is an Increment of the step's text (text_update_id 1), so the item's text \"4\\n\" is their concatenation without vendor knowledge; the result carries the turn's whole response \"4\\n\" as its own block with no update mode (never concatenated with the steps' text) and the session's cumulative usage. The step index is the item's identity (99, Conversation step index), never a provider response id. The step's usage is stated for its unit, the conversation step (scope 99 Other, \"Conversation step\"), never as a model response's, because one step is not established as one model invocation. input_tokens cannot include cache reads (6015 cache reads against 2425 input on this step), but no cache writes are reported, so it is only the uncached component's conditional value, never the canonical tranche; whether thinking is part of output is not stated, so no reasoning relation is written.",
   "authored_from": [
     "agy-headless-docs-2026-10-23",
     "agy-live-1.4.6-recordings"
@@ -27,7 +27,8 @@
         "/identity_basis": "Conversation step index",
         "/content_blocks/0/block_type": "text_delta",
         "/content_blocks/0/text": "4",
-        "/content_blocks/0/data": "4"
+        "/content_blocks/0/data": "4",
+        "/content_blocks/0/text_update_id": 1
       },
       "absent": [
         "/response_uid",
@@ -41,7 +42,10 @@
       "values": {
         "/item_uid": "11",
         "/content_blocks/0/data": "\n",
-        "/usage_observations/0/scope_id": 2,
+        "/content_blocks/0/text_update_id": 1,
+        "/usage_observations/0/scope_id": 99,
+        "/usage_observations/0/scope": "Conversation step",
+        "/usage_observations/0/aggregation_id": 1,
         "/usage_observations/0/usage_status_id": 2,
         "/usage_observations/0/output_tokens": 47,
         "/usage_observations/0/reasoning_tokens": 42,
@@ -72,7 +76,8 @@
         "/usage_observations/0/output_tokens": 977
       },
       "absent": [
-        "/usage_observations/0/uncached_input_tokens"
+        "/usage_observations/0/uncached_input_tokens",
+        "/content_blocks/0/text_update_id"
       ]
     }
   ],
@@ -116,6 +121,36 @@
         "/usage_observations/0/scope_id": 3
       },
       "why": "The result's usage is documented as cumulative over the session, not the turn's."
+    },
+    {
+      "id": "step-usage-as-model-response",
+      "record": 19,
+      "class": "model_response",
+      "activity_id": 3,
+      "values": {
+        "/usage_observations/0/scope_id": 2
+      },
+      "why": "The documentation reports usage per step; nothing establishes that one conversation step is one model invocation, so the step's total is not a model response's."
+    },
+    {
+      "id": "fragment-as-snapshot",
+      "record": 18,
+      "class": "model_response",
+      "activity_id": 1,
+      "values": {
+        "/content_blocks/0/text_update_id": 2
+      },
+      "why": "A text_delta fragment continues the step's text; read as a snapshot it would replace the earlier fragments, and the step's text would lose them."
+    },
+    {
+      "id": "turn-response-as-increment",
+      "record": 20,
+      "class": "prompt_turn",
+      "activity_id": 2,
+      "values": {
+        "/content_blocks/0/text_update_id": 1
+      },
+      "why": "result.response is the turn's whole text, not a further fragment of a step: concatenating it with the steps' text would duplicate the answer."
     }
   ]
 }

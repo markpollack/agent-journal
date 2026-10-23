@@ -43,7 +43,7 @@ class PinsTest {
     @Test
     void semanticContractBytesAreIdenticalInWriterAndReader() throws Exception {
         byte[] writer = resource(Pins.SEMANTIC_CONTRACT_RESOURCE);
-        byte[] reader = Files.readAllBytes(PROJECT.resolve("journal-capture-tck/src/main/resources/ocsf/semantic-contract-0.6.0-prototype.json"));
+        byte[] reader = Files.readAllBytes(PROJECT.resolve("journal-capture-tck/src/main/resources/ocsf/semantic-contract-0.7.0-prototype.json"));
         assertThat(writer).isEqualTo(reader);
         assertThat(io.github.markpollack.journal.tck.ocsf.SemanticOperation.VERSION).isEqualTo(Pins.SEMANTIC_OPERATIONS_VERSION);
         assertThat(io.github.markpollack.journal.tck.ocsf.PackageReader.READER_CONTRACT_VERSION).isEqualTo(Pins.READER_CONTRACT_VERSION);
@@ -71,9 +71,10 @@ class PinsTest {
         for (String name : List.of(ClaudeStreamMapper.CONTRACT, ClaudeTranscriptMapper.CONTRACT, CodexRolloutMapper.CONTRACT, CodexStreamMapper.CONTRACT, AntigravityStreamMapper.CONTRACT,
                 OpaqueTextMapper.CONTRACT)) {
             // the Codex exec-stream contract is 0.7.0 (the lower bound in its direction, review closure), the rollout contract 0.4.0 (conditional
-            // uncached value), the Claude contracts 0.3.0 (SEM-CLOSE tranches), the Antigravity contract 0.1.0 (first onboarding); opaque text is unchanged
+            // uncached value), the Claude contracts 0.3.0 (SEM-CLOSE tranches), the Antigravity contract 0.2.0 (step usage at its own unit, text increments);
+            // opaque text is unchanged
             assertThat(c.uid(name)).endsWith(CodexStreamMapper.CONTRACT.equals(name) ? "/0.7.0-prototype" : CodexRolloutMapper.CONTRACT.equals(name) ? "/0.4.0-prototype"
-                    : AntigravityStreamMapper.CONTRACT.equals(name) ? "/0.1.0-prototype" : OpaqueTextMapper.CONTRACT.equals(name) ? "/0.2.0-prototype" : "/0.3.0-prototype");
+                    : AntigravityStreamMapper.CONTRACT.equals(name) ? "/0.2.0-prototype" : OpaqueTextMapper.CONTRACT.equals(name) ? "/0.2.0-prototype" : "/0.3.0-prototype");
             c.rule(name, "common.opaque->source_record");
             c.rule(name, "common.mapper_exception->source_record");
         }

@@ -19,8 +19,11 @@ import java.util.Map;
  * <li>{@code init} reports the run configuration: cwd, permission mode, model and agent when overridden, the tool names.</li>
  * <li>A DONE {@code user_input} step is a prompt submission without content.</li>
  * <li>An {@code agent_response} step is a content item of a model response the stream does not identify: while ACTIVE a
- * Partial view whose content is its {@code text_delta} fragment, when DONE an item completed with its last fragment
- * and the step's own usage (documented as per-step usage).</li>
+ * Partial view whose content is its {@code text_delta} fragment, when DONE an item completed with its last fragment; every
+ * fragment is an Increment of the step's text (the documentation's {@code jq -j} example joins them in order, and the
+ * result's response is their concatenation, not a further fragment). The DONE record carries the step's own usage
+ * (documented as per-step usage), whose unit is the conversation step (scope 99 Other, "Conversation step"): nothing
+ * establishes that one step is one model invocation, so it is never a model response's usage.</li>
  * <li>A tool step (and a {@code subagent} step completing an {@code invoke_subagent} call) is a started invocation while
  * ACTIVE, with the tool name and parameters it reports; when DONE or ERROR a result whose content is the reported
  * output, else the reported error, else (subagent step) the subagent_info. It failed only where {@code tool_info.error}
@@ -31,14 +34,20 @@ import java.util.Map;
  * entry as a run-scope denial that names a permission category, never a step, so it is unattributed with no
  * candidates.</li>
  * </ul>
- * Usage: cache reads, output, thinking (as reasoning) and the total are reported; whether input includes cache reads,
- * and whether thinking is part of output, is not stated, so the uncached tranche is unavailable and no relation is
- * stated. Checkpoint, system_message and other steps are retained whole. The stream carries no timestamps.
+ * Usage: cache reads, output, thinking (as reasoning) and the total are reported; input excludes cache reads but no cache
+ * writes are reported, so the uncached tranche is unavailable with input as its conditional value
+ * ({@link TrancheReading#antigravity}), and whether thinking is part of output is not stated, so no relation is stated.
+ * The session's cumulative usage covers the steps and can exceed their sum (an interrupted run); neither is derived from
+ * the other. Checkpoint, system_message and other steps are retained whole. The stream carries no timestamps.
  */
 final class AntigravityStreamProfile implements SourceProfile {
 
     /** identity_basis_id of a step index: 99 Other (a conversation step index). */
     private static final int STEP_INDEX = 99;
+    /** The unit of a step's own usage: scope 99 Other named "Conversation step". */
+    private static final String STEP_SCOPE = "Conversation step";
+    /** text_update_id of a text fragment: 1 Increment. */
+    private static final int INCREMENT = 1;
 
     @Override
     public ExpectedFacts expected(NativeArtifact artifact, Json source, Json scope) {
@@ -127,9 +136,10 @@ final class AntigravityStreamProfile implements SourceProfile {
 
     private static void response(ExpectedFacts f, int index, Json s, boolean done) {
         Json delta = s.member("text_delta");
-        f.responses.add(new ExpectedFacts.Response(index, id(s), delta instanceof Json.JString ? List.of(delta) : null, null, done, null, null, STEP_INDEX, done ? 3 : 1));
+        boolean text = delta instanceof Json.JString;
+        f.responses.add(new ExpectedFacts.Response(index, id(s), text ? List.of(delta) : null, null, done, null, null, STEP_INDEX, done ? 3 : 1, text ? INCREMENT : null));
         if (s.member("usage") instanceof Json.JObject usage) {
-            f.usages.add(new ExpectedFacts.Usage(index, index, 2, done ? 2 : 1, TrancheReading.antigravity(usage), null, null, null, 1));
+            f.usages.add(new ExpectedFacts.Usage(index, index, STEP_SCOPE, done ? 2 : 1, TrancheReading.antigravity(usage), 1));
         }
     }
 

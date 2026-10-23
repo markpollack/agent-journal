@@ -1243,6 +1243,7 @@ public final class OcsfOracle {
                 }
                 compare(what + " block " + i + " data", native_, b.member("data"), problems, representation);
                 stated(what + " block " + i + " reasoning_form_id", r.reasoningForm(), Event.integer(b.member("reasoning_form_id")), problems);
+                stated(what + " block " + i + " text_update_id", r.textUpdate(), Event.integer(b.member("text_update_id")), problems);
             }
         }
         valueCheck("response.values", owner, examined, problems, representation);
@@ -1329,6 +1330,9 @@ public final class OcsfOracle {
                 Json o = observed.get(i).obs();
                 if (!Objects.equals(Event.integer(o.member("usage_status_id")), u.statusId())) {
                     problems.add(key + " usage_status_id " + (o.member("usage_status_id") == null ? null : o.member("usage_status_id").scalarText()) + " != " + u.statusId());
+                }
+                if (u.scopeName() != null || u.scopeId() == 99) {
+                    stated(key + " scope (the source-defined unit of scope 99 Other)", u.scopeName(), SchemaCatalog.text(o, "scope"), problems);
                 }
                 for (String c : AnalysisViews.COMPONENTS) {
                     Json want = u.components().get(c);
@@ -1682,6 +1686,10 @@ public final class OcsfOracle {
         List<String> texts = new ArrayList<>();
         for (Json b : e.elements("content_blocks")) {
             texts.add(SchemaCatalog.text(b, "text"));
+            if (b.member("text_update_id") != null) {
+                // the turn's own text is whole: stated as an update it would be assembled with the items it repeats
+                problems.add("record " + t.recordIndex() + " turn content block states text_update_id " + b.member("text_update_id").scalarText() + ", but a turn's own response is not an update of an item");
+            }
         }
         if (!texts.equals(t.texts())) {
             problems.add("record " + t.recordIndex() + " turn content block texts differ (" + texts.size() + " vs " + t.texts().size() + " reported)");

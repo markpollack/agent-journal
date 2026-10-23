@@ -52,6 +52,8 @@ final class OcsfFixtures {
     static final String LIVE_AGY_DENIAL = "antigravity-live-1.4.6-denial";
     static final String LIVE_AGY_INTERRUPT_OPEN = "antigravity-live-1.4.6-interrupt-open";
     static final String LIVE_AGY_SUBAGENT = "antigravity-live-1.4.6-subagent";
+    static final String LIVE_AGY_MCP_DENIED = "antigravity-live-1.4.6-mcp-denied";
+    static final String LIVE_MCP = "claude-live-2.1.304-mcp";
     /** The historical two-file layout, kept unchanged under {@code fixtures-historical/0.2.0-prototype/<name>/package}. */
     static final String HISTORICAL_0_2_0 = "0.2.0-prototype";
 

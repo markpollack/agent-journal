@@ -292,7 +292,7 @@
     },
     "scope_id": {
       "caption": "Scope ID",
-      "description": "The scope at which the source reported this observation.",
+      "description": "The scope at which the source reported this observation. 99 Other names, in its sibling scope, a unit the source defines that no other value describes.",
       "type": "integer_t",
       "sibling": "scope",
       "enum": {
@@ -319,12 +319,16 @@
         },
         "7": {
           "caption": "Child run"
+        },
+        "99": {
+          "caption": "Other",
+          "description": "A unit the source itself defines, which none of the other scopes describes; the sibling scope names it (for example Conversation step). It is not established to be the unit of any other scope (a conversation step is not stated to be one model response), and units of different source artifacts are never joined by equal identifiers. Where the unit is identified depends on the object (see usage_observation)."
         }
       }
     },
     "scope": {
       "caption": "Scope",
-      "description": "Caption sibling of scope_id.",
+      "description": "Caption sibling of scope_id; for 99 Other, the name of the source-defined unit.",
       "type": "string_t"
     },
     "usage_observations": {
@@ -813,6 +817,33 @@
     "reasoning_form": {
       "caption": "Reasoning Form",
       "description": "Caption sibling of reasoning_form_id.",
+      "type": "string_t"
+    },
+    "text_update_id": {
+      "caption": "Text Update ID",
+      "description": "How this block's text relates to the text of the same content item (item_uid) or response (response_uid) that earlier events of the same source artifact reported, as a declared rule establishes it. Absent when no rule states it; a consumer then assumes neither.",
+      "type": "integer_t",
+      "sibling": "text_update",
+      "enum": {
+        "0": {
+          "caption": "Unknown"
+        },
+        "1": {
+          "caption": "Increment",
+          "description": "The text continues the item's text: the item's text is the concatenation, in journal.sequence order, of the texts of its Increment blocks. An increment is not by itself asserted to be the whole text, and the assembled text is never concatenated with a whole text reported elsewhere (for example a turn's own response)."
+        },
+        "2": {
+          "caption": "Snapshot",
+          "description": "The text is the item's whole text as of this record: it replaces any earlier view of the item and is never concatenated with one."
+        },
+        "99": {
+          "caption": "Other"
+        }
+      }
+    },
+    "text_update": {
+      "caption": "Text Update",
+      "description": "Caption sibling of text_update_id.",
       "type": "string_t"
     },
     "uncached_input_tokens": {

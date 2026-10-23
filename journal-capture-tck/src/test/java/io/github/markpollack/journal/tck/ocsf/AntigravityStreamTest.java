@@ -29,8 +29,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * its native records owe (record and step numbers below are read from the native streams), and each mutation of a
  * material reading is detected on its owning property: a soft-denied command reported as a success or tied to its
  * run-scope denial, a changed tool argument, an invented response identity, an altered text fragment or turn response,
- * a fabricated result for the open tool of the interrupted run, a changed child conversation of a subagent spawn, and
- * an uncached tranche, a wrong conditional uncached value or a reasoning relation the source does not establish.
+ * a fabricated result for the open tool of the interrupted run, a changed child conversation of a subagent spawn, an
+ * uncached tranche, a wrong conditional uncached value or a reasoning relation the source does not establish, a step's
+ * total stated as a model response's, under another unit or as a running total, and a text fragment stated as a
+ * snapshot or a turn's whole response stated as an increment. The views read the same packages without vendor knowledge:
+ * one usage group per conversation step beside the session's cumulative total (never summed), each step item's text
+ * assembled from its Increment blocks, and step indices owning only within their artifact.
  */
 class AntigravityStreamTest {
 
@@ -145,5 +149,126 @@ class AntigravityStreamTest {
         });
         String detail = verify(fixture).check("usage.values", STREAM).detail();
         assertThat(detail).contains("uncached_input_tokens present").contains("reasoning_relation_id").contains("uncached_input_tokens conditional_value 18691 != 18690");
+    }
+
+    /** Records 3, 6, 9, 12, 15 and 19 carry the six steps' own usage; record 19 completes step 11. */
+    @Test
+    void aStepTotalStatedAsAModelResponseUnderAnotherUnitOrAsARunningTotalIsAUsageDefect(@TempDir Path work) {
+        Path response = copy(LIVE_AGY_FEATURES, work.resolve("response"));
+        editEvents(pkg(response), events -> {
+            Json.JObject u = obj(at(events, "model_response", 3, 19).member("usage_observations").elements().get(0));
+            u.members().put("scope_id", num("2"));
+            u.members().put("scope", str("Model response"));
+        });
+        assertThat(verify(response).check("population.usage", STREAM).detail()).as("a step is not established as one model invocation").contains("missing [19:19:99:null]")
+                .contains("extra [19:19:2:null]");
+        Path unit = copy(LIVE_AGY_FEATURES, work.resolve("unit"));
+        editEvents(pkg(unit), events -> obj(at(events, "model_response", 3, 19).member("usage_observations").elements().get(0)).members().put("scope", str("Turn")));
+        assertThat(verify(unit).check("usage.values", STREAM).detail()).contains("scope (the source-defined unit of scope 99 Other) Turn != Conversation step");
+        Path running = copy(LIVE_AGY_FEATURES, work.resolve("running"));
+        editEvents(pkg(running), events -> obj(at(events, "model_response", 3, 19).member("usage_observations").elements().get(0)).members().put("aggregation_id", num("2")));
+        assertThat(verify(running).check("usage.values", STREAM).detail()).contains("aggregation_id 2 != 1");
+    }
+
+    @Test
+    void aFragmentStatedAsASnapshotOrWithoutItsUpdateModeOrATurnResponseStatedAsAnIncrementIsDetected(@TempDir Path work) {
+        Path fixture = copy(LIVE_AGY_FEATURES, work);
+        editEvents(pkg(fixture), events -> {
+            obj(at(events, "model_response", 1, 18).member("content_blocks").elements().get(0)).members().put("text_update_id", num("2"));
+            obj(at(events, "model_response", 3, 19).member("content_blocks").elements().get(0)).members().remove("text_update_id");
+            obj(at(events, "prompt_turn", 2, 20).member("content_blocks").elements().get(0)).members().put("text_update_id", num("1"));
+        });
+        OracleReport report = verify(fixture);
+        assertThat(report.check("response.values", STREAM).detail()).contains("18:11 block 0 text_update_id 2 != 1").contains("19:11 block 0 text_update_id null != 1");
+        assertThat(report.check("turn.values", STREAM).detail()).contains("record 20 turn content block states text_update_id 1, but a turn's own response is not an update of an item");
+    }
+
+    /**
+     * The usage view keeps each step's total in its own group and the session's cumulative total in another, with no
+     * applicable value summed across them. On the interrupted run the session exceeds the only emitted step (input 9422
+     * against 6925, output 238 against 192) and the view reconciles nothing. The same steps written at Model-response
+     * scope (0.1.0-prototype of the contract) pool into one unidentified response whose distinct step totals read as a
+     * conflict, which is why a step is stated at its own unit.
+     */
+    @Test
+    void theUsageViewKeepsStepTotalsApartFromTheSessionAndNeverReconcilesTheInterruptedRun(@TempDir Path work) throws java.io.IOException {
+        Json view = AnalysisViews.usage(PackageReader.open(pkg(copy(LIVE_AGY_FEATURES, work.resolve("features")))));
+        List<Json> groups = view.member("groups").elements();
+        assertThat(groups).hasSize(7);
+        assertThat(groups.subList(0, 6)).allSatisfy(g -> {
+            assertThat(g.member("scope").text()).isEqualTo("Other: Conversation step");
+            assertThat(g.member("conflict").scalarText()).isEqualTo("false");
+            assertThat(g.member("final_observations").scalarText()).isEqualTo("1");
+        });
+        assertThat(groups.subList(0, 6)).extracting(g -> g.member("owner").text()).containsExactly("item 1", "item 3", "item 5", "item 7", "item 9", "item 11");
+        assertThat(groups.get(6).member("scope").text()).isEqualTo("Session");
+        assertThat(view.member("aggregation").text()).startsWith("none");
+
+        Json interrupted = AnalysisViews.usage(PackageReader.open(pkg(copy(LIVE_AGY_INTERRUPT_OPEN, work.resolve("interrupted")))));
+        List<Json> two = interrupted.member("groups").elements();
+        assertThat(two).extracting(g -> g.member("scope").text()).containsExactly("Other: Conversation step", "Session");
+        assertThat(two.get(0).path("applicable_final", "output_tokens").scalarText()).isEqualTo("192");
+        assertThat(two.get(1).path("applicable_final", "output_tokens").scalarText()).as("the session's own figure, not the steps' sum").isEqualTo("238");
+
+        Path old = copy(LIVE_AGY_FEATURES, work.resolve("model-response-scope"));
+        editEvents(pkg(old), events -> {
+            for (Json e : events) {
+                if ("Model Response".equals(SchemaCatalog.text(e, "class_name")) && e.member("usage_observations") != null) {
+                    Json.JObject u = obj(e.member("usage_observations").elements().get(0));
+                    u.members().put("scope_id", num("2"));
+                    u.members().put("scope", str("Model response"));
+                }
+            }
+        });
+        Json pooled = AnalysisViews.usage(PackageReader.open(pkg(old))).member("groups").elements().get(0);
+        assertThat(pooled.member("owner").text()).startsWith("owner unidentified");
+        assertThat(pooled.member("conflict").scalarText()).as("six distinct steps misread as six disagreeing finals of one response").isEqualTo("true");
+    }
+
+    /** Each step item's text comes from its blocks' Increment mode alone; the turn's whole response is never added to it. */
+    @Test
+    void theItemsViewAssemblesEachStepFromItsIncrementsWithoutTheTurnResponse(@TempDir Path work) throws java.io.IOException {
+        OcsfPackage subagent = PackageReader.open(pkg(copy(LIVE_AGY_SUBAGENT, work.resolve("subagent"))));
+        List<Json> items = AnalysisViews.items(subagent).member("rows").elements();
+        assertThat(items).extracting(i -> i.member("item_uid").text()).containsExactly("1", "3", "5");
+        assertThat(items.get(1).member("assembled_text").text()).isEqualTo("Waiting for the subagent to read [a.txt](file:///work/src/a.txt)...\n");
+        assertThat(items.get(2).member("assembled_text").text()).isEqualTo("alpha beta gamma\n");
+        assertThat(items.get(2).member("assembly").text()).isEqualTo("from 2 Increment and 0 Snapshot block(s)");
+        // the turn's own response repeats the two items' text; it is a separate fact, not a third increment
+        assertThat(items.get(1).member("assembled_text").text() + items.get(2).member("assembled_text").text())
+                .isEqualTo(at(eventsOf(subagent), "prompt_turn", 2, 20).member("content_blocks").elements().get(0).member("text").text());
+        assertThat(subagent.events("model_response")).allSatisfy(e -> assertThat(e.get("response_uid")).as("no provider response id is invented").isNull());
+
+        Path unstated = copy(LIVE_AGY_SUBAGENT, work.resolve("unstated"));
+        editEvents(pkg(unstated), events -> obj(at(events, "model_response", 1, 18).member("content_blocks").elements().get(0)).members().remove("text_update_id"));
+        Json row = AnalysisViews.items(PackageReader.open(pkg(unstated))).member("rows").elements().get(2);
+        assertThat(row.member("assembled_text").isNull()).as("without a stated mode nothing is assembled").isTrue();
+        assertThat(row.member("assembly").text()).startsWith("unavailable");
+    }
+
+    /**
+     * A step index identifies a step within its artifact only. The features run's tool step 4 copied as if a second
+     * captured stream reported it (another artifact) stays a separate owner with its own result, never joined to step 4.
+     */
+    @Test
+    void equalStepIndicesOfDifferentArtifactsAreDifferentOwners(@TempDir Path work) throws java.io.IOException {
+        Path fixture = copy(LIVE_AGY_FEATURES, work);
+        editEvents(pkg(fixture), events -> {
+            for (Json e : List.copyOf(events)) {
+                if ("Tool Call".equals(SchemaCatalog.text(e, "class_name")) && "4".equals(SchemaCatalog.text(e, "tool_call_uid"))) {
+                    Json other = NeutralJson.parse(NeutralJson.write(e));
+                    obj(other.member("source_ref")).members().put("artifact", str("second/stream.jsonl"));
+                    events.add(other);
+                }
+            }
+        });
+        List<Json> calls = AnalysisViews.toolExchanges(PackageReader.open(pkg(fixture))).member("calls").elements();
+        List<Json> step4 = calls.stream().filter(c -> "4".equals(c.member("tool_call_uid").text())).toList();
+        assertThat(step4).extracting(c -> c.member("owner_scope").text()).containsExactly("artifact stream.jsonl", "artifact second/stream.jsonl");
+        assertThat(step4).allSatisfy(c -> assertThat(c.member("results").elements()).hasSize(1));
+    }
+
+    private static List<Json> eventsOf(OcsfPackage p) {
+        return OcsfFixtures.eventLines(p.dir.resolve("events.jsonl"));
     }
 }

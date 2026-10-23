@@ -1,0 +1,40 @@
+{
+ "kind": "agent-journal/fixture-provenance",
+ "fixture": "antigravity-live-1.4.6-mcp-denied",
+ "origin": "SANITIZED REAL LIVE RECORDING (not synthetic)",
+ "evidence_class": "recorded replay of a live stream; the live capture itself (unsanitized) is private steward evidence under plans/evidence/2026-10-23-mcp-live/",
+ "cli": "Antigravity CLI",
+ "cli_version": "1.4.6",
+ "cli_version_basis": "discovered once per run by the documented adapter path `agy --version` before launch, because the stream-json output reports no version; the native session file was not consulted",
+ "mode_and_route": "CliCapture launch (opt-in integration): raw stdout, independent byte copy, flush per record",
+ "capture_command": [
+  "agy",
+  "--print",
+  "Use the MCP server named journal_echo. 1. Call its tool echo_record with arguments {\"text\": \"alpha\", \"n\": 1}. 2. Call echo_record again with arguments {\"text\": \"beta\", \"n\": 2}. 3. Call its tool always_fails exactly once with no arguments. Make the calls one after another. Do not use any other tool and do not run shell commands. Finally reply in one line with the two echo values returned and whether always_fails reported an error.",
+  "--output-format",
+  "stream-json"
+ ],
+ "scenario": "LIVE-06 attempted in the default request-review mode with the workspace MCP configuration: the call_mcp_tool step for journal_echo echo_record is soft-denied (permission category mcp), so no tool result exists; LIVE-05 for the mcp category",
+ "live_run": "agy-mcp-1",
+ "live_process": {
+  "pid": 3064202,
+  "started": "2026-10-23T22:54:31.465859891Z",
+  "ended": "2026-10-23T22:54:41.867359285Z",
+  "how": "exited",
+  "exit_code": 0,
+  "exit_meaning": "0: the CLI reported success",
+  "stdout": "closed: EOF reached",
+  "stderr_bytes": 295,
+  "meaning": "the CLI process outcome; distinct from storage finalization (recording.state) and acquisition extent (acquisition.status): EOF never implies success"
+ },
+ "original_sha256": "3d76cfd0a2fc019334c22dfc870e7373b5735e72af4e6e3dd94d78e866b6c457",
+ "original_bytes": 2872,
+ "sanitized_sha256": "2084a721d577c1f9d4cbbd087689c3a32a01e32ba742fc16ff7d00435230cd25",
+ "sanitized_bytes": 2751,
+ "records": 6,
+ "sanitization": [
+  "conversation id of the run -> stand-in 00000000-0000-4000-8000-000000000200",
+  "task directory path -> /work"
+ ],
+ "privacy_review": "local paths (task directory, session scratch, home directory) and conversation ids (the run and any spawned subagent) replaced by text substitution on the raw bytes; tool names, step indexes, token counts, durations and the built-in tool list kept; prompt text is the deliberate synthetic task; reviewed 2026-10-23"
+}

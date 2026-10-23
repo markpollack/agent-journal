@@ -3,7 +3,7 @@
 This guide explains the OCSF-based writer (`journal-ocsf-writer`) and the independent reader and oracle that judge it
 (`journal-capture-tck`, the TCK: the project's compatibility kit of reader, oracle and tools). It is written for a capable colleague who does not know the code. The older `journal-core` and
 `<cli>-capture` modules are out of scope. Both modules here are **non-production prototypes**: the event file layout is
-`0.3.0-prototype`, on OCSF 1.9.0 with the `agentic_cli` extension `0.9.0-prototype` (provisional, unregistered uid 901). No
+`0.3.0-prototype`, on OCSF 1.9.0 with the `agentic_cli` extension `0.10.0-prototype` (provisional, unregistered uid 901). No
 production default uses them.
 
 Every statement carries one of these labels:

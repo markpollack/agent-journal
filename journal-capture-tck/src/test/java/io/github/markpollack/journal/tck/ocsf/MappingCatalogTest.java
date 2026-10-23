@@ -80,6 +80,7 @@ class MappingCatalogTest {
             new Route("claude", "ClaudeStreamProfile", OcsfFixtures.CHILD, "stream.jsonl", "Claude Code stream 2.1.299 sdk (sanitized real fixture)", "claude-code/stream-json/2.1.299-sdk"),
             new Route("claude", "ClaudeStreamProfile", OcsfFixtures.LIVE_FEATURES, "stream.jsonl", "Claude Code stream 2.1.304 stdout (sanitized live feature recording)", "claude-code/stream-json/2.1.304-stdout"),
             new Route("claude", "ClaudeStreamProfile", OcsfFixtures.LIVE_DENIAL, "stream.jsonl", "Claude Code stream 2.1.304 stdout (sanitized live denial recording)", "claude-code/stream-json/2.1.304-stdout"),
+            new Route("claude", "ClaudeStreamProfile", OcsfFixtures.LIVE_MCP, "stream.jsonl", "Claude Code stream 2.1.304 stdout (sanitized live recording: Java SDK MCP test server calls)", "claude-code/stream-json/2.1.304-stdout"),
             new Route("codex", "CodexStreamProfile", OcsfFixtures.CODEX_STREAM, "stream.jsonl", "Codex CLI exec stream 0.160.1 (labelled synthetic fixture)", "codex-cli/exec-json-stream/0.160.1"),
             new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording)", "codex-cli/exec-json-stream/0.160.1"),
             new Route("claude", "ClaudeStreamProfile", OcsfFixtures.LIVE_CANCELLED, "stream.jsonl", "Claude Code stream 2.1.304 stdout (sanitized live cancelled recording)", "claude-code/stream-json/2.1.304-stdout"),
@@ -96,7 +97,8 @@ class MappingCatalogTest {
             new Route("agy", "AntigravityStreamProfile", OcsfFixtures.LIVE_AGY_FEATURES, "stream.jsonl", "Antigravity CLI stream-json 1.4.6 stdout (sanitized live recording: tools, a failed tool, a failing command, answer)", "antigravity-cli/stream-json/1.4.6-stdout"),
             new Route("agy", "AntigravityStreamProfile", OcsfFixtures.LIVE_AGY_DENIAL, "stream.jsonl", "Antigravity CLI stream-json 1.4.6 stdout (sanitized live recording: headless soft denial)", "antigravity-cli/stream-json/1.4.6-stdout"),
             new Route("agy", "AntigravityStreamProfile", OcsfFixtures.LIVE_AGY_INTERRUPT_OPEN, "stream.jsonl", "Antigravity CLI stream-json 1.4.6 stdout (sanitized live recording: cancelled with a command open)", "antigravity-cli/stream-json/1.4.6-stdout"),
-            new Route("agy", "AntigravityStreamProfile", OcsfFixtures.LIVE_AGY_SUBAGENT, "stream.jsonl", "Antigravity CLI stream-json 1.4.6 stdout (sanitized live recording: subagent spawn)", "antigravity-cli/stream-json/1.4.6-stdout"));
+            new Route("agy", "AntigravityStreamProfile", OcsfFixtures.LIVE_AGY_SUBAGENT, "stream.jsonl", "Antigravity CLI stream-json 1.4.6 stdout (sanitized live recording: subagent spawn)", "antigravity-cli/stream-json/1.4.6-stdout"),
+            new Route("agy", "AntigravityStreamProfile", OcsfFixtures.LIVE_AGY_MCP_DENIED, "stream.jsonl", "Antigravity CLI stream-json 1.4.6 stdout (sanitized live recording: MCP call soft-denied in request-review mode)", "antigravity-cli/stream-json/1.4.6-stdout"));
 
     /** A coverage-table column: one admitted CLI/version/profile/route, or the historical sdk route, labelled so. */
     record Column(String entry, String label, String support) {
@@ -737,7 +739,7 @@ class MappingCatalogTest {
 
     static Set<String> semanticOperations() {
         Set<String> out = new TreeSet<>();
-        Json sc = NeutralJson.readDocument(PROJECT.resolve("journal-capture-tck/src/main/resources/ocsf/semantic-contract-0.6.0-prototype.json"));
+        Json sc = NeutralJson.readDocument(PROJECT.resolve("journal-capture-tck/src/main/resources/ocsf/semantic-contract-0.7.0-prototype.json"));
         for (Json d : sc.member("declarations").elements()) {
             for (String k : List.of("id", "operation")) {
                 if (SchemaCatalog.text(d, k) != null) {

@@ -854,6 +854,118 @@
      ]
     }
    ]
+  },
+  {
+   "id": "mcp-claude-1",
+   "route": "claude-code/stream-json/2.1.304-stdout",
+   "cli_version": "2.1.304",
+   "evidence_class": "live",
+   "fixture": "claude-live-2.1.304-mcp",
+   "provenance": "live MCP close-out 2026-10-23 (retained 2.1.304 binary; launch-scoped --mcp-config --strict-mcp-config; Java MCP SDK 2.0.1 stdio test server; sanitized fixture; private run under the steward's 2026-10-23-mcp-live evidence)",
+   "behaviors": [
+    {
+     "behavior": "LIVE-06",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "path:tool_use_meta",
+       "min": 3
+      },
+      {
+       "scenario": "facts:requests",
+       "min": 4
+      },
+      {
+       "scenario": "facts:results",
+       "min": 4
+      }
+     ],
+     "assertions": [
+      "McpLiveFixtureTest#theClaudeRecordingCarriesThreeMcpCallsWithStructuredResultsAndTheToolError"
+     ],
+     "note": "echo_record twice and always_fails as mcp__journal_echo__<tool> tool_use blocks with exact arguments; each echo result's content is compact JSON equal to the server's structuredContent, which tool_use_result also carries (the server's own text content, with spaces, does not appear in the stream); a ToolSearch call loads the deferred MCP tools first; no namespace binding (tool kind 99 Other); MCP initialization and discovery are not in the stream (init lists the server as connected and the tool names)",
+     "canonical": [
+      "population.requests",
+      "request.values",
+      "population.results",
+      "result.values",
+      "result.owner"
+     ]
+    },
+    {
+     "behavior": "LIVE-04",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:results.failed",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "McpLiveFixtureTest#theClaudeRecordingCarriesThreeMcpCallsWithStructuredResultsAndTheToolError"
+     ],
+     "note": "always_fails returns isError: is_error true on its tool_result (status Failure, reported) with the fixed text; the model then completed normally; a protocol or transport error was not triggered",
+     "canonical": [
+      "result.values"
+     ]
+    },
+    {
+     "behavior": "LIVE-03",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:requests",
+       "min": 3
+      }
+     ],
+     "assertions": [
+      "McpLiveFixtureTest#theClaudeRecordingCarriesThreeMcpCallsWithStructuredResultsAndTheToolError"
+     ],
+     "note": "two echo_record calls with distinct tool_use ids, arguments (n 1, n 2) and results, each owned by its own id; sequential, so parallel overlap is not claimed",
+     "canonical": [
+      "population.requests",
+      "result.owner"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "mcp-agy-1",
+   "route": "antigravity-cli/stream-json/1.4.6-stdout",
+   "cli_version": "1.4.6",
+   "evidence_class": "live",
+   "fixture": "antigravity-live-1.4.6-mcp-denied",
+   "provenance": "live MCP close-out 2026-10-23 (default request-review mode; documented workspace configuration <task>/.agents/mcp_config.json; Java MCP SDK 2.0.1 stdio test server; sanitized fixture; private run under the steward's 2026-10-23-mcp-live evidence)",
+   "behaviors": [
+    {
+     "behavior": "LIVE-05",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:decisions",
+       "min": 1
+      },
+      {
+       "scenario": "value:step_update.tool_name=call_mcp_tool",
+       "min": 2
+      }
+     ],
+     "assertions": [
+      "McpLiveFixtureTest#theAntigravityRecordingShowsTheMcpCallSoftDeniedAtRunScope"
+     ],
+     "note": "headless request-review mode soft-denied the mcp permission: the call_mcp_tool step (parameters ServerName journal_echo, ToolName echo_record, Arguments {n: 1, text: alpha}) went ACTIVE then DONE with neither output nor error, and the result reported denied_actions [{action: mcp, display_name: CallMcpTool}]; the denial names a category, never the step",
+     "canonical": [
+      "population.decisions",
+      "decision.values",
+      "result.values"
+     ]
+    },
+    {
+     "behavior": "LIVE-06",
+     "status": "blocked",
+     "note": "blocked: in this run the default request-review mode soft-denied the mcp category, so no permitted MCP result is recorded; MCP calls appear as the dispatcher tool call_mcp_tool whose parameters name the server and tool"
+    }
+   ]
   }
  ]
 }
