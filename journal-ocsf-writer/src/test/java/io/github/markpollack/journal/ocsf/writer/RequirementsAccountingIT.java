@@ -116,7 +116,9 @@ class RequirementsAccountingIT {
                 junit("CliCaptureTest#codexVersionIsDiscoveredOnceByTheDocumentedCommandAndTheThreadIdBecomesTheSession", STAND_IN + ": rollout archived by thread id"),
                 live("native session files archived by hash on all five runs")));
         CRITERIA.put("UC1-AC4", List.of(junit("CliCaptureTest#theArchiveContentsCannotChangeTheNormalizedStreamOutput", STAND_IN + ": identical output whatever the archive holds, including a non-JSON archive"),
-                junit("PinsTest#mappingContractsDeclareEveryRuleTheMappersExecute", "the stream contract states its unavailable_at_source facts (final per-response usage, the main thread's prompt)")));
+                junit("StreamLimitationTest#theClaudeStreamContractDeclaresWhatTheStreamDoesNotReport", "the Claude stream contract states its unavailable_at_source facts (final per-response usage, the main thread's prompt)"),
+                junit("StreamLimitationTest#theLiveRecordingCarriesTheLimitationAndKeepsItsUsageProvisional", "the live Claude recording embeds the limitation once; its per-message usage stays provisional"),
+                note("the Codex exec contract declares no unavailable_at_source list yet")));
         CRITERIA.put("UC1-AC5", List.of(oracle("UC1-AC5", "labelled synthetic 2.1.999 Claude stream (syn-claude-untested-version)")));
         CRITERIA.put("UC1-AC6", List.of(oracle("UC1-AC6", BOTH)));
         CRITERIA.put("UC1-AC7", List.of(junit("CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy", STAND_IN + ": the frozen denominator is the stream alone while the archive exists"),
@@ -128,11 +130,15 @@ class RequirementsAccountingIT {
                 live("Codex 0.160.1 discovered once on two runs")));
         CRITERIA.put("UC2-AC3", List.of(junit("LiveCaptureSeamTest#aStreamPipedToTheCaptureSeamIsRecordedWithItsReportedVersionAndJudgedAgainstTheBytes", "records before the version are persisted"),
                 junit("UntestedCompatibilityTest#aVersionNoEntryCoversIsRetainedFlaggedAndNotNormalized", "records_before_selection recorded"),
-                junit("WriterLifecycleTest#persistedPrefixIsReadableAndQueryableBeforeEof", "prefix persistence")));
+                junit("WriterLifecycleTest#persistedPrefixIsReadableAndQueryableBeforeEof", "prefix persistence"),
+                junit("UntestedCompatibilityTest#aSupportedVersionReportedByTheStreamDeclaresThePendingSelectionThenTheTestedOne", "pending then tested selection history"),
+                junit("UntestedCompatibilityTest#aVersionNeverLearnedLeavesTheSelectionPendingAndUnresolved", "a version never learned stays pending, compatibility unresolved"),
+                note("records read while the version is pending are interpreted provisionally under the profile's mapper, labelled only at file level; whether to interpret them is an open product decision")));
         CRITERIA.put("UC2-AC4", List.of(oracle("UC2-AC4", BOTH), junit("CompatibilityTest#exactTestedVersionsAndInclusiveBoundariesSelectTheOneEntry", "registry selection"),
                 junit("UntestedCompatibilityTest#aTestedVersionOnItsRouteIsSelectedAndVerified", "declaration in parent and child files")));
         CRITERIA.put("UC2-AC5", List.of(oracle("UC2-AC5", "labelled synthetic 2.1.999 Claude stream"), junit("UntestedCompatibilityTest#aVersionNoEntryCoversIsRetainedFlaggedAndNotNormalized", "retained, flagged, reader warns"),
-                junit("CompatibilityTest#outsideEveryRangeOrOffEveryKeyIsNoMatchAndTheNearestEntryIsNotSelected", "no nearest-entry selection")));
+                junit("CompatibilityTest#outsideEveryRangeOrOffEveryKeyIsNoMatchAndTheNearestEntryIsNotSelected", "no nearest-entry selection"),
+                junit("UntestedCompatibilityTest#factsInterpretedBeforeANoMatchAreDeclaredProvisionalAndNeverCreditedAsSupport", "provisional facts before a no-match are never credited as support")));
         CRITERIA.put("UC2-AC6", List.of(junit("CompatibilityTest#overlappingEntriesAreRejectedWhenTheRegistryLoads", "overlap, inverted range, duplicate id rejected at load")));
         CRITERIA.put("UC3-AC1", List.of(oracle("UC3-AC1", BOTH)));
         CRITERIA.put("UC3-AC2", List.of(oracle("UC3-AC2", BOTH)));
@@ -207,7 +213,7 @@ class RequirementsAccountingIT {
                 junit("NativeRequirementTest#everyNativeRfcSpecificationCarriesTheCompleteStatementAndThePromptRendersIt", "complete statements (Agent Judge 0.19.0)")));
         CRITERIA.put("UC5-AC9", List.of(oracle("UC5-AC9", "reporter controls computed on the real reports")));
         CRITERIA.put("UC5-AC10", List.of(separate("mutation sensitivity is measured by the pit profiles of both modules (threshold 70%, mutators and targets unchanged) in detached worktrees of the delivered revision, not in this build; killed, survived and uncovered counts are reported apart in the return")));
-        CRITERIA.put("UC5-AC11", List.of(validator("every committed fixture core, execution records selected by the record rule; ocsf-toolkit v0.9.0, the compiled schema hash each summary records")));
+        CRITERIA.put("UC5-AC11", List.of(validator("every committed fixture core, execution records selected by the record rule; the pinned ocsf-toolkit v0.9.0 binary and compiled schema of toolchain.lock.json, read from the committed summaries (Maven does not run the validator)")));
         CRITERIA.put("UC5-AC12", List.of(oracle("UC5-AC12", "reporter controls"), junit("RequirementsReporterReproductionTest#rr02RemovingOneRequiredPropertyOrOneRequiredOwnerIsAnErrorNotAPass", "missing property or owner is ERROR")));
         CRITERIA.put("UC5-AC13", List.of(junit("MappingCatalogTest#theCommonConceptMatrixIsDerivedFromTheEntriesAndThisRunsOracleResultsWithStatesKeptSeparate", BOTH),
                 junit("MappingCatalogTest#everyCatalogReferenceResolvesInJava", "reference validity")));
@@ -306,7 +312,7 @@ class RequirementsAccountingIT {
         RULES.put("RULE-3", new RuleEvidence(List.of("UC1-AC5"), List.of(), ""));
         RULES.put("RULE-4", new RuleEvidence(List.of("UC1-AC3", "UC1-AC7"), List.of(), ""));
         RULES.put("RULE-5", new RuleEvidence(List.of("UC1-AC4"), List.of(junit("CliCaptureTest#theArchiveContentsCannotChangeTheNormalizedStreamOutput", "archive never opened; version from the stream")), ""));
-        RULES.put("RULE-6", new RuleEvidence(List.of("UC1-AC4"), List.of(), "stated limitations in the contract's unavailable_at_source"));
+        RULES.put("RULE-6", new RuleEvidence(List.of("UC1-AC4"), List.of(), "stated limitations in the Claude stream contract's unavailable_at_source, embedded in the event file; none declared for the Codex exec contract yet"));
         RULES.put("RULE-7", new RuleEvidence(List.of("UC2-AC1"), List.of(), ""));
         RULES.put("RULE-8", new RuleEvidence(List.of("UC2-AC2"), List.of(), ""));
         RULES.put("RULE-9", new RuleEvidence(List.of("UC2-AC3"), List.of(), ""));
@@ -316,13 +322,13 @@ class RequirementsAccountingIT {
         RULES.put("RULE-13", new RuleEvidence(List.of("UC3-AC1", "UC3-AC2", "UC3-AC3", "UC3-AC6", "UC3-AC10", "UC3-AC13"), List.of(), ""));
         RULES.put("RULE-14", new RuleEvidence(List.of("UC3-AC1"), List.of(junit("OcsfOracleMutationTest#identicalResultsSwappedBetweenOwnersAreADefect", "no value-search ownership"),
                 junit("OcsfOracleMutationTest#resultOwnedByAnIdQuotedInsideItsOwnTextIsADefect", "no id-in-text ownership"), junit("OcsfOracleMutationTest#largeIntegerAndHighPrecisionDecimalAreExact", "no thresholds")), ""));
-        RULES.put("RULE-15", new RuleEvidence(List.of("UC3-AC6"), List.of(junit("OcsfOracleMutationTest#normalizedRecordRetainedOnlyAsFallbackIsAMissingNormalization", "fallback is retention, not normalization")), "MAY: whole-record retention in force"));
-        RULES.put("RULE-16", new RuleEvidence(List.of(), List.of(junit("FieldDispositionTest#everyObservedStreamFieldHasExactlyOneBackedDisposition", "no field is dispositioned omitted: no omission rule exists, none is applied"),
+        RULES.put("RULE-15", new RuleEvidence(List.of("UC3-AC6", "UC3-AC12"), List.of(junit("OcsfOracleMutationTest#normalizedRecordRetainedOnlyAsFallbackIsAMissingNormalization", "fallback is retention, not normalization")), "MAY: whole-record retention in force"));
+        RULES.put("RULE-16", new RuleEvidence(List.of("UC3-AC12"), List.of(junit("FieldDispositionTest#everyObservedStreamFieldHasExactlyOneBackedDisposition", "no field is dispositioned omitted: no omission rule exists, none is applied"),
                 junit("AnalysisViewsTest#identicalResultContentUnderTwoOwnersIsKeptSeparate", "identical values under distinct owners stay distinct")), "no residual omission exists yet; the obligation binds any future compaction (UC3-AC12 deferred)"));
-        RULES.put("RULE-17", new RuleEvidence(List.of(), List.of(junit("OracleFullSourceTest#changingARetainedNumberIsAStructureDefectAndRespellingItIsARepresentationDifference", "value vs representation"),
+        RULES.put("RULE-17", new RuleEvidence(List.of("UC3-AC3"), List.of(junit("OracleFullSourceTest#changingARetainedNumberIsAStructureDefectAndRespellingItIsARepresentationDifference", "value vs representation"),
                 junit("OcsfOracleMutationTest#costSpellingIsRepresentationValueIsValue", "spelling")), "MAY"));
         RULES.put("RULE-18", new RuleEvidence(List.of("UC4-AC8"), List.of(junit("WriterLifecycleTest#captureFacingRecordInputProducesTheSameBytesAsChunkedReplay", "one writer, same bytes")), ""));
-        RULES.put("RULE-19", new RuleEvidence(List.of("UC4-AC1"), List.of(), ""));
+        RULES.put("RULE-19", new RuleEvidence(List.of("UC4-AC1", "UC4-AC8"), List.of(), ""));
         RULES.put("RULE-20", new RuleEvidence(List.of("UC4-AC2", "UC4-AC3", "UC4-AC4", "UC4-AC5"), List.of(), ""));
         RULES.put("RULE-21", new RuleEvidence(List.of("UC1-AC6", "UC3-AC7", "UC3-AC8", "UC3-AC11", "UC4-AC6"), List.of(junit("OcsfOracleValueCheckTest#sessionOrNativeIdentityCopiedWronglyIsADefect", "native ids in their scope")), ""));
         RULES.put("RULE-22", new RuleEvidence(List.of(), List.of(junit("CodexExecStreamTest#viewsMatchTheIndependentlyAuthoredAnswersAndStateTheirCountUnits", "views are test utilities with stated count units"),
@@ -334,7 +340,7 @@ class RequirementsAccountingIT {
                 junit("DeclaredFileDiagnosticsTest#anUnreadableAncillaryManifestIsADefectAndTheFileIsReadAlone", "run.json not needed")), ""));
         RULES.put("RULE-27", new RuleEvidence(List.of(), List.of(unexercised("no external feedback producer is in the two-CLI scope; feedback.jsonl durability was not exercised and is not claimed")), ""));
         RULES.put("RULE-28", new RuleEvidence(List.of("UC5-AC7"), List.of(), ""));
-        RULES.put("RULE-29", new RuleEvidence(List.of("UC5-AC4", "UC5-AC5"), List.of(junit("OcsfOracleMutationTest#refusedPackageIsUnsupportedNotVerified", "refusal is not verification")), "the TCK never calls the writer: by construction of the module dependency (writer -> TCK, test scope only)"));
+        RULES.put("RULE-29", new RuleEvidence(List.of("UC5-AC4", "UC5-AC5", "UC5-AC10"), List.of(junit("OcsfOracleMutationTest#refusedPackageIsUnsupportedNotVerified", "refusal is not verification")), "the TCK never calls the writer: by construction of the module dependency (writer -> TCK, test scope only)"));
         RULES.put("RULE-30", new RuleEvidence(List.of("UC5-AC6"), List.of(), ""));
         RULES.put("RULE-31", new RuleEvidence(List.of("UC5-AC6"), List.of(), "provenance manifests with hashes and the recorded sanitization steps on every live-derived fixture; the private captures stay in the steward"));
         RULES.put("RULE-32", new RuleEvidence(List.of("UC5-AC8", "UC5-AC9"), List.of(), ""));
@@ -343,7 +349,7 @@ class RequirementsAccountingIT {
         RULES.put("RULE-35", new RuleEvidence(List.of("UC5-AC13"), List.of(), ""));
         RULES.put("RULE-36", new RuleEvidence(List.of("UC5-AC12", "UC5-AC14", "UC5-AC16"), List.of(), ""));
         RULES.put("RULE-37", new RuleEvidence(List.of(), List.of(junit("StandaloneEventFileTest#theParentEventFileAloneIsInterpretedFromItsDeclarations", "definitions once per file, not per event")), "no mapping language, generated reader or model call exists in the build; enforced by review beyond the executable check"));
-        RULES.put("RULE-38", new RuleEvidence(List.of("UC5-AC17", "UC5-AC21"), List.of(junit("SemanticClaimTest#aDelegatedDecisionStatesItsDelegationAndClaimsNoDirectOwnerReviewOfEachDigest", "the delegated SEM-1 decision under its delegated identity")),
+        RULES.put("RULE-38", new RuleEvidence(List.of("UC5-AC17", "UC5-AC21", "UC5-AC28"), List.of(junit("SemanticClaimTest#aDelegatedDecisionStatesItsDelegationAndClaimsNoDirectOwnerReviewOfEachDigest", "the delegated SEM-1 decision under its delegated identity")),
                 "approval is a recorded decision of the Owner, or of a reviewer the Owner explicitly delegated, naming the exact claim revision and digest"));
         RULES.put("RULE-39", new RuleEvidence(List.of("UC5-AC19", "UC5-AC20"), List.of(), ""));
         RULES.put("RULE-40", new RuleEvidence(List.of("UC5-AC14", "UC5-AC15"), List.of(), ""));
@@ -389,12 +395,39 @@ class RequirementsAccountingIT {
         CONTROLS.put("missing, altered or late declarations", List.of("StandaloneEventFileTest#removingOrAlteringAMandatoryDeclarationFailsInterpretationExplicitly", "DeclaredFileDiagnosticsTest#malformedDuplicateUnknownAndConflictingDeclarationsAreEachReported", "DeclaredFileDiagnosticsTest#aContractDeclarationAlteredUnderItsHashAndAnAttributeUsedBeforeItsAmendmentAreDefects"));
     }
 
+    /** Rule to the criteria whose {@code Rule:} line (before its {@code Tests:}) names it, from the criteria document itself. */
+    static Map<String, java.util.TreeSet<String>> documentedRuleLinks(String criteriaMd) {
+        Map<String, java.util.TreeSet<String>> out = new TreeMap<>();
+        String current = null;
+        for (String line : criteriaMd.split("\n")) {
+            Matcher heading = Pattern.compile("^### (UC\\d-AC\\d+):").matcher(line);
+            if (heading.find()) {
+                current = heading.group(1);
+                continue;
+            }
+            if (current != null && line.startsWith("Rule:")) {
+                Matcher rule = Pattern.compile("RULE-\\d+").matcher(line.split("Tests:")[0]);
+                while (rule.find()) {
+                    out.computeIfAbsent(rule.group(), k -> new java.util.TreeSet<>()).add(current);
+                }
+                current = null;
+            }
+        }
+        return out;
+    }
+
     @Test
     void everyRuleAndCriterionIsAccountedForWithExecutedEvidenceOrANamedGap() throws Exception {
         List<EarsRequirement> criteria = EarsRequirement.fromStrict(REQUIREMENTS.resolve("criteria.md"), "sha256:" + sha256(Files.readAllBytes(REQUIREMENTS.resolve("criteria.md"))));
         List<Rfc2119Requirement> rules = Rfc2119Requirement.fromStrict(REQUIREMENTS.resolve("rules.md"), "sha256:" + sha256(Files.readAllBytes(REQUIREMENTS.resolve("rules.md"))));
         assertThat(CRITERIA.keySet()).as("every criterion accounted, none invented").containsExactlyElementsOf(criteria.stream().map(EarsRequirement::id).toList());
         assertThat(RULES.keySet()).as("every rule accounted, none invented").containsExactlyElementsOf(rules.stream().map(Rfc2119Requirement::id).toList());
+        // a rule rolls up exactly the criteria whose Rule: line names it, so a deferred or unexercised constituent cannot drop out of its rule
+        Map<String, java.util.TreeSet<String>> documented = documentedRuleLinks(Files.readString(REQUIREMENTS.resolve("criteria.md"), StandardCharsets.UTF_8));
+        for (Map.Entry<String, RuleEvidence> r : RULES.entrySet()) {
+            assertThat(new java.util.TreeSet<>(r.getValue().criteria())).as(r.getKey() + " rolls up the criteria whose Rule: line names it")
+                    .isEqualTo(documented.getOrDefault(r.getKey(), new java.util.TreeSet<>()));
+        }
 
         Map<String, Surefire> surefire = Surefire.read(List.of(TCK.resolve("target/surefire-reports"), WRITER.resolve("target/surefire-reports")));
         Map<String, Map<String, Object>> oracleStatus = oracleStatus();
@@ -540,6 +573,11 @@ class RequirementsAccountingIT {
             case VALIDATOR -> {
                 List<String> problems = new ArrayList<>();
                 int cores = 0;
+                // the pinned toolkit and compiled schema: a summary of another tool or schema does not establish this build's files
+                var lock = new ObjectMapper().readTree(WRITER.resolve("..").resolve("prototype/ocsf-acp/toolchain.lock.json").normalize().toFile());
+                String release = lock.path("ocsf_toolkit").path("release").asText();
+                String binary = lock.path("ocsf_toolkit").path("binary_sha256").asText();
+                String schema = lock.path("extension").path("compiled_sha256_uid_901").asText();
                 try (Stream<Path> s = Files.list(VALIDATION)) {
                     for (Path summary : s.filter(p -> p.toString().endsWith(".json")).sorted().toList()) {
                         cores++;
@@ -555,6 +593,14 @@ class RequirementsAccountingIT {
                         String actual = sha256(Files.readAllBytes(events));
                         if (!actual.equals(recorded)) {
                             problems.add(summary.getFileName() + ": stale: recorded hash " + recorded.substring(0, 12) + " differs from the current event file " + actual.substring(0, 12) + "; rerun validate-fixtures.sh");
+                        }
+                        var doc = new ObjectMapper().readTree(text);
+                        if (!release.equals(doc.path("toolkit").path("release").asText()) || !binary.equals(doc.path("toolkit").path("binary_sha256").asText())
+                                || doc.path("toolkit").path("exit_code").asInt(-1) != 0) {
+                            problems.add(summary.getFileName() + ": stale: toolkit " + doc.path("toolkit") + " is not the pinned " + release + " " + binary.substring(0, 12) + " with exit 0");
+                        }
+                        if (!schema.equals(doc.path("compiled_schema_sha256").asText())) {
+                            problems.add(summary.getFileName() + ": stale: compiled schema " + doc.path("compiled_schema_sha256").asText() + " is not the pinned " + schema);
                         }
                         Matcher m = Pattern.compile("\"error_events\":\\s*(\\d+)").matcher(text);
                         if (!m.find() || !"0".equals(m.group(1))) {
@@ -578,7 +624,8 @@ class RequirementsAccountingIT {
                     boolean stale = problems.stream().allMatch(p -> p.contains("stale") || p.contains("no committed") || p.contains("does not exist"));
                     return new Outcome(item, stale ? Status.ERROR : Status.FAIL, String.join("; ", problems));
                 }
-                return new Outcome(item, Status.PASS, cores + " committed core summaries, each tied to the current event file hash, 0 error events");
+                return new Outcome(item, Status.PASS, cores + " committed core summaries, each tied to the current event file hash, the pinned toolkit " + release
+                        + " and compiled schema " + schema.substring(0, 12) + ", 0 error events (read from the summaries: Maven does not execute the validator)");
             }
             case LIVE -> {
                 return new Outcome(item, Status.INFO, "informational: " + item.ref() + " (" + item.scope() + "); not executed in this build");

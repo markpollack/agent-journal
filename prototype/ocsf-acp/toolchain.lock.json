@@ -20,6 +20,8 @@
     "binary": "ocsf-toolkit_v0.9.0_linux_amd64.tar.gz",
     "sha256": "641fec9f8c457896c06ead9136fe8f4e50753cd95f8a68c24b25c2bcc9cfd5a5",
     "sha256_source": "release SHA256SUMS; equals the archive checksum recorded in the steward's 2026-10-20 investigation",
+    "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
+    "binary_sha256_source": "sha256 of the ocsf-toolkit executable extracted from the pinned archive; every committed validation summary records it, and the requirements accounting compares it",
     "built_with": "go1.27.1 (per the binary's own summary metadata)",
     "licence": "Apache-2.0",
     "limits": [

@@ -17,7 +17,7 @@ not assessed.
 ### UC1-AC1: Normalize the stream of a streaming CLI
 
 When a CLI offers stream output, the capture shall normalize that stream into `events.jsonl` as the selected input.
-Rule: RULE-1. Tests: `PrefixReplayTest#everyPrefixOfTheClaudeStreamIsJudgedDefectFreeByTheOracle`, `PrefixReplayTest#everyPrefixOfTheCodexExecStreamIsJudgedDefectFreeByTheOracle` (recorded and synthetic replay). Status: no production recorder uses the new writer yet.
+Rule: RULE-1. Tests: `CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy` (stand-in process through the opt-in launching capture), `PrefixReplayTest#everyPrefixOfTheClaudeStreamIsJudgedDefectFreeByTheOracle`, `PrefixReplayTest#everyPrefixOfTheCodexExecStreamIsJudgedDefectFreeByTheOracle` (recorded and synthetic replay). Status: the opt-in launching capture (`CliCapture`) normalizes the stream and was exercised live for both CLIs on 2026-10-21 (private evidence); the production default capture modules are unchanged.
 
 ### UC1-AC2: Import a native session file only when it is the only source
 
@@ -27,17 +27,17 @@ Rule: RULE-2. Tests: `PrefixReplayTest#everyPrefixOfTheCodexRolloutIsJudgedDefec
 ### UC1-AC3: Archive the native session file unchanged
 
 When a streaming CLI writes a native session file, the capture shall archive it byte-identical with its checksum and shall declare it outside the selected input.
-Rule: RULE-4. Tests: none yet in the new package layout. Status: not implemented in the new writer.
+Rule: RULE-4. Tests: `CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy` (the archive is byte-identical with its sha256, not parsed, and not a declared source). Status: implemented in the opt-in launching capture; the archive is recorded in the ancillary `run.json` only.
 
 ### UC1-AC4: Report a stream gap instead of enriching from the archive
 
 While a stream is the selected input, if a fact such as final response usage is absent from the stream, then the capture shall record that limitation and shall not read the native session file to supply it.
-Rule: RULE-5, RULE-6. Tests: none yet. Status: the prototype can admit a later session file experimentally; that path is not the target behavior.
+Rule: RULE-5, RULE-6. Tests: `CliCaptureTest#theArchiveContentsCannotChangeTheNormalizedStreamOutput` (identical events whatever the archive holds), `StreamLimitationTest` (the Claude stream's declared limitations travel in the event file; its per-message usage stays provisional). Status: the prototype can still admit a later session file experimentally through the writer's multi-source path; that path is not the target behavior and the launching capture never uses it. The Codex exec contract declares no limitation list yet.
 
 ### UC1-AC5: Treat an unsupported stream as a gap
 
 If no stream adapter supports a streaming CLI's version or launch mode, then the capture shall report an unsupported-stream gap and shall not select the native session file instead.
-Rule: RULE-3. Tests: none yet. Status: not implemented.
+Rule: RULE-3. Tests: `UntestedCompatibilityTest#aVersionNoEntryCoversIsRetainedFlaggedAndNotNormalized` (the stream stays the only source; no native session file is selected), `CliCaptureTest#aVersionTestedOnAnotherRouteOnlyIsNoMatchRetainedAndFlagged`. Status: the unsupported-stream gap is the no-match compatibility declaration and the reader's warning; no other gap record exists.
 
 ### UC1-AC6: Declare every selected source
 
@@ -47,39 +47,39 @@ Rule: RULE-21. Tests: `OcsfOracleMutationTest#sourceInventoryHashIsChecked`, `Fu
 ### UC1-AC7: Do not credit the archive to preservation
 
 When preservation is judged, the archived native session file shall not be counted toward the selected-input denominator.
-Rule: RULE-4. Tests: `OracleFullSourceTest#anOmittedNativeArtifactIsUnresolvedAndBlocksAcceptance` (frozen manifest defines the denominator). Status: archive-only disposition is not yet expressible in the expected-sources manifest.
+Rule: RULE-4. Tests: `CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy` (the frozen manifest lists only the stream; the archive never enters it), `OracleFullSourceTest#anOmittedNativeArtifactIsUnresolvedAndBlocksAcceptance` (the frozen manifest defines the denominator). Status: the archive is kept out of the denominator by never entering the frozen manifest; an explicit archive-only disposition is still not expressible in that manifest.
 
 ## UC2: CLI version and compatibility
 
 ### UC2-AC1: Keep the stream-reported version without a version command
 
 When the stream reports the CLI version, the capture shall record that version in the session settings and shall not run a separate version command.
-Rule: RULE-7. Tests: `LiveCaptureSeamTest#aStreamPipedToTheCaptureSeamIsRecordedWithItsReportedVersionAndJudgedAgainstTheBytes` (a launch without a version; the `cli_version` declaration records the stream-reported one), `OracleFullSourceTest#alteringAReportedSettingOrAddingAnUnreportedOneIsAContextValueDefect`. Status: the capture seam launches no subprocess at all (the driver launches the CLI); demonstrated live on 2026-10-21 with Claude Code 2.1.304 (private evidence).
+Rule: RULE-7. Tests: `LiveCaptureSeamTest#aStreamPipedToTheCaptureSeamIsRecordedWithItsReportedVersionAndJudgedAgainstTheBytes` (a launch without a version; the `cli_version` declaration records the stream-reported one), `CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy` (the launching capture runs no version command for Claude), `OracleFullSourceTest#alteringAReportedSettingOrAddingAnUnreportedOneIsAContextValueDefect`. Status: demonstrated live on 2026-10-21 with Claude Code 2.1.304 (private evidence).
 
 ### UC2-AC2: Discover an unreported version once
 
 When the selected source reports no CLI version, the capture shall apply the adapter's documented discovery path at most once per run and shall record the discovery basis.
-Rule: RULE-8. Tests: none yet. Status: not implemented; Codex's exec stream is the known case.
+Rule: RULE-8. Tests: `CliCaptureTest#codexVersionIsDiscoveredOnceByTheDocumentedCommandAndTheThreadIdBecomesTheSession` (one `codex --version` per run, its basis declared), `CliCaptureLifecycleTest#aHangingVersionProbeIsBoundedAndReported`, `CliCaptureUnitTest#theVersionProbeParsesBothOutputFormsAndRefusesUnrecognizableOutput`, `UntestedCompatibilityTest#aDiscoveredVersionCarriesItsBasis`. Status: implemented for Codex exec in the opt-in launching capture.
 
 ### UC2-AC3: Retain records that arrive before the version is known
 
 When records arrive before the CLI version is known, the capture shall retain them whole and in order.
-Rule: RULE-9. Tests: `LiveCaptureSeamTest` (the version is declared after the settings record that reports it; the records before it are already persisted), `WriterLifecycleTest#persistedPrefixIsReadableAndQueryableBeforeEof`.
+Rule: RULE-9. Tests: `UntestedCompatibilityTest#aSupportedVersionReportedByTheStreamDeclaresThePendingSelectionThenTheTestedOne`, `UntestedCompatibilityTest#factsInterpretedBeforeANoMatchAreDeclaredProvisionalAndNeverCreditedAsSupport`, `UntestedCompatibilityTest#aVersionNeverLearnedLeavesTheSelectionPendingAndUnresolved`, `LiveCaptureSeamTest` (the records before the reported version are already persisted). Status: retention is implemented; interpreting pending records provisionally is today's behavior, not an approved policy (see RULE-9).
 
 ### UC2-AC4: State the selected compatibility entry and its applicability
 
 When a run is recorded, the event file's declarations shall name the compatibility entry applied to each source with its source-description revision, mapping contract and mapper identity, and whether the recorded CLI version is within that entry's tested range.
-Rule: RULE-10. Tests: `PinsTest#mappingContractsDeclareEveryRuleTheMappersExecute`, `VendorSpecificationsTest`. Status: implemented (`101f8ff`, exact entries since `4e11243`): each source's `compatibility` declaration names the entry, its range and the status (tested, in_range, no_match, version_unknown).
+Rule: RULE-10. Tests: `CompatibilityTest#theDeclarationStatesEachStatusAndOnlyWhatTheSelectionKnows`, `UntestedCompatibilityTest#aTestedVersionOnItsRouteIsSelectedAndVerified`, `CompatibilityAndIdentityOracleTest#aTestedSelectionIsVerifiedAndEachInternalInconsistencyIsADefect`, `PinsTest#mappingContractsDeclareEveryRuleTheMappersExecute`. Status: implemented (`101f8ff`, exact entries since `4e11243`): each source's `compatibility` declaration names the entry, its range and the status (tested, in_range, no_match, version_unknown).
 
 ### UC2-AC5: Retain and flag an untested version
 
 If the recorded CLI version, source format or launch route matches no compatibility entry, then the capture shall retain the acquired input, record the compatibility status as untested and surface a warning rather than select the nearest entry or record the version as supported.
-Rule: RULE-33. Tests: none yet. Status: not implemented; warning, retention and strict-mode behavior remain proposals.
+Rule: RULE-33. Tests: `UntestedCompatibilityTest#aVersionNoEntryCoversIsRetainedFlaggedAndNotNormalized`, `UntestedCompatibilityTest#normalizingAfterANoMatchSelectionIsADefect`, `UntestedCompatibilityTest#factsInterpretedBeforeANoMatchAreDeclaredProvisionalAndNeverCreditedAsSupport`, `CompatibilityTest#outsideEveryRangeOrOffEveryKeyIsNoMatchAndTheNearestEntryIsNotSelected`, `CliCaptureTest#aVersionTestedOnAnotherRouteOnlyIsNoMatchRetainedAndFlagged`. Status: retention, the no-match declaration and the reader's `COMPATIBILITY_NO_MATCH` warning are implemented; a strict mode and any partial untested normalization remain proposals.
 
 ### UC2-AC6: Reject an ambiguous compatibility selection
 
 If more than one compatibility entry matches a CLI, source profile, launch route and version, then selection shall fail as a configuration error rather than choose one of them.
-Rule: RULE-10. Tests: none yet. Status: the registry data shape and its selection test are a bounded next step.
+Rule: RULE-10. Tests: `CompatibilityTest#overlappingEntriesAreRejectedWhenTheRegistryLoads`, `CompatibilityTest#everyOtherMisconfigurationIsRejectedWhenTheRegistryLoads`. Status: ambiguity is rejected when the registry loads, so the selection-time error is unreachable and untested.
 
 ## UC3: Mapping and preservation
 
@@ -146,12 +146,12 @@ Rule: RULE-15, RULE-16. Tests: none yet. Status: not implemented; whole records 
 ### UC3-AC13: Preserve ordered prompt content blocks
 
 When a prompt carries content blocks, the prompt event shall preserve block order, block type, verbatim text and the native block data.
-Rule: RULE-13. Tests: `FullOneReviewRegressionTest#changedRenderedTextIsAContextValueDefectWhileTheRawRecordIsIntact` (context text), `OcsfOracleMutationTest`. Status: split from UC3-AC2 on 2026-10-21 so prompt evidence is required on its own; no committed public fixture carries a prompt occurrence (the `-p` stream does not echo the prompt), so `RequirementsEvidenceTest` reports it not assessed.
+Rule: RULE-13. Tests: `FullOneReviewRegressionTest#changedRenderedTextIsAContextValueDefectWhileTheRawRecordIsIntact` (context text), `OcsfOracleMutationTest`. Status: split from UC3-AC2 on 2026-10-21 so prompt evidence is required on its own. The `-p` stream does not echo the main thread's prompt; a child scope's prompt is echoed, and the live Claude recording establishes it (`LiveFixtureFeaturesTest#theSubAgentPromptIsTheChildScopesVendorReportedPrompt`), so `RequirementsEvidenceTest` assesses it on that child prompt only.
 
 ### UC3-AC14: Dispose of every meaningful acquired field
 
 When a source field family is accepted into the maintained source inventory, each meaningful field shall carry one recorded disposition of normalized, retained, omitted under a tested rule, or unresolved with retention.
-Rule: RULE-34. Tests: `InventoryDriftTest` (observed inventory). Status: dispositions are not yet recorded per field.
+Rule: RULE-34. Tests: `FieldDispositionTest` (one disposition per observed and vendor-declared field, `schema/vendor/<cli>/<profile>/dispositions.json`), `VendorStreamInventoryTest`, `InventoryDriftTest` (observed inventory). Status: implemented for the Claude stream and Codex exec routes.
 
 ### UC3-AC15: Label Journal-generated time and identity as Journal's
 
@@ -198,14 +198,14 @@ Rule: RULE-12. Tests: `OcsfOracleValueCheckTest#resultStructuredDetailAndMissing
 ### UC4-AC8: Record a live process incrementally and check it independently
 
 When a live CLI process is recorded, the persisted package shall be readable before the process exits and the final package shall be checked against an independently acquired copy of the selected stream.
-Rule: RULE-18, RULE-19. Tests: `LiveCaptureSeamTest` (recorded stream through the `capture` seam: replay evidence about the seam, not live). Status: demonstrated live on 2026-10-21 (Claude Code 2.1.304, normal completion and driver interruption, package read before exit, judged against an independent tee copy; private steward evidence, not a Maven test). The seam is non-default; the production recorder is unchanged.
+Rule: RULE-18, RULE-19. Tests: `CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy` (stand-in process through the launching capture), `LiveCaptureSeamTest` (recorded stream through the `capture` seam: replay evidence about the seam, not live). Status: demonstrated live on 2026-10-21 through the seam (Claude Code 2.1.304) and through the opt-in launching capture (five runs of Claude Code 2.1.304 and Codex CLI 0.160.1, packages read before exit, judged against independent copies; private steward evidence, not Maven tests). Both paths are non-default; the production recorders are unchanged.
 
 ## UC5: Portable output and testing
 
 ### UC5-AC1: Bootstrap from a copied event file
 
 When `events.jsonl` alone is copied to a fresh directory without `run.json`, sibling files, network access or a schema cache, a compatible Java reader shall discover the declared schema, enumerate its fields, types and enumerations, resolve the essential references and read the recorded execution facts and vendor data.
-Rule: RULE-24, RULE-25. Tests: `StandaloneEventFileTest#theParentEventFileAloneIsInterpretedFromItsDeclarations`, `StandaloneEventFileTest#theWholeRunAloneIsAcceptedByTheOracleAndTheToolWithoutAnyManifest`, `StandalonePrefixTest` (flushed prefix, interruption, cut, failure, child); `IsolatedBootstrapTest` (two-file core). Status: changed meaning 2026-10-21, from the copied two-file core to the event file alone; implemented in layout 0.3.0-prototype.
+Rule: RULE-24, RULE-25, RULE-26. Tests: `StandaloneEventFileTest#theParentEventFileAloneIsInterpretedFromItsDeclarations`, `StandaloneEventFileTest#theWholeRunAloneIsAcceptedByTheOracleAndTheToolWithoutAnyManifest`, `StandalonePrefixTest` (flushed prefix, interruption, cut, failure, child); `IsolatedBootstrapTest` (two-file core). Status: changed meaning 2026-10-21, from the copied two-file core to the event file alone; implemented in layout 0.3.0-prototype.
 
 ### UC5-AC2: Fail explicitly on a missing or altered declaration
 
@@ -235,7 +235,7 @@ Rule: RULE-30, RULE-31. Tests: `FixtureEvidenceClassTest#eachCommittedFixtureHas
 ### UC5-AC7: Back each claimed feature with an observed fixture
 
 When a feature is claimed as supported, a committed fixture shall exhibit the feature and an independent assertion shall check it.
-Rule: RULE-28. Tests: `CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted`, `OcsfOracleFixtureTest#sanitizedClaudeStreamWithChildCoreIsJudgedPerCoreWithoutDefect`. Status: interruption, media and redacted reasoning have only labelled-synthetic or no fixtures.
+Rule: RULE-28. Tests: `CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted`, `OcsfOracleFixtureTest#sanitizedClaudeStreamWithChildCoreIsJudgedPerCoreWithoutDefect`, `LiveFixtureFeaturesTest#theCancelledRecordingsAreHonestInterruptedPrefixes`. Status: interruption has live recordings of both CLIs; media and redacted reasoning have no fixtures and are not claimed.
 
 ### UC5-AC8: Load the complete requirement roster
 
@@ -255,7 +255,7 @@ Rule: RULE-29. Tests: the `pit` Maven profile in `journal-capture-tck/pom.xml`. 
 ### UC5-AC11: Validate execution records with the pinned upstream OCSF validator
 
 When a package is written, its execution event records, selected by the documented record-kind rule, shall validate without error under the pinned upstream OCSF validator against the pinned compiled extension schema.
-Rule: RULE-11. Tests: `prototype/ocsf-acp/scripts/validate.sh` with the pinned toolkit (a separately executed tool step, not a Maven test). Status: split from UC5-AC3 on 2026-10-21; `RequirementsEvidenceTest` reports it not assessed because no Maven check runs the validator.
+Rule: RULE-11. Tests: `prototype/ocsf-acp/scripts/validate-fixtures.sh` with the pinned toolkit writes one committed summary per fixture core (`ocsf/validation/`); the requirements accounting reads them. Status: split from UC5-AC3 on 2026-10-21. Maven never runs the upstream validator: the accounting establishes this criterion only from a committed summary whose recorded event-file hash equals the current file, whose toolkit and compiled schema equal the pinned ones, and which reports no error, for every committed core; regenerating fixtures without rerunning the validator therefore fails the build. `RequirementsEvidenceTest` (the oracle reporter) does not assess it.
 
 ### UC5-AC12: Report a partially evidenced criterion as not passed
 
@@ -414,5 +414,9 @@ response identifier (it no longer forbids the stream-local call identity Journal
 (one invocation for a shell command whatever its text runs). UC5-AC6 is retained with changed meaning: one evidence
 class from the declared vocabularies for fixtures, references and examples, a missing or contradicted class reported
 (it named three labels for fixtures and reports only). Added UC5-AC32 (every pinned Tier 1 field accounted once, the
-denominator and the proposed-exclusion roster pinned). No criterion removed; `RequirementsRosterTest` pins the
-per-use-case counts 7, 6, 15, 8 and 32.
+denominator and the proposed-exclusion roster pinned). UC5-AC1 also names RULE-26, which the accounting already
+linked. Annotations only, no criterion's obligation changed: the Tests and Status lines of UC1-AC1, UC1-AC3, UC1-AC4,
+UC1-AC5, UC1-AC7, UC2-AC1 to UC2-AC6, UC3-AC13, UC3-AC14, UC4-AC8, UC5-AC7 and UC5-AC11 now match the implemented
+behaviour and the executed evidence (UC5-AC11: Maven reads pinned validator summaries tied to the current event-file
+hashes, toolkit and compiled schema; it does not run the validator). No criterion removed; `RequirementsRosterTest`
+pins the per-use-case counts 7, 6, 15, 8 and 32.

@@ -19,7 +19,7 @@ runs (`stream-json`, `exec --json`). **Selected input** is the source normalizat
 ### RULE-1
 **MUST** normalize a CLI's stream output as the selected input whenever that CLI offers a stream.
 **Reason:** The stream is the public, incrementally available contract; it is what a live recorder can persist before the CLI exits.
-Tests: no production recorder exercises this selection yet; `PrefixReplayTest`, `WriterLifecycleTest` replay recorded streams through the same writer entry point.
+Tests: `CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy` (the opt-in launching capture normalizes the CLI's stdout stream; stand-in process), `PrefixReplayTest`, `WriterLifecycleTest` (recorded streams through the same writer entry point). The production default capture modules are unchanged and do not use this writer.
 
 ### RULE-2
 **MUST** import a native session file as the selected input only when it is the only data source the CLI offers.
@@ -29,40 +29,44 @@ Tests: the writer accepts a native session file through the same entry point (`W
 ### RULE-3
 **MUST NOT** treat a missing stream adapter, an unknown CLI version, or a richer native session file as grounds to select the native session file for a streaming CLI.
 **Reason:** Those are implementation gaps or research observations; letting them change the selected input makes the capture boundary depend on adapter maturity instead of on the CLI's offered sources.
+Tests: `UntestedCompatibilityTest#aVersionNoEntryCoversIsRetainedFlaggedAndNotNormalized` (an unknown version keeps the stream as the only source), `CliCaptureTest#aVersionTestedOnAnotherRouteOnlyIsNoMatchRetainedAndFlagged`.
 
 ### RULE-4
 **MUST** archive a streaming CLI's native session file unchanged, with its checksum, as redundancy outside the selected input.
 **Reason:** The archive is the emergency fallback; keeping it byte-identical keeps it trustworthy, and keeping it outside the selected input keeps the preservation denominator honest.
+Tests: `CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy` (archived byte-identical with its sha256, not parsed, not a declared source).
 
 ### RULE-5
 **MUST NOT** parse an archived native session file to supplement, reconcile, deduplicate or enrich a streaming CLI's normalized output, including for final response usage or to discover the CLI version.
 **Reason:** Enrichment reintroduces a second input and silently changes which facts the stream is credited with; the archived file stays available for research without entering `events.jsonl`.
-Tests: `FullOneReviewRegressionTest#omittingAnEntireSourceIsADefectOnEveryObligationOfThatSource` shows the frozen denominator is the selected input; no test yet rejects enrichment from an archive-only file.
+Tests: `CliCaptureTest#theArchiveContentsCannotChangeTheNormalizedStreamOutput` (two runs whose archives differ, one carrying another version and usage, write identical events), `FullOneReviewRegressionTest#omittingAnEntireSourceIsADefectOnEveryObligationOfThatSource` (the frozen denominator is the selected input).
 
 ### RULE-6
 **MUST** record a fact the selected stream does not report as a stated limitation of that source rather than fill it from another artifact.
 **Reason:** A consumer can act on a declared gap; a filled gap hides which source actually reported the value.
+Tests: `StreamLimitationTest` (the Claude stream contract's declared limitations are embedded in the event file and its per-message usage stays provisional); the Codex exec contract declares no such list yet.
 
 ## CLI version and mapping applicability
 
 ### RULE-7
 **MUST** retain the CLI version the stream reports and MUST NOT launch a separate version command when the stream reports one.
 **Reason:** A redundant subprocess costs time, can disagree with the running process, and adds nothing the stream did not already say.
-Tests: `LiveCaptureSeamTest` (launch without a version; `cli_version` declaration from the stream), `OracleFullSourceTest#alteringAReportedSettingOrAddingAnUnreportedOneIsAContextValueDefect`; the capture seam spawns no process.
+Tests: `LiveCaptureSeamTest` (launch without a version; `cli_version` declaration from the stream), `CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy` (no version command for Claude), `OracleFullSourceTest#alteringAReportedSettingOrAddingAnUnreportedOneIsAContextValueDefect`; the capture seam spawns no process.
 
 ### RULE-8
 **MUST** use one documented, adapter-specific discovery path when the selected source reports no version, without repeated probes.
 **Reason:** Codex's tested exec stream carries no version; discovery must be bounded and explicit so it cannot become a hidden dependency on the native session file.
+Tests: `CliCaptureTest#codexVersionIsDiscoveredOnceByTheDocumentedCommandAndTheThreadIdBecomesTheSession`, `CliCaptureLifecycleTest#aHangingVersionProbeIsBoundedAndReported`, `CliCaptureUnitTest#theVersionProbeParsesBothOutputFormsAndRefusesUnrecognizableOutput`, `UntestedCompatibilityTest#aDiscoveredVersionCarriesItsBasis`.
 
 ### RULE-9
 **MUST** retain input that arrives before the version is known, without blocking persistence on mapping selection.
 **Reason:** The first records of a stream are evidence; waiting for a version to choose a mapper would lose them or force a buffer the recorder cannot bound.
-Tests: `LiveCaptureSeamTest` (records before the version is known are persisted; the version is declared when reported), `WriterLifecycleTest#persistedPrefixIsReadableAndQueryableBeforeEof`.
+Tests: `UntestedCompatibilityTest#aSupportedVersionReportedByTheStreamDeclaresThePendingSelectionThenTheTestedOne`, `UntestedCompatibilityTest#factsInterpretedBeforeANoMatchAreDeclaredProvisionalAndNeverCreditedAsSupport`, `UntestedCompatibilityTest#aVersionNeverLearnedLeavesTheSelectionPendingAndUnresolved`, `LiveCaptureSeamTest` (records before the version is known are persisted; the version is declared when reported). Status: retention before selection is implemented. Records read while the version is pending are interpreted provisionally under the profile's mapper, labelled only by the file's `version_unknown` compatibility declaration ("provisionally"); after a no-match they stay in the append-only file and are never credited as support. Whether pending records should be interpreted at all, and how a provisional fact is labelled per event, is an open product decision (RULE-33's partial-normalization proposal); retention does not settle it.
 
 ### RULE-10
 **MUST** select the source description and Java mapper for a source through exactly one explicit compatibility entry naming the CLI, source format or profile, launch route or mode, inclusive minimum and maximum CLI versions, source-description revision, schema, mapper identity and tested evidence, and MUST record that selection with the version and whether the version is within the entry's tested range.
 **Reason:** Recording a version does not implement version-based mapping selection; the file has to say which entry judged it and whether that pairing was ever tested. Overlapping or ambiguous entries are configuration errors, and a description may keep the name of its lowest supported version while a reviewed range grows.
-Tests: `PinsTest#mappingContractsDeclareEveryRuleTheMappersExecute`, `VendorSpecificationsTest` (declared applicability); a registry with explicit ranges and runtime applicability status is not yet implemented.
+Tests: `CompatibilityTest` (exact and range selection, overlap and misconfiguration rejected when the registry loads, each declared status), `UntestedCompatibilityTest#aTestedVersionOnItsRouteIsSelectedAndVerified`, `CompatibilityAndIdentityOracleTest` (the oracle's own check of the declared selection), `PinsTest#mappingContractsDeclareEveryRuleTheMappersExecute`. Status: implemented (`ocsf/compatibility.json`, exact tested entries); the selection-time ambiguity error is unreachable behind the load-time validation.
 
 ## Common model and preservation
 
@@ -131,7 +135,7 @@ Tests: `CodexExecStreamTest#viewsMatchTheIndependentlyAuthoredAnswersAndStateThe
 ### RULE-23
 **MUST NOT** depend on Agent Judge, a model runtime or any network service in the writer or the capture path.
 **Reason:** Requirements are inert data evaluated by tests; capture must work offline and remain free of evaluation tooling.
-Tests: the Agent Judge dependency is test-scoped in `journal-capture-tck/pom.xml`; `journal-ocsf-writer/pom.xml` declares no such dependency.
+Tests: the Agent Judge dependency is test-scoped in `journal-capture-tck/pom.xml` and `journal-ocsf-writer/pom.xml` (the accounting IT); neither module declares an evaluation or model dependency in a runtime scope, which the requirements accounting checks directly.
 
 ## Portable output
 
@@ -159,7 +163,7 @@ Tests: `OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstructi
 ### RULE-28
 **MUST** demonstrate each claimed feature with a committed fixture in which the feature actually occurred and an independent assertion that checks it, and MUST report scenarios without such a fixture as gaps.
 **Reason:** Asking a model to use a feature does not establish that it did; a finite corpus is scoped support, not universal vendor coverage. Schema validity, mutation sensitivity, recorded replay and live capture are different kinds of evidence and none substitutes for another.
-Tests: `CodexExecStreamTest`, `OcsfOracleFixtureTest#sanitizedClaudeStreamWithChildCoreIsJudgedPerCoreWithoutDefect`; interruption and media remain labelled-synthetic or unexercised.
+Tests: `CodexExecStreamTest`, `OcsfOracleFixtureTest#sanitizedClaudeStreamWithChildCoreIsJudgedPerCoreWithoutDefect`, `LiveFixtureFeaturesTest`; interruption is exercised on live cancelled recordings of both CLIs, while media and redacted reasoning remain unexercised.
 
 ### RULE-29
 **MUST** establish acceptance with the independent Java TCK, which MUST NOT call production capture parsers, SDK deserializers or mappers to compute expected values.
@@ -174,7 +178,7 @@ Tests: `FixtureEvidenceClassTest`, `LiveFixtureFeaturesTest#everyFixtureStatesIt
 ### RULE-31
 **MUST** publish only deliberately reviewed and sanitized material as public test data, with a manifest of capture command, CLI version, mode, source, hashes, sanitization and origin.
 **Reason:** Even synthetic prompts produce local paths, account metadata and injected instructions that must not leak.
-Tests: public fixtures under `src/test/resources/ocsf/fixtures/` carry `spec.json` provenance; no automated privacy check exists.
+Tests: `LiveFixtureFeaturesTest#everyFixtureStatesItsEvidenceClassAndLiveOnesCarryProvenance` (every fixture's spec, and each live recording's stream and provenance, carry no local user or session paths; live recordings name their capture command, hashes and sanitization steps). The automated check is narrow: it is not a general privacy review, which stays deliberate.
 
 ### RULE-32
 **MUST** compare the requirement roster parsed by Agent Judge with every intended identifier in these documents, and MUST NOT infer compliance from a successful parse.
@@ -186,6 +190,7 @@ Tests: `RequirementsRosterTest`, `NativeRequirementTest`, `RequirementsEvidenceT
 ### RULE-33
 **MUST** retain and flag as untested any acquired input whose CLI version, source format or launch route matches no compatibility entry, and MUST NOT select the numerically nearest entry or imply support for it.
 **Reason:** Two tested endpoints do not prove every intermediate release and nothing proves a future one; a no-match input is evidence to keep and a gap to report, not a reason to guess a mapper. Any partial untested normalization or strict mode is a separate tested proposal.
+Tests: `UntestedCompatibilityTest`, `CompatibilityTest#outsideEveryRangeOrOffEveryKeyIsNoMatchAndTheNearestEntryIsNotSelected`, `CliCaptureTest#aVersionTestedOnAnotherRouteOnlyIsNoMatchRetainedAndFlagged`, `CompatibilityAndIdentityOracleTest#aNoMatchSelectionIsHonestOnlyWhenNothingAfterItWasNormalizedAndNoEntryIsNamed`.
 
 ### RULE-34
 **MUST** give every meaningful acquired field exactly one disposition: normalized into a portable field, retained in vendor residual or fallback data, omitted under a reviewed and tested redundancy or noise rule, or unresolved with retention; and **MUST** give every field the pinned vendor inventory declares for a supported route a family-specific disposition, whether or not a recording has carried it (unexercised until one does).
@@ -318,5 +323,8 @@ exact-name table. RULE-44 is unchanged; its Tests line names the new independent
 changed meaning: it reuses the declared vocabularies to keep what an artifact is (definition, source inspection, live
 recording, sanitized real stream, synthetic, publisher-normalized corpus) apart from how a check executed it (live,
 replay, synthetic replay), in place of one three-label list that could not represent research evidence. Added RULE-47
-(exact field accounting of the pinned Tier 1 union with proposed exclusions kept visible). No rule removed;
-`RequirementsRosterTest` pins 47 rules.
+(exact field accounting of the pinned Tier 1 union with proposed exclusions kept visible). Annotations only, no
+obligation changed: the Tests lines of RULE-1, RULE-5, RULE-7, RULE-9, RULE-10, RULE-23, RULE-28 and RULE-31 no longer
+describe implemented and tested behaviour as missing; RULE-3, RULE-4, RULE-6, RULE-8 and RULE-33 gain Tests lines.
+RULE-9's status states that pending records are interpreted provisionally today and that whether to interpret them is
+an open decision. No rule removed; `RequirementsRosterTest` pins 47 rules.

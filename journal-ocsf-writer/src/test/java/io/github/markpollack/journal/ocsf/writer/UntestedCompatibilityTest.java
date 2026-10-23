@@ -175,4 +175,93 @@ class UntestedCompatibilityTest {
         assertThat(p.declarations.compatibility("stream.jsonl").get(0).member("version_basis").text()).contains("codex --version");
         assertThat(p.declarations.compatibility("stream.jsonl").get(0).member("status").text()).isEqualTo("tested");
     }
+
+    /**
+     * Version-pending interpretation, supported discovery: with no version at launch the selection is declared
+     * version_unknown before the first record, and repeated as tested once the init record reports 2.1.304; the history
+     * keeps both and states how many records were read before the selection.
+     */
+    @Test
+    void aSupportedVersionReportedByTheStreamDeclaresThePendingSelectionThenTheTestedOne(@TempDir Path work) throws Exception {
+        Path core = work.resolve("core");
+        RunDescriptor d = run(WriterTestSupport.LIVE_FEATURES);
+        RunDescriptor pending = new RunDescriptor(d.runUid(), d.invocationIndex(), d.sessionUid(), d.captureStart(),
+                new RunDescriptor.Cli(d.cli().name(), null, d.cli().vendorName()), d.launchSettings(), d.synthetic());
+        try (OcsfRunWriter w = OcsfRunWriter.open(core, pending, SchemaPin.bundled(), options())) {
+            Replay.feedBytes(w.source(claudeStreamStdout()), nativeOf(WriterTestSupport.LIVE_FEATURES, "stream.jsonl"), 1024, options().clock());
+            w.complete();
+        }
+        OcsfPackage p = open(core);
+        List<Json> history = p.declarations.compatibility("stream.jsonl");
+        assertThat(history).hasSize(2);
+        assertThat(history.get(0).member("status").text()).isEqualTo("version_unknown");
+        assertThat(history.get(0).member("records_before_selection").scalarText()).isEqualTo("0");
+        assertThat(history.get(0).member("normalizes").text()).contains("provisionally");
+        assertThat(history.get(1).member("status").text()).isEqualTo("tested");
+        assertThat(history.get(1).member("entry_id").text()).isEqualTo("claude-code/stream-json/2.1.304-stdout");
+        assertThat(history.get(1).member("records_before_selection").scalarText()).as("the init record that reported the version").isEqualTo("1");
+        OracleReport report = verify(core, nativeDir(work, WriterTestSupport.LIVE_FEATURES, "stream.jsonl", -1));
+        assertThat(report.outcome("source.compatibility", "main/stream.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
+    }
+
+    /**
+     * Version-pending interpretation, then no match: a record that precedes the init record is interpreted provisionally
+     * under the profile's mapper while the version is pending, and the file says so (version_unknown, "provisionally").
+     * When the version then matches no entry, those earlier facts stay in the append-only file, but they are never credited
+     * as support: every normalization family of the source is UNSUPPORTED, the reader warns, and nothing after the
+     * selection is normalized. Whether pending records should be interpreted at all is an open product decision; this
+     * control holds for any choice that keeps today's file.
+     */
+    @Test
+    void factsInterpretedBeforeANoMatchAreDeclaredProvisionalAndNeverCreditedAsSupport(@TempDir Path work) throws Exception {
+        List<String> lines = Files.readAllLines(nativeOf(UNTESTED, "stream.jsonl"), StandardCharsets.UTF_8);
+        String assistant = lines.stream().filter(l -> l.startsWith("{\"type\":\"assistant\"")).findFirst().orElseThrow();
+        List<String> reordered = new java.util.ArrayList<>(lines);
+        reordered.add(0, assistant);
+        Path nat = work.resolve("native");
+        Files.createDirectories(nat);
+        Files.write(nat.resolve("stream.jsonl"), (String.join("\n", reordered) + "\n").getBytes(StandardCharsets.UTF_8));
+        Path core = work.resolve("core");
+        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(UNTESTED), SchemaPin.bundled(), options())) {
+            Replay.feedBytes(w.source(claudeStreamStdout()), nat.resolve("stream.jsonl"), 1024, options().clock());
+            w.complete();
+        }
+        OcsfPackage p = open(core);
+        List<Json> history = p.declarations.compatibility("stream.jsonl");
+        assertThat(history.get(0).member("status").text()).isEqualTo("version_unknown");
+        assertThat(history.get(0).member("normalizes").text()).contains("provisionally");
+        assertThat(history.get(1).member("status").text()).isEqualTo("no_match");
+        assertThat(history.get(1).member("records_before_selection").scalarText()).as("the early assistant record and the init record").isEqualTo("2");
+        assertThat(p.events).as("the pending record was interpreted under the profile's contract").anyMatch(e -> Integer.valueOf(1).equals(e.recordIndex()) && "model_response".equals(e.className));
+        assertThat(p.events).filteredOn(e -> e.recordIndex() != null && e.recordIndex() > 2).allMatch(e -> "source_record".equals(e.className));
+        assertThat(p.diagnosticsWithCode("COMPATIBILITY_NO_MATCH")).hasSize(1);
+        OracleReport report = verify(core, nat);
+        assertThat(report.outcome("source.compatibility", "main/stream.jsonl")).isEqualTo(Check.Outcome.UNSUPPORTED);
+        assertThat(report.outcome("response.values", "main/stream.jsonl")).as("provisional facts are not credited").isEqualTo(Check.Outcome.UNSUPPORTED);
+        assertThat(report.checks()).as("no normalization of this source is verified support").noneMatch(c -> "main/stream.jsonl".equals(c.owner()) && c.outcome() == Check.Outcome.VERIFIED
+                && (c.property().startsWith("response.") || c.property().startsWith("request.") || c.property().startsWith("usage.") || c.property().startsWith("context.")));
+    }
+
+    /**
+     * A version that is never learned (a Codex exec replay without the launch probe's version): the selection stays
+     * version_unknown to the end, and the independent oracle reports the source's compatibility UNRESOLVED rather than
+     * tested, whatever the provisional facts' values.
+     */
+    @Test
+    void aVersionNeverLearnedLeavesTheSelectionPendingAndUnresolved(@TempDir Path work) throws Exception {
+        Path core = work.resolve("core");
+        RunDescriptor d = run(WriterTestSupport.CODEX_STREAM);
+        RunDescriptor pending = new RunDescriptor(d.runUid(), d.invocationIndex(), d.sessionUid(), d.captureStart(),
+                new RunDescriptor.Cli(d.cli().name(), null, d.cli().vendorName()), d.launchSettings(), d.synthetic());
+        try (OcsfRunWriter w = OcsfRunWriter.open(core, pending, SchemaPin.bundled(), options())) {
+            Replay.feedRecords(w.source(WriterTestSupport.codexStream()), nativeOf(WriterTestSupport.CODEX_STREAM, "stream.jsonl"), options().clock());
+            w.complete();
+        }
+        OcsfPackage p = open(core);
+        List<Json> history = p.declarations.compatibility("stream.jsonl");
+        assertThat(history).hasSize(1);
+        assertThat(history.get(0).member("status").text()).isEqualTo("version_unknown");
+        OracleReport report = verify(core, nativeDir(work, WriterTestSupport.CODEX_STREAM, "stream.jsonl", -1));
+        assertThat(report.outcome("source.compatibility", "main/stream.jsonl")).isEqualTo(Check.Outcome.UNRESOLVED);
+    }
 }
