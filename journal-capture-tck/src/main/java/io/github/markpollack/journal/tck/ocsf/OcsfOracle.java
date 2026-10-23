@@ -1325,13 +1325,7 @@ public final class OcsfOracle {
                 problems.add(key + " components[] has no entry for " + b.getKey() + " (expected basis " + b.getValue() + ")");
                 continue;
             }
-            stated(key + " " + b.getKey() + " component_basis_id", b.getValue(), Event.integer(c.member("component_basis_id")), problems);
-            stated(key + " " + b.getKey() + " measurement_status_id", t.statuses().get(b.getKey()), Event.integer(c.member("measurement_status_id")), problems);
-            Json conditional = c.member("conditional_value");
-            Json wantConditional = t.conditionals().get(b.getKey());
-            stated(key + " " + b.getKey() + " conditional_value", wantConditional == null ? null : wantConditional.scalarText(),
-                    conditional == null ? null : conditional.scalarText(), problems);
-            stated(key + " " + b.getKey() + " native_pointers", t.pointers().get(b.getKey()), texts(c.member("native_pointers")), problems);
+            componentStatement(key + " " + b.getKey(), b.getKey(), b.getValue(), t, c, problems);
             if (b.getValue() == TrancheReading.UNAVAILABLE && o.member(b.getKey()) != null) {
                 problems.add(key + " " + b.getKey() + " present although the source does not establish it");
             }
@@ -1339,6 +1333,19 @@ public final class OcsfOracle {
         if (!entries.isEmpty()) {
             problems.add(key + " components[] states " + entries.keySet() + ", which the source does not report");
         }
+    }
+
+    /**
+     * One component entry against the profile's reading: its basis, what the source establishes about its quantity, a
+     * conditional formula result kept apart from the canonical value, and the native pointers it is read from.
+     */
+    private static void componentStatement(String what, String name, Integer basis, ExpectedFacts.Tranches t, Json c, List<String> problems) {
+        stated(what + " component_basis_id", basis, Event.integer(c.member("component_basis_id")), problems);
+        stated(what + " measurement_status_id", t.statuses().get(name), Event.integer(c.member("measurement_status_id")), problems);
+        Json conditional = c.member("conditional_value");
+        Json wantConditional = t.conditionals().get(name);
+        stated(what + " conditional_value", wantConditional == null ? null : wantConditional.scalarText(), conditional == null ? null : conditional.scalarText(), problems);
+        stated(what + " native_pointers", t.pointers().get(name), texts(c.member("native_pointers")), problems);
     }
 
     /** The strings of a JSON array, in order (empty when absent). */
