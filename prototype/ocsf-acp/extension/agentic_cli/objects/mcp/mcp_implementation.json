@@ -1,0 +1,40 @@
+{
+  "caption": "MCP Implementation",
+  "description": "Describes the MCP implementation. Generated from the pinned MCP schema (2025-11-25 Implementation; 2026-07-28 Implementation).",
+  "extends": "object",
+  "name": "mcp_implementation",
+  "attributes": {
+    "mcp_description": {
+      "description": "MCP member `description`: An optional human-readable description of what this implementation does.\n\nThis can be used by clients or servers to provide context about their purpose\nand capabilities. For example, a server might describe the types of resources\nor tools it provides, while a client might describe its intended use case.",
+      "requirement": "optional"
+    },
+    "mcp_icon_list": {
+      "description": "MCP member `icons`: Optional set of sized icons that the client can display in a user interface.\n\nClients that support rendering icons MUST support at least the following MIME types:\n- `image/png` - PNG images (safe, universal compatibility)\n- `image/jpeg` (and `image/jpg`) - JPEG images (safe, universal compatibility)\n\nClients that support rendering icons SHOULD also support:\n- `image/svg+xml` - SVG images (scalable but requires security precautions)\n- `image/webp` - WebP images (modern, efficient format)",
+      "requirement": "optional"
+    },
+    "mcp_name": {
+      "description": "MCP member `name` (required by the protocol): Intended for programmatic or logical use, but used as a display name in past specs or fallback (if title isn't present).",
+      "requirement": "optional"
+    },
+    "mcp_title": {
+      "description": "MCP member `title`: Intended for UI and end-user contexts — optimized to be human-readable and easily understood,\neven by those unfamiliar with domain-specific terminology.\n\nIf not provided, the name should be used for display (except for Tool,\nwhere `annotations.title` should be given precedence over using `name`,\nif present).",
+      "requirement": "optional"
+    },
+    "mcp_version": {
+      "description": "MCP member `version` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_website_url": {
+      "description": "MCP member `websiteUrl`: An optional URL of the website for this implementation.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

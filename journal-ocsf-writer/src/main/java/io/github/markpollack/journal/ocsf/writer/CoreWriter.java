@@ -89,6 +89,7 @@ final class CoreWriter {
     private final Map<String, Integer> amendments = new LinkedHashMap<>();
     private final Set<String> declaredTypes = new LinkedHashSet<>();
     private final Set<String> declaredSources = new LinkedHashSet<>();
+    private final ProtocolDeclarations protocols = new ProtocolDeclarations();
     private long declarationBytes;
     private final MessageDigest declarationDigest;
 
@@ -230,6 +231,7 @@ final class CoreWriter {
         if (event.get("session_uid") instanceof Jv.Str s) {
             declareSession(s.value());
         }
+        protocols.declareFor(event, this::declare);
         Integer classUid = event.get("class_uid") instanceof Jv.Num n ? (int) n.value().longValueExact() : null;
         String className = null;
         for (Map.Entry<String, Integer> c : context.pin().classUids().entrySet()) {

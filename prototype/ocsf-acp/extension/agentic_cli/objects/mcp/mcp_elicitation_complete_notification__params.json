@@ -1,0 +1,20 @@
+{
+  "caption": "MCP Elicitation Complete Notification Params",
+  "description": "MCP Elicitation Complete Notification Params. Generated from the pinned MCP schema (2025-11-25 ElicitationCompleteNotification.params).",
+  "extends": "object",
+  "name": "mcp_elicitation_complete_notification__params",
+  "attributes": {
+    "mcp_elicitation_id": {
+      "description": "MCP member `elicitationId` (required by the protocol): The ID of the elicitation that completed.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

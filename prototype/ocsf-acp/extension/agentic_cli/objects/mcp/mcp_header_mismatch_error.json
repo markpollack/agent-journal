@@ -1,0 +1,28 @@
+{
+  "caption": "MCP Header Mismatch Error",
+  "description": "Returned when a server rejects a request because the values in the HTTP\nheaders do not match the corresponding values in the request body, or\nbecause required headers are missing or malformed. For HTTP, the response\nstatus code MUST be `400 Bad Request`. Generated from the pinned MCP schema (2026-07-28 HeaderMismatchError).",
+  "extends": "object",
+  "name": "mcp_header_mismatch_error",
+  "attributes": {
+    "mcp_header_mismatch_error__error": {
+      "description": "MCP member `error` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_id_json": {
+      "description": "MCP member `id`.",
+      "requirement": "optional"
+    },
+    "mcp_jsonrpc": {
+      "description": "MCP member `jsonrpc` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

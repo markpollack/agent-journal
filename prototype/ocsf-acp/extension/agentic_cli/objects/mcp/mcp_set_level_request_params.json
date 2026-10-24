@@ -1,0 +1,24 @@
+{
+  "caption": "MCP Set Level Request Params",
+  "description": "Parameters for a `logging/setLevel` request. Generated from the pinned MCP schema (2025-11-25 SetLevelRequestParams).",
+  "extends": "object",
+  "name": "mcp_set_level_request_params",
+  "attributes": {
+    "mcp_set_level_request_params__meta": {
+      "description": "MCP member `_meta`: See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_level": {
+      "description": "MCP member `level` (required by the protocol): The level of logging that the client wants to receive from the server. The server should send all logs at this level and higher (i.e., more severe) to the client as notifications/message.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

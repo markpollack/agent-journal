@@ -19,6 +19,10 @@
         "3": {
           "caption": "Accounting reported",
           "description": "A record reporting session- or response-scope usage or cost accounting was observed."
+        },
+        "4": {
+          "caption": "Outcome reported",
+          "description": "The CLI reports how its run or session ended (an exit code, a lifecycle state, a cancellation flag) in its own record. It is the CLI's report, kept apart from Journal's observation of the process."
         }
       }
     },
@@ -77,6 +81,33 @@
       "group": "primary",
       "requirement": "recommended",
       "description": "The mapping rule that classified this record."
+    },
+    "mcp": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "tool_definitions": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "cost_observations": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "exit_code": {
+      "description": "The exit code the CLI reports in its own outcome record (Outcome reported); Journal's observation of the process is declared separately.",
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "reported_state": {
+      "description": "The outcome or lifecycle state exactly as the source reports it.",
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "assembly": {
+      "description": "Present in a finally assembled file: this event's assembly role and evidence.",
+      "group": "context",
+      "requirement": "optional"
     },
     "data": {
       "group": "context",

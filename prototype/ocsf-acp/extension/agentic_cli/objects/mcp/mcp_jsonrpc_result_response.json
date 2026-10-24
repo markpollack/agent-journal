@@ -1,0 +1,28 @@
+{
+  "caption": "MCP Jsonrpc Result Response",
+  "description": "A successful (non-error) response to a request. Generated from the pinned MCP schema (2025-11-25 JSONRPCResultResponse; 2026-07-28 JSONRPCResultResponse).",
+  "extends": "object",
+  "name": "mcp_jsonrpc_result_response",
+  "attributes": {
+    "mcp_id_json": {
+      "description": "MCP member `id` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_jsonrpc": {
+      "description": "MCP member `jsonrpc` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_result": {
+      "description": "MCP member `result` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "caption": "MCP Primitive Schema Definition",
+  "description": "Restricted schema definitions that only allow primitive types\nwithout nested objects or arrays. Generated from the pinned MCP schema (2025-11-25 PrimitiveSchemaDefinition; 2026-07-28 PrimitiveSchemaDefinition).",
+  "extends": "object",
+  "name": "mcp_primitive_schema_definition",
+  "attributes": {
+    "mcp_string_schema": {
+      "description": "The value when it is the alternative StringSchema.",
+      "requirement": "optional"
+    },
+    "mcp_number_schema": {
+      "description": "The value when it is the alternative NumberSchema.",
+      "requirement": "optional"
+    },
+    "mcp_boolean_schema": {
+      "description": "The value when it is the alternative BooleanSchema.",
+      "requirement": "optional"
+    },
+    "mcp_untitled_single_select_enum_schema": {
+      "description": "The value when it is the alternative UntitledSingleSelectEnumSchema.",
+      "requirement": "optional"
+    },
+    "mcp_titled_single_select_enum_schema": {
+      "description": "The value when it is the alternative TitledSingleSelectEnumSchema.",
+      "requirement": "optional"
+    },
+    "mcp_untitled_multi_select_enum_schema": {
+      "description": "The value when it is the alternative UntitledMultiSelectEnumSchema.",
+      "requirement": "optional"
+    },
+    "mcp_titled_multi_select_enum_schema": {
+      "description": "The value when it is the alternative TitledMultiSelectEnumSchema.",
+      "requirement": "optional"
+    },
+    "mcp_legacy_titled_enum_schema": {
+      "description": "The value when it is the alternative LegacyTitledEnumSchema.",
+      "requirement": "optional"
+    },
+    "mcp_unresolved": {
+      "description": "The value exactly as reported when no single alternative matches it by its constant and required members.",
+      "requirement": "optional"
+    }
+  }
+}

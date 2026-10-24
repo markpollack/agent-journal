@@ -1,0 +1,20 @@
+{
+  "caption": "MCP Elicit Request Params",
+  "description": "The parameters for a request to elicit additional information from the user via the client. Generated from the pinned MCP schema (2025-11-25 ElicitRequestParams; 2026-07-28 ElicitRequestParams).",
+  "extends": "object",
+  "name": "mcp_elicit_request_params",
+  "attributes": {
+    "mcp_elicit_request_url_params": {
+      "description": "The value when it is the alternative ElicitRequestURLParams.",
+      "requirement": "optional"
+    },
+    "mcp_elicit_request_form_params": {
+      "description": "The value when it is the alternative ElicitRequestFormParams.",
+      "requirement": "optional"
+    },
+    "mcp_unresolved": {
+      "description": "The value exactly as reported when no single alternative matches it by its constant and required members.",
+      "requirement": "optional"
+    }
+  }
+}

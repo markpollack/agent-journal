@@ -77,6 +77,7 @@ final class CodexStreamProfile implements SourceProfile {
             return true;
         }
         if (TOOL_ITEMS.contains(itemType)) {
+            McpReadings.codex(f, index, item, started);
             if (started) {
                 f.requests.add(request(index, itemType, item));
             }

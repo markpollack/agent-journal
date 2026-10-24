@@ -1,0 +1,24 @@
+{
+  "caption": "MCP Input Request",
+  "description": "MCP Input Request. Generated from the pinned MCP schema (2026-07-28 InputRequest).",
+  "extends": "object",
+  "name": "mcp_input_request",
+  "attributes": {
+    "mcp_create_message_request": {
+      "description": "The value when it is the alternative CreateMessageRequest.",
+      "requirement": "optional"
+    },
+    "mcp_list_roots_request": {
+      "description": "The value when it is the alternative ListRootsRequest.",
+      "requirement": "optional"
+    },
+    "mcp_elicit_request": {
+      "description": "The value when it is the alternative ElicitRequest.",
+      "requirement": "optional"
+    },
+    "mcp_unresolved": {
+      "description": "The value exactly as reported when no single alternative matches it by its constant and required members.",
+      "requirement": "optional"
+    }
+  }
+}

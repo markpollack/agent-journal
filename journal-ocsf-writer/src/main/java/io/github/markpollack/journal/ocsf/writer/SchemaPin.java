@@ -24,7 +24,7 @@ import java.util.TreeMap;
 public final class SchemaPin {
 
     public static final String EXTENSION = "agentic_cli";
-    public static final String BUNDLED_EXCERPT = "/ocsf/compiled-excerpt-agentic_cli-0.10.0-prototype.json";
+    public static final String BUNDLED_EXCERPT = "/ocsf/compiled-excerpt-agentic_cli-0.11.0-prototype.json";
 
     /** One written class as the compiled schema defines it. */
     public record ClassDef(String name, String caption, int classUid, int categoryUid, String categoryName, Map<String, String> activities) {
@@ -150,17 +150,38 @@ public final class SchemaPin {
 
     // ------------------------------------------------------------------------------------------ extension source
 
-    /** The files of the extension source, bundled under {@code ocsf/extension/<name>/}. */
-    public static final List<String> EXTENSION_SOURCE_FILES = List.of(
+    /** The hand-written files of the extension source, bundled under {@code ocsf/extension/<name>/}. */
+    public static final List<String> AUTHORED_SOURCE_FILES = List.of(
             "categories.json", "dictionary.json", "extension.json",
             "events/agent_execution/model_response.json", "events/agent_execution/prompt_turn.json",
             "events/agent_execution/session_context.json", "events/agent_execution/source_record.json",
             "events/agent_execution/tool_call.json",
-            "objects/attribution.json", "objects/cache_write_tier.json", "objects/cli_agent.json", "objects/content_block.json", "objects/cost_observation.json",
-            "objects/journal_provenance.json", "objects/model_ref.json", "objects/operation.json", "objects/permission_decision.json",
-            "objects/session_settings.json", "objects/source_ref.json", "objects/tool_result.json", "objects/usage_component.json", "objects/usage_observation.json");
+            "objects/assembly_conflict.json", "objects/assembly_record.json", "objects/attribution.json", "objects/cache_write_tier.json",
+            "objects/cli_agent.json", "objects/content_block.json", "objects/cost_observation.json", "objects/error_info.json",
+            "objects/field_evidence.json", "objects/journal_provenance.json", "objects/json_schema.json", "objects/mcp_observation.json",
+            "objects/model_ref.json", "objects/observation_ref.json", "objects/operation.json", "objects/permission_decision.json",
+            "objects/session_settings.json", "objects/source_ref.json", "objects/tool_definition.json", "objects/tool_result.json",
+            "objects/usage_component.json", "objects/usage_observation.json");
 
-    /** Reads the bundled extension source; fills {@code files} (path to parsed document) and returns the source hash. */
+    /**
+     * Every file of the extension source: the authored files plus the MCP protocol objects {@link McpBindingGenerator}
+     * generated, which the bundled binding lists.
+     */
+    public static final List<String> EXTENSION_SOURCE_FILES = sourceFiles();
+
+    private static List<String> sourceFiles() {
+        List<String> all = new java.util.ArrayList<>(AUTHORED_SOURCE_FILES);
+        for (Jv f : McpBinding.bundled().document().member("extension_files").elements()) {
+            all.add(f.text());
+        }
+        return List.copyOf(all);
+    }
+
+    /**
+     * Reads the bundled extension source and returns the hash over every file's path and bytes. {@code files} receives
+     * each authored file parsed and, for each generated MCP protocol object, its sha256 and generator (the generated
+     * files are reproducible from the pinned MCP schemas and the binding, so the ancillary manifest names them by hash).
+     */
     public static String extensionSource(Map<String, Jv> files) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -172,7 +193,8 @@ public final class SchemaPin {
                     byte[] bytes = in.readAllBytes();
                     digest.update(rel.getBytes(StandardCharsets.UTF_8));
                     digest.update(bytes);
-                    files.put(rel, Jv.parse(new String(bytes, StandardCharsets.UTF_8)));
+                    files.put(rel, AUTHORED_SOURCE_FILES.contains(rel) ? Jv.parse(new String(bytes, StandardCharsets.UTF_8))
+                            : new Jv.Obj().put("generated_by", McpBindingGenerator.class.getSimpleName()).put("sha256", sha256(bytes)));
                 }
             }
             return HexFormat.of().formatHex(digest.digest());

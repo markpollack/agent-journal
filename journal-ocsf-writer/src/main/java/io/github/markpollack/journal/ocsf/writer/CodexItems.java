@@ -85,7 +85,35 @@ final class CodexItems {
             out.put("error_reported", "failed".equals(state));
         }
         Jv structured = res.member("structured_content");
+        if ("failed".equals(state) || it.member("error") instanceof Jv.Obj) {
+            out.put("errors", McpObservations.errors(McpObservations.error(3, null, text(it, "error", "message"), it.member("error") instanceof Jv.Obj e ? e : null,
+                    "codex.stream.mcp_error.v1: item.status failed or item.error reported by the CLI; whether the server returned isError or a JSON-RPC error is not reported")));
+        }
         return structured == null || structured.isNull() ? out : out.put("structured_result", structured);
+    }
+
+    /**
+     * codex.stream.mcp.v1: an MCP call's addressed server and tool are the item's own reported members (basis 1) and its
+     * arguments are the target's own (pointer "", when reported and not null); the started item projects CallToolRequestParams {name, arguments}, the
+     * completed item CallToolResult {content, structuredContent} as the CLI reports them (structured_content renamed by the
+     * CLI; null is not reported). isError, request ids and the protocol revision are not reported and never synthesized.
+     */
+    static Jv.Obj mcp(Jv it, boolean started) {
+        Jv arguments = it.member("arguments") == null || it.member("arguments").isNull() ? null : it.member("arguments");
+        Jv.Obj mcp = McpObservations.target(text(it, "server"), McpObservations.REPORTED_MEMBERS, text(it, "tool"), McpObservations.REPORTED_MEMBERS,
+                arguments == null ? null : "", "codex.stream.mcp.v1: item.server and item.tool are the call's own members; the negotiated protocol revision is not reported");
+        if (started) {
+            return McpObservations.project(mcp, McpObservations.PROJECTION_BINDING, "CallToolRequestParams",
+                    McpObservations.members("name", it.member("tool"), "arguments", arguments),
+                    "item.tool as name and item.arguments (null not reported) as arguments, as the exec stream reports them");
+        }
+        if (!(it.member("result") instanceof Jv.Obj res)) {
+            return mcp;
+        }
+        Jv structured = res.member("structured_content");
+        return McpObservations.project(mcp, McpObservations.PROJECTION_BINDING, "CallToolResult",
+                McpObservations.members("content", res.member("content"), "structuredContent", structured == null || structured.isNull() ? null : structured),
+                "item.result.content as content and item.result.structured_content (renamed by the CLI; null not reported) as structuredContent; isError is not reported");
     }
 
     /**

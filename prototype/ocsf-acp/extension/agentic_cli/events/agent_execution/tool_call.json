@@ -121,6 +121,15 @@
       "group": "primary",
       "requirement": "optional"
     },
+    "mcp": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "assembly": {
+      "description": "Present in a finally assembled file: this event's assembly role and evidence.",
+      "group": "context",
+      "requirement": "optional"
+    },
     "data": {
       "description": "Native record fields not represented elsewhere on the event (residual).",
       "group": "context",

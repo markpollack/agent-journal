@@ -1,0 +1,44 @@
+{
+  "caption": "MCP Untitled Multi Select Enum Schema",
+  "description": "Schema for multiple-selection enumeration without display titles for options. Generated from the pinned MCP schema (2025-11-25 UntitledMultiSelectEnumSchema; 2026-07-28 UntitledMultiSelectEnumSchema).",
+  "extends": "object",
+  "name": "mcp_untitled_multi_select_enum_schema",
+  "attributes": {
+    "mcp_default_string_list": {
+      "description": "MCP member `default`: Optional default value.",
+      "requirement": "optional"
+    },
+    "mcp_description": {
+      "description": "MCP member `description`: Optional description for the enum field.",
+      "requirement": "optional"
+    },
+    "mcp_untitled_multi_select_enum_schema__items": {
+      "description": "MCP member `items` (required by the protocol): Schema for the array items.",
+      "requirement": "optional"
+    },
+    "mcp_max_items": {
+      "description": "MCP member `maxItems`: Maximum number of items to select.",
+      "requirement": "optional"
+    },
+    "mcp_min_items": {
+      "description": "MCP member `minItems`: Minimum number of items to select.",
+      "requirement": "optional"
+    },
+    "mcp_title": {
+      "description": "MCP member `title`: Optional title for the enum field.",
+      "requirement": "optional"
+    },
+    "mcp_type": {
+      "description": "MCP member `type` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

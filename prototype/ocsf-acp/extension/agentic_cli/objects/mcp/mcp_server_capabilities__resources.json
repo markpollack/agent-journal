@@ -1,0 +1,24 @@
+{
+  "caption": "MCP Server Capabilities Resources",
+  "description": "Present if the server offers any resources to read. Generated from the pinned MCP schema (2025-11-25 ServerCapabilities.resources; 2026-07-28 ServerCapabilities.resources).",
+  "extends": "object",
+  "name": "mcp_server_capabilities__resources",
+  "attributes": {
+    "mcp_list_changed": {
+      "description": "MCP member `listChanged`: Whether this server supports notifications for changes to the resource list.",
+      "requirement": "optional"
+    },
+    "mcp_subscribe": {
+      "description": "MCP member `subscribe`: Whether this server supports subscribing to resource updates.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

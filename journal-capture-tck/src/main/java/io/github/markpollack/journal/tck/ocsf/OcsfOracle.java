@@ -43,8 +43,8 @@ public final class OcsfOracle {
             "population.results", "result.owner", "result.values", "population.responses", "response.values", "population.prompts",
             "prompt.values", "population.usage", "usage.values", "population.cost", "cost.values", "population.decisions", "decision.values",
             "population.operations", "operation.values", "population.turn_completed", "turn.values", "population.turn_started",
-            "turn_started.values", "population.contexts", "context.values", "time.basis", "identity.values", "reconstruction.coverage",
-            "reconstruction.structure_value");
+            "turn_started.values", "population.contexts", "context.values", "population.mcp", "mcp.values", "population.tool_errors", "tool_error.values", "time.basis", "identity.values",
+            "reconstruction.coverage", "reconstruction.structure_value");
 
     private final OracleReport report = new OracleReport();
     private final Path nativeDir;
@@ -256,7 +256,7 @@ public final class OcsfOracle {
                 for (String p : List.of("population.requests", "request.values", "population.results", "result.owner", "result.values", "population.responses", "response.values",
                         "population.prompts", "prompt.values", "population.usage", "usage.values", "population.cost", "cost.values", "population.decisions", "decision.values",
                         "population.operations", "operation.values", "population.turn_completed", "turn.values", "population.turn_started", "turn_started.values",
-                        "population.contexts", "context.values")) {
+                        "population.contexts", "context.values", "population.mcp", "mcp.values", "population.tool_errors", "tool_error.values")) {
                     report.add(Category.NORMALIZATION, p, owner, Outcome.UNSUPPORTED, families);
                 }
                 report.add(Category.EXPLANATION, "time.basis", owner, Outcome.UNSUPPORTED,
@@ -277,6 +277,8 @@ public final class OcsfOracle {
                 turns(owed, events, owner);
                 started(owed, events, owner);
                 contexts(owed, events, owner);
+                mcp(owed, events, owner, core);
+                toolErrors(owed, events, owner);
                 time(owed, events, owner);
                 identity(owed, events, owner);
             }
@@ -1083,6 +1085,37 @@ public final class OcsfOracle {
             }
         }
         valueCheck("request.values", owner, examined, problems, representation);
+    }
+
+    /** MCP targets and projections (RULE-53): the profile's reading, the file's declared binding, the pinned definition. */
+    private void mcp(ExpectedFacts facts, List<Event> events, String owner, OcsfPackage core) {
+        populationCheck("population.mcp", owner, McpChecks.expectedKeys(facts), McpChecks.actualKeys(events));
+        Map<String, McpProtocol.Binding> bindings = McpProtocol.fromDeclarations(core.declarations);
+        List<String> problems = new ArrayList<>();
+        int examined = 0;
+        for (ExpectedFacts.Mcp m : facts.mcp) {
+            Event e = McpChecks.find(events, m.recordIndex(), m.id(), m.activityId());
+            if (e != null && e.get("mcp") != null) {
+                examined++;
+                problems.addAll(McpChecks.compare(m, e, bindings));
+            }
+        }
+        valueCheck("mcp.values", owner, examined, problems, null);
+    }
+
+    /** Errors reported for tool results, each with the layer that reported it (JSON-RPC, tool result, CLI, process, capture). */
+    private void toolErrors(ExpectedFacts facts, List<Event> events, String owner) {
+        populationCheck("population.tool_errors", owner, McpChecks.expectedErrorKeys(facts), McpChecks.actualErrorKeys(events));
+        List<String> problems = new ArrayList<>();
+        int examined = 0;
+        for (ExpectedFacts.ToolError t : facts.toolErrors) {
+            Event e = find(events, "tool_call", 2, t.recordIndex(), "tool_call_uid", t.id());
+            if (e != null) {
+                examined++;
+                problems.addAll(McpChecks.compareError(t, e));
+            }
+        }
+        valueCheck("tool_error.values", owner, examined, problems, null);
     }
 
     /** The kind the package's own embedded contract table assigns to a tool name (shared declarative data). */

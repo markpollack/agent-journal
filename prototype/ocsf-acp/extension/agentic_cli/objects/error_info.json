@@ -1,0 +1,28 @@
+{
+  "caption": "Error Information",
+  "description": "One reported error with the layer that reported it: a JSON-RPC protocol error response, a tool result that reports an error (MCP isError), a failure the CLI reports for a tool call, a CLI or process failure, or Journal's own capture failure. The layers stay distinct; an absent error is not a success and an absent isError is not false.",
+  "extends": "object",
+  "name": "error_info",
+  "attributes": {
+    "error_layer_id": {
+      "requirement": "required"
+    },
+    "error_layer": {
+      "requirement": "optional"
+    },
+    "error_code": {
+      "requirement": "optional"
+    },
+    "message": {
+      "description": "The error message exactly as reported.",
+      "requirement": "optional"
+    },
+    "data": {
+      "description": "Error data exactly as reported.",
+      "requirement": "optional"
+    },
+    "basis": {
+      "requirement": "optional"
+    }
+  }
+}

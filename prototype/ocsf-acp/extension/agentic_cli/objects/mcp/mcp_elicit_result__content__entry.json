@@ -1,0 +1,16 @@
+{
+  "caption": "MCP Elicit Result Content Entry",
+  "description": "The submitted form data, only present when action is \"accept\" and mode was \"form\".\nContains values matching the requested schema.\nOmitted for out-of-band mode responses. Generated from the pinned MCP schema (2025-11-25 ElicitResult.content; 2026-07-28 ElicitResult.content).",
+  "extends": "object",
+  "name": "mcp_elicit_result__content__entry",
+  "attributes": {
+    "mcp_key": {
+      "description": "The map key exactly as reported.",
+      "requirement": "required"
+    },
+    "mcp_elicit_result__content__value": {
+      "description": "The value under the key.",
+      "requirement": "optional"
+    }
+  }
+}

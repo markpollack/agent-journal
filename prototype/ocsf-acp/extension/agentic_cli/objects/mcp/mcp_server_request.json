@@ -1,0 +1,44 @@
+{
+  "caption": "MCP Server Request",
+  "description": "MCP Server Request. Generated from the pinned MCP schema (2025-11-25 ServerRequest).",
+  "extends": "object",
+  "name": "mcp_server_request",
+  "attributes": {
+    "mcp_ping_request": {
+      "description": "The value when it is the alternative PingRequest.",
+      "requirement": "optional"
+    },
+    "mcp_get_task_request": {
+      "description": "The value when it is the alternative GetTaskRequest.",
+      "requirement": "optional"
+    },
+    "mcp_get_task_payload_request": {
+      "description": "The value when it is the alternative GetTaskPayloadRequest.",
+      "requirement": "optional"
+    },
+    "mcp_cancel_task_request": {
+      "description": "The value when it is the alternative CancelTaskRequest.",
+      "requirement": "optional"
+    },
+    "mcp_list_tasks_request": {
+      "description": "The value when it is the alternative ListTasksRequest.",
+      "requirement": "optional"
+    },
+    "mcp_create_message_request": {
+      "description": "The value when it is the alternative CreateMessageRequest.",
+      "requirement": "optional"
+    },
+    "mcp_list_roots_request": {
+      "description": "The value when it is the alternative ListRootsRequest.",
+      "requirement": "optional"
+    },
+    "mcp_elicit_request": {
+      "description": "The value when it is the alternative ElicitRequest.",
+      "requirement": "optional"
+    },
+    "mcp_unresolved": {
+      "description": "The value exactly as reported when no single alternative matches it by its constant and required members.",
+      "requirement": "optional"
+    }
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "caption": "MCP Client Request",
+  "description": "MCP Client Request. Generated from the pinned MCP schema (2025-11-25 ClientRequest; 2026-07-28 ClientRequest).",
+  "extends": "object",
+  "name": "mcp_client_request",
+  "attributes": {
+    "mcp_initialize_request": {
+      "description": "The value when it is the alternative InitializeRequest.",
+      "requirement": "optional"
+    },
+    "mcp_ping_request": {
+      "description": "The value when it is the alternative PingRequest.",
+      "requirement": "optional"
+    },
+    "mcp_list_resources_request": {
+      "description": "The value when it is the alternative ListResourcesRequest.",
+      "requirement": "optional"
+    },
+    "mcp_list_resource_templates_request": {
+      "description": "The value when it is the alternative ListResourceTemplatesRequest.",
+      "requirement": "optional"
+    },
+    "mcp_read_resource_request": {
+      "description": "The value when it is the alternative ReadResourceRequest.",
+      "requirement": "optional"
+    },
+    "mcp_subscribe_request": {
+      "description": "The value when it is the alternative SubscribeRequest.",
+      "requirement": "optional"
+    },
+    "mcp_unsubscribe_request": {
+      "description": "The value when it is the alternative UnsubscribeRequest.",
+      "requirement": "optional"
+    },
+    "mcp_list_prompts_request": {
+      "description": "The value when it is the alternative ListPromptsRequest.",
+      "requirement": "optional"
+    },
+    "mcp_get_prompt_request": {
+      "description": "The value when it is the alternative GetPromptRequest.",
+      "requirement": "optional"
+    },
+    "mcp_list_tools_request": {
+      "description": "The value when it is the alternative ListToolsRequest.",
+      "requirement": "optional"
+    },
+    "mcp_call_tool_request": {
+      "description": "The value when it is the alternative CallToolRequest.",
+      "requirement": "optional"
+    },
+    "mcp_get_task_request": {
+      "description": "The value when it is the alternative GetTaskRequest.",
+      "requirement": "optional"
+    },
+    "mcp_get_task_payload_request": {
+      "description": "The value when it is the alternative GetTaskPayloadRequest.",
+      "requirement": "optional"
+    },
+    "mcp_cancel_task_request": {
+      "description": "The value when it is the alternative CancelTaskRequest.",
+      "requirement": "optional"
+    },
+    "mcp_list_tasks_request": {
+      "description": "The value when it is the alternative ListTasksRequest.",
+      "requirement": "optional"
+    },
+    "mcp_set_level_request": {
+      "description": "The value when it is the alternative SetLevelRequest.",
+      "requirement": "optional"
+    },
+    "mcp_complete_request": {
+      "description": "The value when it is the alternative CompleteRequest.",
+      "requirement": "optional"
+    },
+    "mcp_discover_request": {
+      "description": "The value when it is the alternative DiscoverRequest.",
+      "requirement": "optional"
+    },
+    "mcp_subscriptions_listen_request": {
+      "description": "The value when it is the alternative SubscriptionsListenRequest.",
+      "requirement": "optional"
+    },
+    "mcp_unresolved": {
+      "description": "The value exactly as reported when no single alternative matches it by its constant and required members.",
+      "requirement": "optional"
+    }
+  }
+}

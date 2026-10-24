@@ -1,0 +1,20 @@
+{
+  "caption": "MCP Complete Request Params Ref",
+  "description": "MCP Complete Request Params Ref. Generated from the pinned MCP schema (2025-11-25 CompleteRequestParams.ref; 2026-07-28 CompleteRequestParams.ref).",
+  "extends": "object",
+  "name": "mcp_complete_request_params__ref",
+  "attributes": {
+    "mcp_prompt_reference": {
+      "description": "The value when it is the alternative PromptReference.",
+      "requirement": "optional"
+    },
+    "mcp_resource_template_reference": {
+      "description": "The value when it is the alternative ResourceTemplateReference.",
+      "requirement": "optional"
+    },
+    "mcp_unresolved": {
+      "description": "The value exactly as reported when no single alternative matches it by its constant and required members.",
+      "requirement": "optional"
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "caption": "MCP Client Capabilities Tasks Requests",
+  "description": "Specifies which request types can be augmented with tasks. Generated from the pinned MCP schema (2025-11-25 ClientCapabilities.tasks.requests).",
+  "extends": "object",
+  "name": "mcp_client_capabilities__tasks__requests",
+  "attributes": {
+    "mcp_client_capabilities__tasks__requests__elicitation": {
+      "description": "MCP member `elicitation`: Task support for elicitation-related requests.",
+      "requirement": "optional"
+    },
+    "mcp_client_capabilities__tasks__requests__sampling": {
+      "description": "MCP member `sampling`: Task support for sampling-related requests.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

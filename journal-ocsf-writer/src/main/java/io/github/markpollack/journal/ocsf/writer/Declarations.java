@@ -36,6 +36,10 @@ import java.util.Set;
  * with the source and again when a version becomes known or is contradicted, so the latest declaration for an
  * artifact is the one in force and each governs the records after its records_before_selection (RULE-9, RULE-10,
  * RULE-33).</li>
+ * <li>{@code protocol_binding}: for a protocol whose objects the events carry typed (MCP), the pinned revision, its
+ * upstream pins and dialect, the official JSON Schema definitions of the reference closure of the definitions used, and
+ * the binding shapes that map them to the typed objects; amended by a later declaration when an event needs more, so a
+ * reader extracts and validates the protocol objects without the network or a schema cache.</li>
  * <li>{@code child}: a linked child event file (location and spawn identity), never its content.</li>
  * <li>{@code source_end}: how a source ended, with its final extent, hash and family inventory.</li>
  * <li>{@code recording}: the writer's finalization of this file (COMPLETED or INTERRUPTED) with the acquisition
@@ -108,6 +112,11 @@ final class Declarations {
                 .put("opaque_records", scalar("integer_t", "optional")).put("trailing_newline", scalar("boolean_t", "optional"))
                 .put("incomplete_tail_record", scalar("integer_t", "optional")).put("first_arrival", scalar("string_t", "optional"))
                 .put("last_arrival", scalar("string_t", "optional")).put("family_inventory", scalar("json_t", "optional")));
+        declare(objects, "protocol_binding", new Jv.Obj()
+                .put("protocol", scalar("string_t", "required")).put("revision", scalar("string_t", "required")).put("amends", scalar("string_t", "optional"))
+                .put("pins", scalar("json_t", "required")).put("upstream", scalar("json_t", "required")).put("dialect", scalar("string_t", "required"))
+                .put("schema_definitions", scalar("json_t", "required")).put("binding", scalar("json_t", "required"))
+                .put("binding_version", scalar("string_t", "optional")).put("conventions", scalar("json_t", "optional")));
         declare(objects, "recording", new Jv.Obj()
                 .put("state", scalar("string_t", "required")).put("started", scalar("string_t", "required")).put("ended", scalar("string_t", "required"))
                 .put("interruption_reason", scalar("string_t", "optional")).put("acquisition", scalar("json_t", "required"))

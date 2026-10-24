@@ -1,0 +1,24 @@
+{
+  "caption": "MCP Unsupported Protocol Version Error Error Data",
+  "description": "MCP Unsupported Protocol Version Error Error Data. Generated from the pinned MCP schema (2026-07-28 UnsupportedProtocolVersionError.error.data).",
+  "extends": "object",
+  "name": "mcp_unsupported_protocol_version_error__error__data",
+  "attributes": {
+    "mcp_requested": {
+      "description": "MCP member `requested` (required by the protocol): The protocol version that was requested by the client.",
+      "requirement": "optional"
+    },
+    "mcp_supported": {
+      "description": "MCP member `supported` (required by the protocol): Protocol versions the server supports. The client should choose a\nmutually supported version from this list and retry.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

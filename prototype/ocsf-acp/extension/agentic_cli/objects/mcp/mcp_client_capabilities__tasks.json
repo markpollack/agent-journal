@@ -1,0 +1,28 @@
+{
+  "caption": "MCP Client Capabilities Tasks",
+  "description": "Present if the client supports task-augmented requests. Generated from the pinned MCP schema (2025-11-25 ClientCapabilities.tasks).",
+  "extends": "object",
+  "name": "mcp_client_capabilities__tasks",
+  "attributes": {
+    "mcp_cancel": {
+      "description": "MCP member `cancel`: Whether this client supports tasks/cancel.",
+      "requirement": "optional"
+    },
+    "mcp_list": {
+      "description": "MCP member `list`: Whether this client supports tasks/list.",
+      "requirement": "optional"
+    },
+    "mcp_client_capabilities__tasks__requests": {
+      "description": "MCP member `requests`: Specifies which request types can be augmented with tasks.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "caption": "MCP Internal Error",
+  "description": "A JSON-RPC error indicating that an internal error occurred on the receiver. This error is returned when the receiver encounters an unexpected condition that prevents it from fulfilling the request. Generated from the pinned MCP schema (2026-07-28 InternalError).",
+  "extends": "object",
+  "name": "mcp_internal_error",
+  "attributes": {
+    "mcp_code": {
+      "description": "MCP member `code` (required by the protocol): The error type that occurred.",
+      "requirement": "optional"
+    },
+    "mcp_data_json": {
+      "description": "MCP member `data`: Additional information about the error. The value of this member is defined by the sender (e.g. detailed error information, nested errors etc.).",
+      "requirement": "optional"
+    },
+    "mcp_message": {
+      "description": "MCP member `message` (required by the protocol): A short description of the error. The message SHOULD be limited to a concise single sentence.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

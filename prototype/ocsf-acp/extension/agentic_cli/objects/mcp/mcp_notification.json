@@ -1,0 +1,24 @@
+{
+  "caption": "MCP Notification",
+  "description": "MCP Notification. Generated from the pinned MCP schema (2025-11-25 Notification; 2026-07-28 Notification).",
+  "extends": "object",
+  "name": "mcp_notification",
+  "attributes": {
+    "mcp_method": {
+      "description": "MCP member `method` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_params": {
+      "description": "MCP member `params`.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

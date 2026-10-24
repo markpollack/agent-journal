@@ -20,6 +20,9 @@ final class ClaudeStreamMapper implements SourceMapper {
     /** Claude Code's ModelUsage accumulates over the session: consumers difference its costUSD per turn, and it is partial for a resumed session begun on an older version. */
     static final String CUMULATIVE_MODEL_USAGE = "claude.model_usage.cumulative.v1: ModelUsage is Claude Code's running total per model (consumers difference it per turn; a resumed session's earlier turns are included)";
 
+    /** MCP facts: the registered servers and tools of the init record, and the calls established as MCP calls. */
+    private final ClaudeMcp mcp = new ClaudeMcp();
+
     @Override
     public String contractName() {
         return CONTRACT;
@@ -49,6 +52,7 @@ final class ClaudeStreamMapper implements SourceMapper {
             for (Jv b : m.member("content") == null ? List.<Jv>of() : m.member("content").elements()) {
                 if ("tool_use".equals(text(b, "type"))) {
                     Jv.Obj req = MapperSupport.claudeToolRequest(ROUTE, msg, text(m, "id"), b);
+                    req.put("mcp", mcp.request(b));
                     ctx.emit(owner, req);
                 }
             }
@@ -82,6 +86,8 @@ final class ClaudeStreamMapper implements SourceMapper {
                 }
                 String id = text(b, "tool_use_id");
                 Jv.Obj ev = MapperSupport.claudeToolResult(ROUTE, msg, first, o, b);
+                ev.put("mcp", mcp.result(id, o, ROUTE.structuredMember()));
+                ((Jv.Obj) ev.get("tool_result")).put("errors", mcp.errors(id, b));
                 for (Jv meta : o.member("tool_result_meta") == null ? List.<Jv>of() : o.member("tool_result_meta").elements()) {
                     Jv pd = meta.member("permission_decision");
                     if (id != null && id.equals(text(meta, "id")) && pd instanceof Jv.Obj) {
@@ -149,6 +155,7 @@ final class ClaudeStreamMapper implements SourceMapper {
             return;
         }
         if ("system".equals(type) && "init".equals(subtype)) {
+            mcp.init(o);
             ctx.family(family, r.raw().length, "normalized: session_context Settings reported (cwd, model, permission mode, version, tools)");
             MapperSupport.Time t = ctx.timeFor(r, ts);
             Jv.Obj settings = new Jv.Obj();

@@ -1,0 +1,32 @@
+{
+  "caption": "MCP Content Block",
+  "description": "MCP Content Block. Generated from the pinned MCP schema (2025-11-25 ContentBlock; 2026-07-28 ContentBlock).",
+  "extends": "object",
+  "name": "mcp_content_block",
+  "attributes": {
+    "mcp_text_content": {
+      "description": "The value when it is the alternative TextContent.",
+      "requirement": "optional"
+    },
+    "mcp_image_content": {
+      "description": "The value when it is the alternative ImageContent.",
+      "requirement": "optional"
+    },
+    "mcp_audio_content": {
+      "description": "The value when it is the alternative AudioContent.",
+      "requirement": "optional"
+    },
+    "mcp_resource_link": {
+      "description": "The value when it is the alternative ResourceLink.",
+      "requirement": "optional"
+    },
+    "mcp_embedded_resource": {
+      "description": "The value when it is the alternative EmbeddedResource.",
+      "requirement": "optional"
+    },
+    "mcp_unresolved": {
+      "description": "The value exactly as reported when no single alternative matches it by its constant and required members.",
+      "requirement": "optional"
+    }
+  }
+}

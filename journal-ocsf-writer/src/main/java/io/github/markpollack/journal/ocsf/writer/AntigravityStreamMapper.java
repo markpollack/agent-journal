@@ -154,9 +154,13 @@ final class AntigravityStreamMapper implements SourceMapper {
             String name = text(s, "tool_name");
             int kind = ctx.contracts.toolKind(CONTRACT, name);
             ev.put("tool_name", name).put("tool_kind_id", kind).put("tool_kind", TOOL_KIND.get(kind)).put("tool_kind_basis", ctx.contracts.toolKindRule(CONTRACT))
-                    .put("arguments", info == null ? null : info.member("parameters"));
+                    .put("arguments", info == null ? null : info.member("parameters")).put("mcp", AntigravityMcp.started(name, info == null ? null : info.member("parameters")));
         }
-        ev.put("reported_state", text(s, "state")).put("tool_result", active ? null : toolResult(s, info, error, subagent)).put("data", o);
+        Jv.Obj result = active ? null : toolResult(s, info, error, subagent);
+        if (result != null) {
+            result.put("errors", AntigravityMcp.errors(text(s, "tool_name"), error));
+        }
+        ev.put("reported_state", text(s, "state")).put("tool_result", result).put("data", o);
         ctx.emit(ev);
     }
 

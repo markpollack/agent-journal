@@ -1,0 +1,36 @@
+{
+  "caption": "MCP Initialize Result",
+  "description": "After receiving an initialize request from the client, the server sends this response. Generated from the pinned MCP schema (2025-11-25 InitializeResult).",
+  "extends": "object",
+  "name": "mcp_initialize_result",
+  "attributes": {
+    "mcp_meta": {
+      "description": "MCP member `_meta`: See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_server_capabilities": {
+      "description": "MCP member `capabilities` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_instructions": {
+      "description": "MCP member `instructions`: Instructions describing how to use the server and its features.\n\nThis can be used by clients to improve the LLM's understanding of available tools, resources, etc. It can be thought of like a \"hint\" to the model. For example, this information MAY be added to the system prompt.",
+      "requirement": "optional"
+    },
+    "mcp_protocol_version": {
+      "description": "MCP member `protocolVersion` (required by the protocol): The version of the Model Context Protocol that the server wants to use. This may not match the version that the client requested. If the client cannot support this version, it MUST disconnect.",
+      "requirement": "optional"
+    },
+    "mcp_implementation": {
+      "description": "MCP member `serverInfo` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

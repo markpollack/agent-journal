@@ -1,0 +1,20 @@
+{
+  "caption": "MCP Cancel Task Request Params",
+  "description": "MCP Cancel Task Request Params. Generated from the pinned MCP schema (2025-11-25 CancelTaskRequest.params).",
+  "extends": "object",
+  "name": "mcp_cancel_task_request__params",
+  "attributes": {
+    "mcp_task_id": {
+      "description": "MCP member `taskId` (required by the protocol): The task identifier to cancel.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

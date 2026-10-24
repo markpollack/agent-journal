@@ -1,0 +1,32 @@
+{
+  "caption": "MCP Tool Input Schema",
+  "description": "A JSON Schema object defining the expected parameters for the tool. Generated from the pinned MCP schema (2025-11-25 Tool.inputSchema; 2026-07-28 Tool.inputSchema).",
+  "extends": "object",
+  "name": "mcp_tool__input_schema",
+  "attributes": {
+    "mcp_schema": {
+      "description": "MCP member `$schema`.",
+      "requirement": "optional"
+    },
+    "mcp_properties": {
+      "description": "MCP member `properties`.",
+      "requirement": "optional"
+    },
+    "mcp_required_string_list": {
+      "description": "MCP member `required`.",
+      "requirement": "optional"
+    },
+    "mcp_type": {
+      "description": "MCP member `type` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

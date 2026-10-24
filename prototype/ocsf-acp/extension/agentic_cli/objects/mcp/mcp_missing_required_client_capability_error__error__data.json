@@ -1,0 +1,20 @@
+{
+  "caption": "MCP Missing Required Client Capability Error Error Data",
+  "description": "MCP Missing Required Client Capability Error Error Data. Generated from the pinned MCP schema (2026-07-28 MissingRequiredClientCapabilityError.error.data).",
+  "extends": "object",
+  "name": "mcp_missing_required_client_capability_error__error__data",
+  "attributes": {
+    "mcp_client_capabilities": {
+      "description": "MCP member `requiredCapabilities` (required by the protocol): The capabilities the server requires from the client to process this request.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

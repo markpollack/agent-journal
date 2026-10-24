@@ -1,11 +1,16 @@
 {
   "caption": "Cost Observation",
-  "description": "A reported cost total with its scope, currency, basis and source. Present only when a source reported a cost.",
+  "description": "A reported cost or billing quantity with its scope, basis and source: a monetary total with its currency, or a non-monetary billing quantity (premium requests, a model cost multiplier, nano-AIU, credits) with its quantity kind and unit. Quantities of different kinds are never added together or read as money. Present only when a source reported one.",
   "extends": "object",
   "name": "cost_observation",
   "attributes": {
     "total_cost": {"requirement": "required"},
-    "currency": {"requirement": "required"},
+    "currency": {"description": "The ISO 4217 currency of a monetary amount; absent for a billing quantity that is not money.", "requirement": "optional"},
+    "quantity_kind_id": {"requirement": "recommended"},
+    "quantity_kind": {"requirement": "optional"},
+    "quantity_unit": {"requirement": "optional"},
+    "aggregation_id": {"requirement": "optional"},
+    "aggregation": {"requirement": "optional"},
     "scope_id": {"requirement": "required"},
     "scope": {"requirement": "optional"},
     "cost_basis": {"requirement": "optional"},

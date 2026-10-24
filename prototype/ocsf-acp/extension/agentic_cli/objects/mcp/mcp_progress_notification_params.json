@@ -1,0 +1,40 @@
+{
+  "caption": "MCP Progress Notification Params",
+  "description": "Parameters for a `notifications/progress` notification. Generated from the pinned MCP schema (2025-11-25 ProgressNotificationParams; 2026-07-28 ProgressNotificationParams).",
+  "extends": "object",
+  "name": "mcp_progress_notification_params",
+  "attributes": {
+    "mcp_meta": {
+      "description": "MCP member `_meta`: See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_message": {
+      "description": "MCP member `message`: An optional message describing the current progress.",
+      "requirement": "optional"
+    },
+    "mcp_progress": {
+      "description": "MCP member `progress` (required by the protocol): The progress thus far. This should increase every time progress is made, even if the total is unknown.",
+      "requirement": "optional"
+    },
+    "mcp_progress_token": {
+      "description": "MCP member `progressToken` (required by the protocol): The progress token which was given in the initial request, used to associate this notification with the request that is proceeding.",
+      "requirement": "optional"
+    },
+    "mcp_total_float": {
+      "description": "MCP member `total`: Total number of items to process (or total progress required), if known.",
+      "requirement": "optional"
+    },
+    "mcp_notification_meta_object": {
+      "description": "MCP member `_meta`.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

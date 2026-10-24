@@ -1,0 +1,730 @@
+{
+  "caption": "MCP Protocol Object",
+  "description": "One MCP protocol object typed by the pinned binding: protocol_definition names the official definition, binding_revision the pinned revision whose binding typed it, and exactly one slot holds it. projection_id states whether it is a complete acquired protocol object, a partial projection a CLI reported (missing_required lists the protocol-required members the projection lacks) or a labelled schema example. Generated with the mcp_* objects.",
+  "extends": "object",
+  "name": "mcp_protocol_object",
+  "attributes": {
+    "protocol_definition": {
+      "requirement": "required"
+    },
+    "binding_revision": {
+      "requirement": "required"
+    },
+    "projection_id": {
+      "requirement": "required"
+    },
+    "projection": {
+      "requirement": "optional"
+    },
+    "projection_basis": {
+      "requirement": "optional"
+    },
+    "missing_required": {
+      "requirement": "optional"
+    },
+    "mcp_annotations": {
+      "description": "The protocol object when protocol_definition binds to mcp_annotations.",
+      "requirement": "optional"
+    },
+    "mcp_audio_content": {
+      "description": "The protocol object when protocol_definition binds to mcp_audio_content.",
+      "requirement": "optional"
+    },
+    "mcp_base_metadata": {
+      "description": "The protocol object when protocol_definition binds to mcp_base_metadata.",
+      "requirement": "optional"
+    },
+    "mcp_blob_resource_contents": {
+      "description": "The protocol object when protocol_definition binds to mcp_blob_resource_contents.",
+      "requirement": "optional"
+    },
+    "mcp_boolean_schema": {
+      "description": "The protocol object when protocol_definition binds to mcp_boolean_schema.",
+      "requirement": "optional"
+    },
+    "mcp_cacheable_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_cacheable_result.",
+      "requirement": "optional"
+    },
+    "mcp_call_tool_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_call_tool_request.",
+      "requirement": "optional"
+    },
+    "mcp_call_tool_request_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_call_tool_request_params.",
+      "requirement": "optional"
+    },
+    "mcp_call_tool_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_call_tool_result.",
+      "requirement": "optional"
+    },
+    "mcp_call_tool_result_response": {
+      "description": "The protocol object when protocol_definition binds to mcp_call_tool_result_response.",
+      "requirement": "optional"
+    },
+    "mcp_cancel_task_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_cancel_task_request.",
+      "requirement": "optional"
+    },
+    "mcp_cancel_task_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_cancel_task_result.",
+      "requirement": "optional"
+    },
+    "mcp_cancelled_notification": {
+      "description": "The protocol object when protocol_definition binds to mcp_cancelled_notification.",
+      "requirement": "optional"
+    },
+    "mcp_cancelled_notification_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_cancelled_notification_params.",
+      "requirement": "optional"
+    },
+    "mcp_client_capabilities": {
+      "description": "The protocol object when protocol_definition binds to mcp_client_capabilities.",
+      "requirement": "optional"
+    },
+    "mcp_client_notification": {
+      "description": "The protocol object when protocol_definition binds to mcp_client_notification.",
+      "requirement": "optional"
+    },
+    "mcp_client_notification__2026_07_28": {
+      "description": "The protocol object when protocol_definition binds to mcp_client_notification__2026_07_28.",
+      "requirement": "optional"
+    },
+    "mcp_client_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_client_request.",
+      "requirement": "optional"
+    },
+    "mcp_client_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_client_result.",
+      "requirement": "optional"
+    },
+    "mcp_complete_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_complete_request.",
+      "requirement": "optional"
+    },
+    "mcp_complete_request_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_complete_request_params.",
+      "requirement": "optional"
+    },
+    "mcp_complete_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_complete_result.",
+      "requirement": "optional"
+    },
+    "mcp_complete_result_response": {
+      "description": "The protocol object when protocol_definition binds to mcp_complete_result_response.",
+      "requirement": "optional"
+    },
+    "mcp_content_block": {
+      "description": "The protocol object when protocol_definition binds to mcp_content_block.",
+      "requirement": "optional"
+    },
+    "mcp_create_message_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_create_message_request.",
+      "requirement": "optional"
+    },
+    "mcp_create_message_request_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_create_message_request_params.",
+      "requirement": "optional"
+    },
+    "mcp_create_message_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_create_message_result.",
+      "requirement": "optional"
+    },
+    "mcp_create_task_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_create_task_result.",
+      "requirement": "optional"
+    },
+    "mcp_discover_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_discover_request.",
+      "requirement": "optional"
+    },
+    "mcp_discover_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_discover_result.",
+      "requirement": "optional"
+    },
+    "mcp_discover_result_response": {
+      "description": "The protocol object when protocol_definition binds to mcp_discover_result_response.",
+      "requirement": "optional"
+    },
+    "mcp_elicit_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_elicit_request.",
+      "requirement": "optional"
+    },
+    "mcp_elicit_request_form_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_elicit_request_form_params.",
+      "requirement": "optional"
+    },
+    "mcp_elicit_request_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_elicit_request_params.",
+      "requirement": "optional"
+    },
+    "mcp_elicit_request_url_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_elicit_request_url_params.",
+      "requirement": "optional"
+    },
+    "mcp_elicit_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_elicit_result.",
+      "requirement": "optional"
+    },
+    "mcp_elicitation_complete_notification": {
+      "description": "The protocol object when protocol_definition binds to mcp_elicitation_complete_notification.",
+      "requirement": "optional"
+    },
+    "mcp_embedded_resource": {
+      "description": "The protocol object when protocol_definition binds to mcp_embedded_resource.",
+      "requirement": "optional"
+    },
+    "mcp_enum_schema": {
+      "description": "The protocol object when protocol_definition binds to mcp_enum_schema.",
+      "requirement": "optional"
+    },
+    "mcp_error": {
+      "description": "The protocol object when protocol_definition binds to mcp_error.",
+      "requirement": "optional"
+    },
+    "mcp_get_prompt_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_get_prompt_request.",
+      "requirement": "optional"
+    },
+    "mcp_get_prompt_request_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_get_prompt_request_params.",
+      "requirement": "optional"
+    },
+    "mcp_get_prompt_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_get_prompt_result.",
+      "requirement": "optional"
+    },
+    "mcp_get_prompt_result_response": {
+      "description": "The protocol object when protocol_definition binds to mcp_get_prompt_result_response.",
+      "requirement": "optional"
+    },
+    "mcp_get_task_payload_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_get_task_payload_request.",
+      "requirement": "optional"
+    },
+    "mcp_get_task_payload_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_get_task_payload_result.",
+      "requirement": "optional"
+    },
+    "mcp_get_task_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_get_task_request.",
+      "requirement": "optional"
+    },
+    "mcp_get_task_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_get_task_result.",
+      "requirement": "optional"
+    },
+    "mcp_header_mismatch_error": {
+      "description": "The protocol object when protocol_definition binds to mcp_header_mismatch_error.",
+      "requirement": "optional"
+    },
+    "mcp_icon": {
+      "description": "The protocol object when protocol_definition binds to mcp_icon.",
+      "requirement": "optional"
+    },
+    "mcp_icons": {
+      "description": "The protocol object when protocol_definition binds to mcp_icons.",
+      "requirement": "optional"
+    },
+    "mcp_image_content": {
+      "description": "The protocol object when protocol_definition binds to mcp_image_content.",
+      "requirement": "optional"
+    },
+    "mcp_implementation": {
+      "description": "The protocol object when protocol_definition binds to mcp_implementation.",
+      "requirement": "optional"
+    },
+    "mcp_initialize_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_initialize_request.",
+      "requirement": "optional"
+    },
+    "mcp_initialize_request_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_initialize_request_params.",
+      "requirement": "optional"
+    },
+    "mcp_initialize_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_initialize_result.",
+      "requirement": "optional"
+    },
+    "mcp_initialized_notification": {
+      "description": "The protocol object when protocol_definition binds to mcp_initialized_notification.",
+      "requirement": "optional"
+    },
+    "mcp_input_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_input_request.",
+      "requirement": "optional"
+    },
+    "mcp_input_requests__entry_list": {
+      "description": "The protocol object when protocol_definition binds to mcp_input_requests__entry_list.",
+      "requirement": "optional"
+    },
+    "mcp_input_required_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_input_required_result.",
+      "requirement": "optional"
+    },
+    "mcp_input_response": {
+      "description": "The protocol object when protocol_definition binds to mcp_input_response.",
+      "requirement": "optional"
+    },
+    "mcp_input_response_request_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_input_response_request_params.",
+      "requirement": "optional"
+    },
+    "mcp_input_responses__entry_list": {
+      "description": "The protocol object when protocol_definition binds to mcp_input_responses__entry_list.",
+      "requirement": "optional"
+    },
+    "mcp_internal_error": {
+      "description": "The protocol object when protocol_definition binds to mcp_internal_error.",
+      "requirement": "optional"
+    },
+    "mcp_invalid_params_error": {
+      "description": "The protocol object when protocol_definition binds to mcp_invalid_params_error.",
+      "requirement": "optional"
+    },
+    "mcp_invalid_request_error": {
+      "description": "The protocol object when protocol_definition binds to mcp_invalid_request_error.",
+      "requirement": "optional"
+    },
+    "mcp_jsonrpc_error_response": {
+      "description": "The protocol object when protocol_definition binds to mcp_jsonrpc_error_response.",
+      "requirement": "optional"
+    },
+    "mcp_jsonrpc_message": {
+      "description": "The protocol object when protocol_definition binds to mcp_jsonrpc_message.",
+      "requirement": "optional"
+    },
+    "mcp_jsonrpc_notification": {
+      "description": "The protocol object when protocol_definition binds to mcp_jsonrpc_notification.",
+      "requirement": "optional"
+    },
+    "mcp_jsonrpc_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_jsonrpc_request.",
+      "requirement": "optional"
+    },
+    "mcp_jsonrpc_response": {
+      "description": "The protocol object when protocol_definition binds to mcp_jsonrpc_response.",
+      "requirement": "optional"
+    },
+    "mcp_jsonrpc_result_response": {
+      "description": "The protocol object when protocol_definition binds to mcp_jsonrpc_result_response.",
+      "requirement": "optional"
+    },
+    "mcp_legacy_titled_enum_schema": {
+      "description": "The protocol object when protocol_definition binds to mcp_legacy_titled_enum_schema.",
+      "requirement": "optional"
+    },
+    "mcp_list_prompts_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_list_prompts_request.",
+      "requirement": "optional"
+    },
+    "mcp_list_prompts_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_list_prompts_result.",
+      "requirement": "optional"
+    },
+    "mcp_list_prompts_result_response": {
+      "description": "The protocol object when protocol_definition binds to mcp_list_prompts_result_response.",
+      "requirement": "optional"
+    },
+    "mcp_list_resource_templates_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_list_resource_templates_request.",
+      "requirement": "optional"
+    },
+    "mcp_list_resource_templates_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_list_resource_templates_result.",
+      "requirement": "optional"
+    },
+    "mcp_list_resource_templates_result_response": {
+      "description": "The protocol object when protocol_definition binds to mcp_list_resource_templates_result_response.",
+      "requirement": "optional"
+    },
+    "mcp_list_resources_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_list_resources_request.",
+      "requirement": "optional"
+    },
+    "mcp_list_resources_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_list_resources_result.",
+      "requirement": "optional"
+    },
+    "mcp_list_resources_result_response": {
+      "description": "The protocol object when protocol_definition binds to mcp_list_resources_result_response.",
+      "requirement": "optional"
+    },
+    "mcp_list_roots_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_list_roots_request.",
+      "requirement": "optional"
+    },
+    "mcp_list_roots_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_list_roots_result.",
+      "requirement": "optional"
+    },
+    "mcp_list_tasks_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_list_tasks_request.",
+      "requirement": "optional"
+    },
+    "mcp_list_tasks_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_list_tasks_result.",
+      "requirement": "optional"
+    },
+    "mcp_list_tools_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_list_tools_request.",
+      "requirement": "optional"
+    },
+    "mcp_list_tools_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_list_tools_result.",
+      "requirement": "optional"
+    },
+    "mcp_list_tools_result_response": {
+      "description": "The protocol object when protocol_definition binds to mcp_list_tools_result_response.",
+      "requirement": "optional"
+    },
+    "mcp_logging_message_notification": {
+      "description": "The protocol object when protocol_definition binds to mcp_logging_message_notification.",
+      "requirement": "optional"
+    },
+    "mcp_logging_message_notification_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_logging_message_notification_params.",
+      "requirement": "optional"
+    },
+    "mcp_method_not_found_error": {
+      "description": "The protocol object when protocol_definition binds to mcp_method_not_found_error.",
+      "requirement": "optional"
+    },
+    "mcp_missing_required_client_capability_error": {
+      "description": "The protocol object when protocol_definition binds to mcp_missing_required_client_capability_error.",
+      "requirement": "optional"
+    },
+    "mcp_model_hint": {
+      "description": "The protocol object when protocol_definition binds to mcp_model_hint.",
+      "requirement": "optional"
+    },
+    "mcp_model_preferences": {
+      "description": "The protocol object when protocol_definition binds to mcp_model_preferences.",
+      "requirement": "optional"
+    },
+    "mcp_multi_select_enum_schema": {
+      "description": "The protocol object when protocol_definition binds to mcp_multi_select_enum_schema.",
+      "requirement": "optional"
+    },
+    "mcp_notification": {
+      "description": "The protocol object when protocol_definition binds to mcp_notification.",
+      "requirement": "optional"
+    },
+    "mcp_notification_meta_object": {
+      "description": "The protocol object when protocol_definition binds to mcp_notification_meta_object.",
+      "requirement": "optional"
+    },
+    "mcp_notification_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_notification_params.",
+      "requirement": "optional"
+    },
+    "mcp_number_schema": {
+      "description": "The protocol object when protocol_definition binds to mcp_number_schema.",
+      "requirement": "optional"
+    },
+    "mcp_paginated_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_paginated_request.",
+      "requirement": "optional"
+    },
+    "mcp_paginated_request_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_paginated_request_params.",
+      "requirement": "optional"
+    },
+    "mcp_paginated_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_paginated_result.",
+      "requirement": "optional"
+    },
+    "mcp_parse_error": {
+      "description": "The protocol object when protocol_definition binds to mcp_parse_error.",
+      "requirement": "optional"
+    },
+    "mcp_ping_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_ping_request.",
+      "requirement": "optional"
+    },
+    "mcp_primitive_schema_definition": {
+      "description": "The protocol object when protocol_definition binds to mcp_primitive_schema_definition.",
+      "requirement": "optional"
+    },
+    "mcp_progress_notification": {
+      "description": "The protocol object when protocol_definition binds to mcp_progress_notification.",
+      "requirement": "optional"
+    },
+    "mcp_progress_notification_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_progress_notification_params.",
+      "requirement": "optional"
+    },
+    "mcp_prompt": {
+      "description": "The protocol object when protocol_definition binds to mcp_prompt.",
+      "requirement": "optional"
+    },
+    "mcp_prompt_argument": {
+      "description": "The protocol object when protocol_definition binds to mcp_prompt_argument.",
+      "requirement": "optional"
+    },
+    "mcp_prompt_list_changed_notification": {
+      "description": "The protocol object when protocol_definition binds to mcp_prompt_list_changed_notification.",
+      "requirement": "optional"
+    },
+    "mcp_prompt_message": {
+      "description": "The protocol object when protocol_definition binds to mcp_prompt_message.",
+      "requirement": "optional"
+    },
+    "mcp_prompt_reference": {
+      "description": "The protocol object when protocol_definition binds to mcp_prompt_reference.",
+      "requirement": "optional"
+    },
+    "mcp_read_resource_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_read_resource_request.",
+      "requirement": "optional"
+    },
+    "mcp_read_resource_request_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_read_resource_request_params.",
+      "requirement": "optional"
+    },
+    "mcp_read_resource_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_read_resource_result.",
+      "requirement": "optional"
+    },
+    "mcp_read_resource_result_response": {
+      "description": "The protocol object when protocol_definition binds to mcp_read_resource_result_response.",
+      "requirement": "optional"
+    },
+    "mcp_related_task_metadata": {
+      "description": "The protocol object when protocol_definition binds to mcp_related_task_metadata.",
+      "requirement": "optional"
+    },
+    "mcp_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_request.",
+      "requirement": "optional"
+    },
+    "mcp_request_meta_object": {
+      "description": "The protocol object when protocol_definition binds to mcp_request_meta_object.",
+      "requirement": "optional"
+    },
+    "mcp_request_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_request_params.",
+      "requirement": "optional"
+    },
+    "mcp_resource": {
+      "description": "The protocol object when protocol_definition binds to mcp_resource.",
+      "requirement": "optional"
+    },
+    "mcp_resource_contents": {
+      "description": "The protocol object when protocol_definition binds to mcp_resource_contents.",
+      "requirement": "optional"
+    },
+    "mcp_resource_link": {
+      "description": "The protocol object when protocol_definition binds to mcp_resource_link.",
+      "requirement": "optional"
+    },
+    "mcp_resource_list_changed_notification": {
+      "description": "The protocol object when protocol_definition binds to mcp_resource_list_changed_notification.",
+      "requirement": "optional"
+    },
+    "mcp_resource_request_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_resource_request_params.",
+      "requirement": "optional"
+    },
+    "mcp_resource_template": {
+      "description": "The protocol object when protocol_definition binds to mcp_resource_template.",
+      "requirement": "optional"
+    },
+    "mcp_resource_template_reference": {
+      "description": "The protocol object when protocol_definition binds to mcp_resource_template_reference.",
+      "requirement": "optional"
+    },
+    "mcp_resource_updated_notification": {
+      "description": "The protocol object when protocol_definition binds to mcp_resource_updated_notification.",
+      "requirement": "optional"
+    },
+    "mcp_resource_updated_notification_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_resource_updated_notification_params.",
+      "requirement": "optional"
+    },
+    "mcp_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_result.",
+      "requirement": "optional"
+    },
+    "mcp_result_meta_object": {
+      "description": "The protocol object when protocol_definition binds to mcp_result_meta_object.",
+      "requirement": "optional"
+    },
+    "mcp_root": {
+      "description": "The protocol object when protocol_definition binds to mcp_root.",
+      "requirement": "optional"
+    },
+    "mcp_roots_list_changed_notification": {
+      "description": "The protocol object when protocol_definition binds to mcp_roots_list_changed_notification.",
+      "requirement": "optional"
+    },
+    "mcp_sampling_message": {
+      "description": "The protocol object when protocol_definition binds to mcp_sampling_message.",
+      "requirement": "optional"
+    },
+    "mcp_sampling_message_content_block": {
+      "description": "The protocol object when protocol_definition binds to mcp_sampling_message_content_block.",
+      "requirement": "optional"
+    },
+    "mcp_server_capabilities": {
+      "description": "The protocol object when protocol_definition binds to mcp_server_capabilities.",
+      "requirement": "optional"
+    },
+    "mcp_server_notification": {
+      "description": "The protocol object when protocol_definition binds to mcp_server_notification.",
+      "requirement": "optional"
+    },
+    "mcp_server_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_server_request.",
+      "requirement": "optional"
+    },
+    "mcp_server_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_server_result.",
+      "requirement": "optional"
+    },
+    "mcp_set_level_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_set_level_request.",
+      "requirement": "optional"
+    },
+    "mcp_set_level_request_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_set_level_request_params.",
+      "requirement": "optional"
+    },
+    "mcp_single_select_enum_schema": {
+      "description": "The protocol object when protocol_definition binds to mcp_single_select_enum_schema.",
+      "requirement": "optional"
+    },
+    "mcp_string_schema": {
+      "description": "The protocol object when protocol_definition binds to mcp_string_schema.",
+      "requirement": "optional"
+    },
+    "mcp_subscribe_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_subscribe_request.",
+      "requirement": "optional"
+    },
+    "mcp_subscribe_request_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_subscribe_request_params.",
+      "requirement": "optional"
+    },
+    "mcp_subscription_filter": {
+      "description": "The protocol object when protocol_definition binds to mcp_subscription_filter.",
+      "requirement": "optional"
+    },
+    "mcp_subscriptions_acknowledged_notification": {
+      "description": "The protocol object when protocol_definition binds to mcp_subscriptions_acknowledged_notification.",
+      "requirement": "optional"
+    },
+    "mcp_subscriptions_acknowledged_notification_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_subscriptions_acknowledged_notification_params.",
+      "requirement": "optional"
+    },
+    "mcp_subscriptions_listen_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_subscriptions_listen_request.",
+      "requirement": "optional"
+    },
+    "mcp_subscriptions_listen_request_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_subscriptions_listen_request_params.",
+      "requirement": "optional"
+    },
+    "mcp_subscriptions_listen_result": {
+      "description": "The protocol object when protocol_definition binds to mcp_subscriptions_listen_result.",
+      "requirement": "optional"
+    },
+    "mcp_subscriptions_listen_result_meta_object": {
+      "description": "The protocol object when protocol_definition binds to mcp_subscriptions_listen_result_meta_object.",
+      "requirement": "optional"
+    },
+    "mcp_subscriptions_listen_result_response": {
+      "description": "The protocol object when protocol_definition binds to mcp_subscriptions_listen_result_response.",
+      "requirement": "optional"
+    },
+    "mcp_task": {
+      "description": "The protocol object when protocol_definition binds to mcp_task.",
+      "requirement": "optional"
+    },
+    "mcp_task_augmented_request_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_task_augmented_request_params.",
+      "requirement": "optional"
+    },
+    "mcp_task_metadata": {
+      "description": "The protocol object when protocol_definition binds to mcp_task_metadata.",
+      "requirement": "optional"
+    },
+    "mcp_task_status_notification": {
+      "description": "The protocol object when protocol_definition binds to mcp_task_status_notification.",
+      "requirement": "optional"
+    },
+    "mcp_task_status_notification_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_task_status_notification_params.",
+      "requirement": "optional"
+    },
+    "mcp_text_content": {
+      "description": "The protocol object when protocol_definition binds to mcp_text_content.",
+      "requirement": "optional"
+    },
+    "mcp_text_resource_contents": {
+      "description": "The protocol object when protocol_definition binds to mcp_text_resource_contents.",
+      "requirement": "optional"
+    },
+    "mcp_titled_multi_select_enum_schema": {
+      "description": "The protocol object when protocol_definition binds to mcp_titled_multi_select_enum_schema.",
+      "requirement": "optional"
+    },
+    "mcp_titled_single_select_enum_schema": {
+      "description": "The protocol object when protocol_definition binds to mcp_titled_single_select_enum_schema.",
+      "requirement": "optional"
+    },
+    "mcp_tool": {
+      "description": "The protocol object when protocol_definition binds to mcp_tool.",
+      "requirement": "optional"
+    },
+    "mcp_tool_annotations": {
+      "description": "The protocol object when protocol_definition binds to mcp_tool_annotations.",
+      "requirement": "optional"
+    },
+    "mcp_tool_choice": {
+      "description": "The protocol object when protocol_definition binds to mcp_tool_choice.",
+      "requirement": "optional"
+    },
+    "mcp_tool_execution": {
+      "description": "The protocol object when protocol_definition binds to mcp_tool_execution.",
+      "requirement": "optional"
+    },
+    "mcp_tool_list_changed_notification": {
+      "description": "The protocol object when protocol_definition binds to mcp_tool_list_changed_notification.",
+      "requirement": "optional"
+    },
+    "mcp_tool_result_content": {
+      "description": "The protocol object when protocol_definition binds to mcp_tool_result_content.",
+      "requirement": "optional"
+    },
+    "mcp_tool_use_content": {
+      "description": "The protocol object when protocol_definition binds to mcp_tool_use_content.",
+      "requirement": "optional"
+    },
+    "mcp_unsubscribe_request": {
+      "description": "The protocol object when protocol_definition binds to mcp_unsubscribe_request.",
+      "requirement": "optional"
+    },
+    "mcp_unsubscribe_request_params": {
+      "description": "The protocol object when protocol_definition binds to mcp_unsubscribe_request_params.",
+      "requirement": "optional"
+    },
+    "mcp_unsupported_protocol_version_error": {
+      "description": "The protocol object when protocol_definition binds to mcp_unsupported_protocol_version_error.",
+      "requirement": "optional"
+    },
+    "mcp_untitled_multi_select_enum_schema": {
+      "description": "The protocol object when protocol_definition binds to mcp_untitled_multi_select_enum_schema.",
+      "requirement": "optional"
+    },
+    "mcp_untitled_single_select_enum_schema": {
+      "description": "The protocol object when protocol_definition binds to mcp_untitled_single_select_enum_schema.",
+      "requirement": "optional"
+    },
+    "mcp_url_elicitation_required_error": {
+      "description": "The protocol object when protocol_definition binds to mcp_url_elicitation_required_error.",
+      "requirement": "optional"
+    }
+  }
+}

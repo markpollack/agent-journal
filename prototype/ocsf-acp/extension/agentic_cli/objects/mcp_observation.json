@@ -1,0 +1,45 @@
+{
+  "caption": "MCP Observation",
+  "description": "What an event observed of a Model Context Protocol interaction, kept apart from the shared tool fields it also fills: the protocol revision with how it was established (never inferred from a CLI or SDK version), the addressed server and tool with an independent basis for each (a dispatcher's own name and arguments stay in tool_name and arguments), and the protocol objects the source reported, each typed by the pinned binding and labelled complete, a partial CLI projection or a schema example. Absent means no MCP fact was established, not that the call was not MCP.",
+  "extends": "object",
+  "name": "mcp_observation",
+  "attributes": {
+    "protocol_revision": {
+      "requirement": "optional"
+    },
+    "protocol_revision_basis_id": {
+      "requirement": "optional"
+    },
+    "protocol_revision_basis": {
+      "requirement": "optional"
+    },
+    "target_server_name": {
+      "requirement": "optional"
+    },
+    "target_server_basis_id": {
+      "requirement": "optional"
+    },
+    "target_server_basis": {
+      "requirement": "optional"
+    },
+    "target_tool_name": {
+      "requirement": "optional"
+    },
+    "target_tool_basis_id": {
+      "requirement": "optional"
+    },
+    "target_tool_basis": {
+      "requirement": "optional"
+    },
+    "target_arguments_pointer": {
+      "requirement": "optional"
+    },
+    "protocol_objects": {
+      "requirement": "optional"
+    },
+    "basis": {
+      "description": "How the MCP facts on this observation were established from the source.",
+      "requirement": "optional"
+    }
+  }
+}

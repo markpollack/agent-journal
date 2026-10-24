@@ -1,0 +1,20 @@
+{
+  "caption": "MCP Icons",
+  "description": "Base interface to add `icons` property. Generated from the pinned MCP schema (2025-11-25 Icons; 2026-07-28 Icons).",
+  "extends": "object",
+  "name": "mcp_icons",
+  "attributes": {
+    "mcp_icon_list": {
+      "description": "MCP member `icons`: Optional set of sized icons that the client can display in a user interface.\n\nClients that support rendering icons MUST support at least the following MIME types:\n- `image/png` - PNG images (safe, universal compatibility)\n- `image/jpeg` (and `image/jpg`) - JPEG images (safe, universal compatibility)\n\nClients that support rendering icons SHOULD also support:\n- `image/svg+xml` - SVG images (scalable but requires security precautions)\n- `image/webp` - WebP images (modern, efficient format)",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

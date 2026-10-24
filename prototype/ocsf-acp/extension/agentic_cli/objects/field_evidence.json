@@ -1,0 +1,23 @@
+{
+  "caption": "Field Evidence",
+  "description": "Which occurrences supplied one field of a consolidated event and how their reports relate: a single source, identical, differing only in representation, or conflicting (the value then absent unless a declared authority selected one).",
+  "extends": "object",
+  "name": "field_evidence",
+  "attributes": {
+    "field_pointer": {
+      "requirement": "required"
+    },
+    "relation_class_id": {
+      "requirement": "required"
+    },
+    "relation_class": {
+      "requirement": "optional"
+    },
+    "occurrence_uids": {
+      "requirement": "required"
+    },
+    "selection_basis": {
+      "requirement": "optional"
+    }
+  }
+}

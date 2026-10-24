@@ -964,6 +964,2451 @@
       "caption": "Tool Family",
       "description": "The source's own family or item type of a tool activity, exactly as reported (for example the Codex exec item types mcp_tool_call, web_search, collab_tool_call and file_change). Not a tool name.",
       "type": "string_t"
+    },
+    "mcp": {
+      "caption": "MCP Observation",
+      "description": "What this event observed of a Model Context Protocol interaction: protocol revision and basis, the addressed server and tool with their bases, and typed protocol objects (complete, partial CLI projection or schema example).",
+      "type": "mcp_observation"
+    },
+    "protocol_revision": {
+      "caption": "Protocol Revision",
+      "description": "The MCP protocol revision (for example 2025-11-25) only where the protocol exchange or a CLI artifact established it; never inferred from a CLI or SDK version.",
+      "type": "string_t"
+    },
+    "protocol_revision_basis_id": {
+      "caption": "Protocol Revision Basis ID",
+      "description": "How protocol_revision was established.",
+      "type": "integer_t",
+      "sibling": "protocol_revision_basis",
+      "enum": {
+        "0": {
+          "caption": "Unknown"
+        },
+        "1": {
+          "caption": "Reported in the protocol exchange",
+          "description": "The negotiated revision of an acquired protocol message (for example an initialize result)."
+        },
+        "2": {
+          "caption": "Reported by a CLI artifact",
+          "description": "A log or record the CLI wrote reports the negotiated revision for this session."
+        },
+        "3": {
+          "caption": "Declared by the capture configuration",
+          "description": "The capture declared it; not observed."
+        },
+        "99": {
+          "caption": "Other"
+        }
+      }
+    },
+    "protocol_revision_basis": {
+      "caption": "Protocol Revision Basis",
+      "description": "The caption of protocol_revision_basis_id, or the source's own basis for 99 Other.",
+      "type": "string_t"
+    },
+    "target_server_name": {
+      "caption": "Target Server Name",
+      "description": "The MCP server a call addresses, exactly as the source names it (usually the configured server key, which need not equal the server's self-reported name), independently of the call's reported tool_name.",
+      "type": "string_t"
+    },
+    "target_server_basis_id": {
+      "caption": "Target Server Basis ID",
+      "description": "How target_server_name was established.",
+      "type": "integer_t",
+      "sibling": "target_server_basis",
+      "enum": {
+        "0": {
+          "caption": "Unknown"
+        },
+        "1": {
+          "caption": "Reported members of the call",
+          "description": "The call record names the server in a member of its own (for example server, mcpServerName)."
+        },
+        "2": {
+          "caption": "Reported dispatcher arguments",
+          "description": "A dispatcher tool's reported arguments name it (for example call_mcp_tool ServerName)."
+        },
+        "3": {
+          "caption": "Declared derivation from an encoded tool name",
+          "description": "Derived from the reported tool name by a pinned naming convention and confirmed unambiguous by the registered servers the source reported."
+        },
+        "99": {
+          "caption": "Other"
+        }
+      }
+    },
+    "target_server_basis": {
+      "caption": "Target Server Basis",
+      "description": "The caption of target_server_basis_id, or the source's own basis for 99 Other.",
+      "type": "string_t"
+    },
+    "target_tool_name": {
+      "caption": "Target Tool Name",
+      "description": "The MCP tool name on the addressed server, exactly as the source reports or the declared derivation yields it. The call's own tool_name and arguments are never rewritten to it.",
+      "type": "string_t"
+    },
+    "target_tool_basis_id": {
+      "caption": "Target Tool Basis ID",
+      "description": "How target_tool_name was established.",
+      "type": "integer_t",
+      "sibling": "target_tool_basis",
+      "enum": {
+        "0": {
+          "caption": "Unknown"
+        },
+        "1": {
+          "caption": "Reported members of the call"
+        },
+        "2": {
+          "caption": "Reported dispatcher arguments"
+        },
+        "3": {
+          "caption": "Declared derivation from an encoded tool name"
+        },
+        "99": {
+          "caption": "Other"
+        }
+      }
+    },
+    "target_tool_basis": {
+      "caption": "Target Tool Basis",
+      "description": "The caption of target_tool_basis_id, or the source's own basis for 99 Other.",
+      "type": "string_t"
+    },
+    "target_arguments_pointer": {
+      "caption": "Target Arguments Pointer",
+      "description": "An RFC 6901 pointer into the event's own arguments locating the arguments the addressed tool receives (empty string: the arguments themselves; /Arguments inside a dispatcher envelope). Present only when such arguments are reported; nothing is copied.",
+      "type": "string_t"
+    },
+    "protocol_objects": {
+      "caption": "Protocol Objects",
+      "description": "MCP protocol objects the source reported for this observation, each typed by the pinned binding.",
+      "type": "mcp_protocol_object",
+      "is_array": true
+    },
+    "protocol_definition": {
+      "caption": "Protocol Definition",
+      "description": "The official MCP definition name (for example CallToolResult) the protocol object is typed as.",
+      "type": "string_t"
+    },
+    "binding_revision": {
+      "caption": "Binding Revision",
+      "description": "The pinned MCP schema revision whose binding typed the protocol object. It is the binding used, not a claim about the negotiated revision (that is protocol_revision).",
+      "type": "string_t"
+    },
+    "projection_id": {
+      "caption": "Projection ID",
+      "description": "Whether a protocol object is a complete acquired protocol object, a partial projection a CLI reported, or a labelled schema example.",
+      "type": "integer_t",
+      "sibling": "projection",
+      "enum": {
+        "0": {
+          "caption": "Unknown"
+        },
+        "1": {
+          "caption": "Complete protocol object",
+          "description": "The object as the protocol carried it, acquired whole."
+        },
+        "2": {
+          "caption": "Partial projection",
+          "description": "Members a CLI reported in its own records, mapped to the protocol definition; members it did not report are absent and the required ones are listed in missing_required. Nothing is synthesized to complete it."
+        },
+        "3": {
+          "caption": "Schema example",
+          "description": "A labelled synthetic or official schema example, not an observation of a run."
+        },
+        "99": {
+          "caption": "Other"
+        }
+      }
+    },
+    "projection": {
+      "caption": "Projection",
+      "description": "The caption of projection_id.",
+      "type": "string_t"
+    },
+    "projection_basis": {
+      "caption": "Projection Basis",
+      "description": "Which source members were mapped to which protocol members, including any renaming the CLI applied (for example structured_content as structuredContent).",
+      "type": "string_t"
+    },
+    "missing_required": {
+      "caption": "Missing Required Members",
+      "description": "Protocol-required members of the definition that a partial projection does not carry.",
+      "type": "string_t",
+      "is_array": true
+    },
+    "tool_definitions": {
+      "caption": "Tool Definitions",
+      "description": "Tools the source declared as available, each in its reported declaration format.",
+      "type": "tool_definition",
+      "is_array": true
+    },
+    "tool_description": {
+      "caption": "Tool Description",
+      "description": "A tool's description exactly as declared.",
+      "type": "string_t"
+    },
+    "input_schema": {
+      "caption": "Input Schema",
+      "description": "The JSON Schema a tool declares for its input, exactly as reported.",
+      "type": "json_schema"
+    },
+    "output_schema": {
+      "caption": "Output Schema",
+      "description": "The JSON Schema a tool declares for its structured output, exactly as reported.",
+      "type": "json_schema"
+    },
+    "definition_format_id": {
+      "caption": "Definition Format ID",
+      "description": "The declaration format of a tool definition.",
+      "type": "integer_t",
+      "sibling": "definition_format",
+      "enum": {
+        "0": {
+          "caption": "Unknown"
+        },
+        "1": {
+          "caption": "MCP Tool",
+          "description": "An MCP Tool definition (typed in mcp)."
+        },
+        "2": {
+          "caption": "Function declaration",
+          "description": "A function-calling declaration (type function, name, description, parameters), as OpenAI-compatible APIs and OTel gen_ai.tool.definitions carry it."
+        },
+        "3": {
+          "caption": "Name and schema hash",
+          "description": "Only the tool name and a hash of its schema; the schema itself is not reported."
+        },
+        "4": {
+          "caption": "Name only",
+          "description": "Only the tool name."
+        },
+        "99": {
+          "caption": "Other"
+        }
+      }
+    },
+    "definition_format": {
+      "caption": "Definition Format",
+      "description": "The caption of definition_format_id.",
+      "type": "string_t"
+    },
+    "schema_hash": {
+      "caption": "Schema Hash",
+      "description": "A hash of a tool's schema exactly as the source reported it; it identifies, it does not contain, the schema.",
+      "type": "string_t"
+    },
+    "schema_dialect": {
+      "caption": "Schema Dialect",
+      "description": "The JSON Schema dialect URI the document or the source states ($schema); absent when neither states one.",
+      "type": "string_t"
+    },
+    "schema_document": {
+      "caption": "Schema Document",
+      "description": "The JSON Schema document exactly as reported.",
+      "type": "json_t"
+    },
+    "error_layer_id": {
+      "caption": "Error Layer ID",
+      "description": "Which layer reported an error.",
+      "type": "integer_t",
+      "sibling": "error_layer",
+      "enum": {
+        "0": {
+          "caption": "Unknown"
+        },
+        "1": {
+          "caption": "JSON-RPC protocol error",
+          "description": "An MCP or JSON-RPC error response (code, message, data)."
+        },
+        "2": {
+          "caption": "Tool result error",
+          "description": "A tool result that reports an error as its content (MCP isError true)."
+        },
+        "3": {
+          "caption": "CLI-reported tool failure",
+          "description": "The CLI reports that a tool call failed, without establishing which protocol layer failed."
+        },
+        "4": {
+          "caption": "CLI or process failure",
+          "description": "The CLI or its process reports a failure outside a tool call."
+        },
+        "5": {
+          "caption": "Capture failure",
+          "description": "Journal's own acquisition or persistence failed; not a vendor report."
+        },
+        "99": {
+          "caption": "Other"
+        }
+      }
+    },
+    "error_layer": {
+      "caption": "Error Layer",
+      "description": "The caption of error_layer_id.",
+      "type": "string_t"
+    },
+    "error_code": {
+      "caption": "Error Code",
+      "description": "An error code exactly as reported, keeping its JSON type (a JSON-RPC integer, a CLI string).",
+      "type": "json_t"
+    },
+    "errors": {
+      "caption": "Errors",
+      "description": "Reported errors, each with its layer.",
+      "type": "error_info",
+      "is_array": true
+    },
+    "quantity_kind_id": {
+      "caption": "Quantity Kind ID",
+      "description": "What a cost observation counts. Different kinds are never added together, and only a Monetary amount has a currency.",
+      "type": "integer_t",
+      "sibling": "quantity_kind",
+      "enum": {
+        "0": {
+          "caption": "Unknown"
+        },
+        "1": {
+          "caption": "Monetary amount",
+          "description": "Money in the stated currency."
+        },
+        "2": {
+          "caption": "Premium requests",
+          "description": "A count of premium requests the CLI reports as consumed."
+        },
+        "3": {
+          "caption": "Model cost multiplier",
+          "description": "A per-call model multiplier, or a sum of such multipliers, that a vendor reports for billing; not money and not a request count."
+        },
+        "4": {
+          "caption": "Nano-AIU",
+          "description": "Nano AI units a vendor reports."
+        },
+        "5": {
+          "caption": "Credits",
+          "description": "Account credits a vendor reports."
+        },
+        "99": {
+          "caption": "Other"
+        }
+      }
+    },
+    "quantity_kind": {
+      "caption": "Quantity Kind",
+      "description": "The caption of quantity_kind_id, or the source's own name for 99 Other.",
+      "type": "string_t"
+    },
+    "quantity_unit": {
+      "caption": "Quantity Unit",
+      "description": "The unit a non-monetary billing quantity is stated in, as the source names it.",
+      "type": "string_t"
+    },
+    "cost_observations": {
+      "caption": "Cost Observations",
+      "description": "Every cost or billing quantity the record reports, each with its quantity kind, scope and aggregation. cost_observation keeps a single reported monetary total where routes reported one before 0.11.0.",
+      "type": "cost_observation",
+      "is_array": true
+    },
+    "assembly": {
+      "caption": "Assembly",
+      "description": "How final assembly placed this event: canonical from one source, consolidated from several sources' observations, or a supporting observation that is evidence only.",
+      "type": "assembly_record"
+    },
+    "assembly_role_id": {
+      "caption": "Assembly Role ID",
+      "description": "The event's role in an assembled file. Canonical consumers read roles 1 and 3; role 2 is evidence and never counted as an execution.",
+      "type": "integer_t",
+      "sibling": "assembly_role",
+      "enum": {
+        "0": {
+          "caption": "Unknown"
+        },
+        "1": {
+          "caption": "Canonical single observation",
+          "description": "The only observation of its entity and stage among the declared sources."
+        },
+        "2": {
+          "caption": "Supporting observation",
+          "description": "One source's observation of an entity whose consolidated canonical event is in the same file."
+        },
+        "3": {
+          "caption": "Consolidated canonical",
+          "description": "The canonical event of an entity and stage that several sources observed, built from their compatible fields with per-field evidence."
+        },
+        "99": {
+          "caption": "Other"
+        }
+      }
+    },
+    "assembly_role": {
+      "caption": "Assembly Role",
+      "description": "The caption of assembly_role_id.",
+      "type": "string_t"
+    },
+    "entity_uid": {
+      "caption": "Entity ID",
+      "description": "The logical entity and lifecycle stage in its declared identity namespace (for example tool_call/started/copilot.toolCallId:call_1).",
+      "type": "string_t"
+    },
+    "occurrence_uid": {
+      "caption": "Occurrence ID",
+      "description": "A source occurrence: artifact, one-based record index and the emit ordinal of the event within that record (artifact#record/ordinal).",
+      "type": "string_t"
+    },
+    "relation_class_id": {
+      "caption": "Relation Class ID",
+      "description": "How the observations of one entity, or of one field, relate.",
+      "type": "integer_t",
+      "sibling": "relation_class",
+      "enum": {
+        "0": {
+          "caption": "Unknown"
+        },
+        "1": {
+          "caption": "Identical"
+        },
+        "2": {
+          "caption": "Representation only",
+          "description": "Equal values spelled differently (1 and 1.0)."
+        },
+        "3": {
+          "caption": "One richer",
+          "description": "One observation carries members the others lack; nothing conflicts."
+        },
+        "4": {
+          "caption": "Each richer",
+          "description": "Each carries members the others lack; nothing conflicts."
+        },
+        "5": {
+          "caption": "Conflicting",
+          "description": "Two observations report different values for one field."
+        },
+        "6": {
+          "caption": "Ambiguous",
+          "description": "The identity repeats within one source, so no pairing is established."
+        },
+        "7": {
+          "caption": "Single source",
+          "description": "Only one observation reports the field."
+        },
+        "99": {
+          "caption": "Other"
+        }
+      }
+    },
+    "relation_class": {
+      "caption": "Relation Class",
+      "description": "The caption of relation_class_id.",
+      "type": "string_t"
+    },
+    "observation_refs": {
+      "caption": "Observation References",
+      "description": "The source occurrences a consolidated event was built from.",
+      "type": "observation_ref",
+      "is_array": true
+    },
+    "emit_ordinal": {
+      "caption": "Emit Ordinal",
+      "description": "The zero-based position of an event among the events its mapper emitted for one native record.",
+      "type": "integer_t"
+    },
+    "field_evidence": {
+      "caption": "Field Evidence",
+      "description": "Per-field evidence of a consolidated event for every field whose observations are not identical.",
+      "type": "field_evidence",
+      "is_array": true
+    },
+    "field_pointer": {
+      "caption": "Field Pointer",
+      "description": "An RFC 6901 pointer into the consolidated event.",
+      "type": "string_t"
+    },
+    "occurrence_uids": {
+      "caption": "Occurrence IDs",
+      "description": "The occurrences that reported a field.",
+      "type": "string_t",
+      "is_array": true
+    },
+    "selection_basis": {
+      "caption": "Selection Basis",
+      "description": "Why the canonical value of a field is the one shown (single source, equal reports, a declared authority).",
+      "type": "string_t"
+    },
+    "assembly_conflicts": {
+      "caption": "Assembly Conflicts",
+      "description": "Fields whose observations disagree, each value with its occurrence.",
+      "type": "assembly_conflict",
+      "is_array": true
+    },
+    "observed_values": {
+      "caption": "Observed Values",
+      "description": "Each disagreeing value with its occurrence: [{occurrence_uid, value}].",
+      "type": "json_t"
+    },
+    "resolution": {
+      "caption": "Resolution",
+      "description": "unresolved, or the declared authority that selected the canonical value.",
+      "type": "string_t"
+    },
+    "mcp_action": {
+      "caption": "MCP Action",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_additional_members": {
+      "caption": "MCP Additional Members",
+      "description": "MCP members the pinned definition does not name, exactly as reported (generated).",
+      "type": "json_t"
+    },
+    "mcp_annotations": {
+      "caption": "MCP Annotations",
+      "description": "An MCP protocol value typed by mcp_annotations (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_annotations"
+    },
+    "mcp_arguments": {
+      "caption": "MCP Arguments",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_audience": {
+      "caption": "MCP Audience",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t",
+      "is_array": true
+    },
+    "mcp_audio_content": {
+      "caption": "MCP Audio Content",
+      "description": "An MCP protocol value typed by mcp_audio_content (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_audio_content"
+    },
+    "mcp_base_metadata": {
+      "caption": "MCP Base Metadata",
+      "description": "An MCP protocol value typed by mcp_base_metadata (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_base_metadata"
+    },
+    "mcp_blob": {
+      "caption": "MCP Blob",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_blob_resource_contents": {
+      "caption": "MCP Blob Resource Contents",
+      "description": "An MCP protocol value typed by mcp_blob_resource_contents (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_blob_resource_contents"
+    },
+    "mcp_boolean_schema": {
+      "caption": "MCP Boolean Schema",
+      "description": "An MCP protocol value typed by mcp_boolean_schema (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_boolean_schema"
+    },
+    "mcp_cache_scope": {
+      "caption": "MCP Cache Scope",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_cacheable_result": {
+      "caption": "MCP Cacheable Result",
+      "description": "An MCP protocol value typed by mcp_cacheable_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_cacheable_result"
+    },
+    "mcp_call": {
+      "caption": "MCP Call",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_call_tool_request": {
+      "caption": "MCP Call Tool Request",
+      "description": "An MCP protocol value typed by mcp_call_tool_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_call_tool_request"
+    },
+    "mcp_call_tool_request_params": {
+      "caption": "MCP Call Tool Request Params",
+      "description": "An MCP protocol value typed by mcp_call_tool_request_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_call_tool_request_params"
+    },
+    "mcp_call_tool_request_params__meta": {
+      "caption": "MCP Call Tool Request Params Meta",
+      "description": "An MCP protocol value typed by mcp_call_tool_request_params__meta (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_call_tool_request_params__meta"
+    },
+    "mcp_call_tool_result": {
+      "caption": "MCP Call Tool Result",
+      "description": "An MCP protocol value typed by mcp_call_tool_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_call_tool_result"
+    },
+    "mcp_call_tool_result_response": {
+      "caption": "MCP Call Tool Result Response",
+      "description": "An MCP protocol value typed by mcp_call_tool_result_response (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_call_tool_result_response"
+    },
+    "mcp_call_tool_result_response__result": {
+      "caption": "MCP Call Tool Result Response Result",
+      "description": "An MCP protocol value typed by mcp_call_tool_result_response__result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_call_tool_result_response__result"
+    },
+    "mcp_cancel": {
+      "caption": "MCP Cancel",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_cancel_task_request": {
+      "caption": "MCP Cancel Task Request",
+      "description": "An MCP protocol value typed by mcp_cancel_task_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_cancel_task_request"
+    },
+    "mcp_cancel_task_request__params": {
+      "caption": "MCP Cancel Task Request Params",
+      "description": "An MCP protocol value typed by mcp_cancel_task_request__params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_cancel_task_request__params"
+    },
+    "mcp_cancel_task_result": {
+      "caption": "MCP Cancel Task Result",
+      "description": "An MCP protocol value typed by mcp_cancel_task_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_cancel_task_result"
+    },
+    "mcp_cancelled_notification": {
+      "caption": "MCP Cancelled Notification",
+      "description": "An MCP protocol value typed by mcp_cancelled_notification (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_cancelled_notification"
+    },
+    "mcp_cancelled_notification_params": {
+      "caption": "MCP Cancelled Notification Params",
+      "description": "An MCP protocol value typed by mcp_cancelled_notification_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_cancelled_notification_params"
+    },
+    "mcp_client_capabilities": {
+      "caption": "MCP Client Capabilities",
+      "description": "An MCP protocol value typed by mcp_client_capabilities (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_client_capabilities"
+    },
+    "mcp_client_capabilities__elicitation": {
+      "caption": "MCP Client Capabilities Elicitation",
+      "description": "An MCP protocol value typed by mcp_client_capabilities__elicitation (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_client_capabilities__elicitation"
+    },
+    "mcp_client_capabilities__roots": {
+      "caption": "MCP Client Capabilities Roots",
+      "description": "An MCP protocol value typed by mcp_client_capabilities__roots (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_client_capabilities__roots"
+    },
+    "mcp_client_capabilities__sampling": {
+      "caption": "MCP Client Capabilities Sampling",
+      "description": "An MCP protocol value typed by mcp_client_capabilities__sampling (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_client_capabilities__sampling"
+    },
+    "mcp_client_capabilities__tasks": {
+      "caption": "MCP Client Capabilities Tasks",
+      "description": "An MCP protocol value typed by mcp_client_capabilities__tasks (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_client_capabilities__tasks"
+    },
+    "mcp_client_capabilities__tasks__requests": {
+      "caption": "MCP Client Capabilities Tasks Requests",
+      "description": "An MCP protocol value typed by mcp_client_capabilities__tasks__requests (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_client_capabilities__tasks__requests"
+    },
+    "mcp_client_capabilities__tasks__requests__elicitation": {
+      "caption": "MCP Client Capabilities Tasks Requests Elicitation",
+      "description": "An MCP protocol value typed by mcp_client_capabilities__tasks__requests__elicitation (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_client_capabilities__tasks__requests__elicitation"
+    },
+    "mcp_client_capabilities__tasks__requests__sampling": {
+      "caption": "MCP Client Capabilities Tasks Requests Sampling",
+      "description": "An MCP protocol value typed by mcp_client_capabilities__tasks__requests__sampling (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_client_capabilities__tasks__requests__sampling"
+    },
+    "mcp_client_notification": {
+      "caption": "MCP Client Notification",
+      "description": "An MCP protocol value typed by mcp_client_notification (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_client_notification"
+    },
+    "mcp_client_notification__2026_07_28": {
+      "caption": "MCP Client Notification 2026 07 28",
+      "description": "An MCP protocol value typed by mcp_client_notification__2026_07_28 (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_client_notification__2026_07_28"
+    },
+    "mcp_client_request": {
+      "caption": "MCP Client Request",
+      "description": "An MCP protocol value typed by mcp_client_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_client_request"
+    },
+    "mcp_client_result": {
+      "caption": "MCP Client Result",
+      "description": "An MCP protocol value typed by mcp_client_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_client_result"
+    },
+    "mcp_code": {
+      "caption": "MCP Code",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "long_t"
+    },
+    "mcp_complete_request": {
+      "caption": "MCP Complete Request",
+      "description": "An MCP protocol value typed by mcp_complete_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_complete_request"
+    },
+    "mcp_complete_request_params": {
+      "caption": "MCP Complete Request Params",
+      "description": "An MCP protocol value typed by mcp_complete_request_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_complete_request_params"
+    },
+    "mcp_complete_request_params__argument": {
+      "caption": "MCP Complete Request Params Argument",
+      "description": "An MCP protocol value typed by mcp_complete_request_params__argument (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_complete_request_params__argument"
+    },
+    "mcp_complete_request_params__context": {
+      "caption": "MCP Complete Request Params Context",
+      "description": "An MCP protocol value typed by mcp_complete_request_params__context (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_complete_request_params__context"
+    },
+    "mcp_complete_request_params__context__arguments__entry_list": {
+      "caption": "MCP Complete Request Params Context Arguments Entry List",
+      "description": "An MCP protocol value typed by mcp_complete_request_params__context__arguments__entry (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_complete_request_params__context__arguments__entry",
+      "is_array": true
+    },
+    "mcp_complete_request_params__meta": {
+      "caption": "MCP Complete Request Params Meta",
+      "description": "An MCP protocol value typed by mcp_complete_request_params__meta (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_complete_request_params__meta"
+    },
+    "mcp_complete_request_params__ref": {
+      "caption": "MCP Complete Request Params Ref",
+      "description": "An MCP protocol value typed by mcp_complete_request_params__ref (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_complete_request_params__ref"
+    },
+    "mcp_complete_result": {
+      "caption": "MCP Complete Result",
+      "description": "An MCP protocol value typed by mcp_complete_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_complete_result"
+    },
+    "mcp_complete_result__completion": {
+      "caption": "MCP Complete Result Completion",
+      "description": "An MCP protocol value typed by mcp_complete_result__completion (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_complete_result__completion"
+    },
+    "mcp_complete_result_response": {
+      "caption": "MCP Complete Result Response",
+      "description": "An MCP protocol value typed by mcp_complete_result_response (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_complete_result_response"
+    },
+    "mcp_completions": {
+      "caption": "MCP Completions",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_const": {
+      "caption": "MCP Const",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_content_block": {
+      "caption": "MCP Content Block",
+      "description": "An MCP protocol value typed by mcp_content_block (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_content_block"
+    },
+    "mcp_content_block_list": {
+      "caption": "MCP Content Block List",
+      "description": "An MCP protocol value typed by mcp_content_block (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_content_block",
+      "is_array": true
+    },
+    "mcp_context": {
+      "caption": "MCP Context",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_cost_priority": {
+      "caption": "MCP Cost Priority",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "float_t"
+    },
+    "mcp_create": {
+      "caption": "MCP Create",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_create_message": {
+      "caption": "MCP Create Message",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_create_message_request": {
+      "caption": "MCP Create Message Request",
+      "description": "An MCP protocol value typed by mcp_create_message_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_create_message_request"
+    },
+    "mcp_create_message_request_params": {
+      "caption": "MCP Create Message Request Params",
+      "description": "An MCP protocol value typed by mcp_create_message_request_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_create_message_request_params"
+    },
+    "mcp_create_message_request_params__meta": {
+      "caption": "MCP Create Message Request Params Meta",
+      "description": "An MCP protocol value typed by mcp_create_message_request_params__meta (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_create_message_request_params__meta"
+    },
+    "mcp_create_message_result": {
+      "caption": "MCP Create Message Result",
+      "description": "An MCP protocol value typed by mcp_create_message_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_create_message_result"
+    },
+    "mcp_create_message_result__content": {
+      "caption": "MCP Create Message Result Content",
+      "description": "An MCP protocol value typed by mcp_create_message_result__content (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_create_message_result__content"
+    },
+    "mcp_create_task_result": {
+      "caption": "MCP Create Task Result",
+      "description": "An MCP protocol value typed by mcp_create_task_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_create_task_result"
+    },
+    "mcp_created_at": {
+      "caption": "MCP Created At",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_cursor": {
+      "caption": "MCP Cursor",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_data_json": {
+      "caption": "MCP Data Json",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_data_string": {
+      "caption": "MCP Data String",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_default_boolean": {
+      "caption": "MCP Default Boolean",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "boolean_t"
+    },
+    "mcp_default_float": {
+      "caption": "MCP Default Float",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "float_t"
+    },
+    "mcp_default_string": {
+      "caption": "MCP Default String",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_default_string_list": {
+      "caption": "MCP Default String List",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t",
+      "is_array": true
+    },
+    "mcp_description": {
+      "caption": "MCP Description",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_destructive_hint": {
+      "caption": "MCP Destructive Hint",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "boolean_t"
+    },
+    "mcp_discover_request": {
+      "caption": "MCP Discover Request",
+      "description": "An MCP protocol value typed by mcp_discover_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_discover_request"
+    },
+    "mcp_discover_result": {
+      "caption": "MCP Discover Result",
+      "description": "An MCP protocol value typed by mcp_discover_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_discover_result"
+    },
+    "mcp_discover_result_response": {
+      "caption": "MCP Discover Result Response",
+      "description": "An MCP protocol value typed by mcp_discover_result_response (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_discover_result_response"
+    },
+    "mcp_elicit_request": {
+      "caption": "MCP Elicit Request",
+      "description": "An MCP protocol value typed by mcp_elicit_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_elicit_request"
+    },
+    "mcp_elicit_request_form_params": {
+      "caption": "MCP Elicit Request Form Params",
+      "description": "An MCP protocol value typed by mcp_elicit_request_form_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_elicit_request_form_params"
+    },
+    "mcp_elicit_request_form_params__meta": {
+      "caption": "MCP Elicit Request Form Params Meta",
+      "description": "An MCP protocol value typed by mcp_elicit_request_form_params__meta (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_elicit_request_form_params__meta"
+    },
+    "mcp_elicit_request_form_params__requested_schema": {
+      "caption": "MCP Elicit Request Form Params Requested Schema",
+      "description": "An MCP protocol value typed by mcp_elicit_request_form_params__requested_schema (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_elicit_request_form_params__requested_schema"
+    },
+    "mcp_elicit_request_form_params__requested_schema__properties__entry_list": {
+      "caption": "MCP Elicit Request Form Params Requested Schema Properties Entry List",
+      "description": "An MCP protocol value typed by mcp_elicit_request_form_params__requested_schema__properties__entry (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_elicit_request_form_params__requested_schema__properties__entry",
+      "is_array": true
+    },
+    "mcp_elicit_request_params": {
+      "caption": "MCP Elicit Request Params",
+      "description": "An MCP protocol value typed by mcp_elicit_request_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_elicit_request_params"
+    },
+    "mcp_elicit_request_url_params": {
+      "caption": "MCP Elicit Request Url Params",
+      "description": "An MCP protocol value typed by mcp_elicit_request_url_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_elicit_request_url_params"
+    },
+    "mcp_elicit_request_url_params__meta": {
+      "caption": "MCP Elicit Request Url Params Meta",
+      "description": "An MCP protocol value typed by mcp_elicit_request_url_params__meta (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_elicit_request_url_params__meta"
+    },
+    "mcp_elicit_request_url_params_list": {
+      "caption": "MCP Elicit Request Url Params List",
+      "description": "An MCP protocol value typed by mcp_elicit_request_url_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_elicit_request_url_params",
+      "is_array": true
+    },
+    "mcp_elicit_result": {
+      "caption": "MCP Elicit Result",
+      "description": "An MCP protocol value typed by mcp_elicit_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_elicit_result"
+    },
+    "mcp_elicit_result__content__entry_list": {
+      "caption": "MCP Elicit Result Content Entry List",
+      "description": "An MCP protocol value typed by mcp_elicit_result__content__entry (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_elicit_result__content__entry",
+      "is_array": true
+    },
+    "mcp_elicit_result__content__value": {
+      "caption": "MCP Elicit Result Content Value",
+      "description": "An MCP protocol value typed by mcp_elicit_result__content__value (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_elicit_result__content__value"
+    },
+    "mcp_elicitation_complete_notification": {
+      "caption": "MCP Elicitation Complete Notification",
+      "description": "An MCP protocol value typed by mcp_elicitation_complete_notification (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_elicitation_complete_notification"
+    },
+    "mcp_elicitation_complete_notification__params": {
+      "caption": "MCP Elicitation Complete Notification Params",
+      "description": "An MCP protocol value typed by mcp_elicitation_complete_notification__params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_elicitation_complete_notification__params"
+    },
+    "mcp_elicitation_id": {
+      "caption": "MCP Elicitation Id",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_embedded_resource": {
+      "caption": "MCP Embedded Resource",
+      "description": "An MCP protocol value typed by mcp_embedded_resource (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_embedded_resource"
+    },
+    "mcp_embedded_resource__resource": {
+      "caption": "MCP Embedded Resource Resource",
+      "description": "An MCP protocol value typed by mcp_embedded_resource__resource (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_embedded_resource__resource"
+    },
+    "mcp_enum": {
+      "caption": "MCP Enum",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t",
+      "is_array": true
+    },
+    "mcp_enum_names": {
+      "caption": "MCP Enum Names",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t",
+      "is_array": true
+    },
+    "mcp_enum_schema": {
+      "caption": "MCP Enum Schema",
+      "description": "An MCP protocol value typed by mcp_enum_schema (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_enum_schema"
+    },
+    "mcp_error": {
+      "caption": "MCP Error",
+      "description": "An MCP protocol value typed by mcp_error (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_error"
+    },
+    "mcp_experimental": {
+      "caption": "MCP Experimental",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_extensions": {
+      "caption": "MCP Extensions",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_form": {
+      "caption": "MCP Form",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_format": {
+      "caption": "MCP Format",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_get_prompt_request": {
+      "caption": "MCP Get Prompt Request",
+      "description": "An MCP protocol value typed by mcp_get_prompt_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_get_prompt_request"
+    },
+    "mcp_get_prompt_request_params": {
+      "caption": "MCP Get Prompt Request Params",
+      "description": "An MCP protocol value typed by mcp_get_prompt_request_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_get_prompt_request_params"
+    },
+    "mcp_get_prompt_request_params__arguments__entry_list": {
+      "caption": "MCP Get Prompt Request Params Arguments Entry List",
+      "description": "An MCP protocol value typed by mcp_get_prompt_request_params__arguments__entry (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_get_prompt_request_params__arguments__entry",
+      "is_array": true
+    },
+    "mcp_get_prompt_request_params__meta": {
+      "caption": "MCP Get Prompt Request Params Meta",
+      "description": "An MCP protocol value typed by mcp_get_prompt_request_params__meta (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_get_prompt_request_params__meta"
+    },
+    "mcp_get_prompt_result": {
+      "caption": "MCP Get Prompt Result",
+      "description": "An MCP protocol value typed by mcp_get_prompt_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_get_prompt_result"
+    },
+    "mcp_get_prompt_result_response": {
+      "caption": "MCP Get Prompt Result Response",
+      "description": "An MCP protocol value typed by mcp_get_prompt_result_response (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_get_prompt_result_response"
+    },
+    "mcp_get_prompt_result_response__result": {
+      "caption": "MCP Get Prompt Result Response Result",
+      "description": "An MCP protocol value typed by mcp_get_prompt_result_response__result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_get_prompt_result_response__result"
+    },
+    "mcp_get_task_payload_request": {
+      "caption": "MCP Get Task Payload Request",
+      "description": "An MCP protocol value typed by mcp_get_task_payload_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_get_task_payload_request"
+    },
+    "mcp_get_task_payload_request__params": {
+      "caption": "MCP Get Task Payload Request Params",
+      "description": "An MCP protocol value typed by mcp_get_task_payload_request__params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_get_task_payload_request__params"
+    },
+    "mcp_get_task_payload_result": {
+      "caption": "MCP Get Task Payload Result",
+      "description": "An MCP protocol value typed by mcp_get_task_payload_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_get_task_payload_result"
+    },
+    "mcp_get_task_request": {
+      "caption": "MCP Get Task Request",
+      "description": "An MCP protocol value typed by mcp_get_task_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_get_task_request"
+    },
+    "mcp_get_task_request__params": {
+      "caption": "MCP Get Task Request Params",
+      "description": "An MCP protocol value typed by mcp_get_task_request__params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_get_task_request__params"
+    },
+    "mcp_get_task_result": {
+      "caption": "MCP Get Task Result",
+      "description": "An MCP protocol value typed by mcp_get_task_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_get_task_result"
+    },
+    "mcp_has_more": {
+      "caption": "MCP Has More",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "boolean_t"
+    },
+    "mcp_header_mismatch_error": {
+      "caption": "MCP Header Mismatch Error",
+      "description": "An MCP protocol value typed by mcp_header_mismatch_error (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_header_mismatch_error"
+    },
+    "mcp_header_mismatch_error__error": {
+      "caption": "MCP Header Mismatch Error Error",
+      "description": "An MCP protocol value typed by mcp_header_mismatch_error__error (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_header_mismatch_error__error"
+    },
+    "mcp_icon": {
+      "caption": "MCP Icon",
+      "description": "An MCP protocol value typed by mcp_icon (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_icon"
+    },
+    "mcp_icon_list": {
+      "caption": "MCP Icon List",
+      "description": "An MCP protocol value typed by mcp_icon (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_icon",
+      "is_array": true
+    },
+    "mcp_icons": {
+      "caption": "MCP Icons",
+      "description": "An MCP protocol value typed by mcp_icons (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_icons"
+    },
+    "mcp_id_json": {
+      "caption": "MCP Id Json",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_id_string": {
+      "caption": "MCP Id String",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_idempotent_hint": {
+      "caption": "MCP Idempotent Hint",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "boolean_t"
+    },
+    "mcp_image_content": {
+      "caption": "MCP Image Content",
+      "description": "An MCP protocol value typed by mcp_image_content (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_image_content"
+    },
+    "mcp_implementation": {
+      "caption": "MCP Implementation",
+      "description": "An MCP protocol value typed by mcp_implementation (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_implementation"
+    },
+    "mcp_include_context": {
+      "caption": "MCP Include Context",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_initialize_request": {
+      "caption": "MCP Initialize Request",
+      "description": "An MCP protocol value typed by mcp_initialize_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_initialize_request"
+    },
+    "mcp_initialize_request_params": {
+      "caption": "MCP Initialize Request Params",
+      "description": "An MCP protocol value typed by mcp_initialize_request_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_initialize_request_params"
+    },
+    "mcp_initialize_request_params__meta": {
+      "caption": "MCP Initialize Request Params Meta",
+      "description": "An MCP protocol value typed by mcp_initialize_request_params__meta (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_initialize_request_params__meta"
+    },
+    "mcp_initialize_result": {
+      "caption": "MCP Initialize Result",
+      "description": "An MCP protocol value typed by mcp_initialize_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_initialize_result"
+    },
+    "mcp_initialized_notification": {
+      "caption": "MCP Initialized Notification",
+      "description": "An MCP protocol value typed by mcp_initialized_notification (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_initialized_notification"
+    },
+    "mcp_input": {
+      "caption": "MCP Input",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_input_request": {
+      "caption": "MCP Input Request",
+      "description": "An MCP protocol value typed by mcp_input_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_input_request"
+    },
+    "mcp_input_requests__entry_list": {
+      "caption": "MCP Input Requests Entry List",
+      "description": "An MCP protocol value typed by mcp_input_requests__entry (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_input_requests__entry",
+      "is_array": true
+    },
+    "mcp_input_required_result": {
+      "caption": "MCP Input Required Result",
+      "description": "An MCP protocol value typed by mcp_input_required_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_input_required_result"
+    },
+    "mcp_input_response": {
+      "caption": "MCP Input Response",
+      "description": "An MCP protocol value typed by mcp_input_response (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_input_response"
+    },
+    "mcp_input_response_request_params": {
+      "caption": "MCP Input Response Request Params",
+      "description": "An MCP protocol value typed by mcp_input_response_request_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_input_response_request_params"
+    },
+    "mcp_input_responses__entry_list": {
+      "caption": "MCP Input Responses Entry List",
+      "description": "An MCP protocol value typed by mcp_input_responses__entry (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_input_responses__entry",
+      "is_array": true
+    },
+    "mcp_instructions": {
+      "caption": "MCP Instructions",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_intelligence_priority": {
+      "caption": "MCP Intelligence Priority",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "float_t"
+    },
+    "mcp_internal_error": {
+      "caption": "MCP Internal Error",
+      "description": "An MCP protocol value typed by mcp_internal_error (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_internal_error"
+    },
+    "mcp_invalid_params_error": {
+      "caption": "MCP Invalid Params Error",
+      "description": "An MCP protocol value typed by mcp_invalid_params_error (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_invalid_params_error"
+    },
+    "mcp_invalid_request_error": {
+      "caption": "MCP Invalid Request Error",
+      "description": "An MCP protocol value typed by mcp_invalid_request_error (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_invalid_request_error"
+    },
+    "mcp_io_modelcontextprotocol_log_level": {
+      "caption": "MCP Io Modelcontextprotocol Log Level",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_io_modelcontextprotocol_protocol_version": {
+      "caption": "MCP Io Modelcontextprotocol Protocol Version",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_io_modelcontextprotocol_subscription_id": {
+      "caption": "MCP Io Modelcontextprotocol Subscription Id",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_is_error": {
+      "caption": "MCP Is Error",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "boolean_t"
+    },
+    "mcp_jsonrpc": {
+      "caption": "MCP Jsonrpc",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_jsonrpc_error_response": {
+      "caption": "MCP Jsonrpc Error Response",
+      "description": "An MCP protocol value typed by mcp_jsonrpc_error_response (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_jsonrpc_error_response"
+    },
+    "mcp_jsonrpc_message": {
+      "caption": "MCP Jsonrpc Message",
+      "description": "An MCP protocol value typed by mcp_jsonrpc_message (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_jsonrpc_message"
+    },
+    "mcp_jsonrpc_notification": {
+      "caption": "MCP Jsonrpc Notification",
+      "description": "An MCP protocol value typed by mcp_jsonrpc_notification (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_jsonrpc_notification"
+    },
+    "mcp_jsonrpc_request": {
+      "caption": "MCP Jsonrpc Request",
+      "description": "An MCP protocol value typed by mcp_jsonrpc_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_jsonrpc_request"
+    },
+    "mcp_jsonrpc_response": {
+      "caption": "MCP Jsonrpc Response",
+      "description": "An MCP protocol value typed by mcp_jsonrpc_response (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_jsonrpc_response"
+    },
+    "mcp_jsonrpc_result_response": {
+      "caption": "MCP Jsonrpc Result Response",
+      "description": "An MCP protocol value typed by mcp_jsonrpc_result_response (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_jsonrpc_result_response"
+    },
+    "mcp_key": {
+      "caption": "MCP Key",
+      "description": "An MCP map key exactly as reported (generated).",
+      "type": "string_t"
+    },
+    "mcp_last_modified": {
+      "caption": "MCP Last Modified",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_last_updated_at": {
+      "caption": "MCP Last Updated At",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_legacy_titled_enum_schema": {
+      "caption": "MCP Legacy Titled Enum Schema",
+      "description": "An MCP protocol value typed by mcp_legacy_titled_enum_schema (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_legacy_titled_enum_schema"
+    },
+    "mcp_level": {
+      "caption": "MCP Level",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_list": {
+      "caption": "MCP List",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_list_changed": {
+      "caption": "MCP List Changed",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "boolean_t"
+    },
+    "mcp_list_prompts_request": {
+      "caption": "MCP List Prompts Request",
+      "description": "An MCP protocol value typed by mcp_list_prompts_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_list_prompts_request"
+    },
+    "mcp_list_prompts_result": {
+      "caption": "MCP List Prompts Result",
+      "description": "An MCP protocol value typed by mcp_list_prompts_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_list_prompts_result"
+    },
+    "mcp_list_prompts_result_response": {
+      "caption": "MCP List Prompts Result Response",
+      "description": "An MCP protocol value typed by mcp_list_prompts_result_response (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_list_prompts_result_response"
+    },
+    "mcp_list_resource_templates_request": {
+      "caption": "MCP List Resource Templates Request",
+      "description": "An MCP protocol value typed by mcp_list_resource_templates_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_list_resource_templates_request"
+    },
+    "mcp_list_resource_templates_result": {
+      "caption": "MCP List Resource Templates Result",
+      "description": "An MCP protocol value typed by mcp_list_resource_templates_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_list_resource_templates_result"
+    },
+    "mcp_list_resource_templates_result_response": {
+      "caption": "MCP List Resource Templates Result Response",
+      "description": "An MCP protocol value typed by mcp_list_resource_templates_result_response (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_list_resource_templates_result_response"
+    },
+    "mcp_list_resources_request": {
+      "caption": "MCP List Resources Request",
+      "description": "An MCP protocol value typed by mcp_list_resources_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_list_resources_request"
+    },
+    "mcp_list_resources_result": {
+      "caption": "MCP List Resources Result",
+      "description": "An MCP protocol value typed by mcp_list_resources_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_list_resources_result"
+    },
+    "mcp_list_resources_result_response": {
+      "caption": "MCP List Resources Result Response",
+      "description": "An MCP protocol value typed by mcp_list_resources_result_response (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_list_resources_result_response"
+    },
+    "mcp_list_roots_request": {
+      "caption": "MCP List Roots Request",
+      "description": "An MCP protocol value typed by mcp_list_roots_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_list_roots_request"
+    },
+    "mcp_list_roots_request__params": {
+      "caption": "MCP List Roots Request Params",
+      "description": "An MCP protocol value typed by mcp_list_roots_request__params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_list_roots_request__params"
+    },
+    "mcp_list_roots_result": {
+      "caption": "MCP List Roots Result",
+      "description": "An MCP protocol value typed by mcp_list_roots_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_list_roots_result"
+    },
+    "mcp_list_tasks_request": {
+      "caption": "MCP List Tasks Request",
+      "description": "An MCP protocol value typed by mcp_list_tasks_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_list_tasks_request"
+    },
+    "mcp_list_tasks_result": {
+      "caption": "MCP List Tasks Result",
+      "description": "An MCP protocol value typed by mcp_list_tasks_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_list_tasks_result"
+    },
+    "mcp_list_tools_request": {
+      "caption": "MCP List Tools Request",
+      "description": "An MCP protocol value typed by mcp_list_tools_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_list_tools_request"
+    },
+    "mcp_list_tools_result": {
+      "caption": "MCP List Tools Result",
+      "description": "An MCP protocol value typed by mcp_list_tools_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_list_tools_result"
+    },
+    "mcp_list_tools_result_response": {
+      "caption": "MCP List Tools Result Response",
+      "description": "An MCP protocol value typed by mcp_list_tools_result_response (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_list_tools_result_response"
+    },
+    "mcp_logger": {
+      "caption": "MCP Logger",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_logging": {
+      "caption": "MCP Logging",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_logging_message_notification": {
+      "caption": "MCP Logging Message Notification",
+      "description": "An MCP protocol value typed by mcp_logging_message_notification (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_logging_message_notification"
+    },
+    "mcp_logging_message_notification_params": {
+      "caption": "MCP Logging Message Notification Params",
+      "description": "An MCP protocol value typed by mcp_logging_message_notification_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_logging_message_notification_params"
+    },
+    "mcp_max_items": {
+      "caption": "MCP Max Items",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "long_t"
+    },
+    "mcp_max_length": {
+      "caption": "MCP Max Length",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "long_t"
+    },
+    "mcp_max_tokens": {
+      "caption": "MCP Max Tokens",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "long_t"
+    },
+    "mcp_maximum": {
+      "caption": "MCP Maximum",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "float_t"
+    },
+    "mcp_message": {
+      "caption": "MCP Message",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_meta": {
+      "caption": "MCP Meta",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_metadata": {
+      "caption": "MCP Metadata",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_method": {
+      "caption": "MCP Method",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_method_not_found_error": {
+      "caption": "MCP Method Not Found Error",
+      "description": "An MCP protocol value typed by mcp_method_not_found_error (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_method_not_found_error"
+    },
+    "mcp_mime_type": {
+      "caption": "MCP Mime Type",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_min_items": {
+      "caption": "MCP Min Items",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "long_t"
+    },
+    "mcp_min_length": {
+      "caption": "MCP Min Length",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "long_t"
+    },
+    "mcp_minimum": {
+      "caption": "MCP Minimum",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "float_t"
+    },
+    "mcp_missing_required_client_capability_error": {
+      "caption": "MCP Missing Required Client Capability Error",
+      "description": "An MCP protocol value typed by mcp_missing_required_client_capability_error (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_missing_required_client_capability_error"
+    },
+    "mcp_missing_required_client_capability_error__error": {
+      "caption": "MCP Missing Required Client Capability Error Error",
+      "description": "An MCP protocol value typed by mcp_missing_required_client_capability_error__error (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_missing_required_client_capability_error__error"
+    },
+    "mcp_missing_required_client_capability_error__error__data": {
+      "caption": "MCP Missing Required Client Capability Error Error Data",
+      "description": "An MCP protocol value typed by mcp_missing_required_client_capability_error__error__data (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_missing_required_client_capability_error__error__data"
+    },
+    "mcp_mode": {
+      "caption": "MCP Mode",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_model": {
+      "caption": "MCP Model",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_model_hint": {
+      "caption": "MCP Model Hint",
+      "description": "An MCP protocol value typed by mcp_model_hint (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_model_hint"
+    },
+    "mcp_model_hint_list": {
+      "caption": "MCP Model Hint List",
+      "description": "An MCP protocol value typed by mcp_model_hint (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_model_hint",
+      "is_array": true
+    },
+    "mcp_model_preferences": {
+      "caption": "MCP Model Preferences",
+      "description": "An MCP protocol value typed by mcp_model_preferences (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_model_preferences"
+    },
+    "mcp_multi_select_enum_schema": {
+      "caption": "MCP Multi Select Enum Schema",
+      "description": "An MCP protocol value typed by mcp_multi_select_enum_schema (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_multi_select_enum_schema"
+    },
+    "mcp_name": {
+      "caption": "MCP Name",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_next_cursor": {
+      "caption": "MCP Next Cursor",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_nonconforming_members": {
+      "caption": "MCP Nonconforming Members",
+      "description": "MCP members whose value does not fit the pinned definition, exactly as reported (generated).",
+      "type": "json_t"
+    },
+    "mcp_notification": {
+      "caption": "MCP Notification",
+      "description": "An MCP protocol value typed by mcp_notification (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_notification"
+    },
+    "mcp_notification_meta_object": {
+      "caption": "MCP Notification Meta Object",
+      "description": "An MCP protocol value typed by mcp_notification_meta_object (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_notification_meta_object"
+    },
+    "mcp_notification_params": {
+      "caption": "MCP Notification Params",
+      "description": "An MCP protocol value typed by mcp_notification_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_notification_params"
+    },
+    "mcp_number_schema": {
+      "caption": "MCP Number Schema",
+      "description": "An MCP protocol value typed by mcp_number_schema (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_number_schema"
+    },
+    "mcp_open_world_hint": {
+      "caption": "MCP Open World Hint",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "boolean_t"
+    },
+    "mcp_paginated_request": {
+      "caption": "MCP Paginated Request",
+      "description": "An MCP protocol value typed by mcp_paginated_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_paginated_request"
+    },
+    "mcp_paginated_request_params": {
+      "caption": "MCP Paginated Request Params",
+      "description": "An MCP protocol value typed by mcp_paginated_request_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_paginated_request_params"
+    },
+    "mcp_paginated_request_params__meta": {
+      "caption": "MCP Paginated Request Params Meta",
+      "description": "An MCP protocol value typed by mcp_paginated_request_params__meta (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_paginated_request_params__meta"
+    },
+    "mcp_paginated_result": {
+      "caption": "MCP Paginated Result",
+      "description": "An MCP protocol value typed by mcp_paginated_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_paginated_result"
+    },
+    "mcp_params": {
+      "caption": "MCP Params",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_parse_error": {
+      "caption": "MCP Parse Error",
+      "description": "An MCP protocol value typed by mcp_parse_error (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_parse_error"
+    },
+    "mcp_ping_request": {
+      "caption": "MCP Ping Request",
+      "description": "An MCP protocol value typed by mcp_ping_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_ping_request"
+    },
+    "mcp_poll_interval": {
+      "caption": "MCP Poll Interval",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "long_t"
+    },
+    "mcp_primitive_schema_definition": {
+      "caption": "MCP Primitive Schema Definition",
+      "description": "An MCP protocol value typed by mcp_primitive_schema_definition (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_primitive_schema_definition"
+    },
+    "mcp_priority": {
+      "caption": "MCP Priority",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "float_t"
+    },
+    "mcp_progress": {
+      "caption": "MCP Progress",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "float_t"
+    },
+    "mcp_progress_notification": {
+      "caption": "MCP Progress Notification",
+      "description": "An MCP protocol value typed by mcp_progress_notification (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_progress_notification"
+    },
+    "mcp_progress_notification_params": {
+      "caption": "MCP Progress Notification Params",
+      "description": "An MCP protocol value typed by mcp_progress_notification_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_progress_notification_params"
+    },
+    "mcp_progress_token": {
+      "caption": "MCP Progress Token",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_prompt": {
+      "caption": "MCP Prompt",
+      "description": "An MCP protocol value typed by mcp_prompt (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_prompt"
+    },
+    "mcp_prompt_argument": {
+      "caption": "MCP Prompt Argument",
+      "description": "An MCP protocol value typed by mcp_prompt_argument (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_prompt_argument"
+    },
+    "mcp_prompt_argument_list": {
+      "caption": "MCP Prompt Argument List",
+      "description": "An MCP protocol value typed by mcp_prompt_argument (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_prompt_argument",
+      "is_array": true
+    },
+    "mcp_prompt_list": {
+      "caption": "MCP Prompt List",
+      "description": "An MCP protocol value typed by mcp_prompt (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_prompt",
+      "is_array": true
+    },
+    "mcp_prompt_list_changed_notification": {
+      "caption": "MCP Prompt List Changed Notification",
+      "description": "An MCP protocol value typed by mcp_prompt_list_changed_notification (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_prompt_list_changed_notification"
+    },
+    "mcp_prompt_message": {
+      "caption": "MCP Prompt Message",
+      "description": "An MCP protocol value typed by mcp_prompt_message (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_prompt_message"
+    },
+    "mcp_prompt_message_list": {
+      "caption": "MCP Prompt Message List",
+      "description": "An MCP protocol value typed by mcp_prompt_message (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_prompt_message",
+      "is_array": true
+    },
+    "mcp_prompt_reference": {
+      "caption": "MCP Prompt Reference",
+      "description": "An MCP protocol value typed by mcp_prompt_reference (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_prompt_reference"
+    },
+    "mcp_prompts_list_changed": {
+      "caption": "MCP Prompts List Changed",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "boolean_t"
+    },
+    "mcp_properties": {
+      "caption": "MCP Properties",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_protocol_version": {
+      "caption": "MCP Protocol Version",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_read_only_hint": {
+      "caption": "MCP Read Only Hint",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "boolean_t"
+    },
+    "mcp_read_resource_request": {
+      "caption": "MCP Read Resource Request",
+      "description": "An MCP protocol value typed by mcp_read_resource_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_read_resource_request"
+    },
+    "mcp_read_resource_request_params": {
+      "caption": "MCP Read Resource Request Params",
+      "description": "An MCP protocol value typed by mcp_read_resource_request_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_read_resource_request_params"
+    },
+    "mcp_read_resource_request_params__meta": {
+      "caption": "MCP Read Resource Request Params Meta",
+      "description": "An MCP protocol value typed by mcp_read_resource_request_params__meta (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_read_resource_request_params__meta"
+    },
+    "mcp_read_resource_result": {
+      "caption": "MCP Read Resource Result",
+      "description": "An MCP protocol value typed by mcp_read_resource_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_read_resource_result"
+    },
+    "mcp_read_resource_result__contents__item_list": {
+      "caption": "MCP Read Resource Result Contents Item List",
+      "description": "An MCP protocol value typed by mcp_read_resource_result__contents__item (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_read_resource_result__contents__item",
+      "is_array": true
+    },
+    "mcp_read_resource_result_response": {
+      "caption": "MCP Read Resource Result Response",
+      "description": "An MCP protocol value typed by mcp_read_resource_result_response (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_read_resource_result_response"
+    },
+    "mcp_read_resource_result_response__result": {
+      "caption": "MCP Read Resource Result Response Result",
+      "description": "An MCP protocol value typed by mcp_read_resource_result_response__result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_read_resource_result_response__result"
+    },
+    "mcp_reason": {
+      "caption": "MCP Reason",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_related_task_metadata": {
+      "caption": "MCP Related Task Metadata",
+      "description": "An MCP protocol value typed by mcp_related_task_metadata (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_related_task_metadata"
+    },
+    "mcp_request": {
+      "caption": "MCP Request",
+      "description": "An MCP protocol value typed by mcp_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_request"
+    },
+    "mcp_request_id": {
+      "caption": "MCP Request Id",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_request_meta_object": {
+      "caption": "MCP Request Meta Object",
+      "description": "An MCP protocol value typed by mcp_request_meta_object (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_request_meta_object"
+    },
+    "mcp_request_params": {
+      "caption": "MCP Request Params",
+      "description": "An MCP protocol value typed by mcp_request_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_request_params"
+    },
+    "mcp_request_params__meta": {
+      "caption": "MCP Request Params Meta",
+      "description": "An MCP protocol value typed by mcp_request_params__meta (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_request_params__meta"
+    },
+    "mcp_request_state": {
+      "caption": "MCP Request State",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_requested": {
+      "caption": "MCP Requested",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_required_boolean": {
+      "caption": "MCP Required Boolean",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "boolean_t"
+    },
+    "mcp_required_string_list": {
+      "caption": "MCP Required String List",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t",
+      "is_array": true
+    },
+    "mcp_resource": {
+      "caption": "MCP Resource",
+      "description": "An MCP protocol value typed by mcp_resource (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_resource"
+    },
+    "mcp_resource_contents": {
+      "caption": "MCP Resource Contents",
+      "description": "An MCP protocol value typed by mcp_resource_contents (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_resource_contents"
+    },
+    "mcp_resource_link": {
+      "caption": "MCP Resource Link",
+      "description": "An MCP protocol value typed by mcp_resource_link (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_resource_link"
+    },
+    "mcp_resource_list": {
+      "caption": "MCP Resource List",
+      "description": "An MCP protocol value typed by mcp_resource (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_resource",
+      "is_array": true
+    },
+    "mcp_resource_list_changed_notification": {
+      "caption": "MCP Resource List Changed Notification",
+      "description": "An MCP protocol value typed by mcp_resource_list_changed_notification (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_resource_list_changed_notification"
+    },
+    "mcp_resource_request_params": {
+      "caption": "MCP Resource Request Params",
+      "description": "An MCP protocol value typed by mcp_resource_request_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_resource_request_params"
+    },
+    "mcp_resource_request_params__meta": {
+      "caption": "MCP Resource Request Params Meta",
+      "description": "An MCP protocol value typed by mcp_resource_request_params__meta (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_resource_request_params__meta"
+    },
+    "mcp_resource_subscriptions": {
+      "caption": "MCP Resource Subscriptions",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t",
+      "is_array": true
+    },
+    "mcp_resource_template": {
+      "caption": "MCP Resource Template",
+      "description": "An MCP protocol value typed by mcp_resource_template (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_resource_template"
+    },
+    "mcp_resource_template_list": {
+      "caption": "MCP Resource Template List",
+      "description": "An MCP protocol value typed by mcp_resource_template (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_resource_template",
+      "is_array": true
+    },
+    "mcp_resource_template_reference": {
+      "caption": "MCP Resource Template Reference",
+      "description": "An MCP protocol value typed by mcp_resource_template_reference (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_resource_template_reference"
+    },
+    "mcp_resource_updated_notification": {
+      "caption": "MCP Resource Updated Notification",
+      "description": "An MCP protocol value typed by mcp_resource_updated_notification (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_resource_updated_notification"
+    },
+    "mcp_resource_updated_notification_params": {
+      "caption": "MCP Resource Updated Notification Params",
+      "description": "An MCP protocol value typed by mcp_resource_updated_notification_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_resource_updated_notification_params"
+    },
+    "mcp_resources_list_changed": {
+      "caption": "MCP Resources List Changed",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "boolean_t"
+    },
+    "mcp_result": {
+      "caption": "MCP Result",
+      "description": "An MCP protocol value typed by mcp_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_result"
+    },
+    "mcp_result_meta_object": {
+      "caption": "MCP Result Meta Object",
+      "description": "An MCP protocol value typed by mcp_result_meta_object (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_result_meta_object"
+    },
+    "mcp_result_type": {
+      "caption": "MCP Result Type",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_role": {
+      "caption": "MCP Role",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_root": {
+      "caption": "MCP Root",
+      "description": "An MCP protocol value typed by mcp_root (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_root"
+    },
+    "mcp_root_list": {
+      "caption": "MCP Root List",
+      "description": "An MCP protocol value typed by mcp_root (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_root",
+      "is_array": true
+    },
+    "mcp_roots": {
+      "caption": "MCP Roots",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_roots_list_changed_notification": {
+      "caption": "MCP Roots List Changed Notification",
+      "description": "An MCP protocol value typed by mcp_roots_list_changed_notification (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_roots_list_changed_notification"
+    },
+    "mcp_sampling_message": {
+      "caption": "MCP Sampling Message",
+      "description": "An MCP protocol value typed by mcp_sampling_message (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_sampling_message"
+    },
+    "mcp_sampling_message__content": {
+      "caption": "MCP Sampling Message Content",
+      "description": "An MCP protocol value typed by mcp_sampling_message__content (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_sampling_message__content"
+    },
+    "mcp_sampling_message_content_block": {
+      "caption": "MCP Sampling Message Content Block",
+      "description": "An MCP protocol value typed by mcp_sampling_message_content_block (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_sampling_message_content_block"
+    },
+    "mcp_sampling_message_content_block_list": {
+      "caption": "MCP Sampling Message Content Block List",
+      "description": "An MCP protocol value typed by mcp_sampling_message_content_block (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_sampling_message_content_block",
+      "is_array": true
+    },
+    "mcp_sampling_message_list": {
+      "caption": "MCP Sampling Message List",
+      "description": "An MCP protocol value typed by mcp_sampling_message (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_sampling_message",
+      "is_array": true
+    },
+    "mcp_scalar_value": {
+      "caption": "MCP Scalar Value",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_schema": {
+      "caption": "MCP Schema",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_server_capabilities": {
+      "caption": "MCP Server Capabilities",
+      "description": "An MCP protocol value typed by mcp_server_capabilities (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_server_capabilities"
+    },
+    "mcp_server_capabilities__prompts": {
+      "caption": "MCP Server Capabilities Prompts",
+      "description": "An MCP protocol value typed by mcp_server_capabilities__prompts (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_server_capabilities__prompts"
+    },
+    "mcp_server_capabilities__resources": {
+      "caption": "MCP Server Capabilities Resources",
+      "description": "An MCP protocol value typed by mcp_server_capabilities__resources (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_server_capabilities__resources"
+    },
+    "mcp_server_capabilities__tasks": {
+      "caption": "MCP Server Capabilities Tasks",
+      "description": "An MCP protocol value typed by mcp_server_capabilities__tasks (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_server_capabilities__tasks"
+    },
+    "mcp_server_capabilities__tasks__requests": {
+      "caption": "MCP Server Capabilities Tasks Requests",
+      "description": "An MCP protocol value typed by mcp_server_capabilities__tasks__requests (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_server_capabilities__tasks__requests"
+    },
+    "mcp_server_capabilities__tasks__requests__tools": {
+      "caption": "MCP Server Capabilities Tasks Requests Tools",
+      "description": "An MCP protocol value typed by mcp_server_capabilities__tasks__requests__tools (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_server_capabilities__tasks__requests__tools"
+    },
+    "mcp_server_capabilities__tools": {
+      "caption": "MCP Server Capabilities Tools",
+      "description": "An MCP protocol value typed by mcp_server_capabilities__tools (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_server_capabilities__tools"
+    },
+    "mcp_server_notification": {
+      "caption": "MCP Server Notification",
+      "description": "An MCP protocol value typed by mcp_server_notification (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_server_notification"
+    },
+    "mcp_server_request": {
+      "caption": "MCP Server Request",
+      "description": "An MCP protocol value typed by mcp_server_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_server_request"
+    },
+    "mcp_server_result": {
+      "caption": "MCP Server Result",
+      "description": "An MCP protocol value typed by mcp_server_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_server_result"
+    },
+    "mcp_set_level_request": {
+      "caption": "MCP Set Level Request",
+      "description": "An MCP protocol value typed by mcp_set_level_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_set_level_request"
+    },
+    "mcp_set_level_request_params": {
+      "caption": "MCP Set Level Request Params",
+      "description": "An MCP protocol value typed by mcp_set_level_request_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_set_level_request_params"
+    },
+    "mcp_set_level_request_params__meta": {
+      "caption": "MCP Set Level Request Params Meta",
+      "description": "An MCP protocol value typed by mcp_set_level_request_params__meta (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_set_level_request_params__meta"
+    },
+    "mcp_single_select_enum_schema": {
+      "caption": "MCP Single Select Enum Schema",
+      "description": "An MCP protocol value typed by mcp_single_select_enum_schema (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_single_select_enum_schema"
+    },
+    "mcp_size": {
+      "caption": "MCP Size",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "long_t"
+    },
+    "mcp_sizes": {
+      "caption": "MCP Sizes",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t",
+      "is_array": true
+    },
+    "mcp_speed_priority": {
+      "caption": "MCP Speed Priority",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "float_t"
+    },
+    "mcp_src": {
+      "caption": "MCP Src",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_status": {
+      "caption": "MCP Status",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_status_message": {
+      "caption": "MCP Status Message",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_stop_reason": {
+      "caption": "MCP Stop Reason",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_stop_sequences": {
+      "caption": "MCP Stop Sequences",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t",
+      "is_array": true
+    },
+    "mcp_string_schema": {
+      "caption": "MCP String Schema",
+      "description": "An MCP protocol value typed by mcp_string_schema (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_string_schema"
+    },
+    "mcp_string_value": {
+      "caption": "MCP String Value",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_string_values": {
+      "caption": "MCP String Values",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t",
+      "is_array": true
+    },
+    "mcp_structured_content": {
+      "caption": "MCP Structured Content",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_subscribe": {
+      "caption": "MCP Subscribe",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "boolean_t"
+    },
+    "mcp_subscribe_request": {
+      "caption": "MCP Subscribe Request",
+      "description": "An MCP protocol value typed by mcp_subscribe_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_subscribe_request"
+    },
+    "mcp_subscribe_request_params": {
+      "caption": "MCP Subscribe Request Params",
+      "description": "An MCP protocol value typed by mcp_subscribe_request_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_subscribe_request_params"
+    },
+    "mcp_subscribe_request_params__meta": {
+      "caption": "MCP Subscribe Request Params Meta",
+      "description": "An MCP protocol value typed by mcp_subscribe_request_params__meta (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_subscribe_request_params__meta"
+    },
+    "mcp_subscription_filter": {
+      "caption": "MCP Subscription Filter",
+      "description": "An MCP protocol value typed by mcp_subscription_filter (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_subscription_filter"
+    },
+    "mcp_subscriptions_acknowledged_notification": {
+      "caption": "MCP Subscriptions Acknowledged Notification",
+      "description": "An MCP protocol value typed by mcp_subscriptions_acknowledged_notification (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_subscriptions_acknowledged_notification"
+    },
+    "mcp_subscriptions_acknowledged_notification_params": {
+      "caption": "MCP Subscriptions Acknowledged Notification Params",
+      "description": "An MCP protocol value typed by mcp_subscriptions_acknowledged_notification_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_subscriptions_acknowledged_notification_params"
+    },
+    "mcp_subscriptions_listen_request": {
+      "caption": "MCP Subscriptions Listen Request",
+      "description": "An MCP protocol value typed by mcp_subscriptions_listen_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_subscriptions_listen_request"
+    },
+    "mcp_subscriptions_listen_request_params": {
+      "caption": "MCP Subscriptions Listen Request Params",
+      "description": "An MCP protocol value typed by mcp_subscriptions_listen_request_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_subscriptions_listen_request_params"
+    },
+    "mcp_subscriptions_listen_result": {
+      "caption": "MCP Subscriptions Listen Result",
+      "description": "An MCP protocol value typed by mcp_subscriptions_listen_result (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_subscriptions_listen_result"
+    },
+    "mcp_subscriptions_listen_result_meta_object": {
+      "caption": "MCP Subscriptions Listen Result Meta Object",
+      "description": "An MCP protocol value typed by mcp_subscriptions_listen_result_meta_object (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_subscriptions_listen_result_meta_object"
+    },
+    "mcp_subscriptions_listen_result_response": {
+      "caption": "MCP Subscriptions Listen Result Response",
+      "description": "An MCP protocol value typed by mcp_subscriptions_listen_result_response (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_subscriptions_listen_result_response"
+    },
+    "mcp_supported": {
+      "caption": "MCP Supported",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t",
+      "is_array": true
+    },
+    "mcp_supported_versions": {
+      "caption": "MCP Supported Versions",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t",
+      "is_array": true
+    },
+    "mcp_system_prompt": {
+      "caption": "MCP System Prompt",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_task": {
+      "caption": "MCP Task",
+      "description": "An MCP protocol value typed by mcp_task (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_task"
+    },
+    "mcp_task_augmented_request_params": {
+      "caption": "MCP Task Augmented Request Params",
+      "description": "An MCP protocol value typed by mcp_task_augmented_request_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_task_augmented_request_params"
+    },
+    "mcp_task_augmented_request_params__meta": {
+      "caption": "MCP Task Augmented Request Params Meta",
+      "description": "An MCP protocol value typed by mcp_task_augmented_request_params__meta (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_task_augmented_request_params__meta"
+    },
+    "mcp_task_id": {
+      "caption": "MCP Task Id",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_task_list": {
+      "caption": "MCP Task List",
+      "description": "An MCP protocol value typed by mcp_task (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_task",
+      "is_array": true
+    },
+    "mcp_task_metadata": {
+      "caption": "MCP Task Metadata",
+      "description": "An MCP protocol value typed by mcp_task_metadata (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_task_metadata"
+    },
+    "mcp_task_status_notification": {
+      "caption": "MCP Task Status Notification",
+      "description": "An MCP protocol value typed by mcp_task_status_notification (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_task_status_notification"
+    },
+    "mcp_task_status_notification_params": {
+      "caption": "MCP Task Status Notification Params",
+      "description": "An MCP protocol value typed by mcp_task_status_notification_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_task_status_notification_params"
+    },
+    "mcp_task_support": {
+      "caption": "MCP Task Support",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_temperature": {
+      "caption": "MCP Temperature",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "float_t"
+    },
+    "mcp_text": {
+      "caption": "MCP Text",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_text_content": {
+      "caption": "MCP Text Content",
+      "description": "An MCP protocol value typed by mcp_text_content (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_text_content"
+    },
+    "mcp_text_resource_contents": {
+      "caption": "MCP Text Resource Contents",
+      "description": "An MCP protocol value typed by mcp_text_resource_contents (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_text_resource_contents"
+    },
+    "mcp_theme": {
+      "caption": "MCP Theme",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_title": {
+      "caption": "MCP Title",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_titled_multi_select_enum_schema": {
+      "caption": "MCP Titled Multi Select Enum Schema",
+      "description": "An MCP protocol value typed by mcp_titled_multi_select_enum_schema (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_titled_multi_select_enum_schema"
+    },
+    "mcp_titled_multi_select_enum_schema__items": {
+      "caption": "MCP Titled Multi Select Enum Schema Items",
+      "description": "An MCP protocol value typed by mcp_titled_multi_select_enum_schema__items (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_titled_multi_select_enum_schema__items"
+    },
+    "mcp_titled_multi_select_enum_schema__items__any_of__item_list": {
+      "caption": "MCP Titled Multi Select Enum Schema Items Any Of Item List",
+      "description": "An MCP protocol value typed by mcp_titled_multi_select_enum_schema__items__any_of__item (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_titled_multi_select_enum_schema__items__any_of__item",
+      "is_array": true
+    },
+    "mcp_titled_single_select_enum_schema": {
+      "caption": "MCP Titled Single Select Enum Schema",
+      "description": "An MCP protocol value typed by mcp_titled_single_select_enum_schema (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_titled_single_select_enum_schema"
+    },
+    "mcp_titled_single_select_enum_schema__one_of__item_list": {
+      "caption": "MCP Titled Single Select Enum Schema One Of Item List",
+      "description": "An MCP protocol value typed by mcp_titled_single_select_enum_schema__one_of__item (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_titled_single_select_enum_schema__one_of__item",
+      "is_array": true
+    },
+    "mcp_tool": {
+      "caption": "MCP Tool",
+      "description": "An MCP protocol value typed by mcp_tool (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_tool"
+    },
+    "mcp_tool__input_schema": {
+      "caption": "MCP Tool Input Schema",
+      "description": "An MCP protocol value typed by mcp_tool__input_schema (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_tool__input_schema"
+    },
+    "mcp_tool__output_schema": {
+      "caption": "MCP Tool Output Schema",
+      "description": "An MCP protocol value typed by mcp_tool__output_schema (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_tool__output_schema"
+    },
+    "mcp_tool_annotations": {
+      "caption": "MCP Tool Annotations",
+      "description": "An MCP protocol value typed by mcp_tool_annotations (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_tool_annotations"
+    },
+    "mcp_tool_choice": {
+      "caption": "MCP Tool Choice",
+      "description": "An MCP protocol value typed by mcp_tool_choice (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_tool_choice"
+    },
+    "mcp_tool_execution": {
+      "caption": "MCP Tool Execution",
+      "description": "An MCP protocol value typed by mcp_tool_execution (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_tool_execution"
+    },
+    "mcp_tool_list": {
+      "caption": "MCP Tool List",
+      "description": "An MCP protocol value typed by mcp_tool (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_tool",
+      "is_array": true
+    },
+    "mcp_tool_list_changed_notification": {
+      "caption": "MCP Tool List Changed Notification",
+      "description": "An MCP protocol value typed by mcp_tool_list_changed_notification (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_tool_list_changed_notification"
+    },
+    "mcp_tool_result_content": {
+      "caption": "MCP Tool Result Content",
+      "description": "An MCP protocol value typed by mcp_tool_result_content (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_tool_result_content"
+    },
+    "mcp_tool_use_content": {
+      "caption": "MCP Tool Use Content",
+      "description": "An MCP protocol value typed by mcp_tool_use_content (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_tool_use_content"
+    },
+    "mcp_tool_use_id": {
+      "caption": "MCP Tool Use Id",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_tools": {
+      "caption": "MCP Tools",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_tools_list_changed": {
+      "caption": "MCP Tools List Changed",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "boolean_t"
+    },
+    "mcp_total_float": {
+      "caption": "MCP Total Float",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "float_t"
+    },
+    "mcp_total_long": {
+      "caption": "MCP Total Long",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "long_t"
+    },
+    "mcp_ttl_json": {
+      "caption": "MCP Ttl Json",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_ttl_long": {
+      "caption": "MCP Ttl Long",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "long_t"
+    },
+    "mcp_ttl_ms": {
+      "caption": "MCP Ttl Ms",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "long_t"
+    },
+    "mcp_type": {
+      "caption": "MCP Type",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_unresolved": {
+      "caption": "MCP Unresolved",
+      "description": "An MCP union value no single alternative matches, exactly as reported (generated).",
+      "type": "json_t"
+    },
+    "mcp_unsubscribe_request": {
+      "caption": "MCP Unsubscribe Request",
+      "description": "An MCP protocol value typed by mcp_unsubscribe_request (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_unsubscribe_request"
+    },
+    "mcp_unsubscribe_request_params": {
+      "caption": "MCP Unsubscribe Request Params",
+      "description": "An MCP protocol value typed by mcp_unsubscribe_request_params (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_unsubscribe_request_params"
+    },
+    "mcp_unsubscribe_request_params__meta": {
+      "caption": "MCP Unsubscribe Request Params Meta",
+      "description": "An MCP protocol value typed by mcp_unsubscribe_request_params__meta (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_unsubscribe_request_params__meta"
+    },
+    "mcp_unsupported_protocol_version_error": {
+      "caption": "MCP Unsupported Protocol Version Error",
+      "description": "An MCP protocol value typed by mcp_unsupported_protocol_version_error (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_unsupported_protocol_version_error"
+    },
+    "mcp_unsupported_protocol_version_error__error": {
+      "caption": "MCP Unsupported Protocol Version Error Error",
+      "description": "An MCP protocol value typed by mcp_unsupported_protocol_version_error__error (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_unsupported_protocol_version_error__error"
+    },
+    "mcp_unsupported_protocol_version_error__error__data": {
+      "caption": "MCP Unsupported Protocol Version Error Error Data",
+      "description": "An MCP protocol value typed by mcp_unsupported_protocol_version_error__error__data (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_unsupported_protocol_version_error__error__data"
+    },
+    "mcp_untitled_multi_select_enum_schema": {
+      "caption": "MCP Untitled Multi Select Enum Schema",
+      "description": "An MCP protocol value typed by mcp_untitled_multi_select_enum_schema (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_untitled_multi_select_enum_schema"
+    },
+    "mcp_untitled_multi_select_enum_schema__items": {
+      "caption": "MCP Untitled Multi Select Enum Schema Items",
+      "description": "An MCP protocol value typed by mcp_untitled_multi_select_enum_schema__items (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_untitled_multi_select_enum_schema__items"
+    },
+    "mcp_untitled_single_select_enum_schema": {
+      "caption": "MCP Untitled Single Select Enum Schema",
+      "description": "An MCP protocol value typed by mcp_untitled_single_select_enum_schema (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_untitled_single_select_enum_schema"
+    },
+    "mcp_uri": {
+      "caption": "MCP Uri",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_uri_template": {
+      "caption": "MCP Uri Template",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_url_elicitation_required_error": {
+      "caption": "MCP Url Elicitation Required Error",
+      "description": "An MCP protocol value typed by mcp_url_elicitation_required_error (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_url_elicitation_required_error"
+    },
+    "mcp_url_elicitation_required_error__error": {
+      "caption": "MCP Url Elicitation Required Error Error",
+      "description": "An MCP protocol value typed by mcp_url_elicitation_required_error__error (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_url_elicitation_required_error__error"
+    },
+    "mcp_url_elicitation_required_error__error__data": {
+      "caption": "MCP Url Elicitation Required Error Error Data",
+      "description": "An MCP protocol value typed by mcp_url_elicitation_required_error__error__data (generated from the pinned MCP schema; the containing object states the member).",
+      "type": "mcp_url_elicitation_required_error__error__data"
+    },
+    "mcp_url_json": {
+      "caption": "MCP Url Json",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "json_t"
+    },
+    "mcp_url_string": {
+      "caption": "MCP Url String",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_value": {
+      "caption": "MCP Value",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_values": {
+      "caption": "MCP Values",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t",
+      "is_array": true
+    },
+    "mcp_version": {
+      "caption": "MCP Version",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
+    },
+    "mcp_website_url": {
+      "caption": "MCP Website Url",
+      "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",
+      "type": "string_t"
     }
   }
 }

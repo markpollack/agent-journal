@@ -1,0 +1,24 @@
+{
+  "caption": "MCP Client Capabilities Elicitation",
+  "description": "Present if the client supports elicitation from the server. Generated from the pinned MCP schema (2025-11-25 ClientCapabilities.elicitation; 2026-07-28 ClientCapabilities.elicitation).",
+  "extends": "object",
+  "name": "mcp_client_capabilities__elicitation",
+  "attributes": {
+    "mcp_form": {
+      "description": "MCP member `form`.",
+      "requirement": "optional"
+    },
+    "mcp_url_json": {
+      "description": "MCP member `url`.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

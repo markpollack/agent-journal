@@ -1,0 +1,28 @@
+{
+  "caption": "MCP Unsupported Protocol Version Error",
+  "description": "Returned when the request's protocol version is unknown to the server or\nunsupported (e.g., a known experimental or draft version the server has\nchosen not to implement). For HTTP, the response status code MUST be\n`400 Bad Request`. Generated from the pinned MCP schema (2026-07-28 UnsupportedProtocolVersionError).",
+  "extends": "object",
+  "name": "mcp_unsupported_protocol_version_error",
+  "attributes": {
+    "mcp_unsupported_protocol_version_error__error": {
+      "description": "MCP member `error` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_id_json": {
+      "description": "MCP member `id`.",
+      "requirement": "optional"
+    },
+    "mcp_jsonrpc": {
+      "description": "MCP member `jsonrpc` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

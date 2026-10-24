@@ -115,6 +115,17 @@
                 <directory>${project.basedir}/../prototype/ocsf-acp/extension</directory>
                 <targetPath>ocsf/extension</targetPath>
             </resource>
+            <!-- The pinned official MCP JSON Schemas (unmodified copies, see schema/protocol/mcp/PINS.json): the writer
+                 declares the reference closure of the protocol definitions a file uses, so a reader validates offline. -->
+            <resource>
+                <directory>${project.basedir}/../schema/protocol/mcp</directory>
+                <includes>
+                    <include>*/schema.json</include>
+                    <include>PINS.json</include>
+                    <include>LICENSE-upstream.txt</include>
+                </includes>
+                <targetPath>ocsf/mcp/schema</targetPath>
+            </resource>
             <resource>
                 <directory>${maven.multiModuleProjectDirectory}</directory>
                 <includes>

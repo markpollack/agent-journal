@@ -1,0 +1,16 @@
+{
+  "caption": "MCP Input Responses Entry",
+  "description": "A map of client responses to server-initiated requests.\nKeys correspond to the keys in the {@link InputRequests} map;\nvalues are the client's result for each request. Generated from the pinned MCP schema (2026-07-28 InputResponses).",
+  "extends": "object",
+  "name": "mcp_input_responses__entry",
+  "attributes": {
+    "mcp_key": {
+      "description": "The map key exactly as reported.",
+      "requirement": "required"
+    },
+    "mcp_input_response": {
+      "description": "The value under the key.",
+      "requirement": "optional"
+    }
+  }
+}

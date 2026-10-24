@@ -1,0 +1,32 @@
+{
+  "caption": "MCP Set Level Request",
+  "description": "A request from the client to the server, to enable or adjust logging. Generated from the pinned MCP schema (2025-11-25 SetLevelRequest).",
+  "extends": "object",
+  "name": "mcp_set_level_request",
+  "attributes": {
+    "mcp_id_json": {
+      "description": "MCP member `id` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_jsonrpc": {
+      "description": "MCP member `jsonrpc` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_method": {
+      "description": "MCP member `method` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_set_level_request_params": {
+      "description": "MCP member `params` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

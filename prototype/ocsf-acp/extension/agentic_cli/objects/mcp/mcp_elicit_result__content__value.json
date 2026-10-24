@@ -1,0 +1,20 @@
+{
+  "caption": "MCP Elicit Result Content Value",
+  "description": "MCP Elicit Result Content Value. Generated from the pinned MCP schema (2025-11-25 ElicitResult.content{}; 2026-07-28 ElicitResult.content{}).",
+  "extends": "object",
+  "name": "mcp_elicit_result__content__value",
+  "attributes": {
+    "mcp_string_values": {
+      "description": "The value when it is the alternative array.",
+      "requirement": "optional"
+    },
+    "mcp_scalar_value": {
+      "description": "The value when it is the alternative string|integer|boolean.",
+      "requirement": "optional"
+    },
+    "mcp_unresolved": {
+      "description": "The value exactly as reported when no single alternative matches it by its constant and required members.",
+      "requirement": "optional"
+    }
+  }
+}

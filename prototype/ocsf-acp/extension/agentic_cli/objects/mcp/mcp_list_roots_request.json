@@ -1,0 +1,36 @@
+{
+  "caption": "MCP List Roots Request",
+  "description": "Sent from the server to request a list of root URIs from the client. Roots allow\nservers to ask for specific directories or files to operate on. A common example\nfor roots is providing a set of repositories or directories a server should operate\non.\n\nThis request is typically used when the server needs to understand the file system\nstructure or access specific locations that the client has permission to read from. Generated from the pinned MCP schema (2025-11-25 ListRootsRequest; 2026-07-28 ListRootsRequest).",
+  "extends": "object",
+  "name": "mcp_list_roots_request",
+  "attributes": {
+    "mcp_id_json": {
+      "description": "MCP member `id` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_jsonrpc": {
+      "description": "MCP member `jsonrpc` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_method": {
+      "description": "MCP member `method` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_request_params": {
+      "description": "MCP member `params`.",
+      "requirement": "optional"
+    },
+    "mcp_list_roots_request__params": {
+      "description": "MCP member `params`.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

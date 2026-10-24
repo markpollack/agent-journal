@@ -1,0 +1,20 @@
+{
+  "caption": "MCP Task Augmented Request Params Meta",
+  "description": "See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage. Generated from the pinned MCP schema (2025-11-25 TaskAugmentedRequestParams._meta).",
+  "extends": "object",
+  "name": "mcp_task_augmented_request_params__meta",
+  "attributes": {
+    "mcp_progress_token": {
+      "description": "MCP member `progressToken`: If specified, the caller is requesting out-of-band progress notifications for this request (as represented by notifications/progress). The value of this parameter is an opaque token that will be attached to any subsequent notifications. The receiver is not obligated to provide these notifications.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

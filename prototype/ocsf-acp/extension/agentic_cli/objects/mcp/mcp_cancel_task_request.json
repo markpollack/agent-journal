@@ -1,0 +1,32 @@
+{
+  "caption": "MCP Cancel Task Request",
+  "description": "A request to cancel a task. Generated from the pinned MCP schema (2025-11-25 CancelTaskRequest).",
+  "extends": "object",
+  "name": "mcp_cancel_task_request",
+  "attributes": {
+    "mcp_id_json": {
+      "description": "MCP member `id` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_jsonrpc": {
+      "description": "MCP member `jsonrpc` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_method": {
+      "description": "MCP member `method` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_cancel_task_request__params": {
+      "description": "MCP member `params` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

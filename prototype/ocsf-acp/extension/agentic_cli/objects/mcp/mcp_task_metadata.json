@@ -1,0 +1,20 @@
+{
+  "caption": "MCP Task Metadata",
+  "description": "Metadata for augmenting a request with task execution.\nInclude this in the `task` field of the request parameters. Generated from the pinned MCP schema (2025-11-25 TaskMetadata).",
+  "extends": "object",
+  "name": "mcp_task_metadata",
+  "attributes": {
+    "mcp_ttl_long": {
+      "description": "MCP member `ttl`: Requested duration in milliseconds to retain task from creation.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

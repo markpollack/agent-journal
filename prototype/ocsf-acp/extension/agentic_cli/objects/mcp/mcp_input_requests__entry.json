@@ -1,0 +1,16 @@
+{
+  "caption": "MCP Input Requests Entry",
+  "description": "A map of server-initiated requests that the client must fulfill.\nKeys are server-assigned identifiers; values are the request objects. Generated from the pinned MCP schema (2026-07-28 InputRequests).",
+  "extends": "object",
+  "name": "mcp_input_requests__entry",
+  "attributes": {
+    "mcp_key": {
+      "description": "The map key exactly as reported.",
+      "requirement": "required"
+    },
+    "mcp_input_request": {
+      "description": "The value under the key.",
+      "requirement": "optional"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "kind": "agent-journal/protocol-schema-pins",
+  "protocol": "Model Context Protocol",
+  "repository": "https://github.com/modelcontextprotocol/modelcontextprotocol",
+  "commit": "dae694f61a31f7a3ec2af3aff709e11f70f61e48",
+  "read": "2026-10-24",
+  "licence": "LICENSE-upstream.txt: Apache-2.0, with contributions not yet relicensed remaining MIT; the files here are unmodified copies",
+  "explanation": "https://modelcontextprotocol.io/specification/2026-07-28/basic",
+  "revisions": [
+    {
+      "revision": "2025-11-25",
+      "schema_json": {"path": "2025-11-25/schema.json", "git_blob": "c722dd45ba83610bec2b3f576a7658d5d6dc1553", "sha256": "268a5f82ba70fd7e4b6dc4aa1e64f116f74b4d0edcb69dc046829c79dd4e97e7"},
+      "schema_ts": {"path": "2025-11-25/schema.ts", "git_blob": "850a083fa228bf40af6feca42e23fd26342d3c59", "sha256": "e74b56e73b2e37bdb595f74ba22e428ad7f07aa3519355ba661d681298ed38ac"},
+      "dialect": "https://json-schema.org/draft/2020-12/schema",
+      "examples": null,
+      "why_pinned": "the revision the Copilot 1.0.100 route negotiated with the Java MCP SDK 2.0.1 test server (the CLI's own process log of copilot-otel-1 reports protocol_version 2025-11-25)"
+    },
+    {
+      "revision": "2026-07-28",
+      "schema_json": {"path": "2026-07-28/schema.json", "git_blob": "213c58f6d9a1c2ce6ad055afe90bbdb095a29ee8", "sha256": "ef70b61f99b6d2e5e3b46863822eab08dff6a45bedc7a08914e0e5b133f40203"},
+      "schema_ts": {"path": "2026-07-28/schema.ts", "git_blob": "9b55feeb412bc3ae877f2eac10b5c01ba29a2eed", "sha256": "742750af0bb8c716e7030c4977c992b55d1adc4407e9e66997db5846baedc2cd"},
+      "dialect": "https://json-schema.org/draft/2020-12/schema",
+      "examples": "2026-07-28/examples",
+      "why_pinned": "the current revision at the pinned commit; the model baseline, not a claim that any recorded route used it"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "caption": "MCP Tool Choice",
+  "description": "Controls tool selection behavior for sampling requests. Generated from the pinned MCP schema (2025-11-25 ToolChoice; 2026-07-28 ToolChoice).",
+  "extends": "object",
+  "name": "mcp_tool_choice",
+  "attributes": {
+    "mcp_mode": {
+      "description": "MCP member `mode`: Controls the tool use ability of the model:\n- \"auto\": Model decides whether to use tools (default)\n- \"required\": Model MUST use at least one tool before completing\n- \"none\": Model MUST NOT use any tools",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "caption": "MCP Elicit Request Url Params",
+  "description": "The parameters for a request to elicit information from the user via a URL in the client. Generated from the pinned MCP schema (2025-11-25 ElicitRequestURLParams; 2026-07-28 ElicitRequestURLParams).",
+  "extends": "object",
+  "name": "mcp_elicit_request_url_params",
+  "attributes": {
+    "mcp_elicit_request_url_params__meta": {
+      "description": "MCP member `_meta`: See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_elicitation_id": {
+      "description": "MCP member `elicitationId` (required by the protocol): The ID of the elicitation, which must be unique within the context of the server.\nThe client MUST treat this ID as an opaque value.",
+      "requirement": "optional"
+    },
+    "mcp_message": {
+      "description": "MCP member `message` (required by the protocol): The message to present to the user explaining why the interaction is needed.",
+      "requirement": "optional"
+    },
+    "mcp_mode": {
+      "description": "MCP member `mode` (required by the protocol): The elicitation mode.",
+      "requirement": "optional"
+    },
+    "mcp_task_metadata": {
+      "description": "MCP member `task`: If specified, the caller is requesting task-augmented execution for this request.\nThe request will return a CreateTaskResult immediately, and the actual result can be\nretrieved later via tasks/result.\n\nTask augmentation is subject to capability negotiation - receivers MUST declare support\nfor task augmentation of specific request types in their capabilities.",
+      "requirement": "optional"
+    },
+    "mcp_url_string": {
+      "description": "MCP member `url` (required by the protocol): The URL that the user should navigate to.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

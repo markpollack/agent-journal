@@ -6,7 +6,7 @@
  },
  "extension": {
   "name": "agentic_cli",
-  "version": "0.10.0-prototype"
+  "version": "0.11.0-prototype"
  },
  "purpose": "Comparison inventory only: for each attribute our extension defines, the upstream attribute it means, if any, and the verdict. It does not reshape the extension; our attributes and names are kept.",
  "evidence_class": "source-verified",
@@ -2007,6 +2007,504 @@
    "upstream_file": null,
    "verdict": "no_counterpart",
    "caveat": "No upstream record of the rule and arithmetic that derived a value."
+  },
+  {
+   "ours": "assembly_conflict.field_pointer",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "assembly_conflict.observed_values",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "assembly_conflict.resolution",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "assembly_record.assembly_role_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "assembly_record.assembly_role",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "assembly_record.entity_uid",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "assembly_record.occurrence_uid",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "assembly_record.relation_class_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "assembly_record.relation_class",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "assembly_record.observation_refs",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "assembly_record.field_evidence",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "assembly_record.assembly_conflicts",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "assembly_record.basis",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "cost_observation.quantity_kind_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no cost or billing-quantity attribute; quantity kinds keep premium requests, multipliers, nano-AIU, credits and money apart."
+  },
+  {
+   "ours": "cost_observation.quantity_kind",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no cost or billing-quantity attribute; quantity kinds keep premium requests, multipliers, nano-AIU, credits and money apart."
+  },
+  {
+   "ours": "cost_observation.quantity_unit",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no cost or billing-quantity attribute; quantity kinds keep premium requests, multipliers, nano-AIU, credits and money apart."
+  },
+  {
+   "ours": "cost_observation.aggregation_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no cost or billing-quantity attribute; quantity kinds keep premium requests, multipliers, nano-AIU, credits and money apart."
+  },
+  {
+   "ours": "cost_observation.aggregation",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no cost or billing-quantity attribute; quantity kinds keep premium requests, multipliers, nano-AIU, credits and money apart."
+  },
+  {
+   "ours": "error_info.error_layer_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 base_event status_detail is free text; it has no layered error report (JSON-RPC, tool result, CLI, process, capture)."
+  },
+  {
+   "ours": "error_info.error_layer",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 base_event status_detail is free text; it has no layered error report (JSON-RPC, tool result, CLI, process, capture)."
+  },
+  {
+   "ours": "error_info.error_code",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 base_event status_detail is free text; it has no layered error report (JSON-RPC, tool result, CLI, process, capture)."
+  },
+  {
+   "ours": "error_info.message",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 base_event status_detail is free text; it has no layered error report (JSON-RPC, tool result, CLI, process, capture)."
+  },
+  {
+   "ours": "error_info.data",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 base_event status_detail is free text; it has no layered error report (JSON-RPC, tool result, CLI, process, capture)."
+  },
+  {
+   "ours": "error_info.basis",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 base_event status_detail is free text; it has no layered error report (JSON-RPC, tool result, CLI, process, capture)."
+  },
+  {
+   "ours": "field_evidence.field_pointer",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "field_evidence.relation_class_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "field_evidence.relation_class",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "field_evidence.occurrence_uids",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "field_evidence.selection_basis",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "json_schema.schema_dialect",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no JSON Schema document object."
+  },
+  {
+   "ours": "json_schema.schema_document",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no JSON Schema document object."
+  },
+  {
+   "ours": "mcp_observation.protocol_revision",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no MCP protocol attributes; the generated mcp_* objects carry the pinned MCP data model (excluded from these rows: they are generated from the pinned MCP JSON Schemas and checked by McpProtocolContainmentTest) and mcp_observation places them on an execution observation."
+  },
+  {
+   "ours": "mcp_observation.protocol_revision_basis_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no MCP protocol attributes; the generated mcp_* objects carry the pinned MCP data model (excluded from these rows: they are generated from the pinned MCP JSON Schemas and checked by McpProtocolContainmentTest) and mcp_observation places them on an execution observation."
+  },
+  {
+   "ours": "mcp_observation.protocol_revision_basis",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no MCP protocol attributes; the generated mcp_* objects carry the pinned MCP data model (excluded from these rows: they are generated from the pinned MCP JSON Schemas and checked by McpProtocolContainmentTest) and mcp_observation places them on an execution observation."
+  },
+  {
+   "ours": "mcp_observation.target_server_name",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no MCP protocol attributes; the generated mcp_* objects carry the pinned MCP data model (excluded from these rows: they are generated from the pinned MCP JSON Schemas and checked by McpProtocolContainmentTest) and mcp_observation places them on an execution observation."
+  },
+  {
+   "ours": "mcp_observation.target_server_basis_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no MCP protocol attributes; the generated mcp_* objects carry the pinned MCP data model (excluded from these rows: they are generated from the pinned MCP JSON Schemas and checked by McpProtocolContainmentTest) and mcp_observation places them on an execution observation."
+  },
+  {
+   "ours": "mcp_observation.target_server_basis",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no MCP protocol attributes; the generated mcp_* objects carry the pinned MCP data model (excluded from these rows: they are generated from the pinned MCP JSON Schemas and checked by McpProtocolContainmentTest) and mcp_observation places them on an execution observation."
+  },
+  {
+   "ours": "mcp_observation.target_tool_name",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no MCP protocol attributes; the generated mcp_* objects carry the pinned MCP data model (excluded from these rows: they are generated from the pinned MCP JSON Schemas and checked by McpProtocolContainmentTest) and mcp_observation places them on an execution observation."
+  },
+  {
+   "ours": "mcp_observation.target_tool_basis_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no MCP protocol attributes; the generated mcp_* objects carry the pinned MCP data model (excluded from these rows: they are generated from the pinned MCP JSON Schemas and checked by McpProtocolContainmentTest) and mcp_observation places them on an execution observation."
+  },
+  {
+   "ours": "mcp_observation.target_tool_basis",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no MCP protocol attributes; the generated mcp_* objects carry the pinned MCP data model (excluded from these rows: they are generated from the pinned MCP JSON Schemas and checked by McpProtocolContainmentTest) and mcp_observation places them on an execution observation."
+  },
+  {
+   "ours": "mcp_observation.target_arguments_pointer",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no MCP protocol attributes; the generated mcp_* objects carry the pinned MCP data model (excluded from these rows: they are generated from the pinned MCP JSON Schemas and checked by McpProtocolContainmentTest) and mcp_observation places them on an execution observation."
+  },
+  {
+   "ours": "mcp_observation.protocol_objects",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no MCP protocol attributes; the generated mcp_* objects carry the pinned MCP data model (excluded from these rows: they are generated from the pinned MCP JSON Schemas and checked by McpProtocolContainmentTest) and mcp_observation places them on an execution observation."
+  },
+  {
+   "ours": "mcp_observation.basis",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no MCP protocol attributes; the generated mcp_* objects carry the pinned MCP data model (excluded from these rows: they are generated from the pinned MCP JSON Schemas and checked by McpProtocolContainmentTest) and mcp_observation places them on an execution observation."
+  },
+  {
+   "ours": "observation_ref.occurrence_uid",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "observation_ref.artifact",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "observation_ref.record_index",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "observation_ref.emit_ordinal",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "tool_definition.name",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no object for a tool an agent declares as available; api and ai_model do not describe one."
+  },
+  {
+   "ours": "tool_definition.title",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no object for a tool an agent declares as available; api and ai_model do not describe one."
+  },
+  {
+   "ours": "tool_definition.tool_description",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no object for a tool an agent declares as available; api and ai_model do not describe one."
+  },
+  {
+   "ours": "tool_definition.input_schema",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no object for a tool an agent declares as available; api and ai_model do not describe one."
+  },
+  {
+   "ours": "tool_definition.output_schema",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no object for a tool an agent declares as available; api and ai_model do not describe one."
+  },
+  {
+   "ours": "tool_definition.definition_format_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no object for a tool an agent declares as available; api and ai_model do not describe one."
+  },
+  {
+   "ours": "tool_definition.definition_format",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no object for a tool an agent declares as available; api and ai_model do not describe one."
+  },
+  {
+   "ours": "tool_definition.schema_hash",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no object for a tool an agent declares as available; api and ai_model do not describe one."
+  },
+  {
+   "ours": "tool_definition.mcp",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no MCP protocol attributes; the generated mcp_* objects carry the pinned MCP data model (excluded from these rows: they are generated from the pinned MCP JSON Schemas and checked by McpProtocolContainmentTest) and mcp_observation places them on an execution observation."
+  },
+  {
+   "ours": "tool_definition.source_ref",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no object for a tool an agent declares as available; api and ai_model do not describe one."
+  },
+  {
+   "ours": "tool_definition.data",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no object for a tool an agent declares as available; api and ai_model do not describe one."
+  },
+  {
+   "ours": "tool_result.errors",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 base_event status_detail is free text; it has no layered error report (JSON-RPC, tool result, CLI, process, capture)."
+  },
+  {
+   "ours": "model_response.cost_observations",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no cost or billing-quantity attribute; quantity kinds keep premium requests, multipliers, nano-AIU, credits and money apart."
+  },
+  {
+   "ours": "model_response.assembly",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "prompt_turn.assembly",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "session_context.mcp",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no MCP protocol attributes; the generated mcp_* objects carry the pinned MCP data model (excluded from these rows: they are generated from the pinned MCP JSON Schemas and checked by McpProtocolContainmentTest) and mcp_observation places them on an execution observation."
+  },
+  {
+   "ours": "session_context.tool_definitions",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no object for a tool an agent declares as available; api and ai_model do not describe one."
+  },
+  {
+   "ours": "session_context.cost_observations",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no cost or billing-quantity attribute; quantity kinds keep premium requests, multipliers, nano-AIU, credits and money apart."
+  },
+  {
+   "ours": "session_context.exit_code",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "The CLI's own reported outcome; OCSF 1.9.0 process objects describe a process Journal observes, not a record the CLI writes about itself."
+  },
+  {
+   "ours": "session_context.reported_state",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "The CLI's own reported outcome; OCSF 1.9.0 process objects describe a process Journal observes, not a record the CLI writes about itself."
+  },
+  {
+   "ours": "session_context.assembly",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "source_record.assembly",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "tool_call.mcp",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no MCP protocol attributes; the generated mcp_* objects carry the pinned MCP data model (excluded from these rows: they are generated from the pinned MCP JSON Schemas and checked by McpProtocolContainmentTest) and mcp_observation places them on an execution observation."
+  },
+  {
+   "ours": "tool_call.assembly",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
   }
- ]
+ ],
+ "generated_mcp_objects": "The mcp_* objects under objects/mcp/ (0.11.0-prototype) are generated from the pinned MCP JSON Schemas by McpBindingGenerator and are not rowed one by one: OCSF 1.9.0 has no MCP vocabulary, so every one would be no_counterpart; their coverage of the pinned MCP definitions is checked by McpProtocolContainmentTest."
 }

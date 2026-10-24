@@ -1,0 +1,28 @@
+{
+  "caption": "MCP Logging Message Notification",
+  "description": "JSONRPCNotification of a log message passed from server to client. If no logging/setLevel request has been sent from the client, the server MAY decide which messages to send automatically. Generated from the pinned MCP schema (2025-11-25 LoggingMessageNotification; 2026-07-28 LoggingMessageNotification).",
+  "extends": "object",
+  "name": "mcp_logging_message_notification",
+  "attributes": {
+    "mcp_jsonrpc": {
+      "description": "MCP member `jsonrpc` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_method": {
+      "description": "MCP member `method` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_logging_message_notification_params": {
+      "description": "MCP member `params` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

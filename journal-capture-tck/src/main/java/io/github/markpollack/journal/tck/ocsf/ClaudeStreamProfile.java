@@ -19,6 +19,7 @@ final class ClaudeStreamProfile implements SourceProfile {
     @Override
     public ExpectedFacts expected(NativeArtifact artifact, Json source, Json scope) {
         ExpectedFacts f = new ExpectedFacts(SourceProfile.text(source, "artifact"));
+        McpReadings.Claude mcp = new McpReadings.Claude();
         for (NativeArtifact.Record r : artifact.records()) {
             Json o = r.json();
             if (!r.parsed()) {
@@ -26,6 +27,9 @@ final class ClaudeStreamProfile implements SourceProfile {
                     f.owned.add(r.index()); // opaque lines belong to the main thread
                 }
                 continue;
+            }
+            if ("system".equals(SourceProfile.text(o, "type")) && "init".equals(SourceProfile.text(o, "subtype"))) {
+                mcp.init(o); // registration is a fact of the session, whichever core owns the record
             }
             if (!SourceProfile.owned(o, scope)) {
                 continue;
@@ -50,6 +54,7 @@ final class ClaudeStreamProfile implements SourceProfile {
                     if ("tool_use".equals(SourceProfile.text(b, "type"))) {
                         f.requests.add(new ExpectedFacts.Request(r.index(), SourceProfile.text(b, "id"), SourceProfile.text(b, "name"),
                                 b.member("input"), id, null));
+                        mcp.request(f, r.index(), b);
                     }
                 }
             }
@@ -71,6 +76,7 @@ final class ClaudeStreamProfile implements SourceProfile {
                     }
                     f.results.add(new ExpectedFacts.Result(r.index(), id, b.member("content"), b.member("is_error"),
                             o.member("tool_use_result"), decision, null));
+                    mcp.result(f, r.index(), o, b);
                     if (decision != null) {
                         f.decisions.add(decision);
                     }

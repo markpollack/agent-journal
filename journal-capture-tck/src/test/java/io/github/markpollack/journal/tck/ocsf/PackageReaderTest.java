@@ -46,7 +46,7 @@ class PackageReaderTest {
         assertThat(fromEvents.standalone()).as("read from the file's declarations; run.json is ancillary").isTrue();
         assertThat(fromEvents.manifest.packageState()).isEqualTo("COMPLETED");
         assertThat(fromEvents.manifest.extensionUid()).isEqualTo(901);
-        assertThat(fromEvents.manifest.extensionVersion()).isEqualTo("0.10.0-prototype");
+        assertThat(fromEvents.manifest.extensionVersion()).isEqualTo("0.11.0-prototype");
         assertThat(fromEvents.manifest.contracts()).containsKey("codex-cli/rollout/0.160.1/0.4.0-prototype");
     }
 
@@ -93,7 +93,7 @@ class PackageReaderTest {
         assertThat(report.defects()).extracting(Check::property).containsOnly("population.usage", "operation.values", "population.responses");
         assertThat(report.missingRequired()).isEmpty();
         Path current = copy(OcsfFixtures.LIVE_CODEX, work.resolve("current"));
-        assertThat(open(current).manifest.extensionVersion()).isEqualTo("0.10.0-prototype");
+        assertThat(open(current).manifest.extensionVersion()).isEqualTo("0.11.0-prototype");
     }
 
     /**
@@ -109,8 +109,10 @@ class PackageReaderTest {
         assertThat(p.manifest.extensionVersion()).isEqualTo("0.4.0-prototype");
         assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
         OracleReport report = OcsfFixtures.verify(historical);
-        // population.responses: under the 0.6.0 reading its stream-local agent-message ids are not response identities
-        assertThat(report.defects()).extracting(Check::property).containsOnly("population.usage", "population.requests", "population.results", "whole_record.class", "population.responses");
+        // population.responses: under the 0.6.0 reading its stream-local agent-message ids are not response identities;
+        // population.mcp and population.tool_errors: it predates the MCP observations and layered errors of 0.11.0
+        assertThat(report.defects()).extracting(Check::property).containsOnly("population.usage", "population.requests", "population.results", "whole_record.class", "population.responses",
+                "population.mcp", "population.tool_errors");
         assertThat(report.missingRequired()).isEmpty();
     }
 
@@ -129,7 +131,9 @@ class PackageReaderTest {
         assertThat(p.manifest.extensionVersion()).isEqualTo("0.5.0-prototype");
         assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
         OracleReport report = OcsfFixtures.verify(historical);
-        assertThat(report.defects()).extracting(Check::property).containsOnly("population.responses", "request.values", "result.values", "usage.values");
+        // population.mcp, population.tool_errors and tool_error.values: it predates the MCP observations and layered errors of 0.11.0
+        assertThat(report.defects()).extracting(Check::property).containsOnly("population.responses", "request.values", "result.values", "usage.values",
+                "population.mcp", "population.tool_errors", "tool_error.values");
         assertThat(report.check("request.values", "main/stream.jsonl").detail()).contains("activity_id 1 != 4");
         assertThat(report.check("usage.values", "main/stream.jsonl").detail()).contains("measurement_status_id 1 != 4").contains("components[] has no entry for uncached_input_tokens");
         assertThat(report.missingRequired()).isEmpty();

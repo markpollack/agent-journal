@@ -121,6 +121,7 @@ final class AntigravityStreamProfile implements SourceProfile {
 
     /** A tool step: a started invocation while ACTIVE, a result when DONE or ERROR; {@code false} for any other state. */
     private static boolean tool(ExpectedFacts f, int index, Json s, String state, boolean subagent) {
+        McpReadings.antigravity(f, index, id(s), s);
         if ("ACTIVE".equals(state)) {
             Json info = s.member("tool_info");
             f.requests.add(new ExpectedFacts.Request(index, id(s), SourceProfile.text(s, "tool_name"), info == null ? null : info.member("parameters"), null, state, null, STEP_INDEX,

@@ -1,0 +1,32 @@
+{
+  "caption": "MCP Sampling Message Content Block",
+  "description": "MCP Sampling Message Content Block. Generated from the pinned MCP schema (2025-11-25 SamplingMessageContentBlock; 2026-07-28 SamplingMessageContentBlock).",
+  "extends": "object",
+  "name": "mcp_sampling_message_content_block",
+  "attributes": {
+    "mcp_text_content": {
+      "description": "The value when it is the alternative TextContent.",
+      "requirement": "optional"
+    },
+    "mcp_image_content": {
+      "description": "The value when it is the alternative ImageContent.",
+      "requirement": "optional"
+    },
+    "mcp_audio_content": {
+      "description": "The value when it is the alternative AudioContent.",
+      "requirement": "optional"
+    },
+    "mcp_tool_use_content": {
+      "description": "The value when it is the alternative ToolUseContent.",
+      "requirement": "optional"
+    },
+    "mcp_tool_result_content": {
+      "description": "The value when it is the alternative ToolResultContent.",
+      "requirement": "optional"
+    },
+    "mcp_unresolved": {
+      "description": "The value exactly as reported when no single alternative matches it by its constant and required members.",
+      "requirement": "optional"
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "caption": "MCP Prompt",
+  "description": "A prompt or prompt template that the server offers. Generated from the pinned MCP schema (2025-11-25 Prompt; 2026-07-28 Prompt).",
+  "extends": "object",
+  "name": "mcp_prompt",
+  "attributes": {
+    "mcp_meta": {
+      "description": "MCP member `_meta`: See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_prompt_argument_list": {
+      "description": "MCP member `arguments`: A list of arguments to use for templating the prompt.",
+      "requirement": "optional"
+    },
+    "mcp_description": {
+      "description": "MCP member `description`: An optional description of what this prompt provides",
+      "requirement": "optional"
+    },
+    "mcp_icon_list": {
+      "description": "MCP member `icons`: Optional set of sized icons that the client can display in a user interface.\n\nClients that support rendering icons MUST support at least the following MIME types:\n- `image/png` - PNG images (safe, universal compatibility)\n- `image/jpeg` (and `image/jpg`) - JPEG images (safe, universal compatibility)\n\nClients that support rendering icons SHOULD also support:\n- `image/svg+xml` - SVG images (scalable but requires security precautions)\n- `image/webp` - WebP images (modern, efficient format)",
+      "requirement": "optional"
+    },
+    "mcp_name": {
+      "description": "MCP member `name` (required by the protocol): Intended for programmatic or logical use, but used as a display name in past specs or fallback (if title isn't present).",
+      "requirement": "optional"
+    },
+    "mcp_title": {
+      "description": "MCP member `title`: Intended for UI and end-user contexts — optimized to be human-readable and easily understood,\neven by those unfamiliar with domain-specific terminology.\n\nIf not provided, the name should be used for display (except for Tool,\nwhere `annotations.title` should be given precedence over using `name`,\nif present).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

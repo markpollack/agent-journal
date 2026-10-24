@@ -52,17 +52,22 @@
       "group": "primary",
       "requirement": "recommended"
     },
-    "data": {
-      "description": "The parsed record exactly as reported.",
-      "group": "context",
-      "requirement": "optional"
-    },
     "raw_data": {
       "description": "The record text verbatim when it decodes as UTF-8 but is not one JSON object.",
       "group": "context",
       "requirement": "optional"
     },
     "raw_bytes_b64": {
+      "group": "context",
+      "requirement": "optional"
+    },
+    "assembly": {
+      "description": "Present in a finally assembled file: this event's assembly role and evidence.",
+      "group": "context",
+      "requirement": "optional"
+    },
+    "data": {
+      "description": "The parsed record exactly as reported.",
       "group": "context",
       "requirement": "optional"
     }

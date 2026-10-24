@@ -1,0 +1,20 @@
+{
+  "caption": "MCP Jsonrpc Response",
+  "description": "A response to a request, containing either the result or error. Generated from the pinned MCP schema (2025-11-25 JSONRPCResponse; 2026-07-28 JSONRPCResponse).",
+  "extends": "object",
+  "name": "mcp_jsonrpc_response",
+  "attributes": {
+    "mcp_jsonrpc_result_response": {
+      "description": "The value when it is the alternative JSONRPCResultResponse.",
+      "requirement": "optional"
+    },
+    "mcp_jsonrpc_error_response": {
+      "description": "The value when it is the alternative JSONRPCErrorResponse.",
+      "requirement": "optional"
+    },
+    "mcp_unresolved": {
+      "description": "The value exactly as reported when no single alternative matches it by its constant and required members.",
+      "requirement": "optional"
+    }
+  }
+}

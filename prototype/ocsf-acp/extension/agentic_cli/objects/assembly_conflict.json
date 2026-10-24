@@ -1,0 +1,17 @@
+{
+  "caption": "Assembly Conflict",
+  "description": "Disagreeing reports of one field of one logical entity, each kept with its occurrence; resolution states whether a declared authority selected one or the field stays unresolved.",
+  "extends": "object",
+  "name": "assembly_conflict",
+  "attributes": {
+    "field_pointer": {
+      "requirement": "required"
+    },
+    "observed_values": {
+      "requirement": "required"
+    },
+    "resolution": {
+      "requirement": "required"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "caption": "MCP Server Capabilities Tasks Requests Tools",
+  "description": "Task support for tool-related requests. Generated from the pinned MCP schema (2025-11-25 ServerCapabilities.tasks.requests.tools).",
+  "extends": "object",
+  "name": "mcp_server_capabilities__tasks__requests__tools",
+  "attributes": {
+    "mcp_call": {
+      "description": "MCP member `call`: Whether the server supports task-augmented tools/call requests.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

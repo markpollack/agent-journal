@@ -1,0 +1,52 @@
+{
+  "caption": "MCP Server Notification",
+  "description": "MCP Server Notification. Generated from the pinned MCP schema (2025-11-25 ServerNotification; 2026-07-28 ServerNotification).",
+  "extends": "object",
+  "name": "mcp_server_notification",
+  "attributes": {
+    "mcp_cancelled_notification": {
+      "description": "The value when it is the alternative CancelledNotification.",
+      "requirement": "optional"
+    },
+    "mcp_progress_notification": {
+      "description": "The value when it is the alternative ProgressNotification.",
+      "requirement": "optional"
+    },
+    "mcp_resource_list_changed_notification": {
+      "description": "The value when it is the alternative ResourceListChangedNotification.",
+      "requirement": "optional"
+    },
+    "mcp_resource_updated_notification": {
+      "description": "The value when it is the alternative ResourceUpdatedNotification.",
+      "requirement": "optional"
+    },
+    "mcp_prompt_list_changed_notification": {
+      "description": "The value when it is the alternative PromptListChangedNotification.",
+      "requirement": "optional"
+    },
+    "mcp_tool_list_changed_notification": {
+      "description": "The value when it is the alternative ToolListChangedNotification.",
+      "requirement": "optional"
+    },
+    "mcp_task_status_notification": {
+      "description": "The value when it is the alternative TaskStatusNotification.",
+      "requirement": "optional"
+    },
+    "mcp_logging_message_notification": {
+      "description": "The value when it is the alternative LoggingMessageNotification.",
+      "requirement": "optional"
+    },
+    "mcp_elicitation_complete_notification": {
+      "description": "The value when it is the alternative ElicitationCompleteNotification.",
+      "requirement": "optional"
+    },
+    "mcp_subscriptions_acknowledged_notification": {
+      "description": "The value when it is the alternative SubscriptionsAcknowledgedNotification.",
+      "requirement": "optional"
+    },
+    "mcp_unresolved": {
+      "description": "The value exactly as reported when no single alternative matches it by its constant and required members.",
+      "requirement": "optional"
+    }
+  }
+}

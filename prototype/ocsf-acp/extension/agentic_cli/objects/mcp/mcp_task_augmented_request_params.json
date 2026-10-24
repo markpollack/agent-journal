@@ -1,0 +1,24 @@
+{
+  "caption": "MCP Task Augmented Request Params",
+  "description": "Common params for any task-augmented request. Generated from the pinned MCP schema (2025-11-25 TaskAugmentedRequestParams).",
+  "extends": "object",
+  "name": "mcp_task_augmented_request_params",
+  "attributes": {
+    "mcp_task_augmented_request_params__meta": {
+      "description": "MCP member `_meta`: See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_task_metadata": {
+      "description": "MCP member `task`: If specified, the caller is requesting task-augmented execution for this request.\nThe request will return a CreateTaskResult immediately, and the actual result can be\nretrieved later via tasks/result.\n\nTask augmentation is subject to capability negotiation - receivers MUST declare support\nfor task augmentation of specific request types in their capabilities.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

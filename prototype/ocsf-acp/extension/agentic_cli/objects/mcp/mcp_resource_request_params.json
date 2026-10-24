@@ -1,0 +1,28 @@
+{
+  "caption": "MCP Resource Request Params",
+  "description": "Common parameters when working with resources. Generated from the pinned MCP schema (2025-11-25 ResourceRequestParams; 2026-07-28 ResourceRequestParams).",
+  "extends": "object",
+  "name": "mcp_resource_request_params",
+  "attributes": {
+    "mcp_resource_request_params__meta": {
+      "description": "MCP member `_meta`: See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_uri": {
+      "description": "MCP member `uri` (required by the protocol): The URI of the resource. The URI can use any protocol; it is up to the server how to interpret it.",
+      "requirement": "optional"
+    },
+    "mcp_request_meta_object": {
+      "description": "MCP member `_meta` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

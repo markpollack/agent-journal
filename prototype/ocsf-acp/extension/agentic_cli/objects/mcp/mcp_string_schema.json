@@ -1,0 +1,44 @@
+{
+  "caption": "MCP String Schema",
+  "description": "MCP String Schema. Generated from the pinned MCP schema (2025-11-25 StringSchema; 2026-07-28 StringSchema).",
+  "extends": "object",
+  "name": "mcp_string_schema",
+  "attributes": {
+    "mcp_default_string": {
+      "description": "MCP member `default`.",
+      "requirement": "optional"
+    },
+    "mcp_description": {
+      "description": "MCP member `description`.",
+      "requirement": "optional"
+    },
+    "mcp_format": {
+      "description": "MCP member `format`.",
+      "requirement": "optional"
+    },
+    "mcp_max_length": {
+      "description": "MCP member `maxLength`.",
+      "requirement": "optional"
+    },
+    "mcp_min_length": {
+      "description": "MCP member `minLength`.",
+      "requirement": "optional"
+    },
+    "mcp_title": {
+      "description": "MCP member `title`.",
+      "requirement": "optional"
+    },
+    "mcp_type": {
+      "description": "MCP member `type` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

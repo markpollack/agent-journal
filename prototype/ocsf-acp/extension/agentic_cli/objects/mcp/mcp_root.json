@@ -1,0 +1,28 @@
+{
+  "caption": "MCP Root",
+  "description": "Represents a root directory or file that the server can operate on. Generated from the pinned MCP schema (2025-11-25 Root; 2026-07-28 Root).",
+  "extends": "object",
+  "name": "mcp_root",
+  "attributes": {
+    "mcp_meta": {
+      "description": "MCP member `_meta`: See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_name": {
+      "description": "MCP member `name`: An optional name for the root. This can be used to provide a human-readable\nidentifier for the root, which may be useful for display purposes or for\nreferencing the root in other parts of the application.",
+      "requirement": "optional"
+    },
+    "mcp_uri": {
+      "description": "MCP member `uri` (required by the protocol): The URI identifying the root. This *must* start with file:// for now.\nThis restriction may be relaxed in future versions of the protocol to allow\nother URI schemes.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

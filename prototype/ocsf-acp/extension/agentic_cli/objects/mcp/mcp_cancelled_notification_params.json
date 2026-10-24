@@ -1,0 +1,32 @@
+{
+  "caption": "MCP Cancelled Notification Params",
+  "description": "Parameters for a `notifications/cancelled` notification. Generated from the pinned MCP schema (2025-11-25 CancelledNotificationParams; 2026-07-28 CancelledNotificationParams).",
+  "extends": "object",
+  "name": "mcp_cancelled_notification_params",
+  "attributes": {
+    "mcp_meta": {
+      "description": "MCP member `_meta`: See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_reason": {
+      "description": "MCP member `reason`: An optional string describing the reason for the cancellation. This MAY be logged or presented to the user.",
+      "requirement": "optional"
+    },
+    "mcp_request_id": {
+      "description": "MCP member `requestId`: The ID of the request to cancel.\n\nThis MUST correspond to the ID of a request previously issued in the same direction.\nThis MUST be provided for cancelling non-task requests.\nThis MUST NOT be used for cancelling tasks (use the `tasks/cancel` request instead).",
+      "requirement": "optional"
+    },
+    "mcp_notification_meta_object": {
+      "description": "MCP member `_meta`.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "caption": "MCP Client Result",
+  "description": "MCP Client Result. Generated from the pinned MCP schema (2025-11-25 ClientResult).",
+  "extends": "object",
+  "name": "mcp_client_result",
+  "attributes": {
+    "mcp_result": {
+      "description": "The value when it is the alternative Result.",
+      "requirement": "optional"
+    },
+    "mcp_get_task_result": {
+      "description": "The value when it is the alternative GetTaskResult.",
+      "requirement": "optional"
+    },
+    "mcp_get_task_payload_result": {
+      "description": "The value when it is the alternative GetTaskPayloadResult.",
+      "requirement": "optional"
+    },
+    "mcp_cancel_task_result": {
+      "description": "The value when it is the alternative CancelTaskResult.",
+      "requirement": "optional"
+    },
+    "mcp_list_tasks_result": {
+      "description": "The value when it is the alternative ListTasksResult.",
+      "requirement": "optional"
+    },
+    "mcp_create_message_result": {
+      "description": "The value when it is the alternative CreateMessageResult.",
+      "requirement": "optional"
+    },
+    "mcp_list_roots_result": {
+      "description": "The value when it is the alternative ListRootsResult.",
+      "requirement": "optional"
+    },
+    "mcp_elicit_result": {
+      "description": "The value when it is the alternative ElicitResult.",
+      "requirement": "optional"
+    },
+    "mcp_unresolved": {
+      "description": "The value exactly as reported when no single alternative matches it by its constant and required members.",
+      "requirement": "optional"
+    }
+  }
+}

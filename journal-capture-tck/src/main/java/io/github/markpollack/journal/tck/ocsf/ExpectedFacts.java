@@ -173,7 +173,26 @@ public final class ExpectedFacts {
     public record Context(int recordIndex, int activityId, String contextKind, String turnUid, Map<String, Json> settings, String renderedRole, List<Block> blocks) {
     }
 
+    /** An MCP projection the source reports: the protocol definition, the projected protocol JSON and the protocol-required members it lacks. */
+    public record McpProjection(String definition, Json value, List<String> missingRequired) {
+    }
+
+    /**
+     * The MCP facts of one tool activity observation (activity 1, 2 or 4): the addressed server and tool with their
+     * bases (each {@code null} when not established), the pointer to the target's own arguments ({@code null} when the
+     * call reports none) and the projections, in order.
+     */
+    public record Mcp(int recordIndex, String id, int activityId, String server, Integer serverBasis, String tool, Integer toolBasis, String argumentsPointer,
+            List<McpProjection> projections) {
+    }
+
+    /** One error the source reports for a tool result, with the layer that reported it and its code and message as reported. */
+    public record ToolError(int recordIndex, String id, int layer, Json code, String message) {
+    }
+
     public final String artifact;
+    public final List<Mcp> mcp = new ArrayList<>();
+    public final List<ToolError> toolErrors = new ArrayList<>();
     public final List<Request> requests = new ArrayList<>();
     public final List<Result> results = new ArrayList<>();
     public final List<Response> responses = new ArrayList<>();
@@ -220,6 +239,8 @@ public final class ExpectedFacts {
         completed.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.completed::add);
         started.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.started::add);
         contexts.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.contexts::add);
+        mcp.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.mcp::add);
+        toolErrors.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.toolErrors::add);
         f.owned.addAll(owned);
         normalized.stream().filter(i -> !records.contains(i)).forEach(f.normalized::add);
         f.excluded.putAll(excluded);
@@ -257,6 +278,8 @@ public final class ExpectedFacts {
         m.put("turn_completed", completed.size());
         m.put("turn_started", started.size());
         m.put("contexts", contexts.size());
+        m.put("mcp", mcp.size());
+        m.put("tool_errors", toolErrors.size());
         return m;
     }
 }

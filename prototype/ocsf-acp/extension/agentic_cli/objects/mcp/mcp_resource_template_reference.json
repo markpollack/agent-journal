@@ -1,0 +1,24 @@
+{
+  "caption": "MCP Resource Template Reference",
+  "description": "A reference to a resource or resource template definition. Generated from the pinned MCP schema (2025-11-25 ResourceTemplateReference; 2026-07-28 ResourceTemplateReference).",
+  "extends": "object",
+  "name": "mcp_resource_template_reference",
+  "attributes": {
+    "mcp_type": {
+      "description": "MCP member `type` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_uri": {
+      "description": "MCP member `uri` (required by the protocol): The URI or URI template of the resource.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

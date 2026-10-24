@@ -1,0 +1,36 @@
+{
+  "caption": "MCP Logging Message Notification Params",
+  "description": "Parameters for a `notifications/message` notification. Generated from the pinned MCP schema (2025-11-25 LoggingMessageNotificationParams; 2026-07-28 LoggingMessageNotificationParams).",
+  "extends": "object",
+  "name": "mcp_logging_message_notification_params",
+  "attributes": {
+    "mcp_meta": {
+      "description": "MCP member `_meta`: See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_data_json": {
+      "description": "MCP member `data` (required by the protocol): The data to be logged, such as a string message or an object. Any JSON serializable type is allowed here.",
+      "requirement": "optional"
+    },
+    "mcp_level": {
+      "description": "MCP member `level` (required by the protocol): The severity of this log message.",
+      "requirement": "optional"
+    },
+    "mcp_logger": {
+      "description": "MCP member `logger`: An optional name of the logger issuing this message.",
+      "requirement": "optional"
+    },
+    "mcp_notification_meta_object": {
+      "description": "MCP member `_meta`.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

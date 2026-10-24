@@ -1,0 +1,24 @@
+{
+  "caption": "MCP Client Capabilities Sampling",
+  "description": "Present if the client supports sampling from an LLM. Generated from the pinned MCP schema (2025-11-25 ClientCapabilities.sampling; 2026-07-28 ClientCapabilities.sampling).",
+  "extends": "object",
+  "name": "mcp_client_capabilities__sampling",
+  "attributes": {
+    "mcp_context": {
+      "description": "MCP member `context`: Whether the client supports context inclusion via includeContext parameter.\nIf not declared, servers SHOULD only use `includeContext: \"none\"` (or omit it).",
+      "requirement": "optional"
+    },
+    "mcp_tools": {
+      "description": "MCP member `tools`: Whether the client supports tool use via tools and toolChoice parameters.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

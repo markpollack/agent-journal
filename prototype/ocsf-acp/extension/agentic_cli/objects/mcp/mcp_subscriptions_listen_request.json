@@ -1,0 +1,32 @@
+{
+  "caption": "MCP Subscriptions Listen Request",
+  "description": "Sent from the client to open a long-lived channel for receiving notifications\noutside the context of a specific request. Replaces the previous HTTP GET\nendpoint and ensures consistent behavior between HTTP and STDIO. Generated from the pinned MCP schema (2026-07-28 SubscriptionsListenRequest).",
+  "extends": "object",
+  "name": "mcp_subscriptions_listen_request",
+  "attributes": {
+    "mcp_id_json": {
+      "description": "MCP member `id` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_jsonrpc": {
+      "description": "MCP member `jsonrpc` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_method": {
+      "description": "MCP member `method` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_subscriptions_listen_request_params": {
+      "description": "MCP member `params` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

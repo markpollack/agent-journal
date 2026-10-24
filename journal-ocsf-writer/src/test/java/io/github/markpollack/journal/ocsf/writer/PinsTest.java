@@ -43,7 +43,7 @@ class PinsTest {
     @Test
     void semanticContractBytesAreIdenticalInWriterAndReader() throws Exception {
         byte[] writer = resource(Pins.SEMANTIC_CONTRACT_RESOURCE);
-        byte[] reader = Files.readAllBytes(PROJECT.resolve("journal-capture-tck/src/main/resources/ocsf/semantic-contract-0.7.0-prototype.json"));
+        byte[] reader = Files.readAllBytes(PROJECT.resolve("journal-capture-tck/src/main/resources/ocsf/semantic-contract-0.8.0-prototype.json"));
         assertThat(writer).isEqualTo(reader);
         assertThat(io.github.markpollack.journal.tck.ocsf.SemanticOperation.VERSION).isEqualTo(Pins.SEMANTIC_OPERATIONS_VERSION);
         assertThat(io.github.markpollack.journal.tck.ocsf.PackageReader.READER_CONTRACT_VERSION).isEqualTo(Pins.READER_CONTRACT_VERSION);
@@ -70,11 +70,16 @@ class PinsTest {
         MappingContracts c = new MappingContracts();
         for (String name : List.of(ClaudeStreamMapper.CONTRACT, ClaudeTranscriptMapper.CONTRACT, CodexRolloutMapper.CONTRACT, CodexStreamMapper.CONTRACT, AntigravityStreamMapper.CONTRACT,
                 OpaqueTextMapper.CONTRACT)) {
-            // the Codex exec-stream contract is 0.7.0 (the lower bound in its direction, review closure), the rollout contract 0.4.0 (conditional
-            // uncached value), the Claude contracts 0.3.0 (SEM-CLOSE tranches), the Antigravity contract 0.2.0 (step usage at its own unit, text increments);
-            // opaque text is unchanged
-            assertThat(c.uid(name)).endsWith(CodexStreamMapper.CONTRACT.equals(name) ? "/0.7.0-prototype" : CodexRolloutMapper.CONTRACT.equals(name) ? "/0.4.0-prototype"
-                    : AntigravityStreamMapper.CONTRACT.equals(name) ? "/0.2.0-prototype" : OpaqueTextMapper.CONTRACT.equals(name) ? "/0.2.0-prototype" : "/0.3.0-prototype");
+            // the stream contracts gain MCP observations (0.11.0): Codex exec stream 0.8.0, Claude stream 0.4.0, Antigravity 0.3.0; the rollout contract
+            // stays 0.4.0 (conditional uncached value), the Claude transcript 0.3.0 (SEM-CLOSE tranches; no MCP registration evidence), opaque text 0.2.0
+            assertThat(c.uid(name)).endsWith(switch (name) {
+                case CodexStreamMapper.CONTRACT -> "/0.8.0-prototype";
+                case CodexRolloutMapper.CONTRACT -> "/0.4.0-prototype";
+                case AntigravityStreamMapper.CONTRACT -> "/0.3.0-prototype";
+                case OpaqueTextMapper.CONTRACT -> "/0.2.0-prototype";
+                case ClaudeStreamMapper.CONTRACT -> "/0.4.0-prototype";
+                default -> "/0.3.0-prototype";
+            });
             c.rule(name, "common.opaque->source_record");
             c.rule(name, "common.mapper_exception->source_record");
         }

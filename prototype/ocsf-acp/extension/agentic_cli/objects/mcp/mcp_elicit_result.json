@@ -1,0 +1,28 @@
+{
+  "caption": "MCP Elicit Result",
+  "description": "The client's response to an elicitation request. Generated from the pinned MCP schema (2025-11-25 ElicitResult; 2026-07-28 ElicitResult).",
+  "extends": "object",
+  "name": "mcp_elicit_result",
+  "attributes": {
+    "mcp_meta": {
+      "description": "MCP member `_meta`: See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_action": {
+      "description": "MCP member `action` (required by the protocol): The user action in response to the elicitation.\n- \"accept\": User submitted the form/confirmed the action\n- \"decline\": User explicitly decline the action\n- \"cancel\": User dismissed without making an explicit choice",
+      "requirement": "optional"
+    },
+    "mcp_elicit_result__content__entry_list": {
+      "description": "MCP member `content`: The submitted form data, only present when action is \"accept\" and mode was \"form\".\nContains values matching the requested schema.\nOmitted for out-of-band mode responses.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

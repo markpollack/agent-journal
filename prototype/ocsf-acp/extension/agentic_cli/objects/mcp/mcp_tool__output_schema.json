@@ -1,0 +1,32 @@
+{
+  "caption": "MCP Tool Output Schema",
+  "description": "An optional JSON Schema object defining the structure of the tool's output returned in\nthe structuredContent field of a CallToolResult.\n\nDefaults to JSON Schema 2020-12 when no explicit $schema is provided.\nCurrently restricted to type: \"object\" at the root level. Generated from the pinned MCP schema (2025-11-25 Tool.outputSchema; 2026-07-28 Tool.outputSchema).",
+  "extends": "object",
+  "name": "mcp_tool__output_schema",
+  "attributes": {
+    "mcp_schema": {
+      "description": "MCP member `$schema`.",
+      "requirement": "optional"
+    },
+    "mcp_properties": {
+      "description": "MCP member `properties`.",
+      "requirement": "optional"
+    },
+    "mcp_required_string_list": {
+      "description": "MCP member `required`.",
+      "requirement": "optional"
+    },
+    "mcp_type": {
+      "description": "MCP member `type` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

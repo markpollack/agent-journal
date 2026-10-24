@@ -1,0 +1,196 @@
+{
+  "uid": "agent-journal/semantic-contract/0.8.0-prototype",
+  "non_production": true,
+  "operations_implementation": {
+    "library": "journal-capture-tck",
+    "package": "io.github.markpollack.journal.tck.ocsf",
+    "operations_version": "0.3",
+    "note": "Each declaration names a SemanticOperation implemented in Java and the schema paths it reads. Paths are validated against the embedded definition closure when the package is opened. Prose explains; the operation name and targets are the testable specification. Version 0.2 adds SETTINGS_AND_CONTEXT and the Session scope owner (session_uid) in usage selection. Version 0.3 (extension 0.6.0-prototype) reads uncached_input_tokens instead of input_tokens among the usage components, and the Codex exec stream no longer reports response identities: its content items carry item_uid, so its response assembly is UNKNOWN rather than a stream-local guess. Version 0.4 (extension 0.7.0-prototype) names the Codex exec-stream contract 0.5.0-prototype, whose usage components state their measurement status; no operation changed. Version 0.5 (extension 0.8.0-prototype) names the Codex exec-stream contract 0.6.0-prototype, whose usage components state a lower bound for a running total and keep a conditional formula result apart from the canonical value, and the Codex rollout contract 0.4.0-prototype, whose uncached input is likewise only a conditional value; no operation changed. Version 0.6 (extension 0.9.0-prototype) names the Codex exec-stream contract 0.7.0-prototype, whose usage prose states the lower bound in its direction (the thread quantity is at least the reported value) and that equal tranche prices do not make an incomplete subtotal exact; no operation changed. Version 0.7 (extension 0.10.0-prototype) names the Antigravity contract 0.2.0-prototype; FINAL_USAGE_SELECTION owns an observation at scope 99 Other by the enclosing event's own item (item_uid, else tool_call_uid) within its source artifact and keeps differently named Other units apart; RESPONSE_ASSEMBLY also assembles a content item's text from the blocks' declared text_update_id (Increment blocks concatenated in order, a Snapshot replacing earlier views), never from vendor block types; RESULT_OWNERSHIP scopes an owner whose identity basis is not a model-facing call identifier to its source artifact. Version 0.8 (extension 0.11.0-prototype) names the Claude stream contract 0.4.0-prototype, the Codex exec-stream contract 0.8.0-prototype and the Antigravity contract 0.3.0-prototype, which add MCP observations; operations 0.3 add CANONICAL_PROJECTION: in a finally assembled file every other operation reads the canonical projection (events with no assembly record, or assembly role 1 Canonical single observation or 3 Consolidated canonical) and never a supporting observation (role 2), which is evidence for a consolidated event and is never counted again."
+  },
+  "declarations": [
+    {
+      "id": "submission.identity.v1",
+      "operation": "SUBMISSION_IDENTITY",
+      "question": "How many user submissions did this run contain, and which native records represent each one?",
+      "targets": {
+        "events": "prompt_turn",
+        "activity_id": 1,
+        "run": "prompt_turn.journal.run_uid",
+        "turn": "prompt_turn.turn_uid",
+        "text": "prompt_turn.content_blocks[].text",
+        "occurrence": "prompt_turn.source_ref.record_index",
+        "contract": "prompt_turn.journal.contract_uid"
+      },
+      "identity": "(run_uid, turn_uid, exact concatenated block text) when the record reports a turn id: records with the same key are representations of one submission. Without a turn id each occurrence stands alone (identity_basis occurrence); the view cannot tell a repeated representation from a new identical-text submission and says so. A record classified by a classifier below is not a submission.",
+      "classifiers": [
+        {
+          "rule": "codex.user_role_context.v1",
+          "contract_uid": "codex-cli/rollout/0.160.1/0.4.0-prototype",
+          "target": "prompt_turn.content_blocks[].text",
+          "first_block_starts_with": "<environment_context>",
+          "label": "environment_context",
+          "counts_as_submission": false,
+          "basis": "Codex writes the environment context as a user-role message before the prompt; user role alone does not establish human authorship"
+        }
+      ]
+    },
+    {
+      "id": "response.assembly.v1",
+      "operation": "RESPONSE_ASSEMBLY",
+      "question": "How many model responses were there, and what did each one contain across all its native updates?",
+      "targets": {
+        "events": "model_response",
+        "identity": "model_response.response_uid",
+        "artifact": "model_response.source_ref.artifact",
+        "blocks": "model_response.content_blocks[].block_index",
+        "block_type": "model_response.content_blocks[].block_type",
+        "block_data": "model_response.content_blocks[].data",
+        "activity": "model_response.activity_id",
+        "stop_reason": "model_response.stop_reason",
+        "contract": "model_response.journal.contract_uid",
+        "item": "model_response.item_uid",
+        "text_update": "model_response.content_blocks[].text_update_id",
+        "block_text": "model_response.content_blocks[].text"
+      },
+      "identity": "(run_uid, response_uid) when identity_scope is run (the source reports a stable response id); (run_uid, artifact, response_uid) when identity_scope is artifact (ids are scoped to one artifact, for example Codex stream item ids). A missing response_uid is unresolved, never guessed.",
+      "update_semantics": [
+        {
+          "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+          "mode": "APPEND_BLOCKS",
+          "identity_scope": "run",
+          "basis": "each stream record carries one further content block of the same message id; the Completed record ends the sequence"
+        },
+        {
+          "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
+          "mode": "APPEND_BLOCKS",
+          "identity_scope": "run",
+          "basis": "each transcript record carries one further content block of the same message id"
+        },
+        {
+          "contract_uid": "codex-cli/rollout/0.160.1/0.4.0-prototype",
+          "mode": "SNAPSHOT",
+          "identity_scope": "run",
+          "basis": "item_completed AgentMessage and response_item message repeat the full message with one id; snapshots must agree"
+        },
+        {
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.8.0-prototype",
+          "mode": "UNKNOWN",
+          "identity_scope": "artifact",
+          "basis": "the exec stream reports completed content items (item_uid, stream-local), not response identities; which items belong to one model response is not reported, so no assembly is possible"
+        },
+        {
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.3.0-prototype",
+          "mode": "UNKNOWN",
+          "identity_scope": "run",
+          "basis": "the stream reports agent-response steps as content items (item_uid, the conversation's step index) whose text_delta fragments are Increment blocks of the step's text, never a response identity; which steps belong to one model response is not reported, so no response assembly is possible (items are assembled separately)"
+        }
+      ],
+      "cross_source": "when one identity has occurrences in several artifacts (live output and saved session file), each artifact is assembled separately and the assemblies are compared; a difference is reported, never reconciled",
+      "items": "Separately from responses: model_response events that report an item_uid are grouped by (run_uid, artifact, item_uid); an item's text is assembled from its blocks' text_update_id alone: Increment texts concatenated in journal.sequence order, a Snapshot replacing the text so far; a text block without text_update_id leaves the item's assembly unavailable (the update mode is not stated). No vendor block type is read, and no text reported on another class (for example a prompt turn's own response) is added to an item."
+    },
+    {
+      "id": "usage.final_selection.v1",
+      "operation": "FINAL_USAGE_SELECTION",
+      "question": "Which reported usage figures are the applicable final values, at which scope, from which source, and how many repeated or provisional observations exist beside them?",
+      "targets": {
+        "observations": "*.usage_observations[]",
+        "scope": "*.usage_observations[].scope_id",
+        "status": "*.usage_observations[].usage_status_id",
+        "source": "*.usage_observations[].source_ref.artifact",
+        "record": "*.usage_observations[].source_ref.record_index",
+        "model": "*.usage_observations[].model_ref.name",
+        "components": [
+          "*.usage_observations[].uncached_input_tokens",
+          "*.usage_observations[].output_tokens",
+          "*.usage_observations[].cache_read_tokens",
+          "*.usage_observations[].cache_write_tokens",
+          "*.usage_observations[].reasoning_tokens",
+          "*.usage_observations[].reported_total_tokens"
+        ],
+        "owner": [
+          "model_response.response_uid",
+          "model_response.item_uid",
+          "tool_call.tool_call_uid",
+          "prompt_turn.turn_uid",
+          "session_context.response_uid",
+          "session_context.turn_uid",
+          "*.session_uid",
+          "*.journal.run_uid"
+        ],
+        "scope_name": "*.usage_observations[].scope"
+      },
+      "rule": "Group observations by (run_uid, scope_id, owner, model name, source artifact), where owner is response_uid at Model-response scope, turn_uid at Prompt-turn scope, session_uid at Session scope, run_uid at Run and Model scope, and at Other scope (99) the enclosing event's own item (item_uid, else tool_call_uid) within the source artifact, with the scope name (the unit the source defines, for example Conversation step) part of the group so that differently named units never share a group; an Other observation on an event without an item identity is unidentified, never pooled with another. Within a group the applicable final is the Final observations' component set when every Final observation reports equal components (repeats are counted once and listed); differing Final observations are a conflict with no applicable value; a group without a Final observation has none, and its Provisional/Unknown observations remain visible. Groups are never summed across scopes, sources, models or child runs; absence of a component is not zero. A finer source unit is not a model response: Other-scope groups are never counted as responses, and their totals are never added to a Session, Run or Model observation that covers them."
+    },
+    {
+      "id": "association.evidence.v1",
+      "operation": "ASSOCIATION_EVIDENCE",
+      "question": "Which facts are associated with which owner, by how many candidates, and on what evidence?",
+      "targets": {
+        "operation_outcome": "tool_call.tool_operation.attribution.outcome_id",
+        "operation_method": "tool_call.tool_operation.attribution.method_id",
+        "operation_candidates": "tool_call.tool_operation.attribution.candidates[]",
+        "operation_tool_call": "tool_call.tool_call_uid",
+        "decision_outcome": "tool_call.permission_decision.attribution.outcome_id",
+        "decision_method": "tool_call.permission_decision.attribution.method_id",
+        "decision_scope": "tool_call.permission_decision.scope_id",
+        "turn_decision_outcome": "prompt_turn.permission_decisions[].attribution.outcome_id",
+        "turn_decision_scope": "prompt_turn.permission_decisions[].scope_id",
+        "turn_decision_candidates": "prompt_turn.permission_decisions[].attribution.candidates[]"
+      },
+      "rule": "Candidate count and evidence method are reported separately. method Reported identifier means the cited native record names the owner at the declared path; method Derived by rule means candidates were computed (for example command text contained in a call input within the same turn). A unique Derived candidate is a derived association, never a reported parent id. A decision whose outcome is Unattributed or Ambiguous stays at its reported scope and is never attached to a tool call."
+    },
+    {
+      "id": "result.ownership.v1",
+      "operation": "RESULT_OWNERSHIP",
+      "question": "Which result belongs to which tool request, including repeated or identical results?",
+      "targets": {
+        "events": "tool_call",
+        "owner": "tool_call.tool_call_uid",
+        "request_name": "tool_call.tool_name",
+        "result_content": "tool_call.tool_result.data",
+        "occurrence": "tool_call.source_ref.record_index",
+        "identity_basis": "tool_call.identity_basis_id",
+        "artifact": "tool_call.source_ref.artifact"
+      },
+      "rule": "A result belongs to the tool_call_uid its own native record reports at the declared path (Claude content[].tool_use_id, Codex payload.call_id or the exec stream's item id, Antigravity step_index). An owner whose identity_basis_id is present and not 1 Model-facing call identifier (a stream-local item identifier, a conversation step index) is an owner only within its source artifact: an equal value in another artifact is another owner. Equal content never pairs a result with a request; identical results under different owners remain separate and are listed as such."
+    },
+    {
+      "id": "settings.context.v1",
+      "operation": "SETTINGS_AND_CONTEXT",
+      "question": "Which launch/session settings, injected context and session accounting did the sources report, at what scope, and from which record?",
+      "targets": {
+        "events": "session_context",
+        "activity": "session_context.activity_id",
+        "kind": "session_context.context_kind",
+        "turn": "session_context.turn_uid",
+        "settings": [
+          "session_context.settings.working_directory",
+          "session_context.settings.model",
+          "session_context.settings.provider",
+          "session_context.settings.version",
+          "session_context.settings.permission_mode",
+          "session_context.settings.approval_policy",
+          "session_context.settings.sandbox_policy",
+          "session_context.settings.tool_names[]",
+          "session_context.settings.git_branch"
+        ],
+        "rendered_role": "session_context.rendered_role",
+        "context_text": "session_context.content_blocks[].text",
+        "occurrence": "session_context.source_ref.record_index"
+      },
+      "rule": "Every session_context event is one row at its reported scope (session when turn_uid is absent, turn otherwise). Settings rows list exactly the settings fields the record reported; nothing is merged across records, so two records reporting the same field remain two rows and a disagreement is visible. Context rows carry the kind, the rendered role and the text length; accounting rows are listed with the usage/cost groups they contribute to the usage view. A permission decision is not a setting: it stays in the association view at its reported scope."
+    },
+    {
+      "id": "canonical.projection.v1",
+      "operation": "CANONICAL_PROJECTION",
+      "question": "Which events of an assembled file are the canonical record of the execution, and which are source observations kept only as evidence?",
+      "targets": {
+        "role": "*.assembly.assembly_role_id",
+        "entity": "*.assembly.entity_uid",
+        "observations": "*.assembly.observation_refs[].occurrence_uid"
+      },
+      "rule": "an event without assembly, or with assembly_role_id 1 (Canonical single observation) or 3 (Consolidated canonical), is canonical; assembly_role_id 2 (Supporting observation) is evidence for the consolidated event of the same entity_uid and is excluded from every count, assembly and selection the other operations make",
+      "basis": "final assembly writes each source's observations and, for an entity several sources observed, one consolidated event with per-field evidence; counting both would count one execution twice"
+    }
+  ]
+}

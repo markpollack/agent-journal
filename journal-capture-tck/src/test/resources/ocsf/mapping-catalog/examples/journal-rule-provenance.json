@@ -23,7 +23,7 @@
       "activity_id": 4,
       "values": {
         "/journal/rule_uid": "codex.stream.mcp_tool_call->tool_call.requested",
-        "/journal/contract_uid": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype"
+        "/journal/contract_uid": "codex-cli/exec-json-stream/0.160.1/0.8.0-prototype"
       },
       "absent": [
         "/unmapped"

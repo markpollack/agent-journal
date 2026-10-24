@@ -1,0 +1,16 @@
+{
+  "caption": "MCP Get Prompt Request Params Arguments Entry",
+  "description": "Arguments to use for templating the prompt. Generated from the pinned MCP schema (2025-11-25 GetPromptRequestParams.arguments; 2026-07-28 GetPromptRequestParams.arguments).",
+  "extends": "object",
+  "name": "mcp_get_prompt_request_params__arguments__entry",
+  "attributes": {
+    "mcp_key": {
+      "description": "The map key exactly as reported.",
+      "requirement": "required"
+    },
+    "mcp_string_value": {
+      "description": "The value under the key.",
+      "requirement": "optional"
+    }
+  }
+}

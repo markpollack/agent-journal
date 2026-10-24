@@ -1,0 +1,24 @@
+{
+  "caption": "MCP Complete Request Params Argument",
+  "description": "The argument's information Generated from the pinned MCP schema (2025-11-25 CompleteRequestParams.argument; 2026-07-28 CompleteRequestParams.argument).",
+  "extends": "object",
+  "name": "mcp_complete_request_params__argument",
+  "attributes": {
+    "mcp_name": {
+      "description": "MCP member `name` (required by the protocol): The name of the argument",
+      "requirement": "optional"
+    },
+    "mcp_value": {
+      "description": "MCP member `value` (required by the protocol): The value of the argument to use for completion matching.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

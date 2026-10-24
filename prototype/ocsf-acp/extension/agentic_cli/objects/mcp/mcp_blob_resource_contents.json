@@ -1,0 +1,32 @@
+{
+  "caption": "MCP Blob Resource Contents",
+  "description": "MCP Blob Resource Contents. Generated from the pinned MCP schema (2025-11-25 BlobResourceContents; 2026-07-28 BlobResourceContents).",
+  "extends": "object",
+  "name": "mcp_blob_resource_contents",
+  "attributes": {
+    "mcp_meta": {
+      "description": "MCP member `_meta`: See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_blob": {
+      "description": "MCP member `blob` (required by the protocol): A base64-encoded string representing the binary data of the item.",
+      "requirement": "optional"
+    },
+    "mcp_mime_type": {
+      "description": "MCP member `mimeType`: The MIME type of this resource, if known.",
+      "requirement": "optional"
+    },
+    "mcp_uri": {
+      "description": "MCP member `uri` (required by the protocol): The URI of this resource.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

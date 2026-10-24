@@ -1,0 +1,28 @@
+{
+  "caption": "MCP Tool List Changed Notification",
+  "description": "An optional notification from the server to the client, informing it that the list of tools it offers has changed. This may be issued by servers without any previous subscription from the client. Generated from the pinned MCP schema (2025-11-25 ToolListChangedNotification; 2026-07-28 ToolListChangedNotification).",
+  "extends": "object",
+  "name": "mcp_tool_list_changed_notification",
+  "attributes": {
+    "mcp_jsonrpc": {
+      "description": "MCP member `jsonrpc` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_method": {
+      "description": "MCP member `method` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_notification_params": {
+      "description": "MCP member `params`.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

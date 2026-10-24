@@ -1,0 +1,32 @@
+{
+  "caption": "MCP Subscription Filter",
+  "description": "The set of notification types a client may opt in to on a\n{@link SubscriptionsListenRequestsubscriptions/listen} request.\n\nEach notification type is **opt-in**; the server **MUST NOT** send\nnotification types the client has not explicitly requested here. Generated from the pinned MCP schema (2026-07-28 SubscriptionFilter).",
+  "extends": "object",
+  "name": "mcp_subscription_filter",
+  "attributes": {
+    "mcp_prompts_list_changed": {
+      "description": "MCP member `promptsListChanged`: If true, receive {@link PromptListChangedNotificationnotifications/prompts/list_changed}.",
+      "requirement": "optional"
+    },
+    "mcp_resource_subscriptions": {
+      "description": "MCP member `resourceSubscriptions`: Subscribe to {@link ResourceUpdatedNotificationnotifications/resources/updated} for these resource URIs.\nReplaces the former `resources/subscribe` RPC.",
+      "requirement": "optional"
+    },
+    "mcp_resources_list_changed": {
+      "description": "MCP member `resourcesListChanged`: If true, receive {@link ResourceListChangedNotificationnotifications/resources/list_changed}.",
+      "requirement": "optional"
+    },
+    "mcp_tools_list_changed": {
+      "description": "MCP member `toolsListChanged`: If true, receive {@link ToolListChangedNotificationnotifications/tools/list_changed}.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

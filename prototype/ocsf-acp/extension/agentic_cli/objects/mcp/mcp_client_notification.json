@@ -1,0 +1,32 @@
+{
+  "caption": "MCP Client Notification",
+  "description": "MCP Client Notification. Generated from the pinned MCP schema (2025-11-25 ClientNotification).",
+  "extends": "object",
+  "name": "mcp_client_notification",
+  "attributes": {
+    "mcp_cancelled_notification": {
+      "description": "The value when it is the alternative CancelledNotification.",
+      "requirement": "optional"
+    },
+    "mcp_initialized_notification": {
+      "description": "The value when it is the alternative InitializedNotification.",
+      "requirement": "optional"
+    },
+    "mcp_progress_notification": {
+      "description": "The value when it is the alternative ProgressNotification.",
+      "requirement": "optional"
+    },
+    "mcp_task_status_notification": {
+      "description": "The value when it is the alternative TaskStatusNotification.",
+      "requirement": "optional"
+    },
+    "mcp_roots_list_changed_notification": {
+      "description": "The value when it is the alternative RootsListChangedNotification.",
+      "requirement": "optional"
+    },
+    "mcp_unresolved": {
+      "description": "The value exactly as reported when no single alternative matches it by its constant and required members.",
+      "requirement": "optional"
+    }
+  }
+}

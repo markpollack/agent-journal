@@ -1,0 +1,28 @@
+{
+  "caption": "MCP Complete Result Completion",
+  "description": "MCP Complete Result Completion. Generated from the pinned MCP schema (2025-11-25 CompleteResult.completion; 2026-07-28 CompleteResult.completion).",
+  "extends": "object",
+  "name": "mcp_complete_result__completion",
+  "attributes": {
+    "mcp_has_more": {
+      "description": "MCP member `hasMore`: Indicates whether there are additional completion options beyond those provided in the current response, even if the exact total is unknown.",
+      "requirement": "optional"
+    },
+    "mcp_total_long": {
+      "description": "MCP member `total`: The total number of completion options available. This can exceed the number of values actually sent in the response.",
+      "requirement": "optional"
+    },
+    "mcp_values": {
+      "description": "MCP member `values` (required by the protocol): An array of completion values. Must not exceed 100 items.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

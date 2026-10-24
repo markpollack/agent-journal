@@ -45,13 +45,13 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
-        <!-- test scope only: validates the coverage bookkeeping documents (vendor inventories, scenario roster and
-             results, foundation pins and inventory) against their JSON Schemas (draft 2020-12); never on the capture path -->
+        <!-- validates protocol objects a package carries (McpProtocol: the pinned MCP definitions declared in the event
+             file, draft 2020-12) and, in tests, the coverage bookkeeping documents against their JSON Schemas. Part of
+             the independent reader and checks; never on the writer's or the capture's path -->
         <dependency>
             <groupId>com.networknt</groupId>
             <artifactId>json-schema-validator</artifactId>
             <version>1.5.7</version>
-            <scope>test</scope>
         </dependency>
         <!-- test scope only: reads the pinned OTel GenAI semantic-convention YAML when the foundation field inventory is
              re-derived from the pinned upstream files (FoundationFieldsTest, gated); version from the Jackson BOM -->

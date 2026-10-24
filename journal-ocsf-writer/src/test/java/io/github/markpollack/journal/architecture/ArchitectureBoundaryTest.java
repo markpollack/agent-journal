@@ -52,8 +52,10 @@ class ArchitectureBoundaryTest {
     static final DescribedPredicate<JavaClass> WRITER_CODE = resideInAPackage(WRITER + "..").as("the writer's production classes");
 
     static ArchRule checkerUsesNoProducerCode(DescribedPredicate<? super JavaClass> checker) {
-        return classes().that(checker).should().onlyDependOnClassesThat(resideInAnyPackage("java..", "com.fasterxml.jackson.core..", "com.fasterxml.jackson.databind..", TCK + ".."))
-                .because("the independent TCK must not call production capture parsers, SDK deserializers or mappers to compute expected values (RULE-29)");
+        return classes().that(checker).should().onlyDependOnClassesThat(resideInAnyPackage("java..", "com.fasterxml.jackson.core..", "com.fasterxml.jackson.databind..", "com.networknt.schema..",
+                TCK + ".."))
+                .because("the independent TCK must not call production capture parsers, SDK deserializers or mappers to compute expected values (RULE-29); the JSON Schema "
+                        + "validator only judges protocol objects a package carries against the pinned definitions the package declares");
     }
 
     static ArchRule oracleCoreReadsNeutrally(DescribedPredicate<? super JavaClass> oracleCore) {

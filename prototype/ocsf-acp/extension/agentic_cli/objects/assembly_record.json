@@ -1,0 +1,38 @@
+{
+  "caption": "Assembly Record",
+  "description": "How final assembly placed this event: a canonical event observed by one source, a consolidated canonical event built from several sources' observations of one logical entity at one lifecycle stage, or a supporting observation kept as evidence and never counted again. entity_uid names the logical entity in its declared identity namespace; occurrence_uid names the source occurrence (artifact, record and emit ordinal).",
+  "extends": "object",
+  "name": "assembly_record",
+  "attributes": {
+    "assembly_role_id": {
+      "requirement": "required"
+    },
+    "assembly_role": {
+      "requirement": "optional"
+    },
+    "entity_uid": {
+      "requirement": "optional"
+    },
+    "occurrence_uid": {
+      "requirement": "optional"
+    },
+    "relation_class_id": {
+      "requirement": "optional"
+    },
+    "relation_class": {
+      "requirement": "optional"
+    },
+    "observation_refs": {
+      "requirement": "optional"
+    },
+    "field_evidence": {
+      "requirement": "optional"
+    },
+    "assembly_conflicts": {
+      "requirement": "optional"
+    },
+    "basis": {
+      "requirement": "optional"
+    }
+  }
+}

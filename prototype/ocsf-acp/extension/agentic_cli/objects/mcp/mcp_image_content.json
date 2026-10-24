@@ -1,0 +1,36 @@
+{
+  "caption": "MCP Image Content",
+  "description": "An image provided to or from an LLM. Generated from the pinned MCP schema (2025-11-25 ImageContent; 2026-07-28 ImageContent).",
+  "extends": "object",
+  "name": "mcp_image_content",
+  "attributes": {
+    "mcp_meta": {
+      "description": "MCP member `_meta`: See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_annotations": {
+      "description": "MCP member `annotations`: Optional annotations for the client.",
+      "requirement": "optional"
+    },
+    "mcp_data_string": {
+      "description": "MCP member `data` (required by the protocol): The base64-encoded image data.",
+      "requirement": "optional"
+    },
+    "mcp_mime_type": {
+      "description": "MCP member `mimeType` (required by the protocol): The MIME type of the image. Different providers may support different image types.",
+      "requirement": "optional"
+    },
+    "mcp_type": {
+      "description": "MCP member `type` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

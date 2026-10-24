@@ -1,0 +1,20 @@
+{
+  "caption": "MCP Titled Multi Select Enum Schema Items",
+  "description": "Schema for array items with enum options and display labels. Generated from the pinned MCP schema (2025-11-25 TitledMultiSelectEnumSchema.items; 2026-07-28 TitledMultiSelectEnumSchema.items).",
+  "extends": "object",
+  "name": "mcp_titled_multi_select_enum_schema__items",
+  "attributes": {
+    "mcp_titled_multi_select_enum_schema__items__any_of__item_list": {
+      "description": "MCP member `anyOf` (required by the protocol): Array of enum options with values and display labels.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

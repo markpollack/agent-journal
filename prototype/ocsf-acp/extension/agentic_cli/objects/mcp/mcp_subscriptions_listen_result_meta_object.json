@@ -1,0 +1,24 @@
+{
+  "caption": "MCP Subscriptions Listen Result Meta Object",
+  "description": "Extends {@link ResultMetaObject} with the subscription-stream identifier carried by a\n{@link SubscriptionsListenResult}. All key naming rules from `MetaObject` apply. Generated from the pinned MCP schema (2026-07-28 SubscriptionsListenResultMetaObject).",
+  "extends": "object",
+  "name": "mcp_subscriptions_listen_result_meta_object",
+  "attributes": {
+    "mcp_implementation": {
+      "description": "MCP member `io.modelcontextprotocol/serverInfo`: Identifies the server software producing the response. Servers SHOULD\ninclude this field on every response unless specifically configured not\nto do so.\n\nThe {@link Implementation} schema requires `name` and `version`; other\nfields are optional.\n\nThe value is self-reported by the server and is not verified by the\nprotocol. It is intended for display, logging, and debugging. Clients\nSHOULD NOT use it to change their behavior, and SHOULD NOT rely on it for\nsecurity decisions.",
+      "requirement": "optional"
+    },
+    "mcp_io_modelcontextprotocol_subscription_id": {
+      "description": "MCP member `io.modelcontextprotocol/subscriptionId` (required by the protocol): Identifies the subscription stream this response closes, so the client can\ncorrelate it with the originating subscription — mirroring the same key on\nthe stream's notifications. The value is the JSON-RPC ID of the\n`subscriptions/listen` request that opened the stream (and equals this\nresponse's `id`).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

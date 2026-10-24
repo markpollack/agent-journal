@@ -1,0 +1,20 @@
+{
+  "caption": "MCP Complete Request Params Context",
+  "description": "Additional, optional context for completions Generated from the pinned MCP schema (2025-11-25 CompleteRequestParams.context; 2026-07-28 CompleteRequestParams.context).",
+  "extends": "object",
+  "name": "mcp_complete_request_params__context",
+  "attributes": {
+    "mcp_complete_request_params__context__arguments__entry_list": {
+      "description": "MCP member `arguments`: Previously-resolved variables in a URI template or prompt.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

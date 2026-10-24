@@ -1,0 +1,16 @@
+{
+  "caption": "MCP Elicit Request Form Params Requested Schema Properties Entry",
+  "description": "MCP Elicit Request Form Params Requested Schema Properties Entry. Generated from the pinned MCP schema (2025-11-25 ElicitRequestFormParams.requestedSchema.properties; 2026-07-28 ElicitRequestFormParams.requestedSchema.properties).",
+  "extends": "object",
+  "name": "mcp_elicit_request_form_params__requested_schema__properties__entry",
+  "attributes": {
+    "mcp_key": {
+      "description": "The map key exactly as reported.",
+      "requirement": "required"
+    },
+    "mcp_primitive_schema_definition": {
+      "description": "The value under the key.",
+      "requirement": "optional"
+    }
+  }
+}

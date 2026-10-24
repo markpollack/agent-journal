@@ -1,0 +1,20 @@
+{
+  "caption": "MCP Get Task Payload Result",
+  "description": "The response to a tasks/result request.\nThe structure matches the result type of the original request.\nFor example, a tools/call task would return the CallToolResult structure. Generated from the pinned MCP schema (2025-11-25 GetTaskPayloadResult).",
+  "extends": "object",
+  "name": "mcp_get_task_payload_result",
+  "attributes": {
+    "mcp_meta": {
+      "description": "MCP member `_meta`: See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

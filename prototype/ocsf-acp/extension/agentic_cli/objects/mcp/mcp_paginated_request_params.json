@@ -1,0 +1,28 @@
+{
+  "caption": "MCP Paginated Request Params",
+  "description": "Common parameters for paginated requests. Generated from the pinned MCP schema (2025-11-25 PaginatedRequestParams; 2026-07-28 PaginatedRequestParams).",
+  "extends": "object",
+  "name": "mcp_paginated_request_params",
+  "attributes": {
+    "mcp_paginated_request_params__meta": {
+      "description": "MCP member `_meta`: See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_cursor": {
+      "description": "MCP member `cursor`: An opaque token representing the current pagination position.\nIf provided, the server should return results starting after this cursor.",
+      "requirement": "optional"
+    },
+    "mcp_request_meta_object": {
+      "description": "MCP member `_meta` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

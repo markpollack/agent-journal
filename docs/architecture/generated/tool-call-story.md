@@ -140,7 +140,7 @@ No `tool_call` event with activity 1 exists for record 4 (as expected): the stre
 | `population.results` | VERIFIED | 2 expected, 2 observed |
 | `result.owner` | VERIFIED | 2 result(s) owned by the id of their own record |
 
-Whole report: 0 defects among 51 checks.
+Whole report: 0 defects among 55 checks.
 
 ## 7. Misleading interpretations and what catches them
 
@@ -186,9 +186,10 @@ The added event is a copy of the record's existing `tool_call` event, so the che
 
 | Check | Outcome | Detail |
 |---|---|---|
-| `event.order` on `main` | DEFECTIVE | line 45 sequence 4 after 4 |
+| `event.order` on `main` | DEFECTIVE | line 59 sequence 4 after 4 |
 | `whole_record.coverage` on `main/stream.jsonl` | DEFECTIVE | record 4: 2 whole-record events |
 | `population.requests` on `main/stream.jsonl` | DEFECTIVE | duplicated [4:item_1 x2] (expected 2, observed 3) |
+| `population.mcp` on `main/stream.jsonl` | DEFECTIVE | extra [4:item_1:1] (expected 4, observed 5) |
 
 Of 4 reviewed counterexamples, the oracle reports 4 as a changed check. The oracle's own mutation tests (for example `IdentityClassificationControlTest`) assert several of these outcomes in every build.
 

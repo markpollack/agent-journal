@@ -1,0 +1,48 @@
+{
+  "caption": "MCP Task Status Notification Params",
+  "description": "Parameters for a `notifications/tasks/status` notification. Generated from the pinned MCP schema (2025-11-25 TaskStatusNotificationParams).",
+  "extends": "object",
+  "name": "mcp_task_status_notification_params",
+  "attributes": {
+    "mcp_meta": {
+      "description": "MCP member `_meta`: See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_created_at": {
+      "description": "MCP member `createdAt` (required by the protocol): ISO 8601 timestamp when the task was created.",
+      "requirement": "optional"
+    },
+    "mcp_last_updated_at": {
+      "description": "MCP member `lastUpdatedAt` (required by the protocol): ISO 8601 timestamp when the task was last updated.",
+      "requirement": "optional"
+    },
+    "mcp_poll_interval": {
+      "description": "MCP member `pollInterval`: Suggested polling interval in milliseconds.",
+      "requirement": "optional"
+    },
+    "mcp_status": {
+      "description": "MCP member `status` (required by the protocol): Current task state.",
+      "requirement": "optional"
+    },
+    "mcp_status_message": {
+      "description": "MCP member `statusMessage`: Optional human-readable message describing the current task state.\nThis can provide context for any status, including:\n- Reasons for \"cancelled\" status\n- Summaries for \"completed\" status\n- Diagnostic information for \"failed\" status (e.g., error details, what went wrong)",
+      "requirement": "optional"
+    },
+    "mcp_task_id": {
+      "description": "MCP member `taskId` (required by the protocol): The task identifier.",
+      "requirement": "optional"
+    },
+    "mcp_ttl_json": {
+      "description": "MCP member `ttl` (required by the protocol): Actual retention duration from creation in milliseconds, null for unlimited.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

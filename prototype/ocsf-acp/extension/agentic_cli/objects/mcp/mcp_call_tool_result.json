@@ -1,0 +1,40 @@
+{
+  "caption": "MCP Call Tool Result",
+  "description": "The server's response to a tool call. Generated from the pinned MCP schema (2025-11-25 CallToolResult; 2026-07-28 CallToolResult).",
+  "extends": "object",
+  "name": "mcp_call_tool_result",
+  "attributes": {
+    "mcp_meta": {
+      "description": "MCP member `_meta`: See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_content_block_list": {
+      "description": "MCP member `content` (required by the protocol): A list of content objects that represent the unstructured result of the tool call.",
+      "requirement": "optional"
+    },
+    "mcp_is_error": {
+      "description": "MCP member `isError`: Whether the tool call ended in an error.\n\nIf not set, this is assumed to be false (the call was successful).\n\nAny errors that originate from the tool SHOULD be reported inside the result\nobject, with `isError` set to true, _not_ as an MCP protocol-level error\nresponse. Otherwise, the LLM would not be able to see that an error occurred\nand self-correct.\n\nHowever, any errors in _finding_ the tool, an error indicating that the\nserver does not support tool calls, or any other exceptional conditions,\nshould be reported as an MCP error response.",
+      "requirement": "optional"
+    },
+    "mcp_structured_content": {
+      "description": "MCP member `structuredContent`: An optional JSON object that represents the structured result of the tool call.",
+      "requirement": "optional"
+    },
+    "mcp_result_meta_object": {
+      "description": "MCP member `_meta`.",
+      "requirement": "optional"
+    },
+    "mcp_result_type": {
+      "description": "MCP member `resultType` (required by the protocol): Indicates the type of the result, which allows the client to determine\nhow to parse the result object.\n\nServers implementing this protocol version MUST include this field.\nFor backward compatibility, when a client receives a result from a\nserver implementing an earlier protocol version (which does not include\n`resultType`), the client MUST treat the absent field as `\"complete\"`.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

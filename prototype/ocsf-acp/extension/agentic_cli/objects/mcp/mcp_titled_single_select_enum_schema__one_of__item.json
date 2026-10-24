@@ -1,0 +1,24 @@
+{
+  "caption": "MCP Titled Single Select Enum Schema One Of Item",
+  "description": "MCP Titled Single Select Enum Schema One Of Item. Generated from the pinned MCP schema (2025-11-25 TitledSingleSelectEnumSchema.oneOf[]; 2026-07-28 TitledSingleSelectEnumSchema.oneOf[]).",
+  "extends": "object",
+  "name": "mcp_titled_single_select_enum_schema__one_of__item",
+  "attributes": {
+    "mcp_const": {
+      "description": "MCP member `const` (required by the protocol): The enum value.",
+      "requirement": "optional"
+    },
+    "mcp_title": {
+      "description": "MCP member `title` (required by the protocol): Display label for this option.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

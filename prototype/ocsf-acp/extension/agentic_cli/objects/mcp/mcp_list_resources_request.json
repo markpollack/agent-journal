@@ -1,0 +1,32 @@
+{
+  "caption": "MCP List Resources Request",
+  "description": "Sent from the client to request a list of resources the server has. Generated from the pinned MCP schema (2025-11-25 ListResourcesRequest; 2026-07-28 ListResourcesRequest).",
+  "extends": "object",
+  "name": "mcp_list_resources_request",
+  "attributes": {
+    "mcp_id_json": {
+      "description": "MCP member `id` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_jsonrpc": {
+      "description": "MCP member `jsonrpc` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_method": {
+      "description": "MCP member `method` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_paginated_request_params": {
+      "description": "MCP member `params`.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "caption": "MCP Elicitation Complete Notification",
+  "description": "An optional notification from the server to the client, informing it of a completion of a out-of-band elicitation request. Generated from the pinned MCP schema (2025-11-25 ElicitationCompleteNotification).",
+  "extends": "object",
+  "name": "mcp_elicitation_complete_notification",
+  "attributes": {
+    "mcp_jsonrpc": {
+      "description": "MCP member `jsonrpc` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_method": {
+      "description": "MCP member `method` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_elicitation_complete_notification__params": {
+      "description": "MCP member `params` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

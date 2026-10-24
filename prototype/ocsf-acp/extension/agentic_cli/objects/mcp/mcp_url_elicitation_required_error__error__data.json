@@ -1,0 +1,20 @@
+{
+  "caption": "MCP Url Elicitation Required Error Error Data",
+  "description": "MCP Url Elicitation Required Error Error Data. Generated from the pinned MCP schema (2025-11-25 URLElicitationRequiredError.error.data).",
+  "extends": "object",
+  "name": "mcp_url_elicitation_required_error__error__data",
+  "attributes": {
+    "mcp_elicit_request_url_params_list": {
+      "description": "MCP member `elicitations` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

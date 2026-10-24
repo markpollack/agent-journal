@@ -7,6 +7,7 @@
     "data": {"description": "The model-visible result content exactly as reported (string, array or object).", "requirement": "required"},
     "error_reported": {"requirement": "optional"},
     "structured_result": {"requirement": "optional"},
-    "reported_state": {"requirement": "optional"}
+    "reported_state": {"requirement": "optional"},
+    "errors": {"description": "Each error reported for this result with the layer that reported it (JSON-RPC, tool result, CLI, capture).", "requirement": "optional"}
   }
 }

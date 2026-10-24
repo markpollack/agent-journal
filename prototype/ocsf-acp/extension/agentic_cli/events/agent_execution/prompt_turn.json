@@ -79,6 +79,11 @@
       "group": "primary",
       "requirement": "optional"
     },
+    "assembly": {
+      "description": "Present in a finally assembled file: this event's assembly role and evidence.",
+      "group": "context",
+      "requirement": "optional"
+    },
     "data": {
       "description": "The native record exactly as reported, when retained on the event.",
       "group": "context",

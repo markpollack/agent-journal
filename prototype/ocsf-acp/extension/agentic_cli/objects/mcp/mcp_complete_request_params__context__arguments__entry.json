@@ -1,0 +1,16 @@
+{
+  "caption": "MCP Complete Request Params Context Arguments Entry",
+  "description": "Previously-resolved variables in a URI template or prompt. Generated from the pinned MCP schema (2025-11-25 CompleteRequestParams.context.arguments; 2026-07-28 CompleteRequestParams.context.arguments).",
+  "extends": "object",
+  "name": "mcp_complete_request_params__context__arguments__entry",
+  "attributes": {
+    "mcp_key": {
+      "description": "The map key exactly as reported.",
+      "requirement": "required"
+    },
+    "mcp_string_value": {
+      "description": "The value under the key.",
+      "requirement": "optional"
+    }
+  }
+}

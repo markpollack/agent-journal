@@ -1,0 +1,28 @@
+{
+  "caption": "MCP Method Not Found Error",
+  "description": "A JSON-RPC error indicating that the requested method does not exist or is not available.\n\nIn MCP, a server returns this error when a client invokes a method the server does not implement — either a genuinely unknown method, or one gated behind a server capability the server did not advertise (e.g., calling `prompts/list` when the `prompts` capability was not advertised).\n\nA request that requires a client capability the client did not declare is signalled instead by {@link MissingRequiredClientCapabilityError} (`-32021`). Generated from the pinned MCP schema (2026-07-28 MethodNotFoundError).",
+  "extends": "object",
+  "name": "mcp_method_not_found_error",
+  "attributes": {
+    "mcp_code": {
+      "description": "MCP member `code` (required by the protocol): The error type that occurred.",
+      "requirement": "optional"
+    },
+    "mcp_data_json": {
+      "description": "MCP member `data`: Additional information about the error. The value of this member is defined by the sender (e.g. detailed error information, nested errors etc.).",
+      "requirement": "optional"
+    },
+    "mcp_message": {
+      "description": "MCP member `message` (required by the protocol): A short description of the error. The message SHOULD be limited to a concise single sentence.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

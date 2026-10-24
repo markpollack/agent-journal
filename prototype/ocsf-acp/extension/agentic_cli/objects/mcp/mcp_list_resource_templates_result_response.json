@@ -1,0 +1,28 @@
+{
+  "caption": "MCP List Resource Templates Result Response",
+  "description": "A successful response from the server for a {@link ListResourceTemplatesRequestresources/templates/list} request. Generated from the pinned MCP schema (2026-07-28 ListResourceTemplatesResultResponse).",
+  "extends": "object",
+  "name": "mcp_list_resource_templates_result_response",
+  "attributes": {
+    "mcp_id_json": {
+      "description": "MCP member `id` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_jsonrpc": {
+      "description": "MCP member `jsonrpc` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_list_resource_templates_result": {
+      "description": "MCP member `result` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

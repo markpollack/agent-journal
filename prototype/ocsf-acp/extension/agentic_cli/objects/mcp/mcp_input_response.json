@@ -1,0 +1,24 @@
+{
+  "caption": "MCP Input Response",
+  "description": "MCP Input Response. Generated from the pinned MCP schema (2026-07-28 InputResponse).",
+  "extends": "object",
+  "name": "mcp_input_response",
+  "attributes": {
+    "mcp_create_message_result": {
+      "description": "The value when it is the alternative CreateMessageResult.",
+      "requirement": "optional"
+    },
+    "mcp_list_roots_result": {
+      "description": "The value when it is the alternative ListRootsResult.",
+      "requirement": "optional"
+    },
+    "mcp_elicit_result": {
+      "description": "The value when it is the alternative ElicitResult.",
+      "requirement": "optional"
+    },
+    "mcp_unresolved": {
+      "description": "The value exactly as reported when no single alternative matches it by its constant and required members.",
+      "requirement": "optional"
+    }
+  }
+}

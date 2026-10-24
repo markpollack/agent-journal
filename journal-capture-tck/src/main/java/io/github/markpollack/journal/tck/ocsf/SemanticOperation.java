@@ -17,10 +17,12 @@ public enum SemanticOperation {
     /** Tool exchanges grouped by the owner id of their own record; equal content never pairs results. */
     RESULT_OWNERSHIP,
     /** Settings, injected context and accounting records listed at their reported scope; nothing merged. */
-    SETTINGS_AND_CONTEXT;
+    SETTINGS_AND_CONTEXT,
+    /** In an assembled file, the canonical events (no assembly, role 1 or 3) every other operation reads; supporting observations (role 2) are evidence only. */
+    CANONICAL_PROJECTION;
 
     /** The version of these operations' semantics, pinned by packages separately from schema and contracts. */
-    public static final String VERSION = "0.2";
+    public static final String VERSION = "0.3";
 
     public static boolean known(String name) {
         for (SemanticOperation op : values()) {

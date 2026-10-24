@@ -1,0 +1,40 @@
+{
+  "caption": "MCP Get Prompt Request Params",
+  "description": "Parameters for a `prompts/get` request. Generated from the pinned MCP schema (2025-11-25 GetPromptRequestParams; 2026-07-28 GetPromptRequestParams).",
+  "extends": "object",
+  "name": "mcp_get_prompt_request_params",
+  "attributes": {
+    "mcp_get_prompt_request_params__meta": {
+      "description": "MCP member `_meta`: See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_get_prompt_request_params__arguments__entry_list": {
+      "description": "MCP member `arguments`: Arguments to use for templating the prompt.",
+      "requirement": "optional"
+    },
+    "mcp_name": {
+      "description": "MCP member `name` (required by the protocol): The name of the prompt or prompt template.",
+      "requirement": "optional"
+    },
+    "mcp_request_meta_object": {
+      "description": "MCP member `_meta` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_input_responses__entry_list": {
+      "description": "MCP member `inputResponses`.",
+      "requirement": "optional"
+    },
+    "mcp_request_state": {
+      "description": "MCP member `requestState`.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

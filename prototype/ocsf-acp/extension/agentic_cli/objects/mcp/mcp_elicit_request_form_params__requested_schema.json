@@ -1,0 +1,32 @@
+{
+  "caption": "MCP Elicit Request Form Params Requested Schema",
+  "description": "A restricted subset of JSON Schema.\nOnly top-level properties are allowed, without nesting. Generated from the pinned MCP schema (2025-11-25 ElicitRequestFormParams.requestedSchema; 2026-07-28 ElicitRequestFormParams.requestedSchema).",
+  "extends": "object",
+  "name": "mcp_elicit_request_form_params__requested_schema",
+  "attributes": {
+    "mcp_schema": {
+      "description": "MCP member `$schema`.",
+      "requirement": "optional"
+    },
+    "mcp_elicit_request_form_params__requested_schema__properties__entry_list": {
+      "description": "MCP member `properties` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_required_string_list": {
+      "description": "MCP member `required`.",
+      "requirement": "optional"
+    },
+    "mcp_type": {
+      "description": "MCP member `type` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

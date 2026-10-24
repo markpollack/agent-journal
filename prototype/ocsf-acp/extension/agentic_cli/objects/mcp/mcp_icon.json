@@ -1,0 +1,32 @@
+{
+  "caption": "MCP Icon",
+  "description": "An optionally-sized icon that can be displayed in a user interface. Generated from the pinned MCP schema (2025-11-25 Icon; 2026-07-28 Icon).",
+  "extends": "object",
+  "name": "mcp_icon",
+  "attributes": {
+    "mcp_mime_type": {
+      "description": "MCP member `mimeType`: Optional MIME type override if the source MIME type is missing or generic.\nFor example: `\"image/png\"`, `\"image/jpeg\"`, or `\"image/svg+xml\"`.",
+      "requirement": "optional"
+    },
+    "mcp_sizes": {
+      "description": "MCP member `sizes`: Optional array of strings that specify sizes at which the icon can be used.\nEach string should be in WxH format (e.g., `\"48x48\"`, `\"96x96\"`) or `\"any\"` for scalable formats like SVG.\n\nIf not provided, the client should assume that the icon can be used at any size.",
+      "requirement": "optional"
+    },
+    "mcp_src": {
+      "description": "MCP member `src` (required by the protocol): A standard URI pointing to an icon resource. May be an HTTP/HTTPS URL or a\n`data:` URI with Base64-encoded image data.\n\nConsumers SHOULD takes steps to ensure URLs serving icons are from the\nsame domain as the client/server or a trusted domain.\n\nConsumers SHOULD take appropriate precautions when consuming SVGs as they can contain\nexecutable JavaScript.",
+      "requirement": "optional"
+    },
+    "mcp_theme": {
+      "description": "MCP member `theme`: Optional specifier for the theme this icon is designed for. `light` indicates\nthe icon is designed to be used with a light background, and `dark` indicates\nthe icon is designed to be used with a dark background.\n\nIf not provided, the client should assume the icon can be used with any theme.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

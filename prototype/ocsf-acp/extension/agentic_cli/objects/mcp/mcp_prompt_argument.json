@@ -1,0 +1,32 @@
+{
+  "caption": "MCP Prompt Argument",
+  "description": "Describes an argument that a prompt can accept. Generated from the pinned MCP schema (2025-11-25 PromptArgument; 2026-07-28 PromptArgument).",
+  "extends": "object",
+  "name": "mcp_prompt_argument",
+  "attributes": {
+    "mcp_description": {
+      "description": "MCP member `description`: A human-readable description of the argument.",
+      "requirement": "optional"
+    },
+    "mcp_name": {
+      "description": "MCP member `name` (required by the protocol): Intended for programmatic or logical use, but used as a display name in past specs or fallback (if title isn't present).",
+      "requirement": "optional"
+    },
+    "mcp_required_boolean": {
+      "description": "MCP member `required`: Whether this argument must be provided.",
+      "requirement": "optional"
+    },
+    "mcp_title": {
+      "description": "MCP member `title`: Intended for UI and end-user contexts — optimized to be human-readable and easily understood,\neven by those unfamiliar with domain-specific terminology.\n\nIf not provided, the name should be used for display (except for Tool,\nwhere `annotations.title` should be given precedence over using `name`,\nif present).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

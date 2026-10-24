@@ -1,0 +1,20 @@
+{
+  "caption": "MCP Read Resource Result Contents Item",
+  "description": "MCP Read Resource Result Contents Item. Generated from the pinned MCP schema (2025-11-25 ReadResourceResult.contents[]; 2026-07-28 ReadResourceResult.contents[]).",
+  "extends": "object",
+  "name": "mcp_read_resource_result__contents__item",
+  "attributes": {
+    "mcp_text_resource_contents": {
+      "description": "The value when it is the alternative TextResourceContents.",
+      "requirement": "optional"
+    },
+    "mcp_blob_resource_contents": {
+      "description": "The value when it is the alternative BlobResourceContents.",
+      "requirement": "optional"
+    },
+    "mcp_unresolved": {
+      "description": "The value exactly as reported when no single alternative matches it by its constant and required members.",
+      "requirement": "optional"
+    }
+  }
+}

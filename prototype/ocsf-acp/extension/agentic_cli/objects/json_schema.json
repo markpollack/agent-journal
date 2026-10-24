@@ -1,0 +1,14 @@
+{
+  "caption": "JSON Schema",
+  "description": "A JSON Schema document as a source reported it (a tool's input or output schema), kept exactly; the dialect only when the document or the source states it.",
+  "extends": "object",
+  "name": "json_schema",
+  "attributes": {
+    "schema_dialect": {
+      "requirement": "optional"
+    },
+    "schema_document": {
+      "requirement": "required"
+    }
+  }
+}

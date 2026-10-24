@@ -1,0 +1,36 @@
+{
+  "caption": "MCP Create Message Result",
+  "description": "The client's response to a sampling/createMessage request from the server.\nThe client should inform the user before returning the sampled message, to allow them\nto inspect the response (human in the loop) and decide whether to allow the server to see it. Generated from the pinned MCP schema (2025-11-25 CreateMessageResult; 2026-07-28 CreateMessageResult).",
+  "extends": "object",
+  "name": "mcp_create_message_result",
+  "attributes": {
+    "mcp_meta": {
+      "description": "MCP member `_meta`: See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_create_message_result__content": {
+      "description": "MCP member `content` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_model": {
+      "description": "MCP member `model` (required by the protocol): The name of the model that generated the message.",
+      "requirement": "optional"
+    },
+    "mcp_role": {
+      "description": "MCP member `role` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_stop_reason": {
+      "description": "MCP member `stopReason`: The reason why sampling stopped, if known.\n\nStandard values:\n- \"endTurn\": Natural end of the assistant's turn\n- \"stopSequence\": A stop sequence was encountered\n- \"maxTokens\": Maximum token limit was reached\n- \"toolUse\": The model wants to use one or more tools\n\nThis field is an open string to allow for provider-specific stop reasons.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

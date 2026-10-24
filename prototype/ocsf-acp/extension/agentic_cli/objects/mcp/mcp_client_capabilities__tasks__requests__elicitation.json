@@ -1,0 +1,20 @@
+{
+  "caption": "MCP Client Capabilities Tasks Requests Elicitation",
+  "description": "Task support for elicitation-related requests. Generated from the pinned MCP schema (2025-11-25 ClientCapabilities.tasks.requests.elicitation).",
+  "extends": "object",
+  "name": "mcp_client_capabilities__tasks__requests__elicitation",
+  "attributes": {
+    "mcp_create": {
+      "description": "MCP member `create`: Whether the client supports task-augmented elicitation/create requests.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "caption": "MCP Get Task Payload Request Params",
+  "description": "MCP Get Task Payload Request Params. Generated from the pinned MCP schema (2025-11-25 GetTaskPayloadRequest.params).",
+  "extends": "object",
+  "name": "mcp_get_task_payload_request__params",
+  "attributes": {
+    "mcp_task_id": {
+      "description": "MCP member `taskId` (required by the protocol): The task identifier to retrieve results for.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

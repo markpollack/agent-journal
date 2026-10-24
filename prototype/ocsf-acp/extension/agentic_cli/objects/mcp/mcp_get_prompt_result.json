@@ -1,0 +1,36 @@
+{
+  "caption": "MCP Get Prompt Result",
+  "description": "The server's response to a prompts/get request from the client. Generated from the pinned MCP schema (2025-11-25 GetPromptResult; 2026-07-28 GetPromptResult).",
+  "extends": "object",
+  "name": "mcp_get_prompt_result",
+  "attributes": {
+    "mcp_meta": {
+      "description": "MCP member `_meta`: See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_description": {
+      "description": "MCP member `description`: An optional description for the prompt.",
+      "requirement": "optional"
+    },
+    "mcp_prompt_message_list": {
+      "description": "MCP member `messages` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_result_meta_object": {
+      "description": "MCP member `_meta`.",
+      "requirement": "optional"
+    },
+    "mcp_result_type": {
+      "description": "MCP member `resultType` (required by the protocol): Indicates the type of the result, which allows the client to determine\nhow to parse the result object.\n\nServers implementing this protocol version MUST include this field.\nFor backward compatibility, when a client receives a result from a\nserver implementing an earlier protocol version (which does not include\n`resultType`), the client MUST treat the absent field as `\"complete\"`.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

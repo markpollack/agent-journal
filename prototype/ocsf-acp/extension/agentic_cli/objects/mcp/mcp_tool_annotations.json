@@ -1,0 +1,36 @@
+{
+  "caption": "MCP Tool Annotations",
+  "description": "Additional properties describing a Tool to clients.\n\nNOTE: all properties in ToolAnnotations are **hints**.\nThey are not guaranteed to provide a faithful description of\ntool behavior (including descriptive properties like `title`).\n\nClients should never make tool use decisions based on ToolAnnotations\nreceived from untrusted servers. Generated from the pinned MCP schema (2025-11-25 ToolAnnotations; 2026-07-28 ToolAnnotations).",
+  "extends": "object",
+  "name": "mcp_tool_annotations",
+  "attributes": {
+    "mcp_destructive_hint": {
+      "description": "MCP member `destructiveHint`: If true, the tool may perform destructive updates to its environment.\nIf false, the tool performs only additive updates.\n\n(This property is meaningful only when `readOnlyHint == false`)\n\nDefault: true",
+      "requirement": "optional"
+    },
+    "mcp_idempotent_hint": {
+      "description": "MCP member `idempotentHint`: If true, calling the tool repeatedly with the same arguments\nwill have no additional effect on its environment.\n\n(This property is meaningful only when `readOnlyHint == false`)\n\nDefault: false",
+      "requirement": "optional"
+    },
+    "mcp_open_world_hint": {
+      "description": "MCP member `openWorldHint`: If true, this tool may interact with an \"open world\" of external\nentities. If false, the tool's domain of interaction is closed.\nFor example, the world of a web search tool is open, whereas that\nof a memory tool is not.\n\nDefault: true",
+      "requirement": "optional"
+    },
+    "mcp_read_only_hint": {
+      "description": "MCP member `readOnlyHint`: If true, the tool does not modify its environment.\n\nDefault: false",
+      "requirement": "optional"
+    },
+    "mcp_title": {
+      "description": "MCP member `title`: A human-readable title for the tool.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

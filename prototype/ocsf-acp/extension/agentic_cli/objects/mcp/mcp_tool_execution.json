@@ -1,0 +1,20 @@
+{
+  "caption": "MCP Tool Execution",
+  "description": "Execution-related properties for a tool. Generated from the pinned MCP schema (2025-11-25 ToolExecution).",
+  "extends": "object",
+  "name": "mcp_tool_execution",
+  "attributes": {
+    "mcp_task_support": {
+      "description": "MCP member `taskSupport`: Indicates whether this tool supports task-augmented execution.\nThis allows clients to handle long-running operations through polling\nthe task system.\n\n- \"forbidden\": Tool does not support task-augmented execution (default when absent)\n- \"optional\": Tool may support task-augmented execution\n- \"required\": Tool requires task-augmented execution\n\nDefault: \"forbidden\"",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

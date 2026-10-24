@@ -161,7 +161,8 @@ final class CodexStreamMapper implements SourceMapper {
                 .put("tool_name", CodexItems.toolName(itype, it)).put("tool_family", itype).put("tool_namespace", namespace)
                 .put("tool_kind_id", kind.id()).put("tool_kind", TOOL_KIND.get(kind.id())).put("tool_kind_basis", kind.rule())
                 .put("arguments", CodexItems.arguments(itype, it)).put("reported_state", text(it, "status"))
-                .put("tool_result", started ? null : CodexItems.result(itype, it)).put("data", whole ? o : null);
+                .put("tool_result", started ? null : CodexItems.result(itype, it)).put("mcp", "mcp_tool_call".equals(itype) ? CodexItems.mcp(it, started) : null)
+                .put("data", whole ? o : null);
         ctx.emit(ev);
     }
 

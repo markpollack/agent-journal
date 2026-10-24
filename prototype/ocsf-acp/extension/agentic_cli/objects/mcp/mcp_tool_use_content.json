@@ -1,0 +1,36 @@
+{
+  "caption": "MCP Tool Use Content",
+  "description": "A request from the assistant to call a tool. Generated from the pinned MCP schema (2025-11-25 ToolUseContent; 2026-07-28 ToolUseContent).",
+  "extends": "object",
+  "name": "mcp_tool_use_content",
+  "attributes": {
+    "mcp_meta": {
+      "description": "MCP member `_meta`: Optional metadata about the tool use. Clients SHOULD preserve this field when\nincluding tool uses in subsequent sampling requests to enable caching optimizations.\n\nSee [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_id_string": {
+      "description": "MCP member `id` (required by the protocol): A unique identifier for this tool use.\n\nThis ID is used to match tool results to their corresponding tool uses.",
+      "requirement": "optional"
+    },
+    "mcp_input": {
+      "description": "MCP member `input` (required by the protocol): The arguments to pass to the tool, conforming to the tool's input schema.",
+      "requirement": "optional"
+    },
+    "mcp_name": {
+      "description": "MCP member `name` (required by the protocol): The name of the tool to call.",
+      "requirement": "optional"
+    },
+    "mcp_type": {
+      "description": "MCP member `type` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

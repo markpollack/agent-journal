@@ -1,0 +1,44 @@
+{
+  "caption": "Tool Definition",
+  "description": "A tool the CLI or a server declared as available, in any declaration format (an MCP Tool, a function declaration, a vendor tool record): its name, description, input and output JSON Schemas and annotations as reported. A source that reports only a name or a hash of the schema states only that; a hash is never the schema.",
+  "extends": "object",
+  "name": "tool_definition",
+  "attributes": {
+    "name": {
+      "description": "The tool name exactly as declared.",
+      "requirement": "required"
+    },
+    "title": {
+      "description": "A human-readable title the declaration gives the tool, exactly as declared.",
+      "requirement": "optional"
+    },
+    "tool_description": {
+      "requirement": "optional"
+    },
+    "input_schema": {
+      "requirement": "optional"
+    },
+    "output_schema": {
+      "requirement": "optional"
+    },
+    "definition_format_id": {
+      "requirement": "recommended"
+    },
+    "definition_format": {
+      "requirement": "optional"
+    },
+    "schema_hash": {
+      "requirement": "optional"
+    },
+    "mcp": {
+      "requirement": "optional"
+    },
+    "source_ref": {
+      "requirement": "optional"
+    },
+    "data": {
+      "description": "The native declaration exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

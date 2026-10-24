@@ -13,7 +13,8 @@ import java.util.TreeMap;
 /**
  * The data-definition closure a core embeds, computed from the pinned compiled schema and the events written so
  * far. Policy {@code WRITTEN}: the written classes keep every attribute our extension defines plus the core
- * attributes present in the saved events or required; extension objects are kept complete; core objects keep
+ * attributes present in the saved events or required; extension objects are kept complete, except the generated MCP
+ * protocol objects, which like core objects keep present-or-required attributes; core objects keep
  * present-or-required attributes; profile-only attributes of profiles the events do not enable are omitted; every
  * object a kept attribute refers to is included (fixpoint); the scalar types used are listed. Policy
  * {@code FULL_REACHED} keeps every attribute of every reachable definition and is only measured.
@@ -129,7 +130,10 @@ public final class DefinitionClosure {
             if (def == null) {
                 continue;
             }
-            boolean extensionObject = !isClass && key.startsWith(extension + "/");
+            // the generated MCP protocol objects are declared like core objects (members present or required), so a file
+            // carries the part of the protocol model its events use rather than the whole generated vocabulary
+            boolean generatedProtocol = !isClass && key.startsWith(extension + "/" + McpBindingGenerator.PREFIX) && !key.equals(extension + "/mcp_observation");
+            boolean extensionObject = !isClass && key.startsWith(extension + "/") && !generatedProtocol;
             Set<String> keep = present.getOrDefault(key, Set.of());
             Map<String, Jv> attrs = new LinkedHashMap<>();
             int omittedCore = 0;
@@ -137,7 +141,7 @@ public final class DefinitionClosure {
             for (Map.Entry<String, Jv> a : ((Jv.Obj) def.member("attributes")).members().entrySet()) {
                 Jv attr = a.getValue();
                 boolean required = "required".equals(text(attr, "requirement"));
-                boolean ours = extensionObject || extension.equals(text(attr, "extension"));
+                boolean ours = !generatedProtocol && (extensionObject || extension.equals(text(attr, "extension")));
                 boolean enabled = profileEnabled(attr, profiles);
                 boolean keepIt = policy == Policy.FULL_REACHED
                         || (enabled && (keep.contains(a.getKey()) || required || ours))
@@ -189,7 +193,7 @@ public final class DefinitionClosure {
         }
         Jv.Obj out = new Jv.Obj();
         out.put("policy", policy == Policy.WRITTEN
-                ? "WRITTEN: written classes keep every extension-defined attribute plus core attributes present in the saved events or required; extension objects complete; core objects present-or-required; profile-only attributes of profiles the events do not enable omitted; every referenced object included; scalar types used listed"
+                ? "WRITTEN: written classes keep every extension-defined attribute plus core attributes present in the saved events or required; extension objects complete except the generated MCP protocol objects (mcp_* but mcp_observation), which like core objects keep the attributes present or required; profile-only attributes of profiles the events do not enable omitted; every referenced object included; scalar types used listed"
                 : "FULL_REACHED: every attribute of the written classes and every object reachable from them");
         Jv.Arr profs = new Jv.Arr();
         for (String p : profiles) {

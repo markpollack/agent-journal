@@ -1,0 +1,32 @@
+{
+  "caption": "MCP Complete Result",
+  "description": "The server's response to a completion/complete request Generated from the pinned MCP schema (2025-11-25 CompleteResult; 2026-07-28 CompleteResult).",
+  "extends": "object",
+  "name": "mcp_complete_result",
+  "attributes": {
+    "mcp_meta": {
+      "description": "MCP member `_meta`: See [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_complete_result__completion": {
+      "description": "MCP member `completion` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_result_meta_object": {
+      "description": "MCP member `_meta`.",
+      "requirement": "optional"
+    },
+    "mcp_result_type": {
+      "description": "MCP member `resultType` (required by the protocol): Indicates the type of the result, which allows the client to determine\nhow to parse the result object.\n\nServers implementing this protocol version MUST include this field.\nFor backward compatibility, when a client receives a result from a\nserver implementing an earlier protocol version (which does not include\n`resultType`), the client MUST treat the absent field as `\"complete\"`.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

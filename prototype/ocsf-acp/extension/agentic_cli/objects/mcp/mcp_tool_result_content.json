@@ -1,0 +1,40 @@
+{
+  "caption": "MCP Tool Result Content",
+  "description": "The result of a tool use, provided by the user back to the assistant. Generated from the pinned MCP schema (2025-11-25 ToolResultContent; 2026-07-28 ToolResultContent).",
+  "extends": "object",
+  "name": "mcp_tool_result_content",
+  "attributes": {
+    "mcp_meta": {
+      "description": "MCP member `_meta`: Optional metadata about the tool result. Clients SHOULD preserve this field when\nincluding tool results in subsequent sampling requests to enable caching optimizations.\n\nSee [General fields: `_meta`](/specification/2025-11-25/basic/index#meta) for notes on `_meta` usage.",
+      "requirement": "optional"
+    },
+    "mcp_content_block_list": {
+      "description": "MCP member `content` (required by the protocol): The unstructured result content of the tool use.\n\nThis has the same format as CallToolResult.content and can include text, images,\naudio, resource links, and embedded resources.",
+      "requirement": "optional"
+    },
+    "mcp_is_error": {
+      "description": "MCP member `isError`: Whether the tool use resulted in an error.\n\nIf true, the content typically describes the error that occurred.\nDefault: false",
+      "requirement": "optional"
+    },
+    "mcp_structured_content": {
+      "description": "MCP member `structuredContent`: An optional structured result object.\n\nIf the tool defined an outputSchema, this SHOULD conform to that schema.",
+      "requirement": "optional"
+    },
+    "mcp_tool_use_id": {
+      "description": "MCP member `toolUseId` (required by the protocol): The ID of the tool use this result corresponds to.\n\nThis MUST match the ID from a previous ToolUseContent.",
+      "requirement": "optional"
+    },
+    "mcp_type": {
+      "description": "MCP member `type` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

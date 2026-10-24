@@ -20,6 +20,7 @@ package "journal-ocsf-writer\n(production writer)" {
   [Framing and native records] as framing
   [Compatibility selection] as compatibility
   [Source mappers] as mapping
+  [MCP protocol binding] as mcp_binding
   [Core persistence] as persistence
   [Schema and toolchain pins] as schema
   [Lexically exact JSON (writer)] as json_writer #EEEEEE
@@ -51,9 +52,12 @@ compatibility --> framing
 compatibility --> mapping
 mapping --> run_input
 mapping --> framing
+mapping --> mcp_binding
 mapping --> schema
 persistence --> run_input
+persistence --> mcp_binding
 persistence --> schema
+schema --> mcp_binding
 oracle --> reader
 oracle --> profiles
 oracle --> views

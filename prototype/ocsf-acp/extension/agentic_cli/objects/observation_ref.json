@@ -1,0 +1,20 @@
+{
+  "caption": "Observation Reference",
+  "description": "One source occurrence that supports a consolidated event, found in this file as a supporting observation.",
+  "extends": "object",
+  "name": "observation_ref",
+  "attributes": {
+    "occurrence_uid": {
+      "requirement": "required"
+    },
+    "artifact": {
+      "requirement": "required"
+    },
+    "record_index": {
+      "requirement": "required"
+    },
+    "emit_ordinal": {
+      "requirement": "required"
+    }
+  }
+}

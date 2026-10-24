@@ -1,0 +1,20 @@
+{
+  "caption": "MCP Get Prompt Result Response Result",
+  "description": "MCP Get Prompt Result Response Result. Generated from the pinned MCP schema (2026-07-28 GetPromptResultResponse.result).",
+  "extends": "object",
+  "name": "mcp_get_prompt_result_response__result",
+  "attributes": {
+    "mcp_input_required_result": {
+      "description": "The value when it is the alternative InputRequiredResult.",
+      "requirement": "optional"
+    },
+    "mcp_get_prompt_result": {
+      "description": "The value when it is the alternative GetPromptResult.",
+      "requirement": "optional"
+    },
+    "mcp_unresolved": {
+      "description": "The value exactly as reported when no single alternative matches it by its constant and required members.",
+      "requirement": "optional"
+    }
+  }
+}

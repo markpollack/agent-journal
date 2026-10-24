@@ -1,0 +1,24 @@
+{
+  "caption": "MCP Subscriptions Listen Result",
+  "description": "The response to a {@link SubscriptionsListenRequestsubscriptions/listen}\nrequest, signalling that the subscription has ended gracefully (for example,\nduring server shutdown). Because the listen stream is long-lived, this result\nis sent only when the server tears the subscription down; an abrupt transport\nclose carries no response. The result body is otherwise empty. Generated from the pinned MCP schema (2026-07-28 SubscriptionsListenResult).",
+  "extends": "object",
+  "name": "mcp_subscriptions_listen_result",
+  "attributes": {
+    "mcp_subscriptions_listen_result_meta_object": {
+      "description": "MCP member `_meta` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_result_type": {
+      "description": "MCP member `resultType` (required by the protocol): Indicates the type of the result, which allows the client to determine\nhow to parse the result object.\n\nServers implementing this protocol version MUST include this field.\nFor backward compatibility, when a client receives a result from a\nserver implementing an earlier protocol version (which does not include\n`resultType`), the client MUST treat the absent field as `\"complete\"`.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

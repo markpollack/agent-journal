@@ -1,0 +1,28 @@
+{
+  "caption": "MCP Jsonrpc Error Response",
+  "description": "A response to a request that indicates an error occurred. Generated from the pinned MCP schema (2025-11-25 JSONRPCErrorResponse; 2026-07-28 JSONRPCErrorResponse).",
+  "extends": "object",
+  "name": "mcp_jsonrpc_error_response",
+  "attributes": {
+    "mcp_error": {
+      "description": "MCP member `error` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_id_json": {
+      "description": "MCP member `id`.",
+      "requirement": "optional"
+    },
+    "mcp_jsonrpc": {
+      "description": "MCP member `jsonrpc` (required by the protocol).",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}

@@ -11,8 +11,8 @@ public final class Pins {
     public static final String PACKAGE_VERSION = "0.3.0-prototype";
     public static final String READER_CONTRACT = "agent-journal/ocsf-reader";
     public static final String READER_CONTRACT_VERSION = "0.3";
-    public static final String SEMANTIC_OPERATIONS_VERSION = "0.2";
-    public static final String SEMANTIC_CONTRACT_RESOURCE = "/ocsf/semantic-contract-0.7.0-prototype.json";
+    public static final String SEMANTIC_OPERATIONS_VERSION = "0.3";
+    public static final String SEMANTIC_CONTRACT_RESOURCE = "/ocsf/semantic-contract-0.8.0-prototype.json";
 
     public static final String OCSF_SCHEMA_COMMIT = "856d462bd20dc46cc1ffed2dfffe3b91ef0fbeba";
     public static final String OCSF_COMPILER_COMMIT = "865887a9ee88580c471062f93da115e7599fa31d";

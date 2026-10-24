@@ -1,0 +1,32 @@
+{
+  "caption": "MCP Input Required Result",
+  "description": "An InputRequiredResult sent by the server to indicate that additional input is needed\nbefore the request can be completed.\n\nAt least one of `inputRequests` or `requestState` MUST be present. Generated from the pinned MCP schema (2026-07-28 InputRequiredResult).",
+  "extends": "object",
+  "name": "mcp_input_required_result",
+  "attributes": {
+    "mcp_result_meta_object": {
+      "description": "MCP member `_meta`.",
+      "requirement": "optional"
+    },
+    "mcp_input_requests__entry_list": {
+      "description": "MCP member `inputRequests`.",
+      "requirement": "optional"
+    },
+    "mcp_request_state": {
+      "description": "MCP member `requestState`.",
+      "requirement": "optional"
+    },
+    "mcp_result_type": {
+      "description": "MCP member `resultType` (required by the protocol): Indicates the type of the result, which allows the client to determine\nhow to parse the result object.\n\nServers implementing this protocol version MUST include this field.\nFor backward compatibility, when a client receives a result from a\nserver implementing an earlier protocol version (which does not include\n`resultType`), the client MUST treat the absent field as `\"complete\"`.",
+      "requirement": "optional"
+    },
+    "mcp_additional_members": {
+      "description": "Members the pinned definition does not name, exactly as reported, in source order.",
+      "requirement": "optional"
+    },
+    "mcp_nonconforming_members": {
+      "description": "Named members whose value does not fit the pinned definition, exactly as reported.",
+      "requirement": "optional"
+    }
+  }
+}
