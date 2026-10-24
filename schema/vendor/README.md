@@ -13,7 +13,7 @@ a drift report proposes updates; nothing widens the accepted inventory automatic
 | `claude-code/session-transcript/2.1.303.json` | `claude_transcript` | Claude Code 2.1.303, the session's `~/.claude/projects/.../<session>.jsonl` after the run | the frozen pair A transcript (56 records) |
 | `codex-cli/exec-json-stream/0.160.1.json` | `codex_stream` | Codex CLI 0.160.1, `codex exec --json` stdout | the frozen pair B stream (15 records) |
 | `codex-cli/rollout/0.160.1.json` | `codex_rollout` | Codex CLI 0.160.1, the `~/.codex/sessions/.../rollout-*.jsonl` after the run | the frozen pair B rollout (26 records) |
-| `antigravity-cli/stream-json/1.4.6.json` | `agy_stream` | Antigravity CLI 1.4.6, `agy --print <prompt> --output-format stream-json` stdout | the four sanitized live 1.4.6 recordings (54 records) |
+| `antigravity-cli/stream-json/1.4.6.json` | `agy_stream` | Antigravity CLI 1.4.6, `agy --print <prompt> --output-format stream-json` stdout | specification 0.2.0: the six sanitized live 1.4.6 recordings (75 records), including the two MCP recordings; 0.1.0 (four recordings) is kept under `revisions` |
 
 Beside each specification, `<version>.schema.json` is the JSON Schema (Draft 2020-12 subset) **derived** from it:
 one object schema per variant, `required` for paths present in every observed record, `additionalProperties: false`
@@ -52,5 +52,7 @@ java -cp journal-capture-tck/target/classes:<deps> io.github.markpollack.journal
 
 A drift report's `proposed_specification_inventory` is a proposal for review. Accepting it means editing the
 specification here, bumping `specification_version`, recording the new provenance and regenerating the derived
-schema. A change of meaning under an unchanged shape is invisible to this inventory; the semantic oracle in
+schema. A revision for the same CLI version keeps its predecessors under `revisions` (Antigravity 1.4.6 0.2.0 admitted
+object-valued tool parameters and an ERROR step's output beside its error); it is a revision of Journal's description,
+not a new vendor version. A change of meaning under an unchanged shape is invisible to this inventory; the semantic oracle in
 `journal-capture-tck` (profiles, `OcsfOracle`) judges values, and `InventoryDriftTest` demonstrates both halves.

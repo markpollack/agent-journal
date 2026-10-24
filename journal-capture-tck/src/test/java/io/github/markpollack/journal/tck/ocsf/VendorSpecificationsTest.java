@@ -1,5 +1,7 @@
 package io.github.markpollack.journal.tck.ocsf;
 
+import io.github.markpollack.journal.tck.ocsf.inventory.InventoryComparison;
+import io.github.markpollack.journal.tck.ocsf.inventory.RawInventory;
 import io.github.markpollack.journal.tck.ocsf.inventory.SourceSpecification;
 import io.github.markpollack.journal.tck.verify.Json;
 import io.github.markpollack.journal.tck.verify.NeutralJson;
@@ -20,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class VendorSpecificationsTest {
 
     static final Path VENDOR = Path.of("..", "schema", "vendor").toAbsolutePath().normalize();
+    static final Path FIXTURES = Path.of("src", "test", "resources", "ocsf", "fixtures").toAbsolutePath().normalize();
 
     static final Map<String, String> SPECS = Map.of(
             "claude-code/stream-json/2.1.303", "claude_stream",
@@ -28,13 +31,25 @@ class VendorSpecificationsTest {
             "codex-cli/rollout/0.160.1", "codex_rollout",
             "antigravity-cli/stream-json/1.4.6", "agy_stream");
 
+    /** The accepted revision of each specification; a revision keeps the earlier ones under {@code revisions}. */
+    static final Map<String, String> ACCEPTED = Map.of(
+            "claude-code/stream-json/2.1.303", "0.1.0",
+            "claude-code/session-transcript/2.1.303", "0.1.0",
+            "codex-cli/exec-json-stream/0.160.1", "0.1.0",
+            "codex-cli/rollout/0.160.1", "0.1.0",
+            "antigravity-cli/stream-json/1.4.6", "0.2.0");
+
+    /** Every registered recording of the Antigravity 1.4.6 route; the accepted specification must admit each one. */
+    static final List<String> AGY_FIXTURES = List.of(OcsfFixtures.LIVE_AGY_FEATURES, OcsfFixtures.LIVE_AGY_DENIAL,
+            OcsfFixtures.LIVE_AGY_INTERRUPT_OPEN, OcsfFixtures.LIVE_AGY_SUBAGENT, OcsfFixtures.LIVE_AGY_MCP_DENIED, OcsfFixtures.LIVE_AGY_MCP);
+
     @Test
     void everyAcceptedSpecificationParsesCarriesProvenanceAndMatchesItsDerivedSchema() {
         for (Map.Entry<String, String> e : SPECS.entrySet()) {
             Json spec = SourceSpecification.read(VENDOR.resolve(e.getKey() + ".json"));
             assertThat(SchemaCatalog.text(spec, "profile")).isEqualTo(e.getValue());
-            assertThat(SchemaCatalog.text(spec, "status")).startsWith("ACCEPTED 0.1.0");
-            assertThat(SchemaCatalog.text(spec, "specification_version")).isEqualTo("0.1.0");
+            assertThat(SchemaCatalog.text(spec, "status")).startsWith("ACCEPTED " + ACCEPTED.get(e.getKey()));
+            assertThat(SchemaCatalog.text(spec, "specification_version")).isEqualTo(ACCEPTED.get(e.getKey()));
             assertThat(SchemaCatalog.text(spec.member("applies_to"), "version")).isIn("2.1.303", "0.160.1", "1.4.6");
             assertThat(SchemaCatalog.text(spec.member("applies_to"), "route_limit")).isNotBlank();
             // one frozen complete source, or several when no single recording carries every variant (Antigravity 1.4.6): each hash-pinned
@@ -61,5 +76,33 @@ class VendorSpecificationsTest {
         assertThat(((Json.JObject) transcript.path("inventory", "variants")).members().keySet()).contains("attachment/environment", "cost-state", "atis-latch", "api-request-blob");
         assertThat(transcript.path("inventory", "variants", "assistant", "paths", "wireToolInputs", "distinct_data_keys")).isNotNull();
         assertThat(transcript.path("inventory", "variants", "api-request-shape", "paths", "shape.tools[].input_schema.{*}")).isNotNull();
+    }
+
+    /**
+     * Antigravity 1.4.6 specification 0.2.0 admits every registered recording of its route: no recording proposes a
+     * shape change. The revision is the one reviewed (object parameter values, output beside error on ERROR), it keeps
+     * 0.1.0 and its four recordings under {@code revisions}, and the CLI version is unchanged.
+     */
+    @Test
+    void theAntigravitySpecificationRevisionAdmitsEveryRegisteredRecordingAndKeepsItsPredecessor() {
+        Json spec = SourceSpecification.read(VENDOR.resolve("antigravity-cli/stream-json/1.4.6.json"));
+        assertThat(SchemaCatalog.text(spec.member("applies_to"), "version")).isEqualTo("1.4.6");
+        Json variants = spec.path("inventory", "variants");
+        for (String v : List.of("step_update/tool/ACTIVE", "step_update/tool/DONE", "step_update/tool/ERROR")) {
+            assertThat(((Json.JObject) variants.path(v, "paths", "step_update.tool_info.parameters.{*}", "kinds")).members().keySet())
+                    .as(v + " parameter values").containsExactlyInAnyOrder("object", "string");
+        }
+        assertThat(variants.path("step_update/tool/ERROR", "paths", "step_update.tool_info.output")).as("output beside error").isNotNull();
+        assertThat(variants.path("step_update/tool/ERROR", "paths", "step_update.tool_info.error")).isNotNull();
+        List<Json> revisions = spec.member("revisions").elements();
+        assertThat(revisions).extracting(r -> SchemaCatalog.text(r, "specification_version")).containsExactly("0.1.0", "0.2.0");
+        assertThat(revisions.get(0).member("observed_on").elements()).hasSize(4);
+        assertThat(revisions.get(1).member("observed_on").elements()).hasSize(AGY_FIXTURES.size());
+        for (String fixture : AGY_FIXTURES) {
+            Path stream = FIXTURES.resolve(fixture).resolve("native").resolve("stream.jsonl");
+            Json report = InventoryComparison.compare(spec, RawInventory.inventory(NativeArtifact.read(stream), "stream.jsonl", "agy_stream"));
+            assertThat(report.member("shape_drift")).as(fixture + " drift against the accepted specification").isEqualTo(new Json.JBool(false));
+            assertThat(report.member("proposals").scalarText()).as(fixture).isEqualTo("0");
+        }
     }
 }

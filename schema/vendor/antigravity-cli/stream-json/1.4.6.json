@@ -1,8 +1,8 @@
 {
  "kind": "agent-journal/native-source-specification",
  "version": "0.1",
- "status": "ACCEPTED 0.1.0 (2026-10-23, Antigravity onboarding): baseline inventory of the four sanitized live 1.4.6 recordings; drift reports propose changes, review accepts them by editing this file and bumping specification_version",
- "specification_version": "0.1.0",
+ "status": "ACCEPTED 0.2.0 (2026-10-24, review of the Antigravity MCP drift reports): adds the two MCP recordings; a tool_info.parameters value may be an object (call_mcp_tool Arguments) in ACTIVE, DONE and ERROR, and an ERROR step may report tool_info.output beside tool_info.error. Same CLI version 1.4.6: a revision of this Journal-owned specification, not a vendor version; 0.1.0 is kept under revisions. Drift reports propose changes, review accepts them by editing this file and bumping specification_version",
+ "specification_version": "0.2.0",
  "profile": "agy_stream",
  "applies_to": {
   "cli": "Antigravity CLI",
@@ -41,10 +41,24 @@
     "records": 20,
     "bytes": 5842,
     "frozen_in": "journal-capture-tck/src/test/resources/ocsf/fixtures/antigravity-live-1.4.6-subagent/native/expected-sources.json"
+   },
+   {
+    "artifact": "stream.jsonl of antigravity-live-1.4.6-mcp-denied",
+    "sha256": "2084a721d577c1f9d4cbbd087689c3a32a01e32ba742fc16ff7d00435230cd25",
+    "records": 6,
+    "bytes": 2751,
+    "frozen_in": "journal-capture-tck/src/test/resources/ocsf/fixtures/antigravity-live-1.4.6-mcp-denied/native/expected-sources.json"
+   },
+   {
+    "artifact": "stream.jsonl of antigravity-live-1.4.6-mcp",
+    "sha256": "dc798550cf5a8295f9d1fe7d15b3f2ca9c5001050ee1861af5f367bb32feea8a",
+    "records": 15,
+    "bytes": 5775,
+    "frozen_in": "journal-capture-tck/src/test/resources/ocsf/fixtures/antigravity-live-1.4.6-mcp/native/expected-sources.json"
    }
   ],
-  "produced_by": "journal-capture-tck NativeInventoryTool draft (RawInventory 0.1, agy_stream rules)",
-  "reviewed": "2026-10-23 Antigravity onboarding; managing review at the onboarding checkpoint"
+  "produced_by": "journal-capture-tck NativeInventoryTool draft (RawInventory 0.1, agy_stream rules); 0.2.0 drafted from all six recordings, each artifact named by its fixture so every evidence reference is unambiguous",
+  "reviewed": "2026-10-24 review of the drift reports of the two MCP recordings (4 proposals: three kind changes, one new path); 0.1.0: 2026-10-23 Antigravity onboarding; managing review at the onboarding checkpoint"
  },
  "limits": [
   "one CLI version (1.4.6) and one launch mode (headless print, stream-json) on this profile: the inventory is an observed shape, not a vendor promise",
@@ -70,31 +84,70 @@
   }
  ],
  "open_variants": [],
+ "revisions": [
+  {
+   "specification_version": "0.1.0",
+   "accepted": "2026-10-23",
+   "observed_on": [
+    "8448827293f3b21a37dde7077dd53dd6da1777760808b375bd1c132c9fd06261",
+    "2ba182de66186317e245e71c18351a46f4c0b0a6bd58eaa6dba0114d24110894",
+    "6e5ad73eeec6c68f898a2ffde37d676ed3c737941cb603896e30e7d799968bf9",
+    "a6bf3491764bbf7e80f176c5a4702c8017aaeb3a911a822bcf2aa2ed724cfaed"
+   ],
+   "change": "baseline inventory of the features, denial, interrupt-open and subagent recordings"
+  },
+  {
+   "specification_version": "0.2.0",
+   "accepted": "2026-10-24",
+   "observed_on": [
+    "8448827293f3b21a37dde7077dd53dd6da1777760808b375bd1c132c9fd06261",
+    "2ba182de66186317e245e71c18351a46f4c0b0a6bd58eaa6dba0114d24110894",
+    "6e5ad73eeec6c68f898a2ffde37d676ed3c737941cb603896e30e7d799968bf9",
+    "a6bf3491764bbf7e80f176c5a4702c8017aaeb3a911a822bcf2aa2ed724cfaed",
+    "2084a721d577c1f9d4cbbd087689c3a32a01e32ba742fc16ff7d00435230cd25",
+    "dc798550cf5a8295f9d1fe7d15b3f2ca9c5001050ee1861af5f367bb32feea8a"
+   ],
+   "change": "adds the mcp-denied and mcp recordings: step_update.tool_info.parameters.{*} admits kind object in tool/ACTIVE, tool/DONE and tool/ERROR; new path step_update.tool_info.output in tool/ERROR. No variant added or removed; every other accepted path and kind unchanged",
+   "regenerated": "the derived JSON Schema 1.4.6.schema.json"
+  }
+ ],
  "inventory": {
   "observed_on": [
    {
-    "artifact": "stream.jsonl",
+    "artifact": "antigravity-live-1.4.6-features.stream.jsonl",
     "sha256": "8448827293f3b21a37dde7077dd53dd6da1777760808b375bd1c132c9fd06261",
     "bytes": 6676,
     "records": 20
    },
    {
-    "artifact": "stream.jsonl",
+    "artifact": "antigravity-live-1.4.6-denial.stream.jsonl",
     "sha256": "2ba182de66186317e245e71c18351a46f4c0b0a6bd58eaa6dba0114d24110894",
     "bytes": 3481,
     "records": 9
    },
    {
-    "artifact": "stream.jsonl",
+    "artifact": "antigravity-live-1.4.6-interrupt-open.stream.jsonl",
     "sha256": "6e5ad73eeec6c68f898a2ffde37d676ed3c737941cb603896e30e7d799968bf9",
     "bytes": 2318,
     "records": 5
    },
    {
-    "artifact": "stream.jsonl",
+    "artifact": "antigravity-live-1.4.6-subagent.stream.jsonl",
     "sha256": "a6bf3491764bbf7e80f176c5a4702c8017aaeb3a911a822bcf2aa2ed724cfaed",
     "bytes": 5842,
     "records": 20
+   },
+   {
+    "artifact": "antigravity-live-1.4.6-mcp-denied.stream.jsonl",
+    "sha256": "2084a721d577c1f9d4cbbd087689c3a32a01e32ba742fc16ff7d00435230cd25",
+    "bytes": 2751,
+    "records": 6
+   },
+   {
+    "artifact": "antigravity-live-1.4.6-mcp.stream.jsonl",
+    "sha256": "dc798550cf5a8295f9d1fe7d15b3f2ca9c5001050ee1861af5f367bb32feea8a",
+    "bytes": 5775,
+    "records": 15
    }
   ],
   "data_keyed": [
@@ -109,124 +162,140 @@
     "discriminators": {
      "event": "init"
     },
-    "records": 4,
+    "records": 6,
     "evidence": [
-     "stream.jsonl:1",
-     "stream.jsonl:1",
-     "stream.jsonl:1",
-     "stream.jsonl:1"
+     "antigravity-live-1.4.6-features.stream.jsonl:1",
+     "antigravity-live-1.4.6-denial.stream.jsonl:1",
+     "antigravity-live-1.4.6-interrupt-open.stream.jsonl:1",
+     "antigravity-live-1.4.6-subagent.stream.jsonl:1",
+     "antigravity-live-1.4.6-mcp-denied.stream.jsonl:1",
+     "antigravity-live-1.4.6-mcp.stream.jsonl:1"
     ],
     "paths": {
      "conversation_id": {
       "kinds": {
-       "string": 4
+       "string": 6
       },
-      "present_in_records": 4,
+      "present_in_records": 6,
       "absent_in_records": 0,
-      "occurrences": 4,
+      "occurrences": 6,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1",
-       "stream.jsonl:1",
-       "stream.jsonl:1",
-       "stream.jsonl:1"
+       "antigravity-live-1.4.6-features.stream.jsonl:1",
+       "antigravity-live-1.4.6-denial.stream.jsonl:1",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:1",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:1",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:1",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:1"
       ]
      },
      "event": {
       "kinds": {
-       "string": 4
+       "string": 6
       },
-      "present_in_records": 4,
+      "present_in_records": 6,
       "absent_in_records": 0,
-      "occurrences": 4,
+      "occurrences": 6,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1",
-       "stream.jsonl:1",
-       "stream.jsonl:1",
-       "stream.jsonl:1"
+       "antigravity-live-1.4.6-features.stream.jsonl:1",
+       "antigravity-live-1.4.6-denial.stream.jsonl:1",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:1",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:1",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:1",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:1"
       ]
      },
      "init": {
       "kinds": {
-       "object": 4
+       "object": 6
       },
-      "present_in_records": 4,
+      "present_in_records": 6,
       "absent_in_records": 0,
-      "occurrences": 4,
+      "occurrences": 6,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1",
-       "stream.jsonl:1",
-       "stream.jsonl:1",
-       "stream.jsonl:1"
+       "antigravity-live-1.4.6-features.stream.jsonl:1",
+       "antigravity-live-1.4.6-denial.stream.jsonl:1",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:1",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:1",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:1",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:1"
       ]
      },
      "init.cwd": {
       "kinds": {
-       "string": 4
+       "string": 6
       },
-      "present_in_records": 4,
+      "present_in_records": 6,
       "absent_in_records": 0,
-      "occurrences": 4,
+      "occurrences": 6,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1",
-       "stream.jsonl:1",
-       "stream.jsonl:1",
-       "stream.jsonl:1"
+       "antigravity-live-1.4.6-features.stream.jsonl:1",
+       "antigravity-live-1.4.6-denial.stream.jsonl:1",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:1",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:1",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:1",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:1"
       ]
      },
      "init.permission_mode": {
       "kinds": {
-       "string": 4
+       "string": 6
       },
-      "present_in_records": 4,
+      "present_in_records": 6,
       "absent_in_records": 0,
-      "occurrences": 4,
+      "occurrences": 6,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1",
-       "stream.jsonl:1",
-       "stream.jsonl:1",
-       "stream.jsonl:1"
+       "antigravity-live-1.4.6-features.stream.jsonl:1",
+       "antigravity-live-1.4.6-denial.stream.jsonl:1",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:1",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:1",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:1",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:1"
       ]
      },
      "init.tools": {
       "kinds": {
-       "array": 4
+       "array": 6
       },
-      "present_in_records": 4,
+      "present_in_records": 6,
       "absent_in_records": 0,
-      "occurrences": 4,
+      "occurrences": 6,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1",
-       "stream.jsonl:1",
-       "stream.jsonl:1",
-       "stream.jsonl:1"
+       "antigravity-live-1.4.6-features.stream.jsonl:1",
+       "antigravity-live-1.4.6-denial.stream.jsonl:1",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:1",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:1",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:1",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:1"
       ]
      },
      "init.tools[]": {
       "kinds": {
-       "string": 240
+       "string": 360
       },
-      "present_in_records": 4,
+      "present_in_records": 6,
       "absent_in_records": 0,
-      "occurrences": 240,
+      "occurrences": 360,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1",
-       "stream.jsonl:1",
-       "stream.jsonl:1",
-       "stream.jsonl:1"
+       "antigravity-live-1.4.6-features.stream.jsonl:1",
+       "antigravity-live-1.4.6-denial.stream.jsonl:1",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:1",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:1",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:1",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:1"
       ]
      }
     }
@@ -235,128 +304,142 @@
     "discriminators": {
      "event": "result"
     },
-    "records": 4,
+    "records": 6,
     "evidence": [
-     "stream.jsonl:20",
-     "stream.jsonl:9",
-     "stream.jsonl:5",
-     "stream.jsonl:20"
+     "antigravity-live-1.4.6-features.stream.jsonl:20",
+     "antigravity-live-1.4.6-denial.stream.jsonl:9",
+     "antigravity-live-1.4.6-interrupt-open.stream.jsonl:5",
+     "antigravity-live-1.4.6-subagent.stream.jsonl:20",
+     "antigravity-live-1.4.6-mcp-denied.stream.jsonl:6",
+     "antigravity-live-1.4.6-mcp.stream.jsonl:15"
     ],
     "paths": {
      "event": {
       "kinds": {
-       "string": 4
+       "string": 6
       },
-      "present_in_records": 4,
+      "present_in_records": 6,
       "absent_in_records": 0,
-      "occurrences": 4,
+      "occurrences": 6,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:20",
-       "stream.jsonl:9",
-       "stream.jsonl:5",
-       "stream.jsonl:20"
+       "antigravity-live-1.4.6-features.stream.jsonl:20",
+       "antigravity-live-1.4.6-denial.stream.jsonl:9",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:5",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:20",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:15"
       ]
      },
      "result": {
       "kinds": {
-       "object": 4
+       "object": 6
       },
-      "present_in_records": 4,
+      "present_in_records": 6,
       "absent_in_records": 0,
-      "occurrences": 4,
+      "occurrences": 6,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:20",
-       "stream.jsonl:9",
-       "stream.jsonl:5",
-       "stream.jsonl:20"
+       "antigravity-live-1.4.6-features.stream.jsonl:20",
+       "antigravity-live-1.4.6-denial.stream.jsonl:9",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:5",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:20",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:15"
       ]
      },
      "result.conversation_id": {
       "kinds": {
-       "string": 4
+       "string": 6
       },
-      "present_in_records": 4,
+      "present_in_records": 6,
       "absent_in_records": 0,
-      "occurrences": 4,
+      "occurrences": 6,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:20",
-       "stream.jsonl:9",
-       "stream.jsonl:5",
-       "stream.jsonl:20"
+       "antigravity-live-1.4.6-features.stream.jsonl:20",
+       "antigravity-live-1.4.6-denial.stream.jsonl:9",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:5",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:20",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:15"
       ]
      },
      "result.denied_actions": {
       "kinds": {
-       "array": 1
+       "array": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:9"
+       "antigravity-live-1.4.6-denial.stream.jsonl:9",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:6"
       ]
      },
      "result.denied_actions[]": {
       "kinds": {
-       "object": 1
+       "object": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:9"
+       "antigravity-live-1.4.6-denial.stream.jsonl:9",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:6"
       ]
      },
      "result.denied_actions[].action": {
       "kinds": {
-       "string": 1
+       "string": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:9"
+       "antigravity-live-1.4.6-denial.stream.jsonl:9",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:6"
       ]
      },
      "result.denied_actions[].display_name": {
       "kinds": {
-       "string": 1
+       "string": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:9"
+       "antigravity-live-1.4.6-denial.stream.jsonl:9",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:6"
       ]
      },
      "result.duration_seconds": {
       "kinds": {
-       "decimal": 4
+       "decimal": 6
       },
-      "present_in_records": 4,
+      "present_in_records": 6,
       "absent_in_records": 0,
-      "occurrences": 4,
+      "occurrences": 6,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:20",
-       "stream.jsonl:9",
-       "stream.jsonl:5",
-       "stream.jsonl:20"
+       "antigravity-live-1.4.6-features.stream.jsonl:20",
+       "antigravity-live-1.4.6-denial.stream.jsonl:9",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:5",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:20",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:15"
       ]
      },
      "result.error": {
@@ -369,151 +452,169 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:5"
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:5"
       ]
      },
      "result.num_turns": {
       "kinds": {
-       "integer": 4
+       "integer": 6
       },
-      "present_in_records": 4,
+      "present_in_records": 6,
       "absent_in_records": 0,
-      "occurrences": 4,
+      "occurrences": 6,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:20",
-       "stream.jsonl:9",
-       "stream.jsonl:5",
-       "stream.jsonl:20"
+       "antigravity-live-1.4.6-features.stream.jsonl:20",
+       "antigravity-live-1.4.6-denial.stream.jsonl:9",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:5",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:20",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:15"
       ]
      },
      "result.response": {
       "kinds": {
-       "string": 4
+       "string": 6
       },
-      "present_in_records": 4,
+      "present_in_records": 6,
       "absent_in_records": 0,
-      "occurrences": 4,
+      "occurrences": 6,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:20",
-       "stream.jsonl:9",
-       "stream.jsonl:5",
-       "stream.jsonl:20"
+       "antigravity-live-1.4.6-features.stream.jsonl:20",
+       "antigravity-live-1.4.6-denial.stream.jsonl:9",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:5",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:20",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:15"
       ]
      },
      "result.status": {
       "kinds": {
-       "string": 4
+       "string": 6
       },
-      "present_in_records": 4,
+      "present_in_records": 6,
       "absent_in_records": 0,
-      "occurrences": 4,
+      "occurrences": 6,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:20",
-       "stream.jsonl:9",
-       "stream.jsonl:5",
-       "stream.jsonl:20"
+       "antigravity-live-1.4.6-features.stream.jsonl:20",
+       "antigravity-live-1.4.6-denial.stream.jsonl:9",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:5",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:20",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:15"
       ]
      },
      "result.usage": {
       "kinds": {
-       "object": 4
+       "object": 6
       },
-      "present_in_records": 4,
+      "present_in_records": 6,
       "absent_in_records": 0,
-      "occurrences": 4,
+      "occurrences": 6,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:20",
-       "stream.jsonl:9",
-       "stream.jsonl:5",
-       "stream.jsonl:20"
+       "antigravity-live-1.4.6-features.stream.jsonl:20",
+       "antigravity-live-1.4.6-denial.stream.jsonl:9",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:5",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:20",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:15"
       ]
      },
      "result.usage.cache_read_tokens": {
       "kinds": {
-       "integer": 4
+       "integer": 6
       },
-      "present_in_records": 4,
+      "present_in_records": 6,
       "absent_in_records": 0,
-      "occurrences": 4,
+      "occurrences": 6,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:20",
-       "stream.jsonl:9",
-       "stream.jsonl:5",
-       "stream.jsonl:20"
+       "antigravity-live-1.4.6-features.stream.jsonl:20",
+       "antigravity-live-1.4.6-denial.stream.jsonl:9",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:5",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:20",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:15"
       ]
      },
      "result.usage.input_tokens": {
       "kinds": {
-       "integer": 4
+       "integer": 6
       },
-      "present_in_records": 4,
+      "present_in_records": 6,
       "absent_in_records": 0,
-      "occurrences": 4,
+      "occurrences": 6,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:20",
-       "stream.jsonl:9",
-       "stream.jsonl:5",
-       "stream.jsonl:20"
+       "antigravity-live-1.4.6-features.stream.jsonl:20",
+       "antigravity-live-1.4.6-denial.stream.jsonl:9",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:5",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:20",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:15"
       ]
      },
      "result.usage.output_tokens": {
       "kinds": {
-       "integer": 4
+       "integer": 6
       },
-      "present_in_records": 4,
+      "present_in_records": 6,
       "absent_in_records": 0,
-      "occurrences": 4,
+      "occurrences": 6,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:20",
-       "stream.jsonl:9",
-       "stream.jsonl:5",
-       "stream.jsonl:20"
+       "antigravity-live-1.4.6-features.stream.jsonl:20",
+       "antigravity-live-1.4.6-denial.stream.jsonl:9",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:5",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:20",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:15"
       ]
      },
      "result.usage.thinking_tokens": {
       "kinds": {
-       "integer": 4
+       "integer": 6
       },
-      "present_in_records": 4,
+      "present_in_records": 6,
       "absent_in_records": 0,
-      "occurrences": 4,
+      "occurrences": 6,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:20",
-       "stream.jsonl:9",
-       "stream.jsonl:5",
-       "stream.jsonl:20"
+       "antigravity-live-1.4.6-features.stream.jsonl:20",
+       "antigravity-live-1.4.6-denial.stream.jsonl:9",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:5",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:20",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:15"
       ]
      },
      "result.usage.total_tokens": {
       "kinds": {
-       "integer": 4
+       "integer": 6
       },
-      "present_in_records": 4,
+      "present_in_records": 6,
       "absent_in_records": 0,
-      "occurrences": 4,
+      "occurrences": 6,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:20",
-       "stream.jsonl:9",
-       "stream.jsonl:5",
-       "stream.jsonl:20"
+       "antigravity-live-1.4.6-features.stream.jsonl:20",
+       "antigravity-live-1.4.6-denial.stream.jsonl:9",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:5",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:20",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:15"
       ]
      }
     }
@@ -524,188 +625,204 @@
      "step_update.step_type": "agent_response",
      "step_update.state": "ACTIVE"
     },
-    "records": 12,
+    "records": 14,
     "evidence": [
-     "stream.jsonl:18",
-     "stream.jsonl:6",
-     "stream.jsonl:7",
-     "stream.jsonl:8",
-     "stream.jsonl:9",
-     "stream.jsonl:10",
-     "stream.jsonl:11",
-     "stream.jsonl:12",
-     "stream.jsonl:13",
-     "stream.jsonl:14",
-     "stream.jsonl:15",
-     "stream.jsonl:18"
+     "antigravity-live-1.4.6-features.stream.jsonl:18",
+     "antigravity-live-1.4.6-subagent.stream.jsonl:6",
+     "antigravity-live-1.4.6-subagent.stream.jsonl:7",
+     "antigravity-live-1.4.6-subagent.stream.jsonl:8",
+     "antigravity-live-1.4.6-subagent.stream.jsonl:9",
+     "antigravity-live-1.4.6-subagent.stream.jsonl:10",
+     "antigravity-live-1.4.6-subagent.stream.jsonl:11",
+     "antigravity-live-1.4.6-subagent.stream.jsonl:12",
+     "antigravity-live-1.4.6-subagent.stream.jsonl:13",
+     "antigravity-live-1.4.6-subagent.stream.jsonl:14",
+     "antigravity-live-1.4.6-subagent.stream.jsonl:15",
+     "antigravity-live-1.4.6-subagent.stream.jsonl:18",
+     "antigravity-live-1.4.6-mcp.stream.jsonl:12",
+     "antigravity-live-1.4.6-mcp.stream.jsonl:13"
     ],
     "paths": {
      "event": {
       "kinds": {
-       "string": 12
+       "string": 14
       },
-      "present_in_records": 12,
+      "present_in_records": 14,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 14,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:18",
-       "stream.jsonl:6",
-       "stream.jsonl:7",
-       "stream.jsonl:8",
-       "stream.jsonl:9",
-       "stream.jsonl:10",
-       "stream.jsonl:11",
-       "stream.jsonl:12",
-       "stream.jsonl:13",
-       "stream.jsonl:14",
-       "stream.jsonl:15",
-       "stream.jsonl:18"
+       "antigravity-live-1.4.6-features.stream.jsonl:18",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:6",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:7",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:8",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:9",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:10",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:11",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:12",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:13",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:14",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:15",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:18",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:12",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:13"
       ]
      },
      "step_update": {
       "kinds": {
-       "object": 12
+       "object": 14
       },
-      "present_in_records": 12,
+      "present_in_records": 14,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 14,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:18",
-       "stream.jsonl:6",
-       "stream.jsonl:7",
-       "stream.jsonl:8",
-       "stream.jsonl:9",
-       "stream.jsonl:10",
-       "stream.jsonl:11",
-       "stream.jsonl:12",
-       "stream.jsonl:13",
-       "stream.jsonl:14",
-       "stream.jsonl:15",
-       "stream.jsonl:18"
+       "antigravity-live-1.4.6-features.stream.jsonl:18",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:6",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:7",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:8",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:9",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:10",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:11",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:12",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:13",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:14",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:15",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:18",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:12",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:13"
       ]
      },
      "step_update.conversation_id": {
       "kinds": {
-       "string": 12
+       "string": 14
       },
-      "present_in_records": 12,
+      "present_in_records": 14,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 14,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:18",
-       "stream.jsonl:6",
-       "stream.jsonl:7",
-       "stream.jsonl:8",
-       "stream.jsonl:9",
-       "stream.jsonl:10",
-       "stream.jsonl:11",
-       "stream.jsonl:12",
-       "stream.jsonl:13",
-       "stream.jsonl:14",
-       "stream.jsonl:15",
-       "stream.jsonl:18"
+       "antigravity-live-1.4.6-features.stream.jsonl:18",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:6",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:7",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:8",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:9",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:10",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:11",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:12",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:13",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:14",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:15",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:18",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:12",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:13"
       ]
      },
      "step_update.state": {
       "kinds": {
-       "string": 12
+       "string": 14
       },
-      "present_in_records": 12,
+      "present_in_records": 14,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 14,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:18",
-       "stream.jsonl:6",
-       "stream.jsonl:7",
-       "stream.jsonl:8",
-       "stream.jsonl:9",
-       "stream.jsonl:10",
-       "stream.jsonl:11",
-       "stream.jsonl:12",
-       "stream.jsonl:13",
-       "stream.jsonl:14",
-       "stream.jsonl:15",
-       "stream.jsonl:18"
+       "antigravity-live-1.4.6-features.stream.jsonl:18",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:6",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:7",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:8",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:9",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:10",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:11",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:12",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:13",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:14",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:15",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:18",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:12",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:13"
       ]
      },
      "step_update.step_index": {
       "kinds": {
-       "integer": 12
+       "integer": 14
       },
-      "present_in_records": 12,
+      "present_in_records": 14,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 14,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:18",
-       "stream.jsonl:6",
-       "stream.jsonl:7",
-       "stream.jsonl:8",
-       "stream.jsonl:9",
-       "stream.jsonl:10",
-       "stream.jsonl:11",
-       "stream.jsonl:12",
-       "stream.jsonl:13",
-       "stream.jsonl:14",
-       "stream.jsonl:15",
-       "stream.jsonl:18"
+       "antigravity-live-1.4.6-features.stream.jsonl:18",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:6",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:7",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:8",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:9",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:10",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:11",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:12",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:13",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:14",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:15",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:18",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:12",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:13"
       ]
      },
      "step_update.step_type": {
       "kinds": {
-       "string": 12
+       "string": 14
       },
-      "present_in_records": 12,
+      "present_in_records": 14,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 14,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:18",
-       "stream.jsonl:6",
-       "stream.jsonl:7",
-       "stream.jsonl:8",
-       "stream.jsonl:9",
-       "stream.jsonl:10",
-       "stream.jsonl:11",
-       "stream.jsonl:12",
-       "stream.jsonl:13",
-       "stream.jsonl:14",
-       "stream.jsonl:15",
-       "stream.jsonl:18"
+       "antigravity-live-1.4.6-features.stream.jsonl:18",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:6",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:7",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:8",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:9",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:10",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:11",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:12",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:13",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:14",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:15",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:18",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:12",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:13"
       ]
      },
      "step_update.text_delta": {
       "kinds": {
-       "string": 12
+       "string": 14
       },
-      "present_in_records": 12,
+      "present_in_records": 14,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 14,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:18",
-       "stream.jsonl:6",
-       "stream.jsonl:7",
-       "stream.jsonl:8",
-       "stream.jsonl:9",
-       "stream.jsonl:10",
-       "stream.jsonl:11",
-       "stream.jsonl:12",
-       "stream.jsonl:13",
-       "stream.jsonl:14",
-       "stream.jsonl:15",
-       "stream.jsonl:18"
+       "antigravity-live-1.4.6-features.stream.jsonl:18",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:6",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:7",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:8",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:9",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:10",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:11",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:12",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:13",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:14",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:15",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:18",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:12",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:13"
       ]
      }
     }
@@ -716,347 +833,418 @@
      "step_update.step_type": "agent_response",
      "step_update.state": "DONE"
     },
-    "records": 12,
+    "records": 17,
     "evidence": [
-     "stream.jsonl:3",
-     "stream.jsonl:6",
-     "stream.jsonl:9",
-     "stream.jsonl:12",
-     "stream.jsonl:15",
-     "stream.jsonl:19",
-     "stream.jsonl:3",
-     "stream.jsonl:6",
-     "stream.jsonl:3",
-     "stream.jsonl:3",
-     "stream.jsonl:16",
-     "stream.jsonl:19"
+     "antigravity-live-1.4.6-features.stream.jsonl:3",
+     "antigravity-live-1.4.6-features.stream.jsonl:6",
+     "antigravity-live-1.4.6-features.stream.jsonl:9",
+     "antigravity-live-1.4.6-features.stream.jsonl:12",
+     "antigravity-live-1.4.6-features.stream.jsonl:15",
+     "antigravity-live-1.4.6-features.stream.jsonl:19",
+     "antigravity-live-1.4.6-denial.stream.jsonl:3",
+     "antigravity-live-1.4.6-denial.stream.jsonl:6",
+     "antigravity-live-1.4.6-interrupt-open.stream.jsonl:3",
+     "antigravity-live-1.4.6-subagent.stream.jsonl:3",
+     "antigravity-live-1.4.6-subagent.stream.jsonl:16",
+     "antigravity-live-1.4.6-subagent.stream.jsonl:19",
+     "antigravity-live-1.4.6-mcp-denied.stream.jsonl:3",
+     "antigravity-live-1.4.6-mcp.stream.jsonl:3",
+     "antigravity-live-1.4.6-mcp.stream.jsonl:6",
+     "antigravity-live-1.4.6-mcp.stream.jsonl:9",
+     "antigravity-live-1.4.6-mcp.stream.jsonl:14"
     ],
     "paths": {
      "event": {
       "kinds": {
-       "string": 12
+       "string": 17
       },
-      "present_in_records": 12,
+      "present_in_records": 17,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 17,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:9",
-       "stream.jsonl:12",
-       "stream.jsonl:15",
-       "stream.jsonl:19",
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:3",
-       "stream.jsonl:3",
-       "stream.jsonl:16",
-       "stream.jsonl:19"
+       "antigravity-live-1.4.6-features.stream.jsonl:3",
+       "antigravity-live-1.4.6-features.stream.jsonl:6",
+       "antigravity-live-1.4.6-features.stream.jsonl:9",
+       "antigravity-live-1.4.6-features.stream.jsonl:12",
+       "antigravity-live-1.4.6-features.stream.jsonl:15",
+       "antigravity-live-1.4.6-features.stream.jsonl:19",
+       "antigravity-live-1.4.6-denial.stream.jsonl:3",
+       "antigravity-live-1.4.6-denial.stream.jsonl:6",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:16",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:19",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:9",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:14"
       ]
      },
      "step_update": {
       "kinds": {
-       "object": 12
+       "object": 17
       },
-      "present_in_records": 12,
+      "present_in_records": 17,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 17,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:9",
-       "stream.jsonl:12",
-       "stream.jsonl:15",
-       "stream.jsonl:19",
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:3",
-       "stream.jsonl:3",
-       "stream.jsonl:16",
-       "stream.jsonl:19"
+       "antigravity-live-1.4.6-features.stream.jsonl:3",
+       "antigravity-live-1.4.6-features.stream.jsonl:6",
+       "antigravity-live-1.4.6-features.stream.jsonl:9",
+       "antigravity-live-1.4.6-features.stream.jsonl:12",
+       "antigravity-live-1.4.6-features.stream.jsonl:15",
+       "antigravity-live-1.4.6-features.stream.jsonl:19",
+       "antigravity-live-1.4.6-denial.stream.jsonl:3",
+       "antigravity-live-1.4.6-denial.stream.jsonl:6",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:16",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:19",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:9",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:14"
       ]
      },
      "step_update.conversation_id": {
       "kinds": {
-       "string": 12
+       "string": 17
       },
-      "present_in_records": 12,
+      "present_in_records": 17,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 17,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:9",
-       "stream.jsonl:12",
-       "stream.jsonl:15",
-       "stream.jsonl:19",
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:3",
-       "stream.jsonl:3",
-       "stream.jsonl:16",
-       "stream.jsonl:19"
+       "antigravity-live-1.4.6-features.stream.jsonl:3",
+       "antigravity-live-1.4.6-features.stream.jsonl:6",
+       "antigravity-live-1.4.6-features.stream.jsonl:9",
+       "antigravity-live-1.4.6-features.stream.jsonl:12",
+       "antigravity-live-1.4.6-features.stream.jsonl:15",
+       "antigravity-live-1.4.6-features.stream.jsonl:19",
+       "antigravity-live-1.4.6-denial.stream.jsonl:3",
+       "antigravity-live-1.4.6-denial.stream.jsonl:6",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:16",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:19",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:9",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:14"
       ]
      },
      "step_update.duration_seconds": {
       "kinds": {
-       "decimal": 12
+       "decimal": 17
       },
-      "present_in_records": 12,
+      "present_in_records": 17,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 17,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:9",
-       "stream.jsonl:12",
-       "stream.jsonl:15",
-       "stream.jsonl:19",
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:3",
-       "stream.jsonl:3",
-       "stream.jsonl:16",
-       "stream.jsonl:19"
+       "antigravity-live-1.4.6-features.stream.jsonl:3",
+       "antigravity-live-1.4.6-features.stream.jsonl:6",
+       "antigravity-live-1.4.6-features.stream.jsonl:9",
+       "antigravity-live-1.4.6-features.stream.jsonl:12",
+       "antigravity-live-1.4.6-features.stream.jsonl:15",
+       "antigravity-live-1.4.6-features.stream.jsonl:19",
+       "antigravity-live-1.4.6-denial.stream.jsonl:3",
+       "antigravity-live-1.4.6-denial.stream.jsonl:6",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:16",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:19",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:9",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:14"
       ]
      },
      "step_update.state": {
       "kinds": {
-       "string": 12
+       "string": 17
       },
-      "present_in_records": 12,
+      "present_in_records": 17,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 17,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:9",
-       "stream.jsonl:12",
-       "stream.jsonl:15",
-       "stream.jsonl:19",
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:3",
-       "stream.jsonl:3",
-       "stream.jsonl:16",
-       "stream.jsonl:19"
+       "antigravity-live-1.4.6-features.stream.jsonl:3",
+       "antigravity-live-1.4.6-features.stream.jsonl:6",
+       "antigravity-live-1.4.6-features.stream.jsonl:9",
+       "antigravity-live-1.4.6-features.stream.jsonl:12",
+       "antigravity-live-1.4.6-features.stream.jsonl:15",
+       "antigravity-live-1.4.6-features.stream.jsonl:19",
+       "antigravity-live-1.4.6-denial.stream.jsonl:3",
+       "antigravity-live-1.4.6-denial.stream.jsonl:6",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:16",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:19",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:9",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:14"
       ]
      },
      "step_update.step_index": {
       "kinds": {
-       "integer": 12
+       "integer": 17
       },
-      "present_in_records": 12,
+      "present_in_records": 17,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 17,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:9",
-       "stream.jsonl:12",
-       "stream.jsonl:15",
-       "stream.jsonl:19",
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:3",
-       "stream.jsonl:3",
-       "stream.jsonl:16",
-       "stream.jsonl:19"
+       "antigravity-live-1.4.6-features.stream.jsonl:3",
+       "antigravity-live-1.4.6-features.stream.jsonl:6",
+       "antigravity-live-1.4.6-features.stream.jsonl:9",
+       "antigravity-live-1.4.6-features.stream.jsonl:12",
+       "antigravity-live-1.4.6-features.stream.jsonl:15",
+       "antigravity-live-1.4.6-features.stream.jsonl:19",
+       "antigravity-live-1.4.6-denial.stream.jsonl:3",
+       "antigravity-live-1.4.6-denial.stream.jsonl:6",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:16",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:19",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:9",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:14"
       ]
      },
      "step_update.step_type": {
       "kinds": {
-       "string": 12
+       "string": 17
       },
-      "present_in_records": 12,
+      "present_in_records": 17,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 17,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:9",
-       "stream.jsonl:12",
-       "stream.jsonl:15",
-       "stream.jsonl:19",
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:3",
-       "stream.jsonl:3",
-       "stream.jsonl:16",
-       "stream.jsonl:19"
+       "antigravity-live-1.4.6-features.stream.jsonl:3",
+       "antigravity-live-1.4.6-features.stream.jsonl:6",
+       "antigravity-live-1.4.6-features.stream.jsonl:9",
+       "antigravity-live-1.4.6-features.stream.jsonl:12",
+       "antigravity-live-1.4.6-features.stream.jsonl:15",
+       "antigravity-live-1.4.6-features.stream.jsonl:19",
+       "antigravity-live-1.4.6-denial.stream.jsonl:3",
+       "antigravity-live-1.4.6-denial.stream.jsonl:6",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:16",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:19",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:9",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:14"
       ]
      },
      "step_update.text_delta": {
       "kinds": {
-       "string": 3
+       "string": 4
       },
-      "present_in_records": 3,
-      "absent_in_records": 6,
-      "occurrences": 3,
+      "present_in_records": 4,
+      "absent_in_records": 9,
+      "occurrences": 4,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:19",
-       "stream.jsonl:16",
-       "stream.jsonl:19"
+       "antigravity-live-1.4.6-features.stream.jsonl:19",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:16",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:19",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:14"
       ]
      },
      "step_update.usage": {
       "kinds": {
-       "object": 12
+       "object": 17
       },
-      "present_in_records": 12,
+      "present_in_records": 17,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 17,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:9",
-       "stream.jsonl:12",
-       "stream.jsonl:15",
-       "stream.jsonl:19",
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:3",
-       "stream.jsonl:3",
-       "stream.jsonl:16",
-       "stream.jsonl:19"
+       "antigravity-live-1.4.6-features.stream.jsonl:3",
+       "antigravity-live-1.4.6-features.stream.jsonl:6",
+       "antigravity-live-1.4.6-features.stream.jsonl:9",
+       "antigravity-live-1.4.6-features.stream.jsonl:12",
+       "antigravity-live-1.4.6-features.stream.jsonl:15",
+       "antigravity-live-1.4.6-features.stream.jsonl:19",
+       "antigravity-live-1.4.6-denial.stream.jsonl:3",
+       "antigravity-live-1.4.6-denial.stream.jsonl:6",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:16",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:19",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:9",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:14"
       ]
      },
      "step_update.usage.cache_read_tokens": {
       "kinds": {
-       "integer": 12
+       "integer": 17
       },
-      "present_in_records": 12,
+      "present_in_records": 17,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 17,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:9",
-       "stream.jsonl:12",
-       "stream.jsonl:15",
-       "stream.jsonl:19",
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:3",
-       "stream.jsonl:3",
-       "stream.jsonl:16",
-       "stream.jsonl:19"
+       "antigravity-live-1.4.6-features.stream.jsonl:3",
+       "antigravity-live-1.4.6-features.stream.jsonl:6",
+       "antigravity-live-1.4.6-features.stream.jsonl:9",
+       "antigravity-live-1.4.6-features.stream.jsonl:12",
+       "antigravity-live-1.4.6-features.stream.jsonl:15",
+       "antigravity-live-1.4.6-features.stream.jsonl:19",
+       "antigravity-live-1.4.6-denial.stream.jsonl:3",
+       "antigravity-live-1.4.6-denial.stream.jsonl:6",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:16",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:19",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:9",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:14"
       ]
      },
      "step_update.usage.input_tokens": {
       "kinds": {
-       "integer": 12
+       "integer": 17
       },
-      "present_in_records": 12,
+      "present_in_records": 17,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 17,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:9",
-       "stream.jsonl:12",
-       "stream.jsonl:15",
-       "stream.jsonl:19",
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:3",
-       "stream.jsonl:3",
-       "stream.jsonl:16",
-       "stream.jsonl:19"
+       "antigravity-live-1.4.6-features.stream.jsonl:3",
+       "antigravity-live-1.4.6-features.stream.jsonl:6",
+       "antigravity-live-1.4.6-features.stream.jsonl:9",
+       "antigravity-live-1.4.6-features.stream.jsonl:12",
+       "antigravity-live-1.4.6-features.stream.jsonl:15",
+       "antigravity-live-1.4.6-features.stream.jsonl:19",
+       "antigravity-live-1.4.6-denial.stream.jsonl:3",
+       "antigravity-live-1.4.6-denial.stream.jsonl:6",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:16",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:19",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:9",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:14"
       ]
      },
      "step_update.usage.output_tokens": {
       "kinds": {
-       "integer": 12
+       "integer": 17
       },
-      "present_in_records": 12,
+      "present_in_records": 17,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 17,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:9",
-       "stream.jsonl:12",
-       "stream.jsonl:15",
-       "stream.jsonl:19",
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:3",
-       "stream.jsonl:3",
-       "stream.jsonl:16",
-       "stream.jsonl:19"
+       "antigravity-live-1.4.6-features.stream.jsonl:3",
+       "antigravity-live-1.4.6-features.stream.jsonl:6",
+       "antigravity-live-1.4.6-features.stream.jsonl:9",
+       "antigravity-live-1.4.6-features.stream.jsonl:12",
+       "antigravity-live-1.4.6-features.stream.jsonl:15",
+       "antigravity-live-1.4.6-features.stream.jsonl:19",
+       "antigravity-live-1.4.6-denial.stream.jsonl:3",
+       "antigravity-live-1.4.6-denial.stream.jsonl:6",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:16",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:19",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:9",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:14"
       ]
      },
      "step_update.usage.thinking_tokens": {
       "kinds": {
-       "integer": 12
+       "integer": 17
       },
-      "present_in_records": 12,
+      "present_in_records": 17,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 17,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:9",
-       "stream.jsonl:12",
-       "stream.jsonl:15",
-       "stream.jsonl:19",
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:3",
-       "stream.jsonl:3",
-       "stream.jsonl:16",
-       "stream.jsonl:19"
+       "antigravity-live-1.4.6-features.stream.jsonl:3",
+       "antigravity-live-1.4.6-features.stream.jsonl:6",
+       "antigravity-live-1.4.6-features.stream.jsonl:9",
+       "antigravity-live-1.4.6-features.stream.jsonl:12",
+       "antigravity-live-1.4.6-features.stream.jsonl:15",
+       "antigravity-live-1.4.6-features.stream.jsonl:19",
+       "antigravity-live-1.4.6-denial.stream.jsonl:3",
+       "antigravity-live-1.4.6-denial.stream.jsonl:6",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:16",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:19",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:9",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:14"
       ]
      },
      "step_update.usage.total_tokens": {
       "kinds": {
-       "integer": 12
+       "integer": 17
       },
-      "present_in_records": 12,
+      "present_in_records": 17,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 17,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:9",
-       "stream.jsonl:12",
-       "stream.jsonl:15",
-       "stream.jsonl:19",
-       "stream.jsonl:3",
-       "stream.jsonl:6",
-       "stream.jsonl:3",
-       "stream.jsonl:3",
-       "stream.jsonl:16",
-       "stream.jsonl:19"
+       "antigravity-live-1.4.6-features.stream.jsonl:3",
+       "antigravity-live-1.4.6-features.stream.jsonl:6",
+       "antigravity-live-1.4.6-features.stream.jsonl:9",
+       "antigravity-live-1.4.6-features.stream.jsonl:12",
+       "antigravity-live-1.4.6-features.stream.jsonl:15",
+       "antigravity-live-1.4.6-features.stream.jsonl:19",
+       "antigravity-live-1.4.6-denial.stream.jsonl:3",
+       "antigravity-live-1.4.6-denial.stream.jsonl:6",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:3",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:16",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:19",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:3",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:6",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:9",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:14"
       ]
      }
     }
@@ -1069,7 +1257,7 @@
     },
     "records": 1,
     "evidence": [
-     "stream.jsonl:5"
+     "antigravity-live-1.4.6-subagent.stream.jsonl:5"
     ],
     "paths": {
      "event": {
@@ -1082,7 +1270,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:5"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:5"
       ]
      },
      "step_update": {
@@ -1095,7 +1283,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:5"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:5"
       ]
      },
      "step_update.conversation_id": {
@@ -1108,7 +1296,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:5"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:5"
       ]
      },
      "step_update.duration_seconds": {
@@ -1121,7 +1309,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:5"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:5"
       ]
      },
      "step_update.state": {
@@ -1134,7 +1322,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:5"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:5"
       ]
      },
      "step_update.step_index": {
@@ -1147,7 +1335,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:5"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:5"
       ]
      },
      "step_update.step_type": {
@@ -1160,7 +1348,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:5"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:5"
       ]
      },
      "step_update.subagent_info": {
@@ -1173,7 +1361,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:5"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:5"
       ]
      },
      "step_update.subagent_info.subagents": {
@@ -1186,7 +1374,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:5"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:5"
       ]
      },
      "step_update.subagent_info.subagents[]": {
@@ -1199,7 +1387,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:5"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:5"
       ]
      },
      "step_update.subagent_info.subagents[].conversation_id": {
@@ -1212,7 +1400,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:5"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:5"
       ]
      },
      "step_update.subagent_info.subagents[].initial_prompt": {
@@ -1225,7 +1413,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:5"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:5"
       ]
      },
      "step_update.subagent_info.subagents[].log_uri": {
@@ -1238,7 +1426,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:5"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:5"
       ]
      },
      "step_update.subagent_info.subagents[].role": {
@@ -1251,7 +1439,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:5"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:5"
       ]
      },
      "step_update.subagent_info.subagents[].type_name": {
@@ -1264,7 +1452,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:5"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:5"
       ]
      },
      "step_update.subagent_info.subagents[].workspace_uris": {
@@ -1277,7 +1465,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:5"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:5"
       ]
      },
      "step_update.subagent_info.subagents[].workspace_uris[]": {
@@ -1290,7 +1478,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:5"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:5"
       ]
      },
      "step_update.tool_name": {
@@ -1303,7 +1491,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:5"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:5"
       ]
      }
     }
@@ -1316,7 +1504,7 @@
     },
     "records": 1,
     "evidence": [
-     "stream.jsonl:17"
+     "antigravity-live-1.4.6-subagent.stream.jsonl:17"
     ],
     "paths": {
      "event": {
@@ -1329,7 +1517,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:17"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:17"
       ]
      },
      "step_update": {
@@ -1342,7 +1530,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:17"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:17"
       ]
      },
      "step_update.conversation_id": {
@@ -1355,7 +1543,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:17"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:17"
       ]
      },
      "step_update.duration_seconds": {
@@ -1368,7 +1556,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:17"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:17"
       ]
      },
      "step_update.state": {
@@ -1381,7 +1569,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:17"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:17"
       ]
      },
      "step_update.step_index": {
@@ -1394,7 +1582,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:17"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:17"
       ]
      },
      "step_update.step_type": {
@@ -1407,7 +1595,7 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:17"
+       "antigravity-live-1.4.6-subagent.stream.jsonl:17"
       ]
      }
     }
@@ -1418,17 +1606,319 @@
      "step_update.step_type": "tool",
      "step_update.state": "ACTIVE"
     },
+    "records": 13,
+    "evidence": [
+     "antigravity-live-1.4.6-features.stream.jsonl:4",
+     "antigravity-live-1.4.6-features.stream.jsonl:7",
+     "antigravity-live-1.4.6-features.stream.jsonl:10",
+     "antigravity-live-1.4.6-features.stream.jsonl:13",
+     "antigravity-live-1.4.6-features.stream.jsonl:16",
+     "antigravity-live-1.4.6-denial.stream.jsonl:4",
+     "antigravity-live-1.4.6-denial.stream.jsonl:7",
+     "antigravity-live-1.4.6-interrupt-open.stream.jsonl:4",
+     "antigravity-live-1.4.6-subagent.stream.jsonl:4",
+     "antigravity-live-1.4.6-mcp-denied.stream.jsonl:4",
+     "antigravity-live-1.4.6-mcp.stream.jsonl:4",
+     "antigravity-live-1.4.6-mcp.stream.jsonl:7",
+     "antigravity-live-1.4.6-mcp.stream.jsonl:10"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "string": 13
+      },
+      "present_in_records": 13,
+      "absent_in_records": 0,
+      "occurrences": 13,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:4",
+       "antigravity-live-1.4.6-features.stream.jsonl:7",
+       "antigravity-live-1.4.6-features.stream.jsonl:10",
+       "antigravity-live-1.4.6-features.stream.jsonl:13",
+       "antigravity-live-1.4.6-features.stream.jsonl:16",
+       "antigravity-live-1.4.6-denial.stream.jsonl:4",
+       "antigravity-live-1.4.6-denial.stream.jsonl:7",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:4",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:7",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:10"
+      ]
+     },
+     "step_update": {
+      "kinds": {
+       "object": 13
+      },
+      "present_in_records": 13,
+      "absent_in_records": 0,
+      "occurrences": 13,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:4",
+       "antigravity-live-1.4.6-features.stream.jsonl:7",
+       "antigravity-live-1.4.6-features.stream.jsonl:10",
+       "antigravity-live-1.4.6-features.stream.jsonl:13",
+       "antigravity-live-1.4.6-features.stream.jsonl:16",
+       "antigravity-live-1.4.6-denial.stream.jsonl:4",
+       "antigravity-live-1.4.6-denial.stream.jsonl:7",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:4",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:7",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:10"
+      ]
+     },
+     "step_update.conversation_id": {
+      "kinds": {
+       "string": 13
+      },
+      "present_in_records": 13,
+      "absent_in_records": 0,
+      "occurrences": 13,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:4",
+       "antigravity-live-1.4.6-features.stream.jsonl:7",
+       "antigravity-live-1.4.6-features.stream.jsonl:10",
+       "antigravity-live-1.4.6-features.stream.jsonl:13",
+       "antigravity-live-1.4.6-features.stream.jsonl:16",
+       "antigravity-live-1.4.6-denial.stream.jsonl:4",
+       "antigravity-live-1.4.6-denial.stream.jsonl:7",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:4",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:7",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:10"
+      ]
+     },
+     "step_update.state": {
+      "kinds": {
+       "string": 13
+      },
+      "present_in_records": 13,
+      "absent_in_records": 0,
+      "occurrences": 13,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:4",
+       "antigravity-live-1.4.6-features.stream.jsonl:7",
+       "antigravity-live-1.4.6-features.stream.jsonl:10",
+       "antigravity-live-1.4.6-features.stream.jsonl:13",
+       "antigravity-live-1.4.6-features.stream.jsonl:16",
+       "antigravity-live-1.4.6-denial.stream.jsonl:4",
+       "antigravity-live-1.4.6-denial.stream.jsonl:7",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:4",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:7",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:10"
+      ]
+     },
+     "step_update.step_index": {
+      "kinds": {
+       "integer": 13
+      },
+      "present_in_records": 13,
+      "absent_in_records": 0,
+      "occurrences": 13,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:4",
+       "antigravity-live-1.4.6-features.stream.jsonl:7",
+       "antigravity-live-1.4.6-features.stream.jsonl:10",
+       "antigravity-live-1.4.6-features.stream.jsonl:13",
+       "antigravity-live-1.4.6-features.stream.jsonl:16",
+       "antigravity-live-1.4.6-denial.stream.jsonl:4",
+       "antigravity-live-1.4.6-denial.stream.jsonl:7",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:4",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:7",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:10"
+      ]
+     },
+     "step_update.step_type": {
+      "kinds": {
+       "string": 13
+      },
+      "present_in_records": 13,
+      "absent_in_records": 0,
+      "occurrences": 13,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:4",
+       "antigravity-live-1.4.6-features.stream.jsonl:7",
+       "antigravity-live-1.4.6-features.stream.jsonl:10",
+       "antigravity-live-1.4.6-features.stream.jsonl:13",
+       "antigravity-live-1.4.6-features.stream.jsonl:16",
+       "antigravity-live-1.4.6-denial.stream.jsonl:4",
+       "antigravity-live-1.4.6-denial.stream.jsonl:7",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:4",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:7",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:10"
+      ]
+     },
+     "step_update.tool_info": {
+      "kinds": {
+       "object": 13
+      },
+      "present_in_records": 13,
+      "absent_in_records": 0,
+      "occurrences": 13,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:4",
+       "antigravity-live-1.4.6-features.stream.jsonl:7",
+       "antigravity-live-1.4.6-features.stream.jsonl:10",
+       "antigravity-live-1.4.6-features.stream.jsonl:13",
+       "antigravity-live-1.4.6-features.stream.jsonl:16",
+       "antigravity-live-1.4.6-denial.stream.jsonl:4",
+       "antigravity-live-1.4.6-denial.stream.jsonl:7",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:4",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:7",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:10"
+      ]
+     },
+     "step_update.tool_info.name": {
+      "kinds": {
+       "string": 13
+      },
+      "present_in_records": 13,
+      "absent_in_records": 0,
+      "occurrences": 13,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:4",
+       "antigravity-live-1.4.6-features.stream.jsonl:7",
+       "antigravity-live-1.4.6-features.stream.jsonl:10",
+       "antigravity-live-1.4.6-features.stream.jsonl:13",
+       "antigravity-live-1.4.6-features.stream.jsonl:16",
+       "antigravity-live-1.4.6-denial.stream.jsonl:4",
+       "antigravity-live-1.4.6-denial.stream.jsonl:7",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:4",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:7",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:10"
+      ]
+     },
+     "step_update.tool_info.parameters": {
+      "kinds": {
+       "object": 13
+      },
+      "present_in_records": 13,
+      "absent_in_records": 0,
+      "occurrences": 13,
+      "null": 0,
+      "empty": 0,
+      "distinct_data_keys": 3,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:4",
+       "antigravity-live-1.4.6-features.stream.jsonl:7",
+       "antigravity-live-1.4.6-features.stream.jsonl:10",
+       "antigravity-live-1.4.6-features.stream.jsonl:13",
+       "antigravity-live-1.4.6-features.stream.jsonl:16",
+       "antigravity-live-1.4.6-denial.stream.jsonl:4",
+       "antigravity-live-1.4.6-denial.stream.jsonl:7",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:4",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:7",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:10"
+      ]
+     },
+     "step_update.tool_info.parameters.{*}": {
+      "kinds": {
+       "object": 4,
+       "string": 18
+      },
+      "present_in_records": 13,
+      "absent_in_records": 0,
+      "occurrences": 22,
+      "null": 0,
+      "empty": 1,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:4",
+       "antigravity-live-1.4.6-features.stream.jsonl:7",
+       "antigravity-live-1.4.6-features.stream.jsonl:10",
+       "antigravity-live-1.4.6-features.stream.jsonl:13",
+       "antigravity-live-1.4.6-features.stream.jsonl:16",
+       "antigravity-live-1.4.6-denial.stream.jsonl:4",
+       "antigravity-live-1.4.6-denial.stream.jsonl:7",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:4",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:7",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:10"
+      ]
+     },
+     "step_update.tool_name": {
+      "kinds": {
+       "string": 13
+      },
+      "present_in_records": 13,
+      "absent_in_records": 0,
+      "occurrences": 13,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:4",
+       "antigravity-live-1.4.6-features.stream.jsonl:7",
+       "antigravity-live-1.4.6-features.stream.jsonl:10",
+       "antigravity-live-1.4.6-features.stream.jsonl:13",
+       "antigravity-live-1.4.6-features.stream.jsonl:16",
+       "antigravity-live-1.4.6-denial.stream.jsonl:4",
+       "antigravity-live-1.4.6-denial.stream.jsonl:7",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:4",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:4",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:7",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:10"
+      ]
+     }
+    }
+   },
+   "step_update/tool/DONE": {
+    "discriminators": {
+     "event": "step_update",
+     "step_update.step_type": "tool",
+     "step_update.state": "DONE"
+    },
     "records": 9,
     "evidence": [
-     "stream.jsonl:4",
-     "stream.jsonl:7",
-     "stream.jsonl:10",
-     "stream.jsonl:13",
-     "stream.jsonl:16",
-     "stream.jsonl:4",
-     "stream.jsonl:7",
-     "stream.jsonl:4",
-     "stream.jsonl:4"
+     "antigravity-live-1.4.6-features.stream.jsonl:8",
+     "antigravity-live-1.4.6-features.stream.jsonl:11",
+     "antigravity-live-1.4.6-features.stream.jsonl:14",
+     "antigravity-live-1.4.6-features.stream.jsonl:17",
+     "antigravity-live-1.4.6-denial.stream.jsonl:5",
+     "antigravity-live-1.4.6-denial.stream.jsonl:8",
+     "antigravity-live-1.4.6-mcp-denied.stream.jsonl:5",
+     "antigravity-live-1.4.6-mcp.stream.jsonl:5",
+     "antigravity-live-1.4.6-mcp.stream.jsonl:8"
     ],
     "paths": {
      "event": {
@@ -1441,15 +1931,15 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:10",
-       "stream.jsonl:13",
-       "stream.jsonl:16",
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:4",
-       "stream.jsonl:4"
+       "antigravity-live-1.4.6-features.stream.jsonl:8",
+       "antigravity-live-1.4.6-features.stream.jsonl:11",
+       "antigravity-live-1.4.6-features.stream.jsonl:14",
+       "antigravity-live-1.4.6-features.stream.jsonl:17",
+       "antigravity-live-1.4.6-denial.stream.jsonl:5",
+       "antigravity-live-1.4.6-denial.stream.jsonl:8",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:8"
       ]
      },
      "step_update": {
@@ -1462,15 +1952,15 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:10",
-       "stream.jsonl:13",
-       "stream.jsonl:16",
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:4",
-       "stream.jsonl:4"
+       "antigravity-live-1.4.6-features.stream.jsonl:8",
+       "antigravity-live-1.4.6-features.stream.jsonl:11",
+       "antigravity-live-1.4.6-features.stream.jsonl:14",
+       "antigravity-live-1.4.6-features.stream.jsonl:17",
+       "antigravity-live-1.4.6-denial.stream.jsonl:5",
+       "antigravity-live-1.4.6-denial.stream.jsonl:8",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:8"
       ]
      },
      "step_update.conversation_id": {
@@ -1483,15 +1973,36 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:10",
-       "stream.jsonl:13",
-       "stream.jsonl:16",
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:4",
-       "stream.jsonl:4"
+       "antigravity-live-1.4.6-features.stream.jsonl:8",
+       "antigravity-live-1.4.6-features.stream.jsonl:11",
+       "antigravity-live-1.4.6-features.stream.jsonl:14",
+       "antigravity-live-1.4.6-features.stream.jsonl:17",
+       "antigravity-live-1.4.6-denial.stream.jsonl:5",
+       "antigravity-live-1.4.6-denial.stream.jsonl:8",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:8"
+      ]
+     },
+     "step_update.duration_seconds": {
+      "kinds": {
+       "decimal": 9
+      },
+      "present_in_records": 9,
+      "absent_in_records": 0,
+      "occurrences": 9,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:8",
+       "antigravity-live-1.4.6-features.stream.jsonl:11",
+       "antigravity-live-1.4.6-features.stream.jsonl:14",
+       "antigravity-live-1.4.6-features.stream.jsonl:17",
+       "antigravity-live-1.4.6-denial.stream.jsonl:5",
+       "antigravity-live-1.4.6-denial.stream.jsonl:8",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:8"
       ]
      },
      "step_update.state": {
@@ -1504,15 +2015,15 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:10",
-       "stream.jsonl:13",
-       "stream.jsonl:16",
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:4",
-       "stream.jsonl:4"
+       "antigravity-live-1.4.6-features.stream.jsonl:8",
+       "antigravity-live-1.4.6-features.stream.jsonl:11",
+       "antigravity-live-1.4.6-features.stream.jsonl:14",
+       "antigravity-live-1.4.6-features.stream.jsonl:17",
+       "antigravity-live-1.4.6-denial.stream.jsonl:5",
+       "antigravity-live-1.4.6-denial.stream.jsonl:8",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:8"
       ]
      },
      "step_update.step_index": {
@@ -1525,15 +2036,15 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:10",
-       "stream.jsonl:13",
-       "stream.jsonl:16",
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:4",
-       "stream.jsonl:4"
+       "antigravity-live-1.4.6-features.stream.jsonl:8",
+       "antigravity-live-1.4.6-features.stream.jsonl:11",
+       "antigravity-live-1.4.6-features.stream.jsonl:14",
+       "antigravity-live-1.4.6-features.stream.jsonl:17",
+       "antigravity-live-1.4.6-denial.stream.jsonl:5",
+       "antigravity-live-1.4.6-denial.stream.jsonl:8",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:8"
       ]
      },
      "step_update.step_type": {
@@ -1546,15 +2057,15 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:10",
-       "stream.jsonl:13",
-       "stream.jsonl:16",
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:4",
-       "stream.jsonl:4"
+       "antigravity-live-1.4.6-features.stream.jsonl:8",
+       "antigravity-live-1.4.6-features.stream.jsonl:11",
+       "antigravity-live-1.4.6-features.stream.jsonl:14",
+       "antigravity-live-1.4.6-features.stream.jsonl:17",
+       "antigravity-live-1.4.6-denial.stream.jsonl:5",
+       "antigravity-live-1.4.6-denial.stream.jsonl:8",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:8"
       ]
      },
      "step_update.tool_info": {
@@ -1567,15 +2078,15 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:10",
-       "stream.jsonl:13",
-       "stream.jsonl:16",
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:4",
-       "stream.jsonl:4"
+       "antigravity-live-1.4.6-features.stream.jsonl:8",
+       "antigravity-live-1.4.6-features.stream.jsonl:11",
+       "antigravity-live-1.4.6-features.stream.jsonl:14",
+       "antigravity-live-1.4.6-features.stream.jsonl:17",
+       "antigravity-live-1.4.6-denial.stream.jsonl:5",
+       "antigravity-live-1.4.6-denial.stream.jsonl:8",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:8"
       ]
      },
      "step_update.tool_info.name": {
@@ -1588,15 +2099,33 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:10",
-       "stream.jsonl:13",
-       "stream.jsonl:16",
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:4",
-       "stream.jsonl:4"
+       "antigravity-live-1.4.6-features.stream.jsonl:8",
+       "antigravity-live-1.4.6-features.stream.jsonl:11",
+       "antigravity-live-1.4.6-features.stream.jsonl:14",
+       "antigravity-live-1.4.6-features.stream.jsonl:17",
+       "antigravity-live-1.4.6-denial.stream.jsonl:5",
+       "antigravity-live-1.4.6-denial.stream.jsonl:8",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:8"
+      ]
+     },
+     "step_update.tool_info.output": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 2,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:8",
+       "antigravity-live-1.4.6-features.stream.jsonl:11",
+       "antigravity-live-1.4.6-features.stream.jsonl:14",
+       "antigravity-live-1.4.6-denial.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:8"
       ]
      },
      "step_update.tool_info.parameters": {
@@ -1608,38 +2137,39 @@
       "occurrences": 9,
       "null": 0,
       "empty": 0,
-      "distinct_data_keys": 2,
+      "distinct_data_keys": 3,
       "evidence": [
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:10",
-       "stream.jsonl:13",
-       "stream.jsonl:16",
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:4",
-       "stream.jsonl:4"
+       "antigravity-live-1.4.6-features.stream.jsonl:8",
+       "antigravity-live-1.4.6-features.stream.jsonl:11",
+       "antigravity-live-1.4.6-features.stream.jsonl:14",
+       "antigravity-live-1.4.6-features.stream.jsonl:17",
+       "antigravity-live-1.4.6-denial.stream.jsonl:5",
+       "antigravity-live-1.4.6-denial.stream.jsonl:8",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:8"
       ]
      },
      "step_update.tool_info.parameters.{*}": {
       "kinds": {
-       "string": 10
+       "object": 3,
+       "string": 12
       },
       "present_in_records": 9,
       "absent_in_records": 0,
-      "occurrences": 10,
+      "occurrences": 15,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:10",
-       "stream.jsonl:13",
-       "stream.jsonl:16",
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:4",
-       "stream.jsonl:4"
+       "antigravity-live-1.4.6-features.stream.jsonl:8",
+       "antigravity-live-1.4.6-features.stream.jsonl:11",
+       "antigravity-live-1.4.6-features.stream.jsonl:14",
+       "antigravity-live-1.4.6-features.stream.jsonl:17",
+       "antigravity-live-1.4.6-denial.stream.jsonl:5",
+       "antigravity-live-1.4.6-denial.stream.jsonl:8",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:8"
       ]
      },
      "step_update.tool_name": {
@@ -1652,33 +2182,272 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:10",
-       "stream.jsonl:13",
-       "stream.jsonl:16",
-       "stream.jsonl:4",
-       "stream.jsonl:7",
-       "stream.jsonl:4",
-       "stream.jsonl:4"
+       "antigravity-live-1.4.6-features.stream.jsonl:8",
+       "antigravity-live-1.4.6-features.stream.jsonl:11",
+       "antigravity-live-1.4.6-features.stream.jsonl:14",
+       "antigravity-live-1.4.6-features.stream.jsonl:17",
+       "antigravity-live-1.4.6-denial.stream.jsonl:5",
+       "antigravity-live-1.4.6-denial.stream.jsonl:8",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:8"
       ]
      }
     }
    },
-   "step_update/tool/DONE": {
+   "step_update/tool/ERROR": {
     "discriminators": {
      "event": "step_update",
      "step_update.step_type": "tool",
+     "step_update.state": "ERROR"
+    },
+    "records": 2,
+    "evidence": [
+     "antigravity-live-1.4.6-features.stream.jsonl:5",
+     "antigravity-live-1.4.6-mcp.stream.jsonl:11"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:11"
+      ]
+     },
+     "step_update": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:11"
+      ]
+     },
+     "step_update.conversation_id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:11"
+      ]
+     },
+     "step_update.duration_seconds": {
+      "kinds": {
+       "decimal": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:11"
+      ]
+     },
+     "step_update.state": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:11"
+      ]
+     },
+     "step_update.step_index": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:11"
+      ]
+     },
+     "step_update.step_type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:11"
+      ]
+     },
+     "step_update.tool_info": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:11"
+      ]
+     },
+     "step_update.tool_info.error": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:11"
+      ]
+     },
+     "step_update.tool_info.error.message": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:11"
+      ]
+     },
+     "step_update.tool_info.error.type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:11"
+      ]
+     },
+     "step_update.tool_info.name": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:11"
+      ]
+     },
+     "step_update.tool_info.output": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-mcp.stream.jsonl:11"
+      ]
+     },
+     "step_update.tool_info.parameters": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "distinct_data_keys": 3,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:11"
+      ]
+     },
+     "step_update.tool_info.parameters.{*}": {
+      "kinds": {
+       "object": 1,
+       "string": 3
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 1,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:11"
+      ]
+     },
+     "step_update.tool_name": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "antigravity-live-1.4.6-features.stream.jsonl:5",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:11"
+      ]
+     }
+    }
+   },
+   "step_update/user_input/DONE": {
+    "discriminators": {
+     "event": "step_update",
+     "step_update.step_type": "user_input",
      "step_update.state": "DONE"
     },
     "records": 6,
     "evidence": [
-     "stream.jsonl:8",
-     "stream.jsonl:11",
-     "stream.jsonl:14",
-     "stream.jsonl:17",
-     "stream.jsonl:5",
-     "stream.jsonl:8"
+     "antigravity-live-1.4.6-features.stream.jsonl:2",
+     "antigravity-live-1.4.6-denial.stream.jsonl:2",
+     "antigravity-live-1.4.6-interrupt-open.stream.jsonl:2",
+     "antigravity-live-1.4.6-subagent.stream.jsonl:2",
+     "antigravity-live-1.4.6-mcp-denied.stream.jsonl:2",
+     "antigravity-live-1.4.6-mcp.stream.jsonl:2"
     ],
     "paths": {
      "event": {
@@ -1691,12 +2460,12 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:8",
-       "stream.jsonl:11",
-       "stream.jsonl:14",
-       "stream.jsonl:17",
-       "stream.jsonl:5",
-       "stream.jsonl:8"
+       "antigravity-live-1.4.6-features.stream.jsonl:2",
+       "antigravity-live-1.4.6-denial.stream.jsonl:2",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:2",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:2",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:2",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:2"
       ]
      },
      "step_update": {
@@ -1709,12 +2478,12 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:8",
-       "stream.jsonl:11",
-       "stream.jsonl:14",
-       "stream.jsonl:17",
-       "stream.jsonl:5",
-       "stream.jsonl:8"
+       "antigravity-live-1.4.6-features.stream.jsonl:2",
+       "antigravity-live-1.4.6-denial.stream.jsonl:2",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:2",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:2",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:2",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:2"
       ]
      },
      "step_update.conversation_id": {
@@ -1727,30 +2496,12 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:8",
-       "stream.jsonl:11",
-       "stream.jsonl:14",
-       "stream.jsonl:17",
-       "stream.jsonl:5",
-       "stream.jsonl:8"
-      ]
-     },
-     "step_update.duration_seconds": {
-      "kinds": {
-       "decimal": 6
-      },
-      "present_in_records": 6,
-      "absent_in_records": 0,
-      "occurrences": 6,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:8",
-       "stream.jsonl:11",
-       "stream.jsonl:14",
-       "stream.jsonl:17",
-       "stream.jsonl:5",
-       "stream.jsonl:8"
+       "antigravity-live-1.4.6-features.stream.jsonl:2",
+       "antigravity-live-1.4.6-denial.stream.jsonl:2",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:2",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:2",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:2",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:2"
       ]
      },
      "step_update.state": {
@@ -1763,12 +2514,12 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:8",
-       "stream.jsonl:11",
-       "stream.jsonl:14",
-       "stream.jsonl:17",
-       "stream.jsonl:5",
-       "stream.jsonl:8"
+       "antigravity-live-1.4.6-features.stream.jsonl:2",
+       "antigravity-live-1.4.6-denial.stream.jsonl:2",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:2",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:2",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:2",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:2"
       ]
      },
      "step_update.step_index": {
@@ -1781,12 +2532,12 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:8",
-       "stream.jsonl:11",
-       "stream.jsonl:14",
-       "stream.jsonl:17",
-       "stream.jsonl:5",
-       "stream.jsonl:8"
+       "antigravity-live-1.4.6-features.stream.jsonl:2",
+       "antigravity-live-1.4.6-denial.stream.jsonl:2",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:2",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:2",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:2",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:2"
       ]
      },
      "step_update.step_type": {
@@ -1799,440 +2550,12 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:8",
-       "stream.jsonl:11",
-       "stream.jsonl:14",
-       "stream.jsonl:17",
-       "stream.jsonl:5",
-       "stream.jsonl:8"
-      ]
-     },
-     "step_update.tool_info": {
-      "kinds": {
-       "object": 6
-      },
-      "present_in_records": 6,
-      "absent_in_records": 0,
-      "occurrences": 6,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:8",
-       "stream.jsonl:11",
-       "stream.jsonl:14",
-       "stream.jsonl:17",
-       "stream.jsonl:5",
-       "stream.jsonl:8"
-      ]
-     },
-     "step_update.tool_info.name": {
-      "kinds": {
-       "string": 6
-      },
-      "present_in_records": 6,
-      "absent_in_records": 0,
-      "occurrences": 6,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:8",
-       "stream.jsonl:11",
-       "stream.jsonl:14",
-       "stream.jsonl:17",
-       "stream.jsonl:5",
-       "stream.jsonl:8"
-      ]
-     },
-     "step_update.tool_info.output": {
-      "kinds": {
-       "string": 4
-      },
-      "present_in_records": 4,
-      "absent_in_records": 2,
-      "occurrences": 4,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:8",
-       "stream.jsonl:11",
-       "stream.jsonl:14",
-       "stream.jsonl:5"
-      ]
-     },
-     "step_update.tool_info.parameters": {
-      "kinds": {
-       "object": 6
-      },
-      "present_in_records": 6,
-      "absent_in_records": 0,
-      "occurrences": 6,
-      "null": 0,
-      "empty": 0,
-      "distinct_data_keys": 2,
-      "evidence": [
-       "stream.jsonl:8",
-       "stream.jsonl:11",
-       "stream.jsonl:14",
-       "stream.jsonl:17",
-       "stream.jsonl:5",
-       "stream.jsonl:8"
-      ]
-     },
-     "step_update.tool_info.parameters.{*}": {
-      "kinds": {
-       "string": 6
-      },
-      "present_in_records": 6,
-      "absent_in_records": 0,
-      "occurrences": 6,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:8",
-       "stream.jsonl:11",
-       "stream.jsonl:14",
-       "stream.jsonl:17",
-       "stream.jsonl:5",
-       "stream.jsonl:8"
-      ]
-     },
-     "step_update.tool_name": {
-      "kinds": {
-       "string": 6
-      },
-      "present_in_records": 6,
-      "absent_in_records": 0,
-      "occurrences": 6,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:8",
-       "stream.jsonl:11",
-       "stream.jsonl:14",
-       "stream.jsonl:17",
-       "stream.jsonl:5",
-       "stream.jsonl:8"
-      ]
-     }
-    }
-   },
-   "step_update/tool/ERROR": {
-    "discriminators": {
-     "event": "step_update",
-     "step_update.step_type": "tool",
-     "step_update.state": "ERROR"
-    },
-    "records": 1,
-    "evidence": [
-     "stream.jsonl:5"
-    ],
-    "paths": {
-     "event": {
-      "kinds": {
-       "string": 1
-      },
-      "present_in_records": 1,
-      "absent_in_records": 0,
-      "occurrences": 1,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:5"
-      ]
-     },
-     "step_update": {
-      "kinds": {
-       "object": 1
-      },
-      "present_in_records": 1,
-      "absent_in_records": 0,
-      "occurrences": 1,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:5"
-      ]
-     },
-     "step_update.conversation_id": {
-      "kinds": {
-       "string": 1
-      },
-      "present_in_records": 1,
-      "absent_in_records": 0,
-      "occurrences": 1,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:5"
-      ]
-     },
-     "step_update.duration_seconds": {
-      "kinds": {
-       "decimal": 1
-      },
-      "present_in_records": 1,
-      "absent_in_records": 0,
-      "occurrences": 1,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:5"
-      ]
-     },
-     "step_update.state": {
-      "kinds": {
-       "string": 1
-      },
-      "present_in_records": 1,
-      "absent_in_records": 0,
-      "occurrences": 1,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:5"
-      ]
-     },
-     "step_update.step_index": {
-      "kinds": {
-       "integer": 1
-      },
-      "present_in_records": 1,
-      "absent_in_records": 0,
-      "occurrences": 1,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:5"
-      ]
-     },
-     "step_update.step_type": {
-      "kinds": {
-       "string": 1
-      },
-      "present_in_records": 1,
-      "absent_in_records": 0,
-      "occurrences": 1,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:5"
-      ]
-     },
-     "step_update.tool_info": {
-      "kinds": {
-       "object": 1
-      },
-      "present_in_records": 1,
-      "absent_in_records": 0,
-      "occurrences": 1,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:5"
-      ]
-     },
-     "step_update.tool_info.error": {
-      "kinds": {
-       "object": 1
-      },
-      "present_in_records": 1,
-      "absent_in_records": 0,
-      "occurrences": 1,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:5"
-      ]
-     },
-     "step_update.tool_info.error.message": {
-      "kinds": {
-       "string": 1
-      },
-      "present_in_records": 1,
-      "absent_in_records": 0,
-      "occurrences": 1,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:5"
-      ]
-     },
-     "step_update.tool_info.error.type": {
-      "kinds": {
-       "string": 1
-      },
-      "present_in_records": 1,
-      "absent_in_records": 0,
-      "occurrences": 1,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:5"
-      ]
-     },
-     "step_update.tool_info.name": {
-      "kinds": {
-       "string": 1
-      },
-      "present_in_records": 1,
-      "absent_in_records": 0,
-      "occurrences": 1,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:5"
-      ]
-     },
-     "step_update.tool_info.parameters": {
-      "kinds": {
-       "object": 1
-      },
-      "present_in_records": 1,
-      "absent_in_records": 0,
-      "occurrences": 1,
-      "null": 0,
-      "empty": 0,
-      "distinct_data_keys": 1,
-      "evidence": [
-       "stream.jsonl:5"
-      ]
-     },
-     "step_update.tool_info.parameters.{*}": {
-      "kinds": {
-       "string": 1
-      },
-      "present_in_records": 1,
-      "absent_in_records": 0,
-      "occurrences": 1,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:5"
-      ]
-     },
-     "step_update.tool_name": {
-      "kinds": {
-       "string": 1
-      },
-      "present_in_records": 1,
-      "absent_in_records": 0,
-      "occurrences": 1,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:5"
-      ]
-     }
-    }
-   },
-   "step_update/user_input/DONE": {
-    "discriminators": {
-     "event": "step_update",
-     "step_update.step_type": "user_input",
-     "step_update.state": "DONE"
-    },
-    "records": 4,
-    "evidence": [
-     "stream.jsonl:2",
-     "stream.jsonl:2",
-     "stream.jsonl:2",
-     "stream.jsonl:2"
-    ],
-    "paths": {
-     "event": {
-      "kinds": {
-       "string": 4
-      },
-      "present_in_records": 4,
-      "absent_in_records": 0,
-      "occurrences": 4,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:2",
-       "stream.jsonl:2",
-       "stream.jsonl:2",
-       "stream.jsonl:2"
-      ]
-     },
-     "step_update": {
-      "kinds": {
-       "object": 4
-      },
-      "present_in_records": 4,
-      "absent_in_records": 0,
-      "occurrences": 4,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:2",
-       "stream.jsonl:2",
-       "stream.jsonl:2",
-       "stream.jsonl:2"
-      ]
-     },
-     "step_update.conversation_id": {
-      "kinds": {
-       "string": 4
-      },
-      "present_in_records": 4,
-      "absent_in_records": 0,
-      "occurrences": 4,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:2",
-       "stream.jsonl:2",
-       "stream.jsonl:2",
-       "stream.jsonl:2"
-      ]
-     },
-     "step_update.state": {
-      "kinds": {
-       "string": 4
-      },
-      "present_in_records": 4,
-      "absent_in_records": 0,
-      "occurrences": 4,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:2",
-       "stream.jsonl:2",
-       "stream.jsonl:2",
-       "stream.jsonl:2"
-      ]
-     },
-     "step_update.step_index": {
-      "kinds": {
-       "integer": 4
-      },
-      "present_in_records": 4,
-      "absent_in_records": 0,
-      "occurrences": 4,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:2",
-       "stream.jsonl:2",
-       "stream.jsonl:2",
-       "stream.jsonl:2"
-      ]
-     },
-     "step_update.step_type": {
-      "kinds": {
-       "string": 4
-      },
-      "present_in_records": 4,
-      "absent_in_records": 0,
-      "occurrences": 4,
-      "null": 0,
-      "empty": 0,
-      "evidence": [
-       "stream.jsonl:2",
-       "stream.jsonl:2",
-       "stream.jsonl:2",
-       "stream.jsonl:2"
+       "antigravity-live-1.4.6-features.stream.jsonl:2",
+       "antigravity-live-1.4.6-denial.stream.jsonl:2",
+       "antigravity-live-1.4.6-interrupt-open.stream.jsonl:2",
+       "antigravity-live-1.4.6-subagent.stream.jsonl:2",
+       "antigravity-live-1.4.6-mcp-denied.stream.jsonl:2",
+       "antigravity-live-1.4.6-mcp.stream.jsonl:2"
       ]
      }
     }
