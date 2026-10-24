@@ -124,7 +124,7 @@
     "LIVE-10"
    ],
    "not_applicable": [],
-   "basis": "1.4.6-vendor-inventory.json (headless documentation, CHANGELOG at 1.4.6, the 1.4.6 recordings): agent-response text deltas, tool steps with parameters, output or error, run-scope denied_actions in request-review mode, subagent spawns (subagent_info), step and session usage; LIVE-06 needs a configured MCP server (call_mcp_tool is advertised; none is configured on this host); LIVE-10 has no documented media or redacted content member (rich tool payloads stay tool data); no cost (LIVE-09 covers usage only)"
+   "basis": "1.4.6-vendor-inventory.json (headless documentation, CHANGELOG at 1.4.6, the 1.4.6 recordings): agent-response text deltas, tool steps with parameters, output or error, run-scope denied_actions in request-review mode, subagent spawns (subagent_info), step and session usage; LIVE-06 needs a configured MCP server (call_mcp_tool is advertised; the workspace file <task>/.agents/mcp_config.json configured one in the recorded runs) and permission for the mcp category: the recorded request-review run with no mcp allow rule soft-denied it, --dangerously-skip-permissions ran it; the documented permissions.allow route (mcp(<server>/*)) was not tried; LIVE-10 has no documented media or redacted content member (rich tool payloads stay tool data); no cost (LIVE-09 covers usage only)"
   }
  ]
 }

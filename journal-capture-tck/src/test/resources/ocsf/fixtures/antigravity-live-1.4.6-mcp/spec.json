@@ -1,0 +1,34 @@
+{
+ "run_uid": "antigravity-live-1.4.6-mcp",
+ "invocation_index": 0,
+ "capture_start": "2026-10-24T04:28:01.539136416Z",
+ "cli": {
+  "name": "Antigravity CLI",
+  "vendor_name": "Google",
+  "type_id": 1,
+  "type": "Native",
+  "version": "1.4.6",
+  "version_basis": "declared from the live run, where it was discovered once per run by the documented adapter path `agy --version` before launch, because the stream-json output reports no version; the native session file was not consulted"
+ },
+ "launch_settings": {
+  "command": "replay of the sanitized live stream (original: agy --print <prompt> --output-format stream-json --dangerously-skip-permissions)",
+  "cwd": "/work",
+  "route": "stdout",
+  "model_requested": null,
+  "allowed_tools": null,
+  "original_route": "LIVE: CliCapture launch, raw stdout, independent byte copy"
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "kind": 1,
+   "profile": "agy_stream",
+   "route": "stdout",
+   "path": "<fixture>/native/antigravity-live-1.4.6-mcp/stream.jsonl"
+  }
+ ],
+ "synthetic": {
+  "label": "SANITIZED REAL LIVE RECORDING (Antigravity CLI 1.4.6, LIVE-06 under --dangerously-skip-permissions with the workspace MCP configuration: the dispatcher call_mcp_tool runs journal_echo echo_record twice (alpha at step 2, beta at step 4; distinct step indexes, arguments and text outputs) and always_fails once (step 6, state ERROR, error TOOL_ERROR); no denied action), replayed through the writer to produce this package; the live package itself is private steward evidence",
+  "derived_from": "live run agy-mcp-2 (live MCP close-out, 2026-10-24)"
+ }
+}

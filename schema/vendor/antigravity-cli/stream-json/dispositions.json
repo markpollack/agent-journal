@@ -14,7 +14,8 @@
   "antigravity-live-1.4.6-features",
   "antigravity-live-1.4.6-interrupt-open",
   "antigravity-live-1.4.6-subagent",
-  "antigravity-live-1.4.6-mcp-denied"
+  "antigravity-live-1.4.6-mcp-denied",
+  "antigravity-live-1.4.6-mcp"
  ],
  "rule_of_coverage": "see claude-code/stream-json/dispositions.json; the same FieldDispositionTest applies",
  "entries": [
@@ -701,12 +702,29 @@
   },
   {
    "variant": "step_update/tool/ERROR",
+   "path": "step_update.tool_info.output",
+   "disposition": "normalized",
+   "destination": [
+    "tool_call.tool_result.data"
+   ],
+   "rule": "agy.stream.tool.done->tool_call.result",
+   "evidence": {
+    "property": "result.values"
+   },
+   "tests": [
+    "McpLiveFixtureTest#theAntigravityRecordingCarriesTwoEchoResultsAndTheToolErrorThroughTheDispatcher"
+   ],
+   "note": "a failed step that also reports output: the output is the result content exactly, with error_reported true and status Failure from the reported error (output before error is a Journal convention, not documented)"
+  },
+  {
+   "variant": "step_update/tool/ERROR",
    "path": "step_update.tool_info.error",
    "subtree": true,
    "disposition": "normalized",
    "destination": [
-    "tool_call.tool_result.data",
-    "tool_call.status_id"
+    "tool_call.status_id",
+    "tool_call.tool_result.error_reported",
+    "tool_call.tool_result.data"
    ],
    "rule": "agy.stream.tool.done->tool_call.result",
    "evidence": {
@@ -715,15 +733,16 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "the reported error is the result content with error_reported true and status Failure"
+   "note": "the reported error sets status Failure (Reported) and error_reported true; it is the result content only when the step reports no output (the failed read_file of the features recording); when output is also reported, the output is the content and the error object, including its type, is kept only in the retained record. Output before error is the writer's and the oracle's convention; the documentation states no precedence"
   },
   {
    "variant": "step_update/tool/ERROR",
    "path": "step_update.tool_info.error.type",
    "disposition": "normalized",
    "destination": [
-    "tool_call.tool_result.data",
-    "tool_call.status_id"
+    "tool_call.status_id",
+    "tool_call.tool_result.error_reported",
+    "tool_call.tool_result.data"
    ],
    "rule": "agy.stream.tool.done->tool_call.result",
    "evidence": {
@@ -732,15 +751,16 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "the reported error is the result content with error_reported true and status Failure"
+   "note": "the reported error sets status Failure (Reported) and error_reported true; it is the result content only when the step reports no output (the failed read_file of the features recording); when output is also reported, the output is the content and the error object, including its type, is kept only in the retained record. Output before error is the writer's and the oracle's convention; the documentation states no precedence"
   },
   {
    "variant": "step_update/tool/ERROR",
    "path": "step_update.tool_info.error.message",
    "disposition": "normalized",
    "destination": [
-    "tool_call.tool_result.data",
-    "tool_call.status_id"
+    "tool_call.status_id",
+    "tool_call.tool_result.error_reported",
+    "tool_call.tool_result.data"
    ],
    "rule": "agy.stream.tool.done->tool_call.result",
    "evidence": {
@@ -749,7 +769,7 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "the reported error is the result content with error_reported true and status Failure"
+   "note": "the reported error sets status Failure (Reported) and error_reported true; it is the result content only when the step reports no output (the failed read_file of the features recording); when output is also reported, the output is the content and the error object, including its type, is kept only in the retained record. Output before error is the writer's and the oracle's convention; the documentation states no precedence"
   },
   {
    "variant": "step_update/subagent/DONE",

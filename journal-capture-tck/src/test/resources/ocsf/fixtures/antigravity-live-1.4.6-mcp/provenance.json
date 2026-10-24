@@ -1,0 +1,41 @@
+{
+ "kind": "agent-journal/fixture-provenance",
+ "fixture": "antigravity-live-1.4.6-mcp",
+ "origin": "SANITIZED REAL LIVE RECORDING (not synthetic)",
+ "evidence_class": "recorded replay of a live stream; the live capture itself (unsanitized) is private steward evidence under plans/evidence/2026-10-23-mcp-live/",
+ "cli": "Antigravity CLI",
+ "cli_version": "1.4.6",
+ "cli_version_basis": "discovered once per run by the documented adapter path `agy --version` before launch, because the stream-json output reports no version; the native session file was not consulted",
+ "mode_and_route": "CliCapture launch (opt-in integration): raw stdout, independent byte copy, flush per record",
+ "capture_command": [
+  "agy",
+  "--print",
+  "Use the MCP server named journal_echo. 1. Call its tool echo_record with arguments {\"text\": \"alpha\", \"n\": 1}. 2. Call echo_record again with arguments {\"text\": \"beta\", \"n\": 2}. 3. Call its tool always_fails exactly once with no arguments. Make the calls one after another. Do not use any other tool and do not run shell commands. Finally reply in one line with the two echo values returned and whether always_fails reported an error.",
+  "--output-format",
+  "stream-json",
+  "--dangerously-skip-permissions"
+ ],
+ "scenario": "LIVE-06 under --dangerously-skip-permissions with the workspace MCP configuration: the dispatcher call_mcp_tool runs journal_echo echo_record twice (alpha at step 2, beta at step 4; distinct step indexes, arguments and text outputs) and always_fails once (step 6, state ERROR, error TOOL_ERROR); no denied action",
+ "live_run": "agy-mcp-2",
+ "live_process": {
+  "pid": 3302689,
+  "started": "2026-10-24T04:28:01.688114641Z",
+  "ended": "2026-10-24T04:28:46.688451493Z",
+  "how": "exited",
+  "exit_code": 0,
+  "exit_meaning": "0: the CLI reported success",
+  "stdout": "closed: EOF reached",
+  "stderr_bytes": 0,
+  "meaning": "the CLI process outcome; distinct from storage finalization (recording.state) and acquisition extent (acquisition.status): EOF never implies success"
+ },
+ "original_sha256": "5ad777cb3529ce90eeb439416b0c437a3a28c5f24d3b9b1fe65f64aec7b49923",
+ "original_bytes": 5896,
+ "sanitized_sha256": "dc798550cf5a8295f9d1fe7d15b3f2ca9c5001050ee1861af5f367bb32feea8a",
+ "sanitized_bytes": 5775,
+ "records": 15,
+ "sanitization": [
+  "conversation id of the run -> stand-in 00000000-0000-4000-8000-000000000200",
+  "task directory path -> /work"
+ ],
+ "privacy_review": "local paths (task directory, session scratch, home directory) and conversation ids (the run and any spawned subagent) replaced by text substitution on the raw bytes; tool names, step indexes, token counts, durations and the built-in tool list kept; prompt text is the deliberate synthetic task; reviewed 2026-10-24"
+}

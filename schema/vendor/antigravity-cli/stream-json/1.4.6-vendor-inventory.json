@@ -649,6 +649,14 @@
      "symbol": "docs/cli/headless#Tool calls in the stream"
     },
     {
+     "path": "step_update.tool_info.output",
+     "type": "string",
+     "meaning": "the tool result as rendered text, beside the reported error",
+     "availability": "conditional",
+     "condition": "when the failing tool reports output: observed once, on the failed MCP call of the 2026-10-24 recording (where it equals that step's error.message); absent on the failed read_file of the features recording",
+     "symbol": "docs/cli/headless#Tool calls in the stream (tool_info holds name, parameters, output and, when the tool fails, an error object)"
+    },
+    {
      "path": "step_update.tool_info.error",
      "type": "object",
      "meaning": "the tool failure",

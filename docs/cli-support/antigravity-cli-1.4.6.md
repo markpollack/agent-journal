@@ -47,7 +47,8 @@ permission decisions, launch settings, provenance, retention and reconstruction,
   separate operations and their attribution, cost, model identity unless `--model` overrides it.
 - **Retained only** (2 concepts): reported durations (step and result `duration_seconds`), and unresolved step families
   (`checkpoint`, `system_message` and unknown steps, kept whole). Also kept only in their records: tool names and
-  parameters repeated on result records, `result.error`, `num_turns`.
+  parameters repeated on result records, `tool_info.error` (type and message) on a failed step that also reports output,
+  `result.error`, `num_turns`.
 - **Unsupported** (1 concept): child runs. A subagent spawn's `subagent_info`, including the child conversation id, is the spawn's
   result content. The child's own records are not in this stream.
 - **Unresolved** (9 concepts, 6 of them pending on every CLI): injected context, session accounting, retained
@@ -60,15 +61,28 @@ permission decisions, launch settings, provenance, retention and reconstruction,
 ## MCP
 
 MCP calls arrive as the dispatcher tool `call_mcp_tool`, whose parameters name `ServerName`, `ToolName` and `Arguments`.
-They are kept exactly as the call's arguments and never lifted into a tool name or namespace. In the one recorded run
-(admitted headless route, default request-review mode) the CLI auto-denied the `mcp` permission category, and its stderr
-said headless mode cannot prompt for it. The step went ACTIVE, then DONE with neither output nor error, so its outcome is
-not derivable. The result reports `denied_actions [{action: mcp}]`
-as a run-scope denial that names no step (live recording `antigravity-live-1.4.6-mcp-denied`). A successful MCP result
-has not been recorded on this route.
+They are kept exactly as the call's arguments and never lifted into a tool name or namespace. Two runs used the same
+workspace MCP configuration (`<workspace>/.agents/mcp_config.json`), one per permission mode; each states only its own mode.
+
+- **Default request-review mode, no `mcp` allow rule** (live recording `antigravity-live-1.4.6-mcp-denied`): the CLI
+  auto-denied the `mcp` permission category, and its stderr said headless mode cannot prompt for it. The documented
+  `permissions.allow` route (for example `mcp(<server>/*)`, which takes precedence over the mode) was not tried. The step went ACTIVE, then DONE with
+  neither output nor error, so its outcome is not derivable. The result reports `denied_actions [{action: mcp}]` as a
+  run-scope denial that names no step.
+- **`--dangerously-skip-permissions`** (init `permission_mode` `always-proceed`; live recording
+  `antigravity-live-1.4.6-mcp`): `call_mcp_tool` ran three times, at steps 2, 4 and 6. The two `echo_record` steps ended
+  DONE with `tool_info.output` the server's own text content (`{"echo": "alpha", "n": 1, "ok": true}`, with spaces). The
+  server also returned structuredContent and `isError` false; the stream reports neither, so the result is text only, and DONE alone does not establish success: the
+  outcome stays not derivable. `always_fails` ended in state ERROR with `tool_info.output` and
+  `tool_info.error {type TOOL_ERROR}`: the output is the result content, with `error_reported` true and status Failure
+  (Reported); the error object is kept in the retained record. The calls have distinct step indexes, arguments and outputs, and each result is owned by its own step.
+  The turn succeeded and nothing was denied.
+
+Neither stream reports MCP initialization, discovery, resources, prompts or progress, and none is claimed.
 
 ## Live scenario coverage
 
 Live-observed: normal response, built-in tools, repeated tools, tool failure, permission rejection (command and `mcp`
-categories), subagent spawn, interruption with a tool open, usage. Blocked: MCP result. Not run: rich content.
+categories), MCP calls with text results and a tool error (under `--dangerously-skip-permissions`; blocked in the recorded
+request-review run without an `mcp` allow rule), subagent spawn, interruption with a tool open, usage. Not run: rich content.
 Repeated tools are not parallel proof, and a spawn is not the child's interior.

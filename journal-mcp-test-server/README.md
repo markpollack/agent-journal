@@ -43,7 +43,9 @@ self-reported name.
 - **Antigravity CLI** (workspace-scoped): put the same JSON in `<workspace>/.agents/mcp_config.json`. Calls appear as the
   dispatcher tool `call_mcp_tool` with parameters `ServerName`, `ToolName` and `Arguments`. In the recorded headless print run
   the default request-review permission mode auto-denied the `mcp` category (stderr: headless mode cannot prompt for it); a
-  successful call needs an explicit permission decision by whoever owns the environment.
+  successful call needs an explicit permission decision by whoever owns the environment. A recorded run with
+  `--dangerously-skip-permissions` ran both tools: each echo's `tool_info.output` is the server's own text content, and
+  `always_fails` ends in state ERROR with `tool_info.error {type TOOL_ERROR}`.
 - **Codex CLI** (launch-scoped): `-c mcp_servers.journal_echo.command="java" -c 'mcp_servers.journal_echo.args=["-jar","<path>/journal-mcp-test-server.jar"]'`.
   Calls appear as `mcp_tool_call` items with `server` and `tool`.
 

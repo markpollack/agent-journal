@@ -1,0 +1,48 @@
+{
+ "kind": "agent-journal/upstream-validation-summary",
+ "version": "0.1",
+ "fixture": "antigravity-live-1.4.6-mcp",
+ "core": "main",
+ "events_jsonl": "fixtures/antigravity-live-1.4.6-mcp/package/events.jsonl",
+ "events_jsonl_sha256": "4008e0b9acc0c168377d2cf72500ed6c9c185d42151b22a169e1b781f0bb796d",
+ "execution_records": 15,
+ "declarations_skipped": 41,
+ "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
+ "toolkit": {
+  "name": "ocsf-toolkit",
+  "release": "v0.9.0",
+  "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
+  "exit_code": 0
+ },
+ "compiled_schema_sha256": "133b83dac641ced0f0553344a5783eab1922f5d4f29ec025b221ac60dbf5a728",
+ "result": {
+  "event_files_processed": 15,
+  "error_events": 0,
+  "warning_only_events": 3,
+  "issues_reported": 0
+ },
+ "findings": {
+  "0004.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0007.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0010.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ]
+ },
+ "note": "warning-only findings are the toolkit's enum-sibling notice on tool_kind 'other' (a known v0.9.0 limit recorded in the lock); any error event fails UC5-AC11 for this core"
+}

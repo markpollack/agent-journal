@@ -39,6 +39,7 @@ import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.UNTEST
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_DENIAL;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_FEATURES;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_INTERRUPT_OPEN;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_MCP;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_MCP_DENIED;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_SUBAGENT;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.agyStream;
@@ -87,6 +88,7 @@ class PublicFixtureRegenerationTest {
         writeCancelled(LIVE_AGY_INTERRUPT_OPEN, agyStream());
         write(LIVE_AGY_SUBAGENT, List.of(agyStream()), List.of("stream.jsonl"));
         write(LIVE_AGY_MCP_DENIED, List.of(agyStream()), List.of("stream.jsonl"));
+        write(LIVE_AGY_MCP, List.of(agyStream()), List.of("stream.jsonl"));
     }
 
     /**

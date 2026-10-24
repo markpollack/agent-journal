@@ -56,6 +56,7 @@ final class WriterTestSupport {
     static final String LIVE_AGY_INTERRUPT_OPEN = "antigravity-live-1.4.6-interrupt-open";
     static final String LIVE_AGY_SUBAGENT = "antigravity-live-1.4.6-subagent";
     static final String LIVE_AGY_MCP_DENIED = "antigravity-live-1.4.6-mcp-denied";
+    static final String LIVE_AGY_MCP = "antigravity-live-1.4.6-mcp";
     static final String LIVE_MCP = "claude-live-2.1.304-mcp";
     static final String SPAWN = "toolu_01BnEuCUmZ2Vu1LpADzksmrJ";
 

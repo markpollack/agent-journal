@@ -118,7 +118,7 @@
       "contract": "antigravity-cli-1.4.6-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.AntigravityStreamMapper",
       "tested": [
-        {"version": "1.4.6", "route": "stdout", "evidence": "Antigravity onboarding live runs (2026-10-23) through the integrated launch path (CliCapture --cli antigravity) and their sanitized fixtures antigravity-live-1.4.6-features, -denial, -interrupt-open, -subagent; the live MCP attempt of 2026-10-23 in request-review mode and its fixture antigravity-live-1.4.6-mcp-denied (the call was soft-denied: no MCP result is established on this route)"}
+        {"version": "1.4.6", "route": "stdout", "evidence": "Antigravity onboarding live runs (2026-10-23) through the integrated launch path (CliCapture --cli antigravity) and their sanitized fixtures antigravity-live-1.4.6-features, -denial, -interrupt-open, -subagent; the live MCP attempt of 2026-10-23 in request-review mode and its fixture antigravity-live-1.4.6-mcp-denied (the call was soft-denied in that run, which had no mcp allow rule); the live MCP attempt of 2026-10-24 under --dangerously-skip-permissions and its fixture antigravity-live-1.4.6-mcp (call_mcp_tool ran echo_record twice and always_fails once: two text outputs and a TOOL_ERROR)"}
       ],
       "note": "the stream-json output reports no version; the documented discovery path is one `agy --version` per run; headless print mode (agy --print <prompt> --output-format stream-json), permission mode request-review by default and always-proceed under --dangerously-skip-permissions, both reported by the init event"
     },

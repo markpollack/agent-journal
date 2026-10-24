@@ -703,7 +703,7 @@
         "codex-cli/exec-json-stream/0.160.1": "mapped",
         "antigravity-cli/stream-json/1.4.6-stdout": "retained_only"
       },
-      "route_evidence": "Codex mcp_tool_call server/tool mapped (live, claim codex.exec-stream.mcp-tool-call); Claude MCP tools arrive as tool_use names mcp__server__tool (namespace never derived from a name) and mcp_tool_use.server_name is unexercised; Claude system/elicitation_complete retained; Antigravity: MCP calls arrive as the dispatcher tool call_mcp_tool whose arguments name ServerName and ToolName (kept exactly, never lifted into a namespace); live call soft-denied in request-review mode, no MCP result on the permitted route",
+      "route_evidence": "Codex mcp_tool_call server/tool mapped (live, claim codex.exec-stream.mcp-tool-call); Claude MCP tools arrive as tool_use names mcp__server__tool (namespace never derived from a name) and mcp_tool_use.server_name is unexercised; Claude system/elicitation_complete retained; Antigravity: MCP calls arrive as the dispatcher tool call_mcp_tool whose arguments name ServerName and ToolName (kept exactly, never lifted into a namespace); the recorded request-review run with no mcp allow rule soft-denied the call; under --dangerously-skip-permissions two echo results (tool_info.output, text only) and a TOOL_ERROR are recorded and checked as tool results",
       "evidence": [
         "claim:codex.exec-stream.mcp-tool-call"
       ],

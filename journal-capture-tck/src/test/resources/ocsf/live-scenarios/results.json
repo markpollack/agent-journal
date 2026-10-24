@@ -963,7 +963,81 @@
     {
      "behavior": "LIVE-06",
      "status": "blocked",
-     "note": "blocked: in this run the default request-review mode soft-denied the mcp category, so no permitted MCP result is recorded; MCP calls appear as the dispatcher tool call_mcp_tool whose parameters name the server and tool"
+     "note": "blocked in this attempt: in the default request-review mode, with no mcp allow rule configured, the mcp category was soft-denied, so no permitted MCP result is recorded here (the documented permissions.allow route was not tried); MCP calls appear as the dispatcher tool call_mcp_tool whose parameters name the server and tool (attempt mcp-agy-2 records results under --dangerously-skip-permissions)"
+    }
+   ]
+  },
+  {
+   "id": "mcp-agy-2",
+   "route": "antigravity-cli/stream-json/1.4.6-stdout",
+   "cli_version": "1.4.6",
+   "evidence_class": "live",
+   "fixture": "antigravity-live-1.4.6-mcp",
+   "provenance": "live MCP run 2026-10-24 with --dangerously-skip-permissions (init reports permission_mode always-proceed); the same workspace configuration <task>/.agents/mcp_config.json as mcp-agy-1 (byte-identical file); Java MCP SDK 2.0.1 stdio test server; sanitized fixture replayed through the current writer; private run under the steward's 2026-10-23-mcp-live evidence",
+   "behaviors": [
+    {
+     "behavior": "LIVE-06",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "value:step_update.tool_name=call_mcp_tool",
+       "min": 6
+      },
+      {
+       "scenario": "facts:requests",
+       "min": 3
+      },
+      {
+       "scenario": "facts:results",
+       "min": 3
+      }
+     ],
+     "assertions": [
+      "McpLiveFixtureTest#theAntigravityRecordingCarriesTwoEchoResultsAndTheToolErrorThroughTheDispatcher"
+     ],
+     "note": "three call_mcp_tool steps (2, 4, 6), each ACTIVE then terminal with parameters ServerName journal_echo, ToolName and Arguments kept whole as the dispatcher's arguments (never lifted into a namespace or a tool name): echo_record {n 1, text alpha} and {n 2, text beta} end DONE with tool_info.output the server's own text content ({\"echo\": \"alpha\", \"n\": 1, \"ok\": true}, with spaces); the test server returns structuredContent and isError false with that text, and the stream reports neither, so the structured-result half of LIVE-06 is not observable on this route (the result is text only); DONE reports no success flag, so the outcome stays not derivable; MCP initialization and discovery are not in the stream (init lists call_mcp_tool among the built-in tools, no per-server tool names)",
+     "canonical": [
+      "population.requests",
+      "request.values",
+      "population.results",
+      "result.values",
+      "result.owner"
+     ]
+    },
+    {
+     "behavior": "LIVE-04",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:results.failed",
+       "min": 1
+      }
+     ],
+     "assertions": [
+      "McpLiveFixtureTest#theAntigravityRecordingCarriesTwoEchoResultsAndTheToolErrorThroughTheDispatcher"
+     ],
+     "note": "always_fails ends in state ERROR with tool_info.output and tool_info.error {type TOOL_ERROR, message always_fails: deliberate test failure}: status Failure, basis Reported; the agent then answered and the result is SUCCESS with no denied_actions; a protocol or transport error was not triggered",
+     "canonical": [
+      "result.values"
+     ]
+    },
+    {
+     "behavior": "LIVE-03",
+     "status": "observed",
+     "predicates": [
+      {
+       "scenario": "facts:requests",
+       "min": 3
+      }
+     ],
+     "assertions": [
+      "McpLiveFixtureTest#theAntigravityRecordingCarriesTwoEchoResultsAndTheToolErrorThroughTheDispatcher"
+     ],
+     "note": "two echo_record calls with distinct step indexes (2, 4), arguments (n 1, n 2) and outputs, each result owned by its own step index; sequential, so parallel overlap is not claimed",
+     "canonical": [
+      "population.requests",
+      "result.owner"
+     ]
     }
    ]
   }

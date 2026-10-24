@@ -98,7 +98,8 @@ class MappingCatalogTest {
             new Route("agy", "AntigravityStreamProfile", OcsfFixtures.LIVE_AGY_DENIAL, "stream.jsonl", "Antigravity CLI stream-json 1.4.6 stdout (sanitized live recording: headless soft denial)", "antigravity-cli/stream-json/1.4.6-stdout"),
             new Route("agy", "AntigravityStreamProfile", OcsfFixtures.LIVE_AGY_INTERRUPT_OPEN, "stream.jsonl", "Antigravity CLI stream-json 1.4.6 stdout (sanitized live recording: cancelled with a command open)", "antigravity-cli/stream-json/1.4.6-stdout"),
             new Route("agy", "AntigravityStreamProfile", OcsfFixtures.LIVE_AGY_SUBAGENT, "stream.jsonl", "Antigravity CLI stream-json 1.4.6 stdout (sanitized live recording: subagent spawn)", "antigravity-cli/stream-json/1.4.6-stdout"),
-            new Route("agy", "AntigravityStreamProfile", OcsfFixtures.LIVE_AGY_MCP_DENIED, "stream.jsonl", "Antigravity CLI stream-json 1.4.6 stdout (sanitized live recording: MCP call soft-denied in request-review mode)", "antigravity-cli/stream-json/1.4.6-stdout"));
+            new Route("agy", "AntigravityStreamProfile", OcsfFixtures.LIVE_AGY_MCP_DENIED, "stream.jsonl", "Antigravity CLI stream-json 1.4.6 stdout (sanitized live recording: MCP call soft-denied in request-review mode)", "antigravity-cli/stream-json/1.4.6-stdout"),
+            new Route("agy", "AntigravityStreamProfile", OcsfFixtures.LIVE_AGY_MCP, "stream.jsonl", "Antigravity CLI stream-json 1.4.6 stdout (sanitized live recording: MCP echo twice and a tool error under skip-permissions)", "antigravity-cli/stream-json/1.4.6-stdout"));
 
     /** A coverage-table column: one admitted CLI/version/profile/route, or the historical sdk route, labelled so. */
     record Column(String entry, String label, String support) {

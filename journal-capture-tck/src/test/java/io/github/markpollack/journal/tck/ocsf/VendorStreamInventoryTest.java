@@ -80,7 +80,7 @@ class VendorStreamInventoryTest {
                     List.of(OcsfFixtures.LIVE_FEATURES, OcsfFixtures.LIVE_DENIAL, OcsfFixtures.LIVE_CANCELLED, OcsfFixtures.LIVE_MCP), List.of(), Set.of()),
             // closed source: the pinned basis is the public CHANGELOG (git blob) and the fetched documentation pages (sha256)
             new Profile("agy_stream", "schema/vendor/antigravity-cli/stream-json/1.4.6-vendor-inventory.json", "agy.checkout",
-                    List.of(OcsfFixtures.LIVE_AGY_FEATURES, OcsfFixtures.LIVE_AGY_DENIAL, OcsfFixtures.LIVE_AGY_INTERRUPT_OPEN, OcsfFixtures.LIVE_AGY_SUBAGENT, OcsfFixtures.LIVE_AGY_MCP_DENIED), List.of(), Set.of()));
+                    List.of(OcsfFixtures.LIVE_AGY_FEATURES, OcsfFixtures.LIVE_AGY_DENIAL, OcsfFixtures.LIVE_AGY_INTERRUPT_OPEN, OcsfFixtures.LIVE_AGY_SUBAGENT, OcsfFixtures.LIVE_AGY_MCP_DENIED, OcsfFixtures.LIVE_AGY_MCP), List.of(), Set.of()));
 
     static JsonNode inventory(Profile p) {
         try {
