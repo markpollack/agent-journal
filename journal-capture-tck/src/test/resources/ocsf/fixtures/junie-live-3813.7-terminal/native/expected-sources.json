@@ -1,0 +1,54 @@
+{
+ "kind": "agent-journal/expected-sources",
+ "version": "0.1",
+ "run_uid": "junie-live-3813.7-terminal",
+ "complete": true,
+ "frozen": {
+  "at": "2026-10-24",
+  "by": "sha256 and record count of the committed native artifacts (the summary document is one record), written before the package was judged; independent of the package's own sources[]",
+  "basis": "the sanitized live run junie-2: the session directory's summary.json and events.jsonl, standard output and standard error of one launch, finally assembled under the experimental session-primary profile",
+  "live_process": {
+   "started": "2026-10-24T04:58:04.452405462Z",
+   "ended": "2026-10-24T04:58:23.506498787Z",
+   "how": "exited",
+   "exit_code": 0,
+   "exit_meaning": "0: as the run script recorded",
+   "meaning": "the CLI process outcome the run script recorded (process.json); distinct from storage finalization and acquisition extent"
+  }
+ },
+ "sources": [
+  {
+   "artifact": "summary.json",
+   "profile": "junie_summary",
+   "sha256": "f9bbab52ce242dcc8768d3b5689c0cbf511a67b38426cb4fa6e0b29962677b97",
+   "bytes": 1094,
+   "records": 1,
+   "required": true,
+   "framing": "document"
+  },
+  {
+   "artifact": "session-events.jsonl",
+   "profile": "junie_session_events",
+   "sha256": "b7a67807130502d59da3643a542f83a35fd78495a075b751560de5de35c25a4f",
+   "bytes": 32625,
+   "records": 65,
+   "required": true
+  },
+  {
+   "artifact": "stdout.jsonl",
+   "profile": "junie_stdout",
+   "sha256": "3a943fda8914746df86a8cafeb563cdacf75d1aa075ba4174ba0ffc464f2b2e8",
+   "bytes": 2104,
+   "records": 4,
+   "required": true
+  },
+  {
+   "artifact": "stderr.txt",
+   "profile": "opaque_text",
+   "sha256": "682a53deeb178cc9653abf29c5b76d80c2112fff1bcfa3244abbbd8a9b89fbca",
+   "bytes": 104,
+   "records": 1,
+   "required": true
+  }
+ ]
+}

@@ -1,4 +1,4 @@
-# Agent Journal rules: stream-first capture, preservation and the Java writer
+# Agent Journal rules: source-aware capture, final assembly, preservation and the Java writer
 
 Normative constraints on how Agent Journal records an agentic CLI execution into its OCSF-based run
 package. Each rule states one obligation with an RFC 2119 keyword and a reason. Observable behavior
@@ -11,40 +11,44 @@ not that the implementation meets any rule. A `Tests:` line names executable che
 this repository; it is a link, not proof that the check ran or passed.
 
 Terminology: **native session file** is the file a CLI writes on its own account (Claude Code's
-session transcript, Codex's rollout file). **Stream** is the structured output a CLI offers while it
-runs (`stream-json`, `exec --json`). **Selected input** is the source normalization reads.
+session transcript, Codex's rollout file, Copilot's session events, Junie's session directory). **Stream** is
+the structured output a CLI offers while it runs (`stream-json`, `exec --json`). **Source profile** is the
+reviewed list of a CLI version and route's declared sources (standard output, native session files and
+their summaries, native OTel exports, usage reports, standard error), each with its role, requirement,
+framing and identity binding. **Selected input** is a declared source normalization reads. **Final
+assembly** writes one new `events.jsonl` from the declared sources of one execution.
 
-## Source selection and the archive boundary
+## Source selection, final assembly and the archive boundary
 
 ### RULE-1
-**MUST** normalize a CLI's stream output as the selected input whenever that CLI offers a stream.
-**Reason:** The stream is the public, incrementally available contract; it is what a live recorder can persist before the CLI exits.
-Tests: `CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy` (the opt-in launching capture normalizes the CLI's stdout stream; stand-in process), `PrefixReplayTest`, `WriterLifecycleTest` (recorded streams through the same writer entry point). The production default capture modules are unchanged and do not use this writer.
+**MUST** select a CLI's inputs from the reviewed source profile of its exact version and route, declaring each source's role, requirement, framing and acquisition evidence; there is no universal preference for standard output.
+**Reason:** CLIs put different facts in different sources (Copilot reports per-call usage in its session file and OTel export, Junie its structured steps in the session directory); a fixed preference loses facts the reviewed profile shows a source reports.
+Tests: `FinalAssemblyClaudeTest#thePairAssemblesIntoOneCanonicalExecutionTheOracleVerifies`, `FinalAssemblyCopilotTest#theFourSourcesAssembleIntoOneExecutionTheOracleVerifies`, `FinalAssemblyJunieTest#theSessionDirectoryAssemblesWithItsOutputsAndTheOracleVerifiesIt`; single-source capture keeps `CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy`.
 
 ### RULE-2
-**MUST** import a native session file as the selected input only when it is the only data source the CLI offers.
-**Reason:** Session-only CLIs have no other evidence; a streaming CLI does, and two inputs for one run create a reconciliation problem the recorder should not own. This rule governs automatic live-capture source selection; an explicitly requested offline import of a saved native session is a separate mode with its own source provenance and separate output, never a supplement to a stream.
-Tests: the writer accepts a native session file through the same entry point (`WriterLifecycleTest`); no test yet checks the selection rule itself.
+**MUST** bind each declared source to the execution by a session identity the source itself reports, by the identity of a declared companion in the same native session directory, or by the acquisition that captured it, and **MUST** refuse a source that reports another execution, several, or (when required) none.
+**Reason:** A source of another execution silently corrupts the record; identity reported by the source, not assumed from its location, is what lets an independent check confirm membership.
+Tests: `FinalAssemblyClaudeTest#anotherExecutionsSessionFileIsRefusedAndWrittenNowhere`, `FinalAssemblyCopilotTest#anotherExecutionsTelemetryIsRefused`, `FinalAssemblyJunieTest#aSummaryOfAnotherSessionTakesItsEventsWithIt`, `FinalAssemblyJunieTest#withoutItsSummaryTheSessionFileHasNoIdentity`.
 
 ### RULE-3
-**MUST NOT** treat a missing stream adapter, an unknown CLI version, or a richer native session file as grounds to select the native session file for a streaming CLI.
-**Reason:** Those are implementation gaps or research observations; letting them change the selected input makes the capture boundary depend on adapter maturity instead of on the CLI's offered sources.
-Tests: `UntestedCompatibilityTest#aVersionNoEntryCoversIsRetainedFlaggedAndNotNormalized` (an unknown version keeps the stream as the only source), `CliCaptureTest#aVersionTestedOnAnotherRouteOnlyIsNoMatchRetainedAndFlagged`.
+**MUST NOT** treat a missing adapter, an unknown CLI version or a richer source as grounds to substitute one source for another outside the reviewed profile.
+**Reason:** Those are implementation gaps or research observations; letting them change the inputs makes the capture boundary depend on adapter maturity instead of on a reviewed profile.
+Tests: `UntestedCompatibilityTest#aVersionNoEntryCoversIsRetainedFlaggedAndNotNormalized`, `CliCaptureTest#aVersionTestedOnAnotherRouteOnlyIsNoMatchRetainedAndFlagged`.
 
 ### RULE-4
-**MUST** archive a streaming CLI's native session file unchanged, with its checksum, as redundancy outside the selected input.
-**Reason:** The archive is the emergency fallback; keeping it byte-identical keeps it trustworthy, and keeping it outside the selected input keeps the preservation denominator honest.
-Tests: `CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy` (archived byte-identical with its sha256, not parsed, not a declared source).
+**MUST** keep archive-only material (a native file or log no profile declares) byte-identical with its checksum outside the assembled sources, and **MUST** leave every original package and native input unchanged by final assembly.
+**Reason:** The archive and the originals are the fallback and the evidence; assembly writes a new file and never rewrites what it read.
+Tests: `CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy` (archived byte-identical with its sha256), `FinalAssemblyClaudeTest#assemblyLeavesItsInputsAndTheOriginalPackageUnchanged`, `FinalAssemblyCopilotTest#theFinalFileReadsAloneAndTheOriginalsAreUnchanged`.
 
 ### RULE-5
-**MUST NOT** parse an archived native session file to supplement, reconcile, deduplicate or enrich a streaming CLI's normalized output, including for final response usage or to discover the CLI version.
-**Reason:** Enrichment reintroduces a second input and silently changes which facts the stream is credited with; the archived file stays available for research without entering `events.jsonl`.
-Tests: `CliCaptureTest#theArchiveContentsCannotChangeTheNormalizedStreamOutput` (two runs whose archives differ, one carrying another version and usage, write identical events), `FullOneReviewRegressionTest#omittingAnEntireSourceIsADefectOnEveryObligationOfThatSource` (the frozen denominator is the selected input).
+**MUST** assemble a complete capture's declared sources automatically after acquisition, without a per-run enrichment request, into a new `events.jsonl` written through the one writer, consolidating each logical entity several sources observe into one canonical event and keeping each source's observation as a supporting observation.
+**Reason:** Consumers must not reconstruct an execution by merging several event streams themselves; one deterministic mechanism serves every CLI and differs only by its reviewed profile.
+Tests: `CliCaptureTest#aCompleteCaptureAssemblesTheFinalPackageAutomatically`, `FinalAssemblyClaudeTest#thePairAssemblesIntoOneCanonicalExecutionTheOracleVerifies`, `FinalAssemblyCopilotTest#theCanonicalEventsCarryTheUnionOfTheSources`.
 
 ### RULE-6
-**MUST** record a fact the selected stream does not report as a stated limitation of that source rather than fill it from another artifact.
-**Reason:** A consumer can act on a declared gap; a filled gap hides which source actually reported the value.
-Tests: `StreamLimitationTest` (the Claude stream contract's declared limitations are embedded in the event file and its per-message usage stays provisional); the Codex exec contract declares no such list yet.
+**MUST** state a fact no declared source reports as absent from the declared sources, never fill it from an undeclared artifact, and keep an absent value absent, never zero.
+**Reason:** A consumer can act on a declared gap; a filled gap hides which source reported the value, and a defaulted zero is a false measurement.
+Tests: `StreamLimitationTest` (declared limitations travel in the event file), `FinalAssemblyCopilotTest#anAbsentPerSpanCacheWriteStaysAbsent`.
 
 ## CLI version and mapping applicability
 
@@ -129,7 +133,7 @@ Tests: `OcsfOracleMutationTest#missingDuplicatedAndReorderedRowsAreDefects`, `Oc
 
 ### RULE-22
 **MUST NOT** compute cross-source logical counts, significant aggregation, scoring or conclusions in the live writer path.
-**Reason:** Those are consumer analyses with their own provenance; the writer records identifiers, order, reported scope and finality and leaves counting to tests and consumers.
+**Reason:** Those are consumer analyses with their own provenance; the writer records identifiers, order, reported scope and finality, and final assembly relates observations only through declared identities and states each consolidation with its evidence, leaving counting to tests and consumers.
 Tests: `CodexExecStreamTest#viewsMatchTheIndependentlyAuthoredAnswersAndStateTheirCountUnits` (views are test utilities, not writer output).
 
 ### RULE-23
@@ -266,6 +270,43 @@ Tests: `SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCo
 **Reason:** Tier 1 is the useful union of the three foundations, not their intersection and not what every CLI emits: a capability any one of them represents is in scope, and whether a route supplies it is a separate, per-route fact. An entry that leaves the denominator, an exclusion that disappears or is re-tiered without a decision, or retained raw data counted as a mapping would make parity look complete when it is not; a reference check proves accounting, not semantic correctness.
 Tests: `ParityLedgerTest#everyPinnedFieldIsAccountedForExactlyOnce`, `ParityLedgerTest#eachCorruptionIsDetected`, `ParityLedgerTest#everyFacetAspectAgreesWithItsConceptsExecutedStatePerRoute`, `ParityLedgerTest#theLedgerAndTheTopicExplanationAreGenerated`, `MappingCatalogSummaryTest` (executed verification needs every property, owner and occurrence).
 
+## Final assembly semantics, MCP containment and source availability
+
+### RULE-48
+**MUST** relate observations of different sources only through identities a reviewed profile declares (namespaced identifiers, bridges through another source, or a declared execution singleton), never by position, timestamp proximity or similar text, and **MUST** leave observations whose identity repeats within one source unpaired and flagged ambiguous.
+**Reason:** A guessed pairing fabricates a fact; a repeated identity cannot say which occurrence is which.
+Tests: `FinalAssemblyClaudeTest#anIdentityRepeatedWithinOneSourceStaysUnpairedAndFlagged`, `FinalAssemblyCopilotTest#theFourSourcesAssembleIntoOneExecutionTheOracleVerifies` (bridges through the provider call id).
+
+### RULE-49
+**MUST** merge compatible reports of one entity field by field with per-field evidence, **MUST** keep every conflicting report listed with its occurrence, and **MUST NOT** apply a universal source-wins rule; a value may be selected only by a field authority the profile declares with its reason.
+**Reason:** Silent precedence hides disagreement; a declared authority is a reviewable decision that keeps the other values visible.
+Tests: `FinalAssemblyClaudeTest#theOracleRejectsAlteredConsolidation`, `FinalAssemblyCopilotTest#theCanonicalEventsCarryTheUnionOfTheSources`.
+
+### RULE-50
+**MUST** carry each reported quantity once per canonical event (one usage observation per scope, aggregation and model, a final observation superseding a provisional one; one cost observation per quantity kind, scope, currency, unit and model), and **MUST NOT** compare, add or convert quantities of different kinds (money, premium requests, model cost multipliers, nano-AIU, credits, or a cost whose unit the source does not name).
+**Reason:** Overlapping reports counted twice, or a multiplier read as a request count or a currency, are false accounting.
+Tests: `FinalAssemblyCopilotTest#aMultiplierSumAndPremiumRequestsAreDistinctQuantities`, `FinalAssemblyJunieTest#theSessionDirectoryAssemblesWithItsOutputsAndTheOracleVerifiesIt`, `FinalAssemblyClaudeTest#theOracleRejectsAlteredConsolidation`.
+
+### RULE-51
+**MUST** identify an imported source by its acquisition origin and its sha256: replaying the same origin and bytes adds nothing, while identical bytes from distinct origins stay distinct sources whose observations are one entity, never extra executions.
+**Reason:** Idempotent import prevents double counting; distinct provenance must not be erased by equal bytes.
+Tests: `FinalAssemblyClaudeTest#replayingTheSameImportAddsNothingWhileIdenticalBytesFromAnotherOriginStayDistinct`.
+
+### RULE-52
+**MUST** declare a final assembly in the event file itself: the profile by value, the engine and its contract, the original packages it derives from, every declared source with its role, origin, extent, hash and verdict, and the result with missing required roles and the assembly status.
+**Reason:** The final file must read alone, with native files, `run.json` and schema caches unavailable, and still say how it was assembled and whether it is complete.
+Tests: `FinalAssemblyClaudeTest#theFinalFileReadsAloneWithoutNativeFilesManifestOrSchemaCaches`, `FinalAssemblyClaudeTest#aMissingRequiredSourceMakesTheAssemblyIncomplete`.
+
+### RULE-53
+**MUST** embed MCP protocol data in typed objects generated from the pinned official versioned MCP schemas, declaring a CLI's partial projection with the required members it lacks, and **MUST NOT** synthesize request ids, protocol revision, capabilities, structured content, isError or success; JSON-RPC, tool-result, CLI-reported and capture errors stay distinct.
+**Reason:** MCP semantics belong to the protocol's own definitions; a CLI shows a partial view, and inventing the rest would misstate the wire exchange.
+Tests: `McpProtocolContainmentTest`, `FinalAssemblyCopilotTest#theCanonicalEventsCarryTheUnionOfTheSources` (two partial projections merge without inventing members).
+
+### RULE-54
+**MUST** state, for each source specification, which fact families the source reports with selectors and their observed match populations, and **MUST** reject an absence claim the inventory contradicts, a zero-match selector marked exercised, and vendor usage hidden under a subtree inventoried as tool data or missing from the specification.
+**Reason:** A review once declared a source token-free that carried nested usage; executable gates on the inventory keep onboarding claims tied to what was observed.
+Tests: `SourceAvailabilityTest`.
+
 ## Change log
 
 2026-10-21, consolidated event-file work order (REQ-1 amendment). Retained identifiers with changed
@@ -342,3 +383,16 @@ reason now states the lower bound in its direction (the counted quantity is at l
 compatible with an actual 150) and that equal tranche prices never recover a missing contribution; its obligation is
 unchanged. Annotations only: the Tests lines of RULE-33 and RULE-43. No rule added or removed;
 `RequirementsRosterTest` pins 47 rules.
+
+2026-10-24, final Level 1 assembly, first-class MCP and onboarding repair (Owner-authorized). Retained identifiers
+with changed meaning: RULE-1 (inputs from the reviewed source profile, no universal stdout preference; was: normalize
+the stream), RULE-2 (bind each source to the execution by reported, companion or acquisition identity; was: import a
+native session file only when it is the only source), RULE-3 (no substitution outside the reviewed profile), RULE-4
+(archive-only material unchanged; originals unchanged by assembly), RULE-5 (assemble a complete capture automatically
+into one new file with consolidated canonical events; was: never parse an archived session file to enrich the stream),
+RULE-6 (a fact no declared source reports is stated absent, never zero; was: a stream limitation). RULE-22's reason now
+names final assembly's declared-identity consolidation. Added RULE-48 (joins on declared identities only; repeated
+identity unpaired), RULE-49 (field-level merge, conflicts kept, no source-wins), RULE-50 (each quantity once; quantity
+kinds never mixed), RULE-51 (import identity by origin and sha256), RULE-52 (the assembly declared in the file),
+RULE-53 (MCP in typed objects from the pinned official schemas; nothing synthesized) and RULE-54 (source availability
+gates). No rule removed; `RequirementsRosterTest` pins 54 rules.

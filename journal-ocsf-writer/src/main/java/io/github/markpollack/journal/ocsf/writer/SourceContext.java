@@ -22,6 +22,8 @@ final class SourceContext {
     final MappingContracts contracts;
     final SchemaPin pin;
     private final Sink sink;
+    private final java.util.function.Supplier<String> knownSession;
+    private java.util.Set<String> reportedSessions;
     private final long captureStartMs;
     private Long lastMs;
     private Integer lastIndex;
@@ -36,12 +38,53 @@ final class SourceContext {
     }
 
     SourceContext(SourceDescriptor source, RunDescriptor run, MappingContracts contracts, SchemaPin pin, Sink sink) {
+        this(source, run, contracts, pin, sink, run::sessionUid);
+    }
+
+    SourceContext(SourceDescriptor source, RunDescriptor run, MappingContracts contracts, SchemaPin pin, Sink sink, java.util.function.Supplier<String> knownSession) {
         this.source = source;
         this.run = run;
         this.contracts = contracts;
         this.pin = pin;
         this.sink = sink;
+        this.knownSession = knownSession;
         this.captureStartMs = run.captureStart().toEpochMilli();
+    }
+
+    /**
+     * The run's session identity as the writer knows it so far (declared at launch, or reported by a source fed earlier),
+     * for a source whose records do not name their session (Junie's session events, identified by the summary.json the
+     * same session directory holds); {@code null} when none is known.
+     */
+    String knownSession() {
+        return knownSession.get();
+    }
+
+    /** The session identities this source's own records reported, when its mapper states them ({@link #reportSession}); else {@code null}. */
+    java.util.Set<String> reportedSessions() {
+        return reportedSessions;
+    }
+
+    /**
+     * States a session identity this source's own record reported. A mapper whose events carry a session the source
+     * did not report (to satisfy the class's required session_uid) states the reported ones here, and the assembly gate
+     * judges the source on these alone.
+     */
+    void reportSession(String uid) {
+        if (reportedSessions == null) {
+            reportedSessions = new java.util.LinkedHashSet<>();
+        }
+        if (uid != null) {
+            reportedSessions.add(uid);
+        }
+    }
+
+    /** The session an event carries: the one its source reported, else the launch's declared one, else the run's known one. */
+    String sessionFor(String reported) {
+        if (reported != null) {
+            return reported;
+        }
+        return run.sessionUid() != null ? run.sessionUid() : knownSession();
     }
 
     void emit(Jv.Obj event) {

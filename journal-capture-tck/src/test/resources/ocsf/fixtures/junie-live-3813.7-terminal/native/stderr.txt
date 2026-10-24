@@ -1,0 +1,1 @@
+Junie 26.10.20 (3813.7) (pid=1): log file: /home/user/.junie/logs/log-2026-10-24_005805-pid-3339909.log

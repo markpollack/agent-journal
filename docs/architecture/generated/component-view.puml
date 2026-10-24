@@ -20,6 +20,7 @@ package "journal-ocsf-writer\n(production writer)" {
   [Framing and native records] as framing
   [Compatibility selection] as compatibility
   [Source mappers] as mapping
+  [Final assembly] as final_assembly
   [MCP protocol binding] as mcp_binding
   [Core persistence] as persistence
   [Schema and toolchain pins] as schema
@@ -41,19 +42,28 @@ capture --> run_writer
 capture --> run_input
 capture --> framing
 capture --> mapping
+capture --> final_assembly
 capture --> schema
 run_writer --> run_input
 run_writer --> framing
 run_writer --> compatibility
 run_writer --> mapping
+run_writer --> final_assembly
 run_writer --> persistence
 run_writer --> schema
+framing --> run_input
 compatibility --> framing
 compatibility --> mapping
 mapping --> run_input
 mapping --> framing
 mapping --> mcp_binding
 mapping --> schema
+final_assembly --> capture
+final_assembly --> run_writer
+final_assembly --> run_input
+final_assembly --> mapping
+final_assembly --> mcp_binding
+final_assembly --> schema
 persistence --> run_input
 persistence --> mcp_binding
 persistence --> schema

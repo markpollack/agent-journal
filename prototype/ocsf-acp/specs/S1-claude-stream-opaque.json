@@ -30,7 +30,7 @@
    "artifact": "stream.jsonl",
    "kind": 1,
    "profile": "claude_stream",
-   "path": "/tmp/claude-1000/-home-mark-projects-agent-journal-steward/31a7d4e7-4639-409f-bdf9-d27324c178de/scratchpad/neg/fixtures/S1-claude-stream-opaque/stream.jsonl"
+   "path": "<scratch>/neg/fixtures/S1-claude-stream-opaque/stream.jsonl"
   }
  ],
  "excluded": [

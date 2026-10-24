@@ -1,0 +1,8043 @@
+{
+ "kind": "agent-journal/native-source-specification",
+ "version": "0.1",
+ "status": "ACCEPTED 0.1.0 (2026-10-24, level-1 assembly phase): EXPERIMENTAL route specification frozen from the sanitized live 2.1.304 session file of claude-mcp-1; it replaces the 2.1.303 specification the 2.1.304 entry named, whose inventory lacks cost-state modelUsage.{*}.maxOutputTokens (found by the source-availability gate)",
+ "specification_version": "0.1.0",
+ "profile": "claude_transcript",
+ "applies_to": {
+  "cli": "Claude Code",
+  "version": "2.1.304",
+  "launch_mode": "claude -p --output-format stream-json; the transcript is the session file the CLI wrote",
+  "source_kind": "saved session file",
+  "capture_route": "copied from ~/.claude/projects/<cwd>/<session>.jsonl after the run; the only file acquired from that directory",
+  "route_limit": "no sub-agent sidecar was looked for at acquisition (pair A spawned none)"
+ },
+ "provenance": {
+  "observed_on": [
+   {
+    "artifact": "fixture claude-live-2.1.304-mcp-pair native/transcript.jsonl",
+    "sha256": "8151869fcc92b7809ebf95f8e936b5bf913ff988382eef2ceafa04e4cbb14a54",
+    "records": 52,
+    "bytes": 125890,
+    "frozen_in": "journal-capture-tck/src/test/resources/ocsf/fixtures/claude-live-2.1.304-mcp-pair (sanitized; the original is private steward evidence)"
+   }
+  ],
+  "produced_by": "journal-capture-tck NativeInventoryTool draft (RawInventory 0.1, profile claude_transcript)",
+  "reviewed": "2026-10-24 level-1 assembly phase"
+ },
+ "limits": [
+  "one CLI version and one launch mode per profile: the inventory is an observed shape at the stated versions, not a vendor promise",
+  "a field observed in one record is not universal; a field absent from a specimen is not removed; nullability is what was seen",
+  "variants are discriminated by the vendor's own fields; a record with a new discriminator value is a new variant, not an error",
+  "data-keyed subtrees (tool inputs, tool-defined results, tool schemas, per-tool wire inputs) are tool/user data: only value kinds are recorded",
+  "a change of meaning under an unchanged shape is not visible to this inventory; the semantic oracle judges values",
+  "the community description's version range is not proof of coverage at 2.1.303: 20 variants and 34 paths of this specimen are outside it",
+  "one sanitized live 2.1.304 session file (private context replaced by labelled placeholders with lengths and hashes): shapes and value kinds are unchanged"
+ ],
+ "external_cross_checks": [
+  {
+   "name": "daig/claude-transcript-tools session-transcript.schema.json",
+   "commit": "1cc935377f79a30c285eef216c0f71520cc647ff",
+   "role": "community (reverse-engineered, stated minimum 2.1.20+)",
+   "use": "path-level cross-check with NativeInventoryTool external (discriminator type): 4 of 24 observed variants described (assistant, queue-operation, user x2), 20 not described, 34 observed paths not declared on the described variants; recorded in the FULL-1R evidence, not applied to this inventory"
+  }
+ ],
+ "open_variants": [],
+ "inventory": {
+  "observed_on": [
+   {
+    "artifact": "transcript.jsonl",
+    "sha256": "8151869fcc92b7809ebf95f8e936b5bf913ff988382eef2ceafa04e4cbb14a54",
+    "bytes": 125890,
+    "records": 52
+   }
+  ],
+  "data_keyed": [
+   "attachment.tools[].schema",
+   "message.content[].input",
+   "shape.tools[].input_schema",
+   "toolUseResult",
+   "wireToolInputs"
+  ],
+  "map_keyed": [
+   "modelUsage"
+  ],
+  "variants": {
+   "api-request": {
+    "discriminators": {
+     "type": "api-request"
+    },
+    "records": 5,
+    "evidence": [
+     "transcript.jsonl:20",
+     "transcript.jsonl:31",
+     "transcript.jsonl:39",
+     "transcript.jsonl:44",
+     "transcript.jsonl:49"
+    ],
+    "paths": {
+     "base": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 1,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "cacheControl": {
+      "kinds": {
+       "array": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "cacheControl[]": {
+      "kinds": {
+       "object": 15
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "cacheControl[].path": {
+      "kinds": {
+       "array": 15
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "cacheControl[].path[]": {
+      "kinds": {
+       "integer": 20,
+       "string": 20
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 40,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "cacheControl[].value": {
+      "kinds": {
+       "object": 15
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "cacheControl[].value.scope": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "cacheControl[].value.ttl": {
+      "kinds": {
+       "string": 15
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "cacheControl[].value.type": {
+      "kinds": {
+       "string": 15
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "id": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "keep": {
+      "kinds": {
+       "integer": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "params": {
+      "kinds": {
+       "object": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "params.betas": {
+      "kinds": {
+       "array": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "params.betas[]": {
+      "kinds": {
+       "string": 100
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 100,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "params.context_management": {
+      "kinds": {
+       "object": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "params.context_management.edits": {
+      "kinds": {
+       "array": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "params.context_management.edits[]": {
+      "kinds": {
+       "object": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "params.context_management.edits[].keep": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "params.context_management.edits[].type": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "params.max_tokens": {
+      "kinds": {
+       "integer": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "params.model": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "params.output_config": {
+      "kinds": {
+       "object": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "params.output_config.effort": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "params.thinking": {
+      "kinds": {
+       "object": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "params.thinking.display": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "params.thinking.type": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "querySource": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "requestDigest": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "shapeHash": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "tail": {
+      "kinds": {
+       "array": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "tail[]": {
+      "kinds": {
+       "string": 14
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 14,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     },
+     "version": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:20",
+       "transcript.jsonl:31",
+       "transcript.jsonl:39",
+       "transcript.jsonl:44",
+       "transcript.jsonl:49"
+      ]
+     }
+    }
+   },
+   "api-request-blob": {
+    "discriminators": {
+     "type": "api-request-blob"
+    },
+    "records": 7,
+    "evidence": [
+     "transcript.jsonl:18",
+     "transcript.jsonl:19",
+     "transcript.jsonl:29",
+     "transcript.jsonl:30",
+     "transcript.jsonl:38",
+     "transcript.jsonl:43",
+     "transcript.jsonl:48"
+    ],
+    "paths": {
+     "hash": {
+      "kinds": {
+       "string": 7
+      },
+      "present_in_records": 7,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:18",
+       "transcript.jsonl:19",
+       "transcript.jsonl:29",
+       "transcript.jsonl:30",
+       "transcript.jsonl:38",
+       "transcript.jsonl:43",
+       "transcript.jsonl:48"
+      ]
+     },
+     "message": {
+      "kinds": {
+       "object": 7
+      },
+      "present_in_records": 7,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:18",
+       "transcript.jsonl:19",
+       "transcript.jsonl:29",
+       "transcript.jsonl:30",
+       "transcript.jsonl:38",
+       "transcript.jsonl:43",
+       "transcript.jsonl:48"
+      ]
+     },
+     "message.content": {
+      "kinds": {
+       "array": 7
+      },
+      "present_in_records": 7,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:18",
+       "transcript.jsonl:19",
+       "transcript.jsonl:29",
+       "transcript.jsonl:30",
+       "transcript.jsonl:38",
+       "transcript.jsonl:43",
+       "transcript.jsonl:48"
+      ]
+     },
+     "message.content[]": {
+      "kinds": {
+       "object": 11
+      },
+      "present_in_records": 7,
+      "absent_in_records": 0,
+      "occurrences": 11,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:18",
+       "transcript.jsonl:19",
+       "transcript.jsonl:29",
+       "transcript.jsonl:30",
+       "transcript.jsonl:38",
+       "transcript.jsonl:43",
+       "transcript.jsonl:48"
+      ]
+     },
+     "message.content[].content": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 6,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:29"
+      ]
+     },
+     "message.content[].content[]": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 1,
+      "absent_in_records": 6,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:29"
+      ]
+     },
+     "message.content[].content[].tool_name": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 1,
+      "absent_in_records": 6,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:29"
+      ]
+     },
+     "message.content[].content[].type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 1,
+      "absent_in_records": 6,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:29"
+      ]
+     },
+     "message.content[].text": {
+      "kinds": {
+       "string": 10
+      },
+      "present_in_records": 7,
+      "absent_in_records": 0,
+      "occurrences": 10,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:18",
+       "transcript.jsonl:19",
+       "transcript.jsonl:29",
+       "transcript.jsonl:30",
+       "transcript.jsonl:38",
+       "transcript.jsonl:43",
+       "transcript.jsonl:48"
+      ]
+     },
+     "message.content[].tool_use_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 6,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:29"
+      ]
+     },
+     "message.content[].type": {
+      "kinds": {
+       "string": 11
+      },
+      "present_in_records": 7,
+      "absent_in_records": 0,
+      "occurrences": 11,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:18",
+       "transcript.jsonl:19",
+       "transcript.jsonl:29",
+       "transcript.jsonl:30",
+       "transcript.jsonl:38",
+       "transcript.jsonl:43",
+       "transcript.jsonl:48"
+      ]
+     },
+     "message.output_config": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 6,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:19"
+      ]
+     },
+     "message.output_config.effort": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 6,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:19"
+      ]
+     },
+     "message.role": {
+      "kinds": {
+       "string": 7
+      },
+      "present_in_records": 7,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:18",
+       "transcript.jsonl:19",
+       "transcript.jsonl:29",
+       "transcript.jsonl:30",
+       "transcript.jsonl:38",
+       "transcript.jsonl:43",
+       "transcript.jsonl:48"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 7
+      },
+      "present_in_records": 7,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:18",
+       "transcript.jsonl:19",
+       "transcript.jsonl:29",
+       "transcript.jsonl:30",
+       "transcript.jsonl:38",
+       "transcript.jsonl:43",
+       "transcript.jsonl:48"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 7
+      },
+      "present_in_records": 7,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:18",
+       "transcript.jsonl:19",
+       "transcript.jsonl:29",
+       "transcript.jsonl:30",
+       "transcript.jsonl:38",
+       "transcript.jsonl:43",
+       "transcript.jsonl:48"
+      ]
+     }
+    }
+   },
+   "api-request-shape": {
+    "discriminators": {
+     "type": "api-request-shape"
+    },
+    "records": 2,
+    "evidence": [
+     "transcript.jsonl:17",
+     "transcript.jsonl:28"
+    ],
+    "paths": {
+     "sessionId": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:17",
+       "transcript.jsonl:28"
+      ]
+     },
+     "shape": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:17",
+       "transcript.jsonl:28"
+      ]
+     },
+     "shape.system": {
+      "kinds": {
+       "array": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:17",
+       "transcript.jsonl:28"
+      ]
+     },
+     "shape.system[]": {
+      "kinds": {
+       "object": 6
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:17",
+       "transcript.jsonl:28"
+      ]
+     },
+     "shape.system[].text": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:17",
+       "transcript.jsonl:28"
+      ]
+     },
+     "shape.system[].type": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:17",
+       "transcript.jsonl:28"
+      ]
+     },
+     "shape.tools": {
+      "kinds": {
+       "array": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:17",
+       "transcript.jsonl:28"
+      ]
+     },
+     "shape.tools[]": {
+      "kinds": {
+       "object": 28
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 28,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:17",
+       "transcript.jsonl:28"
+      ]
+     },
+     "shape.tools[].defer_loading": {
+      "kinds": {
+       "boolean": 6
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:17",
+       "transcript.jsonl:28"
+      ]
+     },
+     "shape.tools[].description": {
+      "kinds": {
+       "string": 26
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 26,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:17",
+       "transcript.jsonl:28"
+      ]
+     },
+     "shape.tools[].eager_input_streaming": {
+      "kinds": {
+       "boolean": 24
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 24,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:17",
+       "transcript.jsonl:28"
+      ]
+     },
+     "shape.tools[].input_schema": {
+      "kinds": {
+       "object": 26
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 26,
+      "null": 0,
+      "empty": 0,
+      "distinct_data_keys": 5,
+      "evidence": [
+       "transcript.jsonl:17",
+       "transcript.jsonl:28"
+      ]
+     },
+     "shape.tools[].input_schema.{*}": {
+      "kinds": {
+       "array": 17,
+       "boolean": 24,
+       "object": 26,
+       "string": 48
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 115,
+      "null": 0,
+      "empty": 3,
+      "evidence": [
+       "transcript.jsonl:17",
+       "transcript.jsonl:28"
+      ]
+     },
+     "shape.tools[].model": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:17",
+       "transcript.jsonl:28"
+      ]
+     },
+     "shape.tools[].name": {
+      "kinds": {
+       "string": 28
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 28,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:17",
+       "transcript.jsonl:28"
+      ]
+     },
+     "shape.tools[].type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:17",
+       "transcript.jsonl:28"
+      ]
+     },
+     "shapeHash": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:17",
+       "transcript.jsonl:28"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:17",
+       "transcript.jsonl:28"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:17",
+       "transcript.jsonl:28"
+      ]
+     },
+     "version": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:17",
+       "transcript.jsonl:28"
+      ]
+     }
+    }
+   },
+   "assistant": {
+    "discriminators": {
+     "type": "assistant"
+    },
+    "records": 6,
+    "evidence": [
+     "transcript.jsonl:23",
+     "transcript.jsonl:24",
+     "transcript.jsonl:35",
+     "transcript.jsonl:40",
+     "transcript.jsonl:45",
+     "transcript.jsonl:50"
+    ],
+    "paths": {
+     "advisorModel": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "apiBlockIndex": {
+      "kinds": {
+       "integer": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "attributionMcpServer": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 3,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "attributionMcpTool": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 3,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "cwd": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "effort": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "entrypoint": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "gitBranch": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "isSidechain": {
+      "kinds": {
+       "boolean": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message": {
+      "kinds": {
+       "object": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.container": {
+      "kinds": {
+       "null": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 6,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.content": {
+      "kinds": {
+       "array": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.content[]": {
+      "kinds": {
+       "object": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.content[].caller": {
+      "kinds": {
+       "object": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 2,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45"
+      ]
+     },
+     "message.content[].caller.type": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 2,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45"
+      ]
+     },
+     "message.content[].id": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 2,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45"
+      ]
+     },
+     "message.content[].input": {
+      "kinds": {
+       "object": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 2,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 1,
+      "distinct_data_keys": 4,
+      "evidence": [
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45"
+      ]
+     },
+     "message.content[].input.{*}": {
+      "kinds": {
+       "integer": 3,
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 3,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40"
+      ]
+     },
+     "message.content[].name": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 2,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45"
+      ]
+     },
+     "message.content[].signature": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 5,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23"
+      ]
+     },
+     "message.content[].text": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 5,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.content[].thinking": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 5,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23"
+      ]
+     },
+     "message.content[].type": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.context_management": {
+      "kinds": {
+       "null": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 6,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.diagnostics": {
+      "kinds": {
+       "null": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 6,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.id": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.input_transformations": {
+      "kinds": {
+       "array": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 6,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.model": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.role": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.stop_details": {
+      "kinds": {
+       "null": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 6,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.stop_reason": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.stop_sequence": {
+      "kinds": {
+       "null": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 6,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.type": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage": {
+      "kinds": {
+       "object": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.cache_creation": {
+      "kinds": {
+       "object": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.cache_creation.ephemeral_1h_input_tokens": {
+      "kinds": {
+       "integer": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.cache_creation.ephemeral_5m_input_tokens": {
+      "kinds": {
+       "integer": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.cache_creation_input_tokens": {
+      "kinds": {
+       "integer": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.cache_read_input_tokens": {
+      "kinds": {
+       "integer": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.fallback_credit": {
+      "kinds": {
+       "null": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 6,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.inference_geo": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.input_tokens": {
+      "kinds": {
+       "integer": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.iterations": {
+      "kinds": {
+       "array": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.iterations[]": {
+      "kinds": {
+       "object": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.iterations[].cache_creation": {
+      "kinds": {
+       "object": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.iterations[].cache_creation.ephemeral_1h_input_tokens": {
+      "kinds": {
+       "integer": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.iterations[].cache_creation.ephemeral_5m_input_tokens": {
+      "kinds": {
+       "integer": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.iterations[].cache_creation_input_tokens": {
+      "kinds": {
+       "integer": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.iterations[].cache_read_input_tokens": {
+      "kinds": {
+       "integer": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.iterations[].input_tokens": {
+      "kinds": {
+       "integer": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.iterations[].output_tokens": {
+      "kinds": {
+       "integer": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.iterations[].type": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.output_tokens": {
+      "kinds": {
+       "integer": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.output_tokens_details": {
+      "kinds": {
+       "object": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.output_tokens_details.thinking_tokens": {
+      "kinds": {
+       "integer": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.server_tool_use": {
+      "kinds": {
+       "object": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.server_tool_use.web_fetch_requests": {
+      "kinds": {
+       "integer": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.server_tool_use.web_search_requests": {
+      "kinds": {
+       "integer": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.service_tier": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "message.usage.speed": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "parentUuid": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "perTurnEffort": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "requestId": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "requestRef": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "requestedModel": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "serverClassifierRequest": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "thinkingDisplay": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 5,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23"
+      ]
+     },
+     "thinkingDurationMs": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 5,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "userType": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "uuid": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "version": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 6,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:23",
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45",
+       "transcript.jsonl:50"
+      ]
+     },
+     "wireToolInputs": {
+      "kinds": {
+       "object": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 2,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "distinct_data_keys": 4,
+      "evidence": [
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45"
+      ]
+     },
+     "wireToolInputs.{*}": {
+      "kinds": {
+       "object": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 2,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 1,
+      "evidence": [
+       "transcript.jsonl:24",
+       "transcript.jsonl:35",
+       "transcript.jsonl:40",
+       "transcript.jsonl:45"
+      ]
+     }
+    }
+   },
+   "atis-latch": {
+    "discriminators": {
+     "type": "atis-latch"
+    },
+    "records": 3,
+    "evidence": [
+     "transcript.jsonl:10",
+     "transcript.jsonl:22",
+     "transcript.jsonl:33"
+    ],
+    "paths": {
+     "atis": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:10",
+       "transcript.jsonl:22",
+       "transcript.jsonl:33"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:10",
+       "transcript.jsonl:22",
+       "transcript.jsonl:33"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:10",
+       "transcript.jsonl:22",
+       "transcript.jsonl:33"
+      ]
+     }
+    }
+   },
+   "attachment/agent_listing_delta": {
+    "discriminators": {
+     "type": "attachment",
+     "attachment.type": "agent_listing_delta"
+    },
+    "records": 1,
+    "evidence": [
+     "transcript.jsonl:7"
+    ],
+    "paths": {
+     "attachment": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "attachment.addedLines": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "attachment.addedLines[]": {
+      "kinds": {
+       "string": 7
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "attachment.addedTypes": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "attachment.addedTypes[]": {
+      "kinds": {
+       "string": 7
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "attachment.builtInPluginTypes": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 1,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "attachment.builtInTypes": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "attachment.builtInTypes[]": {
+      "kinds": {
+       "string": 6
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 6,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "attachment.isInitial": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "attachment.removedTypes": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 1,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "attachment.showConcurrencyNote": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "attachment.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "cwd": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "entrypoint": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "gitBranch": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "isSidechain": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "parentUuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "rendered": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "renderedRole": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "rendered[]": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "rendered[].content": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "userType": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "uuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     },
+     "version": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:7"
+      ]
+     }
+    }
+   },
+   "attachment/credential_org": {
+    "discriminators": {
+     "type": "attachment",
+     "attachment.type": "credential_org"
+    },
+    "records": 1,
+    "evidence": [
+     "transcript.jsonl:14"
+    ],
+    "paths": {
+     "attachment": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:14"
+      ]
+     },
+     "attachment.organizationUuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:14"
+      ]
+     },
+     "attachment.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:14"
+      ]
+     },
+     "cwd": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:14"
+      ]
+     },
+     "entrypoint": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:14"
+      ]
+     },
+     "gitBranch": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:14"
+      ]
+     },
+     "isSidechain": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:14"
+      ]
+     },
+     "parentUuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:14"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:14"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:14"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:14"
+      ]
+     },
+     "userType": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:14"
+      ]
+     },
+     "uuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:14"
+      ]
+     },
+     "version": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:14"
+      ]
+     }
+    }
+   },
+   "attachment/date": {
+    "discriminators": {
+     "type": "attachment",
+     "attachment.type": "date"
+    },
+    "records": 1,
+    "evidence": [
+     "transcript.jsonl:13"
+    ],
+    "paths": {
+     "attachment": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:13"
+      ]
+     },
+     "attachment.date": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:13"
+      ]
+     },
+     "attachment.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:13"
+      ]
+     },
+     "cwd": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:13"
+      ]
+     },
+     "entrypoint": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:13"
+      ]
+     },
+     "gitBranch": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:13"
+      ]
+     },
+     "isSidechain": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:13"
+      ]
+     },
+     "parentUuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:13"
+      ]
+     },
+     "rendered": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:13"
+      ]
+     },
+     "renderedRole": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:13"
+      ]
+     },
+     "rendered[]": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:13"
+      ]
+     },
+     "rendered[].content": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:13"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:13"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:13"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:13"
+      ]
+     },
+     "userType": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:13"
+      ]
+     },
+     "uuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:13"
+      ]
+     },
+     "version": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:13"
+      ]
+     }
+    }
+   },
+   "attachment/deferred_tools_delta": {
+    "discriminators": {
+     "type": "attachment",
+     "attachment.type": "deferred_tools_delta"
+    },
+    "records": 1,
+    "evidence": [
+     "transcript.jsonl:6"
+    ],
+    "paths": {
+     "attachment": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "attachment.addedLines": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "attachment.addedLines[]": {
+      "kinds": {
+       "string": 15
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "attachment.addedNames": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "attachment.addedNames[]": {
+      "kinds": {
+       "string": 15
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "attachment.failedMcpServers": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 1,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "attachment.needsAuthMcpServers": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 1,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "attachment.pendingMcpServers": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 1,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "attachment.readdedNames": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 1,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "attachment.removedNames": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 1,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "attachment.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "attachment.wireHiddenNames": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 1,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "cwd": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "entrypoint": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "gitBranch": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "isSidechain": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "parentUuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "rendered": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "renderedRole": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "rendered[]": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "rendered[].content": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "userType": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "uuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     },
+     "version": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:6"
+      ]
+     }
+    }
+   },
+   "attachment/deferred_tools_record": {
+    "discriminators": {
+     "type": "attachment",
+     "attachment.type": "deferred_tools_record"
+    },
+    "records": 1,
+    "evidence": [
+     "transcript.jsonl:34"
+    ],
+    "paths": {
+     "attachment": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "attachment.entries": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "attachment.entries[]": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "attachment.entries[].defer_loading": {
+      "kinds": {
+       "boolean": 2
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "attachment.entries[].description": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "attachment.entries[].eager_input_streaming": {
+      "kinds": {
+       "boolean": 2
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "attachment.entries[].input_schema": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "attachment.entries[].input_schema.additionalProperties": {
+      "kinds": {
+       "boolean": 2
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "attachment.entries[].input_schema.properties": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 1,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "attachment.entries[].input_schema.properties.n": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "attachment.entries[].input_schema.properties.n.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "attachment.entries[].input_schema.properties.text": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "attachment.entries[].input_schema.properties.text.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "attachment.entries[].input_schema.required": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "attachment.entries[].input_schema.required[]": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "attachment.entries[].input_schema.type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "attachment.entries[].name": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "attachment.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "cwd": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "entrypoint": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "gitBranch": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "isSidechain": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "parentUuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "userType": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "uuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     },
+     "version": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:34"
+      ]
+     }
+    }
+   },
+   "attachment/environment": {
+    "discriminators": {
+     "type": "attachment",
+     "attachment.type": "environment"
+    },
+    "records": 1,
+    "evidence": [
+     "transcript.jsonl:4"
+    ],
+    "paths": {
+     "attachment": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "attachment.snapshot": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "attachment.snapshot.additionalWorkingDirectories": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 1,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "attachment.snapshot.isGitRepo": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "attachment.snapshot.isWorktree": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "attachment.snapshot.osVersion": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "attachment.snapshot.platform": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "attachment.snapshot.shell": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "attachment.snapshot.workingDirectory": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "attachment.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "cwd": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "entrypoint": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "gitBranch": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "isSidechain": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "parentUuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "rendered": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "renderedRole": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "rendered[]": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "rendered[].content": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "userType": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "uuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     },
+     "version": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:4"
+      ]
+     }
+    }
+   },
+   "attachment/instructions": {
+    "discriminators": {
+     "type": "attachment",
+     "attachment.type": "instructions"
+    },
+    "records": 1,
+    "evidence": [
+     "transcript.jsonl:11"
+    ],
+    "paths": {
+     "attachment": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     },
+     "attachment.files": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     },
+     "attachment.files[]": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     },
+     "attachment.files[].content": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     },
+     "attachment.files[].path": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     },
+     "attachment.files[].type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     },
+     "attachment.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     },
+     "cwd": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     },
+     "entrypoint": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     },
+     "gitBranch": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     },
+     "isSidechain": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     },
+     "parentUuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     },
+     "rendered": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     },
+     "renderedRole": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     },
+     "rendered[]": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     },
+     "rendered[].content": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     },
+     "userType": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     },
+     "uuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     },
+     "version": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:11"
+      ]
+     }
+    }
+   },
+   "attachment/model": {
+    "discriminators": {
+     "type": "attachment",
+     "attachment.type": "model"
+    },
+    "records": 1,
+    "evidence": [
+     "transcript.jsonl:5"
+    ],
+    "paths": {
+     "attachment": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     },
+     "attachment.identity": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     },
+     "attachment.identity.knowledgeCutoff": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     },
+     "attachment.identity.marketingName": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     },
+     "attachment.identity.modelId": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     },
+     "attachment.text": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     },
+     "attachment.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     },
+     "cwd": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     },
+     "entrypoint": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     },
+     "gitBranch": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     },
+     "isSidechain": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     },
+     "parentUuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     },
+     "rendered": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     },
+     "renderedRole": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     },
+     "rendered[]": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     },
+     "rendered[].content": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     },
+     "userType": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     },
+     "uuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     },
+     "version": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:5"
+      ]
+     }
+    }
+   },
+   "attachment/prompt_snapshot": {
+    "discriminators": {
+     "type": "attachment",
+     "attachment.type": "prompt_snapshot"
+    },
+    "records": 2,
+    "evidence": [
+     "transcript.jsonl:16",
+     "transcript.jsonl:26"
+    ],
+    "paths": {
+     "attachment": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:16",
+       "transcript.jsonl:26"
+      ]
+     },
+     "attachment.cliPrefix": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:26"
+      ]
+     },
+     "attachment.contextRendering": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:16",
+       "transcript.jsonl:26"
+      ]
+     },
+     "attachment.echoWireToolInputs": {
+      "kinds": {
+       "boolean": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:16",
+       "transcript.jsonl:26"
+      ]
+     },
+     "attachment.inlineTools": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:26"
+      ]
+     },
+     "attachment.keptReminders": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:26"
+      ]
+     },
+     "attachment.reminderFold": {
+      "kinds": {
+       "boolean": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:16",
+       "transcript.jsonl:26"
+      ]
+     },
+     "attachment.systemPrompt": {
+      "kinds": {
+       "array": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:16",
+       "transcript.jsonl:26"
+      ]
+     },
+     "attachment.systemPrompt[]": {
+      "kinds": {
+       "string": 26
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 26,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:16",
+       "transcript.jsonl:26"
+      ]
+     },
+     "attachment.systemTurns": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:26"
+      ]
+     },
+     "attachment.toolChangeHeader": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:26"
+      ]
+     },
+     "attachment.tools": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:26"
+      ]
+     },
+     "attachment.tools[]": {
+      "kinds": {
+       "object": 11
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 11,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:26"
+      ]
+     },
+     "attachment.tools[].description": {
+      "kinds": {
+       "string": 11
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 11,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:26"
+      ]
+     },
+     "attachment.tools[].name": {
+      "kinds": {
+       "string": 11
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 11,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:26"
+      ]
+     },
+     "attachment.tools[].schema": {
+      "kinds": {
+       "object": 11
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 11,
+      "null": 0,
+      "empty": 0,
+      "distinct_data_keys": 4,
+      "evidence": [
+       "transcript.jsonl:26"
+      ]
+     },
+     "attachment.tools[].schema.{*}": {
+      "kinds": {
+       "boolean": 11,
+       "object": 11,
+       "string": 22
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 44,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:26"
+      ]
+     },
+     "attachment.type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:16",
+       "transcript.jsonl:26"
+      ]
+     },
+     "cwd": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:16",
+       "transcript.jsonl:26"
+      ]
+     },
+     "entrypoint": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:16",
+       "transcript.jsonl:26"
+      ]
+     },
+     "gitBranch": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:16",
+       "transcript.jsonl:26"
+      ]
+     },
+     "isSidechain": {
+      "kinds": {
+       "boolean": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:16",
+       "transcript.jsonl:26"
+      ]
+     },
+     "parentUuid": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:16",
+       "transcript.jsonl:26"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:16",
+       "transcript.jsonl:26"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:16",
+       "transcript.jsonl:26"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:16",
+       "transcript.jsonl:26"
+      ]
+     },
+     "userType": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:16",
+       "transcript.jsonl:26"
+      ]
+     },
+     "uuid": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:16",
+       "transcript.jsonl:26"
+      ]
+     },
+     "version": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:16",
+       "transcript.jsonl:26"
+      ]
+     }
+    }
+   },
+   "attachment/remote_session_change": {
+    "discriminators": {
+     "type": "attachment",
+     "attachment.type": "remote_session_change"
+    },
+    "records": 1,
+    "evidence": [
+     "transcript.jsonl:15"
+    ],
+    "paths": {
+     "attachment": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "attachment.commit": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "attachment.managedCommit": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "attachment.managedPr": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "attachment.pr": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "attachment.sendUserFileHint": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "attachment.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "attachment.url": {
+      "kinds": {
+       "null": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 1,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "cwd": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "entrypoint": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "gitBranch": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "isSidechain": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "parentUuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "rendered": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "renderedBesideToolResult": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "renderedRole": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "rendered[]": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "rendered[].content": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "userType": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "uuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     },
+     "version": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:15"
+      ]
+     }
+    }
+   },
+   "attachment/session_context": {
+    "discriminators": {
+     "type": "attachment",
+     "attachment.type": "session_context"
+    },
+    "records": 1,
+    "evidence": [
+     "transcript.jsonl:12"
+    ],
+    "paths": {
+     "attachment": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:12"
+      ]
+     },
+     "attachment.context": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:12"
+      ]
+     },
+     "attachment.context.userEmail": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:12"
+      ]
+     },
+     "attachment.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:12"
+      ]
+     },
+     "cwd": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:12"
+      ]
+     },
+     "entrypoint": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:12"
+      ]
+     },
+     "gitBranch": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:12"
+      ]
+     },
+     "isSidechain": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:12"
+      ]
+     },
+     "parentUuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:12"
+      ]
+     },
+     "rendered": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:12"
+      ]
+     },
+     "renderedRole": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:12"
+      ]
+     },
+     "rendered[]": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:12"
+      ]
+     },
+     "rendered[].content": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:12"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:12"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:12"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:12"
+      ]
+     },
+     "userType": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:12"
+      ]
+     },
+     "uuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:12"
+      ]
+     },
+     "version": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:12"
+      ]
+     }
+    }
+   },
+   "attachment/skill_listing": {
+    "discriminators": {
+     "type": "attachment",
+     "attachment.type": "skill_listing"
+    },
+    "records": 1,
+    "evidence": [
+     "transcript.jsonl:8"
+    ],
+    "paths": {
+     "attachment": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "attachment.content": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "attachment.digests": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "attachment.digests[]": {
+      "kinds": {
+       "string": 52
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 52,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "attachment.isInitial": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "attachment.names": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "attachment.names[]": {
+      "kinds": {
+       "string": 52
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 52,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "attachment.skillCount": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "attachment.type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "cwd": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "entrypoint": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "gitBranch": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "isSidechain": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "parentUuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "rendered": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "renderedRole": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "rendered[]": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "rendered[].content": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "userType": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "uuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     },
+     "version": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:8"
+      ]
+     }
+    }
+   },
+   "attachment/total_tokens_reminder": {
+    "discriminators": {
+     "type": "attachment",
+     "attachment.type": "total_tokens_reminder"
+    },
+    "records": 5,
+    "evidence": [
+     "transcript.jsonl:9",
+     "transcript.jsonl:27",
+     "transcript.jsonl:37",
+     "transcript.jsonl:42",
+     "transcript.jsonl:47"
+    ],
+    "paths": {
+     "attachment": {
+      "kinds": {
+       "object": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:9",
+       "transcript.jsonl:27",
+       "transcript.jsonl:37",
+       "transcript.jsonl:42",
+       "transcript.jsonl:47"
+      ]
+     },
+     "attachment.text": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:9",
+       "transcript.jsonl:27",
+       "transcript.jsonl:37",
+       "transcript.jsonl:42",
+       "transcript.jsonl:47"
+      ]
+     },
+     "attachment.type": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:9",
+       "transcript.jsonl:27",
+       "transcript.jsonl:37",
+       "transcript.jsonl:42",
+       "transcript.jsonl:47"
+      ]
+     },
+     "cwd": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:9",
+       "transcript.jsonl:27",
+       "transcript.jsonl:37",
+       "transcript.jsonl:42",
+       "transcript.jsonl:47"
+      ]
+     },
+     "entrypoint": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:9",
+       "transcript.jsonl:27",
+       "transcript.jsonl:37",
+       "transcript.jsonl:42",
+       "transcript.jsonl:47"
+      ]
+     },
+     "gitBranch": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:9",
+       "transcript.jsonl:27",
+       "transcript.jsonl:37",
+       "transcript.jsonl:42",
+       "transcript.jsonl:47"
+      ]
+     },
+     "isSidechain": {
+      "kinds": {
+       "boolean": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:9",
+       "transcript.jsonl:27",
+       "transcript.jsonl:37",
+       "transcript.jsonl:42",
+       "transcript.jsonl:47"
+      ]
+     },
+     "parentUuid": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:9",
+       "transcript.jsonl:27",
+       "transcript.jsonl:37",
+       "transcript.jsonl:42",
+       "transcript.jsonl:47"
+      ]
+     },
+     "rendered": {
+      "kinds": {
+       "array": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:9",
+       "transcript.jsonl:27",
+       "transcript.jsonl:37",
+       "transcript.jsonl:42",
+       "transcript.jsonl:47"
+      ]
+     },
+     "renderedRole": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:9",
+       "transcript.jsonl:27",
+       "transcript.jsonl:37",
+       "transcript.jsonl:42",
+       "transcript.jsonl:47"
+      ]
+     },
+     "rendered[]": {
+      "kinds": {
+       "object": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:9",
+       "transcript.jsonl:27",
+       "transcript.jsonl:37",
+       "transcript.jsonl:42",
+       "transcript.jsonl:47"
+      ]
+     },
+     "rendered[].content": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:9",
+       "transcript.jsonl:27",
+       "transcript.jsonl:37",
+       "transcript.jsonl:42",
+       "transcript.jsonl:47"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:9",
+       "transcript.jsonl:27",
+       "transcript.jsonl:37",
+       "transcript.jsonl:42",
+       "transcript.jsonl:47"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:9",
+       "transcript.jsonl:27",
+       "transcript.jsonl:37",
+       "transcript.jsonl:42",
+       "transcript.jsonl:47"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:9",
+       "transcript.jsonl:27",
+       "transcript.jsonl:37",
+       "transcript.jsonl:42",
+       "transcript.jsonl:47"
+      ]
+     },
+     "userType": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:9",
+       "transcript.jsonl:27",
+       "transcript.jsonl:37",
+       "transcript.jsonl:42",
+       "transcript.jsonl:47"
+      ]
+     },
+     "uuid": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:9",
+       "transcript.jsonl:27",
+       "transcript.jsonl:37",
+       "transcript.jsonl:42",
+       "transcript.jsonl:47"
+      ]
+     },
+     "version": {
+      "kinds": {
+       "string": 5
+      },
+      "present_in_records": 5,
+      "absent_in_records": 0,
+      "occurrences": 5,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:9",
+       "transcript.jsonl:27",
+       "transcript.jsonl:37",
+       "transcript.jsonl:42",
+       "transcript.jsonl:47"
+      ]
+     }
+    }
+   },
+   "cost-state": {
+    "discriminators": {
+     "type": "cost-state"
+    },
+    "records": 1,
+    "evidence": [
+     "transcript.jsonl:52"
+    ],
+    "paths": {
+     "hasUnknownModelCost": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:52"
+      ]
+     },
+     "modelUsage": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "distinct_data_keys": 1,
+      "evidence": [
+       "transcript.jsonl:52"
+      ]
+     },
+     "modelUsage.{*}": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:52"
+      ]
+     },
+     "modelUsage.{*}.cacheCreationInputTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:52"
+      ]
+     },
+     "modelUsage.{*}.cacheReadInputTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:52"
+      ]
+     },
+     "modelUsage.{*}.costUSD": {
+      "kinds": {
+       "decimal": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:52"
+      ]
+     },
+     "modelUsage.{*}.inputTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:52"
+      ]
+     },
+     "modelUsage.{*}.outputTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:52"
+      ]
+     },
+     "modelUsage.{*}.thinkingTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:52"
+      ]
+     },
+     "modelUsage.{*}.webSearchRequests": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:52"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:52"
+      ]
+     },
+     "startTime": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:52"
+      ]
+     },
+     "totalAPIDuration": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:52"
+      ]
+     },
+     "totalAPIDurationWithoutRetries": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:52"
+      ]
+     },
+     "totalCostUSD": {
+      "kinds": {
+       "decimal": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:52"
+      ]
+     },
+     "totalDuration": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:52"
+      ]
+     },
+     "totalLinesAdded": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:52"
+      ]
+     },
+     "totalLinesRemoved": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:52"
+      ]
+     },
+     "totalToolDuration": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:52"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:52"
+      ]
+     }
+    }
+   },
+   "last-prompt": {
+    "discriminators": {
+     "type": "last-prompt"
+    },
+    "records": 3,
+    "evidence": [
+     "transcript.jsonl:21",
+     "transcript.jsonl:32",
+     "transcript.jsonl:51"
+    ],
+    "paths": {
+     "lastPrompt": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:21",
+       "transcript.jsonl:32",
+       "transcript.jsonl:51"
+      ]
+     },
+     "leafUuid": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:21",
+       "transcript.jsonl:32",
+       "transcript.jsonl:51"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:21",
+       "transcript.jsonl:32",
+       "transcript.jsonl:51"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:21",
+       "transcript.jsonl:32",
+       "transcript.jsonl:51"
+      ]
+     }
+    }
+   },
+   "queue-operation": {
+    "discriminators": {
+     "type": "queue-operation"
+    },
+    "records": 2,
+    "evidence": [
+     "transcript.jsonl:1",
+     "transcript.jsonl:2"
+    ],
+    "paths": {
+     "content": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:1"
+      ]
+     },
+     "operation": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:1",
+       "transcript.jsonl:2"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:1",
+       "transcript.jsonl:2"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:1",
+       "transcript.jsonl:2"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:1",
+       "transcript.jsonl:2"
+      ]
+     }
+    }
+   },
+   "user/prompt": {
+    "discriminators": {
+     "type": "user",
+     "message.content[].type": "prompt"
+    },
+    "records": 1,
+    "evidence": [
+     "transcript.jsonl:3"
+    ],
+    "paths": {
+     "cwd": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:3"
+      ]
+     },
+     "entrypoint": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:3"
+      ]
+     },
+     "gitBranch": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:3"
+      ]
+     },
+     "isSidechain": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:3"
+      ]
+     },
+     "message": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:3"
+      ]
+     },
+     "message.content": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:3"
+      ]
+     },
+     "message.role": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:3"
+      ]
+     },
+     "parentUuid": {
+      "kinds": {
+       "null": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 1,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:3"
+      ]
+     },
+     "permissionMode": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:3"
+      ]
+     },
+     "promptId": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:3"
+      ]
+     },
+     "promptSource": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:3"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:3"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:3"
+      ]
+     },
+     "turnOrigin": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:3"
+      ]
+     },
+     "turnPosition": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:3"
+      ]
+     },
+     "turnPosition.promptIndex": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:3"
+      ]
+     },
+     "turnPosition.turnIndex": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:3"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:3"
+      ]
+     },
+     "userType": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:3"
+      ]
+     },
+     "uuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:3"
+      ]
+     },
+     "version": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:3"
+      ]
+     }
+    }
+   },
+   "user/tool_result": {
+    "discriminators": {
+     "type": "user",
+     "message.content[].type": "tool_result"
+    },
+    "records": 4,
+    "evidence": [
+     "transcript.jsonl:25",
+     "transcript.jsonl:36",
+     "transcript.jsonl:41",
+     "transcript.jsonl:46"
+    ],
+    "paths": {
+     "cwd": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "entrypoint": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "gitBranch": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "isSidechain": {
+      "kinds": {
+       "boolean": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "mcpMeta": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 2,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:36",
+       "transcript.jsonl:41"
+      ]
+     },
+     "mcpMeta.structuredContent": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 2,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:36",
+       "transcript.jsonl:41"
+      ]
+     },
+     "mcpMeta.structuredContent.echo": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 2,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:36",
+       "transcript.jsonl:41"
+      ]
+     },
+     "mcpMeta.structuredContent.n": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 2,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:36",
+       "transcript.jsonl:41"
+      ]
+     },
+     "mcpMeta.structuredContent.ok": {
+      "kinds": {
+       "boolean": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 2,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:36",
+       "transcript.jsonl:41"
+      ]
+     },
+     "message": {
+      "kinds": {
+       "object": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "message.content": {
+      "kinds": {
+       "array": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "message.content[]": {
+      "kinds": {
+       "object": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "message.content[].content": {
+      "kinds": {
+       "array": 1,
+       "string": 3
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "message.content[].content[]": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 1,
+      "absent_in_records": 3,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25"
+      ]
+     },
+     "message.content[].content[].tool_name": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 1,
+      "absent_in_records": 3,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25"
+      ]
+     },
+     "message.content[].content[].type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 1,
+      "absent_in_records": 3,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25"
+      ]
+     },
+     "message.content[].is_error": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 3,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:46"
+      ]
+     },
+     "message.content[].tool_use_id": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "message.content[].type": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "message.role": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "parentUuid": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "permissionDecision": {
+      "kinds": {
+       "object": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "permissionDecision.decision": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "permissionDecision.reasonType": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 1,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "permissionDecision.source": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "promptId": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "sourceToolAssistantUUID": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "toolUseResult": {
+      "kinds": {
+       "object": 1,
+       "string": 3
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "distinct_data_keys": 3,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "toolUseResult.{*}": {
+      "kinds": {
+       "array": 1,
+       "integer": 1,
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 3,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "userType": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "uuid": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     },
+     "version": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "transcript.jsonl:25",
+       "transcript.jsonl:36",
+       "transcript.jsonl:41",
+       "transcript.jsonl:46"
+      ]
+     }
+    }
+   }
+  }
+ }
+}

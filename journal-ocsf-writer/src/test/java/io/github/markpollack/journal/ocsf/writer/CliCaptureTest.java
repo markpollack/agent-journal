@@ -1,6 +1,10 @@
 package io.github.markpollack.journal.ocsf.writer;
 
 import io.github.markpollack.journal.tck.ocsf.Diagnostic;
+import io.github.markpollack.journal.tck.ocsf.NativeArtifact;
+import io.github.markpollack.journal.tck.ocsf.inventory.AssemblyOracle;
+import io.github.markpollack.journal.tck.verify.Json;
+import io.github.markpollack.journal.tck.verify.NeutralJson;
 import io.github.markpollack.journal.tck.ocsf.OcsfPackage;
 import io.github.markpollack.journal.tck.ocsf.OracleReport;
 import io.github.markpollack.journal.tck.ocsf.PackageReader;
@@ -25,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CHILD;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX_STREAM;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_FEATURES;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CLAUDE_PAIR;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_FEATURES;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.nativeOf;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.verify;
@@ -174,7 +179,7 @@ class CliCaptureTest {
             Files.writeString(claudeSessionFile(home, task, CLAUDE_SESSION), content, StandardCharsets.UTF_8);
             Path out = work.resolve("out-" + content.length());
             CliCapture.Launch base = launch(CliCapture.Cli.CLAUDE, fake, task, out, home, null, null);
-            CliCapture.Result r = new CliCapture(new CliCapture.Launch(base.cli(), base.command(), base.workDir(), base.prompt(), "archive-independence", out, null, null, home, null, base.launchNotes(), null),
+            CliCapture.Result r = new CliCapture(new CliCapture.Launch(base.cli(), base.command(), base.workDir(), base.prompt(), "archive-independence", out, null, null, home, null, base.launchNotes(), null, null),
                     options(work)).run();
             assertThat(r.state()).isEqualTo(OcsfRunWriter.State.COMPLETED);
             assertThat(r.archive().get("status").text()).isEqualTo("archived");
@@ -192,6 +197,42 @@ class CliCaptureTest {
             OcsfPackage p = PackageReader.open(out.resolve("package/events.jsonl"));
             assertThat(p.manifest.cliVersion()).isEqualTo("2.1.304");
         }
+    }
+
+    /**
+     * A complete-capture configuration (an assembly profile at launch) assembles the final package automatically after
+     * acquisition, from the standard output copy and the archived session file, without changing the original package.
+     */
+    @Test
+    void aCompleteCaptureAssemblesTheFinalPackageAutomatically(@TempDir Path work) throws Exception {
+        Path task = Files.createDirectories(work.resolve("task"));
+        Path home = Files.createDirectories(work.resolve("home"));
+        Files.copy(nativeOf(LIVE_CLAUDE_PAIR, "transcript.jsonl"), claudeSessionFile(home, task, FinalAssemblyClaudeTest.RUN_SESSION));
+        Path fake = fakeClaude(work, nativeOf(LIVE_CLAUDE_PAIR, "stream.jsonl"), 0, 0, false);
+        Path out = work.resolve("out");
+        CliCapture.Launch base = launch(CliCapture.Cli.CLAUDE, fake, task, out, home, null, null);
+        CliCapture.Result r = new CliCapture(new CliCapture.Launch(base.cli(), base.command(), base.workDir(), base.prompt(), "complete-capture", out, null, null, home, null,
+                base.launchNotes(), null, FinalAssemblyClaudeTest.PROFILE), options(work)).run();
+        assertThat(r.state()).isEqualTo(OcsfRunWriter.State.COMPLETED);
+        assertThat(r.assembly().get("status").text()).as(Jv.write(r.assembly())).isEqualTo("assembled");
+        assertThat(r.assembly().get("state").text()).isEqualTo("COMPLETED");
+        String original = NativeArtifact.read(out.resolve("package/events.jsonl")).sha256();
+        OcsfPackage fin = PackageReader.open(out.resolve("final/events.jsonl"));
+        assertThat(fin.declarations.assembly().member("lineage").elements()).singleElement()
+                .satisfies(l -> assertThat(l.member("events_jsonl_sha256").text()).as("the original package, unchanged").isEqualTo(original));
+        assertThat(fin.events("tool_call", 1)).hasSize(4).allSatisfy(e -> assertThat(e.assemblyRole()).isEqualTo(3));
+        Path archived = out.resolve("archive").resolve(r.archive().get("artifact").text());
+        List<AssemblyOracle.Supplied> supplied = List.of(
+                new AssemblyOracle.Supplied("stream.jsonl", "stream", "CliCapture independent copy of standard output", NativeArtifact.read(r.independentCopy())),
+                new AssemblyOracle.Supplied("transcript.jsonl", "transcript", "native session file archived after the launch ended (" + r.archive().get("sha256").text() + ")",
+                        NativeArtifact.read(archived)));
+        Json spec = NeutralJson.parse(Files.readString(WriterTestSupport.FIXTURES.resolve(LIVE_CLAUDE_PAIR).resolve("native/assembly-expectation.json")));
+        OracleReport report = AssemblyOracle.verify(fin, spec, supplied);
+        assertThat(report.defects()).as(report.toString()).isEmpty();
+        // without the configuration nothing is assembled
+        CliCapture.Result plain = new CliCapture(launch(CliCapture.Cli.CLAUDE, fake, task, work.resolve("plain"), home, null, null), options(work)).run();
+        assertThat(plain.assembly().get("status").text()).isEqualTo("not configured");
+        assertThat(Files.exists(work.resolve("plain/final"))).isFalse();
     }
 
     @Test
@@ -283,7 +324,7 @@ class CliCaptureTest {
         Files.createDirectories(rollout.getParent());
         Files.writeString(rollout, "{\"timestamp\":\"x\",\"type\":\"session_meta\",\"payload\":{\"id\":\"" + CODEX_THREAD + "\",\"cli_version\":\"0.160.1\"}}\n", StandardCharsets.UTF_8);
         List<String> command = CliCapture.codexCommand(fake.toString(), "say hello", null, "workspace-write", task, List.of());
-        CliCapture.Launch launch = new CliCapture.Launch(CliCapture.Cli.CODEX, command, task, "say hello", "codex-fake-1", work.resolve("out"), null, null, home, null, null, null);
+        CliCapture.Launch launch = new CliCapture.Launch(CliCapture.Cli.CODEX, command, task, "say hello", "codex-fake-1", work.resolve("out"), null, null, home, null, null, null, null);
         CliCapture.Result r = new CliCapture(launch, options(work)).run();
         assertThat(r.state()).isEqualTo(OcsfRunWriter.State.COMPLETED);
         assertThat(r.exitCode()).isZero();
@@ -316,7 +357,7 @@ class CliCaptureTest {
         Files.writeString(store.resolveSibling(AGY_CONVERSATION + ".db-wal"), "wal", StandardCharsets.UTF_8);
         List<String> command = CliCapture.antigravityCommand(fake.toString(), "say hello", null, List.of("--dangerously-skip-permissions"));
         assertThat(command).containsExactly(fake.toString(), "--print", "say hello", "--output-format", "stream-json", "--dangerously-skip-permissions");
-        CliCapture.Launch launch = new CliCapture.Launch(CliCapture.Cli.ANTIGRAVITY, command, task, "say hello", "agy-fake-1", work.resolve("out"), null, null, home, null, null, null);
+        CliCapture.Launch launch = new CliCapture.Launch(CliCapture.Cli.ANTIGRAVITY, command, task, "say hello", "agy-fake-1", work.resolve("out"), null, null, home, null, null, null, null);
         CliCapture.Result r = new CliCapture(launch, options(work)).run();
         assertThat(r.state()).isEqualTo(OcsfRunWriter.State.COMPLETED);
         assertThat(Files.readString(counter).lines().count()).as("the discovery command ran exactly once").isEqualTo(1);
@@ -356,7 +397,7 @@ class CliCaptureTest {
     static CliCapture.Launch launch(CliCapture.Cli cli, Path fake, Path task, Path out, Path home, Integer cancelAfterRecords, Long cancelAfterMs) {
         List<String> command = CliCapture.claudeCommand(fake.toString(), "TEST PROMPT (stand-in; no model)", null, List.of("Read", "Write"), List.of());
         return new CliCapture.Launch(cli, command, task, "TEST PROMPT (stand-in; no model)", "fake-" + out.getFileName(), out, cancelAfterRecords, cancelAfterMs, home, null,
-                new Jv.Obj().put("stand_in", "TEST-ONLY: a shell script replaying a committed stream; not a live CLI"), null);
+                new Jv.Obj().put("stand_in", "TEST-ONLY: a shell script replaying a committed stream; not a live CLI"), null, null);
     }
 
     static WriterOptions options(Path work) {

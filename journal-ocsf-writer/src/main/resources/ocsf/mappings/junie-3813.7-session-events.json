@@ -1,0 +1,89 @@
+{
+  "contract_uid": "junie/session-events/3813.7/0.1.0-prototype",
+  "applies_to": {
+    "product": "Junie",
+    "version": "3813.7",
+    "launch": "as the summary (the same session directory's events.jsonl)",
+    "source_kind": "Saved session file",
+    "compatibility_entries": [
+      "junie/session-events/3813.7"
+    ],
+    "selection": "the version the capture discovered with junie --version"
+  },
+  "executor": "journal-ocsf-writer JunieSessionMapper (direct Java); one record at a time",
+  "record_discriminator": "kind, then event.agentEvent.kind",
+  "time_policy": {
+    "reported": "timestampMs",
+    "fallback": "latest preceding reported time"
+  },
+  "identity": "junie.session.identity.v1: no event names the session; the summary.json of the same directory does (companion identity). stepId is the agent's own step id (stream-local, identity basis 2); LLM calls carry no id",
+  "usage": "junie.usage.unnamed_cost.v1: a usage entry's cost is a quantity whose unit the source does not name (kind 99 Other, no currency); the per-model costs of the recorded runs sum to completion.taskCostUsd, but a sum in one run does not name their unit",
+  "rules": [
+    {
+      "id": "junie.session.step_block->tool_call.operation",
+      "selector": {
+        "event.agentEvent.kind": [
+          "ToolBlockUpdatedEvent",
+          "ViewFilesBlockUpdatedEvent",
+          "TerminalBlockUpdatedEvent"
+        ]
+      },
+      "target": "agentic_cli/tool_call",
+      "activity": "3 Operation observed",
+      "owner": "tool_operation.uid = stepId; reported status (COMPLETED Success, FAILED Failure, else none); a terminal's command, output and exitCode"
+    },
+    {
+      "id": "junie.session.llm_response_metadata->model_response",
+      "selector": {
+        "event.agentEvent.kind": "LlmResponseMetadataEvent"
+      },
+      "target": "agentic_cli/model_response",
+      "activity": "2 Completed",
+      "owner": "unidentified (no call id); usage per modelUsage entry (scope 2, final) and unnamed-unit cost (kind 99, model_ref)"
+    },
+    {
+      "id": "junie.session.result_block->model_response.final_answer",
+      "selector": {
+        "event.agentEvent.kind": "ResultBlockUpdatedEvent"
+      },
+      "target": "agentic_cli/model_response",
+      "activity": "3 Item completed",
+      "owner": "item_uid = stepId; one text block from agentEvent.result; reported_state = errorCode (\"Submit\")"
+    },
+    {
+      "id": "junie.session.completion->session_context.accounting",
+      "selector": {
+        "completion.taskCostUsd": "present"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "3 Accounting reported",
+      "owner": "completion.taskCostUsd as money (kind 1, USD), scope 99 Task"
+    },
+    {
+      "id": "junie.session.fallback->source_record",
+      "selector": {
+        "event.agentEvent.kind": "any other (status, directory, environment, tip, task name, context window, patch) or TaskStartedEvent"
+      },
+      "target": "agentic_cli/source_record",
+      "activity": "1 Parsed",
+      "owner": "retained whole with the meaning the mapper states"
+    },
+    {
+      "id": "common.opaque->source_record",
+      "selector": "a record that is not one JSON object",
+      "target": "agentic_cli/source_record",
+      "activity": "2 Opaque",
+      "owner": "the record's bytes"
+    },
+    {
+      "id": "common.mapper_exception->source_record",
+      "selector": "a record whose mapping failed",
+      "target": "agentic_cli/source_record",
+      "activity": "1 Parsed",
+      "owner": "the record retained whole with the failure"
+    }
+  ],
+  "candidate": {
+    "status": "EXPERIMENTAL candidate (2026-10-24): tested on two sanitized live 3813.7 runs (junie-1, junie-2) and their final assemblies; not admitted: no field-disposition catalog or oracle profile yet; tested candidate behaviour is not approved support"
+  }
+}

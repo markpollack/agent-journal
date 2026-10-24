@@ -74,8 +74,13 @@ final class ArchitectureComponents {
             writer("mapping", "Source mappers",
                     "Interpret one native record at a time under the selected mapping contract into OCSF-extension events or whole-record retention, naming the contract rule each event executes.",
                     implementing(WRITER + ".SourceMapper").or(named("SourceMapper", "MapperSupport", "SourceContext", "CodexItems", "UsageTranches", "MappingContracts",
-                            "ClaudeMcp", "AntigravityMcp", "McpObservations").in(WRITER)),
-                    "classes implementing SourceMapper, plus SourceMapper, MapperSupport, SourceContext, CodexItems, UsageTranches, MappingContracts, ClaudeMcp, AntigravityMcp, McpObservations"),
+                            "ClaudeMcp", "AntigravityMcp", "McpObservations", "CopilotTools", "CopilotAccounting", "CopilotDefinitions", "JunieUsage", "SourceMappers").in(WRITER)),
+                    "classes implementing SourceMapper, plus SourceMapper, MapperSupport, SourceContext, CodexItems, UsageTranches, MappingContracts, ClaudeMcp, AntigravityMcp, McpObservations, "
+                            + "CopilotTools, CopilotAccounting, CopilotDefinitions, JunieUsage, SourceMappers"),
+            writer("final-assembly", "Final assembly",
+                    "Assembles the declared sources of one execution under a reviewed profile into one new events.jsonl: holds each mapper's observations, gates sources on the identities they report, "
+                            + "groups observations by declared joins, consolidates each multi-source entity field by field with its evidence and conflicts, and declares the assembly.",
+                    named("FinalAssembly", "Assembler", "AssemblyProfile", "AssemblyPlan", "AssemblyGate", "AssemblyGrouping", "EventMerge", "AssemblyDeclaration")),
             writer("mcp-binding", "MCP protocol binding",
                     "Generates the typed mcp_* objects and the binding table from the pinned official MCP JSON Schemas, embeds a protocol object or a CLI's partial projection into them losslessly, and names the official definitions a file must declare to be read offline.",
                     named("McpBinding", "McpEmbedder", "McpAlternatives", "McpNode", "McpSchemaModel", "McpUnionMatch", "McpAllOf", "McpBindingNames", "McpBindingGenerator",
@@ -113,7 +118,8 @@ final class ArchitectureComponents {
                     "Verifies packages of the earlier journal-core format produced by claude-code-capture against their Claude stream; not on the OCSF writer's path.",
                     named("verify.CandidatePackage", "verify.ClaudeStreamContract", "verify.ClaudeStreamOracle", "verify.ClaudeStreamVerifier", "verify.VerificationReport")),
             tck("inventory", "Native inventory tools",
-                    "Empirical variant/path inventories of native artifacts and their comparison with the accepted source specifications; findings are proposals, never applied.",
+                    "Empirical variant/path inventories of native artifacts and their comparison with the accepted source specifications (findings are proposals, never applied); "
+                            + "source joins and the independent assembly oracle, which judges a finally assembled file from native identities alone.",
                     inPackage(TCK + ".ocsf.inventory"), "package " + TCK + ".ocsf.inventory"),
             tck("prototype", "Prototype candidate support",
                     "NON-PRODUCTION support that produces candidate packages from the earlier Python prototype's layout; it is producer-side code and the oracle never uses it.",

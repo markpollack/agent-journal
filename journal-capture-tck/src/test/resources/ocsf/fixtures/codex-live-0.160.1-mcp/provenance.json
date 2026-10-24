@@ -19,7 +19,7 @@
   "-c",
   "mcp_servers.fnd1.command=\"python3\"",
   "-c",
-  "mcp_servers.fnd1.args=[\"/home/user/projects/agent-journal-steward/plans/evidence/2026-10-22-fnd-1-live/tools/echo_mcp.py\"]",
+  "mcp_servers.fnd1.args=[\"<echo_mcp.py>\"]",
   "Use the MCP server named fnd1. First call its tool echo_record with arguments {\"text\": \"fnd-1\", \"n\": 7}. Then call its tool always_fails exactly once with no arguments. Do not run any shell commands. Finally report in one sentence what each call returned."
  ],
  "scenario": "LIVE-06 two calls to a local deterministic stdio MCP test server (echo_record with structured result; always_fails returning isError)",

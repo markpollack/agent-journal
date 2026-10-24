@@ -1,0 +1,165 @@
+{
+ "kind": "agent-journal/assembly-expectation",
+ "version": "0.1",
+ "written": {
+  "at": "2026-10-24",
+  "basis": "from the Claude Code stream-json and session-file record shapes (RFC 6901 pointers into the native records), before the assembled package was judged; independent of the writer's profile, mappers and assembly"
+ },
+ "profile_id": "claude-code/2.1.304/stdout+session-file",
+ "precedence": [
+  "stream",
+  "transcript"
+ ],
+ "sources": [
+  {
+   "role": "stream",
+   "requirement": "required",
+   "session": [
+    {
+     "pointer": "/session_id"
+    }
+   ]
+  },
+  {
+   "role": "transcript",
+   "requirement": "optional",
+   "session": [
+    {
+     "pointer": "/sessionId"
+    }
+   ]
+  }
+ ],
+ "entities": [
+  {
+   "name": "assistant record",
+   "class": "model_response",
+   "locators": {
+    "stream": {
+     "select": {
+      "/type": "assistant"
+     },
+     "pointer": "/uuid"
+    },
+    "transcript": {
+     "select": {
+      "/type": "assistant"
+     },
+     "pointer": "/uuid"
+    }
+   },
+   "basis": "both sources write each assistant record under its uuid"
+  },
+  {
+   "name": "tool request",
+   "class": "tool_call",
+   "activities": [
+    1
+   ],
+   "locators": {
+    "stream": {
+     "select": {
+      "/type": "assistant"
+     },
+     "each": "/message/content",
+     "element_select": {
+      "/type": "tool_use"
+     },
+     "pointer": "/id"
+    },
+    "transcript": {
+     "select": {
+      "/type": "assistant"
+     },
+     "each": "/message/content",
+     "element_select": {
+      "/type": "tool_use"
+     },
+     "pointer": "/id"
+    }
+   },
+   "basis": "a tool_use block's id"
+  },
+  {
+   "name": "tool result",
+   "class": "tool_call",
+   "activities": [
+    2
+   ],
+   "locators": {
+    "stream": {
+     "select": {
+      "/type": "user"
+     },
+     "each": "/message/content",
+     "element_select": {
+      "/type": "tool_result"
+     },
+     "pointer": "/tool_use_id"
+    },
+    "transcript": {
+     "select": {
+      "/type": "user"
+     },
+     "each": "/message/content",
+     "element_select": {
+      "/type": "tool_result"
+     },
+     "pointer": "/tool_use_id"
+    }
+   },
+   "basis": "a tool_result block names its call by tool_use_id"
+  }
+ ],
+ "totals": [
+  {
+   "name": "response_final_output_tokens",
+   "basis": "each API message's output tokens once, from the session file's assistant records (stop_reason set); the stream's are provisional",
+   "native": {
+    "transcript": {
+     "locator": {
+      "select": {
+       "/type": "assistant"
+      },
+      "pointer": "/message/id"
+     },
+     "value": "/message/usage/output_tokens"
+    }
+   },
+   "canonical": {
+    "class": "model_response",
+    "key": "/response_uid",
+    "array": "usage_observations",
+    "where": {
+     "scope_id": 2,
+     "usage_status_id": 2
+    },
+    "member": "output_tokens"
+   }
+  },
+  {
+   "name": "run_output_tokens",
+   "basis": "the result record's run usage, once",
+   "native": {
+    "stream": {
+     "locator": {
+      "select": {
+       "/type": "result"
+      },
+      "pointer": "/session_id"
+     },
+     "value": "/usage/output_tokens"
+    }
+   },
+   "canonical": {
+    "class": "prompt_turn",
+    "key": "/session_uid",
+    "array": "usage_observations",
+    "where": {
+     "scope_id": 4
+    },
+    "member": "output_tokens"
+   }
+  }
+ ]
+}

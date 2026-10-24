@@ -234,12 +234,25 @@ class LiveFixtureFeaturesTest {
                 if (live) {
                     Json prov = NeutralJson.readDocument(dir.resolve("provenance.json"));
                     assertThat(SchemaCatalog.text(prov, "origin")).startsWith("SANITIZED REAL LIVE RECORDING");
-                    assertThat(SchemaCatalog.text(prov, "original_sha256")).hasSize(64);
-                    assertThat(SchemaCatalog.text(prov, "sanitized_sha256")).isEqualTo(NativeArtifact.read(dir.resolve("native").resolve("stream.jsonl")).sha256());
+                    if (prov.member("files") instanceof Json.JObject files) {
+                        // a multi-source live fixture: every native file with its original and sanitized hash
+                        for (Map.Entry<String, Json> f : files.members().entrySet()) {
+                            assertThat(SchemaCatalog.text(f.getValue(), "original_sha256")).as(name + " " + f.getKey()).hasSize(64);
+                            assertThat(SchemaCatalog.text(f.getValue(), "sha256")).as(name + " " + f.getKey()).isEqualTo(NativeArtifact.read(dir.resolve("native").resolve(f.getKey())).sha256());
+                        }
+                    }
+                    else {
+                        assertThat(SchemaCatalog.text(prov, "original_sha256")).hasSize(64);
+                        assertThat(SchemaCatalog.text(prov, "sanitized_sha256")).isEqualTo(NativeArtifact.read(dir.resolve("native").resolve("stream.jsonl")).sha256());
+                    }
                     assertThat(prov.member("sanitization").elements()).isNotEmpty();
                     assertThat(prov.member("capture_command").elements()).isNotEmpty();
                     assertThat(SchemaCatalog.text(prov, "cli_version")).isNotBlank();
-                    assertThat(Files.readString(dir.resolve("native").resolve("stream.jsonl"))).doesNotContain("/home/mark").doesNotContain("/tmp/claude-1000");
+                    try (var natives = Files.list(dir.resolve("native"))) {
+                        for (Path n : natives.toList()) {
+                            assertThat(Files.readString(n)).as(name + " " + n.getFileName()).doesNotContain("/home/mark").doesNotContain("/tmp/claude-1000");
+                        }
+                    }
                     assertThat(Files.readString(dir.resolve("provenance.json"))).as(name + " provenance").doesNotContain("/home/mark").doesNotContain("/tmp/claude-1000").doesNotContain("-home-mark");
                 }
                 assertThat(Files.readString(dir.resolve("spec.json"))).as(name + " spec").doesNotContain("/home/mark").doesNotContain("/tmp/claude-1000").doesNotContain("-home-mark");

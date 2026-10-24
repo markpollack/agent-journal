@@ -1,0 +1,372 @@
+{
+ "kind": "agent-journal/assembly-expectation",
+ "version": "0.1",
+ "written": {
+  "at": "2026-10-24",
+  "basis": "from the Copilot CLI 1.0.100 event, OTel and usage-report record shapes (RFC 6901 pointers into the native records), before the assembled package was judged; independent of the writer's profile, mappers and assembly"
+ },
+ "profile_id": "github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report",
+ "precedence": [
+  "session",
+  "stdout",
+  "otel",
+  "usage_report"
+ ],
+ "sources": [
+  {
+   "role": "session",
+   "requirement": "required",
+   "session": [
+    {
+     "select": {
+      "/type": "session.start"
+     },
+     "pointer": "/data/sessionId"
+    }
+   ]
+  },
+  {
+   "role": "stdout",
+   "requirement": "required",
+   "session": [
+    {
+     "select": {
+      "/type": "result"
+     },
+     "pointer": "/sessionId"
+    }
+   ]
+  },
+  {
+   "role": "otel",
+   "requirement": "optional",
+   "session": [
+    {
+     "select": {
+      "/type": "span"
+     },
+     "pointer": "/attributes/gen_ai.conversation.id"
+    }
+   ]
+  },
+  {
+   "role": "usage_report",
+   "requirement": "optional",
+   "identity": "acquisition"
+  }
+ ],
+ "entities": [
+  {
+   "name": "persisted event (session context)",
+   "class": "session_context",
+   "locators": {
+    "session": {
+     "pointer": "/id"
+    },
+    "stdout": {
+     "pointer": "/id"
+    }
+   },
+   "basis": "a persisted event's own id on both routes"
+  },
+  {
+   "name": "persisted event (prompt)",
+   "class": "prompt_turn",
+   "locators": {
+    "session": {
+     "pointer": "/id"
+    },
+    "stdout": {
+     "pointer": "/id"
+    }
+   }
+  },
+  {
+   "name": "persisted event (retained)",
+   "class": "source_record",
+   "locators": {
+    "session": {
+     "pointer": "/id"
+    },
+    "stdout": {
+     "pointer": "/id"
+    }
+   }
+  },
+  {
+   "name": "model call",
+   "class": "model_response",
+   "locators": {
+    "session": [
+     {
+      "select": {
+       "/type": "assistant.message"
+      },
+      "pointer": "/data/apiCallId"
+     },
+     {
+      "select": {
+       "/type": "session.usage_record"
+      },
+      "pointer": "/data/usage/apiCallId"
+     },
+     {
+      "select": {
+       "/type": "session.usage_checkpoint"
+      },
+      "each": "/data/promptCacheBreakState",
+      "pointer": "/models/mai-code-1.1-flash/model_call_id"
+     }
+    ],
+    "stdout": [
+     {
+      "select": {
+       "/type": "assistant.message"
+      },
+      "pointer": "/data/apiCallId"
+     },
+     {
+      "select": {
+       "/type": "session.usage_checkpoint"
+      },
+      "each": "/data/promptCacheBreakState",
+      "pointer": "/models/mai-code-1.1-flash/model_call_id"
+     }
+    ],
+    "otel": {
+     "select": {
+      "/type": "span",
+      "/attributes/gen_ai.operation.name": "chat"
+     },
+     "pointer": "/attributes/gen_ai.response.id"
+    }
+   },
+   "basis": "the provider call id: apiCallId, the checkpoint's last model_call_id, gen_ai.response.id"
+  },
+  {
+   "name": "tool request",
+   "class": "tool_call",
+   "activities": [
+    1
+   ],
+   "locators": {
+    "session": {
+     "select": {
+      "/type": "assistant.message"
+     },
+     "each": "/data/toolRequests",
+     "pointer": "/toolCallId"
+    },
+    "stdout": {
+     "select": {
+      "/type": "assistant.message"
+     },
+     "each": "/data/toolRequests",
+     "pointer": "/toolCallId"
+    }
+   }
+  },
+  {
+   "name": "tool start",
+   "class": "tool_call",
+   "activities": [
+    4
+   ],
+   "locators": {
+    "session": {
+     "select": {
+      "/type": "tool.execution_start"
+     },
+     "pointer": "/data/toolCallId"
+    },
+    "stdout": {
+     "select": {
+      "/type": "tool.execution_start"
+     },
+     "pointer": "/data/toolCallId"
+    }
+   }
+  },
+  {
+   "name": "tool result",
+   "class": "tool_call",
+   "activities": [
+    2
+   ],
+   "locators": {
+    "session": {
+     "select": {
+      "/type": "tool.execution_complete"
+     },
+     "pointer": "/data/toolCallId"
+    },
+    "stdout": {
+     "select": {
+      "/type": "tool.execution_complete"
+     },
+     "pointer": "/data/toolCallId"
+    },
+    "otel": {
+     "select": {
+      "/type": "span",
+      "/attributes/gen_ai.operation.name": "execute_tool"
+     },
+     "pointer": "/attributes/gen_ai.tool.call.id"
+    }
+   }
+  },
+  {
+   "name": "final accounting",
+   "class": "session_context",
+   "activities": [
+    3
+   ],
+   "locators": {
+    "session": {
+     "select": {
+      "/type": "session.shutdown"
+     },
+     "constant": "execution"
+    },
+    "usage_report": {
+     "constant": "execution"
+    },
+    "otel": {
+     "select": {
+      "/type": "span",
+      "/attributes/gen_ai.operation.name": "invoke_agent"
+     },
+     "constant": "execution"
+    }
+   },
+   "basis": "one final accounting per execution: the shutdown snapshot, the usage report the launch named, the invocation span"
+  }
+ ],
+ "totals": [
+  {
+   "name": "call_output_tokens",
+   "basis": "each call's output tokens once (session usage records)",
+   "native": {
+    "session": {
+     "locator": {
+      "select": {
+       "/type": "session.usage_record"
+      },
+      "pointer": "/data/usage/apiCallId"
+     },
+     "value": "/data/usage/outputTokens"
+    }
+   },
+   "canonical": {
+    "class": "model_response",
+    "key": "/response_uid",
+    "array": "usage_observations",
+    "where": {
+     "scope_id": 2,
+     "usage_status_id": 2
+    },
+    "member": "output_tokens"
+   }
+  },
+  {
+   "name": "call_cache_read_tokens",
+   "native": {
+    "session": {
+     "locator": {
+      "select": {
+       "/type": "session.usage_record"
+      },
+      "pointer": "/data/usage/apiCallId"
+     },
+     "value": "/data/usage/cacheReadTokens"
+    }
+   },
+   "canonical": {
+    "class": "model_response",
+    "key": "/response_uid",
+    "array": "usage_observations",
+    "where": {
+     "scope_id": 2,
+     "usage_status_id": 2
+    },
+    "member": "cache_read_tokens"
+   }
+  },
+  {
+   "name": "call_model_multipliers",
+   "basis": "each call's model cost multiplier once (session usage records; kind 3)",
+   "native": {
+    "session": {
+     "locator": {
+      "select": {
+       "/type": "session.usage_record"
+      },
+      "pointer": "/data/usage/apiCallId"
+     },
+     "value": "/data/usage/cost"
+    }
+   },
+   "canonical": {
+    "class": "model_response",
+    "key": "/response_uid",
+    "array": "cost_observations",
+    "where": {
+     "quantity_kind_id": 3,
+     "scope_id": 2
+    },
+    "member": "total_cost"
+   }
+  },
+  {
+   "name": "run_multiplier_sum",
+   "basis": "the invocation's multiplier sum (OTel invoke_agent github.copilot.cost; kind 3 at run scope), never premium requests",
+   "native": {
+    "otel": {
+     "locator": {
+      "select": {
+       "/type": "span",
+       "/attributes/gen_ai.operation.name": "invoke_agent"
+      },
+      "pointer": "/attributes/gen_ai.conversation.id"
+     },
+     "value": "/attributes/github.copilot.cost"
+    }
+   },
+   "canonical": {
+    "class": "session_context",
+    "key": "/session_uid",
+    "array": "cost_observations",
+    "where": {
+     "quantity_kind_id": 3,
+     "scope_id": 4
+    },
+    "member": "total_cost"
+   }
+  },
+  {
+   "name": "session_premium_requests",
+   "basis": "the session's premium requests (shutdown snapshot; kind 2), apart from the multiplier sum",
+   "native": {
+    "session": {
+     "locator": {
+      "select": {
+       "/type": "session.shutdown"
+      },
+      "constant": "session"
+     },
+     "value": "/data/accountingSnapshot/totalPremiumRequestCost"
+    }
+   },
+   "canonical": {
+    "class": "session_context",
+    "constant": "session",
+    "array": "cost_observations",
+    "where": {
+     "quantity_kind_id": 2,
+     "scope_id": 5
+    },
+    "member": "total_cost"
+   }
+  }
+ ]
+}

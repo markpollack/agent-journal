@@ -1,0 +1,195 @@
+{
+ "kind": "agent-journal/upstream-validation-summary",
+ "version": "0.1",
+ "fixture": "copilot-live-1.0.100-otel",
+ "core": "main",
+ "events_jsonl": "fixtures/copilot-live-1.0.100-otel/package/events.jsonl",
+ "events_jsonl_sha256": "78be7c9c9db78d9ae228dea84855b1c08cb0fa4a116c3de4131453ce2a4c55e8",
+ "execution_records": 231,
+ "declarations_skipped": 74,
+ "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
+ "toolkit": {
+  "name": "ocsf-toolkit",
+  "release": "v0.9.0",
+  "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
+  "exit_code": 0
+ },
+ "compiled_schema_sha256": "6a7a30905144286c90abaf841bfe6ac8d37e985120bc4eb07cee64d310616935",
+ "result": {
+  "event_files_processed": 231,
+  "error_events": 0,
+  "warning_only_events": 24,
+  "issues_reported": 0
+ },
+ "findings": {
+  "0032.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0033.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0034.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0035.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0037.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0045.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0046.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0047.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0048.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0050.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0058.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0059.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0060.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0061.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0063.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0138.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0139.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0156.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0157.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0166.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0167.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0202.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0204.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0206.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ]
+ },
+ "note": "warning-only findings are the toolkit's enum-sibling notice on tool_kind 'other' (a known v0.9.0 limit recorded in the lock); any error event fails UC5-AC11 for this core"
+}

@@ -2135,6 +2135,14 @@
    "caveat": "OCSF 1.9.0 has no cost or billing-quantity attribute; quantity kinds keep premium requests, multipliers, nano-AIU, credits and money apart."
   },
   {
+   "ours": "cost_observation.model_ref",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream cost, so no per-model cost reference."
+  },
+  {
    "ours": "error_info.error_layer_id",
    "ours_kind": "object",
    "upstream": null,

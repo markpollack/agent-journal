@@ -70,20 +70,35 @@ public final class OcsfPackage {
         return out;
     }
 
+    /**
+     * The canonical events: all of them outside a finally assembled file; inside one, the canonical single observations
+     * and the consolidated events, never the supporting observations a consolidated event was built from.
+     */
+    public List<Event> canonical() {
+        return events.stream().filter(Event::canonical).toList();
+    }
+
+    /** Each source's own observations: all events outside an assembled file; inside one, everything but consolidated events. */
+    public List<Event> observations() {
+        return events.stream().filter(Event::observation).toList();
+    }
+
+    /** The canonical events of a class ({@link #canonical()}). */
     public List<Event> events(String className) {
         List<Event> out = new ArrayList<>();
         for (Event e : events) {
-            if (className.equals(e.className)) {
+            if (className.equals(e.className) && e.canonical()) {
                 out.add(e);
             }
         }
         return out;
     }
 
+    /** The canonical events of a class and activity ({@link #canonical()}). */
     public List<Event> events(String className, int activityId) {
         List<Event> out = new ArrayList<>();
         for (Event e : events) {
-            if (e.is(className, activityId)) {
+            if (e.is(className, activityId) && e.canonical()) {
                 out.add(e);
             }
         }

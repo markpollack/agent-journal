@@ -1,0 +1,207 @@
+{
+  "profile_id": "github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report",
+  "version": "0.1.0-prototype",
+  "status": "experimental",
+  "status_meaning": "tested on one sanitized live 1.0.100 run (copilot-otel-1); every route is experimental (no field-disposition catalog or oracle profile yet)",
+  "cli": {
+    "name": "GitHub Copilot CLI",
+    "version": "1.0.100",
+    "vendor_name": "GitHub"
+  },
+  "sources": [
+    {
+      "role": "session",
+      "profile": "copilot_events",
+      "route": "native_session_file",
+      "kind": 2,
+      "requirement": "required",
+      "framing": "lines",
+      "identity": "events",
+      "artifact": "session-events.jsonl",
+      "establishes": "the persisted session: session start and version, the prompt, the system message, assistant messages with their tool requests, tool execution start and completion, per-call usage records with model cost multipliers and nano-AIU, usage checkpoints and the shutdown's accounting"
+    },
+    {
+      "role": "stdout",
+      "profile": "copilot_events",
+      "route": "stdout",
+      "kind": 1,
+      "requirement": "required",
+      "framing": "lines",
+      "identity": "events",
+      "artifact": "stdout.jsonl",
+      "establishes": "the same persisted events plus ephemeral progress (message and tool-call deltas, shell output, partial results, model-call progress), richer tool results (detailed content, MCP content lists) and the CLI's result with its exit code and session"
+    },
+    {
+      "role": "otel",
+      "profile": "copilot_otel",
+      "route": "otel_file",
+      "kind": 3,
+      "requirement": "optional",
+      "framing": "lines",
+      "identity": "events",
+      "artifact": "otel.jsonl",
+      "content_settings": "file exporter with content capture on: message, system, tool definition and tool argument/result attributes present; without it they are absent, never empty",
+      "establishes": "per-call chat spans (usage, multiplier, nano-AIU, finish reasons, service request ids), per-execution tool spans (arguments, result text, status), the invocation's totals including its multiplier sum, tool definitions and MCP servers, and run metrics"
+    },
+    {
+      "role": "usage_report",
+      "profile": "copilot_usage_report",
+      "route": "usage_report_file",
+      "kind": 4,
+      "requirement": "optional",
+      "framing": "document",
+      "identity": "acquisition",
+      "artifact": "usage-output.json",
+      "establishes": "the session's final accounting at exit: premium requests, nano-AIU, token details overall and per model and agent"
+    }
+  ],
+  "feed_order": [
+    "session",
+    "stdout",
+    "otel",
+    "usage_report"
+  ],
+  "precedence": [
+    "session",
+    "stdout",
+    "otel",
+    "usage_report"
+  ],
+  "joins": [
+    {
+      "id": "copilot.persisted_event",
+      "class": "session_context",
+      "key": [
+        "/source_ref/native_uid"
+      ],
+      "namespace": "copilot.event_id",
+      "roles": [
+        "session",
+        "stdout"
+      ],
+      "basis": "a persisted event keeps its own id on standard output and in the session file"
+    },
+    {
+      "id": "copilot.persisted_prompt",
+      "class": "prompt_turn",
+      "key": [
+        "/source_ref/native_uid"
+      ],
+      "namespace": "copilot.event_id",
+      "roles": [
+        "session",
+        "stdout"
+      ],
+      "basis": "as copilot.persisted_event"
+    },
+    {
+      "id": "copilot.persisted_record",
+      "class": "source_record",
+      "key": [
+        "/source_ref/native_uid"
+      ],
+      "namespace": "copilot.event_id",
+      "roles": [
+        "session",
+        "stdout"
+      ],
+      "basis": "as copilot.persisted_event"
+    },
+    {
+      "id": "copilot.model_call",
+      "class": "model_response",
+      "key": [
+        "/response_uid"
+      ],
+      "namespace": "copilot.api_call_id",
+      "roles": [
+        "session",
+        "stdout",
+        "otel"
+      ],
+      "basis": "one model call: an assistant message's and a usage record's data.apiCallId, a checkpoint's last model_call_id and a chat span's gen_ai.response.id name the same provider call"
+    },
+    {
+      "id": "copilot.tool_request",
+      "class": "tool_call",
+      "activities": [
+        1
+      ],
+      "key": [
+        "/tool_call_uid"
+      ],
+      "namespace": "copilot.tool_call_id",
+      "roles": [
+        "session",
+        "stdout"
+      ],
+      "basis": "toolRequests[].toolCallId"
+    },
+    {
+      "id": "copilot.tool_start",
+      "class": "tool_call",
+      "activities": [
+        4
+      ],
+      "key": [
+        "/tool_call_uid"
+      ],
+      "namespace": "copilot.tool_call_id",
+      "roles": [
+        "session",
+        "stdout"
+      ],
+      "basis": "tool.execution_start data.toolCallId"
+    },
+    {
+      "id": "copilot.tool_result",
+      "class": "tool_call",
+      "activities": [
+        2
+      ],
+      "key": [
+        "/tool_call_uid"
+      ],
+      "namespace": "copilot.tool_call_id",
+      "roles": [
+        "session",
+        "stdout",
+        "otel"
+      ],
+      "basis": "tool.execution_complete data.toolCallId and an execute_tool span's gen_ai.tool.call.id name the same model-facing call"
+    },
+    {
+      "id": "copilot.final_accounting",
+      "class": "session_context",
+      "activities": [
+        3
+      ],
+      "key": [],
+      "namespace": "copilot.execution_singleton",
+      "rules": [
+        "copilot.events.shutdown->session_context.accounting",
+        "copilot.usage_report->session_context.accounting",
+        "copilot.otel.invoke_agent->session_context.accounting"
+      ],
+      "roles": [
+        "session",
+        "usage_report",
+        "otel"
+      ],
+      "basis": "the execution's final accounting, one per execution: the session file's shutdown snapshot, the usage report the launch named and the OTel invocation span; a second occurrence of one of these rules in one source makes the entity ambiguous"
+    }
+  ],
+  "authorities": [
+    {
+      "class": "tool_call",
+      "pointer": "/tool_result/data",
+      "role": "stdout",
+      "basis": "the event routes' data.result object (text content, detailed content, MCP contents, structuredContent) is the CLI's result; an OTel span's gen_ai.tool.call.result is its text rendering, kept on the span's observation"
+    }
+  ],
+  "limits": [
+    "standard output reports per-call usage only for the last call (checkpoint); the other calls' usage is the session file's and OTel's",
+    "a usage report names no session: it belongs to the launch that named the file",
+    "the OTel invocation's github.copilot.cost is a multiplier sum, never premium requests; premium requests come from the session file, standard output and the usage report"
+  ]
+}

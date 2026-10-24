@@ -40,6 +40,7 @@ public final class DeclaredFile {
     private Json schema;
     private Json run;
     private Json recording;
+    private Json assembly;
     private final List<Json> children = new ArrayList<>();
     private final Map<String, Json> sources = new LinkedHashMap<>();
     private final Map<String, Json> sourceEnds = new LinkedHashMap<>();
@@ -175,6 +176,7 @@ public final class DeclaredFile {
             case "compatibility" -> compatibility.computeIfAbsent(SchemaCatalog.text(p, "artifact"), k -> new ArrayList<>()).add(p);
             case "child" -> children.add(p);
             case "recording" -> recording = p;
+            case "assembly" -> assembly = p;
             default -> {
             }
         }
@@ -249,6 +251,11 @@ public final class DeclaredFile {
 
     public Json recording() {
         return recording;
+    }
+
+    /** The final-assembly declaration of a finally assembled file, or {@code null}. */
+    public Json assembly() {
+        return assembly;
     }
 
     public List<Json> children() {

@@ -24,20 +24,36 @@ class VendorSpecificationsTest {
     static final Path VENDOR = Path.of("..", "schema", "vendor").toAbsolutePath().normalize();
     static final Path FIXTURES = Path.of("src", "test", "resources", "ocsf", "fixtures").toAbsolutePath().normalize();
 
-    static final Map<String, String> SPECS = Map.of(
-            "claude-code/stream-json/2.1.303", "claude_stream",
-            "claude-code/session-transcript/2.1.303", "claude_transcript",
-            "codex-cli/exec-json-stream/0.160.1", "codex_stream",
-            "codex-cli/rollout/0.160.1", "codex_rollout",
-            "antigravity-cli/stream-json/1.4.6", "agy_stream");
+    static final Map<String, String> SPECS = Map.ofEntries(
+            Map.entry("claude-code/stream-json/2.1.303", "claude_stream"),
+            Map.entry("claude-code/session-transcript/2.1.303", "claude_transcript"),
+            Map.entry("claude-code/session-transcript/2.1.304", "claude_transcript"),
+            Map.entry("codex-cli/exec-json-stream/0.160.1", "codex_stream"),
+            Map.entry("codex-cli/rollout/0.160.1", "codex_rollout"),
+            Map.entry("antigravity-cli/stream-json/1.4.6", "agy_stream"),
+            Map.entry("github-copilot-cli/stdout-json/1.0.100", "copilot_events"),
+            Map.entry("github-copilot-cli/session-events/1.0.100", "copilot_events"),
+            Map.entry("github-copilot-cli/otel-file/1.0.100", "copilot_otel"),
+            Map.entry("github-copilot-cli/usage-report/1.0.100", "copilot_usage_report"),
+            Map.entry("junie/session-summary/3813.7", "junie_summary"),
+            Map.entry("junie/session-events/3813.7", "junie_session_events"),
+            Map.entry("junie/json-stream/3813.7", "junie_stdout"));
 
     /** The accepted revision of each specification; a revision keeps the earlier ones under {@code revisions}. */
-    static final Map<String, String> ACCEPTED = Map.of(
-            "claude-code/stream-json/2.1.303", "0.1.0",
-            "claude-code/session-transcript/2.1.303", "0.1.0",
-            "codex-cli/exec-json-stream/0.160.1", "0.1.0",
-            "codex-cli/rollout/0.160.1", "0.1.0",
-            "antigravity-cli/stream-json/1.4.6", "0.2.0");
+    static final Map<String, String> ACCEPTED = Map.ofEntries(
+            Map.entry("claude-code/stream-json/2.1.303", "0.1.0"),
+            Map.entry("claude-code/session-transcript/2.1.303", "0.1.0"),
+            Map.entry("claude-code/session-transcript/2.1.304", "0.1.0"),
+            Map.entry("codex-cli/exec-json-stream/0.160.1", "0.1.0"),
+            Map.entry("codex-cli/rollout/0.160.1", "0.1.0"),
+            Map.entry("antigravity-cli/stream-json/1.4.6", "0.2.0"),
+            Map.entry("github-copilot-cli/stdout-json/1.0.100", "0.1.0"),
+            Map.entry("github-copilot-cli/session-events/1.0.100", "0.1.0"),
+            Map.entry("github-copilot-cli/otel-file/1.0.100", "0.1.0"),
+            Map.entry("github-copilot-cli/usage-report/1.0.100", "0.1.0"),
+            Map.entry("junie/session-summary/3813.7", "0.1.0"),
+            Map.entry("junie/session-events/3813.7", "0.1.0"),
+            Map.entry("junie/json-stream/3813.7", "0.1.0"));
 
     /** Every registered recording of the Antigravity 1.4.6 route; the accepted specification must admit each one. */
     static final List<String> AGY_FIXTURES = List.of(OcsfFixtures.LIVE_AGY_FEATURES, OcsfFixtures.LIVE_AGY_DENIAL,
@@ -50,7 +66,7 @@ class VendorSpecificationsTest {
             assertThat(SchemaCatalog.text(spec, "profile")).isEqualTo(e.getValue());
             assertThat(SchemaCatalog.text(spec, "status")).startsWith("ACCEPTED " + ACCEPTED.get(e.getKey()));
             assertThat(SchemaCatalog.text(spec, "specification_version")).isEqualTo(ACCEPTED.get(e.getKey()));
-            assertThat(SchemaCatalog.text(spec.member("applies_to"), "version")).isIn("2.1.303", "0.160.1", "1.4.6");
+            assertThat(SchemaCatalog.text(spec.member("applies_to"), "version")).isIn("2.1.303", "2.1.304", "0.160.1", "1.4.6", "1.0.100", "3813.7");
             assertThat(SchemaCatalog.text(spec.member("applies_to"), "route_limit")).isNotBlank();
             // one frozen complete source, or several when no single recording carries every variant (Antigravity 1.4.6): each hash-pinned
             List<Json> observed = spec.path("provenance", "observed_on").elements();
@@ -65,7 +81,10 @@ class VendorSpecificationsTest {
             for (Map.Entry<String, Json> v : ((Json.JObject) variants).members().entrySet()) {
                 assertThat(v.getValue().member("evidence").elements()).as(e.getKey() + " " + v.getKey()).isNotEmpty();
                 for (String p : ((Json.JObject) v.getValue().member("paths")).members().keySet()) {
-                    assertThat(p).as("no tool-defined key under a data-keyed path").doesNotMatch(".*\\.input\\.[A-Za-z_]+.*");
+                    // the Claude, Codex and Antigravity tool-input rule; elsewhere ".input." is a vendor name (tokenDetails.input, gen_ai.input.messages)
+                    if (!e.getValue().startsWith("copilot_") && !e.getValue().startsWith("junie_")) {
+                        assertThat(p).as("no tool-defined key under a data-keyed path").doesNotMatch(".*\\.input\\.[A-Za-z_]+.*");
+                    }
                 }
             }
             Json committed = NeutralJson.readDocument(VENDOR.resolve(e.getKey() + ".schema.json"));

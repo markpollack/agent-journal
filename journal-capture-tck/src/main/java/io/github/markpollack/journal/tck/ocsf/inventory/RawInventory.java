@@ -34,6 +34,9 @@ public final class RawInventory {
     private RawInventory() {
     }
 
+    /** Profiles whose artifact is one JSON document (one record), not one record per line. */
+    public static final Set<String> DOCUMENT_PROFILES = Set.of("copilot_usage_report", "junie_summary");
+
     /**
      * Data-keyed paths of the profiles described by data alone: Antigravity's tool parameters are the tool's own arguments,
      * and a --json-schema run's schema and structured output are user data (headless documentation, stream-json).
@@ -41,33 +44,51 @@ public final class RawInventory {
     static final Map<String, Set<String>> DATA_KEYED = Map.of("agy_stream",
             Set.of("step_update.tool_info.parameters", "init.json_schema", "result.json_schema", "result.structured_output"));
 
+    /**
+     * Per-profile data-keyed and map-keyed paths. Claude: tool inputs, tool-defined structured results, tool schemas and
+     * per-tool wire inputs are tool/user data; modelUsage is keyed by model name with vendor-structured values. Codex
+     * (codex-rs/exec/src/exec_events.rs at rust-v0.160.1): MCP tool arguments, MCP result content, structured content and
+     * _meta, and web-search results are tool data; collab agents_states is keyed by thread id. GitHub Copilot CLI events
+     * (stdout and session file): tool arguments and tool-defined results are tool data, while per-tool telemetry is the CLI's own
+     * (its token metrics stay inventoried, as the source-availability gate found); accounting maps
+     * keyed by model, agent and call id hold vendor structure, so their nested usage stays inventoried (the copilot-2
+     * checkpoint regression). The OTel file exporter's attribute names are the vendor's own (finite); no subtree is data.
+     * Junie: the session events' environment variables are user data.
+     */
+    static final Map<String, ProfileRules> KNOWN = Map.of(
+            "claude_stream", new ProfileRules("claude_stream", Set.of("message.content[].input", "tool_use_result", "wire_tool_inputs"), Set.of("modelUsage")),
+            "claude_transcript", new ProfileRules("claude_transcript",
+                    Set.of("message.content[].input", "toolUseResult", "wireToolInputs", "shape.tools[].input_schema", "attachment.tools[].schema"), Set.of("modelUsage")),
+            "codex_stream", new ProfileRules("codex_stream",
+                    Set.of("item.arguments", "item.result.content", "item.result.structured_content", "item.result._meta", "item.results"), Set.of("item.agents_states")),
+            "codex_rollout", new ProfileRules("codex_rollout", Set.of("payload.output"), Set.of()),
+            "copilot_events", new ProfileRules("copilot_events",
+                    Set.of("data.arguments", "data.toolRequests[].arguments", "data.result.structuredContent", "data.toolCounts", "data.usage.toolCounts", "data.metadata.variables"),
+                    Set.of("data.categoryScores", "data.accountingSnapshot.modelMetrics", "data.accountingSnapshot.agentMetrics",
+                            "data.accountingSnapshot.agentMetrics.{*}.modelMetrics", "data.modelMetrics", "data.agentMetrics", "data.agentMetrics.{*}.modelMetrics",
+                            "data.promptCacheBreakState[].models", "data.usageAccountingWatermarks")),
+            "copilot_otel", new ProfileRules("copilot_otel", Set.of(), Set.of()),
+            "copilot_usage_report", new ProfileRules("copilot_usage_report", Set.of(), Set.of("modelMetrics", "agentMetrics", "agentMetrics.{*}.modelMetrics")),
+            "junie_summary", new ProfileRules("junie_summary", Set.of(), Set.of()),
+            // Junie session events: the agent's environment variables are user data
+            "junie_session_events", new ProfileRules("junie_session_events", Set.of("event.agentEvent.env"), Set.of()),
+            "junie_stdout", new ProfileRules("junie_stdout", Set.of(), Set.of()));
+
     /** Per-profile discriminator and the data-keyed / map-keyed paths; the profile names are the oracle's. */
     public record ProfileRules(String profile, Set<String> dataKeyed, Set<String> mapKeyed) {
 
         public static ProfileRules forProfile(String profile) {
-            return switch (profile == null ? "" : profile) {
-                // tool inputs, tool-defined structured results, tool schemas and per-tool wire inputs are tool/user data;
-                // modelUsage is keyed by model name with vendor-structured values
-                case "claude_stream" -> new ProfileRules(profile,
-                        Set.of("message.content[].input", "tool_use_result", "wire_tool_inputs"),
-                        Set.of("modelUsage"));
-                case "claude_transcript" -> new ProfileRules(profile,
-                        Set.of("message.content[].input", "toolUseResult", "wireToolInputs", "shape.tools[].input_schema", "attachment.tools[].schema"),
-                        Set.of("modelUsage"));
-                // MCP tool arguments, MCP result content, structured content and _meta, and web-search results are tool
-                // data; collab agents_states is keyed by thread id (codex-rs/exec/src/exec_events.rs at rust-v0.160.1)
-                case "codex_stream" -> new ProfileRules(profile,
-                        Set.of("item.arguments", "item.result.content", "item.result.structured_content", "item.result._meta", "item.results"),
-                        Set.of("item.agents_states"));
-                case "codex_rollout" -> new ProfileRules(profile, Set.of("payload.output"), Set.of());
-                default -> new ProfileRules(profile == null ? "(unknown)" : profile, DATA_KEYED.getOrDefault(String.valueOf(profile), Set.of()), Set.of());
-            };
+            ProfileRules known = profile == null ? null : KNOWN.get(profile);
+            return known != null ? known : new ProfileRules(profile == null ? "(unknown)" : profile, DATA_KEYED.getOrDefault(String.valueOf(profile), Set.of()), Set.of());
         }
 
         /** The variant name of a parsed record under this profile, with the discriminator values that produced it. */
         public Map<String, String> discriminators(Json o) {
             if ("agy_stream".equals(profile)) {
                 return agyDiscriminators(o);
+            }
+            if ("junie_session_events".equals(profile)) {
+                return junieDiscriminators(o);
             }
             Map<String, String> d = new LinkedHashMap<>();
             String type = text(o, "type");
@@ -94,6 +115,7 @@ public final class RawInventory {
                         d.put("item.type", text(o, "item", "type"));
                     }
                 }
+                case "copilot_otel" -> d.putAll(otelDiscriminators(o, type));
                 case "codex_rollout" -> {
                     if (o.path("payload", "type") != null) {
                         d.put("payload.type", text(o, "payload", "type"));
@@ -107,6 +129,26 @@ public final class RawInventory {
                 }
                 default -> {
                 }
+            }
+            return d;
+        }
+
+        /** Junie's session events: the event kind, then the agent event's kind. */
+        private static Map<String, String> junieDiscriminators(Json o) {
+            Map<String, String> d = new LinkedHashMap<>();
+            d.put("kind", text(o, "kind"));
+            d.put("event.agentEvent.kind", text(o, "event", "agentEvent", "kind"));
+            return d;
+        }
+
+        /** The OTel file exporter: a span by its GenAI operation, a metric by its name. */
+        private static Map<String, String> otelDiscriminators(Json o, String type) {
+            Map<String, String> d = new LinkedHashMap<>();
+            if ("span".equals(type)) {
+                d.put("attributes.gen_ai.operation.name", text(o, "attributes", "gen_ai.operation.name"));
+            }
+            if ("metric".equals(type)) {
+                d.put("name", text(o, "name"));
             }
             return d;
         }

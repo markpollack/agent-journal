@@ -187,6 +187,11 @@ final class CoreWriter {
         }
     }
 
+    /** Declares a final assembly (once, before its events): profile, engine, lineage, sources with their verdicts, result. */
+    void declareAssembly(Jv.Obj payload) {
+        declare("assembly", "assembly", payload);
+    }
+
     void declareChild(String childRunUid, String path, String spawnToolCallUid, String basis, Jv.Obj parentScope) {
         declare("child", "child:" + spawnToolCallUid, new Jv.Obj().put("run_uid", childRunUid).put("path", path).put("spawn_tool_call_uid", spawnToolCallUid)
                 .put("basis", basis).put("parent_scope", parentScope));

@@ -57,6 +57,10 @@ final class WriterTestSupport {
     static final String LIVE_AGY_SUBAGENT = "antigravity-live-1.4.6-subagent";
     static final String LIVE_AGY_MCP_DENIED = "antigravity-live-1.4.6-mcp-denied";
     static final String LIVE_AGY_MCP = "antigravity-live-1.4.6-mcp";
+    static final String LIVE_CLAUDE_PAIR = "claude-live-2.1.304-mcp-pair";
+    static final String LIVE_COPILOT = "copilot-live-1.0.100-otel";
+    static final String LIVE_JUNIE_VIEW = "junie-live-3813.7-view";
+    static final String LIVE_JUNIE_TERMINAL = "junie-live-3813.7-terminal";
     static final String LIVE_MCP = "claude-live-2.1.304-mcp";
     static final String SPAWN = "toolu_01BnEuCUmZ2Vu1LpADzksmrJ";
 

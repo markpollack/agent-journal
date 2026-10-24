@@ -68,6 +68,8 @@ class RequirementsAccountingIT {
     static final String CODEX_ALL = "Codex CLI 0.160.1 stdout (labelled synthetic and sanitized live fixtures)";
     static final String BOTH = CLAUDE_ALL + "; " + CODEX_ALL;
     static final String STAND_IN = "stand-in CLI processes (shell scripts replaying committed streams; labelled test-only)";
+    static final String ASSEMBLED = "final assemblies of the sanitized live recordings claude-mcp-1 (Claude Code 2.1.304), copilot-otel-1 (Copilot CLI 1.0.100), junie-1 and junie-2 (Junie 3813.7)";
+    static final String SPECIFICATIONS = "the committed source specifications and their specimens (fixtures)";
     static final String LIVE_RUNS = "steward evidence 2026-10-21-accept-1-live: claude-features-1, claude-denial-1, claude-cancel-1 (Claude Code 2.1.304), codex-features-1, codex-cancel-1 (Codex CLI 0.160.1)";
 
     static Item oracle(String criterion, String scope) {
@@ -107,21 +109,20 @@ class RequirementsAccountingIT {
     /** Criterion to the evidence that establishes it in this build. Every criterion of the roster must appear here. */
     static final Map<String, List<Item>> CRITERIA = new LinkedHashMap<>();
     static {
-        CRITERIA.put("UC1-AC1", List.of(junit("CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy", STAND_IN),
-                junit("LiveCaptureSeamTest#aStreamPipedToTheCaptureSeamIsRecordedWithItsReportedVersionAndJudgedAgainstTheBytes", "recorded Claude 2.1.304 stdout stream through the stdin seam"),
-                junit("LiveFixtureFeaturesTest#theClaudeFeatureRecordingExhibitsToolsChildrenFailureUsageAndRetainedFamilies", CLAUDE_ALL),
-                junit("LiveFixtureFeaturesTest#theCodexRecordingExhibitsOperationsFailureRepetitionAndUsage", CODEX_ALL), live("both CLIs launched by CliCapture, streams normalized live")));
-        CRITERIA.put("UC1-AC2", List.of(deferred("no session-only CLI is in the two-CLI scope: Claude Code and Codex both offer a stream and are captured from it; the import mechanism exists (PrefixReplayTest on a rollout) but the selection rule for a session-only CLI is unexercised and remains an open obligation, not NOT_APPLICABLE")));
-        CRITERIA.put("UC1-AC3", List.of(junit("CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy", STAND_IN + ": byte-equal archive, sha256, parsed=false, not a declared source"),
-                junit("CliCaptureTest#codexVersionIsDiscoveredOnceByTheDocumentedCommandAndTheThreadIdBecomesTheSession", STAND_IN + ": rollout archived by thread id"),
-                live("native session files archived by hash on all five runs")));
-        CRITERIA.put("UC1-AC4", List.of(junit("CliCaptureTest#theArchiveContentsCannotChangeTheNormalizedStreamOutput", STAND_IN + ": identical output whatever the archive holds, including a non-JSON archive"),
-                junit("StreamLimitationTest#theClaudeStreamContractDeclaresWhatTheStreamDoesNotReport", "the Claude stream contract states its unavailable_at_source facts (final per-response usage, the main thread's prompt)"),
-                junit("StreamLimitationTest#theLiveRecordingCarriesTheLimitationAndKeepsItsUsageProvisional", "the live Claude recording embeds the limitation once; its per-message usage stays provisional"),
-                note("the Codex exec contract declares no unavailable_at_source list yet")));
+        CRITERIA.put("UC1-AC1", List.of(junit("CliCaptureTest#aCompleteCaptureAssemblesTheFinalPackageAutomatically", STAND_IN + ": the Claude 2.1.304 profile, final package beside the unchanged original"),
+                junit("CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy", STAND_IN + ": single-source capture"),
+                junit("FinalAssemblyClaudeTest#thePairAssemblesIntoOneCanonicalExecutionTheOracleVerifies", ASSEMBLED),
+                note("Copilot and Junie assemble from recorded inputs through FinalAssembly; no live launch of them runs in this build")));
+        CRITERIA.put("UC1-AC2", List.of(junit("FinalAssemblyClaudeTest#anotherExecutionsSessionFileIsRefusedAndWrittenNowhere", ASSEMBLED),
+                junit("FinalAssemblyCopilotTest#anotherExecutionsTelemetryIsRefused", ASSEMBLED), junit("FinalAssemblyJunieTest#aSummaryOfAnotherSessionTakesItsEventsWithIt", ASSEMBLED)));
+        CRITERIA.put("UC1-AC3", List.of(junit("FinalAssemblyJunieTest#theSessionDirectoryAssemblesWithItsOutputsAndTheOracleVerifiesIt", ASSEMBLED + ": companion and acquisition identities"),
+                junit("CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy", STAND_IN + ": archive-only material byte-identical")));
+        CRITERIA.put("UC1-AC4", List.of(junit("FinalAssemblyClaudeTest#aMissingRequiredSourceMakesTheAssemblyIncomplete", ASSEMBLED),
+                junit("FinalAssemblyJunieTest#withoutItsSummaryTheSessionFileHasNoIdentity", ASSEMBLED), junit("FinalAssemblyCopilotTest#anAbsentPerSpanCacheWriteStaysAbsent", ASSEMBLED)));
         CRITERIA.put("UC1-AC5", List.of(oracle("UC1-AC5", "labelled synthetic 2.1.999 Claude stream (syn-claude-untested-version)")));
         CRITERIA.put("UC1-AC6", List.of(oracle("UC1-AC6", BOTH)));
-        CRITERIA.put("UC1-AC7", List.of(junit("CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy", STAND_IN + ": the frozen denominator is the stream alone while the archive exists"),
+        CRITERIA.put("UC1-AC7", List.of(junit("FinalAssemblyClaudeTest#assemblyLeavesItsInputsAndTheOriginalPackageUnchanged", ASSEMBLED),
+                junit("FinalAssemblyCopilotTest#theFinalFileReadsAloneAndTheOriginalsAreUnchanged", ASSEMBLED),
                 junit("FullOneReviewRegressionTest#omittingAnEntireSourceIsADefectOnEveryObligationOfThatSource", "frozen manifest defines the denominator")));
         CRITERIA.put("UC2-AC1", List.of(junit("LiveCaptureSeamTest#aStreamPipedToTheCaptureSeamIsRecordedWithItsReportedVersionAndJudgedAgainstTheBytes", "Claude 2.1.304 (seam)"),
                 junit("CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy", STAND_IN + ": no version at launch, reported by the stream, no version command"),
@@ -167,6 +168,8 @@ class RequirementsAccountingIT {
         CRITERIA.put("UC3-AC14", List.of(junit("FieldDispositionTest#everyObservedStreamFieldHasExactlyOneBackedDisposition", BOTH + ": every observed path has one backed disposition"),
                 junit("FieldDispositionTest#aMissingDispositionABrokenReferenceAndAnUnexercisedClaimEachFail", "negative controls")));
         CRITERIA.put("UC3-AC15", List.of(oracle("UC3-AC15", BOTH)));
+        CRITERIA.put("UC3-AC16", List.of(junit("McpProtocolContainmentTest#everyOfficialExampleRoundTripsAndValidates", "the pinned MCP revisions"), junit("McpProtocolContainmentTest#everyPinnedDefinitionAndMemberHasABinding", "300 definitions, 930 members"),
+                junit("FinalAssemblyCopilotTest#theCanonicalEventsCarryTheUnionOfTheSources", ASSEMBLED + ": two partial projections merged without inventing members")));
         CRITERIA.put("UC4-AC1", List.of(junit("WriterLifecycleTest#persistedPrefixIsReadableAndQueryableBeforeEof", "prefix readable while open"),
                 junit("CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy", STAND_IN + ": read while the process runs"),
                 junit("StandalonePrefixTest#aFlushedPrefixReadAloneIsAnOpenInterpretablePrefixAndTheCompletedFileCarriesItsFinalization", "file alone"), live("packages read 9 to 32 times before exit on each run")));
@@ -215,8 +218,8 @@ class RequirementsAccountingIT {
                 junit("CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted", "labelled synthetic Codex stream"),
                 junit("OcsfOracleFixtureTest#sanitizedClaudeStreamWithChildCoreIsJudgedPerCoreWithoutDefect", "sanitized real 2.1.299 stream"),
                 note("not claimed (not observed on any tested route): media/multimodal blocks, redacted or encrypted reasoning, an interactively answered permission prompt (the bidirectional stream-json route), Codex sub-agents, Codex permission decisions, a live open request at interruption")));
-        CRITERIA.put("UC5-AC8", List.of(junit("RequirementsRosterTest#everyRuleHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedRoster", "47 rules, strict"),
-                junit("RequirementsRosterTest#everyCriterionHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedCounts", "70 criteria, strict"),
+        CRITERIA.put("UC5-AC8", List.of(junit("RequirementsRosterTest#everyRuleHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedRoster", "54 rules, strict"),
+                junit("RequirementsRosterTest#everyCriterionHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedCounts", "81 criteria, strict"),
                 junit("NativeRequirementTest#everyNativeRfcSpecificationCarriesTheCompleteStatementAndThePromptRendersIt", "complete statements (Agent Judge 0.19.0)")));
         CRITERIA.put("UC5-AC9", List.of(oracle("UC5-AC9", "reporter controls computed on the real reports")));
         CRITERIA.put("UC5-AC10", List.of(separate("mutation sensitivity is measured by the pit profiles of both modules (threshold 70%, mutators and targets unchanged) in detached worktrees of the delivered revision, not in this build; killed, survived and uncovered counts are reported apart in the return")));
@@ -311,6 +314,22 @@ class RequirementsAccountingIT {
         CRITERIA.put("UC5-AC33", List.of(junit("ParityLedgerTest#everyFacetAspectAgreesWithItsConceptsExecutedStatePerRoute", ledger + " (a role claimed on a route that does not report it, an unexercised role claimed, bytes claimed as meaning, a part removed or borrowing another's concept, a covered facet with an unsettled part)"),
                 junit("ParityLedgerTest#theLedgerAndTheTopicExplanationAreGenerated", "parts checked against this build's executed concept states per route"),
                 note("the parts of operation.unknown and content.roles are reviewed proposals; their agreement with executed states approves no meaning")));
+        CRITERIA.put("UC6-AC1", List.of(junit("FinalAssemblyClaudeTest#thePairAssemblesIntoOneCanonicalExecutionTheOracleVerifies", ASSEMBLED),
+                junit("FinalAssemblyCopilotTest#theFourSourcesAssembleIntoOneExecutionTheOracleVerifies", ASSEMBLED)));
+        CRITERIA.put("UC6-AC2", List.of(junit("FinalAssemblyClaudeTest#anIdentityRepeatedWithinOneSourceStaysUnpairedAndFlagged", ASSEMBLED)));
+        CRITERIA.put("UC6-AC3", List.of(junit("FinalAssemblyClaudeTest#thePairAssemblesIntoOneCanonicalExecutionTheOracleVerifies", ASSEMBLED + ": declared authority"),
+                junit("FinalAssemblyCopilotTest#theCanonicalEventsCarryTheUnionOfTheSources", ASSEMBLED)));
+        CRITERIA.put("UC6-AC4", List.of(junit("FinalAssemblyClaudeTest#replayingTheSameImportAddsNothingWhileIdenticalBytesFromAnotherOriginStayDistinct", ASSEMBLED)));
+        CRITERIA.put("UC6-AC5", List.of(junit("FinalAssemblyCopilotTest#aMultiplierSumAndPremiumRequestsAreDistinctQuantities", ASSEMBLED),
+                junit("FinalAssemblyJunieTest#theSessionDirectoryAssemblesWithItsOutputsAndTheOracleVerifiesIt", ASSEMBLED + ": unnamed-unit costs and the named USD total")));
+        CRITERIA.put("UC6-AC6", List.of(junit("FinalAssemblyClaudeTest#theFinalFileReadsAloneWithoutNativeFilesManifestOrSchemaCaches", ASSEMBLED),
+                junit("FinalAssemblyCopilotTest#theFinalFileReadsAloneAndTheOriginalsAreUnchanged", ASSEMBLED), junit("FinalAssemblyJunieTest#theFinalFileReadsAlone", ASSEMBLED)));
+        CRITERIA.put("UC6-AC7", List.of(junit("FinalAssemblyClaudeTest#theOracleRejectsAlteredConsolidation", ASSEMBLED),
+                junit("FinalAssemblyCopilotTest#theFourSourcesAssembleIntoOneExecutionTheOracleVerifies", ASSEMBLED)));
+        CRITERIA.put("UC7-AC1", List.of(junit("SourceAvailabilityTest#aWhollyAbsentUsageClaimIsRejected", SPECIFICATIONS)));
+        CRITERIA.put("UC7-AC2", List.of(junit("SourceAvailabilityTest#aZeroMatchSelectorMarkedExercisedIsRejected", SPECIFICATIONS)));
+        CRITERIA.put("UC7-AC3", List.of(junit("SourceAvailabilityTest#nestedUsageMayNotDisappear", SPECIFICATIONS),
+                junit("SourceAvailabilityTest#theAuditOfTheEarlierRoutesFindsExactlyTheRecordedGaps", SPECIFICATIONS + ": findings A-1 and A-3 open, A-2 repaired")));
     }
 
     /** Rule to the criteria and direct checks whose conjunction establishes its full obligation. */
@@ -319,12 +338,12 @@ class RequirementsAccountingIT {
 
     static final Map<String, RuleEvidence> RULES = new LinkedHashMap<>();
     static {
-        RULES.put("RULE-1", new RuleEvidence(List.of("UC1-AC1"), List.of(), "stream normalized for both CLIs"));
-        RULES.put("RULE-2", new RuleEvidence(List.of("UC1-AC2"), List.of(), "session-only import: deferred, no such CLI in scope"));
+        RULES.put("RULE-1", new RuleEvidence(List.of("UC1-AC1"), List.of(), "inputs from the reviewed source profile of each tested CLI version and route"));
+        RULES.put("RULE-2", new RuleEvidence(List.of("UC1-AC2", "UC1-AC3", "UC1-AC4"), List.of(), ""));
         RULES.put("RULE-3", new RuleEvidence(List.of("UC1-AC5"), List.of(), ""));
         RULES.put("RULE-4", new RuleEvidence(List.of("UC1-AC3", "UC1-AC7"), List.of(), ""));
-        RULES.put("RULE-5", new RuleEvidence(List.of("UC1-AC4"), List.of(junit("CliCaptureTest#theArchiveContentsCannotChangeTheNormalizedStreamOutput", "archive never opened; version from the stream")), ""));
-        RULES.put("RULE-6", new RuleEvidence(List.of("UC1-AC4"), List.of(), "stated limitations in the Claude stream contract's unavailable_at_source, embedded in the event file; none declared for the Codex exec contract yet"));
+        RULES.put("RULE-5", new RuleEvidence(List.of("UC1-AC1", "UC6-AC1"), List.of(), "automatic assembly through CliCapture for the Claude profile; Copilot and Junie from recorded inputs"));
+        RULES.put("RULE-6", new RuleEvidence(List.of("UC1-AC4"), List.of(junit("StreamLimitationTest#theClaudeStreamContractDeclaresWhatTheStreamDoesNotReport", "declared limitations travel in the event file")), ""));
         RULES.put("RULE-7", new RuleEvidence(List.of("UC2-AC1"), List.of(), ""));
         RULES.put("RULE-8", new RuleEvidence(List.of("UC2-AC2"), List.of(), ""));
         RULES.put("RULE-9", new RuleEvidence(List.of("UC2-AC3"), List.of(), ""));
@@ -376,6 +395,13 @@ class RequirementsAccountingIT {
                 junit("MappingCatalogSummaryTest#anotherOwnersVerifiedResultCannotSatisfyAnExpectedChildsNotApplicable", "and every owner"),
                 junit("MappingCatalogSummaryTest#aValueResultCoveringFewerOccurrencesThanTheNativePopulationCannotVerify", "and every occurrence")),
                 "Tier 1 is the union of the pinned foundations; per-route availability is a separate fact"));
+        RULES.put("RULE-48", new RuleEvidence(List.of("UC6-AC1", "UC6-AC2", "UC6-AC7"), List.of(), ""));
+        RULES.put("RULE-49", new RuleEvidence(List.of("UC6-AC3", "UC6-AC7"), List.of(), ""));
+        RULES.put("RULE-50", new RuleEvidence(List.of("UC6-AC5", "UC6-AC7"), List.of(), ""));
+        RULES.put("RULE-51", new RuleEvidence(List.of("UC6-AC4"), List.of(), ""));
+        RULES.put("RULE-52", new RuleEvidence(List.of("UC1-AC4", "UC6-AC6"), List.of(), ""));
+        RULES.put("RULE-53", new RuleEvidence(List.of("UC3-AC16"), List.of(), ""));
+        RULES.put("RULE-54", new RuleEvidence(List.of("UC7-AC1", "UC7-AC2", "UC7-AC3"), List.of(), ""));
     }
 
     /** The §4 corruption-control roster: each control must have run and passed in this build (positive controls live beside them in the same tests). */

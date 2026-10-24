@@ -10,7 +10,8 @@ import java.util.List;
  * middle of a record, or in the middle of a CRLF pair), complete lines leave. A line is the bytes up to an LF;
  * a trailing CR before the LF is removed and recorded as a CRLF ending. Whatever follows the last LF stays
  * buffered as the open tail until more bytes arrive or the source ends, when the caller takes it as the final
- * record with ending {@code none} (complete if it parses, incomplete otherwise).
+ * record with ending {@code none} (complete if it parses, incomplete otherwise). A document framer
+ * ({@link #document()}) completes no line: the whole artifact is its one record, taken when the source ends.
  */
 final class LineFramer {
 
@@ -20,11 +21,33 @@ final class LineFramer {
     }
 
     private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    private final boolean whole;
     private long bytesSeen;
+
+    LineFramer() {
+        this(false);
+    }
+
+    private LineFramer(boolean whole) {
+        this.whole = whole;
+    }
+
+    /** A framer for a JSON document source: every byte stays in the tail, which is the one record when the source ends. */
+    static LineFramer document() {
+        return new LineFramer(true);
+    }
+
+    static LineFramer of(SourceDescriptor descriptor) {
+        return descriptor.document() ? document() : new LineFramer();
+    }
 
     /** Feeds a chunk and returns the complete lines it completed, in order. */
     List<Framed> push(byte[] chunk, int offset, int length) {
         bytesSeen += length;
+        if (whole) {
+            buffer.write(chunk, offset, length);
+            return List.of();
+        }
         List<Framed> out = new ArrayList<>();
         int start = offset;
         int end = offset + length;

@@ -1,0 +1,123 @@
+{
+  "profile_id": "claude-code/2.1.304/stdout+session-file",
+  "version": "0.1.0-prototype",
+  "status": "experimental",
+  "status_meaning": "the stream route is admitted on its own; this two-source assembly is an experimental profile tested on one sanitized live pair",
+  "cli": {
+    "name": "Claude Code",
+    "version": "2.1.304",
+    "vendor_name": "Anthropic"
+  },
+  "sources": [
+    {
+      "role": "stream",
+      "profile": "claude_stream",
+      "route": "stdout",
+      "kind": 1,
+      "requirement": "required",
+      "framing": "lines",
+      "identity": "events",
+      "artifact": "stream.jsonl",
+      "establishes": "the live record of the run: init settings and MCP registration, each assistant record, tool requests and results with MCP projections, the result record with run and per-model usage and cost, permission denials"
+    },
+    {
+      "role": "transcript",
+      "profile": "claude_transcript",
+      "route": "native_session_file",
+      "kind": 2,
+      "requirement": "optional",
+      "framing": "lines",
+      "identity": "events",
+      "artifact": "transcript.jsonl",
+      "establishes": "the native session file the same launch saved: the main prompt, injected context, per-request metadata and the session cost state beside the same assistant and user records"
+    }
+  ],
+  "feed_order": [
+    "stream",
+    "transcript"
+  ],
+  "precedence": [
+    "stream",
+    "transcript"
+  ],
+  "joins": [
+    {
+      "id": "claude.assistant_record",
+      "class": "model_response",
+      "key": [
+        "/source_ref/native_uid"
+      ],
+      "namespace": "claude.record_uuid",
+      "roles": [
+        "stream",
+        "transcript"
+      ],
+      "basis": "the stream and the session file write the same assistant record under the same uuid; the stream shows it before its stop reason is known (Partial) and the session file with it (Completed), so the record is one entity whose consolidated stage is the most advanced the sources report",
+      "stage_order": [
+        1,
+        3,
+        2
+      ]
+    },
+    {
+      "id": "claude.tool_request",
+      "class": "tool_call",
+      "activities": [
+        1
+      ],
+      "key": [
+        "/tool_call_uid"
+      ],
+      "namespace": "anthropic.tool_use_id",
+      "roles": [
+        "stream",
+        "transcript"
+      ],
+      "basis": "a tool_use block's id names the model's tool call in both sources"
+    },
+    {
+      "id": "claude.tool_result",
+      "class": "tool_call",
+      "activities": [
+        2
+      ],
+      "key": [
+        "/tool_call_uid"
+      ],
+      "namespace": "anthropic.tool_use_id",
+      "roles": [
+        "stream",
+        "transcript"
+      ],
+      "basis": "a tool_result block names its call by tool_use_id in both sources"
+    },
+    {
+      "id": "claude.prompt_record",
+      "class": "prompt_turn",
+      "activities": [
+        1
+      ],
+      "key": [
+        "/source_ref/native_uid"
+      ],
+      "namespace": "claude.record_uuid",
+      "roles": [
+        "stream",
+        "transcript"
+      ],
+      "basis": "a user prompt record written by both sources under the same uuid"
+    }
+  ],
+  "limits": [
+    "the transcript states no MCP registration, so the MCP target of a call is the stream's derivation",
+    "per-message usage on both sources is the message's own; the stream's is provisional until a stop reason is reported"
+  ],
+  "authorities": [
+    {
+      "class": "tool_call",
+      "pointer": "/tool_result/structured_result",
+      "role": "stream",
+      "basis": "the stream's tool_use_result is the CLI's structured result object (for an MCP call {content, structuredContent}); the session file's toolUseResult for the same call holds only the rendered text, a different member of the same name"
+    }
+  ]
+}

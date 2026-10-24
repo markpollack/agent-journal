@@ -19,10 +19,13 @@ A capture is not done because a trace parses. A run that used tools but yields n
 collapses to one state, is a failure that can look like a finding; the independent checks judge
 every reported occurrence, owner and value against the native input.
 
-Live capture normalizes the stream a CLI offers (`stream-json`, `exec --json`). Archive the CLI's
-native session file unchanged, with its checksum, and never parse it to supplement, reconcile or
-enrich the stream. Importing a saved native session is a separate, explicitly requested offline
-mode with its own provenance.
+Capture reads the sources a reviewed source profile declares for the exact CLI version and route
+(standard output, native session files and their summaries, native OTel exports, usage reports,
+standard error); there is no universal stdout preference. A complete capture assembles them into one
+new `events.jsonl` through the one writer: observations join only on declared identities, conflicts
+stay visible, quantities are never counted twice or mixed across kinds, and the original packages
+and native inputs stay unchanged. Material no profile declares is archived unchanged, with its
+checksum, and never parsed into the record.
 
 Record what the source reports. Classify a tool from its declared identity: the reported name in a
 declared exact-name table, the source's item family, or a reviewed binding of an MCP tool's exact

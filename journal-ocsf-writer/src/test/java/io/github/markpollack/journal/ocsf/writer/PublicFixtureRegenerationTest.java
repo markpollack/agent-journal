@@ -18,6 +18,10 @@ import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX_STREAM;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.FIXTURES;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.INTERRUPTED;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CLAUDE_PAIR;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_COPILOT;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_JUNIE_TERMINAL;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_JUNIE_VIEW;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.PAIR;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CANCELLED;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CODEX;
@@ -89,6 +93,28 @@ class PublicFixtureRegenerationTest {
         write(LIVE_AGY_SUBAGENT, List.of(agyStream()), List.of("stream.jsonl"));
         write(LIVE_AGY_MCP_DENIED, List.of(agyStream()), List.of("stream.jsonl"));
         write(LIVE_AGY_MCP, List.of(agyStream()), List.of("stream.jsonl"));
+        writeAssembled(LIVE_CLAUDE_PAIR);
+        writeAssembled(LIVE_COPILOT);
+        writeAssembled(LIVE_JUNIE_VIEW);
+        writeAssembled(LIVE_JUNIE_TERMINAL);
+    }
+
+    /**
+     * A finally assembled fixture: the inputs and profile its spec.json names ({@code assembly}), assembled by
+     * {@link FinalAssembly} with a fixed clock.
+     */
+    private static void writeAssembled(String fixture) throws IOException {
+        Path out = FIXTURES.resolve(fixture).resolve("package");
+        delete(out);
+        Clock fixed = Clock.fixed(Instant.parse("2026-10-21T00:00:00Z"), ZoneOffset.UTC);
+        Jv assembly = Jv.parse(Files.readString(FIXTURES.resolve(fixture).resolve("spec.json"))).member("assembly");
+        List<FinalAssembly.Input> inputs = new java.util.ArrayList<>();
+        for (Jv i : assembly.member("inputs").elements()) {
+            String artifact = i.member("artifact").text();
+            inputs.add(new FinalAssembly.Input(artifact, i.member("role").text(), FIXTURES.resolve(fixture).resolve("native").resolve(artifact), i.member("origin").text()));
+        }
+        FinalAssembly.assemble(out, run(fixture), AssemblyProfile.bundled(assembly.member("profile").text()), inputs, new Jv.Arr(), WriterOptions.defaults().withClock(fixed));
+        System.out.println("regenerated " + out);
     }
 
     /**

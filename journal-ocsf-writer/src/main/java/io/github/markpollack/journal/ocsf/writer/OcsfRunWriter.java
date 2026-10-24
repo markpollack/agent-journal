@@ -68,6 +68,8 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
     private boolean versionConflict;
     private Jv.Obj process;
     private Jv.Obj archive;
+    /** Set for a final assembly: mapper events are held as observations and written, consolidated, at finalization. */
+    private Assembler assembler;
 
     private OcsfRunWriter(Path dir, RunDescriptor run, SchemaPin pin, WriterOptions options) throws IOException {
         this.dir = dir;
@@ -93,6 +95,19 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    /**
+     * A writer for a final assembly under {@code plan}: the declared sources are fed as usual, each mapper's events are
+     * held, and at finalization the {@link Assembler} gates, groups and consolidates them and the file is written with
+     * its {@code assembly} declaration (see {@link FinalAssembly}).
+     */
+    public static OcsfRunWriter openAssembly(Path dir, RunDescriptor run, SchemaPin pin, WriterOptions options, AssemblyPlan plan) {
+        OcsfRunWriter w = open(dir, run, pin, options);
+        Map<Integer, String> names = new TreeMap<>();
+        pin.classUids().forEach((name, uid) -> names.put(uid, name));
+        w.assembler = new Assembler(plan, names, w.contracts);
+        return w;
     }
 
     public Path dir() {
@@ -232,7 +247,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         if (s.descriptor.pathAtCapture() != null) {
             d.put("path_at_capture", s.descriptor.pathAtCapture());
         }
-        return d.put("contract_uid", contracts.uid(s.mapper.contractName()));
+        return d.put("framing", s.descriptor.declaredFraming()).put("contract_uid", contracts.uid(s.mapper.contractName()));
     }
 
     /** The {@code run} declaration of a core: identity, product, launch settings, parent/scope for a child, producer and capture time. */
@@ -288,7 +303,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         final SourceDescriptor descriptor;
         final SourceMapper mapper;
         final SourceContext ctx;
-        final LineFramer framer = new LineFramer();
+        final LineFramer framer;
         final MessageDigest digest;
         String stateName = "PENDING";
         int records;
@@ -309,7 +324,8 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         Source(SourceDescriptor descriptor) {
             this.descriptor = descriptor;
             this.mapper = SourceMapper.forProfile(descriptor.profile());
-            this.ctx = new SourceContext(descriptor, run, contracts, pin, this);
+            this.framer = LineFramer.of(descriptor);
+            this.ctx = new SourceContext(descriptor, run, contracts, pin, this, () -> sessionUid);
             try {
                 this.digest = MessageDigest.getInstance("SHA-256");
             }
@@ -563,6 +579,10 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
             if (event.get("session_uid") instanceof Jv.Str s && sessionUid == null) {
                 sessionUid = s.value();
             }
+            if (assembler != null) {
+                assembler.observe(descriptor.artifact(), owner, event);
+                return;
+            }
             if (owner == null) {
                 root.append(event);
             }
@@ -587,7 +607,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
             if (descriptor.pathAtCapture() != null) {
                 s.put("path_at_capture", descriptor.pathAtCapture());
             }
-            s.put("contract_uid", contracts.uid(mapper.contractName())).put("compatibility", compatibilityInForce()).put("state", stateName).put("final", ended)
+            s.put("framing", descriptor.declaredFraming()).put("contract_uid", contracts.uid(mapper.contractName())).put("compatibility", compatibilityInForce()).put("state", stateName).put("final", ended)
                     .put("records", records).put("bytes", bytes).put("opaque_records", opaque).put("trailing_newline", lastByteNewline);
             if (ended) {
                 s.put("sha256", sha256());
@@ -693,6 +713,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
     }
 
     private void finish(State outcome, String reason) {
+        drainAssembly();
         try {
             ended = options.clock().instant();
             state = outcome;
@@ -712,6 +733,31 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
             fail("finish", e);
             throw new UncheckedIOException(e);
         }
+    }
+
+    /** Writes the held observations of a final assembly, consolidated, before the file is finalized. */
+    private void drainAssembly() {
+        if (assembler == null) {
+            return;
+        }
+        Map<String, AssemblyGate.SourceFacts> facts = new LinkedHashMap<>();
+        for (Source s : sources.values()) {
+            facts.put(s.descriptor.artifact(), new AssemblyGate.SourceFacts(s.descriptor.artifact(), s.sha256(), s.records, s.bytes, s.endedHow == null ? "open" : s.endedHow.name(),
+                    s.ctx.reportedSessions()));
+        }
+        Assembler a = assembler;
+        assembler = null;
+        a.write(new Assembler.Out() {
+            @Override
+            public void declare(Jv.Obj assembly) {
+                root.declareAssembly(assembly);
+            }
+
+            @Override
+            public void append(String owner, Jv.Obj event) {
+                (owner == null ? root : childFor(owner)).append(event);
+            }
+        }, facts);
     }
 
     private void fail(String operation, IOException cause) {

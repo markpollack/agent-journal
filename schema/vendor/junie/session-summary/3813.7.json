@@ -1,0 +1,330 @@
+{
+ "kind": "agent-journal/native-source-specification",
+ "version": "0.1",
+ "status": "ACCEPTED 0.1.0 (2026-10-24, level-1 assembly phase): EXPERIMENTAL route specification frozen from two sanitized live 3813.7 runs; drift reports propose changes, review accepts them by editing this file and bumping specification_version",
+ "specification_version": "0.1.0",
+ "profile": "junie_summary",
+ "applies_to": {
+  "cli": "Junie",
+  "version": "3813.7",
+  "launch_mode": "junie --output-format json-stream --skip-update-check --share-anonymous-statistics=false --project <dir> --task <task>",
+  "source_kind": "saved session file",
+  "capture_route": "the session directory's summary.json copied after the run",
+  "route_limit": "the summary document only; it identifies the session directory whose events.jsonl carries no session id"
+ },
+ "provenance": {
+  "observed_on": [
+   {
+    "artifact": "fixture junie-live-3813.7-view native/summary.json",
+    "sha256": "da2f2e16aeaf7690a85e49a0a21a4220a5f53e2c70e735a82a940e46aed866fc",
+    "records": 1,
+    "bytes": 892,
+    "frozen_in": "journal-capture-tck/src/test/resources/ocsf/fixtures/junie-live-3813.7-view (sanitized; the original is private steward evidence)"
+   },
+   {
+    "artifact": "fixture junie-live-3813.7-terminal native/summary.json",
+    "sha256": "f9bbab52ce242dcc8768d3b5689c0cbf511a67b38426cb4fa6e0b29962677b97",
+    "records": 1,
+    "bytes": 1094,
+    "frozen_in": "journal-capture-tck/src/test/resources/ocsf/fixtures/junie-live-3813.7-terminal (sanitized; the original is private steward evidence)"
+   }
+  ],
+  "produced_by": "journal-capture-tck NativeInventoryTool draft (RawInventory 0.1, profile junie_summary)",
+  "reviewed": "2026-10-24 level-1 assembly phase: variants and data-keyed paths reviewed against both 3813.7 recordings"
+ },
+ "limits": [
+  "one CLI version (3813.7, display 26.10.20) and one launch mode: the inventory is the observed shape of two sanitized live runs (junie-1 viewing a file, junie-2 a failing terminal command), not a vendor promise",
+  "a field observed in one record is not universal; a field absent from these specimens is not removed; nullability is what was seen",
+  "variants are discriminated by the vendor's own fields; a record with a new discriminator value is a new variant, not an error",
+  "a usage entry's cost names no unit: it is never read as money; only completion.taskCostUsd is named USD",
+  "EXPERIMENTAL route: no field-disposition catalog and no independent oracle profile yet; the assembly oracle judges the final assembly; admission needs both",
+  "the specimens were sanitized (session, task and step ids replaced by stand-ins; home paths and the log path replaced); shapes and value kinds are unchanged"
+ ],
+ "external_cross_checks": [
+  {
+   "name": "Junie 3813.7 --help and its documentation of --output-format json-stream",
+   "role": "vendor description",
+   "use": "option names compared by reading; no published schema of the outputs; no path-level comparison was run"
+  }
+ ],
+ "open_variants": [],
+ "inventory": {
+  "observed_on": [
+   {
+    "artifact": "summary.json",
+    "sha256": "da2f2e16aeaf7690a85e49a0a21a4220a5f53e2c70e735a82a940e46aed866fc",
+    "bytes": 892,
+    "records": 1
+   },
+   {
+    "artifact": "summary.json",
+    "sha256": "f9bbab52ce242dcc8768d3b5689c0cbf511a67b38426cb4fa6e0b29962677b97",
+    "bytes": 1094,
+    "records": 1
+   }
+  ],
+  "data_keyed": [],
+  "map_keyed": [],
+  "variants": {
+   "(untyped)": {
+    "discriminators": {
+     "type": null
+    },
+    "records": 2,
+    "evidence": [
+     "summary.json:1",
+     "summary.json:1"
+    ],
+    "paths": {
+     "createdAt": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "summary.json:1",
+       "summary.json:1"
+      ]
+     },
+     "lifecycle": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "summary.json:1",
+       "summary.json:1"
+      ]
+     },
+     "mainAgent": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "summary.json:1",
+       "summary.json:1"
+      ]
+     },
+     "mainAgent.modelUsage": {
+      "kinds": {
+       "array": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "summary.json:1",
+       "summary.json:1"
+      ]
+     },
+     "mainAgent.modelUsage[]": {
+      "kinds": {
+       "object": 7
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "summary.json:1",
+       "summary.json:1"
+      ]
+     },
+     "mainAgent.modelUsage[].cacheCreateTokens": {
+      "kinds": {
+       "integer": 7
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "summary.json:1",
+       "summary.json:1"
+      ]
+     },
+     "mainAgent.modelUsage[].cacheInputTokens": {
+      "kinds": {
+       "integer": 7
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "summary.json:1",
+       "summary.json:1"
+      ]
+     },
+     "mainAgent.modelUsage[].cost": {
+      "kinds": {
+       "decimal": 7
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "summary.json:1",
+       "summary.json:1"
+      ]
+     },
+     "mainAgent.modelUsage[].inputTokens": {
+      "kinds": {
+       "integer": 7
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "summary.json:1",
+       "summary.json:1"
+      ]
+     },
+     "mainAgent.modelUsage[].model": {
+      "kinds": {
+       "string": 7
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "summary.json:1",
+       "summary.json:1"
+      ]
+     },
+     "mainAgent.modelUsage[].outputTokens": {
+      "kinds": {
+       "integer": 7
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "summary.json:1",
+       "summary.json:1"
+      ]
+     },
+     "projectDir": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "summary.json:1",
+       "summary.json:1"
+      ]
+     },
+     "sessionId": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "summary.json:1",
+       "summary.json:1"
+      ]
+     },
+     "taskName": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "summary.json:1",
+       "summary.json:1"
+      ]
+     },
+     "updatedAt": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "summary.json:1",
+       "summary.json:1"
+      ]
+     }
+    }
+   }
+  }
+ },
+ "availability": {
+  "rule": "agent-journal/source-availability 0.1: per fact family, whether this source reports it and where (selectors: variant and path, with the population the inventory observed); a family is absent only when no observed path matches its vocabulary; a selector that matches nothing is unexercised, never verified (SourceAvailability)",
+  "families": [
+   {
+    "family": "token_usage",
+    "claim": "present",
+    "granularity": "per model for the main agent (cumulative for the session)",
+    "selectors": [
+     {
+      "variant": "(untyped)",
+      "path": "mainAgent.modelUsage[].inputTokens",
+      "matched_records": 2,
+      "exercised": true
+     },
+     {
+      "variant": "(untyped)",
+      "path": "mainAgent.modelUsage[].outputTokens",
+      "matched_records": 2,
+      "exercised": true
+     }
+    ]
+   },
+   {
+    "family": "cost",
+    "claim": "present",
+    "granularity": "per model, unit not named (never money)",
+    "selectors": [
+     {
+      "variant": "(untyped)",
+      "path": "mainAgent.modelUsage[].cost",
+      "matched_records": 2,
+      "exercised": true
+     }
+    ]
+   }
+  ]
+ }
+}

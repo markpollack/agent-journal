@@ -212,6 +212,8 @@ public final class ExpectedFacts {
     public final Map<Integer, String> nativeUid = new LinkedHashMap<>();
     /** Owned records that a normalization rule covers; every other owned record is expected as a whole-record fallback. */
     public final Set<Integer> normalized = new LinkedHashSet<>();
+    /** Whether the oracle has no profile for the source: which records a rule normalizes is then not judged, only retention. */
+    public boolean classUnjudged;
     /** Records excluded by a declared admission, by record index, with the declared family name. */
     public final Map<Integer, String> excluded = new LinkedHashMap<>();
     /** Records whose timestamp text the event must carry verbatim as {@code metadata.original_time}. */

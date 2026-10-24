@@ -167,7 +167,7 @@ class CliCaptureLifecycleTest {
         Path task = Files.createDirectories(work.resolve("task"));
         List<String> command = CliCapture.codexCommand(standIn.script.toString(), "TEST PROMPT (stand-in; no model)", null, null, task, List.of());
         CliCapture.Launch launch = new CliCapture.Launch(CliCapture.Cli.CODEX, command, task, "TEST PROMPT (stand-in; no model)", "probe-hang", work.resolve("out"), null, null,
-                work.resolve("home"), null, new Jv.Obj().put("stand_in", "TEST-ONLY: a shell script whose --version never ends; not a live CLI"), LIMITS);
+                work.resolve("home"), null, new Jv.Obj().put("stand_in", "TEST-ONLY: a shell script whose --version never ends; not a live CLI"), LIMITS, null);
         CliCapture capture = new CliCapture(launch, options());
         CompletableFuture<Throwable> failure = CompletableFuture.supplyAsync(() -> {
             try {
@@ -245,7 +245,7 @@ class CliCaptureLifecycleTest {
         Path task = Files.createDirectories(work.resolve("task"));
         List<String> command = CliCapture.claudeCommand(standIn.script.toString(), "TEST PROMPT (stand-in; no model)", null, List.of("Read", "Write"), List.of());
         return new CliCapture.Launch(CliCapture.Cli.CLAUDE, command, task, "TEST PROMPT (stand-in; no model)", "lifecycle-" + standIn.name, work.resolve("out"), cancelAfterRecords, cancelAfterMs,
-                work.resolve("home"), null, new Jv.Obj().put("stand_in", "TEST-ONLY: a shell script (" + standIn.name + "); not a live CLI"), LIMITS);
+                work.resolve("home"), null, new Jv.Obj().put("stand_in", "TEST-ONLY: a shell script (" + standIn.name + "); not a live CLI"), LIMITS, null);
     }
 
     /** Runs the capture on its own thread under the outer bound; on timeout kills the stand-in and fails. */

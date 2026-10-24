@@ -1,0 +1,4372 @@
+{
+ "kind": "agent-journal/native-source-specification",
+ "version": "0.1",
+ "status": "ACCEPTED 0.1.0 (2026-10-24, level-1 assembly phase): EXPERIMENTAL route specification frozen from two sanitized live 3813.7 runs; drift reports propose changes, review accepts them by editing this file and bumping specification_version",
+ "specification_version": "0.1.0",
+ "profile": "junie_session_events",
+ "applies_to": {
+  "cli": "Junie",
+  "version": "3813.7",
+  "launch_mode": "as the summary (the same session directory)",
+  "source_kind": "saved session file",
+  "capture_route": "the session directory's events.jsonl copied after the run",
+  "route_limit": "the events file only; its session is the summary's"
+ },
+ "provenance": {
+  "observed_on": [
+   {
+    "artifact": "fixture junie-live-3813.7-view native/session-events.jsonl",
+    "sha256": "b2c730522e8a0fc43dd44d19861e8e52a794cd9fbaed5903cb28d08da4a03461",
+    "records": 64,
+    "bytes": 31878,
+    "frozen_in": "journal-capture-tck/src/test/resources/ocsf/fixtures/junie-live-3813.7-view (sanitized; the original is private steward evidence)"
+   },
+   {
+    "artifact": "fixture junie-live-3813.7-terminal native/session-events.jsonl",
+    "sha256": "b7a67807130502d59da3643a542f83a35fd78495a075b751560de5de35c25a4f",
+    "records": 65,
+    "bytes": 32625,
+    "frozen_in": "journal-capture-tck/src/test/resources/ocsf/fixtures/junie-live-3813.7-terminal (sanitized; the original is private steward evidence)"
+   }
+  ],
+  "produced_by": "journal-capture-tck NativeInventoryTool draft (RawInventory 0.1, profile junie_session_events)",
+  "reviewed": "2026-10-24 level-1 assembly phase: variants and data-keyed paths reviewed against both 3813.7 recordings"
+ },
+ "limits": [
+  "one CLI version (3813.7, display 26.10.20) and one launch mode: the inventory is the observed shape of two sanitized live runs (junie-1 viewing a file, junie-2 a failing terminal command), not a vendor promise",
+  "a field observed in one record is not universal; a field absent from these specimens is not removed; nullability is what was seen",
+  "variants are discriminated by the vendor's own fields; a record with a new discriminator value is a new variant, not an error",
+  "a usage entry's cost names no unit: it is never read as money; only completion.taskCostUsd is named USD",
+  "EXPERIMENTAL route: no field-disposition catalog and no independent oracle profile yet; the assembly oracle judges the final assembly; admission needs both",
+  "the specimens were sanitized (session, task and step ids replaced by stand-ins; home paths and the log path replaced); shapes and value kinds are unchanged"
+ ],
+ "external_cross_checks": [
+  {
+   "name": "Junie 3813.7 --help and its documentation of --output-format json-stream",
+   "role": "vendor description",
+   "use": "option names compared by reading; no published schema of the outputs; no path-level comparison was run"
+  }
+ ],
+ "open_variants": [],
+ "inventory": {
+  "observed_on": [
+   {
+    "artifact": "session-events.jsonl",
+    "sha256": "b2c730522e8a0fc43dd44d19861e8e52a794cd9fbaed5903cb28d08da4a03461",
+    "bytes": 31878,
+    "records": 64
+   },
+   {
+    "artifact": "session-events.jsonl",
+    "sha256": "b7a67807130502d59da3643a542f83a35fd78495a075b751560de5de35c25a4f",
+    "bytes": 32625,
+    "records": 65
+   }
+  ],
+  "data_keyed": [
+   "event.agentEvent.env"
+  ],
+  "map_keyed": [],
+  "variants": {
+   "SessionA2uxEvent/AgentCurrentStatusUpdatedEvent": {
+    "discriminators": {
+     "kind": "SessionA2uxEvent",
+     "event.agentEvent.kind": "AgentCurrentStatusUpdatedEvent"
+    },
+    "records": 86,
+    "evidence": [
+     "session-events.jsonl:2",
+     "session-events.jsonl:5",
+     "session-events.jsonl:6",
+     "session-events.jsonl:8",
+     "session-events.jsonl:10",
+     "session-events.jsonl:11",
+     "session-events.jsonl:12",
+     "session-events.jsonl:13",
+     "session-events.jsonl:14",
+     "session-events.jsonl:15",
+     "session-events.jsonl:16",
+     "session-events.jsonl:17",
+     "session-events.jsonl:18",
+     "session-events.jsonl:20",
+     "session-events.jsonl:21",
+     "session-events.jsonl:23",
+     "session-events.jsonl:26",
+     "session-events.jsonl:27",
+     "session-events.jsonl:28",
+     "session-events.jsonl:29",
+     "session-events.jsonl:30",
+     "session-events.jsonl:34",
+     "session-events.jsonl:36",
+     "session-events.jsonl:39",
+     "session-events.jsonl:40",
+     "session-events.jsonl:41",
+     "session-events.jsonl:42",
+     "session-events.jsonl:43",
+     "session-events.jsonl:44",
+     "session-events.jsonl:46",
+     "session-events.jsonl:49",
+     "session-events.jsonl:50",
+     "session-events.jsonl:51",
+     "session-events.jsonl:52",
+     "session-events.jsonl:53",
+     "session-events.jsonl:55",
+     "session-events.jsonl:56",
+     "session-events.jsonl:57",
+     "session-events.jsonl:58",
+     "session-events.jsonl:60",
+     "session-events.jsonl:63",
+     "session-events.jsonl:64",
+     "session-events.jsonl:2",
+     "session-events.jsonl:5",
+     "session-events.jsonl:6",
+     "session-events.jsonl:8",
+     "session-events.jsonl:10",
+     "session-events.jsonl:11",
+     "session-events.jsonl:12",
+     "session-events.jsonl:13",
+     "session-events.jsonl:14",
+     "session-events.jsonl:15",
+     "session-events.jsonl:16",
+     "session-events.jsonl:17",
+     "session-events.jsonl:18",
+     "session-events.jsonl:20",
+     "session-events.jsonl:21",
+     "session-events.jsonl:23",
+     "session-events.jsonl:26",
+     "session-events.jsonl:27",
+     "session-events.jsonl:28",
+     "session-events.jsonl:29",
+     "session-events.jsonl:30",
+     "session-events.jsonl:32",
+     "session-events.jsonl:34",
+     "session-events.jsonl:37",
+     "session-events.jsonl:38",
+     "session-events.jsonl:39",
+     "session-events.jsonl:40",
+     "session-events.jsonl:41",
+     "session-events.jsonl:42",
+     "session-events.jsonl:43",
+     "session-events.jsonl:45",
+     "session-events.jsonl:48",
+     "session-events.jsonl:50",
+     "session-events.jsonl:51",
+     "session-events.jsonl:52",
+     "session-events.jsonl:53",
+     "session-events.jsonl:54",
+     "session-events.jsonl:56",
+     "session-events.jsonl:57",
+     "session-events.jsonl:58",
+     "session-events.jsonl:59",
+     "session-events.jsonl:61",
+     "session-events.jsonl:64",
+     "session-events.jsonl:65"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "object": 86
+      },
+      "present_in_records": 86,
+      "absent_in_records": 0,
+      "occurrences": 86,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:34",
+       "session-events.jsonl:36",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:44",
+       "session-events.jsonl:46",
+       "session-events.jsonl:49",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:55",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:60",
+       "session-events.jsonl:63",
+       "session-events.jsonl:64",
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:32",
+       "session-events.jsonl:34",
+       "session-events.jsonl:37",
+       "session-events.jsonl:38",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:54",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:59",
+       "session-events.jsonl:61",
+       "session-events.jsonl:64",
+       "session-events.jsonl:65"
+      ]
+     },
+     "event.agentEvent": {
+      "kinds": {
+       "object": 86
+      },
+      "present_in_records": 86,
+      "absent_in_records": 0,
+      "occurrences": 86,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:34",
+       "session-events.jsonl:36",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:44",
+       "session-events.jsonl:46",
+       "session-events.jsonl:49",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:55",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:60",
+       "session-events.jsonl:63",
+       "session-events.jsonl:64",
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:32",
+       "session-events.jsonl:34",
+       "session-events.jsonl:37",
+       "session-events.jsonl:38",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:54",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:59",
+       "session-events.jsonl:61",
+       "session-events.jsonl:64",
+       "session-events.jsonl:65"
+      ]
+     },
+     "event.agentEvent.agent": {
+      "kinds": {
+       "object": 86
+      },
+      "present_in_records": 86,
+      "absent_in_records": 0,
+      "occurrences": 86,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:34",
+       "session-events.jsonl:36",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:44",
+       "session-events.jsonl:46",
+       "session-events.jsonl:49",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:55",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:60",
+       "session-events.jsonl:63",
+       "session-events.jsonl:64",
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:32",
+       "session-events.jsonl:34",
+       "session-events.jsonl:37",
+       "session-events.jsonl:38",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:54",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:59",
+       "session-events.jsonl:61",
+       "session-events.jsonl:64",
+       "session-events.jsonl:65"
+      ]
+     },
+     "event.agentEvent.agent.id": {
+      "kinds": {
+       "string": 86
+      },
+      "present_in_records": 86,
+      "absent_in_records": 0,
+      "occurrences": 86,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:34",
+       "session-events.jsonl:36",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:44",
+       "session-events.jsonl:46",
+       "session-events.jsonl:49",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:55",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:60",
+       "session-events.jsonl:63",
+       "session-events.jsonl:64",
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:32",
+       "session-events.jsonl:34",
+       "session-events.jsonl:37",
+       "session-events.jsonl:38",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:54",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:59",
+       "session-events.jsonl:61",
+       "session-events.jsonl:64",
+       "session-events.jsonl:65"
+      ]
+     },
+     "event.agentEvent.agent.kind": {
+      "kinds": {
+       "string": 86
+      },
+      "present_in_records": 86,
+      "absent_in_records": 0,
+      "occurrences": 86,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:34",
+       "session-events.jsonl:36",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:44",
+       "session-events.jsonl:46",
+       "session-events.jsonl:49",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:55",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:60",
+       "session-events.jsonl:63",
+       "session-events.jsonl:64",
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:32",
+       "session-events.jsonl:34",
+       "session-events.jsonl:37",
+       "session-events.jsonl:38",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:54",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:59",
+       "session-events.jsonl:61",
+       "session-events.jsonl:64",
+       "session-events.jsonl:65"
+      ]
+     },
+     "event.agentEvent.agent.name": {
+      "kinds": {
+       "string": 86
+      },
+      "present_in_records": 86,
+      "absent_in_records": 0,
+      "occurrences": 86,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:34",
+       "session-events.jsonl:36",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:44",
+       "session-events.jsonl:46",
+       "session-events.jsonl:49",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:55",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:60",
+       "session-events.jsonl:63",
+       "session-events.jsonl:64",
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:32",
+       "session-events.jsonl:34",
+       "session-events.jsonl:37",
+       "session-events.jsonl:38",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:54",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:59",
+       "session-events.jsonl:61",
+       "session-events.jsonl:64",
+       "session-events.jsonl:65"
+      ]
+     },
+     "event.agentEvent.agent.type": {
+      "kinds": {
+       "string": 86
+      },
+      "present_in_records": 86,
+      "absent_in_records": 0,
+      "occurrences": 86,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:34",
+       "session-events.jsonl:36",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:44",
+       "session-events.jsonl:46",
+       "session-events.jsonl:49",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:55",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:60",
+       "session-events.jsonl:63",
+       "session-events.jsonl:64",
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:32",
+       "session-events.jsonl:34",
+       "session-events.jsonl:37",
+       "session-events.jsonl:38",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:54",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:59",
+       "session-events.jsonl:61",
+       "session-events.jsonl:64",
+       "session-events.jsonl:65"
+      ]
+     },
+     "event.agentEvent.kind": {
+      "kinds": {
+       "string": 86
+      },
+      "present_in_records": 86,
+      "absent_in_records": 0,
+      "occurrences": 86,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:34",
+       "session-events.jsonl:36",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:44",
+       "session-events.jsonl:46",
+       "session-events.jsonl:49",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:55",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:60",
+       "session-events.jsonl:63",
+       "session-events.jsonl:64",
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:32",
+       "session-events.jsonl:34",
+       "session-events.jsonl:37",
+       "session-events.jsonl:38",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:54",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:59",
+       "session-events.jsonl:61",
+       "session-events.jsonl:64",
+       "session-events.jsonl:65"
+      ]
+     },
+     "event.agentEvent.status": {
+      "kinds": {
+       "string": 40
+      },
+      "present_in_records": 40,
+      "absent_in_records": 46,
+      "occurrences": 40,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:5",
+       "session-events.jsonl:10",
+       "session-events.jsonl:12",
+       "session-events.jsonl:14",
+       "session-events.jsonl:16",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:27",
+       "session-events.jsonl:29",
+       "session-events.jsonl:34",
+       "session-events.jsonl:40",
+       "session-events.jsonl:42",
+       "session-events.jsonl:44",
+       "session-events.jsonl:46",
+       "session-events.jsonl:50",
+       "session-events.jsonl:52",
+       "session-events.jsonl:58",
+       "session-events.jsonl:5",
+       "session-events.jsonl:10",
+       "session-events.jsonl:12",
+       "session-events.jsonl:14",
+       "session-events.jsonl:16",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:27",
+       "session-events.jsonl:29",
+       "session-events.jsonl:32",
+       "session-events.jsonl:38",
+       "session-events.jsonl:39",
+       "session-events.jsonl:41",
+       "session-events.jsonl:43",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:51",
+       "session-events.jsonl:53",
+       "session-events.jsonl:59"
+      ]
+     },
+     "event.agentEvent.statusKind": {
+      "kinds": {
+       "string": 40
+      },
+      "present_in_records": 40,
+      "absent_in_records": 46,
+      "occurrences": 40,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:5",
+       "session-events.jsonl:10",
+       "session-events.jsonl:12",
+       "session-events.jsonl:14",
+       "session-events.jsonl:16",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:27",
+       "session-events.jsonl:29",
+       "session-events.jsonl:34",
+       "session-events.jsonl:40",
+       "session-events.jsonl:42",
+       "session-events.jsonl:44",
+       "session-events.jsonl:46",
+       "session-events.jsonl:50",
+       "session-events.jsonl:52",
+       "session-events.jsonl:58",
+       "session-events.jsonl:5",
+       "session-events.jsonl:10",
+       "session-events.jsonl:12",
+       "session-events.jsonl:14",
+       "session-events.jsonl:16",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:27",
+       "session-events.jsonl:29",
+       "session-events.jsonl:32",
+       "session-events.jsonl:38",
+       "session-events.jsonl:39",
+       "session-events.jsonl:41",
+       "session-events.jsonl:43",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:51",
+       "session-events.jsonl:53",
+       "session-events.jsonl:59"
+      ]
+     },
+     "event.state": {
+      "kinds": {
+       "string": 86
+      },
+      "present_in_records": 86,
+      "absent_in_records": 0,
+      "occurrences": 86,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:34",
+       "session-events.jsonl:36",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:44",
+       "session-events.jsonl:46",
+       "session-events.jsonl:49",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:55",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:60",
+       "session-events.jsonl:63",
+       "session-events.jsonl:64",
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:32",
+       "session-events.jsonl:34",
+       "session-events.jsonl:37",
+       "session-events.jsonl:38",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:54",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:59",
+       "session-events.jsonl:61",
+       "session-events.jsonl:64",
+       "session-events.jsonl:65"
+      ]
+     },
+     "kind": {
+      "kinds": {
+       "string": 86
+      },
+      "present_in_records": 86,
+      "absent_in_records": 0,
+      "occurrences": 86,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:34",
+       "session-events.jsonl:36",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:44",
+       "session-events.jsonl:46",
+       "session-events.jsonl:49",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:55",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:60",
+       "session-events.jsonl:63",
+       "session-events.jsonl:64",
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:32",
+       "session-events.jsonl:34",
+       "session-events.jsonl:37",
+       "session-events.jsonl:38",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:54",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:59",
+       "session-events.jsonl:61",
+       "session-events.jsonl:64",
+       "session-events.jsonl:65"
+      ]
+     },
+     "timestampMs": {
+      "kinds": {
+       "integer": 86
+      },
+      "present_in_records": 86,
+      "absent_in_records": 0,
+      "occurrences": 86,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:34",
+       "session-events.jsonl:36",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:44",
+       "session-events.jsonl:46",
+       "session-events.jsonl:49",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:55",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:60",
+       "session-events.jsonl:63",
+       "session-events.jsonl:64",
+       "session-events.jsonl:2",
+       "session-events.jsonl:5",
+       "session-events.jsonl:6",
+       "session-events.jsonl:8",
+       "session-events.jsonl:10",
+       "session-events.jsonl:11",
+       "session-events.jsonl:12",
+       "session-events.jsonl:13",
+       "session-events.jsonl:14",
+       "session-events.jsonl:15",
+       "session-events.jsonl:16",
+       "session-events.jsonl:17",
+       "session-events.jsonl:18",
+       "session-events.jsonl:20",
+       "session-events.jsonl:21",
+       "session-events.jsonl:23",
+       "session-events.jsonl:26",
+       "session-events.jsonl:27",
+       "session-events.jsonl:28",
+       "session-events.jsonl:29",
+       "session-events.jsonl:30",
+       "session-events.jsonl:32",
+       "session-events.jsonl:34",
+       "session-events.jsonl:37",
+       "session-events.jsonl:38",
+       "session-events.jsonl:39",
+       "session-events.jsonl:40",
+       "session-events.jsonl:41",
+       "session-events.jsonl:42",
+       "session-events.jsonl:43",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:50",
+       "session-events.jsonl:51",
+       "session-events.jsonl:52",
+       "session-events.jsonl:53",
+       "session-events.jsonl:54",
+       "session-events.jsonl:56",
+       "session-events.jsonl:57",
+       "session-events.jsonl:58",
+       "session-events.jsonl:59",
+       "session-events.jsonl:61",
+       "session-events.jsonl:64",
+       "session-events.jsonl:65"
+      ]
+     }
+    }
+   },
+   "SessionA2uxEvent/AgentPatchCreatedEvent": {
+    "discriminators": {
+     "kind": "SessionA2uxEvent",
+     "event.agentEvent.kind": "AgentPatchCreatedEvent"
+    },
+    "records": 2,
+    "evidence": [
+     "session-events.jsonl:61",
+     "session-events.jsonl:62"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:61",
+       "session-events.jsonl:62"
+      ]
+     },
+     "event.agentEvent": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:61",
+       "session-events.jsonl:62"
+      ]
+     },
+     "event.agentEvent.agent": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:61",
+       "session-events.jsonl:62"
+      ]
+     },
+     "event.agentEvent.agent.id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:61",
+       "session-events.jsonl:62"
+      ]
+     },
+     "event.agentEvent.agent.kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:61",
+       "session-events.jsonl:62"
+      ]
+     },
+     "event.agentEvent.agent.name": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:61",
+       "session-events.jsonl:62"
+      ]
+     },
+     "event.agentEvent.agent.type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:61",
+       "session-events.jsonl:62"
+      ]
+     },
+     "event.agentEvent.kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:61",
+       "session-events.jsonl:62"
+      ]
+     },
+     "event.agentEvent.patch": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:61",
+       "session-events.jsonl:62"
+      ]
+     },
+     "event.agentEvent.stats": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:61",
+       "session-events.jsonl:62"
+      ]
+     },
+     "event.agentEvent.stats.filesChanged": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:61",
+       "session-events.jsonl:62"
+      ]
+     },
+     "event.agentEvent.stats.linesAdded": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:61",
+       "session-events.jsonl:62"
+      ]
+     },
+     "event.agentEvent.stats.linesRemoved": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:61",
+       "session-events.jsonl:62"
+      ]
+     },
+     "event.state": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:61",
+       "session-events.jsonl:62"
+      ]
+     },
+     "kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:61",
+       "session-events.jsonl:62"
+      ]
+     },
+     "timestampMs": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:61",
+       "session-events.jsonl:62"
+      ]
+     }
+    }
+   },
+   "SessionA2uxEvent/AgentTaskNameUpdatedEvent": {
+    "discriminators": {
+     "kind": "SessionA2uxEvent",
+     "event.agentEvent.kind": "AgentTaskNameUpdatedEvent"
+    },
+    "records": 2,
+    "evidence": [
+     "session-events.jsonl:24",
+     "session-events.jsonl:24"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:24",
+       "session-events.jsonl:24"
+      ]
+     },
+     "event.agentEvent": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:24",
+       "session-events.jsonl:24"
+      ]
+     },
+     "event.agentEvent.agent": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:24",
+       "session-events.jsonl:24"
+      ]
+     },
+     "event.agentEvent.agent.id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:24",
+       "session-events.jsonl:24"
+      ]
+     },
+     "event.agentEvent.agent.kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:24",
+       "session-events.jsonl:24"
+      ]
+     },
+     "event.agentEvent.agent.name": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:24",
+       "session-events.jsonl:24"
+      ]
+     },
+     "event.agentEvent.agent.type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:24",
+       "session-events.jsonl:24"
+      ]
+     },
+     "event.agentEvent.kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:24",
+       "session-events.jsonl:24"
+      ]
+     },
+     "event.agentEvent.name": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:24",
+       "session-events.jsonl:24"
+      ]
+     },
+     "event.state": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:24",
+       "session-events.jsonl:24"
+      ]
+     },
+     "kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:24",
+       "session-events.jsonl:24"
+      ]
+     },
+     "timestampMs": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:24",
+       "session-events.jsonl:24"
+      ]
+     }
+    }
+   },
+   "SessionA2uxEvent/ContextWindowReportEvent": {
+    "discriminators": {
+     "kind": "SessionA2uxEvent",
+     "event.agentEvent.kind": "ContextWindowReportEvent"
+    },
+    "records": 4,
+    "evidence": [
+     "session-events.jsonl:35",
+     "session-events.jsonl:54",
+     "session-events.jsonl:33",
+     "session-events.jsonl:55"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "object": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:35",
+       "session-events.jsonl:54",
+       "session-events.jsonl:33",
+       "session-events.jsonl:55"
+      ]
+     },
+     "event.agentEvent": {
+      "kinds": {
+       "object": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:35",
+       "session-events.jsonl:54",
+       "session-events.jsonl:33",
+       "session-events.jsonl:55"
+      ]
+     },
+     "event.agentEvent.agent": {
+      "kinds": {
+       "object": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:35",
+       "session-events.jsonl:54",
+       "session-events.jsonl:33",
+       "session-events.jsonl:55"
+      ]
+     },
+     "event.agentEvent.agent.id": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:35",
+       "session-events.jsonl:54",
+       "session-events.jsonl:33",
+       "session-events.jsonl:55"
+      ]
+     },
+     "event.agentEvent.agent.kind": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:35",
+       "session-events.jsonl:54",
+       "session-events.jsonl:33",
+       "session-events.jsonl:55"
+      ]
+     },
+     "event.agentEvent.agent.name": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:35",
+       "session-events.jsonl:54",
+       "session-events.jsonl:33",
+       "session-events.jsonl:55"
+      ]
+     },
+     "event.agentEvent.agent.type": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:35",
+       "session-events.jsonl:54",
+       "session-events.jsonl:33",
+       "session-events.jsonl:55"
+      ]
+     },
+     "event.agentEvent.kind": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:35",
+       "session-events.jsonl:54",
+       "session-events.jsonl:33",
+       "session-events.jsonl:55"
+      ]
+     },
+     "event.agentEvent.percentage": {
+      "kinds": {
+       "decimal": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:35",
+       "session-events.jsonl:54",
+       "session-events.jsonl:33",
+       "session-events.jsonl:55"
+      ]
+     },
+     "event.agentEvent.size": {
+      "kinds": {
+       "integer": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:35",
+       "session-events.jsonl:54",
+       "session-events.jsonl:33",
+       "session-events.jsonl:55"
+      ]
+     },
+     "event.agentEvent.used": {
+      "kinds": {
+       "integer": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:35",
+       "session-events.jsonl:54",
+       "session-events.jsonl:33",
+       "session-events.jsonl:55"
+      ]
+     },
+     "event.state": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:35",
+       "session-events.jsonl:54",
+       "session-events.jsonl:33",
+       "session-events.jsonl:55"
+      ]
+     },
+     "kind": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:35",
+       "session-events.jsonl:54",
+       "session-events.jsonl:33",
+       "session-events.jsonl:55"
+      ]
+     },
+     "timestampMs": {
+      "kinds": {
+       "integer": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:35",
+       "session-events.jsonl:54",
+       "session-events.jsonl:33",
+       "session-events.jsonl:55"
+      ]
+     }
+    }
+   },
+   "SessionA2uxEvent/CurrentDirectoryUpdatedEvent": {
+    "discriminators": {
+     "kind": "SessionA2uxEvent",
+     "event.agentEvent.kind": "CurrentDirectoryUpdatedEvent"
+    },
+    "records": 4,
+    "evidence": [
+     "session-events.jsonl:3",
+     "session-events.jsonl:37",
+     "session-events.jsonl:3",
+     "session-events.jsonl:35"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "object": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:3",
+       "session-events.jsonl:37",
+       "session-events.jsonl:3",
+       "session-events.jsonl:35"
+      ]
+     },
+     "event.agentEvent": {
+      "kinds": {
+       "object": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:3",
+       "session-events.jsonl:37",
+       "session-events.jsonl:3",
+       "session-events.jsonl:35"
+      ]
+     },
+     "event.agentEvent.agent": {
+      "kinds": {
+       "object": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:3",
+       "session-events.jsonl:37",
+       "session-events.jsonl:3",
+       "session-events.jsonl:35"
+      ]
+     },
+     "event.agentEvent.agent.id": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:3",
+       "session-events.jsonl:37",
+       "session-events.jsonl:3",
+       "session-events.jsonl:35"
+      ]
+     },
+     "event.agentEvent.agent.kind": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:3",
+       "session-events.jsonl:37",
+       "session-events.jsonl:3",
+       "session-events.jsonl:35"
+      ]
+     },
+     "event.agentEvent.agent.name": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:3",
+       "session-events.jsonl:37",
+       "session-events.jsonl:3",
+       "session-events.jsonl:35"
+      ]
+     },
+     "event.agentEvent.agent.type": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:3",
+       "session-events.jsonl:37",
+       "session-events.jsonl:3",
+       "session-events.jsonl:35"
+      ]
+     },
+     "event.agentEvent.currentDirectory": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:3",
+       "session-events.jsonl:37",
+       "session-events.jsonl:3",
+       "session-events.jsonl:35"
+      ]
+     },
+     "event.agentEvent.kind": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:3",
+       "session-events.jsonl:37",
+       "session-events.jsonl:3",
+       "session-events.jsonl:35"
+      ]
+     },
+     "event.state": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:3",
+       "session-events.jsonl:37",
+       "session-events.jsonl:3",
+       "session-events.jsonl:35"
+      ]
+     },
+     "kind": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:3",
+       "session-events.jsonl:37",
+       "session-events.jsonl:3",
+       "session-events.jsonl:35"
+      ]
+     },
+     "timestampMs": {
+      "kinds": {
+       "integer": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:3",
+       "session-events.jsonl:37",
+       "session-events.jsonl:3",
+       "session-events.jsonl:35"
+      ]
+     }
+    }
+   },
+   "SessionA2uxEvent/EnvironmentVariablesUpdatedEvent": {
+    "discriminators": {
+     "kind": "SessionA2uxEvent",
+     "event.agentEvent.kind": "EnvironmentVariablesUpdatedEvent"
+    },
+    "records": 4,
+    "evidence": [
+     "session-events.jsonl:4",
+     "session-events.jsonl:38",
+     "session-events.jsonl:4",
+     "session-events.jsonl:36"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "object": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:4",
+       "session-events.jsonl:38",
+       "session-events.jsonl:4",
+       "session-events.jsonl:36"
+      ]
+     },
+     "event.agentEvent": {
+      "kinds": {
+       "object": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:4",
+       "session-events.jsonl:38",
+       "session-events.jsonl:4",
+       "session-events.jsonl:36"
+      ]
+     },
+     "event.agentEvent.agent": {
+      "kinds": {
+       "object": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:4",
+       "session-events.jsonl:38",
+       "session-events.jsonl:4",
+       "session-events.jsonl:36"
+      ]
+     },
+     "event.agentEvent.agent.id": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:4",
+       "session-events.jsonl:38",
+       "session-events.jsonl:4",
+       "session-events.jsonl:36"
+      ]
+     },
+     "event.agentEvent.agent.kind": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:4",
+       "session-events.jsonl:38",
+       "session-events.jsonl:4",
+       "session-events.jsonl:36"
+      ]
+     },
+     "event.agentEvent.agent.name": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:4",
+       "session-events.jsonl:38",
+       "session-events.jsonl:4",
+       "session-events.jsonl:36"
+      ]
+     },
+     "event.agentEvent.agent.type": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:4",
+       "session-events.jsonl:38",
+       "session-events.jsonl:4",
+       "session-events.jsonl:36"
+      ]
+     },
+     "event.agentEvent.env": {
+      "kinds": {
+       "array": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 2,
+      "evidence": [
+       "session-events.jsonl:4",
+       "session-events.jsonl:38",
+       "session-events.jsonl:4",
+       "session-events.jsonl:36"
+      ]
+     },
+     "event.agentEvent.env[]": {
+      "kinds": {
+       "object": 211
+      },
+      "present_in_records": 2,
+      "absent_in_records": 2,
+      "occurrences": 211,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:38",
+       "session-events.jsonl:36"
+      ]
+     },
+     "event.agentEvent.kind": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:4",
+       "session-events.jsonl:38",
+       "session-events.jsonl:4",
+       "session-events.jsonl:36"
+      ]
+     },
+     "event.state": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:4",
+       "session-events.jsonl:38",
+       "session-events.jsonl:4",
+       "session-events.jsonl:36"
+      ]
+     },
+     "kind": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:4",
+       "session-events.jsonl:38",
+       "session-events.jsonl:4",
+       "session-events.jsonl:36"
+      ]
+     },
+     "timestampMs": {
+      "kinds": {
+       "integer": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:4",
+       "session-events.jsonl:38",
+       "session-events.jsonl:4",
+       "session-events.jsonl:36"
+      ]
+     }
+    }
+   },
+   "SessionA2uxEvent/LlmResponseMetadataEvent": {
+    "discriminators": {
+     "kind": "SessionA2uxEvent",
+     "event.agentEvent.kind": "LlmResponseMetadataEvent"
+    },
+    "records": 15,
+    "evidence": [
+     "session-events.jsonl:7",
+     "session-events.jsonl:19",
+     "session-events.jsonl:22",
+     "session-events.jsonl:25",
+     "session-events.jsonl:45",
+     "session-events.jsonl:48",
+     "session-events.jsonl:59",
+     "session-events.jsonl:7",
+     "session-events.jsonl:19",
+     "session-events.jsonl:22",
+     "session-events.jsonl:25",
+     "session-events.jsonl:44",
+     "session-events.jsonl:47",
+     "session-events.jsonl:49",
+     "session-events.jsonl:60"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "object": 15
+      },
+      "present_in_records": 15,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:59",
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:44",
+       "session-events.jsonl:47",
+       "session-events.jsonl:49",
+       "session-events.jsonl:60"
+      ]
+     },
+     "event.agentEvent": {
+      "kinds": {
+       "object": 15
+      },
+      "present_in_records": 15,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:59",
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:44",
+       "session-events.jsonl:47",
+       "session-events.jsonl:49",
+       "session-events.jsonl:60"
+      ]
+     },
+     "event.agentEvent.agent": {
+      "kinds": {
+       "object": 15
+      },
+      "present_in_records": 15,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:59",
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:44",
+       "session-events.jsonl:47",
+       "session-events.jsonl:49",
+       "session-events.jsonl:60"
+      ]
+     },
+     "event.agentEvent.agent.id": {
+      "kinds": {
+       "string": 15
+      },
+      "present_in_records": 15,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:59",
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:44",
+       "session-events.jsonl:47",
+       "session-events.jsonl:49",
+       "session-events.jsonl:60"
+      ]
+     },
+     "event.agentEvent.agent.kind": {
+      "kinds": {
+       "string": 15
+      },
+      "present_in_records": 15,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:59",
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:44",
+       "session-events.jsonl:47",
+       "session-events.jsonl:49",
+       "session-events.jsonl:60"
+      ]
+     },
+     "event.agentEvent.agent.name": {
+      "kinds": {
+       "string": 15
+      },
+      "present_in_records": 15,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:59",
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:44",
+       "session-events.jsonl:47",
+       "session-events.jsonl:49",
+       "session-events.jsonl:60"
+      ]
+     },
+     "event.agentEvent.agent.type": {
+      "kinds": {
+       "string": 15
+      },
+      "present_in_records": 15,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:59",
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:44",
+       "session-events.jsonl:47",
+       "session-events.jsonl:49",
+       "session-events.jsonl:60"
+      ]
+     },
+     "event.agentEvent.kind": {
+      "kinds": {
+       "string": 15
+      },
+      "present_in_records": 15,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:59",
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:44",
+       "session-events.jsonl:47",
+       "session-events.jsonl:49",
+       "session-events.jsonl:60"
+      ]
+     },
+     "event.agentEvent.modelUsage": {
+      "kinds": {
+       "array": 15
+      },
+      "present_in_records": 15,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:59",
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:44",
+       "session-events.jsonl:47",
+       "session-events.jsonl:49",
+       "session-events.jsonl:60"
+      ]
+     },
+     "event.agentEvent.modelUsage[]": {
+      "kinds": {
+       "object": 15
+      },
+      "present_in_records": 15,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:59",
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:44",
+       "session-events.jsonl:47",
+       "session-events.jsonl:49",
+       "session-events.jsonl:60"
+      ]
+     },
+     "event.agentEvent.modelUsage[].cacheCreateTokens": {
+      "kinds": {
+       "integer": 15
+      },
+      "present_in_records": 15,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:59",
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:44",
+       "session-events.jsonl:47",
+       "session-events.jsonl:49",
+       "session-events.jsonl:60"
+      ]
+     },
+     "event.agentEvent.modelUsage[].cacheInputTokens": {
+      "kinds": {
+       "integer": 15
+      },
+      "present_in_records": 15,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:59",
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:44",
+       "session-events.jsonl:47",
+       "session-events.jsonl:49",
+       "session-events.jsonl:60"
+      ]
+     },
+     "event.agentEvent.modelUsage[].cost": {
+      "kinds": {
+       "decimal": 15
+      },
+      "present_in_records": 15,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:59",
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:44",
+       "session-events.jsonl:47",
+       "session-events.jsonl:49",
+       "session-events.jsonl:60"
+      ]
+     },
+     "event.agentEvent.modelUsage[].inputTokens": {
+      "kinds": {
+       "integer": 15
+      },
+      "present_in_records": 15,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:59",
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:44",
+       "session-events.jsonl:47",
+       "session-events.jsonl:49",
+       "session-events.jsonl:60"
+      ]
+     },
+     "event.agentEvent.modelUsage[].model": {
+      "kinds": {
+       "string": 15
+      },
+      "present_in_records": 15,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:59",
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:44",
+       "session-events.jsonl:47",
+       "session-events.jsonl:49",
+       "session-events.jsonl:60"
+      ]
+     },
+     "event.agentEvent.modelUsage[].outputTokens": {
+      "kinds": {
+       "integer": 15
+      },
+      "present_in_records": 15,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:59",
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:44",
+       "session-events.jsonl:47",
+       "session-events.jsonl:49",
+       "session-events.jsonl:60"
+      ]
+     },
+     "event.agentEvent.modelUsage[].time": {
+      "kinds": {
+       "integer": 15
+      },
+      "present_in_records": 15,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:59",
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:44",
+       "session-events.jsonl:47",
+       "session-events.jsonl:49",
+       "session-events.jsonl:60"
+      ]
+     },
+     "event.state": {
+      "kinds": {
+       "string": 15
+      },
+      "present_in_records": 15,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:59",
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:44",
+       "session-events.jsonl:47",
+       "session-events.jsonl:49",
+       "session-events.jsonl:60"
+      ]
+     },
+     "kind": {
+      "kinds": {
+       "string": 15
+      },
+      "present_in_records": 15,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:59",
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:44",
+       "session-events.jsonl:47",
+       "session-events.jsonl:49",
+       "session-events.jsonl:60"
+      ]
+     },
+     "timestampMs": {
+      "kinds": {
+       "integer": 15
+      },
+      "present_in_records": 15,
+      "absent_in_records": 0,
+      "occurrences": 15,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:45",
+       "session-events.jsonl:48",
+       "session-events.jsonl:59",
+       "session-events.jsonl:7",
+       "session-events.jsonl:19",
+       "session-events.jsonl:22",
+       "session-events.jsonl:25",
+       "session-events.jsonl:44",
+       "session-events.jsonl:47",
+       "session-events.jsonl:49",
+       "session-events.jsonl:60"
+      ]
+     }
+    }
+   },
+   "SessionA2uxEvent/ResultBlockUpdatedEvent": {
+    "discriminators": {
+     "kind": "SessionA2uxEvent",
+     "event.agentEvent.kind": "ResultBlockUpdatedEvent"
+    },
+    "records": 2,
+    "evidence": [
+     "session-events.jsonl:62",
+     "session-events.jsonl:63"
+    ],
+    "paths": {
+     "completion": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "completion.endedAtMs": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "completion.quota": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "completion.quota.balanceLeft": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "completion.quota.balanceUnit": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "completion.quota.type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "completion.taskCostUsd": {
+      "kinds": {
+       "decimal": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "event": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "event.agentEvent": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "event.agentEvent.agent": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "event.agentEvent.agent.id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "event.agentEvent.agent.kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "event.agentEvent.agent.name": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "event.agentEvent.agent.type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "event.agentEvent.cancelled": {
+      "kinds": {
+       "boolean": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "event.agentEvent.changes": {
+      "kinds": {
+       "array": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 2,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "event.agentEvent.errorCode": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "event.agentEvent.kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "event.agentEvent.result": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "event.agentEvent.stepId": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "event.agentEvent.title": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "event.state": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     },
+     "timestampMs": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:62",
+       "session-events.jsonl:63"
+      ]
+     }
+    }
+   },
+   "SessionA2uxEvent/TerminalBlockUpdatedEvent": {
+    "discriminators": {
+     "kind": "SessionA2uxEvent",
+     "event.agentEvent.kind": "TerminalBlockUpdatedEvent"
+    },
+    "records": 2,
+    "evidence": [
+     "session-events.jsonl:31",
+     "session-events.jsonl:46"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:46"
+      ]
+     },
+     "event.agentEvent": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:46"
+      ]
+     },
+     "event.agentEvent.agent": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:46"
+      ]
+     },
+     "event.agentEvent.agent.id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:46"
+      ]
+     },
+     "event.agentEvent.agent.kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:46"
+      ]
+     },
+     "event.agentEvent.agent.name": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:46"
+      ]
+     },
+     "event.agentEvent.agent.type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:46"
+      ]
+     },
+     "event.agentEvent.command": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:46"
+      ]
+     },
+     "event.agentEvent.details": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:46"
+      ]
+     },
+     "event.agentEvent.exitCode": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:46"
+      ]
+     },
+     "event.agentEvent.kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:46"
+      ]
+     },
+     "event.agentEvent.output": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:46"
+      ]
+     },
+     "event.agentEvent.outputLinesCount": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:46"
+      ]
+     },
+     "event.agentEvent.presentableOutput": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:46"
+      ]
+     },
+     "event.agentEvent.status": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:46"
+      ]
+     },
+     "event.agentEvent.stepId": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:46"
+      ]
+     },
+     "event.state": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:46"
+      ]
+     },
+     "kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:46"
+      ]
+     },
+     "timestampMs": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:46"
+      ]
+     }
+    }
+   },
+   "SessionA2uxEvent/TipSuggestionCreatedEvent": {
+    "discriminators": {
+     "kind": "SessionA2uxEvent",
+     "event.agentEvent.kind": "TipSuggestionCreatedEvent"
+    },
+    "records": 2,
+    "evidence": [
+     "session-events.jsonl:9",
+     "session-events.jsonl:9"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:9",
+       "session-events.jsonl:9"
+      ]
+     },
+     "event.agentEvent": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:9",
+       "session-events.jsonl:9"
+      ]
+     },
+     "event.agentEvent.agent": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:9",
+       "session-events.jsonl:9"
+      ]
+     },
+     "event.agentEvent.agent.id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:9",
+       "session-events.jsonl:9"
+      ]
+     },
+     "event.agentEvent.agent.kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:9",
+       "session-events.jsonl:9"
+      ]
+     },
+     "event.agentEvent.agent.name": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:9",
+       "session-events.jsonl:9"
+      ]
+     },
+     "event.agentEvent.agent.type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:9",
+       "session-events.jsonl:9"
+      ]
+     },
+     "event.agentEvent.description": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:9",
+       "session-events.jsonl:9"
+      ]
+     },
+     "event.agentEvent.id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:9",
+       "session-events.jsonl:9"
+      ]
+     },
+     "event.agentEvent.kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:9",
+       "session-events.jsonl:9"
+      ]
+     },
+     "event.state": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:9",
+       "session-events.jsonl:9"
+      ]
+     },
+     "kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:9",
+       "session-events.jsonl:9"
+      ]
+     },
+     "timestampMs": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:9",
+       "session-events.jsonl:9"
+      ]
+     }
+    }
+   },
+   "SessionA2uxEvent/ToolBlockUpdatedEvent": {
+    "discriminators": {
+     "kind": "SessionA2uxEvent",
+     "event.agentEvent.kind": "ToolBlockUpdatedEvent"
+    },
+    "records": 2,
+    "evidence": [
+     "session-events.jsonl:31",
+     "session-events.jsonl:32"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:32"
+      ]
+     },
+     "event.agentEvent": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:32"
+      ]
+     },
+     "event.agentEvent.agent": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:32"
+      ]
+     },
+     "event.agentEvent.agent.id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:32"
+      ]
+     },
+     "event.agentEvent.agent.kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:32"
+      ]
+     },
+     "event.agentEvent.agent.name": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:32"
+      ]
+     },
+     "event.agentEvent.agent.type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:32"
+      ]
+     },
+     "event.agentEvent.kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:32"
+      ]
+     },
+     "event.agentEvent.status": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:32"
+      ]
+     },
+     "event.agentEvent.stepId": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:32"
+      ]
+     },
+     "event.agentEvent.text": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:32"
+      ]
+     },
+     "event.state": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:32"
+      ]
+     },
+     "kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:32"
+      ]
+     },
+     "timestampMs": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:31",
+       "session-events.jsonl:32"
+      ]
+     }
+    }
+   },
+   "SessionA2uxEvent/ViewFilesBlockUpdatedEvent": {
+    "discriminators": {
+     "kind": "SessionA2uxEvent",
+     "event.agentEvent.kind": "ViewFilesBlockUpdatedEvent"
+    },
+    "records": 2,
+    "evidence": [
+     "session-events.jsonl:33",
+     "session-events.jsonl:47"
+    ],
+    "paths": {
+     "event": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:33",
+       "session-events.jsonl:47"
+      ]
+     },
+     "event.agentEvent": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:33",
+       "session-events.jsonl:47"
+      ]
+     },
+     "event.agentEvent.agent": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:33",
+       "session-events.jsonl:47"
+      ]
+     },
+     "event.agentEvent.agent.id": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:33",
+       "session-events.jsonl:47"
+      ]
+     },
+     "event.agentEvent.agent.kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:33",
+       "session-events.jsonl:47"
+      ]
+     },
+     "event.agentEvent.agent.name": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:33",
+       "session-events.jsonl:47"
+      ]
+     },
+     "event.agentEvent.agent.type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:33",
+       "session-events.jsonl:47"
+      ]
+     },
+     "event.agentEvent.details": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:47"
+      ]
+     },
+     "event.agentEvent.files": {
+      "kinds": {
+       "array": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:33",
+       "session-events.jsonl:47"
+      ]
+     },
+     "event.agentEvent.files[]": {
+      "kinds": {
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:33",
+       "session-events.jsonl:47"
+      ]
+     },
+     "event.agentEvent.files[].relativePath": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:33",
+       "session-events.jsonl:47"
+      ]
+     },
+     "event.agentEvent.kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:33",
+       "session-events.jsonl:47"
+      ]
+     },
+     "event.agentEvent.status": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:33",
+       "session-events.jsonl:47"
+      ]
+     },
+     "event.agentEvent.stepId": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:33",
+       "session-events.jsonl:47"
+      ]
+     },
+     "event.state": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:33",
+       "session-events.jsonl:47"
+      ]
+     },
+     "kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:33",
+       "session-events.jsonl:47"
+      ]
+     },
+     "timestampMs": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:33",
+       "session-events.jsonl:47"
+      ]
+     }
+    }
+   },
+   "TaskStartedEvent": {
+    "discriminators": {
+     "kind": "TaskStartedEvent",
+     "event.agentEvent.kind": null
+    },
+    "records": 2,
+    "evidence": [
+     "session-events.jsonl:1",
+     "session-events.jsonl:1"
+    ],
+    "paths": {
+     "kind": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:1",
+       "session-events.jsonl:1"
+      ]
+     },
+     "taskId": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:1",
+       "session-events.jsonl:1"
+      ]
+     },
+     "timestampMs": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "session-events.jsonl:1",
+       "session-events.jsonl:1"
+      ]
+     }
+    }
+   }
+  }
+ },
+ "availability": {
+  "rule": "agent-journal/source-availability 0.1: per fact family, whether this source reports it and where (selectors: variant and path, with the population the inventory observed); a family is absent only when no observed path matches its vocabulary; a selector that matches nothing is unexercised, never verified (SourceAvailability)",
+  "families": [
+   {
+    "family": "token_usage",
+    "claim": "present",
+    "granularity": "per model call (LlmResponseMetadataEvent modelUsage entries; no call id)",
+    "selectors": [
+     {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "event.agentEvent.modelUsage[].inputTokens",
+      "matched_records": 15,
+      "exercised": true
+     }
+    ]
+   },
+   {
+    "family": "cost",
+    "claim": "present",
+    "granularity": "per call, unit not named; the task's total in USD (completion.taskCostUsd)",
+    "selectors": [
+     {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "event.agentEvent.modelUsage[].cost",
+      "matched_records": 15,
+      "exercised": true
+     },
+     {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "completion.taskCostUsd",
+      "matched_records": 2,
+      "exercised": true
+     }
+    ]
+   }
+  ]
+ }
+}

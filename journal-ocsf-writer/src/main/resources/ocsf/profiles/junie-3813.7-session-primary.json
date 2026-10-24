@@ -1,0 +1,133 @@
+{
+  "profile_id": "junie/3813.7/session-summary+session-events+stdout+stderr",
+  "version": "0.1.0-prototype",
+  "status": "experimental",
+  "status_meaning": "tested on two sanitized live 3813.7 runs (junie-1, junie-2); every route is experimental (no field-disposition catalog or oracle profile yet)",
+  "cli": {
+    "name": "Junie",
+    "version": "3813.7",
+    "vendor_name": "JetBrains"
+  },
+  "sources": [
+    {
+      "role": "summary",
+      "profile": "junie_summary",
+      "route": "native_session_file",
+      "kind": 2,
+      "requirement": "required",
+      "framing": "document",
+      "identity": "events",
+      "artifact": "summary.json",
+      "establishes": "the session id that identifies the session directory, the project directory, the lifecycle and the main agent's usage per model"
+    },
+    {
+      "role": "session",
+      "profile": "junie_session_events",
+      "route": "native_session_file",
+      "kind": 2,
+      "requirement": "required",
+      "framing": "lines",
+      "identity": "companion:summary",
+      "artifact": "session-events.jsonl",
+      "establishes": "structured steps (view-files, tool and terminal blocks with step ids, status, command, output and exit code), per-call usage, the final answer and the task's named USD total"
+    },
+    {
+      "role": "stdout",
+      "profile": "junie_stdout",
+      "route": "stdout",
+      "kind": 1,
+      "requirement": "optional",
+      "framing": "lines",
+      "identity": "events",
+      "artifact": "stdout.jsonl",
+      "establishes": "the run's session id, step summaries without ids, the final answer and the per-model usage with call counts under the result's errorCode member"
+    },
+    {
+      "role": "stderr",
+      "profile": "opaque_text",
+      "route": "stderr",
+      "kind": 1,
+      "requirement": "optional",
+      "framing": "lines",
+      "identity": "acquisition",
+      "artifact": "stderr.txt",
+      "establishes": "the CLI's version line (Junie 26.10.20 (3813.7)), retained as text"
+    }
+  ],
+  "feed_order": [
+    "summary",
+    "session",
+    "stdout",
+    "stderr"
+  ],
+  "precedence": [
+    "session",
+    "summary",
+    "stdout",
+    "stderr"
+  ],
+  "joins": [
+    {
+      "id": "junie.session_settings",
+      "class": "session_context",
+      "activities": [
+        1
+      ],
+      "key": [],
+      "namespace": "junie.execution_singleton",
+      "rules": [
+        "junie.summary->session_context.settings",
+        "junie.stdout.session->session_context.settings"
+      ],
+      "roles": [
+        "summary",
+        "stdout"
+      ],
+      "basis": "one session per execution: the summary's and standard output's statements of it"
+    },
+    {
+      "id": "junie.final_answer",
+      "class": "model_response",
+      "activities": [
+        3
+      ],
+      "key": [],
+      "namespace": "junie.execution_singleton",
+      "rules": [
+        "junie.session.result_block->model_response.final_answer",
+        "junie.stdout.result->model_response.final_answer"
+      ],
+      "roles": [
+        "session",
+        "stdout"
+      ],
+      "basis": "one final answer per task: the session file's result block and standard output's result (no step id is reported on standard output)"
+    },
+    {
+      "id": "junie.final_accounting",
+      "class": "session_context",
+      "activities": [
+        3
+      ],
+      "key": [],
+      "namespace": "junie.execution_singleton",
+      "rules": [
+        "junie.summary->session_context.accounting",
+        "junie.stdout.result->session_context.accounting",
+        "junie.session.completion->session_context.accounting"
+      ],
+      "roles": [
+        "summary",
+        "stdout",
+        "session"
+      ],
+      "basis": "one final accounting per task: the summary's per-model usage, standard output's per-model usage under errorCode and the completion's named USD total"
+    }
+  ],
+  "authorities": [],
+  "limits": [
+    "standard output's steps carry no id: they are retained and never joined with the session file's steps",
+    "a usage entry's cost names no unit and is never money; only completion.taskCostUsd is USD",
+    "no exit code is reported; the summary's lifecycle is the session's reported state"
+  ]
+}

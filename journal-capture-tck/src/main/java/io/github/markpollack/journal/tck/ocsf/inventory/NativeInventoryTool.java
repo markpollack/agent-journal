@@ -132,7 +132,8 @@ public final class NativeInventoryTool {
     }
 
     static Json inventory(String profile, Path artifact) {
-        return RawInventory.inventory(NativeArtifact.read(artifact), artifact.getFileName().toString(), profile);
+        NativeArtifact art = RawInventory.DOCUMENT_PROFILES.contains(profile) ? NativeArtifact.document(artifact) : NativeArtifact.read(artifact);
+        return RawInventory.inventory(art, artifact.getFileName().toString(), profile);
     }
 
     private static void usage(PrintStream err) {

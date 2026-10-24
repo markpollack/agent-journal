@@ -29,7 +29,7 @@
    "artifact": "stream.jsonl",
    "kind": 1,
    "profile": "agy_stream",
-   "path": "/tmp/claude-1000/-home-mark-projects-agent-journal-steward/31a7d4e7-4639-409f-bdf9-d27324c178de/scratchpad/neg/fixtures/S3-agy-two-run_command/stream.jsonl"
+   "path": "<scratch>/neg/fixtures/S3-agy-two-run_command/stream.jsonl"
   }
  ],
  "excluded": [

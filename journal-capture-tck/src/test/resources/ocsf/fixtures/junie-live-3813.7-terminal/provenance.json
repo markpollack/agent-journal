@@ -1,0 +1,70 @@
+{
+ "kind": "agent-journal/fixture-provenance",
+ "evidence_class": "sanitized recording of a live run",
+ "origin": "SANITIZED REAL LIVE RECORDING (not synthetic): the session summary, session events, standard output and standard error of one live launch (junie-2)",
+ "cli": {
+  "name": "Junie",
+  "version": "3813.7",
+  "display_version": "26.10.20",
+  "version_basis": "junie --version before and after the run (cli-version-before.txt, cli-version-after.txt); the run itself reports it only on stderr"
+ },
+ "launch": "junie --output-format json-stream --skip-update-check --share-anonymous-statistics=false --project <workspace> --task <task>",
+ "files": {
+  "stdout.jsonl": {
+   "original": "stdout.jsonl",
+   "original_sha256": "0f29d15e01a457e740b2613b3c2ffd487145a48fa3c30a02b848f112e05d4131",
+   "sha256": "3a943fda8914746df86a8cafeb563cdacf75d1aa075ba4174ba0ffc464f2b2e8",
+   "records": 4
+  },
+  "session-events.jsonl": {
+   "original": "native-session/events.jsonl",
+   "original_sha256": "b45891e318a700106900a7d4c0c8055ad69c4b210cecda85fec806def356981a",
+   "sha256": "b7a67807130502d59da3643a542f83a35fd78495a075b751560de5de35c25a4f",
+   "records": 65
+  },
+  "summary.json": {
+   "original": "native-session/summary.json",
+   "original_sha256": "f9858f716237aa4dc8b510109031d7cea31407697d48738ccc25cd2c9a1a6969",
+   "sha256": "f9bbab52ce242dcc8768d3b5689c0cbf511a67b38426cb4fa6e0b29962677b97",
+   "records": 1
+  },
+  "stderr.txt": {
+   "original": "stderr.txt",
+   "original_sha256": "7cee45b71adbd0ebc13e759a1f86a90363d4a4894f62c47d136f7ade23958ab1",
+   "sha256": "682a53deeb178cc9653abf29c5b76d80c2112fff1bcfa3244abbbd8a9b89fbca",
+   "records": 1
+  }
+ },
+ "sanitization": [
+  "Junie session and task ids -> stand-ins (session-000000-00000N-K, task-...)",
+  "step ids -> deterministic stand-ins by first occurrence",
+  "workspace path -> /work",
+  "the account credit balance (completion.quota.balanceLeft) -> 1000000.0 (account data, not a consumed quantity)",
+  "home directory -> /home/user",
+  "stderr pid -> 1"
+ ],
+ "stand_ins": {
+  "ids": 4
+ },
+ "fixture": "junie-live-3813.7-terminal",
+ "cli_version": "3813.7",
+ "capture_command": [
+  "junie",
+  "--output-format",
+  "json-stream",
+  "--skip-update-check",
+  "--share-anonymous-statistics=false",
+  "--project",
+  "<workspace>",
+  "--task",
+  "<task>"
+ ],
+ "live_process": {
+  "started": "2026-10-24T04:58:04.452405462Z",
+  "ended": "2026-10-24T04:58:23.506498787Z",
+  "how": "exited",
+  "exit_code": 0,
+  "exit_meaning": "0: as the run script recorded",
+  "meaning": "the CLI process outcome the run script recorded (process.json); distinct from storage finalization and acquisition extent"
+ }
+}

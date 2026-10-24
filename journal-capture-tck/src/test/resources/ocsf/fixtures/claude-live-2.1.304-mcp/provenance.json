@@ -20,7 +20,7 @@
   "mcp__journal_echo__echo_record",
   "mcp__journal_echo__always_fails",
   "--mcp-config",
-  "/home/user/projects/agent-journal-steward/plans/evidence/2026-10-23-mcp-live/runs/claude-mcp-1/mcp.json",
+  "<launch-scoped mcp.json>",
   "--strict-mcp-config"
  ],
  "scenario": "LIVE-06 three calls to the Java MCP SDK stdio test server journal_echo: echo_record twice with distinct arguments and structured results, always_fails returning isError; normal completion",

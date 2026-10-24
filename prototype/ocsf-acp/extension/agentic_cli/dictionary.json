@@ -504,7 +504,7 @@
     },
     "source_kind_id": {
       "caption": "Source Kind ID",
-      "description": "Whether the artifact is live CLI output or a saved native session file.",
+      "description": "What kind of artifact supplied the fact: the CLI's live output (standard output or standard error), a native session file it saved, a telemetry export it wrote (native OTel), a report file it wrote at exit, or its own log file.",
       "type": "integer_t",
       "sibling": "source_kind",
       "enum": {
@@ -516,6 +516,18 @@
         },
         "2": {
           "caption": "Saved session file"
+        },
+        "3": {
+          "caption": "Telemetry export",
+          "description": "A telemetry file the CLI's own exporter wrote during the run (for example the OTel file exporter)."
+        },
+        "4": {
+          "caption": "CLI report file",
+          "description": "A report the CLI wrote at the end of the run (for example a usage report file)."
+        },
+        "5": {
+          "caption": "CLI log file",
+          "description": "The CLI's own diagnostic log, or a declared excerpt of it."
         }
       }
     },
@@ -1390,6 +1402,10 @@
         "7": {
           "caption": "Single source",
           "description": "Only one observation reports the field."
+        },
+        "8": {
+          "caption": "Superseded",
+          "description": "A provisional observation of a quantity that a final observation of the same quantity (same scope, aggregation and model) supersedes: the canonical event carries the final one and the provisional one stays on its supporting observation, never counted again."
         },
         "99": {
           "caption": "Other"

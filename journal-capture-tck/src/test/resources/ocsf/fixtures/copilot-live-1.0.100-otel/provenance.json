@@ -1,0 +1,126 @@
+{
+ "kind": "agent-journal/fixture-provenance",
+ "evidence_class": "sanitized recording of a live run",
+ "origin": "SANITIZED REAL LIVE RECORDING (not synthetic): standard output, the native session file, the OTel file export and the usage report of one live launch (copilot-otel-1)",
+ "cli": {
+  "name": "GitHub Copilot CLI",
+  "version": "1.0.100",
+  "version_basis": "copilot --version before and after the run (cli-version-before.txt, cli-version-after.txt)"
+ },
+ "launch": "copilot -p <task> --output-format json --stream on --no-auto-update --no-ask-user --session-id <id> --disable-builtin-mcps --additional-mcp-config <journal_echo> --allow-tool read shell(ls:*) journal_echo --deny-tool write --log-dir <dir> --usage-output-file <file>, COPILOT_OTEL_FILE_EXPORTER_PATH=<otel.jsonl> with content capture on",
+ "scenario": "read notes.txt, run ls -1, call journal_echo echo_record twice (alpha 1, beta 2) and always_fails once, answer in one line",
+ "files": {
+  "stdout.jsonl": {
+   "original": "stdout.jsonl",
+   "original_sha256": "e72e5cbac037a39f16c329f516a5e3e352441d0d1b0ef406eb03fff33789b963",
+   "original_records": 115,
+   "sha256": "3f954b70de1e69001448189a4aa04cda940755a3b1e3e916a5d54812f4f430c9",
+   "records": 115
+  },
+  "session-events.jsonl": {
+   "original": "native-session/events.jsonl",
+   "original_sha256": "d2c692d4a59cf58581910064f68ebc9650e9f839b63ce40685fe7730429ae3f6",
+   "original_records": 37,
+   "sha256": "09cb968f98afe808d96b199a2bdb8d617dd783949ce13cd5860383ff30fac54d",
+   "records": 37
+  },
+  "otel.jsonl": {
+   "original": "otel.jsonl",
+   "original_sha256": "a2c857cf09055519fdcab76dcad7ed694aa2737c1f3671fc51ee54c796e1fbd1",
+   "original_records": 31,
+   "sha256": "1b156025474ef394459f1424170a04e8b7cdb803a7bff60ed703dab513ac8f77",
+   "records": 31
+  },
+  "usage-output.json": {
+   "original": "usage-output.json",
+   "original_sha256": "faeccb072cd31840c1bb9e1fbb89303d429b6d197ab44ec072cfa2f082400ca7",
+   "sha256": "faeccb072cd31840c1bb9e1fbb89303d429b6d197ab44ec072cfa2f082400ca7"
+  }
+ },
+ "sanitization": [
+  "UUIDs (session, event, parent, interaction, request ids) -> deterministic stand-ins by first occurrence, the session id -> 00000000-0000-4000-8000-0000000000c1",
+  "MCP server names the account configures other than journal_echo -> configured-server-N",
+  "workspace path -> /work",
+  "opaque provider response and request ids (apiCallId, model_call_id, gen_ai.response.id and their copies) -> opaque-NNNN",
+  "system.message data.content -> labelled placeholder (private provider context; length and sha256 in provenance)",
+  "gen_ai.system_instructions -> labelled placeholder (private provider context; length and sha256 in provenance)",
+  "gen_ai.tool.definitions: built-in tools keep their names with a placeholder description and empty parameters; the journal_echo MCP tools are kept whole",
+  "enduser.pseudo.id -> stand-in",
+  "the configured MCP server names of the account -> [\"journal_echo\"] (the run used only journal_echo)",
+  "process log reduced to the runtime line and the MCP client initialization line"
+ ],
+ "placeholders": {
+  "system.message data.content": {
+   "chars": 22394,
+   "sha256": "b06c424ca65f4be142c97512faac12fb860f8936a2172d68c55f4cf98d04cc50"
+  },
+  "gen_ai.system_instructions": {
+   "chars": 22804,
+   "sha256": "60f0a4e493fcf2c6595dbe9c3d6a649bbaaeb6b439d104954810663a4108befb"
+  },
+  "gen_ai.tool.definitions": {
+   "chars": 35218,
+   "sha256": "a8d9194b4039b115725233e2a9c05816d90899d13657cc3bc8e54784c525bb18",
+   "tools": 24
+  }
+ },
+ "stand_ins": {
+  "uuids": 138,
+  "opaque_ids": 5
+ },
+ "fixture": "copilot-live-1.0.100-otel",
+ "archive_only": {
+  "process-log.txt": {
+   "note": "the CLI's own log (--log-dir); private steward evidence, not committed: it states the negotiated MCP protocol revision 2025-11-25 in an rmcp line; not an assembly input of this profile",
+   "original": {
+    "original": "logs/process-1792850654342-3710022.log",
+    "original_sha256": "ede89ce24f78712df64e4c7850540029faa096d39d6c0540f56c1e56a0ac7173",
+    "original_lines": 50,
+    "sha256": "4f11090cd70b6b63247f7d5611ec2b8b13d488e9582253ffdd1c2b6698a46a56",
+    "records": 2,
+    "excerpt": "only the runtime line and the MCP client initialization line (which states the negotiated protocol revision); the full log stays private evidence"
+   }
+  }
+ },
+ "cli_version": "1.0.100",
+ "capture_command": [
+  "copilot",
+  "-p",
+  "<task>",
+  "--output-format",
+  "json",
+  "--stream",
+  "on",
+  "--no-auto-update",
+  "--no-ask-user",
+  "--session-id",
+  "<id>",
+  "--disable-builtin-mcps",
+  "--additional-mcp-config",
+  "<journal_echo>",
+  "--allow-tool",
+  "read",
+  "shell(ls:*)",
+  "journal_echo",
+  "--deny-tool",
+  "write",
+  "--log-dir",
+  "<dir>",
+  "--usage-output-file",
+  "<file>,",
+  "COPILOT_OTEL_FILE_EXPORTER_PATH=<otel.jsonl>",
+  "with",
+  "content",
+  "capture",
+  "on"
+ ],
+ "live_process": {
+  "started": "2026-10-24T14:04:13.999269464Z",
+  "ended": "2026-10-24T14:04:25.697557771Z",
+  "how": "exited",
+  "exit_code": 0,
+  "exit_meaning": "0: the CLI reported success",
+  "stdin": "/dev/null",
+  "meaning": "the CLI process outcome the run script recorded (process.json); distinct from storage finalization and acquisition extent"
+ }
+}

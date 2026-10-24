@@ -40,7 +40,7 @@
     "uid": 901,
     "uid_status": "PROVISIONAL, UNREGISTERED; alternate assignment 902 is compiled only to demonstrate reader refusal",
     "version": "0.11.0-prototype",
-    "compiled_sha256_uid_901": "30e6c30175995bbfd91c8cf5f70ec8c870f84a49ba8c3927e60d63bfcc232e5a",
+    "compiled_sha256_uid_901": "6a7a30905144286c90abaf841bfe6ac8d37e985120bc4eb07cee64d310616935",
     "category": "agent_execution (uid 11 -> scoped 90111)",
     "previous_versions": [
       {

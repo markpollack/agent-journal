@@ -1,0 +1,64 @@
+{
+ "run_uid": "copilot-live-1.0.100-otel",
+ "invocation_index": 0,
+ "capture_start": "2026-10-24T14:04:15.500Z",
+ "cli": {
+  "name": "GitHub Copilot CLI",
+  "vendor_name": "GitHub",
+  "version": "1.0.100",
+  "version_basis": "copilot --version before and after the run (1.0.100 both times)"
+ },
+ "launch_settings": {
+  "command": "final assembly of the sanitized live run copilot-otel-1 (original: copilot -p <task> --output-format json --stream on --no-auto-update --no-ask-user --session-id <id> --disable-builtin-mcps --additional-mcp-config <journal_echo> --allow-tool read shell(ls:*) journal_echo --deny-tool write --log-dir <dir> --usage-output-file <file>, COPILOT_OTEL_FILE_EXPORTER_PATH=<otel.jsonl> with content capture on)",
+  "cwd": "/work",
+  "route": "native_session_file+stdout+otel_file+usage_report_file",
+  "original_route": "LIVE: script launch, raw stdout, native session directory, OTel file exporter, usage report"
+ },
+ "sources": [
+  {
+   "artifact": "session-events.jsonl",
+   "profile": "copilot_events"
+  },
+  {
+   "artifact": "stdout.jsonl",
+   "profile": "copilot_events"
+  },
+  {
+   "artifact": "otel.jsonl",
+   "profile": "copilot_otel"
+  },
+  {
+   "artifact": "usage-output.json",
+   "profile": "copilot_usage_report"
+  }
+ ],
+ "assembly": {
+  "profile": "github-copilot-cli-1.0.100-three-source",
+  "inputs": [
+   {
+    "artifact": "session-events.jsonl",
+    "role": "session",
+    "origin": "native session directory events.jsonl copied after the run (sanitized)"
+   },
+   {
+    "artifact": "stdout.jsonl",
+    "role": "stdout",
+    "origin": "standard output of the launch (sanitized)"
+   },
+   {
+    "artifact": "otel.jsonl",
+    "role": "otel",
+    "origin": "the CLI's OTel file exporter output (sanitized)"
+   },
+   {
+    "artifact": "usage-output.json",
+    "role": "usage_report",
+    "origin": "the usage report the launch named with --usage-output-file"
+   }
+  ]
+ },
+ "synthetic": {
+  "label": "SANITIZED REAL LIVE RECORDING (GitHub Copilot CLI 1.0.100, copilot-otel-1: read notes.txt, run ls -1, call the Java MCP SDK test server journal_echo echo_record twice and always_fails once, answer in one line), finally assembled by the writer under the experimental profile github-copilot-cli-1.0.100-three-source",
+  "derived_from": "live run copilot-otel-1 (source completeness, 2026-10-24)"
+ }
+}

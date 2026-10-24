@@ -1,0 +1,57 @@
+{
+ "run_uid": "claude-live-2.1.304-mcp-pair",
+ "invocation_index": 0,
+ "capture_start": "2026-10-23T22:53:45.219746589Z",
+ "cli": {
+  "name": "Claude Code",
+  "vendor_name": "Anthropic",
+  "type_id": 1,
+  "type": "Native"
+ },
+ "launch_settings": {
+  "command": "final assembly of the sanitized live stream and session file (original: <path> -p Use the MCP server named journal_echo. 1. Call its tool echo_record with arguments {\"text\": \"alpha\", \"n\": 1}. 2. Call echo_record again with arguments {\"text\": \"beta\", \"n\": 2}. 3. Call its tool always_fails exactly once with no arguments. Make the calls one after another. Do not use any other tool and do not run shell commands. Finally reply in one line with the two echo values returned and whether always_fails reported an error. --output-format stream-json --verbose ...)",
+  "cwd": "/work",
+  "route": "stdout+native_session_file",
+  "model_requested": "haiku",
+  "allowed_tools": [
+   "mcp__journal_echo__echo_record",
+   "mcp__journal_echo__always_fails"
+  ],
+  "original_route": "LIVE: CliCapture launch, raw stdout, independent byte copy"
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "kind": 1,
+   "profile": "claude_stream",
+   "route": "stdout",
+   "path": "<fixture>/native/claude-live-2.1.304-mcp-pair/stream.jsonl"
+  },
+  {
+   "artifact": "transcript.jsonl",
+   "kind": 2,
+   "profile": "claude_transcript",
+   "route": "native_session_file",
+   "path": "<fixture>/native/claude-live-2.1.304-mcp-pair/transcript.jsonl"
+  }
+ ],
+ "synthetic": {
+  "label": "SANITIZED REAL LIVE RECORDING (Claude Code 2.1.304, LIVE-06 three calls to the Java MCP SDK stdio test server journal_echo): the stream and the native session file the same launch archived, finally assembled by the writer under the experimental profile claude-code-2.1.304-stdout-session-file",
+  "derived_from": "live run claude-mcp-1 (live MCP close-out, 2026-10-23)"
+ },
+ "assembly": {
+  "profile": "claude-code-2.1.304-stdout-session-file",
+  "inputs": [
+   {
+    "artifact": "stream.jsonl",
+    "role": "stream",
+    "origin": "CliCapture stdout copy of the launch (sanitized)"
+   },
+   {
+    "artifact": "transcript.jsonl",
+    "role": "transcript",
+    "origin": "native session file archived after the launch ended (sanitized)"
+   }
+  ]
+ }
+}

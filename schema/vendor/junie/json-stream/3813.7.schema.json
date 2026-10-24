@@ -1,0 +1,231 @@
+{
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "title" : "agent-journal native source junie_stdout 0.1.0",
+  "description" : "DERIVED from the accepted Journal inventory (junie_stdout); observed shape at the stated versions, not a vendor promise; regenerate, never hand-edit",
+  "x-journal-applies-to" : {
+    "cli" : "Junie",
+    "version" : "3813.7",
+    "launch_mode" : "junie --output-format json-stream (as the summary)",
+    "source_kind" : "live output",
+    "capture_route" : "standard output captured by the run script",
+    "route_limit" : "standard output only; stderr (the CLI's version line) is a separate opaque text artifact"
+  },
+  "x-journal-derived-from" : "agent-journal/native-source-specification 0.1.0",
+  "oneOf" : [ {
+    "$ref" : "#/$defs/result"
+  }, {
+    "$ref" : "#/$defs/session"
+  }, {
+    "$ref" : "#/$defs/step"
+  } ],
+  "$defs" : {
+    "result" : {
+      "type" : "object",
+      "properties" : {
+        "changes" : {
+          "type" : "array",
+          "x-journal-observed" : {
+            "null" : 0,
+            "empty" : 2,
+            "present_in_records" : 2
+          }
+        },
+        "errorCode" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "properties" : {
+              "cacheCreateTokens" : {
+                "type" : "integer",
+                "x-journal-observed" : {
+                  "null" : 0,
+                  "empty" : 0,
+                  "present_in_records" : 2
+                }
+              },
+              "cacheInputTokens" : {
+                "type" : "integer",
+                "x-journal-observed" : {
+                  "null" : 0,
+                  "empty" : 0,
+                  "present_in_records" : 2
+                }
+              },
+              "calls" : {
+                "type" : "integer",
+                "x-journal-observed" : {
+                  "null" : 0,
+                  "empty" : 0,
+                  "present_in_records" : 2
+                }
+              },
+              "cost" : {
+                "type" : "number",
+                "x-journal-observed" : {
+                  "null" : 0,
+                  "empty" : 0,
+                  "present_in_records" : 2
+                }
+              },
+              "inputTokens" : {
+                "type" : "integer",
+                "x-journal-observed" : {
+                  "null" : 0,
+                  "empty" : 0,
+                  "present_in_records" : 2
+                }
+              },
+              "model" : {
+                "type" : "string",
+                "x-journal-observed" : {
+                  "null" : 0,
+                  "empty" : 0,
+                  "present_in_records" : 2
+                }
+              },
+              "outputTokens" : {
+                "type" : "integer",
+                "x-journal-observed" : {
+                  "null" : 0,
+                  "empty" : 0,
+                  "present_in_records" : 2
+                }
+              }
+            },
+            "required" : [ "cacheCreateTokens", "cacheInputTokens", "calls", "cost", "inputTokens", "model", "outputTokens" ],
+            "additionalProperties" : false,
+            "x-journal-observed" : {
+              "null" : 0,
+              "empty" : 0,
+              "present_in_records" : 2
+            }
+          },
+          "x-journal-observed" : {
+            "null" : 0,
+            "empty" : 0,
+            "present_in_records" : 2
+          }
+        },
+        "result" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "null" : 0,
+            "empty" : 0,
+            "present_in_records" : 2
+          }
+        },
+        "timestamp" : {
+          "type" : "integer",
+          "x-journal-observed" : {
+            "null" : 0,
+            "empty" : 0,
+            "present_in_records" : 2
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "null" : 0,
+            "empty" : 0,
+            "present_in_records" : 2
+          }
+        }
+      },
+      "required" : [ "changes", "errorCode", "result", "timestamp", "type" ],
+      "additionalProperties" : false,
+      "title" : "result",
+      "x-journal-discriminators" : {
+        "type" : "result"
+      },
+      "x-journal-observed-records" : 2
+    },
+    "session" : {
+      "type" : "object",
+      "properties" : {
+        "sessionId" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "null" : 0,
+            "empty" : 0,
+            "present_in_records" : 2
+          }
+        },
+        "timestamp" : {
+          "type" : "integer",
+          "x-journal-observed" : {
+            "null" : 0,
+            "empty" : 0,
+            "present_in_records" : 2
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "null" : 0,
+            "empty" : 0,
+            "present_in_records" : 2
+          }
+        }
+      },
+      "required" : [ "sessionId", "timestamp", "type" ],
+      "additionalProperties" : false,
+      "title" : "session",
+      "x-journal-discriminators" : {
+        "type" : "session"
+      },
+      "x-journal-observed-records" : 2
+    },
+    "step" : {
+      "type" : "object",
+      "properties" : {
+        "details" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "null" : 0,
+            "empty" : 0,
+            "present_in_records" : 3
+          }
+        },
+        "name" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "null" : 0,
+            "empty" : 0,
+            "present_in_records" : 4
+          }
+        },
+        "output" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "null" : 0,
+            "empty" : 0,
+            "present_in_records" : 1
+          }
+        },
+        "timestamp" : {
+          "type" : "integer",
+          "x-journal-observed" : {
+            "null" : 0,
+            "empty" : 0,
+            "present_in_records" : 4
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "null" : 0,
+            "empty" : 0,
+            "present_in_records" : 4
+          }
+        }
+      },
+      "required" : [ "name", "timestamp", "type" ],
+      "additionalProperties" : false,
+      "title" : "step",
+      "x-journal-discriminators" : {
+        "type" : "step"
+      },
+      "x-journal-observed-records" : 4
+    }
+  }
+}

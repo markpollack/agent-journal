@@ -1,0 +1,199 @@
+{
+  "contract_uid": "github-copilot-cli/events/1.0.100/0.1.0-prototype",
+  "applies_to": {
+    "product": "GitHub Copilot CLI",
+    "version": "1.0.100",
+    "launch": "copilot -p <task> --output-format json --stream on (standard output) and the native session directory's events.jsonl",
+    "source_kind": "Live output; Saved session file",
+    "compatibility_entries": [
+      "github-copilot-cli/events/1.0.100-stdout",
+      "github-copilot-cli/events/1.0.100-session-file"
+    ],
+    "selection": "the version the capture discovered with copilot --version before and after the run (neither route reports it on every record; the session file's session.start reports copilotVersion)"
+  },
+  "executor": "journal-ocsf-writer CopilotEventsMapper with CopilotTools and CopilotAccounting (direct Java); one record at a time",
+  "record_discriminator": "type",
+  "time_policy": {
+    "reported": "timestamp on every event (result too)",
+    "fallback": "latest preceding reported time"
+  },
+  "identity": "copilot.events.identity.v1: id is the event's own id, kept by a persisted event on both routes; data.apiCallId (assistant message, usage record) is the provider call id of a model response (response_uid); data.toolCallId is the model-facing tool call id (tool_call_uid, identity_basis 1) on the request, start and completion; data.messageId is the CLI's message id (item_uid); data.interactionId is the user interaction (turn_uid). A session is reported only by session.start (data.sessionId) and result (sessionId); no other event is given a session another source reports",
+  "family_kind_table": {
+    "rule": "copilot.events.tool_name_to_kind.v1",
+    "meaning": "a built-in tool's documented name selects its kind (view reads a file or directory, bash executes a command, edit and create change files, grep and glob search); every other name is 99 other",
+    "map": {
+      "view": 1,
+      "bash": 6,
+      "edit": 2,
+      "create": 2,
+      "grep": 5,
+      "glob": 5
+    },
+    "default": 99
+  },
+  "namespace_kind_bindings": {
+    "rule": "copilot.events.mcp_namespace_kind.v1",
+    "family": "mcp",
+    "meaning": "an MCP tool (data.mcpServerName, data.mcpToolName) takes a kind only from a reviewed binding of that exact server and tool; none is declared, so every MCP tool is 99 other",
+    "bindings": [],
+    "default": 99
+  },
+  "block_kind_table": {
+    "rule": "copilot.events.block_kind.v1",
+    "map": {},
+    "default": 1
+  },
+  "rules": [
+    {
+      "id": "copilot.events.session_start->session_context.settings",
+      "selector": {
+        "type": "session.start"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "1 Settings reported",
+      "owner": "session_uid = data.sessionId; settings = data (copilotVersion, producer, context)"
+    },
+    {
+      "id": "copilot.events.session_settings->session_context.settings",
+      "selector": {
+        "type": [
+          "session.model_change",
+          "session.auto_mode_resolved",
+          "session.tools_updated",
+          "session.mcp_servers_loaded",
+          "session.mcp_server_status_changed",
+          "session.mcp_server_tools_loaded"
+        ]
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "1 Settings reported",
+      "owner": "settings = data as reported"
+    },
+    {
+      "id": "copilot.events.user_message->prompt_turn.submitted",
+      "selector": {
+        "type": "user.message"
+      },
+      "target": "agentic_cli/prompt_turn",
+      "activity": "1 Prompt submitted",
+      "owner": "turn_uid = data.interactionId; one text block from data.content; transformedContent kept in data"
+    },
+    {
+      "id": "copilot.events.system_message->session_context.context",
+      "selector": {
+        "type": "system.message"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "2 Context injected",
+      "owner": "one text block from data.content (the system message as recorded)"
+    },
+    {
+      "id": "copilot.events.assistant_message->model_response",
+      "selector": {
+        "type": "assistant.message"
+      },
+      "target": "agentic_cli/model_response",
+      "activity": "2 Completed",
+      "owner": "response_uid = data.apiCallId; item_uid = data.messageId; text block from data.content when non-empty"
+    },
+    {
+      "id": "copilot.events.tool_request->tool_call.requested",
+      "selector": {
+        "type": "assistant.message",
+        "data.toolRequests[]": "each"
+      },
+      "target": "agentic_cli/tool_call",
+      "activity": "1 Requested",
+      "owner": "tool_call_uid = toolRequests[].toolCallId; tool_name, arguments as requested; response_uid = data.apiCallId"
+    },
+    {
+      "id": "copilot.events.tool_execution_start->tool_call.started",
+      "selector": {
+        "type": "tool.execution_start"
+      },
+      "target": "agentic_cli/tool_call",
+      "activity": "4 Started",
+      "owner": "tool_call_uid = data.toolCallId; tool_name = data.toolName (the CLI's encoded name); MCP target from data.mcpServerName/mcpToolName with a CallToolRequestParams projection"
+    },
+    {
+      "id": "copilot.events.tool_execution_complete->tool_call.result",
+      "selector": {
+        "type": "tool.execution_complete"
+      },
+      "target": "agentic_cli/tool_call",
+      "activity": "2 Result observed",
+      "owner": "status from data.success (Reported); tool_result.data = data.result; structured_result = data.result.structuredContent; data.error as a CLI-reported tool failure (layer 3); MCP CallToolResult projection {content: data.result.contents, structuredContent}"
+    },
+    {
+      "id": "copilot.events.usage_record->model_response",
+      "selector": {
+        "type": "session.usage_record"
+      },
+      "target": "agentic_cli/model_response",
+      "activity": "2 Completed",
+      "owner": "response_uid = data.usage.apiCallId; per-call usage (scope 2 Model response, final, scope total); cost_observations: data.usage.cost as quantity kind 3 Model cost multiplier, data.usage.copilotUsage.totalNanoAiu as kind 4 Nano-AIU"
+    },
+    {
+      "id": "copilot.events.usage_checkpoint->session_context.accounting",
+      "selector": {
+        "type": "session.usage_checkpoint"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "3 Accounting reported",
+      "owner": "cumulative session usage from data.accountingSnapshot.tokenDetails (scope 5, provisional, cumulative snapshot) and per model from modelMetrics (scope 6); premium requests (kind 2) and nano-AIU (kind 4)"
+    },
+    {
+      "id": "copilot.events.last_call_usage->model_response",
+      "selector": {
+        "type": "session.usage_checkpoint"
+      },
+      "target": "agentic_cli/model_response",
+      "activity": "2 Completed",
+      "owner": "response_uid = data.promptCacheBreakState[0].models[lastActiveModel].model_call_id; usage = accountingSnapshot.lastCallInputTokens/lastCallOutputTokens with that entry's cache_read/cache_write (scope 2, final): the last call's full usage, the only per-call usage standard output reports"
+    },
+    {
+      "id": "copilot.events.shutdown->session_context.accounting",
+      "selector": {
+        "type": "session.shutdown"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "3 Accounting reported",
+      "owner": "as the checkpoint, from data.accountingSnapshot, final"
+    },
+    {
+      "id": "copilot.events.result->session_context.outcome",
+      "selector": {
+        "type": "result"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "4 Outcome reported",
+      "owner": "exit_code = exitCode; session_uid = sessionId; result.usage.premiumRequests as kind 2 at run scope"
+    },
+    {
+      "id": "copilot.events.fallback->source_record",
+      "selector": {
+        "type": "any other (turn start/end, deltas, model-call progress, shell output, partial results, background tasks, idle)"
+      },
+      "target": "agentic_cli/source_record",
+      "activity": "1 Parsed",
+      "owner": "retained whole with the meaning the mapper states"
+    },
+    {
+      "id": "common.opaque->source_record",
+      "selector": "a record that is not one JSON object",
+      "target": "agentic_cli/source_record",
+      "activity": "2 Opaque",
+      "owner": "the record's bytes"
+    },
+    {
+      "id": "common.mapper_exception->source_record",
+      "selector": "a record whose mapping failed",
+      "target": "agentic_cli/source_record",
+      "activity": "1 Parsed",
+      "owner": "the record retained whole with the failure"
+    }
+  ],
+  "candidate": {
+    "status": "EXPERIMENTAL candidate (2026-10-24): tested on one sanitized live 1.0.100 run (copilot-otel-1) and its final assembly; not admitted: no field-disposition catalog or oracle profile yet; tested candidate behaviour is not approved support"
+  }
+}

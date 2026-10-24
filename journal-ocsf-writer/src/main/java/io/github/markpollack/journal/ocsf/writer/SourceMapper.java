@@ -18,14 +18,6 @@ interface SourceMapper {
     }
 
     static SourceMapper forProfile(String profile) {
-        return switch (profile) {
-            case "claude_stream" -> new ClaudeStreamMapper();
-            case "claude_transcript" -> new ClaudeTranscriptMapper();
-            case "codex_rollout" -> new CodexRolloutMapper();
-            case "codex_stream" -> new CodexStreamMapper();
-            case "agy_stream" -> new AntigravityStreamMapper();
-            case "opaque_text" -> new OpaqueTextMapper();
-            default -> throw new IllegalArgumentException("no mapper for profile " + profile);
-        };
+        return SourceMappers.forProfile(profile);
     }
 }

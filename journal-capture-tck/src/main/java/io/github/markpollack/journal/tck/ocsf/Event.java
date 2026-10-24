@@ -82,6 +82,26 @@ public final class Event {
         return text("journal", "run_uid");
     }
 
+    /**
+     * The event's role in a finally assembled file ({@code assembly.assembly_role_id}): 1 canonical single observation,
+     * 2 supporting observation (evidence, never counted again), 3 consolidated canonical; {@code null} outside one.
+     */
+    public Integer assemblyRole() {
+        return integer("assembly", "assembly_role_id");
+    }
+
+    /** Whether a consumer counts this event: every event outside an assembled file, and roles 1 and 3 inside one. */
+    public boolean canonical() {
+        Integer role = assemblyRole();
+        return role == null || role != 2;
+    }
+
+    /** Whether this event is one source's own observation (not an event an assembly consolidated from several). */
+    public boolean observation() {
+        Integer role = assemblyRole();
+        return role == null || role != 3;
+    }
+
     /** {@code <artifact>:<record_index>} for reports. */
     public String occurrence() {
         return artifact() + ":" + recordIndex();

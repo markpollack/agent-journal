@@ -14,8 +14,10 @@ import java.util.Set;
  * Where a source reports an identity, as a {@link SourceJoin} specification declares it: an optional {@code select}
  * (RFC 6901 pointers that must resolve to the stated strings) choosing the records, and the {@code pointer} to the
  * identity value inside each selected record, or {@code pointers} for a composite identity whose every part must be
- * reported (for example an interaction id and a turn id that repeats across interactions). Only a non-empty string or a
- * number is an identity value.
+ * reported (for example an interaction id and a turn id that repeats across interactions); {@code each} names an array
+ * whose elements each hold an identity; {@code constant} declares an execution singleton (every selected record is the
+ * execution's one occurrence of the fact, for a source that names no identity of its own, such as a usage report). Only a
+ * non-empty string or a number is an identity value.
  */
 final class SourceLocator {
 
@@ -40,13 +42,42 @@ final class SourceLocator {
         return n;
     }
 
-    /** The selected records grouped by the identity value they report; records without one are left out. */
+    /**
+     * The selected records grouped by the identity value they report; records without one are left out. With
+     * {@code each} (a pointer to an array in the record) every element is an identity holder: {@code element_select}
+     * chooses elements and {@code pointer} resolves inside the element, so one record may report several identities
+     * (several tool requests of one message) and is listed under each.
+     */
     static Map<String, List<Located>> keyed(List<Located> records, Json locator) {
         Map<String, List<Located>> out = new LinkedHashMap<>();
+        String each = RawInventory.text(locator, "each");
         for (Located r : records) {
-            String v = selects(r.json(), locator) ? identityAt(r.json(), locator) : null;
-            if (v != null) {
-                out.computeIfAbsent(v, x -> new ArrayList<>()).add(r);
+            if (!selects(r.json(), locator)) {
+                continue;
+            }
+            for (Json holder : each == null ? List.of(r.json()) : elements(pointer(r.json(), each), locator.member("element_select"))) {
+                String v = identityAt(holder, locator);
+                if (v != null) {
+                    out.computeIfAbsent(v, x -> new ArrayList<>()).add(r);
+                }
+            }
+        }
+        return out;
+    }
+
+    /** The identity-holding elements of a selected record under an {@code each} locator (the record itself without one). */
+    static List<Json> holders(Json record, Json locator) {
+        String each = RawInventory.text(locator, "each");
+        return each == null ? List.of(record) : elements(pointer(record, each), locator.member("element_select"));
+    }
+
+    private static List<Json> elements(Json array, Json elementSelect) {
+        List<Json> out = new ArrayList<>();
+        if (array instanceof Json.JArray a) {
+            for (Json el : a.elements()) {
+                if (elementSelect == null || selectsAll(el, elementSelect)) {
+                    out.add(el);
+                }
             }
         }
         return out;
@@ -63,9 +94,10 @@ final class SourceLocator {
 
     static boolean selects(Json record, Json locator) {
         Json select = locator.member("select");
-        if (select == null) {
-            return true;
-        }
+        return select == null || selectsAll(record, select);
+    }
+
+    private static boolean selectsAll(Json record, Json select) {
         for (Map.Entry<String, Json> e : ((Json.JObject) select).members().entrySet()) {
             if (!(pointer(record, e.getKey()) instanceof Json.JString s) || !s.value().equals(e.getValue().text())) {
                 return false;
@@ -76,6 +108,10 @@ final class SourceLocator {
 
     /** The record's identity under the locator: one value, or the parts of a composite identity as a JSON array. */
     static String identityAt(Json record, Json locator) {
+        if (locator.member("constant") != null) {
+            // an execution singleton: every selected record is the execution's one occurrence of this fact (declared, never inferred)
+            return locator.member("constant").text();
+        }
         Json parts = locator.member("pointers");
         if (parts == null) {
             return identity(pointer(record, RawInventory.text(locator, "pointer")));

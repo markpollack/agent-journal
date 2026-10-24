@@ -143,7 +143,7 @@ class CliCaptureUnitTest {
     void theArchiveReportsWhatItSearchedWhenNothingIsLocated(@TempDir Path work) throws IOException {
         Path task = Files.createDirectories(work.resolve("task"));
         Path home = Files.createDirectories(work.resolve("home"));
-        CliCapture claude = new CliCapture(new CliCapture.Launch(CliCapture.Cli.CLAUDE, List.of("x"), task, null, "r", work.resolve("out"), null, null, home, null, null, null), WriterOptions.defaults());
+        CliCapture claude = new CliCapture(new CliCapture.Launch(CliCapture.Cli.CLAUDE, List.of("x"), task, null, "r", work.resolve("out"), null, null, home, null, null, null, null), WriterOptions.defaults());
         Jv.Obj none = claude.archiveNativeSessionFile(Files.createDirectories(work.resolve("a1")), null);
         assertThat(none.get("status").text()).isEqualTo("not located");
         assertThat(none.get("detail").text()).contains("no session id");
@@ -152,7 +152,7 @@ class CliCaptureUnitTest {
         assertThat(missing.get("status").text()).isEqualTo("not located");
         assertThat(missing.get("session_uid").text()).isEqualTo("sess-1");
         assertThat(missing.get("searched").elements().get(0).text()).startsWith(home.resolve(".claude").resolve("projects").toString()).endsWith("sess-1.jsonl");
-        CliCapture codex = new CliCapture(new CliCapture.Launch(CliCapture.Cli.CODEX, List.of("x"), task, null, "r", work.resolve("out"), null, null, home, null, null, null), WriterOptions.defaults());
+        CliCapture codex = new CliCapture(new CliCapture.Launch(CliCapture.Cli.CODEX, List.of("x"), task, null, "r", work.resolve("out"), null, null, home, null, null, null, null), WriterOptions.defaults());
         Jv.Obj noSessions = codex.archiveNativeSessionFile(Files.createDirectories(work.resolve("a3")), "thread-1");
         assertThat(noSessions.get("status").text()).isEqualTo("not located");
         assertThat(noSessions.get("searched").elements().get(0).text()).contains(".codex/sessions").contains("thread-1");
@@ -161,14 +161,14 @@ class CliCaptureUnitTest {
     @Test
     void anExistingOutputDirectoryIsRefusedBeforeAnythingIsLaunched(@TempDir Path work) throws IOException {
         Path out = Files.createDirectories(work.resolve("out"));
-        CliCapture capture = new CliCapture(new CliCapture.Launch(CliCapture.Cli.CLAUDE, List.of("/nonexistent"), work, null, "r", out, null, null, null, null, null, null), WriterOptions.defaults());
+        CliCapture capture = new CliCapture(new CliCapture.Launch(CliCapture.Cli.CLAUDE, List.of("/nonexistent"), work, null, "r", out, null, null, null, null, null, null, null), WriterOptions.defaults());
         assertThatThrownBy(capture::run).isInstanceOf(IOException.class).hasMessageContaining("out directory exists");
         assertThat(Files.exists(out.resolve("native"))).isFalse();
     }
 
     @Test
     void theDefaultLimitsAreFiveSecondsAndThirtySeconds() {
-        CliCapture.Launch launch = new CliCapture.Launch(CliCapture.Cli.CODEX, List.of("x"), Path.of("."), null, "r", Path.of("out"), null, null, null, null, null, null);
+        CliCapture.Launch launch = new CliCapture.Launch(CliCapture.Cli.CODEX, List.of("x"), Path.of("."), null, "r", Path.of("out"), null, null, null, null, null, null, null);
         assertThat(launch.limits()).isNull();
         assertThat(CliCapture.Limits.DEFAULTS.terminationGrace()).isEqualTo(Duration.ofSeconds(5));
         assertThat(CliCapture.Limits.DEFAULTS.versionProbeTimeout()).isEqualTo(Duration.ofSeconds(30));

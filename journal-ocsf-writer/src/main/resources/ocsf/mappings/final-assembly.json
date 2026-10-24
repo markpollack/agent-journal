@@ -1,0 +1,82 @@
+{
+  "contract_uid": "agent-journal/final-assembly/0.1.0-prototype",
+  "applies_to": {
+    "profiles": "every reviewed assembly profile under ocsf/profiles/",
+    "scope": "the consolidated canonical events of a final assembly; every observation keeps the mapping contract of the source that produced it"
+  },
+  "executor": "journal-ocsf-writer Assembler with AssemblyGate, AssemblyGrouping and EventMerge (direct Java over the observations the source mappers emitted)",
+  "rules": [
+    {
+      "id": "assembly.consolidate->canonical",
+      "target": "the class and activity of the consolidated observations",
+      "meaning": "one canonical event for one logical entity at one lifecycle stage that several sources observed: fields one source reports are taken from it, equal reports give their common value, number-spelling differences keep the primary's spelling, objects merge member by member and identified array elements element by element, and any other difference is a conflict left out of the canonical event and listed with every value"
+    }
+  ],
+  "identity_layers": "acquisition (journal.run_uid), source occurrence (artifact, record index, emit ordinal: assembly.occurrence_uid), logical entity and stage (assembly.entity_uid in a profile-declared namespace) and provider or protocol identity (tool_call_uid, response_uid, protocol objects) are distinct; a call id repeated across start, update and completion names stages of one entity, never a duplicate",
+  "gate": "a source is part of the execution when the session identity its observations report, or its declared companion's, equals the run's (the first identity established in precedence order); another identity or several refuse it as another execution; a required source with none is refused as unestablished; the same acquisition origin with the same sha256 is the same import and is not imported again; identical bytes from distinct origins stay distinct sources",
+  "joins": "observations relate only through the profile's declared joins: equal values at every key pointer, in the same core, directly or through a chain of joins across a third source; never by position, timestamp proximity or similar text; an identity repeated within one source from one mapping rule makes the entity ambiguous, and its observations stay canonical and flagged",
+  "merge": {
+    "provenance_members": [
+      "source_ref",
+      "basis",
+      "derivation",
+      "native_pointers",
+      "tool_kind_basis",
+      "projection_basis",
+      "components"
+    ],
+    "provenance_rule": "each observation keeps its own; the consolidated event carries the primary's (the first in the profile's precedence)",
+    "identified_arrays": {
+      "usage_observations": [
+        "scope_id",
+        "scope",
+        "aggregation_id",
+        "model_ref.name"
+      ],
+      "cost_observations": [
+        "quantity_kind_id",
+        "scope_id",
+        "currency",
+        "quantity_unit",
+        "model_ref.name"
+      ],
+      "content_blocks": [
+        "block_index"
+      ],
+      "protocol_objects": [
+        "protocol_definition",
+        "projection_id"
+      ],
+      "tool_definitions": [
+        "name"
+      ],
+      "components": [
+        "name"
+      ],
+      "errors": [
+        "error_layer_id"
+      ],
+      "permission_decisions": [
+        "decision_id",
+        "scope_id"
+      ]
+    },
+    "authority": "a profile may declare, per class and field pointer, the source role whose value the canonical event carries when observations conflict, with its reason; the conflict stays listed with every value. Without a declaration no source wins and the field stays absent.",
+    "finality": "of usage observations of one quantity (same scope, aggregation and model), only those at the highest usage status reach the canonical event (Final over Provisional); the others are field evidence with relation 8 Superseded and stay on their supporting observations",
+    "envelope": "the consolidated event's class, activity, time, metadata, journal and source_ref are the primary observation's, or under a join that declares a stage order the most advanced stage's (a record the stream shows Partial and the session file Completed consolidates at Completed)",
+    "copies": "identical bytes accepted from distinct origins: the copies' observations of the same record and emit ordinal are one entity, so a copy never becomes extra executions",
+    "own_members": [
+      "assembly",
+      "data",
+      "raw_data",
+      "raw_bytes_b64"
+    ],
+    "own_rule": "top-level members that belong to one observation (its assembly record and native residual data) are left out of the consolidated event and stay on each supporting observation; a nested data member is its object's native residual (provenance, the primary's kept) when that object states a basis or source_ref, and otherwise a fact that is compared",
+    "partial_projections": "partial MCP protocol projections of one protocol object (same definition and projection) merge member by member; the merged object's missing_required is the intersection of the projections' (a member one projection lacked and another supplied is complementary), and the merged object stays a partial projection, never a synthesized complete wire message"
+  },
+  "accounting": "one canonical event per entity and stage carries one usage observation per scope, aggregation, finality and model, with every source that reported it in its field evidence, so overlapping reports of one quantity are never counted twice; different quantity kinds (money, premium requests, model cost multipliers, nano-AIU, credits) are separate observations and never compared or added; cumulative snapshots and per-call observations keep their own scopes and aggregations",
+  "order": "each observation is written in precedence and arrival order (a canonical single observation, or a supporting observation) and each consolidated event right after its primary observation; journal.sequence is import order, never occurrence order",
+  "candidate": {
+    "status": "final assembly 0.1.0-prototype (2026-10-24), candidate for review: tested candidate behaviour, not approved support"
+  }
+}

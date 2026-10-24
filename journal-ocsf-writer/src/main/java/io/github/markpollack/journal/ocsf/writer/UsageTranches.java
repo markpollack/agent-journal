@@ -145,6 +145,47 @@ final class UsageTranches {
         finish(into, components);
     }
 
+    static final String COPILOT_UNCACHED = "copilot.usage.input_includes_cache_read.v1: the input count includes cache reads (the 1.0.100 run's "
+            + "accountingSnapshot.tokenDetails input 11397 equals modelMetrics inputTokens 61573 minus cacheReadTokens 50176; the OTel GenAI conventions "
+            + "define gen_ai.usage.input_tokens to include cached tokens): uncached input = input - cache reads, exact when the same report states "
+            + "cache writes of 0";
+    static final String COPILOT_UNCACHED_CONDITIONAL = COPILOT_UNCACHED + "; this report states no cache writes, so whether the difference holds cache writes "
+            + "is not established and it is this component's conditional value, never the canonical tranche (an absent cache-write count is absent, not 0)";
+
+    /**
+     * One GitHub Copilot CLI usage report, by its own member names: a session usage record (camel case) or an OTel span's
+     * GenAI attributes. Cache reads, cache writes, output and reasoning are copied where reported; the uncached tranche is
+     * derived as input minus cache reads (copilot.usage.input_includes_cache_read.v1) when the report states cache writes
+     * of 0, and otherwise kept only as the component's conditional value. No reasoning relation is written: no source
+     * states whether reasoning is part of output.
+     *
+     * @param names the native member names of input, cache reads, cache writes, output and reasoning, in that order
+     */
+    static void copilot(Jv.Obj into, Jv usage, List<String> names) {
+        Jv.Arr components = new Jv.Arr();
+        Jv input = usage == null ? null : usage.member(names.get(0));
+        Jv reads = usage == null ? null : usage.member(names.get(1));
+        Jv writes = usage == null ? null : usage.member(names.get(2));
+        if (isIntegral(input) && isIntegral(reads)) {
+            Jv.Num uncached = new Jv.Num(((Jv.Num) input).value().subtract(((Jv.Num) reads).value()).toBigIntegerExact().toString());
+            List<String> operands = List.of("/" + escape(names.get(0)), "/" + escape(names.get(1)));
+            if (isIntegral(writes) && ((Jv.Num) writes).value().signum() == 0) {
+                into.put("uncached_input_tokens", uncached);
+                components.add(component("uncached_input_tokens", 2, operands, COPILOT_UNCACHED));
+            }
+            else {
+                Jv.Obj c = component("uncached_input_tokens", 3, operands, COPILOT_UNCACHED_CONDITIONAL);
+                measured(c, 3, uncached);
+                components.add(c);
+            }
+        }
+        reported(into, components, usage, "", names.get(1), "cache_read_tokens");
+        reported(into, components, usage, "", names.get(2), "cache_write_tokens");
+        reported(into, components, usage, "", names.get(3), "output_tokens");
+        reported(into, components, usage, "", names.get(4), "reasoning_tokens");
+        finish(into, components);
+    }
+
     /** Whether any Codex member is non-zero: then a usage update arrived (codex.usage.component_measurement.v2). */
     private static boolean codexUpdated(Jv usage) {
         for (String m : CODEX_MEMBERS) {

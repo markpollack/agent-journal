@@ -21,7 +21,8 @@ import java.util.List;
  * A native source artifact read as bytes first. Lines are split on LF, a trailing CR is recorded as a CRLF ending,
  * and every line is kept: a line that is not UTF-8, not one JSON object under strict duplicate-key parsing, or blank
  * stays in the inventory as an opaque record with its exact bytes. A strict parser therefore never ends the inventory
- * early, and the oracle can judge structure/value, representation and bytes separately.
+ * early, and the oracle can judge structure/value, representation and bytes separately. A document-framed artifact
+ * ({@link #document(Path)}) is one record: the whole file.
  */
 public final class NativeArtifact {
 
@@ -54,11 +55,28 @@ public final class NativeArtifact {
     private final boolean trailingNewline;
 
     private NativeArtifact(Path path, byte[] bytes) {
+        this(path, bytes, false);
+    }
+
+    private NativeArtifact(Path path, byte[] bytes, boolean document) {
         this.path = path;
         this.bytes = bytes;
         this.sha256 = sha256(bytes);
-        this.records = split(bytes);
+        this.records = document ? (bytes.length == 0 ? List.of() : List.of(classify(1, bytes, "none"))) : split(bytes);
         this.trailingNewline = bytes.length > 0 && bytes[bytes.length - 1] == '\n';
+    }
+
+    /**
+     * A document-framed artifact: the whole file is one record (a JSON document such as a session summary or a usage
+     * report), the way a source profile declares its framing.
+     */
+    public static NativeArtifact document(Path path) {
+        try {
+            return new NativeArtifact(path, Files.readAllBytes(path), true);
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     public static NativeArtifact read(Path path) {

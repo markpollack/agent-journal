@@ -422,7 +422,7 @@ public final class AnalysisViews {
         Json decl = declaration(pkg, SemanticOperation.FINAL_USAGE_SELECTION);
         Map<String, Map<String, Json>> groups = new LinkedHashMap<>();
         Map<String, List<Map<String, Json>>> observations = new LinkedHashMap<>();
-        for (Event e : pkg.events) {
+        for (Event e : pkg.canonical()) {
             if (e.className == null) {
                 continue;
             }
@@ -537,7 +537,7 @@ public final class AnalysisViews {
             row.put("derived_association", "1".equals(outcome) && "2".equals(method) && !cands.isEmpty() ? cands.get(0) : Json.JNull.INSTANCE);
             rows.add(new Json.JObject(row));
         }
-        for (Event e : pkg.events) {
+        for (Event e : pkg.canonical()) {
             if (e.className == null) {
                 continue;
             }

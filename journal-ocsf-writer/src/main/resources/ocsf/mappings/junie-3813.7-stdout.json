@@ -1,0 +1,76 @@
+{
+  "contract_uid": "junie/json-stream/3813.7/0.1.0-prototype",
+  "applies_to": {
+    "product": "Junie",
+    "version": "3813.7",
+    "launch": "junie --output-format json-stream (standard output)",
+    "source_kind": "Live output",
+    "compatibility_entries": [
+      "junie/json-stream/3813.7-stdout"
+    ],
+    "selection": "the version the capture discovered with junie --version"
+  },
+  "executor": "journal-ocsf-writer JunieStdoutMapper (direct Java); one record at a time",
+  "record_discriminator": "type",
+  "time_policy": {
+    "reported": "timestamp (epoch milliseconds)",
+    "fallback": "latest preceding reported time"
+  },
+  "identity": "junie.stdout.identity.v1: the session record's sessionId; steps carry no id",
+  "usage": "junie.stdout.error_code_usage.v1: the result's errorCode member is a list of per-model usage entries (model, calls, cost, token counts), not an error; junie.usage.unnamed_cost.v1: a usage entry's cost is a quantity whose unit the source does not name (kind 99 Other, no currency); the per-model costs of the recorded runs sum to completion.taskCostUsd, but a sum in one run does not name their unit",
+  "rules": [
+    {
+      "id": "junie.stdout.session->session_context.settings",
+      "selector": {
+        "type": "session"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "1 Settings reported",
+      "owner": "session_uid = sessionId"
+    },
+    {
+      "id": "junie.stdout.result->model_response.final_answer",
+      "selector": {
+        "type": "result"
+      },
+      "target": "agentic_cli/model_response",
+      "activity": "3 Item completed",
+      "owner": "one text block from result; no id"
+    },
+    {
+      "id": "junie.stdout.result->session_context.accounting",
+      "selector": {
+        "type": "result"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "3 Accounting reported",
+      "owner": "per-model usage (scope 6, final, cumulative) and unnamed-unit cost (kind 99, model_ref) from errorCode[]"
+    },
+    {
+      "id": "junie.stdout.fallback->source_record",
+      "selector": {
+        "type": "step, or any other"
+      },
+      "target": "agentic_cli/source_record",
+      "activity": "1 Parsed",
+      "owner": "retained whole: a step without an id is never joined or counted as an operation"
+    },
+    {
+      "id": "common.opaque->source_record",
+      "selector": "a record that is not one JSON object",
+      "target": "agentic_cli/source_record",
+      "activity": "2 Opaque",
+      "owner": "the record's bytes"
+    },
+    {
+      "id": "common.mapper_exception->source_record",
+      "selector": "a record whose mapping failed",
+      "target": "agentic_cli/source_record",
+      "activity": "1 Parsed",
+      "owner": "the record retained whole with the failure"
+    }
+  ],
+  "candidate": {
+    "status": "EXPERIMENTAL candidate (2026-10-24): tested on two sanitized live 3813.7 runs (junie-1, junie-2) and their final assemblies; not admitted: no field-disposition catalog or oracle profile yet; tested candidate behaviour is not approved support"
+  }
+}

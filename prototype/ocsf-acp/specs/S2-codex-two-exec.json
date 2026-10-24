@@ -31,7 +31,7 @@
    "artifact": "rollout-1.jsonl",
    "kind": 2,
    "profile": "codex_rollout",
-   "path": "/tmp/claude-1000/-home-mark-projects-agent-journal-steward/31a7d4e7-4639-409f-bdf9-d27324c178de/scratchpad/neg/fixtures/S2-codex-two-exec/rollout-1.jsonl"
+   "path": "<scratch>/neg/fixtures/S2-codex-two-exec/rollout-1.jsonl"
   },
   {
    "artifact": "stream.jsonl",

@@ -135,7 +135,8 @@ public final class OcsfOracle {
                 report.add(Category.COMPLETENESS, "source.available", owner, Outcome.UNRESOLVED, "native artifact not supplied at " + file);
                 continue;
             }
-            NativeArtifact art = NativeArtifact.read(file);
+            // a document-framed source (a JSON document such as a usage report) is one record
+            NativeArtifact art = "document".equals(SchemaCatalog.text(source, "framing")) ? NativeArtifact.document(file) : NativeArtifact.read(file);
             Map<String, Object> o = new LinkedHashMap<>();
             o.put("path", file.toString());
             o.put("sha256", art.sha256());
@@ -185,7 +186,11 @@ public final class OcsfOracle {
             if (profile == null) {
                 report.add(Category.COMPLETENESS, "source.profile", owner, Outcome.UNSUPPORTED,
                         "no oracle profile for " + profileName + "; only retention is judged");
-                profile = new OpaqueTextProfile();
+                profile = (a, src, sc) -> {
+                    ExpectedFacts f = new OpaqueTextProfile().expected(a, src, sc);
+                    f.classUnjudged = true;
+                    return f;
+                };
             }
             Json scope = core.manifest.sourceScope();
             if (scope != null && core.manifest.parent() == null && !artifact.equals(SchemaCatalog.text(scope, "artifact"))) {
@@ -195,7 +200,7 @@ public final class OcsfOracle {
                 // a child core owns records of its owner artifact only; other declared artifacts belong to the root core
                 boolean stray = false;
                 for (Event e : core.events) {
-                    if (e.className != null && artifact.equals(e.artifact())) {
+                    if (e.className != null && e.observation() && artifact.equals(e.artifact())) {
                         stray = true;
                     }
                 }
@@ -221,7 +226,8 @@ public final class OcsfOracle {
             report.require(owner, MANDATORY_SOURCE.toArray(String[]::new));
             List<Event> events = new ArrayList<>();
             for (Event e : core.events) {
-                if (e.className != null && artifact.equals(e.artifact())) {
+                // a consolidated event of a final assembly is judged by the assembly oracle, never as this source's own
+                if (e.className != null && e.observation() && artifact.equals(e.artifact())) {
                     events.add(e);
                 }
             }
@@ -242,7 +248,11 @@ public final class OcsfOracle {
             // RULE-9, RULE-10, RULE-33: a record that arrived while no entry was selected is retained whole and owes no fact
             retention(art, facts, events, owner, core, unselected);
             CompatibilityHistory.Step inForce = history.inForce();
-            if (inForce != null && !CompatibilityHistory.normalizing(inForce.status())) {
+            if (facts.classUnjudged) {
+                unjudged(facts, owner, "no oracle profile for this source's profile: its normalized facts are not judged here (an assembly is judged by the assembly oracle)",
+                        "this oracle does not judge here", "this oracle does not judge here");
+            }
+            else if (inForce != null && !CompatibilityHistory.normalizing(inForce.status())) {
                 // the candidate declares no normalization for this source; every normalization family is reported UNSUPPORTED,
                 // never VERIFIED and never silently absent, so acceptance cannot credit it
                 String why = switch (String.valueOf(inForce.status())) {
@@ -252,17 +262,8 @@ public final class OcsfOracle {
                             + "; facts written before it are kept but not credited)";
                     default -> "compatibility status " + inForce.status() + " declared";
                 };
-                String families = why + ": normalization is not claimed for this source; expected occurrences by family: " + facts.counts();
-                for (String p : List.of("population.requests", "request.values", "population.results", "result.owner", "result.values", "population.responses", "response.values",
-                        "population.prompts", "prompt.values", "population.usage", "usage.values", "population.cost", "cost.values", "population.decisions", "decision.values",
-                        "population.operations", "operation.values", "population.turn_completed", "turn.values", "population.turn_started", "turn_started.values",
-                        "population.contexts", "context.values", "population.mcp", "mcp.values", "population.tool_errors", "tool_error.values")) {
-                    report.add(Category.NORMALIZATION, p, owner, Outcome.UNSUPPORTED, families);
-                }
-                report.add(Category.EXPLANATION, "time.basis", owner, Outcome.UNSUPPORTED,
-                        why + ": the source's time fields are a mapping this candidate does not claim; retained records carry the fallback basis");
-                report.add(Category.NORMALIZATION, "identity.values", owner, Outcome.UNSUPPORTED,
-                        why + ": session and native record identities are a mapping this candidate does not claim");
+                unjudged(facts, owner, why + ": normalization is not claimed for this source", "this candidate does not claim; retained records carry the fallback basis",
+                        "this candidate does not claim");
             }
             else {
                 ExpectedFacts owed = unselected.isEmpty() ? facts : facts.without(unselected);
@@ -776,10 +777,23 @@ public final class OcsfOracle {
                         : String.join("; ", problems));
     }
 
+    /** Every normalization family of a source reported UNSUPPORTED, never VERIFIED and never silently absent, so acceptance cannot credit it. */
+    private void unjudged(ExpectedFacts facts, String owner, String why, String timeWhy, String identityWhy) {
+        String families = why + "; expected occurrences by family: " + facts.counts();
+        for (String p : List.of("population.requests", "request.values", "population.results", "result.owner", "result.values", "population.responses", "response.values",
+                "population.prompts", "prompt.values", "population.usage", "usage.values", "population.cost", "cost.values", "population.decisions", "decision.values",
+                "population.operations", "operation.values", "population.turn_completed", "turn.values", "population.turn_started", "turn_started.values",
+                "population.contexts", "context.values", "population.mcp", "mcp.values", "population.tool_errors", "tool_error.values")) {
+            report.add(Category.NORMALIZATION, p, owner, Outcome.UNSUPPORTED, families);
+        }
+        String cause = why.endsWith(": normalization is not claimed for this source") ? why.substring(0, why.length() - ": normalization is not claimed for this source".length()) : why;
+        report.add(Category.EXPLANATION, "time.basis", owner, Outcome.UNSUPPORTED, cause + ": the source's time fields are a mapping " + timeWhy);
+        report.add(Category.NORMALIZATION, "identity.values", owner, Outcome.UNSUPPORTED, cause + ": session and native record identities are a mapping " + identityWhy);
+    }
+
     private void order(OcsfPackage core, String label) {
         List<String> problems = new ArrayList<>();
         Integer last = null;
-        Map<String, Integer> lastRecord = new LinkedHashMap<>();
         for (Event e : core.events) {
             if (e.className == null) {
                 continue;
@@ -788,7 +802,18 @@ public final class OcsfOracle {
                 problems.add("line " + e.line + " sequence " + e.sequence + " after " + last);
             }
             last = e.sequence;
-            Integer idx = e.recordIndex();
+        }
+        problems.addAll(recordOrder(core.observations()));
+        report.add(Category.NORMALIZATION, "event.order", label, problems.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
+                problems.isEmpty() ? "journal.sequence strictly increasing; record_index non-decreasing per artifact" : String.join("; ", problems));
+    }
+
+    /** Record order per artifact over each source's own observations (a consolidated event follows its primary observation). */
+    private static List<String> recordOrder(List<Event> observations) {
+        List<String> problems = new ArrayList<>();
+        Map<String, Integer> lastRecord = new LinkedHashMap<>();
+        for (Event e : observations) {
+            Integer idx = e.className == null ? null : e.recordIndex();
             Integer prev = lastRecord.get(e.artifact());
             if (idx != null && prev != null && idx < prev) {
                 problems.add("line " + e.line + " " + e.artifact() + " record " + idx + " after record " + prev);
@@ -797,8 +822,7 @@ public final class OcsfOracle {
                 lastRecord.put(e.artifact(), idx);
             }
         }
-        report.add(Category.NORMALIZATION, "event.order", label, problems.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
-                problems.isEmpty() ? "journal.sequence strictly increasing; record_index non-decreasing per artifact" : String.join("; ", problems));
+        return problems;
     }
 
     // ------------------------------------------------------------------------------------------ retention
@@ -915,8 +939,14 @@ public final class OcsfOracle {
         if (excludedDeclared > 0) {
             report.add(Category.COMPLETENESS, "whole_record.excluded", owner, Outcome.NOT_APPLICABLE, excludedDeclared + " record(s) excluded by the declared admission");
         }
-        report.add(Category.COMPLETENESS, "whole_record.class", owner, classProblems.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
-                classProblems.isEmpty() ? facts.normalized.size() + " normalized, " + (facts.owned.size() - facts.normalized.size()) + " fallback" : String.join("; ", classProblems));
+        if (facts.classUnjudged) {
+            report.add(Category.COMPLETENESS, "whole_record.class", owner, Outcome.UNSUPPORTED,
+                    "no oracle profile for this source: which records a rule normalizes is not judged (every record's retention is)");
+        }
+        else {
+            report.add(Category.COMPLETENESS, "whole_record.class", owner, classProblems.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
+                    classProblems.isEmpty() ? facts.normalized.size() + " normalized, " + (facts.owned.size() - facts.normalized.size()) + " fallback" : String.join("; ", classProblems));
+        }
         report.add(Category.PRESERVATION, "whole_record.structure_value", owner, parsedCompared == 0 ? Outcome.NOT_APPLICABLE : structure.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
                 structure.isEmpty() ? parsedCompared + " parsed record(s) equal in structure and value" : String.join("; ", structure));
         report.add(Category.PRESERVATION, "whole_record.representation", owner, parsedCompared == 0 ? Outcome.NOT_APPLICABLE : representation.isEmpty() ? Outcome.VERIFIED : Outcome.REPRESENTATION_DIFFERS,

@@ -15,6 +15,15 @@ a drift report proposes updates; nothing widens the accepted inventory automatic
 | `codex-cli/rollout/0.160.1.json` | `codex_rollout` | Codex CLI 0.160.1, the `~/.codex/sessions/.../rollout-*.jsonl` after the run | the frozen pair B rollout (26 records) |
 | `antigravity-cli/stream-json/1.4.6.json` | `agy_stream` | Antigravity CLI 1.4.6, `agy --print <prompt> --output-format stream-json` stdout | specification 0.2.0: the six sanitized live 1.4.6 recordings (75 records), including the two MCP recordings; 0.1.0 (four recordings) is kept under `revisions` |
 
+| `claude-code/session-transcript/2.1.304.json` | `claude_transcript` | Claude Code 2.1.304, the session file the launch saved (the 2.1.304 final-assembly profile) | the sanitized live session file of `claude-mcp-1` (52 records) |
+| `github-copilot-cli/stdout-json/1.0.100.json` | `copilot_events` | GitHub Copilot CLI 1.0.100, `copilot -p … --output-format json` standard output | the sanitized live run `copilot-otel-1` (115 records) |
+| `github-copilot-cli/session-events/1.0.100.json` | `copilot_events` | the same launch's native session `events.jsonl` | `copilot-otel-1` (37 records) |
+| `github-copilot-cli/otel-file/1.0.100.json` | `copilot_otel` | the same launch's OTel file export (content capture on) | `copilot-otel-1` (31 records) |
+| `github-copilot-cli/usage-report/1.0.100.json` | `copilot_usage_report` | the same launch's `--usage-output-file` document | `copilot-otel-1` (one document) |
+| `junie/session-summary/3813.7.json` | `junie_summary` | Junie 3813.7, the session directory's `summary.json` | the sanitized live runs `junie-1`, `junie-2` |
+| `junie/session-events/3813.7.json` | `junie_session_events` | the session directory's `events.jsonl` | `junie-1`, `junie-2` |
+| `junie/json-stream/3813.7.json` | `junie_stdout` | `junie --output-format json-stream` standard output | `junie-1`, `junie-2` |
+
 Beside each specification, `<version>.schema.json` is the JSON Schema (Draft 2020-12 subset) **derived** from it:
 one object schema per variant, `required` for paths present in every observed record, `additionalProperties: false`
 except under data-keyed and map-keyed paths. It is a shape description for readers, regenerated with
@@ -36,6 +45,10 @@ inventory, so a new field is discovered even where a schema would be permissive.
   whose values have vendor structure, inventoried below `{*}`.
 - `external_cross_checks`: vendor or community descriptions compared with the same inventory, as separate evidence.
   They inform interpretation and missing-scenario tests; they do not filter the inventory or define support.
+- `availability` (the specifications added on 2026-10-24): per fact family (token usage, cost, system text), whether the
+  source reports it, with selectors and the population the inventory observed; `SourceAvailability` rejects an absence
+  the inventory contradicts, a zero-match selector marked exercised, and vendor usage hidden under a data-keyed subtree
+  or missing from the specification (`SourceAvailabilityTest`, which also pins the audit findings of the earlier routes).
 - `limits`: what one specimen cannot establish. A missing optional field is not removal; a field seen once is not
   universal; one version and one launch mode per CLI.
 

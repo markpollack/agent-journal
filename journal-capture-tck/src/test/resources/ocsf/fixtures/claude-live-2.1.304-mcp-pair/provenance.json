@@ -1,0 +1,76 @@
+{
+ "kind": "agent-journal/fixture-provenance",
+ "fixture": "claude-live-2.1.304-mcp-pair",
+ "origin": "SANITIZED REAL LIVE RECORDING (not synthetic): the stream and the native session file of one live launch",
+ "evidence_class": "recorded replay of a live stream and the native session file the same launch archived; the live capture itself is private steward evidence under plans/evidence/2026-10-23-mcp-live/",
+ "cli": "Claude Code",
+ "cli_version": "2.1.304",
+ "live_run": "claude-mcp-1",
+ "scenario": "LIVE-06 three calls to the Java MCP SDK stdio test server journal_echo: echo_record twice with distinct arguments and structured results, always_fails returning isError; normal completion",
+ "files": {
+  "stream.jsonl": {
+   "original_sha256": "286e14b8babe6b710db9e1deba873aedf6f416b2c06e1e2472882ffe4e70fe8b",
+   "sha256": "7c020c2d528a478c5fcfd340ae1b1d128af13e00e651ac0e67c72e7927bb656c",
+   "records": 15
+  },
+  "transcript.jsonl": {
+   "original": "out/archive/ba07fe4c-ea4c-42e5-bf12-fc2f0608fa31.jsonl",
+   "original_sha256": "0addef68bf5628d5f55ae5d1813ea786b4718dc06f7070d2b7411b110b4e7d53",
+   "sha256": "8151869fcc92b7809ebf95f8e936b5bf913ff988382eef2ceafa04e4cbb14a54",
+   "records": 52
+  }
+ },
+ "sanitization": [
+  "task directory path -> /work",
+  "home directory -> /home/user",
+  "session_id -> stand-in",
+  "uuid -> deterministic stand-ins by first occurrence (stream first, then the transcript)",
+  "init.agents (user configuration names) -> []",
+  "init.skills (user configuration names) -> []",
+  "init.plugins (user configuration names) -> []",
+  "init.slash_commands (user configuration names) -> []",
+  "init.terminal_slash_commands (user configuration names) -> []",
+  "init.memory_paths -> {}",
+  "init.messaging_socket_path -> /run/sock",
+  "rate_limit_event account utilization/resetsAt -> 0 (account status is not fixture data)",
+  "transcript UUIDs (record, parent, request and organization ids) -> the stream's stand-ins where shared, new stand-ins otherwise; session id -> stand-in",
+  "attachment environment: every string value -> labelled placeholder (private context rendered to the model)",
+  "attachment agent_listing_delta: every string value -> labelled placeholder (private context rendered to the model)",
+  "attachment skill_listing: every string value -> labelled placeholder (private context rendered to the model)",
+  "attachment instructions: every string value -> labelled placeholder (private context rendered to the model)",
+  "attachment session_context: every string value -> labelled placeholder (private context rendered to the model)",
+  "attachment credential_org: every string value -> labelled placeholder (private context rendered to the model)",
+  "attachment remote_session_change: every string value -> labelled placeholder (private context rendered to the model)",
+  "attachment prompt_snapshot: every string value -> labelled placeholder (private context rendered to the model)",
+  "api-request-shape: request shape and message text -> labelled placeholders (system prompt and tool definitions of the account)",
+  "api-request-blob: request shape and message text -> labelled placeholders (system prompt and tool definitions of the account)"
+ ],
+ "privacy_review": "paths, home directory, session id, record and request uuids, organization id, user configuration names and every string of the private-context transcript records replaced (labelled placeholders keep length and sha256); the deliberate synthetic task prompt, tool ids, message ids, model names and usage numbers kept; reviewed 2026-10-24",
+ "capture_command": [
+  "/home/user/.local/share/claude/versions/2.1.304",
+  "-p",
+  "Use the MCP server named journal_echo. 1. Call its tool echo_record with arguments {\"text\": \"alpha\", \"n\": 1}. 2. Call echo_record again with arguments {\"text\": \"beta\", \"n\": 2}. 3. Call its tool always_fails exactly once with no arguments. Make the calls one after another. Do not use any other tool and do not run shell commands. Finally reply in one line with the two echo values returned and whether always_fails reported an error.",
+  "--output-format",
+  "stream-json",
+  "--verbose",
+  "--model",
+  "haiku",
+  "--allowedTools",
+  "mcp__journal_echo__echo_record",
+  "mcp__journal_echo__always_fails",
+  "--mcp-config",
+  "<launch-scoped mcp.json>",
+  "--strict-mcp-config"
+ ],
+ "live_process": {
+  "pid": 3062772,
+  "started": "2026-10-23T22:53:45.371199049Z",
+  "ended": "2026-10-23T22:53:52.016444556Z",
+  "how": "exited",
+  "exit_code": 0,
+  "exit_meaning": "0: the CLI reported success",
+  "stdout": "closed: EOF reached",
+  "stderr_bytes": 0,
+  "meaning": "the CLI process outcome; distinct from storage finalization (recording.state) and acquisition extent (acquisition.status): EOF never implies success"
+ }
+}

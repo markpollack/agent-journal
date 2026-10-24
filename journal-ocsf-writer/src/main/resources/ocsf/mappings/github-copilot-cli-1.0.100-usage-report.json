@@ -1,0 +1,48 @@
+{
+  "contract_uid": "github-copilot-cli/usage-report/1.0.100/0.1.0-prototype",
+  "applies_to": {
+    "product": "GitHub Copilot CLI",
+    "version": "1.0.100",
+    "launch": "--usage-output-file <file> (one JSON document written at exit)",
+    "source_kind": "CLI report file",
+    "compatibility_entries": [
+      "github-copilot-cli/usage-report/1.0.100"
+    ],
+    "selection": "the version the capture discovered with copilot --version"
+  },
+  "executor": "journal-ocsf-writer CopilotUsageReportMapper (direct Java); the whole document is one record",
+  "record_discriminator": "none: one document",
+  "time_policy": {
+    "reported": "none (sessionStartTime is the session's start, not the report's time)",
+    "fallback": "latest preceding reported time, else capture start"
+  },
+  "identity": "copilot.usage_report.identity.v1: the report names no session; it belongs to the execution whose launch named the file (bound by acquisition)",
+  "rules": [
+    {
+      "id": "copilot.usage_report->session_context.accounting",
+      "selector": {
+        "document": "the usage report"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "3 Accounting reported",
+      "owner": "session usage from tokenDetails (scope 5, final, cumulative snapshot) and per model from modelMetrics (scope 6); totalPremiumRequestCost as kind 2, totalNanoAiu as kind 4"
+    },
+    {
+      "id": "common.opaque->source_record",
+      "selector": "a record that is not one JSON object",
+      "target": "agentic_cli/source_record",
+      "activity": "2 Opaque",
+      "owner": "the record's bytes"
+    },
+    {
+      "id": "common.mapper_exception->source_record",
+      "selector": "a record whose mapping failed",
+      "target": "agentic_cli/source_record",
+      "activity": "1 Parsed",
+      "owner": "the record retained whole with the failure"
+    }
+  ],
+  "candidate": {
+    "status": "EXPERIMENTAL candidate (2026-10-24): tested on one sanitized live 1.0.100 run (copilot-otel-1) and its final assembly; not admitted: no field-disposition catalog or oracle profile yet; tested candidate behaviour is not approved support"
+  }
+}

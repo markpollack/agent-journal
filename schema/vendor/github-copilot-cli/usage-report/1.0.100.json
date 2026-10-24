@@ -1,0 +1,1419 @@
+{
+ "kind": "agent-journal/native-source-specification",
+ "version": "0.1",
+ "status": "ACCEPTED 0.1.0 (2026-10-24, level-1 assembly phase): EXPERIMENTAL route specification frozen from one sanitized live 1.0.100 run; drift reports propose changes, review accepts them by editing this file and bumping specification_version",
+ "specification_version": "0.1.0",
+ "profile": "copilot_usage_report",
+ "applies_to": {
+  "cli": "GitHub Copilot CLI",
+  "version": "1.0.100",
+  "launch_mode": "--usage-output-file <file> (the same launch)",
+  "source_kind": "CLI report file",
+  "capture_route": "the JSON document the CLI wrote at exit",
+  "route_limit": "one document per launch; it names no session (bound by the launch that named the file)"
+ },
+ "provenance": {
+  "observed_on": [
+   {
+    "artifact": "fixture copilot-live-1.0.100-otel native/usage-output.json",
+    "sha256": "faeccb072cd31840c1bb9e1fbb89303d429b6d197ab44ec072cfa2f082400ca7",
+    "records": 1,
+    "bytes": 3119,
+    "frozen_in": "journal-capture-tck/src/test/resources/ocsf/fixtures/copilot-live-1.0.100-otel (sanitized; the original is private steward evidence)"
+   }
+  ],
+  "produced_by": "journal-capture-tck NativeInventoryTool draft (RawInventory 0.1, profile copilot_usage_report)",
+  "reviewed": "2026-10-24 level-1 assembly phase: variants, data-keyed and map-keyed paths reviewed against the 1.0.100 recordings, including the copilot-2 checkpoint regression (nested accounting under map-keyed paths stays inventoried)"
+ },
+ "limits": [
+  "one CLI version (1.0.100) and one launch per specification: the inventory is the observed shape of one sanitized live run (copilot-otel-1), not a vendor promise",
+  "a field observed in one record is not universal; a field absent from this specimen is not removed; nullability is what was seen",
+  "variants are discriminated by the vendor's own fields; a record with a new discriminator value is a new variant, not an error",
+  "data-keyed subtrees (tool arguments, tool-defined results, per-tool telemetry) record value kinds only; map-keyed subtrees (accounting keyed by model, agent or id) keep their vendor structure below {*}",
+  "EXPERIMENTAL route: no field-disposition catalog and no independent oracle profile yet; the assembly oracle judges the final assembly; admission needs both",
+  "the specimen was sanitized (session, event, call and request ids replaced by stand-ins; private context replaced by labelled placeholders with lengths and hashes); shapes and value kinds are unchanged"
+ ],
+ "external_cross_checks": [
+  {
+   "name": "GitHub Copilot CLI 1.0.100 --help",
+   "role": "vendor/community description",
+   "use": "attribute and option names compared by reading; no path-level comparison was run"
+  }
+ ],
+ "open_variants": [],
+ "inventory": {
+  "observed_on": [
+   {
+    "artifact": "usage-output.json",
+    "sha256": "faeccb072cd31840c1bb9e1fbb89303d429b6d197ab44ec072cfa2f082400ca7",
+    "bytes": 3119,
+    "records": 1
+   }
+  ],
+  "data_keyed": [],
+  "map_keyed": [
+   "agentMetrics",
+   "agentMetrics.{*}.modelMetrics",
+   "modelMetrics"
+  ],
+  "variants": {
+   "(untyped)": {
+    "discriminators": {
+     "type": null
+    },
+    "records": 1,
+    "evidence": [
+     "usage-output.json:1"
+    ],
+    "paths": {
+     "agentMetrics": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "distinct_data_keys": 1,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.modelMetrics": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "distinct_data_keys": 1,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.modelMetrics.{*}": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.modelMetrics.{*}.requests": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.modelMetrics.{*}.requests.cost": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.modelMetrics.{*}.requests.count": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.modelMetrics.{*}.tokenDetails": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.modelMetrics.{*}.tokenDetails.cache_read": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.modelMetrics.{*}.tokenDetails.cache_read.tokenCount": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.modelMetrics.{*}.tokenDetails.cache_write": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.modelMetrics.{*}.tokenDetails.cache_write.tokenCount": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.modelMetrics.{*}.tokenDetails.input": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.modelMetrics.{*}.tokenDetails.input.tokenCount": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.modelMetrics.{*}.tokenDetails.output": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.modelMetrics.{*}.tokenDetails.output.tokenCount": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.modelMetrics.{*}.totalNanoAiu": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.modelMetrics.{*}.usage": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.modelMetrics.{*}.usage.cacheReadTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.modelMetrics.{*}.usage.cacheWriteTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.modelMetrics.{*}.usage.inputTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.modelMetrics.{*}.usage.outputTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.modelMetrics.{*}.usage.reasoningTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.totalApiDurationMs": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "agentMetrics.{*}.totalNanoAiu": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "aiCreditsStatus": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "codeChanges": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "codeChanges.filesModified": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 1,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "codeChanges.filesModifiedCount": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "codeChanges.linesAdded": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "codeChanges.linesRemoved": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "currentModel": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "lastCallInputTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "lastCallOutputTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "distinct_data_keys": 1,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}.aiCreditsStatus": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}.cacheExpiresAt": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}.requests": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}.requests.cost": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}.requests.count": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}.tokenDetails": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}.tokenDetails.cache_read": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}.tokenDetails.cache_read.tokenCount": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}.tokenDetails.cache_write": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}.tokenDetails.cache_write.tokenCount": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}.tokenDetails.input": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}.tokenDetails.input.tokenCount": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}.tokenDetails.output": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}.tokenDetails.output.tokenCount": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}.totalNanoAiu": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}.usage": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}.usage.cacheReadTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}.usage.cacheWriteTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}.usage.inputTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}.usage.outputTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "modelMetrics.{*}.usage.reasoningTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[]": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].metrics": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].metrics.aiCreditsStatus": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].metrics.requests": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].metrics.requests.cost": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].metrics.requests.count": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].metrics.tokenDetails": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].metrics.tokenDetails.cache_read": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].metrics.tokenDetails.cache_read.tokenCount": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].metrics.tokenDetails.cache_write": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].metrics.tokenDetails.cache_write.tokenCount": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].metrics.tokenDetails.input": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].metrics.tokenDetails.input.tokenCount": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].metrics.tokenDetails.output": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].metrics.tokenDetails.output.tokenCount": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].metrics.totalNanoAiu": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].metrics.usage": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].metrics.usage.cacheReadTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].metrics.usage.cacheWriteTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].metrics.usage.inputTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].metrics.usage.outputTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].metrics.usage.reasoningTokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].modelDisplayName": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].modelId": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].provider": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].provider.id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].provider.kind": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "providerModelMetrics[].provider.label": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "sessionStartTime": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "tokenDetails": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "tokenDetails.cache_read": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "tokenDetails.cache_read.tokenCount": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "tokenDetails.cache_write": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "tokenDetails.cache_write.tokenCount": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "tokenDetails.input": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "tokenDetails.input.tokenCount": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "tokenDetails.output": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "tokenDetails.output.tokenCount": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "totalApiDurationMs": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "totalNanoAiu": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "totalPremiumRequestCost": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     },
+     "totalUserRequests": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "usage-output.json:1"
+      ]
+     }
+    }
+   }
+  }
+ },
+ "availability": {
+  "rule": "agent-journal/source-availability 0.1: per fact family, whether this source reports it and where (selectors: variant and path, with the population the inventory observed); a family is absent only when no observed path matches its vocabulary; a selector that matches nothing is unexercised, never verified (SourceAvailability)",
+  "families": [
+   {
+    "family": "token_usage",
+    "claim": "present",
+    "granularity": "session cumulative (tokenDetails) and per model and agent",
+    "selectors": [
+     {
+      "variant": "(untyped)",
+      "path": "tokenDetails.input.tokenCount",
+      "matched_records": 1,
+      "exercised": true
+     },
+     {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.usage.inputTokens",
+      "matched_records": 1,
+      "exercised": true
+     }
+    ]
+   },
+   {
+    "family": "cost",
+    "claim": "present",
+    "granularity": "session premium requests and nano-AIU",
+    "selectors": [
+     {
+      "variant": "(untyped)",
+      "path": "totalPremiumRequestCost",
+      "matched_records": 1,
+      "exercised": true
+     },
+     {
+      "variant": "(untyped)",
+      "path": "totalNanoAiu",
+      "matched_records": 1,
+      "exercised": true
+     }
+    ]
+   }
+  ]
+ }
+}

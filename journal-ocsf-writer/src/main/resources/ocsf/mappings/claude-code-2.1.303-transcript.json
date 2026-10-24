@@ -6,7 +6,8 @@
     "source_kind": "Saved session file (~/.claude/projects/<cwd>/<session>.jsonl)",
     "compatibility_entries": [
       "claude-code/session-transcript/2.1.299-session-file",
-      "claude-code/session-transcript/2.1.303-session-file"
+      "claude-code/session-transcript/2.1.303-session-file",
+      "claude-code/session-transcript/2.1.304-session-file"
     ],
     "selection": "route native_session_file; experimental combined-source evidence only"
   },

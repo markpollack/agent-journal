@@ -12,42 +12,42 @@ configured check missing from the evidence is an error, a wrong observed value a
 unexercised scenario or insufficient evidence is not assessed. Every other criterion is reported as
 not assessed.
 
-## UC1: Recording and source selection
+## UC1: Recording, source selection and final assembly
 
-### UC1-AC1: Normalize the stream of a streaming CLI
+### UC1-AC1: Assemble a complete capture automatically
 
-When a CLI offers stream output, the capture shall normalize that stream into `events.jsonl` as the selected input.
-Rule: RULE-1. Tests: `CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy` (stand-in process through the opt-in launching capture), `PrefixReplayTest#everyPrefixOfTheClaudeStreamIsJudgedDefectFreeByTheOracle`, `PrefixReplayTest#everyPrefixOfTheCodexExecStreamIsJudgedDefectFreeByTheOracle` (recorded and synthetic replay). Status: the opt-in launching capture (`CliCapture`) normalizes the stream and was exercised live for both CLIs on 2026-10-21 (private evidence); the production default capture modules are unchanged.
+When a capture is configured with a reviewed source profile and the run completes, the capture shall acquire the profile's declared sources and write their final assembly into a new `events.jsonl` without a further request.
+Rule: RULE-1, RULE-5. Tests: `CliCaptureTest#aCompleteCaptureAssemblesTheFinalPackageAutomatically` (stand-in process; the original package is kept as lineage), `CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy` (single-source capture). Status: changed meaning 2026-10-24 (was: normalize the stream); implemented for the Claude Code 2.1.304 profile through `CliCapture`; Copilot and Junie assemble from recorded inputs through `FinalAssembly`.
 
-### UC1-AC2: Import a native session file only when it is the only source
+### UC1-AC2: Refuse a source of another execution
 
-When a CLI offers no stream output and writes a native session file, the capture shall import that file through the same writer entry point as its selected input.
-Rule: RULE-2. Tests: `PrefixReplayTest#everyPrefixOfTheCodexRolloutIsJudgedDefectFreeByTheOracle` (mechanism only). Status: the source-selection decision itself is not implemented or tested.
+If a declared source reports another execution's session identity, or several, then the assembly shall refuse it, write none of its records and state the verdict in its declaration.
+Rule: RULE-2. Tests: `FinalAssemblyClaudeTest#anotherExecutionsSessionFileIsRefusedAndWrittenNowhere`, `FinalAssemblyCopilotTest#anotherExecutionsTelemetryIsRefused`, `FinalAssemblyJunieTest#aSummaryOfAnotherSessionTakesItsEventsWithIt`. Status: changed meaning 2026-10-24 (was: import a native session file only when it is the only source).
 
-### UC1-AC3: Archive the native session file unchanged
+### UC1-AC3: Bind a source without an identity of its own through its companion or acquisition
 
-When a streaming CLI writes a native session file, the capture shall archive it byte-identical with its checksum and shall declare it outside the selected input.
-Rule: RULE-4. Tests: `CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy` (the archive is byte-identical with its sha256, not parsed, and not a declared source). Status: implemented in the opt-in launching capture; the archive is recorded in the ancillary `run.json` only.
+When a declared source reports no session identity, the assembly shall bind it through its declared companion in the same native session directory or through the acquisition that captured it, and shall state which.
+Rule: RULE-2, RULE-4. Tests: `FinalAssemblyJunieTest#theSessionDirectoryAssemblesWithItsOutputsAndTheOracleVerifiesIt` (the session events through summary.json; standard error and the Copilot usage report by acquisition), `CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy` (archive-only material byte-identical). Status: changed meaning 2026-10-24 (was: archive the native session file unchanged; that obligation is RULE-4's and is kept).
 
-### UC1-AC4: Report a stream gap instead of enriching from the archive
+### UC1-AC4: Declare a missing required source
 
-While a stream is the selected input, if a fact such as final response usage is absent from the stream, then the capture shall record that limitation and shall not read the native session file to supply it.
-Rule: RULE-5, RULE-6. Tests: `CliCaptureTest#theArchiveContentsCannotChangeTheNormalizedStreamOutput` (identical events whatever the archive holds), `StreamLimitationTest` (the Claude stream's declared limitations travel in the event file; its per-message usage stays provisional). Status: the prototype can still admit a later session file experimentally through the writer's multi-source path; that path is not the target behavior and the launching capture never uses it. The Codex exec contract declares no limitation list yet.
+If a required source of the profile is missing or refused, then the final file shall declare the assembly incomplete with the missing roles, never complete.
+Rule: RULE-2, RULE-6, RULE-52. Tests: `FinalAssemblyClaudeTest#aMissingRequiredSourceMakesTheAssemblyIncomplete`, `FinalAssemblyJunieTest#withoutItsSummaryTheSessionFileHasNoIdentity`, `FinalAssemblyCopilotTest#anAbsentPerSpanCacheWriteStaysAbsent`. Status: changed meaning 2026-10-24 (was: report a stream gap instead of enriching from the archive).
 
-### UC1-AC5: Treat an unsupported stream as a gap
+### UC1-AC5: Treat an unsupported version as a gap
 
-If no stream adapter supports a streaming CLI's version or launch mode, then the capture shall report an unsupported-stream gap and shall not select the native session file instead.
-Rule: RULE-3. Tests: `UntestedCompatibilityTest#aVersionNoEntryCoversIsRetainedFlaggedAndNotNormalized` (the stream stays the only source; no native session file is selected), `CliCaptureTest#aVersionTestedOnAnotherRouteOnlyIsNoMatchRetainedAndFlagged`. Status: the unsupported-stream gap is the no-match compatibility declaration and the reader's warning; no other gap record exists.
+If no compatibility entry supports a source's CLI version or route, then the capture shall retain the source and report the gap, and shall not substitute another source outside the reviewed profile.
+Rule: RULE-3. Tests: `UntestedCompatibilityTest#aVersionNoEntryCoversIsRetainedFlaggedAndNotNormalized`, `CliCaptureTest#aVersionTestedOnAnotherRouteOnlyIsNoMatchRetainedAndFlagged`. Status: the gap is the no-match compatibility declaration and the reader's warning.
 
 ### UC1-AC6: Declare every selected source
 
 When a run is recorded, the event file's source declarations shall declare each selected source with its kind, artifact identity, record count and content hash; `run.json` may mirror them as an ancillary index.
 Rule: RULE-21. Tests: `OcsfOracleMutationTest#sourceInventoryHashIsChecked`, `FullOneReviewRegressionTest#omittingAnEntireSourceIsADefectOnEveryObligationOfThatSource`.
 
-### UC1-AC7: Do not credit the archive to preservation
+### UC1-AC7: Leave the originals unchanged
 
-When preservation is judged, the archived native session file shall not be counted toward the selected-input denominator.
-Rule: RULE-4. Tests: `CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy` (the frozen manifest lists only the stream; the archive never enters it), `OracleFullSourceTest#anOmittedNativeArtifactIsUnresolvedAndBlocksAcceptance` (the frozen manifest defines the denominator). Status: the archive is kept out of the denominator by never entering the frozen manifest; an explicit archive-only disposition is still not expressible in that manifest.
+When final assembly runs, every original package and native input shall remain byte-identical, and archive-only material shall stay out of the assembled sources and the preservation denominator.
+Rule: RULE-4. Tests: `FinalAssemblyClaudeTest#assemblyLeavesItsInputsAndTheOriginalPackageUnchanged`, `FinalAssemblyCopilotTest#theFinalFileReadsAloneAndTheOriginalsAreUnchanged`, `OracleFullSourceTest#anOmittedNativeArtifactIsUnresolvedAndBlocksAcceptance`. Status: changed meaning 2026-10-24 (was: do not credit the archive to preservation, kept as its second clause).
 
 ## UC2: CLI version and compatibility
 
@@ -162,6 +162,11 @@ Rule: RULE-34. Tests: `FieldDispositionTest` (one disposition per observed and v
 
 When an event's time or identity was supplied by Journal rather than reported by the source, the event shall label that value with its Journal basis and shall not present it as a vendor-reported value.
 Rule: RULE-12. Tests: `OcsfOracleValueCheckTest#fallbackTimeBasisClaimedAsSourceTimeIsADefect`, `OcsfOracleMutationTest#derivedAssociationPresentedAsReportedIsADefect`.
+
+### UC3-AC16: Embed MCP data in the pinned official definitions
+
+When a source reports MCP protocol data, the writer shall embed it in typed objects generated from the pinned official MCP schema of a declared revision, declare a partial projection with the required members it lacks, and shall not synthesize request ids, protocol revision, isError or success.
+Rule: RULE-53. Tests: `McpProtocolContainmentTest`, `McpLiveFixtureTest`, `FinalAssemblyCopilotTest#theCanonicalEventsCarryTheUnionOfTheSources`.
 
 ## UC4: Lifecycle and children
 
@@ -373,6 +378,60 @@ Rule: RULE-47. Tests: `ParityLedgerTest#everyPinnedFieldIsAccountedForExactlyOnc
 When a parity facet's support differs by role or aspect, the ledger shall state each part with one of the facet's concepts and a state per route that agrees with that concept's executed state on that route, and a part claimed mapped where its concept is unavailable at source or unexercised, retained bytes claimed as verified meaning, a part citing another part's concept or a concept outside the facet, a removed part, or a facet reported covered while a part is unexercised shall fail the check.
 Rule: RULE-47. Tests: `ParityLedgerTest#everyFacetAspectAgreesWithItsConceptsExecutedStatePerRoute`, `ParityLedgerTest#theLedgerAndTheTopicExplanationAreGenerated`. Status: two facets state parts: `operation.unknown` (the portable marking and exact retention of an operation of unknown kind; its semantics excluded) and `content.roles` (user, assistant, tool and injected-context roles per route). The parts are reviewed proposals; their agreement with this build's executed states is checked, which approves no meaning.
 
+## UC6: Final assembly
+
+### UC6-AC1: Consolidate one entity observed by several sources
+
+When several declared sources observe one logical entity at one lifecycle stage, the final file shall carry one consolidated canonical event naming its supporting observations, each kept as evidence and never counted again.
+Rule: RULE-5, RULE-48. Tests: `FinalAssemblyClaudeTest#thePairAssemblesIntoOneCanonicalExecutionTheOracleVerifies`, `FinalAssemblyCopilotTest#theFourSourcesAssembleIntoOneExecutionTheOracleVerifies`.
+
+### UC6-AC2: Join only on declared identities
+
+If an identity repeats within one source, then the assembly shall pair none of its observations, keeping each canonical and flagged ambiguous; observations are never paired by position, time or similar text.
+Rule: RULE-48. Tests: `FinalAssemblyClaudeTest#anIdentityRepeatedWithinOneSourceStaysUnpairedAndFlagged`.
+
+### UC6-AC3: Keep conflicts visible
+
+When observations of one entity disagree on a field, the consolidated event shall list every value with its occurrence and shall carry a value only by a field authority the profile declares with its reason.
+Rule: RULE-49. Tests: `FinalAssemblyClaudeTest#thePairAssemblesIntoOneCanonicalExecutionTheOracleVerifies` (the stream's MCP structured result by declared authority), `FinalAssemblyCopilotTest#theCanonicalEventsCarryTheUnionOfTheSources`.
+
+### UC6-AC4: Import idempotently and keep distinct origins
+
+When the same origin and bytes are imported again, the assembly shall add nothing; when identical bytes arrive from distinct origins, it shall keep both sources and make their observations one entity.
+Rule: RULE-51. Tests: `FinalAssemblyClaudeTest#replayingTheSameImportAddsNothingWhileIdenticalBytesFromAnotherOriginStayDistinct`.
+
+### UC6-AC5: Keep quantity kinds apart
+
+When sources report a model cost multiplier sum and premium requests for one run, the final file shall carry them as distinct quantity kinds and units, never compared, added or read as money; a cost whose unit the source does not name shall not be stated as money.
+Rule: RULE-50. Tests: `FinalAssemblyCopilotTest#aMultiplierSumAndPremiumRequestsAreDistinctQuantities`, `FinalAssemblyJunieTest#theSessionDirectoryAssemblesWithItsOutputsAndTheOracleVerifiesIt`.
+
+### UC6-AC6: Read the final file alone
+
+When the final `events.jsonl` is copied alone, a compatible reader shall read the consolidated execution and its assembly declaration without the native files, `run.json` or schema caches.
+Rule: RULE-52. Tests: `FinalAssemblyClaudeTest#theFinalFileReadsAloneWithoutNativeFilesManifestOrSchemaCaches`, `FinalAssemblyCopilotTest#theFinalFileReadsAloneAndTheOriginalsAreUnchanged`, `FinalAssemblyJunieTest#theFinalFileReadsAlone`.
+
+### UC6-AC7: Judge the assembly independently
+
+When a final file is judged, the assembly oracle shall derive the gate verdicts, entities, references, consolidated values and accounting from the native records and a written expectation alone, and shall report an altered consolidation as defective.
+Rule: RULE-48, RULE-49, RULE-50. Tests: `FinalAssemblyClaudeTest#theOracleRejectsAlteredConsolidation`, `FinalAssemblyCopilotTest#theFourSourcesAssembleIntoOneExecutionTheOracleVerifies`.
+
+## UC7: Source onboarding gates
+
+### UC7-AC1: Reject an absence the inventory contradicts
+
+If a source specification claims a fact family absent while its inventory observes paths of that family, then the availability gate shall report the claim as defective.
+Rule: RULE-54. Tests: `SourceAvailabilityTest#aWhollyAbsentUsageClaimIsRejected`.
+
+### UC7-AC2: Treat a zero-match selector as unexercised
+
+If a selector matches no observed record, then the availability gate shall report it unexercised and shall reject it when it is marked exercised.
+Rule: RULE-54. Tests: `SourceAvailabilityTest#aZeroMatchSelectorMarkedExercisedIsRejected`.
+
+### UC7-AC3: Keep nested vendor usage inventoried
+
+If vendor usage lies under a subtree a specification inventories as tool data, or an observed usage path is missing from the specification, then the availability gate shall report it.
+Rule: RULE-54. Tests: `SourceAvailabilityTest#nestedUsageMayNotDisappear`, `SourceAvailabilityTest#theAuditOfTheEarlierRoutesFindsExactlyTheRecordedGaps`.
+
 ## Change log
 
 2026-10-21, consolidated event-file work order (REQ-1 amendment). Retained identifiers with changed
@@ -441,3 +500,13 @@ version assertions stop normalization, keep both assertions and report the sourc
 idempotent) and UC5-AC33 (each part of a facet rests on its own concept's executed state per route). Annotations only:
 the Tests or Status lines of UC2-AC5 and UC5-AC32. No criterion removed; `RequirementsRosterTest` pins the per-use-case
 counts 7, 7, 15, 8 and 33.
+
+2026-10-24, final Level 1 assembly, first-class MCP and onboarding repair (Owner-authorized). Retained identifiers with
+changed meaning: UC1-AC1 (assemble a complete capture automatically; was: normalize the stream), UC1-AC2 (refuse a
+source of another execution; was: import a session file only when it is the only source), UC1-AC3 (bind a source
+without its own identity through its companion or acquisition; the archive obligation stays RULE-4's), UC1-AC4
+(declare a missing required source; was: report a stream gap instead of enriching), UC1-AC5 (an unsupported version is
+a gap, no substitution outside the profile), UC1-AC7 (originals unchanged; archive-only material outside the assembled
+sources and the denominator). Added UC3-AC16 (MCP in the pinned official definitions), UC6-AC1 to UC6-AC7 (final
+assembly) and UC7-AC1 to UC7-AC3 (source availability gates). No criterion removed; `RequirementsRosterTest` pins the
+per-use-case counts 7, 7, 16, 8, 33, 7 and 3.

@@ -32,8 +32,10 @@ import java.util.stream.Stream;
  * one incremental writer (an independent byte-for-byte copy is written before the writer sees each chunk), carries
  * the process outcome, cancellation, input failure and persistence failure into the recording lifecycle, archives the
  * CLI's native session file unchanged beside the package, and freezes the expected-source manifest from the
- * independent copy after acquisition. Defaults of the production recorders are untouched; this is the intended
- * stream-first path for Claude Code, Codex and Antigravity behind an explicit launch.
+ * independent copy after acquisition. With a reviewed final-assembly profile at launch (a complete capture), it then
+ * assembles the profile's declared sources (the standard output copy, the archived native session file) into a new
+ * final package automatically ({@link FinalAssembly}). Defaults of the production recorders are untouched; this is the
+ * opt-in capture path for Claude Code, Codex and Antigravity behind an explicit launch.
  *
  * <p>Three facts stay distinct in the result and in the package: storage finalization ({@code COMPLETED},
  * {@code INTERRUPTED}, {@code FAILED}), acquisition extent (every byte to EOF, or an interrupted prefix, with the
@@ -86,9 +88,13 @@ public final class CliCapture {
      * @param versionCommand for Codex, the once-per-run discovery command (default {@code [<executable>, --version]}); ignored for Claude
      * @param launchNotes free launch settings the caller records (model, allowed tools, route label), or {@code null}
      * @param limits the capture's own waiting bounds, or {@code null} for {@link Limits#DEFAULTS}
+     * @param assemblyProfile the reviewed final-assembly profile of a complete capture (for example
+     *        {@code claude-code-2.1.304-stdout-session-file}): after a completed run its declared sources (the standard
+     *        output copy, the archived native session file) are assembled automatically into {@code <out>/final}; the
+     *        original package is not changed. {@code null} for no final assembly.
      */
     public record Launch(Cli cli, List<String> command, Path workDir, String prompt, String runUid, Path out, Integer cancelAfterRecords, Long cancelAfterMillis,
-            Path home, List<String> versionCommand, Jv.Obj launchNotes, Limits limits) {
+            Path home, List<String> versionCommand, Jv.Obj launchNotes, Limits limits, String assemblyProfile) {
     }
 
     /**
@@ -101,9 +107,12 @@ public final class CliCapture {
         public static final Limits DEFAULTS = new Limits(Duration.ofSeconds(5), Duration.ofSeconds(30));
     }
 
-    /** What happened: the three distinct facts plus where everything is. */
+    /**
+     * What happened: the three distinct facts plus where everything is; {@code assembly} says whether a final
+     * assembly ran, why not, or where its package is and in which state.
+     */
     public record Result(OcsfRunWriter.State state, Jv.Obj process, Jv.Obj archive, Path packageDir, Path independentCopy, Path expectedSources, int records, long bytes,
-            String sessionUid, String cliVersion, Path stderr) {
+            String sessionUid, String cliVersion, Path stderr, Jv.Obj assembly) {
         public Integer exitCode() {
             return process.get("exit_code") instanceof Jv.Num n ? (int) n.value().longValueExact() : null;
         }
@@ -351,7 +360,37 @@ public final class CliCapture {
         Files.writeString(out.resolve("archive").resolve("archive.json"), Jv.write(archive == null ? new Jv.Obj().put("status", "not attempted") : archive) + "\n", StandardCharsets.UTF_8);
         boolean completeRun = state == OcsfRunWriter.State.COMPLETED && "exited".equals(processOutcome.get("how").text());
         Path expected = freezeExpectedSources(out.resolve("native"), copyFile, launch.runUid(), launch.cli().profile, completeRun, processOutcome, compatibilityInForce);
-        return new Result(state, processOutcome, archive, out.resolve("package"), copyFile, expected, records, bytes, sessionUid, cliVersion, stderrFile);
+        Jv.Obj assembled = assemble(out, run, copyFile, archive, completeRun);
+        return new Result(state, processOutcome, archive, out.resolve("package"), copyFile, expected, records, bytes, sessionUid, cliVersion, stderrFile, assembled);
+    }
+
+    /**
+     * The final assembly of a complete capture: the declared roles of the launch's assembly profile, bound to what this
+     * capture acquired (the standard output copy for the stdout route, the archived native session file for the session
+     * file route), assembled into {@code <out>/final} with the original package as lineage. It runs only after a
+     * completed run; otherwise it says why it did not.
+     */
+    private Jv.Obj assemble(Path out, RunDescriptor run, Path copyFile, Jv.Obj archive, boolean completeRun) {
+        if (launch.assemblyProfile() == null) {
+            return new Jv.Obj().put("status", "not configured");
+        }
+        if (!completeRun) {
+            return new Jv.Obj().put("status", "not attempted").put("reason", "the capture is not a completed run; its original package stays the record");
+        }
+        AssemblyProfile profile = AssemblyProfile.bundled(launch.assemblyProfile());
+        List<FinalAssembly.Input> inputs = new ArrayList<>();
+        for (AssemblyProfile.Role r : profile.roles()) {
+            if ("stdout".equals(r.route())) {
+                inputs.add(new FinalAssembly.Input(r.json().member("artifact").text(), r.role(), copyFile, "CliCapture independent copy of standard output"));
+            }
+            else if ("native_session_file".equals(r.route()) && archive != null && "archived".equals(archive.get("status").text())) {
+                inputs.add(new FinalAssembly.Input(r.json().member("artifact").text(), r.role(), out.resolve("archive").resolve(archive.get("artifact").text()),
+                        "native session file archived after the launch ended (" + archive.get("sha256").text() + ")"));
+            }
+        }
+        Jv lineage = new Jv.Arr().add(FinalAssembly.lineage(out.resolve("package"), "package"));
+        OcsfRunWriter.State st = FinalAssembly.assemble(out.resolve("final"), run, profile, inputs, lineage, options);
+        return new Jv.Obj().put("status", "assembled").put("profile", profile.id()).put("state", st.name()).put("package", out.resolve("final").toString()).put("inputs", inputs.size());
     }
 
     private static java.io.File devNull() {
@@ -776,11 +815,11 @@ public final class CliCapture {
      */
     static int main(String[] args, java.io.PrintStream out, java.io.PrintStream err) throws IOException {
         if (args.length < 2) {
-            err.println("usage: launch <out-dir> --cli claude|codex|antigravity --prompt TEXT --cwd DIR [--run-uid X] [--model M] [--allowed-tools A,B] [--sandbox MODE] [--executable PATH] [--home DIR] [--cancel-after-records N] [--cancel-after-ms N] [--arg EXTRA]...");
+            err.println("usage: launch <out-dir> --cli claude|codex|antigravity --prompt TEXT --cwd DIR [--run-uid X] [--model M] [--allowed-tools A,B] [--sandbox MODE] [--executable PATH] [--home DIR] [--cancel-after-records N] [--cancel-after-ms N] [--assemble PROFILE] [--arg EXTRA]...");
             return 64;
         }
         Path outDir = Path.of(args[1]);
-        String cliName = null, prompt = null, cwd = null, runUid = null, model = null, sandbox = null, executable = null, home = null;
+        String cliName = null, prompt = null, cwd = null, runUid = null, model = null, sandbox = null, executable = null, home = null, assemble = null;
         List<String> allowed = new ArrayList<>();
         List<String> extra = new ArrayList<>();
         Integer cancelRecords = null;
@@ -799,6 +838,7 @@ public final class CliCapture {
                 case "--cancel-after-records" -> cancelRecords = Integer.parseInt(args[++i]);
                 case "--cancel-after-ms" -> cancelMs = Long.parseLong(args[++i]);
                 case "--arg" -> extra.add(args[++i]);
+                case "--assemble" -> assemble = args[++i];
                 default -> {
                     err.println("unknown option " + args[i]);
                     return 64;
@@ -837,7 +877,7 @@ public final class CliCapture {
             notes.put("sandbox_requested", sandbox);
         }
         Launch launch = new Launch(cli, command, workDir, prompt, runUid != null ? runUid : "launch-" + Instant.now().toEpochMilli(), outDir, cancelRecords, cancelMs,
-                home == null ? null : Path.of(home), null, notes, null);
+                home == null ? null : Path.of(home), null, notes, null, assemble);
         CliCapture capture = new CliCapture(launch, WriterOptions.defaults().withAutoFlush(1));
         Thread hook = new Thread(() -> capture.cancel("the capture process received a termination signal"));
         Runtime.getRuntime().addShutdownHook(hook);

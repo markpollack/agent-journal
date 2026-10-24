@@ -1,0 +1,63 @@
+{
+ "run_uid": "junie-live-3813.7-view",
+ "invocation_index": 0,
+ "capture_start": "2026-10-24T04:56:45.438Z",
+ "cli": {
+  "name": "Junie",
+  "vendor_name": "JetBrains",
+  "version": "3813.7",
+  "version_basis": "junie --version before and after the run (26.10.20 (3813.7)); stderr states it too"
+ },
+ "launch_settings": {
+  "command": "final assembly of the sanitized live run junie-1 (original: junie --output-format json-stream --skip-update-check --share-anonymous-statistics=false --project <workspace> --task <task>)",
+  "cwd": "/work",
+  "route": "native_session_file+stdout+stderr"
+ },
+ "sources": [
+  {
+   "artifact": "summary.json",
+   "profile": "junie_summary"
+  },
+  {
+   "artifact": "session-events.jsonl",
+   "profile": "junie_session_events"
+  },
+  {
+   "artifact": "stdout.jsonl",
+   "profile": "junie_stdout"
+  },
+  {
+   "artifact": "stderr.txt",
+   "profile": "opaque_text"
+  }
+ ],
+ "assembly": {
+  "profile": "junie-3813.7-session-primary",
+  "inputs": [
+   {
+    "artifact": "summary.json",
+    "role": "summary",
+    "origin": "native session directory summary.json copied after the run (sanitized)"
+   },
+   {
+    "artifact": "session-events.jsonl",
+    "role": "session",
+    "origin": "native session directory events.jsonl copied after the run (sanitized)"
+   },
+   {
+    "artifact": "stdout.jsonl",
+    "role": "stdout",
+    "origin": "standard output of the launch (sanitized)"
+   },
+   {
+    "artifact": "stderr.txt",
+    "role": "stderr",
+    "origin": "standard error of the launch (sanitized)"
+   }
+  ]
+ },
+ "synthetic": {
+  "label": "SANITIZED REAL LIVE RECORDING (Junie 3813.7, junie-1: read notes.txt and count the files with ls, answer in one line (a file view step)), finally assembled by the writer under the experimental profile junie-3813.7-session-primary",
+  "derived_from": "live run junie-1 (CLI reconnaissance, 2026-10-24)"
+ }
+}

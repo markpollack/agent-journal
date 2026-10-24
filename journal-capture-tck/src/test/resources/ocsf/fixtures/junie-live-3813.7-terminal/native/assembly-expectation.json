@@ -1,0 +1,187 @@
+{
+ "kind": "agent-journal/assembly-expectation",
+ "version": "0.1",
+ "written": {
+  "at": "2026-10-24",
+  "basis": "from the Junie 3813.7 summary, session event and json-stream record shapes (RFC 6901 pointers into the native records), before the assembled package was judged; independent of the writer's profile, mappers and assembly"
+ },
+ "profile_id": "junie/3813.7/session-summary+session-events+stdout+stderr",
+ "precedence": [
+  "session",
+  "summary",
+  "stdout",
+  "stderr"
+ ],
+ "sources": [
+  {
+   "role": "summary",
+   "requirement": "required",
+   "session": [
+    {
+     "pointer": "/sessionId"
+    }
+   ]
+  },
+  {
+   "role": "session",
+   "requirement": "required",
+   "companion": "summary"
+  },
+  {
+   "role": "stdout",
+   "requirement": "optional",
+   "session": [
+    {
+     "select": {
+      "/type": "session"
+     },
+     "pointer": "/sessionId"
+    }
+   ]
+  },
+  {
+   "role": "stderr",
+   "requirement": "optional",
+   "identity": "acquisition"
+  }
+ ],
+ "entities": [
+  {
+   "name": "session statement",
+   "class": "session_context",
+   "activities": [
+    1
+   ],
+   "locators": {
+    "summary": {
+     "constant": "execution"
+    },
+    "stdout": {
+     "select": {
+      "/type": "session"
+     },
+     "constant": "execution"
+    }
+   }
+  },
+  {
+   "name": "final answer",
+   "class": "model_response",
+   "activities": [
+    3
+   ],
+   "locators": {
+    "session": {
+     "select": {
+      "/event/agentEvent/kind": "ResultBlockUpdatedEvent"
+     },
+     "constant": "execution"
+    },
+    "stdout": {
+     "select": {
+      "/type": "result"
+     },
+     "constant": "execution"
+    }
+   }
+  },
+  {
+   "name": "final accounting",
+   "class": "session_context",
+   "activities": [
+    3
+   ],
+   "locators": {
+    "summary": {
+     "constant": "execution"
+    },
+    "stdout": {
+     "select": {
+      "/type": "result"
+     },
+     "constant": "execution"
+    },
+    "session": {
+     "select": {
+      "/event/agentEvent/kind": "ResultBlockUpdatedEvent"
+     },
+     "constant": "execution"
+    }
+   }
+  }
+ ],
+ "totals": [
+  {
+   "name": "per_model_output_tokens",
+   "basis": "each model's output tokens once (summary.json)",
+   "native": {
+    "summary": {
+     "locator": {
+      "each": "/mainAgent/modelUsage",
+      "pointer": "/model"
+     },
+     "value": "/outputTokens"
+    }
+   },
+   "canonical": {
+    "class": "session_context",
+    "constant": "execution",
+    "element_key": "/model_ref/name",
+    "array": "usage_observations",
+    "where": {
+     "scope_id": 6
+    },
+    "member": "output_tokens"
+   }
+  },
+  {
+   "name": "per_model_unnamed_cost",
+   "basis": "each model's cost once, a quantity of unnamed unit (kind 99), never money",
+   "native": {
+    "summary": {
+     "locator": {
+      "each": "/mainAgent/modelUsage",
+      "pointer": "/model"
+     },
+     "value": "/cost"
+    }
+   },
+   "canonical": {
+    "class": "session_context",
+    "constant": "execution",
+    "element_key": "/model_ref/name",
+    "array": "cost_observations",
+    "where": {
+     "quantity_kind_id": 99,
+     "scope_id": 6
+    },
+    "member": "total_cost"
+   }
+  },
+  {
+   "name": "task_usd",
+   "basis": "the task's named USD total once",
+   "native": {
+    "session": {
+     "locator": {
+      "select": {
+       "/event/agentEvent/kind": "ResultBlockUpdatedEvent"
+      },
+      "constant": "execution"
+     },
+     "value": "/completion/taskCostUsd"
+    }
+   },
+   "canonical": {
+    "class": "session_context",
+    "constant": "execution",
+    "array": "cost_observations",
+    "where": {
+     "quantity_kind_id": 1,
+     "scope_id": 99
+    },
+    "member": "total_cost"
+   }
+  }
+ ]
+}

@@ -1,0 +1,446 @@
+{
+ "kind": "agent-journal/native-source-specification",
+ "version": "0.1",
+ "status": "ACCEPTED 0.1.0 (2026-10-24, level-1 assembly phase): EXPERIMENTAL route specification frozen from two sanitized live 3813.7 runs; drift reports propose changes, review accepts them by editing this file and bumping specification_version",
+ "specification_version": "0.1.0",
+ "profile": "junie_stdout",
+ "applies_to": {
+  "cli": "Junie",
+  "version": "3813.7",
+  "launch_mode": "junie --output-format json-stream (as the summary)",
+  "source_kind": "live output",
+  "capture_route": "standard output captured by the run script",
+  "route_limit": "standard output only; stderr (the CLI's version line) is a separate opaque text artifact"
+ },
+ "provenance": {
+  "observed_on": [
+   {
+    "artifact": "fixture junie-live-3813.7-view native/stdout.jsonl",
+    "sha256": "629b190e8109e6513115188df3d74d71d7803d0660f2beb7a45334a9d2f8c2b6",
+    "records": 4,
+    "bytes": 1483,
+    "frozen_in": "journal-capture-tck/src/test/resources/ocsf/fixtures/junie-live-3813.7-view (sanitized; the original is private steward evidence)"
+   },
+   {
+    "artifact": "fixture junie-live-3813.7-terminal native/stdout.jsonl",
+    "sha256": "3a943fda8914746df86a8cafeb563cdacf75d1aa075ba4174ba0ffc464f2b2e8",
+    "records": 4,
+    "bytes": 2104,
+    "frozen_in": "journal-capture-tck/src/test/resources/ocsf/fixtures/junie-live-3813.7-terminal (sanitized; the original is private steward evidence)"
+   }
+  ],
+  "produced_by": "journal-capture-tck NativeInventoryTool draft (RawInventory 0.1, profile junie_stdout)",
+  "reviewed": "2026-10-24 level-1 assembly phase: variants and data-keyed paths reviewed against both 3813.7 recordings"
+ },
+ "limits": [
+  "one CLI version (3813.7, display 26.10.20) and one launch mode: the inventory is the observed shape of two sanitized live runs (junie-1 viewing a file, junie-2 a failing terminal command), not a vendor promise",
+  "a field observed in one record is not universal; a field absent from these specimens is not removed; nullability is what was seen",
+  "variants are discriminated by the vendor's own fields; a record with a new discriminator value is a new variant, not an error",
+  "a usage entry's cost names no unit: it is never read as money; only completion.taskCostUsd is named USD",
+  "EXPERIMENTAL route: no field-disposition catalog and no independent oracle profile yet; the assembly oracle judges the final assembly; admission needs both",
+  "the specimens were sanitized (session, task and step ids replaced by stand-ins; home paths and the log path replaced); shapes and value kinds are unchanged"
+ ],
+ "external_cross_checks": [
+  {
+   "name": "Junie 3813.7 --help and its documentation of --output-format json-stream",
+   "role": "vendor description",
+   "use": "option names compared by reading; no published schema of the outputs; no path-level comparison was run"
+  }
+ ],
+ "open_variants": [],
+ "inventory": {
+  "observed_on": [
+   {
+    "artifact": "stdout.jsonl",
+    "sha256": "629b190e8109e6513115188df3d74d71d7803d0660f2beb7a45334a9d2f8c2b6",
+    "bytes": 1483,
+    "records": 4
+   },
+   {
+    "artifact": "stdout.jsonl",
+    "sha256": "3a943fda8914746df86a8cafeb563cdacf75d1aa075ba4174ba0ffc464f2b2e8",
+    "bytes": 2104,
+    "records": 4
+   }
+  ],
+  "data_keyed": [],
+  "map_keyed": [],
+  "variants": {
+   "result": {
+    "discriminators": {
+     "type": "result"
+    },
+    "records": 2,
+    "evidence": [
+     "stdout.jsonl:4",
+     "stdout.jsonl:4"
+    ],
+    "paths": {
+     "changes": {
+      "kinds": {
+       "array": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 2,
+      "evidence": [
+       "stdout.jsonl:4",
+       "stdout.jsonl:4"
+      ]
+     },
+     "errorCode": {
+      "kinds": {
+       "array": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stdout.jsonl:4",
+       "stdout.jsonl:4"
+      ]
+     },
+     "errorCode[]": {
+      "kinds": {
+       "object": 7
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stdout.jsonl:4",
+       "stdout.jsonl:4"
+      ]
+     },
+     "errorCode[].cacheCreateTokens": {
+      "kinds": {
+       "integer": 7
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stdout.jsonl:4",
+       "stdout.jsonl:4"
+      ]
+     },
+     "errorCode[].cacheInputTokens": {
+      "kinds": {
+       "integer": 7
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stdout.jsonl:4",
+       "stdout.jsonl:4"
+      ]
+     },
+     "errorCode[].calls": {
+      "kinds": {
+       "integer": 7
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stdout.jsonl:4",
+       "stdout.jsonl:4"
+      ]
+     },
+     "errorCode[].cost": {
+      "kinds": {
+       "decimal": 7
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stdout.jsonl:4",
+       "stdout.jsonl:4"
+      ]
+     },
+     "errorCode[].inputTokens": {
+      "kinds": {
+       "integer": 7
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stdout.jsonl:4",
+       "stdout.jsonl:4"
+      ]
+     },
+     "errorCode[].model": {
+      "kinds": {
+       "string": 7
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stdout.jsonl:4",
+       "stdout.jsonl:4"
+      ]
+     },
+     "errorCode[].outputTokens": {
+      "kinds": {
+       "integer": 7
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 7,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stdout.jsonl:4",
+       "stdout.jsonl:4"
+      ]
+     },
+     "result": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stdout.jsonl:4",
+       "stdout.jsonl:4"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stdout.jsonl:4",
+       "stdout.jsonl:4"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stdout.jsonl:4",
+       "stdout.jsonl:4"
+      ]
+     }
+    }
+   },
+   "session": {
+    "discriminators": {
+     "type": "session"
+    },
+    "records": 2,
+    "evidence": [
+     "stdout.jsonl:1",
+     "stdout.jsonl:1"
+    ],
+    "paths": {
+     "sessionId": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stdout.jsonl:1",
+       "stdout.jsonl:1"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "integer": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stdout.jsonl:1",
+       "stdout.jsonl:1"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stdout.jsonl:1",
+       "stdout.jsonl:1"
+      ]
+     }
+    }
+   },
+   "step": {
+    "discriminators": {
+     "type": "step"
+    },
+    "records": 4,
+    "evidence": [
+     "stdout.jsonl:2",
+     "stdout.jsonl:3",
+     "stdout.jsonl:2",
+     "stdout.jsonl:3"
+    ],
+    "paths": {
+     "details": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 1,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stdout.jsonl:2",
+       "stdout.jsonl:3",
+       "stdout.jsonl:3"
+      ]
+     },
+     "name": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stdout.jsonl:2",
+       "stdout.jsonl:3",
+       "stdout.jsonl:2",
+       "stdout.jsonl:3"
+      ]
+     },
+     "output": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 1,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stdout.jsonl:2"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "integer": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stdout.jsonl:2",
+       "stdout.jsonl:3",
+       "stdout.jsonl:2",
+       "stdout.jsonl:3"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 4
+      },
+      "present_in_records": 4,
+      "absent_in_records": 0,
+      "occurrences": 4,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stdout.jsonl:2",
+       "stdout.jsonl:3",
+       "stdout.jsonl:2",
+       "stdout.jsonl:3"
+      ]
+     }
+    }
+   }
+  }
+ },
+ "availability": {
+  "rule": "agent-journal/source-availability 0.1: per fact family, whether this source reports it and where (selectors: variant and path, with the population the inventory observed); a family is absent only when no observed path matches its vocabulary; a selector that matches nothing is unexercised, never verified (SourceAvailability)",
+  "families": [
+   {
+    "family": "token_usage",
+    "claim": "present",
+    "granularity": "per model for the task, under the result's errorCode member (calls, cost, token counts): the usage-under-errorCode shape",
+    "selectors": [
+     {
+      "variant": "result",
+      "path": "errorCode[].inputTokens",
+      "matched_records": 2,
+      "exercised": true
+     },
+     {
+      "variant": "result",
+      "path": "errorCode[].calls",
+      "matched_records": 2,
+      "exercised": true
+     }
+    ]
+   },
+   {
+    "family": "cost",
+    "claim": "present",
+    "granularity": "per model under errorCode, unit not named (never money)",
+    "selectors": [
+     {
+      "variant": "result",
+      "path": "errorCode[].cost",
+      "matched_records": 2,
+      "exercised": true
+     }
+    ]
+   }
+  ]
+ }
+}

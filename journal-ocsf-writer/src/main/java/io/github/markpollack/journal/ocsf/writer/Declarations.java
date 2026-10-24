@@ -40,6 +40,9 @@ import java.util.Set;
  * upstream pins and dialect, the official JSON Schema definitions of the reference closure of the definitions used, and
  * the binding shapes that map them to the typed objects; amended by a later declaration when an event needs more, so a
  * reader extracts and validates the protocol objects without the network or a schema cache.</li>
+ * <li>{@code assembly}: in a finally assembled file, the source profile by value, the assembly engine and contract,
+ * the original packages (lineage), every declared source with its role, origin, extent, hash and identity verdict, and
+ * the result (entities, consolidated and canonical counts, conflicts, refusals, missing required roles, status).</li>
  * <li>{@code child}: a linked child event file (location and spawn identity), never its content.</li>
  * <li>{@code source_end}: how a source ended, with its final extent, hash and family inventory.</li>
  * <li>{@code recording}: the writer's finalization of this file (COMPLETED or INTERRUPTED) with the acquisition
@@ -86,7 +89,8 @@ final class Declarations {
         declare(objects, "source", new Jv.Obj()
                 .put("artifact", scalar("string_t", "required")).put("kind", scalar("integer_t", "required")).put("profile", scalar("string_t", "required"))
                 .put("route", scalar("string_t", "optional"))
-                .put("surface", scalar("string_t", "optional")).put("path_at_capture", scalar("string_t", "optional")).put("contract_uid", scalar("string_t", "required")));
+                .put("surface", scalar("string_t", "optional")).put("path_at_capture", scalar("string_t", "optional")).put("framing", scalar("string_t", "optional"))
+                .put("contract_uid", scalar("string_t", "required")));
         declare(objects, "definition", new Jv.Obj()
                 .put("kind_of", scalar("string_t", "required")).put("key", scalar("string_t", "required")).put("amends", scalar("string_t", "optional"))
                 .put("sha256", scalar("string_t", "required")).put("body", scalar("json_t", "required")));
@@ -117,6 +121,10 @@ final class Declarations {
                 .put("pins", scalar("json_t", "required")).put("upstream", scalar("json_t", "required")).put("dialect", scalar("string_t", "required"))
                 .put("schema_definitions", scalar("json_t", "required")).put("binding", scalar("json_t", "required"))
                 .put("binding_version", scalar("string_t", "optional")).put("conventions", scalar("json_t", "optional")));
+        declare(objects, "assembly", new Jv.Obj()
+                .put("profile", scalar("json_t", "required")).put("engine", scalar("json_t", "required")).put("lineage", scalar("json_t", "required"))
+                .put("run_session_uid", scalar("string_t", "optional")).put("sources", scalar("json_t", "required")).put("result", scalar("json_t", "required"))
+                .put("identity_layers", scalar("string_t", "optional")).put("idempotence", scalar("string_t", "optional")));
         declare(objects, "recording", new Jv.Obj()
                 .put("state", scalar("string_t", "required")).put("started", scalar("string_t", "required")).put("ended", scalar("string_t", "required"))
                 .put("interruption_reason", scalar("string_t", "optional")).put("acquisition", scalar("json_t", "required"))

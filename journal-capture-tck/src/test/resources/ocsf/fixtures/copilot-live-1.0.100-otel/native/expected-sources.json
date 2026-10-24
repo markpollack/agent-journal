@@ -1,0 +1,55 @@
+{
+ "kind": "agent-journal/expected-sources",
+ "version": "0.1",
+ "run_uid": "copilot-live-1.0.100-otel",
+ "complete": true,
+ "frozen": {
+  "at": "2026-10-24",
+  "by": "sha256 and record count of the committed native artifacts (a document-framed report is one record), written before the package was judged; independent of the package's own sources[]",
+  "basis": "the sanitized live run copilot-otel-1: standard output, the native session file, the OTel file export and the usage report of one launch, finally assembled under the experimental three-source profile",
+  "live_process": {
+   "started": "2026-10-24T14:04:13.999269464Z",
+   "ended": "2026-10-24T14:04:25.697557771Z",
+   "how": "exited",
+   "exit_code": 0,
+   "exit_meaning": "0: the CLI reported success",
+   "stdin": "/dev/null",
+   "meaning": "the CLI process outcome the run script recorded (process.json); distinct from storage finalization and acquisition extent"
+  }
+ },
+ "sources": [
+  {
+   "artifact": "session-events.jsonl",
+   "profile": "copilot_events",
+   "sha256": "09cb968f98afe808d96b199a2bdb8d617dd783949ce13cd5860383ff30fac54d",
+   "bytes": 38811,
+   "records": 37,
+   "required": true
+  },
+  {
+   "artifact": "stdout.jsonl",
+   "profile": "copilot_events",
+   "sha256": "3f954b70de1e69001448189a4aa04cda940755a3b1e3e916a5d54812f4f430c9",
+   "bytes": 48044,
+   "records": 115,
+   "required": true
+  },
+  {
+   "artifact": "otel.jsonl",
+   "profile": "copilot_otel",
+   "sha256": "1b156025474ef394459f1424170a04e8b7cdb803a7bff60ed703dab513ac8f77",
+   "bytes": 69618,
+   "records": 31,
+   "required": true
+  },
+  {
+   "artifact": "usage-output.json",
+   "profile": "copilot_usage_report",
+   "sha256": "faeccb072cd31840c1bb9e1fbb89303d429b6d197ab44ec072cfa2f082400ca7",
+   "bytes": 3119,
+   "records": 1,
+   "required": true,
+   "framing": "document"
+  }
+ ]
+}

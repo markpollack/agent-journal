@@ -1,0 +1,40 @@
+{
+ "kind": "agent-journal/expected-sources",
+ "version": "0.1",
+ "run_uid": "claude-live-2.1.304-mcp-pair",
+ "complete": true,
+ "frozen": {
+  "at": "2026-10-24",
+  "by": "sha256 and line count of the committed native artifacts, written before the package was judged; independent of the package's own sources[]",
+  "basis": "the sanitized live stream and the native session file the same launch archived (claude-mcp-1), assembled under the experimental final-assembly profile; the live process is the claude-mcp-1 launch (as claude-live-2.1.304-mcp)",
+  "live_process": {
+   "pid": 3062772,
+   "started": "2026-10-23T22:53:45.371199049Z",
+   "ended": "2026-10-23T22:53:52.016444556Z",
+   "how": "exited",
+   "exit_code": 0,
+   "exit_meaning": "0: the CLI reported success",
+   "stdout": "closed: EOF reached",
+   "stderr_bytes": 0,
+   "meaning": "the CLI process outcome; distinct from storage finalization (recording.state) and acquisition extent (acquisition.status): EOF never implies success"
+  }
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "profile": "claude_stream",
+   "sha256": "7c020c2d528a478c5fcfd340ae1b1d128af13e00e651ac0e67c72e7927bb656c",
+   "bytes": 14144,
+   "records": 15,
+   "required": true
+  },
+  {
+   "artifact": "transcript.jsonl",
+   "profile": "claude_transcript",
+   "sha256": "8151869fcc92b7809ebf95f8e936b5bf913ff988382eef2ceafa04e4cbb14a54",
+   "bytes": 125890,
+   "records": 52,
+   "required": true
+  }
+ ]
+}
