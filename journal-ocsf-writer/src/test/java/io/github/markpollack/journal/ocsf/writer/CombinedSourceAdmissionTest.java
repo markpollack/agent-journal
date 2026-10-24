@@ -26,9 +26,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * CHARACTERIZATION of the writer's experimental multi-source path (UC1-AC4 status: a saved session file admitted after
  * the live stream ended), recorded as evidence for a combined-source proposal. It pins what the path does today, not
- * target behavior: a session file is admitted without checking that it belongs to the run's session, an identical second
- * import is recorded again under another artifact name, and the same tool call observed by both sources becomes events
- * from each source with no declared relation. The derived event file does read on its own with every source declared.
+ * target behavior: a session file is admitted without checking that it belongs to the run's session (and the oracle,
+ * given a frozen manifest naming those bytes, reports no defect), an identical second import is recorded again under
+ * another artifact name with no declaration marking it, and the same tool call observed by both sources becomes events
+ * from each source with no declaration relating them. The derived event file does read on its own with every source
+ * declared.
  * When a combined-source policy is adopted, the first two tests are expected to change.
  */
 class CombinedSourceAdmissionTest {
@@ -84,7 +86,10 @@ class CombinedSourceAdmissionTest {
                 .containsExactly("stream.jsonl", "transcript-again.jsonl", "transcript.jsonl");
         assertThat(callEvents.get("transcript-again.jsonl")).isEqualTo(callEvents.get("transcript.jsonl"));
         assertThat(pkg.manifest.sources().stream().map(s -> s.member("sha256").text()).distinct().count())
-                .as("two declared sources share one sha256; nothing marks the second as a duplicate").isEqualTo(2);
+                .as("three declared sources, two of them with one sha256").isEqualTo(2);
+        assertThat(declarationKinds(core)).as("the second import adds only its own source, compatibility and source-end declarations; nothing marks a duplicate")
+                .containsExactlyInAnyOrderElementsOf(withAgain(declarationKinds(singleImport(work.resolve("single")))));
+        assertThat(declarationKinds(core)).noneMatch(k -> k.matches("(?i).*(duplicate|relation|join).*"));
     }
 
     @Test
@@ -105,7 +110,31 @@ class CombinedSourceAdmissionTest {
         Map<String, List<String>> sessions = sessionsByArtifact(pkg);
         assertThat(sessions).containsOnlyKeys("stream.jsonl", "transcript.jsonl");
         long both = pkg.events.stream().filter(e -> SHARED_CALL.equals(e.text("tool_call_uid"))).map(Event::artifact).distinct().count();
-        assertThat(both).as("the shared call is readable from each source's own events, with no declared relation between them").isEqualTo(2);
+        assertThat(both).as("the shared call is readable from each source's own events").isEqualTo(2);
+        assertThat(declarationKinds(alone)).as("no declaration relates the two sources' observations").noneMatch(k -> k.matches("(?i).*(relation|join).*"));
+    }
+
+    /** Declaration kinds without the per-file identity part, so packages written into different folders compare. */
+    private static List<String> declarationKinds(Path core) {
+        return WriterTestSupport.declarationKinds(core.resolve("events.jsonl")).stream().map(k -> k.split(" ")[0] + " " + k.split(" ")[1].replaceAll("transcript-again", "transcript")).toList();
+    }
+
+    /** The single-import declaration kinds plus the second import's own source, compatibility selection and source end. */
+    private static List<String> withAgain(List<String> single) {
+        List<String> out = new java.util.ArrayList<>(single);
+        out.add("source source:transcript.jsonl");
+        out.add("compatibility compatibility:transcript.jsonl#1");
+        out.add("source_end source_end:transcript.jsonl");
+        return out;
+    }
+
+    private static Path singleImport(Path core) {
+        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), options())) {
+            Replay.feedBytes(w.source(claudeStream()), nativeOf(PAIR, "stream.jsonl"), 4096, options().clock());
+            Replay.feedBytes(w.source(claudeTranscript()), nativeOf(PAIR, "transcript.jsonl"), 4096, options().clock());
+            w.complete();
+        }
+        return core;
     }
 
     private static Map<String, List<String>> sessionsByArtifact(OcsfPackage pkg) {

@@ -20,8 +20,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * The experimental source join: two native sources of one execution are joined only on identities they report.
  * Synthetic records in the shape of a stream and a session file that share event ids (the Copilot CLI form) and of a
  * stream whose steps carry no id (the Junie form); the controls are the ones a combined-source capture needs before any
- * merge: a wrong or missing session, a duplicated import, repeated same-name calls, a source without identities, a
- * partial snapshot, a repeated key, conflicting and absent values.
+ * merge: a wrong or missing session, a byte-identical second artifact on one side, a self-join, repeated same-name
+ * calls, a source without identities, a partial snapshot, a repeated key, disagreeing records of one fact, a composite
+ * key, a selector that selects nothing, conflicting and absent values.
  */
 class SourceJoinTest {
 
@@ -113,7 +114,18 @@ class SourceJoinTest {
     }
 
     @Test
-    void aDuplicatedImportIsIdempotentNothingIsCountedTwice() {
+    void aByteIdenticalSecondArtifactOnOneSideIsTheSameSourceAndIsNotCountedTwice() {
+        Json once = join(STDOUT, SESSION);
+        Json twice = SourceJoin.join(SPEC, List.of(artifact("stdout.jsonl", STDOUT), artifact("stdout-again.jsonl", STDOUT)), List.of(artifact("events.jsonl", SESSION)));
+        Json sideA = twice.member("sources").elements().get(0);
+        assertThat(sideA.member("artifacts").elements().get(1).member("skipped_duplicate_of").text()).isEqualTo("stdout.jsonl");
+        assertThat(sideA.member("parsed_records").scalarText()).as("the copy's records are not read again").isEqualTo("6");
+        assertThat(key(twice, "event id").member("pairs")).isEqualTo(key(once, "event id").member("pairs"));
+        assertThat(key(twice, "tool call id").member("a_occurrences")).isEqualTo(key(once, "tool call id").member("a_occurrences"));
+    }
+
+    @Test
+    void aSelfJoinMatchesEveryRecordIdentically() {
         Json report = SourceJoin.join(SPEC, List.of(artifact("events.jsonl", SESSION)), List.of(artifact("events.jsonl", SESSION)));
         // the same session file on both sides: its own session locator is the session side's, so state it as a joinable pair
         Json selfSpec = NeutralJson.parse(SPEC_TEXT.replace("{\"select\": {\"/type\": \"result\"}, \"pointer\": \"/sessionId\"}",
@@ -179,6 +191,33 @@ class SourceJoinTest {
         String repeated = SESSION + "{\"type\":\"tool.execution_complete\",\"id\":\"e3\",\"data\":{\"toolCallId\":\"call_a\"}}\n";
         Json ambiguous = key(join(STDOUT, repeated), "event id");
         assertThat(ambiguous.path("pairs", "ambiguous").scalarText()).as("two session records claim e3: not compared").isEqualTo("1");
+    }
+
+    @Test
+    void recordsOfOneSourceThatDisagreeAboutAFactMakeItAmbiguousNotTheFirstValue() {
+        String stdout = STDOUT + "{\"type\":\"tool.execution_start\",\"id\":\"e9\",\"data\":{\"toolCallId\":\"call_a\",\"toolName\":\"echo\",\"arguments\":{\"n\":5}}}\n";
+        Json n = key(join(stdout, SESSION), "tool call id").member("values").elements().get(0);
+        assertThat(texts(n.member("ambiguous_in_a"))).containsExactly("call_a");
+        assertThat(n.member("equal").scalarText()).as("call_b only").isEqualTo("1");
+        assertThat(n.member("differ").elements()).isEmpty();
+    }
+
+    @Test
+    void aCompositeKeyJoinsOnlyWhereEveryPartMatchesAndASelectorThatSelectsNothingIsSaid() {
+        Json spec = NeutralJson.parse("""
+                {"kind": "agent-journal/source-join-specification", "version": "0.1",
+                 "sources": [{"name": "a", "session": [{"pointer": "/s"}]}, {"name": "b", "session": [{"pointer": "/s"}]}],
+                 "keys": [
+                  {"name": "turn", "unit": "fact", "a": {"pointers": ["/interaction", "/turn"]}, "b": {"pointers": ["/interaction", "/turn"]}},
+                  {"name": "typo", "unit": "fact", "a": {"select": {"/type": "no.such.type"}, "pointer": "/id"}, "b": {"pointer": "/turn"}}]}
+                """);
+        NativeArtifact a = artifact("a.jsonl", "{\"s\":\"x\",\"interaction\":\"i1\",\"turn\":\"0\"}\n{\"s\":\"x\",\"interaction\":\"i2\",\"turn\":\"0\"}\n");
+        NativeArtifact b = artifact("b.jsonl", "{\"s\":\"x\",\"interaction\":\"i2\",\"turn\":\"0\"}\n");
+        Json report = SourceJoin.join(spec, List.of(a), List.of(b));
+        Json turn = key(report, "turn");
+        assertThat(turn.member("matched").scalarText()).as("turn 0 of two interactions is two turns").isEqualTo("1");
+        assertThat(texts(turn.member("a_only"))).containsExactly("[\"i1\",\"0\"]");
+        assertThat(key(report, "typo").member("status").text()).isEqualTo("NOTHING_SELECTED_IN_A");
     }
 
     @Test

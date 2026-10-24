@@ -1,6 +1,7 @@
 package io.github.markpollack.journal.tck.ocsf.inventory;
 
 import io.github.markpollack.journal.tck.verify.Json;
+import io.github.markpollack.journal.tck.verify.NeutralJson;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -12,7 +13,9 @@ import java.util.Set;
 /**
  * Where a source reports an identity, as a {@link SourceJoin} specification declares it: an optional {@code select}
  * (RFC 6901 pointers that must resolve to the stated strings) choosing the records, and the {@code pointer} to the
- * identity value inside each selected record. Only a non-empty string or a number is an identity value.
+ * identity value inside each selected record, or {@code pointers} for a composite identity whose every part must be
+ * reported (for example an interaction id and a turn id that repeats across interactions). Only a non-empty string or a
+ * number is an identity value.
  */
 final class SourceLocator {
 
@@ -40,9 +43,8 @@ final class SourceLocator {
     /** The selected records grouped by the identity value they report; records without one are left out. */
     static Map<String, List<Located>> keyed(List<Located> records, Json locator) {
         Map<String, List<Located>> out = new LinkedHashMap<>();
-        String p = RawInventory.text(locator, "pointer");
         for (Located r : records) {
-            String v = selects(r.json(), locator) ? identity(pointer(r.json(), p)) : null;
+            String v = selects(r.json(), locator) ? identityAt(r.json(), locator) : null;
             if (v != null) {
                 out.computeIfAbsent(v, x -> new ArrayList<>()).add(r);
             }
@@ -70,6 +72,23 @@ final class SourceLocator {
             }
         }
         return true;
+    }
+
+    /** The record's identity under the locator: one value, or the parts of a composite identity as a JSON array. */
+    static String identityAt(Json record, Json locator) {
+        Json parts = locator.member("pointers");
+        if (parts == null) {
+            return identity(pointer(record, RawInventory.text(locator, "pointer")));
+        }
+        List<Json> values = new ArrayList<>();
+        for (Json p : parts.elements()) {
+            String v = identity(pointer(record, p.text()));
+            if (v == null) {
+                return null;
+            }
+            values.add(new Json.JString(v));
+        }
+        return NeutralJson.write(new Json.JArray(values));
     }
 
     static String identity(Json v) {

@@ -29,7 +29,10 @@ import java.util.TreeMap;
  * in number spelling, one side carrying members the other lacks, or conflicting (a shared member with a different
  * value, kind or nullness). A key repeated within one source is ambiguous and not compared. A {@code fact} key
  * identifies one fact several records may describe (for example a tool call id on its start and completion records);
- * declared value pairs are compared per matched key, and an absent value is reported as absent, never as zero.
+ * declared value pairs are compared per matched key: records of one source that report different values for the same
+ * key make that value ambiguous there, and an absent value is reported as absent, never as zero. A selector that
+ * selects no record is reported as such rather than as a join with nothing matched. Within one side, an artifact whose
+ * bytes equal an earlier artifact's (same sha256) is the same source: it is listed and skipped, never counted twice.
  *
  * <p>The report holds identities, counts, record indexes, pointers and difference kinds, never record content; it is
  * evidence for a combined-source proposal, not a merge.
@@ -44,7 +47,9 @@ public final class SourceJoin {
     private static final Map<String, String> NOT_JOINED = Map.of(
             "NOT_JOINED_SESSION", "the session identity is not established, so no key is joined",
             "NO_IDENTITY_IN_A", "the selected records of source a report no value for this key; they are not paired by position or content",
-            "NO_IDENTITY_IN_B", "the selected records of source b report no value for this key; they are not paired by position or content");
+            "NO_IDENTITY_IN_B", "the selected records of source b report no value for this key; they are not paired by position or content",
+            "NOTHING_SELECTED_IN_A", "the key's selector selects no record of source a",
+            "NOTHING_SELECTED_IN_B", "the key's selector selects no record of source b");
     private static final List<String> PAIR_CLASSES = List.of("identical", "representation_only", "a_has_more", "b_has_more", "each_has_more", "conflicting", "ambiguous");
 
     private SourceJoin() {
@@ -62,8 +67,8 @@ public final class SourceJoin {
         if (sides.size() != 2) {
             throw new IllegalArgumentException("a source-join specification names exactly two sources");
         }
-        List<Located> ra = located(a);
-        List<Located> rb = located(b);
+        List<Located> ra = located(distinct(a));
+        List<Located> rb = located(distinct(b));
         Set<String> sa = SourceLocator.values(ra, sides.get(0).member("session"));
         Set<String> sb = SourceLocator.values(rb, sides.get(1).member("session"));
         String session = sessionStatus(sa, sb);
@@ -97,16 +102,31 @@ public final class SourceJoin {
         Map<String, Json> m = new LinkedHashMap<>();
         m.put("name", declared.member("name"));
         List<Json> arts = new ArrayList<>();
+        Map<String, String> seen = new LinkedHashMap<>();
         for (NativeArtifact art : artifacts) {
+            String name = art.path().getFileName().toString();
             Map<String, Json> d = new LinkedHashMap<>();
-            d.put("artifact", RawInventory.str(art.path().getFileName().toString()));
+            d.put("artifact", RawInventory.str(name));
             d.put("sha256", RawInventory.str(art.sha256()));
             d.put("records", RawInventory.num(art.records().size()));
+            String first = seen.putIfAbsent(art.sha256(), name);
+            if (first != null) {
+                d.put("skipped_duplicate_of", RawInventory.str(first));
+            }
             arts.add(new Json.JObject(d));
         }
         m.put("artifacts", new Json.JArray(arts));
         m.put("parsed_records", RawInventory.num(records.size()));
         return new Json.JObject(m);
+    }
+
+    /** The artifacts of one side without byte-identical repeats: a second copy is the same source. */
+    private static List<NativeArtifact> distinct(List<NativeArtifact> artifacts) {
+        Map<String, NativeArtifact> out = new LinkedHashMap<>();
+        for (NativeArtifact art : artifacts) {
+            out.putIfAbsent(art.sha256(), art);
+        }
+        return new ArrayList<>(out.values());
     }
 
     private static List<Located> located(List<NativeArtifact> artifacts) {
@@ -135,7 +155,7 @@ public final class SourceJoin {
         m.put("a_keyed_records", RawInventory.num(count(ka)));
         m.put("b_selected_records", RawInventory.num(selectedB));
         m.put("b_keyed_records", RawInventory.num(count(kb)));
-        String status = keyStatus(joined, selectedA > 0 && ka.isEmpty(), selectedB > 0 && kb.isEmpty());
+        String status = keyStatus(joined, selectedA, !ka.isEmpty(), selectedB, !kb.isEmpty());
         m.put("status", RawInventory.str(status));
         if ("JOINED".equals(status)) {
             joinedKey(m, k, ka, kb);
@@ -146,14 +166,17 @@ public final class SourceJoin {
         return new Json.JObject(m);
     }
 
-    static String keyStatus(boolean joined, boolean noIdentityInA, boolean noIdentityInB) {
+    static String keyStatus(boolean joined, int selectedA, boolean keyedA, int selectedB, boolean keyedB) {
         if (!joined) {
             return "NOT_JOINED_SESSION";
         }
-        if (noIdentityInA) {
-            return "NO_IDENTITY_IN_A";
+        if (selectedA == 0 || selectedB == 0) {
+            return selectedA == 0 ? "NOTHING_SELECTED_IN_A" : "NOTHING_SELECTED_IN_B";
         }
-        return noIdentityInB ? "NO_IDENTITY_IN_B" : "JOINED";
+        if (!keyedA || !keyedB) {
+            return keyedA ? "NO_IDENTITY_IN_B" : "NO_IDENTITY_IN_A";
+        }
+        return "JOINED";
     }
 
     private static void joinedKey(Map<String, Json> m, Json k, Map<String, List<Located>> ka, Map<String, List<Located>> kb) {
@@ -235,51 +258,58 @@ public final class SourceJoin {
 
     /**
      * One declared value pair over every matched fact key: a value both sources report must be equal in value; a value
-     * one source lacks is absent there, never zero.
+     * one source lacks is absent there, never zero; records of one source that disagree make the value ambiguous there.
      */
     private static Json compareValues(Json pair, Set<String> both, Map<String, List<Located>> ka, Map<String, List<Located>> kb) {
         String pa = RawInventory.text(pair, "a");
         String pb = RawInventory.text(pair, "b");
-        int equal = 0;
-        List<String> differ = new ArrayList<>();
-        List<String> absentA = new ArrayList<>();
-        List<String> absentB = new ArrayList<>();
+        Map<String, List<String>> buckets = new LinkedHashMap<>();
+        for (String b : List.of("equal", "differ", "absent_in_a", "absent_in_b", "ambiguous_in_a", "ambiguous_in_b")) {
+            buckets.put(b, new ArrayList<>());
+        }
         for (String key : both) {
-            Json va = firstValue(ka.get(key), pa);
-            Json vb = firstValue(kb.get(key), pb);
-            if (va == null) {
-                absentA.add(key);
-            }
-            if (vb == null) {
-                absentB.add(key);
-            }
-            if (va != null && vb != null) {
-                if (Json.sameValue(va, vb)) {
-                    equal++;
-                }
-                else {
-                    differ.add(key);
-                }
+            for (String b : outcome(observed(ka.get(key), pa), observed(kb.get(key), pb))) {
+                buckets.get(b).add(key);
             }
         }
         Map<String, Json> r = new LinkedHashMap<>();
         r.put("a", RawInventory.str(pa));
         r.put("b", RawInventory.str(pb));
-        r.put("equal", RawInventory.num(equal));
-        r.put("differ", strings(differ));
-        r.put("absent_in_a", strings(absentA));
-        r.put("absent_in_b", strings(absentB));
+        r.put("equal", RawInventory.num(buckets.get("equal").size()));
+        for (String b : List.of("differ", "absent_in_a", "absent_in_b", "ambiguous_in_a", "ambiguous_in_b")) {
+            r.put(b, strings(buckets.get(b)));
+        }
         return new Json.JObject(r);
     }
 
-    private static Json firstValue(List<Located> records, String pointer) {
+    /** What one source reports for a value of a fact: nothing ({@code null}), one value, or disagreeing values. */
+    record Observed(Json value, boolean ambiguous) {
+    }
+
+    private static Observed observed(List<Located> records, String pointer) {
+        Json first = null;
         for (Located r : records) {
             Json v = SourceLocator.pointer(r.json(), pointer);
-            if (v != null) {
-                return v;
+            if (v != null && first != null && !Json.sameValue(first, v)) {
+                return new Observed(first, true);
             }
+            first = first == null ? v : first;
         }
-        return null;
+        return first == null ? null : new Observed(first, false);
+    }
+
+    static List<String> outcome(Observed a, Observed b) {
+        List<String> out = new ArrayList<>();
+        if (a == null || a.ambiguous()) {
+            out.add(a == null ? "absent_in_a" : "ambiguous_in_a");
+        }
+        if (b == null || b.ambiguous()) {
+            out.add(b == null ? "absent_in_b" : "ambiguous_in_b");
+        }
+        if (out.isEmpty()) {
+            out.add(Json.sameValue(a.value(), b.value()) ? "equal" : "differ");
+        }
+        return out;
     }
 
     private static int count(Map<String, List<Located>> keyed) {
