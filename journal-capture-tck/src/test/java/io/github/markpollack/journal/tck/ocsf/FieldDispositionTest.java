@@ -412,11 +412,17 @@ class FieldDispositionTest {
         return out;
     }
 
-    /** Observed (variant to paths): the accepted specification's inventory plus the raw inventory of every committed stream of the profile. */
+    /**
+     * Observed (variant to paths): the inventories of the accepted specifications the catalog names (one, or one per route
+     * when its compatibility entries bind several) plus the raw inventory of every committed stream of the profile.
+     */
     static Map<String, Set<String>> observed(String profile, Path work) {
         Map<String, Set<String>> out = new TreeMap<>();
-        Json spec = NeutralJson.readDocument(PROJECT.resolve(SchemaCatalog.text(NeutralJson.readDocument(PROJECT.resolve(CATALOGS.get(profile))), "specification")));
-        absorb(out, spec.path("inventory", "variants"));
+        Json catalog = NeutralJson.readDocument(PROJECT.resolve(CATALOGS.get(profile)));
+        List<Json> specs = catalog.member("specifications") != null ? catalog.member("specifications").elements() : List.of(catalog.member("specification"));
+        for (Json s : specs) {
+            absorb(out, NeutralJson.readDocument(PROJECT.resolve(s.text())).path("inventory", "variants"));
+        }
         for (String fixture : PROFILE_FIXTURES.get(profile)) {
             Path copy = OcsfFixtures.copy(fixture, work.resolve("obs").resolve(fixture));
             NativeArtifact art = NativeArtifact.read(copy.resolve("native").resolve("stream.jsonl"));

@@ -193,7 +193,7 @@ class CompatibilityAndIdentityOracleTest {
         OcsfFixtures.editEvents(pkg(fixture), events -> obj(OcsfFixtures.at(events, "model_response", 1, 4).member("journal")).members().put("contract_uid", str("common/opaque-text/0.2.0-prototype")));
         OracleReport r = verify(fixture);
         assertThat(r.outcome("source.compatibility", MAIN)).isEqualTo(Outcome.DEFECTIVE);
-        assertThat(r.check("source.compatibility", MAIN).detail()).contains("1 normalized event(s) carry a contract other than the source's declared claude-code/stream-json/2.1.303/0.4.0-prototype");
+        assertThat(r.check("source.compatibility", MAIN).detail()).contains("1 normalized event(s) carry a contract other than the source's declared claude-code/stream-json/2.1.303/0.5.0-prototype");
     }
 
     @Test
@@ -297,6 +297,6 @@ class CompatibilityAndIdentityOracleTest {
         OracleReport claude = verify(copy(CHILD, work.resolve("claude")));
         assertThat(claude.outcome("identity.values", "child:" + SPAWN + "/stream.jsonl")).isEqualTo(Outcome.VERIFIED);
         assertThat(claude.check("identity.values", "child:" + SPAWN + "/stream.jsonl").detail()).startsWith("4 normalized event(s)");
-        assertThat(claude.check("identity.values", MAIN).detail()).startsWith("13 normalized event(s)");
+        assertThat(claude.check("identity.values", MAIN).detail()).startsWith("16 normalized event(s)");
     }
 }

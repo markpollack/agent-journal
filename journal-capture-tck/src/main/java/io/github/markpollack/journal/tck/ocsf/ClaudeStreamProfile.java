@@ -20,6 +20,7 @@ final class ClaudeStreamProfile implements SourceProfile {
     public ExpectedFacts expected(NativeArtifact artifact, Json source, Json scope) {
         ExpectedFacts f = new ExpectedFacts(SourceProfile.text(source, "artifact"));
         McpReadings.Claude mcp = new McpReadings.Claude();
+        ClaudeChildUsageReading child = new ClaudeChildUsageReading(artifact);
         for (NativeArtifact.Record r : artifact.records()) {
             Json o = r.json();
             if (!r.parsed()) {
@@ -60,11 +61,13 @@ final class ClaudeStreamProfile implements SourceProfile {
             }
             else if ("user".equals(type) && message != null && hasToolResult(message)) {
                 f.normalized.add(r.index());
+                List<String> resultIds = new ArrayList<>();
                 for (Json b : message.member("content").elements()) {
                     if (!"tool_result".equals(SourceProfile.text(b, "type"))) {
                         continue;
                     }
                     String id = SourceProfile.text(b, "tool_use_id");
+                    resultIds.add(id);
                     ExpectedFacts.Decision decision = null;
                     for (Json meta : o.member("tool_result_meta") == null ? List.<Json>of() : o.member("tool_result_meta").elements()) {
                         Json pd = meta.member("permission_decision");
@@ -81,6 +84,7 @@ final class ClaudeStreamProfile implements SourceProfile {
                         f.decisions.add(decision);
                     }
                 }
+                child.agentResult(f, r.index(), o, resultIds);
             }
             else if ("user".equals(type) && message != null && message.member("content") != null) {
                 // a user record without a tool_result block: the prompt the stream reports for this scope (observed in child scopes)
@@ -88,6 +92,10 @@ final class ClaudeStreamProfile implements SourceProfile {
                 Json content = message.member("content");
                 List<String> texts = content instanceof Json.JString s ? List.of(s.value()) : CodexRolloutProfile.texts(content.elements());
                 f.prompts.add(new ExpectedFacts.Prompt(r.index(), null, texts));
+            }
+            else if ("system".equals(type) && isTask(o)) {
+                // without a usage object a task message stays retained-only
+                child.task(f, r.index(), o, "system/" + SourceProfile.text(o, "subtype"));
             }
             else if ("system".equals(type) && "init".equals(SourceProfile.text(o, "subtype"))) {
                 f.normalized.add(r.index());
@@ -127,6 +135,12 @@ final class ClaudeStreamProfile implements SourceProfile {
             }
         }
         return f;
+    }
+
+    /** A task_progress or task_notification record (Agent SDK 0.3.304 SDKTaskProgressMessage, SDKTaskNotificationMessage). */
+    static boolean isTask(Json record) {
+        String subtype = SourceProfile.text(record, "subtype");
+        return "task_progress".equals(subtype) || "task_notification".equals(subtype);
     }
 
     static boolean hasToolResult(Json message) {

@@ -1,5 +1,6 @@
 package io.github.markpollack.journal.ocsf.writer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static io.github.markpollack.journal.ocsf.writer.MapperSupport.text;
@@ -10,8 +11,9 @@ import static io.github.markpollack.journal.ocsf.writer.MapperSupport.text;
  * (one block per record, Partial until a stop reason is reported), their tool_use blocks are requests, user records
  * with tool_result blocks are results owned by the block's own id, the system init record is the session's reported
  * settings, the result record completes the turn with run/model final usage, cost and run-scope denials, and every
- * other record is retained whole. A record whose {@code parent_tool_use_id} names a tool call is routed to that
- * child core.
+ * other record is retained whole, except that child-run usage the parent's records report (an Agent result, task
+ * progress and notification) is also an accounting event ({@link ClaudeChildUsage}). A record whose
+ * {@code parent_tool_use_id} names a tool call is routed to that child core.
  */
 final class ClaudeStreamMapper implements SourceMapper {
 
@@ -22,6 +24,8 @@ final class ClaudeStreamMapper implements SourceMapper {
 
     /** MCP facts: the registered servers and tools of the init record, and the calls established as MCP calls. */
     private final ClaudeMcp mcp = new ClaudeMcp();
+    /** The Agent requests whose results report child-run usage. */
+    private final ClaudeChildUsage childUsage = new ClaudeChildUsage();
 
     @Override
     public String contractName() {
@@ -53,6 +57,7 @@ final class ClaudeStreamMapper implements SourceMapper {
                 if ("tool_use".equals(text(b, "type"))) {
                     Jv.Obj req = MapperSupport.claudeToolRequest(ROUTE, msg, text(m, "id"), b);
                     req.put("mcp", mcp.request(b));
+                    childUsage.request(b);
                     ctx.emit(owner, req);
                 }
             }
@@ -78,13 +83,16 @@ final class ClaudeStreamMapper implements SourceMapper {
                 ctx.emit(owner, ev);
                 return;
             }
-            ctx.family("user", r.raw().length, "normalized: tool_call Result observed per tool_result block (+ permission_decision from tool_result_meta)");
+            ctx.family("user", r.raw().length, "normalized: tool_call Result observed per tool_result block (+ permission_decision from tool_result_meta; "
+                    + "+ session_context Accounting reported for an Agent result's child-run usage)");
             boolean first = true;
+            List<String> resultIds = new ArrayList<>();
             for (Jv b : content.elements()) {
                 if (!"tool_result".equals(text(b, "type"))) {
                     continue;
                 }
                 String id = text(b, "tool_use_id");
+                resultIds.add(id);
                 Jv.Obj ev = MapperSupport.claudeToolResult(ROUTE, msg, first, o, b);
                 ev.put("mcp", mcp.result(id, o, ROUTE.structuredMember()));
                 ((Jv.Obj) ev.get("tool_result")).put("errors", mcp.errors(id, b));
@@ -102,6 +110,10 @@ final class ClaudeStreamMapper implements SourceMapper {
                 ev.put("data", first ? o : b);
                 ctx.emit(owner, ev);
                 first = false;
+            }
+            Jv.Obj accounting = childUsage.agentResult(msg, o, resultIds);
+            if (accounting != null) {
+                ctx.emit(owner, accounting);
             }
             return;
         }
@@ -174,6 +186,12 @@ final class ClaudeStreamMapper implements SourceMapper {
             ev.put("session_uid", sess).put("context_kind", "system/init").put("settings", settings)
                     .put("basis", "claude.stream.init.v1: the init record reports the session's launch settings once").put("data", o);
             ctx.emit(owner, ev);
+            return;
+        }
+        Jv.Obj task = "system/task_progress".equals(family) || "system/task_notification".equals(family) ? ClaudeChildUsage.task(ctx, r, family, o) : null;
+        if (task != null) {
+            ctx.family(family, r.raw().length, "normalized: session_context Accounting reported (the spawned task's child-run usage, scope 7)");
+            ctx.emit(owner, task);
             return;
         }
         ctx.family(family, r.raw().length, "system/thinking_tokens".equals(family) ? "retained-only: vendor estimate of thinking tokens so far (not reported usage)"

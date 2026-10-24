@@ -77,7 +77,7 @@ class PinsTest {
                 case CodexRolloutMapper.CONTRACT -> "/0.4.0-prototype";
                 case AntigravityStreamMapper.CONTRACT -> "/0.3.0-prototype";
                 case OpaqueTextMapper.CONTRACT -> "/0.2.0-prototype";
-                case ClaudeStreamMapper.CONTRACT -> "/0.4.0-prototype";
+                case ClaudeStreamMapper.CONTRACT -> "/0.5.0-prototype";
                 default -> "/0.3.0-prototype";
             });
             c.rule(name, "common.opaque->source_record");

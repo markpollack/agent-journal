@@ -6,7 +6,8 @@
   "usage": "Every assistant record reports provisional usage (stop_reason null): no applicable final at Model-response scope. The result line (27) reports run usage input 28, output 1040, cache read 64749, cache creation 7220, thinking 783, and modelUsage for claude-haiku-4-5-20251001 (input 46, output 1362, cache read 78077, cache creation 22130, thinking 964): one final each at Run and Model scope. The child's one observation (record 20, output 6) stays in the child core and is not added to the parent's groups.",
   "associations": "tool_result_meta on records 6 (toolu_0183...) and 24 (toolu_01BnE...) and, in the child, 21 (toolu_018f...) name the tool id and report decision accept: unique, reported identifier, attached to the tool call.",
   "tool_exchanges": "Main: ToolSearch toolu_0183ddwvMmvPzqAU5Jeu5hwZ (5/6), Agent toolu_01BnEuCUmZ2Vu1LpADzksmrJ (16/24). Child: Read toolu_018fX6Mygf8aSE8c8bt7pyu6 (20/21).",
-  "amended_2026_10_21": "Amended 2026-10-21 (ACCEPT-1): the child scope's user text record (the sub-agent's prompt as delivered by the spawning call) is a submission on the stream route, so the child counts one; the main thread's -p prompt is still not echoed."
+  "amended_2026_10_21": "Amended 2026-10-21 (ACCEPT-1): the child scope's user text record (the sub-agent's prompt as delivered by the spawning call) is a submission on the stream route, so the child counts one; the main thread's -p prompt is still not echoed.",
+  "usage_child_run": "D1, 2026-10-24, authored from stream.jsonl records 19, 23 and 24: task_progress usage.total_tokens 13574 (Provisional), task_notification usage.total_tokens 15062 (Final) and the Agent result's tool_use_result.usage (input 8, cache read 13328, cache creation 1582, output 56, thinking 47; Final) are three observations of the child run toolu_01BnEuCUmZ2Vu1LpADzksmrJ spawned; the two Final ones report different quantities, so the group states a conflict and no applicable final, and nothing is summed"
  },
  "run_uid": "claude-child-2.1.299",
  "label": "main",
@@ -81,7 +82,7 @@
   ]
  },
  "usage": {
-  "group_count": 5,
+  "group_count": 6,
   "groups": [
    {
     "scope": "Model response",
@@ -98,6 +99,43 @@
     "final_observations": 0,
     "provisional_observations": 3,
     "applicable_final": null
+   },
+   {
+    "scope": "Child run",
+    "owner": "child run of tool call toolu_01BnEuCUmZ2Vu1LpADzksmrJ",
+    "model": null,
+    "source": "stream.jsonl",
+    "final_observations": 2,
+    "provisional_observations": 1,
+    "conflict": true,
+    "applicable_final": null,
+    "observations": [
+     {
+      "record_index": 19,
+      "status": "Provisional",
+      "components": {
+       "reported_total_tokens": 13574
+      }
+     },
+     {
+      "record_index": 23,
+      "status": "Final",
+      "components": {
+       "reported_total_tokens": 15062
+      }
+     },
+     {
+      "record_index": 24,
+      "status": "Final",
+      "components": {
+       "uncached_input_tokens": 8,
+       "output_tokens": 56,
+       "cache_read_tokens": 13328,
+       "cache_write_tokens": 1582,
+       "reasoning_tokens": 47
+      }
+     }
+    ]
    },
    {
     "scope": "Model response",

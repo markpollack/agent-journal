@@ -2,7 +2,7 @@
   "uid": 5,
   "caption": "Session Context",
   "category": "agent_execution",
-  "description": "A native record reporting the session's settings, context injected into the model's input (system reminders, attachments, developer messages), or session-scope accounting (cumulative usage/cost). These are supporting facts at session or turn scope; they are not submissions, responses or tool calls.",
+  "description": "A native record reporting the session's settings, context injected into the model's input (system reminders, attachments, developer messages), or accounting at session, response or child-run scope (usage/cost). These are supporting facts; they are not submissions, responses or tool calls.",
   "name": "session_context",
   "extends": "base_event",
   "attributes": {
@@ -18,7 +18,7 @@
         },
         "3": {
           "caption": "Accounting reported",
-          "description": "A record reporting session- or response-scope usage or cost accounting was observed."
+          "description": "A record reporting session-, response- or child-run-scope usage or cost accounting was observed."
         },
         "4": {
           "caption": "Outcome reported",
@@ -51,6 +51,11 @@
       "group": "primary",
       "requirement": "optional",
       "description": "The response an accounting record cites, when it names one."
+    },
+    "tool_call_uid": {
+      "group": "primary",
+      "requirement": "optional",
+      "description": "The tool call whose spawned child run an accounting record reports (usage at scope 7 Child run), as the source names it; absent otherwise. It identifies the unit, never a second tool call."
     },
     "context_kind": {
       "group": "primary",

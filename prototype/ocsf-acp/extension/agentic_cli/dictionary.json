@@ -318,7 +318,8 @@
           "caption": "Model"
         },
         "7": {
-          "caption": "Child run"
+          "caption": "Child run",
+          "description": "The run of a sub-agent that a tool call spawned. Where the unit is identified depends on the object (see usage_observation); its observations are never added to the parent's or the run's totals."
         },
         "99": {
           "caption": "Other",

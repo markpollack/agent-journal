@@ -1,14 +1,17 @@
 {
  "kind": "agent-journal/field-dispositions",
  "version": "0.1",
- "reviewed": "2026-10-21 (ACCEPT-1)",
+ "reviewed": "2026-10-21 (ACCEPT-1); 2026-10-24 (D1): task usage normalized, the Agent result carve-out, whole-variant task wildcards replaced by exact entries",
  "profile": "claude_stream",
  "compatibility_entries": [
   "claude-code/stream-json/2.1.299-sdk",
   "claude-code/stream-json/2.1.303-sdk",
   "claude-code/stream-json/2.1.304-stdout"
  ],
- "specification": "schema/vendor/claude-code/stream-json/2.1.303.json",
+ "specifications": [
+  "schema/vendor/claude-code/stream-json/2.1.303.json",
+  "schema/vendor/claude-code/stream-json/2.1.304.json"
+ ],
  "contract": "claude-code/stream-json/2.1.303/0.3.0-prototype",
  "contract_file": "claude-code-2.1.303-stream",
  "evidence_fixtures": [
@@ -537,7 +540,10 @@
    "tests": [
     "OcsfOracleValueCheckTest#resultStructuredDetailAndMissingResultAreEachChecked"
    ],
-   "note": "data-keyed: the tool-defined structured result preserved whole as a value"
+   "note": "data-keyed: the tool-defined structured result preserved whole as a value; carve-out (D1): on an Agent result, tool_use_result.usage is also a scope 7 Child run usage observation (session_context Accounting reported, rule claude.stream.user.tool_result.agent_usage->session_context.accounting), judged by its obligation, not by this subtree's structured_result evidence",
+   "carve_outs": [
+    "claude.stream.usage.child-run.agent-result"
+   ]
   },
   {
    "variant": "user/tool_result",
@@ -1418,21 +1424,41 @@
   },
   {
    "variant": "system/task_progress",
-   "path": "*",
-   "subtree": true,
-   "disposition": "retained",
+   "path": "usage",
+   "disposition": "normalized",
+   "destination": [
+    "session_context.usage_observations[].data"
+   ],
+   "rule": "claude.stream.system.task_usage->session_context.accounting",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "usage.values"
    },
    "tests": [
-    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+    "CanonicalConformanceTest#theRepairedClaudeUsageObligationsAreDischargedOnBothBindings",
+    "CanonicalConformanceTest#aWrongValueStatusAggregationOrDataAndAMissingProfileExpectationEachFail"
    ],
-   "note": "sub-agent progress notification with vendor usage counters (duration_ms, tool_uses, total_tokens): vendor-computed totals are never copied into a usage observation"
+   "note": "the task's usage object, kept exactly as the scope 7 Child run observation's data (Provisional); total_tokens is its one canonical component, tool_uses and duration_ms stay in data (no canonical counterpart). Replaces the whole-variant wildcard (D1)"
   },
   {
    "variant": "system/task_notification",
-   "path": "*",
-   "subtree": true,
+   "path": "usage",
+   "disposition": "normalized",
+   "destination": [
+    "session_context.usage_observations[].data"
+   ],
+   "rule": "claude.stream.system.task_usage->session_context.accounting",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "CanonicalConformanceTest#theRepairedClaudeUsageObligationsAreDischargedOnBothBindings",
+    "CanonicalConformanceTest#aWrongValueStatusAggregationOrDataAndAMissingProfileExpectationEachFail"
+   ],
+   "note": "the task's usage object, kept exactly as the scope 7 Child run observation's data (Final); total_tokens is its one canonical component, tool_uses and duration_ms stay in data (no canonical counterpart). Replaces the whole-variant wildcard (D1)"
+  },
+  {
+   "variant": "system/task_notification",
+   "path": "handback",
    "disposition": "retained",
    "evidence": {
     "property": "whole_record.coverage"
@@ -1440,12 +1466,35 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "sub-agent completion notification (status, summary, output_file, vendor counters)"
+   "note": "the sub-agent's handback text as the parent receives it (2.1.304); content, kept whole; retained whole in the record's data"
+  },
+  {
+   "variant": "system/task_notification",
+   "path": "handback_report",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "the sub-agent's structured handback report (2.1.304); its members have their own entries; retained whole in the record's data"
+  },
+  {
+   "variant": "system/task_notification",
+   "path": "handback_report.text",
+   "disposition": "retained",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "text of the handback report; content, kept whole; retained whole in the record's data"
   },
   {
    "variant": "system/task_updated",
-   "path": "*",
-   "subtree": true,
+   "path": "patch",
    "disposition": "retained",
    "evidence": {
     "property": "whole_record.coverage"
@@ -1453,7 +1502,7 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "sub-agent task patch (status, end_time)"
+   "note": "the task's state patch object (status, end_time, ...); its members have their own entries. Replaces the whole-variant wildcard (D1): a new member is a new disposition, never swallowed"
   },
   {
    "variant": "system/init",
@@ -3567,16 +3616,19 @@
   {
    "variant": "system/task_progress",
    "path": "usage.total_tokens",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "session_context.usage_observations[].reported_total_tokens"
+   ],
+   "rule": "claude.stream.system.task_usage->session_context.accounting",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "usage.values"
    },
    "tests": [
-    "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
+    "CanonicalConformanceTest#theRepairedClaudeUsageObligationsAreDischargedOnBothBindings",
+    "CanonicalConformanceTest#aWrongValueStatusAggregationOrDataAndAMissingProfileExpectationEachFail"
    ],
-   "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): tokens used by the task so far; retained whole by claude.stream.fallback->source_record, no normalized destination",
+   "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): tokens used by the task so far; normalized since contract 0.5.0-prototype (D1): reported_total_tokens of a scope 7 Child run observation naming tool_use_id, Provisional, no aggregation; obligation claude.stream.usage.child-run.task-progress",
    "vendor_declared": true
   },
   {
@@ -3867,16 +3919,19 @@
   {
    "variant": "system/task_notification",
    "path": "usage.total_tokens",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "session_context.usage_observations[].reported_total_tokens"
+   ],
+   "rule": "claude.stream.system.task_usage->session_context.accounting",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "usage.values"
    },
    "tests": [
-    "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
+    "CanonicalConformanceTest#theRepairedClaudeUsageObligationsAreDischargedOnBothBindings",
+    "CanonicalConformanceTest#aWrongValueStatusAggregationOrDataAndAMissingProfileExpectationEachFail"
    ],
-   "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): tokens used by the task; retained whole by claude.stream.fallback->source_record, no normalized destination",
+   "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): tokens used by the task; normalized since contract 0.5.0-prototype (D1): reported_total_tokens of a scope 7 Child run observation naming tool_use_id, Final, no aggregation; obligation claude.stream.usage.child-run.task-notification",
    "vendor_declared": true
   },
   {

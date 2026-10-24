@@ -6,7 +6,7 @@
  },
  "extension": {
   "name": "agentic_cli",
-  "version": "0.11.0-prototype"
+  "version": "0.12.0-prototype"
  },
  "purpose": "Comparison inventory only: for each attribute our extension defines, the upstream attribute it means, if any, and the verdict. It does not reshape the extension; our attributes and names are kept.",
  "evidence_class": "source-verified",
@@ -695,6 +695,14 @@
    "upstream_file": null,
    "verdict": "no_counterpart",
    "caveat": "No per-response identifier at 1.9.0: message_context.uid identifies a session or conversation and api.request.uid a request, not the provider's response id."
+  },
+  {
+   "ours": "session_context.tool_call_uid",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No tool-call identifier at 1.9.0 (as for tool_call.tool_call_uid); here it names the call whose spawned child run the accounting reports."
   },
   {
    "ours": "session_context.context_kind",

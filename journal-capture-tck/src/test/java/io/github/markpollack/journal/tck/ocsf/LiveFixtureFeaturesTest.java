@@ -92,12 +92,18 @@ class LiveFixtureFeaturesTest {
         assertThat(report.outcome("cost.values", MAIN)).isEqualTo(Outcome.VERIFIED);
         assertThat(turn.get("permission_decisions")).as("no run-scope denial on this run (the Edit ran under auto permission mode)").isNull();
 
-        // unknown and rich content retained whole: rate limit, running thinking estimates, task lifecycle; reasoning blocks kept with their data
+        // unknown and rich content retained whole: rate limit, running thinking estimates, task start and patch; reasoning blocks kept with their data
         List<String> families = new ArrayList<>();
         for (Event e : p.events("source_record", 1)) {
             families.add(e.text("record_type"));
         }
-        assertThat(families).contains("rate_limit_event", "system/thinking_tokens", "system/task_started", "system/task_progress", "system/task_updated", "system/task_notification");
+        assertThat(families).contains("rate_limit_event", "system/thinking_tokens", "system/task_started", "system/task_updated")
+                .doesNotContain("system/task_progress", "system/task_notification");
+        // the task's usage and the Agent result's usage are child-run accounting at the spawning call (D1), whole records kept in data
+        assertThat(p.events("session_context", 3)).extracting(e -> e.text("context_kind") + " " + e.text("tool_call_uid") + " " + e.recordIndex())
+                .containsExactly("system/task_progress " + LIVE_SPAWN + " 25", "system/task_progress " + LIVE_SPAWN + " 28", "system/task_notification " + LIVE_SPAWN + " 32",
+                        "user/tool_result " + LIVE_SPAWN + " 33");
+        assertThat(report.outcome("context.values", MAIN)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("whole_record.coverage", MAIN)).isEqualTo(Outcome.VERIFIED);
         assertThat(p.events("model_response", 1).stream().anyMatch(e -> e.elements("content_blocks").stream().anyMatch(b -> "thinking".equals(SchemaCatalog.text(b, "block_type"))))).isTrue();
     }

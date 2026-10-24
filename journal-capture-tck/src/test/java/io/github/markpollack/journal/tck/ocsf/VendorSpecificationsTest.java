@@ -26,6 +26,7 @@ class VendorSpecificationsTest {
 
     static final Map<String, String> SPECS = Map.ofEntries(
             Map.entry("claude-code/stream-json/2.1.303", "claude_stream"),
+            Map.entry("claude-code/stream-json/2.1.304", "claude_stream"),
             Map.entry("claude-code/session-transcript/2.1.303", "claude_transcript"),
             Map.entry("claude-code/session-transcript/2.1.304", "claude_transcript"),
             Map.entry("codex-cli/exec-json-stream/0.160.1", "codex_stream"),
@@ -41,7 +42,8 @@ class VendorSpecificationsTest {
 
     /** The accepted revision of each specification; a revision keeps the earlier ones under {@code revisions}. */
     static final Map<String, String> ACCEPTED = Map.ofEntries(
-            Map.entry("claude-code/stream-json/2.1.303", "0.1.0"),
+            Map.entry("claude-code/stream-json/2.1.303", "0.2.0"),
+            Map.entry("claude-code/stream-json/2.1.304", "0.1.0"),
             Map.entry("claude-code/session-transcript/2.1.303", "0.1.0"),
             Map.entry("claude-code/session-transcript/2.1.304", "0.1.0"),
             Map.entry("codex-cli/exec-json-stream/0.160.1", "0.1.0"),
@@ -66,7 +68,7 @@ class VendorSpecificationsTest {
             assertThat(SchemaCatalog.text(spec, "profile")).isEqualTo(e.getValue());
             assertThat(SchemaCatalog.text(spec, "status")).startsWith("ACCEPTED " + ACCEPTED.get(e.getKey()));
             assertThat(SchemaCatalog.text(spec, "specification_version")).isEqualTo(ACCEPTED.get(e.getKey()));
-            assertThat(SchemaCatalog.text(spec.member("applies_to"), "version")).isIn("2.1.303", "2.1.304", "0.160.1", "1.4.6", "1.0.100", "3813.7");
+            assertThat(SchemaCatalog.text(spec.member("applies_to"), "version")).isIn("2.1.299, 2.1.303", "2.1.303", "2.1.304", "0.160.1", "1.4.6", "1.0.100", "3813.7");
             assertThat(SchemaCatalog.text(spec.member("applies_to"), "route_limit")).isNotBlank();
             // one frozen complete source, or several when no single recording carries every variant (Antigravity 1.4.6): each hash-pinned
             List<Json> observed = spec.path("provenance", "observed_on").elements();

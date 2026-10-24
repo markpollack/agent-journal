@@ -204,6 +204,8 @@ public final class ExpectedFacts {
     public final List<TurnCompleted> completed = new ArrayList<>();
     public final List<TurnStarted> started = new ArrayList<>();
     public final List<Context> contexts = new ArrayList<>();
+    /** The tool call a context names as the spawner of the child run it accounts for, by {@code recordIndex:contextKind}; absent means none. */
+    public final Map<String, String> contextToolCalls = new LinkedHashMap<>();
     /** Records this core owns and must retain (owner-scoped for a split core; admission-scoped for a bounded source). */
     public final Set<Integer> owned = new LinkedHashSet<>();
     /** The native session id each parsed record reports (or inherits, for a stream that states it once), by record index; empty when the profile cannot read one. */
@@ -241,6 +243,11 @@ public final class ExpectedFacts {
         completed.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.completed::add);
         started.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.started::add);
         contexts.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.contexts::add);
+        contextToolCalls.forEach((k, v) -> {
+            if (!records.contains(Integer.valueOf(k.substring(0, k.indexOf(':'))))) {
+                f.contextToolCalls.put(k, v);
+            }
+        });
         mcp.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.mcp::add);
         toolErrors.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.toolErrors::add);
         f.owned.addAll(owned);

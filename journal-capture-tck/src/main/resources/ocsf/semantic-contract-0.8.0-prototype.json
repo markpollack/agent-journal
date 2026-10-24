@@ -55,7 +55,7 @@
       "identity": "(run_uid, response_uid) when identity_scope is run (the source reports a stable response id); (run_uid, artifact, response_uid) when identity_scope is artifact (ids are scoped to one artifact, for example Codex stream item ids). A missing response_uid is unresolved, never guessed.",
       "update_semantics": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
           "mode": "APPEND_BLOCKS",
           "identity_scope": "run",
           "basis": "each stream record carries one further content block of the same message id; the Completed record ends the sequence"

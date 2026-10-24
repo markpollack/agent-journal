@@ -107,6 +107,13 @@ final class TrancheReading {
         return b.build();
     }
 
+    /** Claude Code task usage (Agent SDK 0.3.304 task_progress and task_notification usage): total_tokens is copied as the reported total; nothing is derived. */
+    static ExpectedFacts.Tranches claudeTaskUsage(Json usage) {
+        Builder b = new Builder();
+        b.copy(usage, "", "total_tokens", "reported_total_tokens");
+        return b.build();
+    }
+
     static ExpectedFacts.Tranches claudeModelUsage(Json usage) {
         Builder b = new Builder();
         String[][] table = {{"inputTokens", "uncached_input_tokens"}, {"cacheReadInputTokens", "cache_read_tokens"}, {"cacheCreationInputTokens", "cache_write_tokens"},

@@ -74,8 +74,8 @@ final class ArchitectureComponents {
             writer("mapping", "Source mappers",
                     "Interpret one native record at a time under the selected mapping contract into OCSF-extension events or whole-record retention, naming the contract rule each event executes.",
                     implementing(WRITER + ".SourceMapper").or(named("SourceMapper", "MapperSupport", "SourceContext", "CodexItems", "UsageTranches", "MappingContracts",
-                            "ClaudeMcp", "AntigravityMcp", "McpObservations", "CopilotTools", "CopilotAccounting", "CopilotDefinitions", "JunieUsage", "SourceMappers").in(WRITER)),
-                    "classes implementing SourceMapper, plus SourceMapper, MapperSupport, SourceContext, CodexItems, UsageTranches, MappingContracts, ClaudeMcp, AntigravityMcp, McpObservations, "
+                            "ClaudeMcp", "ClaudeChildUsage", "AntigravityMcp", "McpObservations", "CopilotTools", "CopilotAccounting", "CopilotDefinitions", "JunieUsage", "SourceMappers").in(WRITER)),
+                    "classes implementing SourceMapper, plus SourceMapper, MapperSupport, SourceContext, CodexItems, UsageTranches, MappingContracts, ClaudeMcp, ClaudeChildUsage, AntigravityMcp, McpObservations, "
                             + "CopilotTools, CopilotAccounting, CopilotDefinitions, JunieUsage, SourceMappers"),
             writer("final-assembly", "Final assembly",
                     "Assembles the declared sources of one execution under a reviewed profile into one new events.jsonl: holds each mapper's observations, gates sources on the identities they report, "
@@ -103,8 +103,8 @@ final class ArchitectureComponents {
                     named("ocsf.OcsfOracle", "ocsf.OracleReport", "ocsf.ExpectedSources", "ocsf.Reconstruction", "ocsf.McpChecks")),
             tck("profiles", "Source profiles",
                     "State, from a native artifact's records alone and independently of the writer's mappers, which facts it reports: the expected population and exact values per fact family.",
-                    implementing(TCK + ".ocsf.SourceProfile").or(named("ocsf.SourceProfile", "ocsf.ExpectedFacts", "ocsf.TrancheReading", "ocsf.McpReadings").in(TCK)),
-                    "classes implementing SourceProfile, plus SourceProfile, ExpectedFacts, TrancheReading, McpReadings"),
+                    implementing(TCK + ".ocsf.SourceProfile").or(named("ocsf.SourceProfile", "ocsf.ExpectedFacts", "ocsf.TrancheReading", "ocsf.McpReadings", "ocsf.ClaudeChildUsageReading").in(TCK)),
+                    "classes implementing SourceProfile, plus SourceProfile, ExpectedFacts, TrancheReading, McpReadings, ClaudeChildUsageReading"),
             tck("views", "Analysis views",
                     "Compute the named deterministic operations a package's semantic contract declares from the saved core alone, and measure a core's bytes.",
                     named("ocsf.AnalysisViews", "ocsf.PackageMeasure")),

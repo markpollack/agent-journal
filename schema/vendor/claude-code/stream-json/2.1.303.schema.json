@@ -1,16 +1,17 @@
 {
   "$schema" : "https://json-schema.org/draft/2020-12/schema",
-  "title" : "agent-journal native source claude_stream 0.1.0",
+  "title" : "agent-journal native source claude_stream 0.2.0",
   "description" : "DERIVED from the accepted Journal inventory (claude_stream); observed shape at the stated versions, not a vendor promise; regenerate, never hand-edit",
   "x-journal-applies-to" : {
     "cli" : "Claude Code",
-    "version" : "2.1.303",
-    "launch_mode" : "claude -p --output-format stream-json (via claude-code-sdk 1.7.0 pair driver)",
+    "version" : "2.1.299, 2.1.303",
+    "launch_mode" : "claude -p --output-format stream-json through the Java claude-code-sdk (2.1.303: the 1.7.0 pair driver; 2.1.299: the sanitized claude-code-capture test stream)",
     "source_kind" : "live output",
     "capture_route" : "SDK-delivered ParsedMessage.rawJson lines teed from the Iterator<ParsedMessage> seam",
-    "route_limit" : "the SDK surface is not proven to be every stdout line the CLI wrote; lines the SDK does not parse are not delivered, so this inventory cannot prove what the unfiltered stdout contained"
+    "route_limit" : "the SDK surface is not proven to be every stdout line the CLI wrote; lines the SDK does not parse are not delivered, so this inventory cannot prove what the unfiltered stdout contained",
+    "versions" : "exact: 2.1.299 sdk (claude-code/stream-json/2.1.299-sdk) and 2.1.303 sdk (claude-code/stream-json/2.1.303-sdk); the stdout route has its own specification (2.1.304.json)"
   },
-  "x-journal-derived-from" : "agent-journal/native-source-specification 0.1.0",
+  "x-journal-derived-from" : "agent-journal/native-source-specification 0.2.0",
   "oneOf" : [ {
     "$ref" : "#/$defs/assistant"
   }, {
@@ -20,7 +21,17 @@
   }, {
     "$ref" : "#/$defs/system_init"
   }, {
+    "$ref" : "#/$defs/system_task_notification"
+  }, {
+    "$ref" : "#/$defs/system_task_progress"
+  }, {
+    "$ref" : "#/$defs/system_task_started"
+  }, {
+    "$ref" : "#/$defs/system_task_updated"
+  }, {
     "$ref" : "#/$defs/system_thinking_tokens"
+  }, {
+    "$ref" : "#/$defs/user"
   }, {
     "$ref" : "#/$defs/user_tool_result"
   } ],
@@ -28,6 +39,14 @@
     "assistant" : {
       "type" : "object",
       "properties" : {
+        "agent_id" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
         "message" : {
           "type" : "object",
           "properties" : {
@@ -35,8 +54,8 @@
               "type" : "null",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 12,
-                "null" : 12
+                "present_in_records" : 22,
+                "null" : 22
               }
             },
             "content" : {
@@ -51,7 +70,7 @@
                         "type" : "string",
                         "x-journal-observed" : {
                           "empty" : 0,
-                          "present_in_records" : 5,
+                          "present_in_records" : 9,
                           "null" : 0
                         }
                       }
@@ -59,7 +78,7 @@
                     "additionalProperties" : false,
                     "x-journal-observed" : {
                       "empty" : 0,
-                      "present_in_records" : 5,
+                      "present_in_records" : 9,
                       "null" : 0
                     }
                   },
@@ -67,7 +86,7 @@
                     "type" : "string",
                     "x-journal-observed" : {
                       "empty" : 0,
-                      "present_in_records" : 5,
+                      "present_in_records" : 9,
                       "null" : 0
                     }
                   },
@@ -78,7 +97,7 @@
                     "x-journal-note" : "keys and values here are tool/user data, not vendor envelope structure; only value kinds were inventoried",
                     "x-journal-observed" : {
                       "empty" : 0,
-                      "present_in_records" : 5,
+                      "present_in_records" : 9,
                       "null" : 0
                     }
                   },
@@ -86,7 +105,7 @@
                     "type" : "string",
                     "x-journal-observed" : {
                       "empty" : 0,
-                      "present_in_records" : 5,
+                      "present_in_records" : 9,
                       "null" : 0
                     }
                   },
@@ -94,7 +113,7 @@
                     "type" : "string",
                     "x-journal-observed" : {
                       "empty" : 0,
-                      "present_in_records" : 4,
+                      "present_in_records" : 8,
                       "null" : 0
                     }
                   },
@@ -102,7 +121,7 @@
                     "type" : "string",
                     "x-journal-observed" : {
                       "empty" : 0,
-                      "present_in_records" : 3,
+                      "present_in_records" : 5,
                       "null" : 0
                     }
                   },
@@ -110,7 +129,7 @@
                     "type" : "string",
                     "x-journal-observed" : {
                       "empty" : 0,
-                      "present_in_records" : 4,
+                      "present_in_records" : 8,
                       "null" : 0
                     }
                   },
@@ -118,7 +137,7 @@
                     "type" : "string",
                     "x-journal-observed" : {
                       "empty" : 0,
-                      "present_in_records" : 12,
+                      "present_in_records" : 22,
                       "null" : 0
                     }
                   }
@@ -127,13 +146,13 @@
                 "additionalProperties" : false,
                 "x-journal-observed" : {
                   "empty" : 0,
-                  "present_in_records" : 12,
+                  "present_in_records" : 22,
                   "null" : 0
                 }
               },
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 12,
+                "present_in_records" : 22,
                 "null" : 0
               }
             },
@@ -141,31 +160,31 @@
               "type" : "null",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 12,
-                "null" : 12
+                "present_in_records" : 22,
+                "null" : 22
               }
             },
             "diagnostics" : {
               "type" : "null",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 12,
-                "null" : 12
+                "present_in_records" : 22,
+                "null" : 22
               }
             },
             "id" : {
               "type" : "string",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 12,
+                "present_in_records" : 22,
                 "null" : 0
               }
             },
             "input_transformations" : {
               "type" : "array",
               "x-journal-observed" : {
-                "empty" : 12,
-                "present_in_records" : 12,
+                "empty" : 22,
+                "present_in_records" : 22,
                 "null" : 0
               }
             },
@@ -173,7 +192,7 @@
               "type" : "string",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 12,
+                "present_in_records" : 22,
                 "null" : 0
               }
             },
@@ -181,7 +200,7 @@
               "type" : "string",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 12,
+                "present_in_records" : 22,
                 "null" : 0
               }
             },
@@ -189,31 +208,31 @@
               "type" : "null",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 12,
-                "null" : 12
+                "present_in_records" : 22,
+                "null" : 22
               }
             },
             "stop_reason" : {
               "type" : "null",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 12,
-                "null" : 12
+                "present_in_records" : 22,
+                "null" : 22
               }
             },
             "stop_sequence" : {
               "type" : "null",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 12,
-                "null" : 12
+                "present_in_records" : 22,
+                "null" : 22
               }
             },
             "type" : {
               "type" : "string",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 12,
+                "present_in_records" : 22,
                 "null" : 0
               }
             },
@@ -227,7 +246,7 @@
                       "type" : "integer",
                       "x-journal-observed" : {
                         "empty" : 0,
-                        "present_in_records" : 12,
+                        "present_in_records" : 22,
                         "null" : 0
                       }
                     },
@@ -235,7 +254,7 @@
                       "type" : "integer",
                       "x-journal-observed" : {
                         "empty" : 0,
-                        "present_in_records" : 12,
+                        "present_in_records" : 22,
                         "null" : 0
                       }
                     }
@@ -244,7 +263,7 @@
                   "additionalProperties" : false,
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 12,
+                    "present_in_records" : 22,
                     "null" : 0
                   }
                 },
@@ -252,7 +271,7 @@
                   "type" : "integer",
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 12,
+                    "present_in_records" : 22,
                     "null" : 0
                   }
                 },
@@ -260,7 +279,7 @@
                   "type" : "integer",
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 12,
+                    "present_in_records" : 22,
                     "null" : 0
                   }
                 },
@@ -268,7 +287,7 @@
                   "type" : "string",
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 12,
+                    "present_in_records" : 22,
                     "null" : 0
                   }
                 },
@@ -276,7 +295,7 @@
                   "type" : "integer",
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 12,
+                    "present_in_records" : 22,
                     "null" : 0
                   }
                 },
@@ -284,7 +303,7 @@
                   "type" : "integer",
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 12,
+                    "present_in_records" : 22,
                     "null" : 0
                   }
                 },
@@ -292,7 +311,7 @@
                   "type" : "string",
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 12,
+                    "present_in_records" : 22,
                     "null" : 0
                   }
                 },
@@ -305,11 +324,11 @@
                   }
                 }
               },
-              "required" : [ "cache_creation", "cache_creation_input_tokens", "cache_read_input_tokens", "inference_geo", "input_tokens", "output_tokens", "service_tier", "speed" ],
+              "required" : [ "cache_creation", "cache_creation_input_tokens", "cache_read_input_tokens", "inference_geo", "input_tokens", "output_tokens", "service_tier" ],
               "additionalProperties" : false,
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 12,
+                "present_in_records" : 22,
                 "null" : 0
               }
             }
@@ -318,23 +337,23 @@
           "additionalProperties" : false,
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 12,
+            "present_in_records" : 22,
             "null" : 0
           }
         },
         "parent_tool_use_id" : {
-          "type" : "null",
+          "type" : [ "null", "string" ],
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 12,
-            "null" : 12
+            "present_in_records" : 22,
+            "null" : 21
           }
         },
         "request_id" : {
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 12,
+            "present_in_records" : 22,
             "null" : 0
           }
         },
@@ -342,7 +361,23 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 12,
+            "present_in_records" : 22,
+            "null" : 0
+          }
+        },
+        "subagent_type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "task_description" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
             "null" : 0
           }
         },
@@ -350,7 +385,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 4,
+            "present_in_records" : 8,
             "null" : 0
           }
         },
@@ -358,7 +393,7 @@
           "type" : "integer",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 4,
+            "present_in_records" : 8,
             "null" : 0
           }
         },
@@ -366,7 +401,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 12,
+            "present_in_records" : 22,
             "null" : 0
           }
         },
@@ -374,7 +409,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 12,
+            "present_in_records" : 22,
             "null" : 0
           }
         },
@@ -382,7 +417,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 12,
+            "present_in_records" : 22,
             "null" : 0
           }
         },
@@ -393,7 +428,7 @@
           "x-journal-note" : "keys and values here are tool/user data, not vendor envelope structure; only value kinds were inventoried",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 5,
+            "present_in_records" : 8,
             "null" : 0
           }
         }
@@ -404,7 +439,7 @@
       "x-journal-discriminators" : {
         "type" : "assistant"
       },
-      "x-journal-observed-records" : 12
+      "x-journal-observed-records" : 22
     },
     "rate_limit_event" : {
       "type" : "object",
@@ -416,7 +451,7 @@
               "type" : "boolean",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 3,
                 "null" : 0
               }
             },
@@ -424,7 +459,7 @@
               "type" : "string",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 3,
                 "null" : 0
               }
             },
@@ -432,7 +467,7 @@
               "type" : "string",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 3,
                 "null" : 0
               }
             },
@@ -440,7 +475,7 @@
               "type" : "string",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 3,
                 "null" : 0
               }
             },
@@ -448,7 +483,7 @@
               "type" : "integer",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 3,
                 "null" : 0
               }
             },
@@ -456,7 +491,7 @@
               "type" : "string",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 3,
                 "null" : 0
               }
             },
@@ -470,7 +505,7 @@
                       "type" : "integer",
                       "x-journal-observed" : {
                         "empty" : 0,
-                        "present_in_records" : 1,
+                        "present_in_records" : 3,
                         "null" : 0
                       }
                     },
@@ -478,7 +513,7 @@
                       "type" : "number",
                       "x-journal-observed" : {
                         "empty" : 0,
-                        "present_in_records" : 1,
+                        "present_in_records" : 3,
                         "null" : 0
                       }
                     }
@@ -487,7 +522,7 @@
                   "additionalProperties" : false,
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 1,
+                    "present_in_records" : 3,
                     "null" : 0
                   }
                 },
@@ -498,7 +533,7 @@
                       "type" : "integer",
                       "x-journal-observed" : {
                         "empty" : 0,
-                        "present_in_records" : 1,
+                        "present_in_records" : 3,
                         "null" : 0
                       }
                     },
@@ -506,7 +541,7 @@
                       "type" : "number",
                       "x-journal-observed" : {
                         "empty" : 0,
-                        "present_in_records" : 1,
+                        "present_in_records" : 3,
                         "null" : 0
                       }
                     }
@@ -515,7 +550,7 @@
                   "additionalProperties" : false,
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 1,
+                    "present_in_records" : 3,
                     "null" : 0
                   }
                 }
@@ -524,7 +559,7 @@
               "additionalProperties" : false,
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 3,
                 "null" : 0
               }
             }
@@ -533,7 +568,7 @@
           "additionalProperties" : false,
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -541,7 +576,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -549,7 +584,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -557,7 +592,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 3,
             "null" : 0
           }
         }
@@ -568,7 +603,7 @@
       "x-journal-discriminators" : {
         "type" : "rate_limit_event"
       },
-      "x-journal-observed-records" : 1
+      "x-journal-observed-records" : 3
     },
     "result" : {
       "type" : "object",
@@ -577,15 +612,15 @@
           "type" : "null",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
-            "null" : 1
+            "present_in_records" : 2,
+            "null" : 2
           }
         },
         "duration_api_ms" : {
           "type" : "integer",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -593,7 +628,7 @@
           "type" : "integer",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -601,7 +636,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -609,7 +644,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -617,7 +652,7 @@
           "type" : "integer",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -625,7 +660,7 @@
           "type" : "boolean",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -638,7 +673,7 @@
                 "type" : "integer",
                 "x-journal-observed" : {
                   "empty" : 0,
-                  "present_in_records" : 1,
+                  "present_in_records" : 2,
                   "null" : 0
                 }
               },
@@ -646,7 +681,7 @@
                 "type" : "integer",
                 "x-journal-observed" : {
                   "empty" : 0,
-                  "present_in_records" : 1,
+                  "present_in_records" : 2,
                   "null" : 0
                 }
               },
@@ -654,7 +689,7 @@
                 "type" : "string",
                 "x-journal-observed" : {
                   "empty" : 0,
-                  "present_in_records" : 1,
+                  "present_in_records" : 2,
                   "null" : 0
                 }
               },
@@ -662,7 +697,7 @@
                 "type" : "integer",
                 "x-journal-observed" : {
                   "empty" : 0,
-                  "present_in_records" : 1,
+                  "present_in_records" : 2,
                   "null" : 0
                 }
               },
@@ -670,7 +705,7 @@
                 "type" : "string",
                 "x-journal-observed" : {
                   "empty" : 0,
-                  "present_in_records" : 1,
+                  "present_in_records" : 2,
                   "null" : 0
                 }
               },
@@ -678,7 +713,7 @@
                 "type" : "number",
                 "x-journal-observed" : {
                   "empty" : 0,
-                  "present_in_records" : 1,
+                  "present_in_records" : 2,
                   "null" : 0
                 }
               },
@@ -686,7 +721,7 @@
                 "type" : "integer",
                 "x-journal-observed" : {
                   "empty" : 0,
-                  "present_in_records" : 1,
+                  "present_in_records" : 2,
                   "null" : 0
                 }
               },
@@ -694,7 +729,7 @@
                 "type" : "integer",
                 "x-journal-observed" : {
                   "empty" : 0,
-                  "present_in_records" : 1,
+                  "present_in_records" : 2,
                   "null" : 0
                 }
               },
@@ -702,7 +737,7 @@
                 "type" : "integer",
                 "x-journal-observed" : {
                   "empty" : 0,
-                  "present_in_records" : 1,
+                  "present_in_records" : 2,
                   "null" : 0
                 }
               },
@@ -710,7 +745,7 @@
                 "type" : "string",
                 "x-journal-observed" : {
                   "empty" : 0,
-                  "present_in_records" : 1,
+                  "present_in_records" : 2,
                   "null" : 0
                 }
               },
@@ -718,7 +753,7 @@
                 "type" : "integer",
                 "x-journal-observed" : {
                   "empty" : 0,
-                  "present_in_records" : 1,
+                  "present_in_records" : 2,
                   "null" : 0
                 }
               },
@@ -726,7 +761,7 @@
                 "type" : "integer",
                 "x-journal-observed" : {
                   "empty" : 0,
-                  "present_in_records" : 1,
+                  "present_in_records" : 2,
                   "null" : 0
                 }
               }
@@ -735,14 +770,14 @@
             "additionalProperties" : false,
             "x-journal-observed" : {
               "empty" : 0,
-              "present_in_records" : 1,
+              "present_in_records" : 2,
               "null" : 0
             }
           },
           "x-journal-map-keyed" : true,
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -750,15 +785,15 @@
           "type" : "integer",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
         "permission_denials" : {
           "type" : "array",
           "x-journal-observed" : {
-            "empty" : 1,
-            "present_in_records" : 1,
+            "empty" : 2,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -766,7 +801,7 @@
           "type" : "integer",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -774,7 +809,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -782,7 +817,7 @@
           "type" : "integer",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -790,7 +825,7 @@
           "type" : "integer",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -798,7 +833,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -806,7 +841,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -815,9 +850,20 @@
           "properties" : {
             "by_type" : {
               "type" : "object",
+              "properties" : {
+                "general-purpose" : {
+                  "type" : "integer",
+                  "x-journal-observed" : {
+                    "empty" : 0,
+                    "present_in_records" : 1,
+                    "null" : 0
+                  }
+                }
+              },
+              "additionalProperties" : false,
               "x-journal-observed" : {
                 "empty" : 1,
-                "present_in_records" : 1,
+                "present_in_records" : 2,
                 "null" : 0
               }
             },
@@ -825,7 +871,7 @@
               "type" : "integer",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 2,
                 "null" : 0
               }
             },
@@ -833,7 +879,7 @@
               "type" : "integer",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 2,
                 "null" : 0
               }
             },
@@ -844,7 +890,7 @@
                   "type" : "integer",
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 1,
+                    "present_in_records" : 2,
                     "null" : 0
                   }
                 },
@@ -852,7 +898,7 @@
                   "type" : "integer",
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 1,
+                    "present_in_records" : 2,
                     "null" : 0
                   }
                 },
@@ -860,7 +906,7 @@
                   "type" : "integer",
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 1,
+                    "present_in_records" : 2,
                     "null" : 0
                   }
                 }
@@ -869,7 +915,7 @@
               "additionalProperties" : false,
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 2,
                 "null" : 0
               }
             },
@@ -877,7 +923,7 @@
               "type" : "integer",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 2,
                 "null" : 0
               }
             },
@@ -888,7 +934,7 @@
                   "type" : "integer",
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 1,
+                    "present_in_records" : 2,
                     "null" : 0
                   }
                 },
@@ -896,7 +942,7 @@
                   "type" : "integer",
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 1,
+                    "present_in_records" : 2,
                     "null" : 0
                   }
                 },
@@ -904,7 +950,7 @@
                   "type" : "integer",
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 1,
+                    "present_in_records" : 2,
                     "null" : 0
                   }
                 }
@@ -913,7 +959,7 @@
               "additionalProperties" : false,
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 2,
                 "null" : 0
               }
             },
@@ -924,7 +970,7 @@
                   "type" : "integer",
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 1,
+                    "present_in_records" : 2,
                     "null" : 0
                   }
                 },
@@ -932,7 +978,7 @@
                   "type" : "integer",
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 1,
+                    "present_in_records" : 2,
                     "null" : 0
                   }
                 },
@@ -940,7 +986,7 @@
                   "type" : "integer",
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 1,
+                    "present_in_records" : 2,
                     "null" : 0
                   }
                 }
@@ -949,7 +995,7 @@
               "additionalProperties" : false,
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 2,
                 "null" : 0
               }
             },
@@ -957,7 +1003,7 @@
               "type" : "integer",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 2,
                 "null" : 0
               }
             },
@@ -965,7 +1011,7 @@
               "type" : "integer",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 2,
                 "null" : 0
               }
             },
@@ -973,7 +1019,7 @@
               "type" : "integer",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 2,
                 "null" : 0
               }
             }
@@ -982,7 +1028,7 @@
           "additionalProperties" : false,
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -990,7 +1036,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -998,7 +1044,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -1006,7 +1052,7 @@
           "type" : "integer",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -1014,7 +1060,7 @@
           "type" : "number",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -1022,7 +1068,7 @@
           "type" : "integer",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -1030,7 +1076,7 @@
           "type" : "integer",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -1038,7 +1084,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -1052,7 +1098,7 @@
                   "type" : "integer",
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 1,
+                    "present_in_records" : 2,
                     "null" : 0
                   }
                 },
@@ -1060,7 +1106,7 @@
                   "type" : "integer",
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 1,
+                    "present_in_records" : 2,
                     "null" : 0
                   }
                 }
@@ -1069,7 +1115,7 @@
               "additionalProperties" : false,
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 2,
                 "null" : 0
               }
             },
@@ -1077,7 +1123,7 @@
               "type" : "integer",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 2,
                 "null" : 0
               }
             },
@@ -1085,7 +1131,7 @@
               "type" : "integer",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 2,
                 "null" : 0
               }
             },
@@ -1093,15 +1139,15 @@
               "type" : "null",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
-                "null" : 1
+                "present_in_records" : 2,
+                "null" : 2
               }
             },
             "inference_geo" : {
               "type" : "string",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 2,
                 "null" : 0
               }
             },
@@ -1109,7 +1155,7 @@
               "type" : "integer",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 2,
                 "null" : 0
               }
             },
@@ -1125,7 +1171,7 @@
                         "type" : "integer",
                         "x-journal-observed" : {
                           "empty" : 0,
-                          "present_in_records" : 1,
+                          "present_in_records" : 2,
                           "null" : 0
                         }
                       },
@@ -1133,7 +1179,7 @@
                         "type" : "integer",
                         "x-journal-observed" : {
                           "empty" : 0,
-                          "present_in_records" : 1,
+                          "present_in_records" : 2,
                           "null" : 0
                         }
                       }
@@ -1142,7 +1188,7 @@
                     "additionalProperties" : false,
                     "x-journal-observed" : {
                       "empty" : 0,
-                      "present_in_records" : 1,
+                      "present_in_records" : 2,
                       "null" : 0
                     }
                   },
@@ -1150,7 +1196,7 @@
                     "type" : "integer",
                     "x-journal-observed" : {
                       "empty" : 0,
-                      "present_in_records" : 1,
+                      "present_in_records" : 2,
                       "null" : 0
                     }
                   },
@@ -1158,7 +1204,7 @@
                     "type" : "integer",
                     "x-journal-observed" : {
                       "empty" : 0,
-                      "present_in_records" : 1,
+                      "present_in_records" : 2,
                       "null" : 0
                     }
                   },
@@ -1166,7 +1212,7 @@
                     "type" : "integer",
                     "x-journal-observed" : {
                       "empty" : 0,
-                      "present_in_records" : 1,
+                      "present_in_records" : 2,
                       "null" : 0
                     }
                   },
@@ -1174,7 +1220,7 @@
                     "type" : "integer",
                     "x-journal-observed" : {
                       "empty" : 0,
-                      "present_in_records" : 1,
+                      "present_in_records" : 2,
                       "null" : 0
                     }
                   },
@@ -1182,7 +1228,7 @@
                     "type" : "string",
                     "x-journal-observed" : {
                       "empty" : 0,
-                      "present_in_records" : 1,
+                      "present_in_records" : 2,
                       "null" : 0
                     }
                   }
@@ -1191,13 +1237,13 @@
                 "additionalProperties" : false,
                 "x-journal-observed" : {
                   "empty" : 0,
-                  "present_in_records" : 1,
+                  "present_in_records" : 2,
                   "null" : 0
                 }
               },
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 2,
                 "null" : 0
               }
             },
@@ -1205,7 +1251,7 @@
               "type" : "integer",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 2,
                 "null" : 0
               }
             },
@@ -1216,7 +1262,7 @@
                   "type" : "integer",
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 1,
+                    "present_in_records" : 2,
                     "null" : 0
                   }
                 }
@@ -1225,7 +1271,7 @@
               "additionalProperties" : false,
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 2,
                 "null" : 0
               }
             },
@@ -1236,7 +1282,7 @@
                   "type" : "integer",
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 1,
+                    "present_in_records" : 2,
                     "null" : 0
                   }
                 },
@@ -1244,7 +1290,7 @@
                   "type" : "integer",
                   "x-journal-observed" : {
                     "empty" : 0,
-                    "present_in_records" : 1,
+                    "present_in_records" : 2,
                     "null" : 0
                   }
                 }
@@ -1253,7 +1299,7 @@
               "additionalProperties" : false,
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 2,
                 "null" : 0
               }
             },
@@ -1261,7 +1307,7 @@
               "type" : "string",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 2,
                 "null" : 0
               }
             },
@@ -1269,7 +1315,7 @@
               "type" : "string",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 1,
+                "present_in_records" : 2,
                 "null" : 0
               }
             }
@@ -1278,7 +1324,7 @@
           "additionalProperties" : false,
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         },
@@ -1286,7 +1332,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 2,
             "null" : 0
           }
         }
@@ -1297,7 +1343,7 @@
       "x-journal-discriminators" : {
         "type" : "result"
       },
-      "x-journal-observed-records" : 1
+      "x-journal-observed-records" : 2
     },
     "system_init" : {
       "type" : "object",
@@ -1321,8 +1367,8 @@
             }
           },
           "x-journal-observed" : {
-            "empty" : 0,
-            "present_in_records" : 1,
+            "empty" : 2,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1330,7 +1376,7 @@
           "type" : "boolean",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1338,7 +1384,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1348,13 +1394,13 @@
             "type" : "string",
             "x-journal-observed" : {
               "empty" : 0,
-              "present_in_records" : 1,
+              "present_in_records" : 3,
               "null" : 0
             }
           },
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1362,7 +1408,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1370,7 +1416,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1378,7 +1424,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1386,7 +1432,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1420,7 +1466,6 @@
                 }
               }
             },
-            "required" : [ "name", "source", "status" ],
             "additionalProperties" : false,
             "x-journal-observed" : {
               "empty" : 0,
@@ -1429,8 +1474,8 @@
             }
           },
           "x-journal-observed" : {
-            "empty" : 0,
-            "present_in_records" : 1,
+            "empty" : 2,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1446,11 +1491,10 @@
               }
             }
           },
-          "required" : [ "auto" ],
           "additionalProperties" : false,
           "x-journal-observed" : {
-            "empty" : 0,
-            "present_in_records" : 1,
+            "empty" : 2,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1458,7 +1502,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1466,7 +1510,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1482,7 +1526,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1490,7 +1534,7 @@
           "type" : "boolean",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1498,7 +1542,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1532,7 +1576,6 @@
                 }
               }
             },
-            "required" : [ "name", "path", "source" ],
             "additionalProperties" : false,
             "x-journal-observed" : {
               "empty" : 0,
@@ -1541,8 +1584,8 @@
             }
           },
           "x-journal-observed" : {
-            "empty" : 0,
-            "present_in_records" : 1,
+            "empty" : 2,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1550,7 +1593,7 @@
           "type" : "boolean",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1558,7 +1601,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1573,8 +1616,8 @@
             }
           },
           "x-journal-observed" : {
-            "empty" : 0,
-            "present_in_records" : 1,
+            "empty" : 2,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1589,8 +1632,8 @@
             }
           },
           "x-journal-observed" : {
-            "empty" : 0,
-            "present_in_records" : 1,
+            "empty" : 2,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1598,7 +1641,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 1,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1613,8 +1656,8 @@
             }
           },
           "x-journal-observed" : {
-            "empty" : 0,
-            "present_in_records" : 1,
+            "empty" : 2,
+            "present_in_records" : 3,
             "null" : 0
           }
         },
@@ -1624,10 +1667,393 @@
             "type" : "string",
             "x-journal-observed" : {
               "empty" : 0,
-              "present_in_records" : 1,
+              "present_in_records" : 3,
               "null" : 0
             }
           },
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 3,
+            "null" : 0
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 3,
+            "null" : 0
+          }
+        },
+        "uuid" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 3,
+            "null" : 0
+          }
+        },
+        "view_mode" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 3,
+            "null" : 0
+          }
+        }
+      },
+      "required" : [ "agents", "analytics_disabled", "apiKeySource", "capabilities", "claude_code_version", "cwd", "fast_mode_disabled_reason", "fast_mode_state", "mcp_servers", "memory_paths", "messaging_socket_path", "model", "output_style", "per_turn_effort_active", "permissionMode", "plugins", "product_feedback_disabled", "session_id", "skills", "slash_commands", "subtype", "terminal_slash_commands", "tools", "type", "uuid", "view_mode" ],
+      "additionalProperties" : false,
+      "title" : "system/init",
+      "x-journal-discriminators" : {
+        "type" : "system",
+        "subtype" : "init"
+      },
+      "x-journal-observed-records" : 3
+    },
+    "system_task_notification" : {
+      "type" : "object",
+      "properties" : {
+        "output_file" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "run_id" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "session_id" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "status" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "subtype" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "summary" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "task_id" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "tool_use_id" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "usage" : {
+          "type" : "object",
+          "properties" : {
+            "duration_ms" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "tool_uses" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "total_tokens" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            }
+          },
+          "required" : [ "duration_ms", "tool_uses", "total_tokens" ],
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "uuid" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        }
+      },
+      "required" : [ "output_file", "run_id", "session_id", "status", "subtype", "summary", "task_id", "tool_use_id", "type", "usage", "uuid" ],
+      "additionalProperties" : false,
+      "title" : "system/task_notification",
+      "x-journal-discriminators" : {
+        "type" : "system",
+        "subtype" : "task_notification"
+      },
+      "x-journal-observed-records" : 1
+    },
+    "system_task_progress" : {
+      "type" : "object",
+      "properties" : {
+        "description" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "last_tool_name" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "run_id" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "session_id" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "subagent_type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "subtype" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "task_id" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "tool_use_id" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "usage" : {
+          "type" : "object",
+          "properties" : {
+            "duration_ms" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "tool_uses" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "total_tokens" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            }
+          },
+          "required" : [ "duration_ms", "tool_uses", "total_tokens" ],
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "uuid" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        }
+      },
+      "required" : [ "description", "last_tool_name", "run_id", "session_id", "subagent_type", "subtype", "task_id", "tool_use_id", "type", "usage", "uuid" ],
+      "additionalProperties" : false,
+      "title" : "system/task_progress",
+      "x-journal-discriminators" : {
+        "type" : "system",
+        "subtype" : "task_progress"
+      },
+      "x-journal-observed-records" : 1
+    },
+    "system_task_started" : {
+      "type" : "object",
+      "properties" : {
+        "description" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "is_backgrounded" : {
+          "type" : "boolean",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "prompt" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "run_id" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "session_id" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "spawn_depth" : {
+          "type" : "integer",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "subagent_type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "subtype" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "task_id" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "task_type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "tool_use_id" : {
+          "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
             "present_in_records" : 1,
@@ -1649,8 +2075,89 @@
             "present_in_records" : 1,
             "null" : 0
           }
+        }
+      },
+      "required" : [ "description", "is_backgrounded", "prompt", "run_id", "session_id", "spawn_depth", "subagent_type", "subtype", "task_id", "task_type", "tool_use_id", "type", "uuid" ],
+      "additionalProperties" : false,
+      "title" : "system/task_started",
+      "x-journal-discriminators" : {
+        "type" : "system",
+        "subtype" : "task_started"
+      },
+      "x-journal-observed-records" : 1
+    },
+    "system_task_updated" : {
+      "type" : "object",
+      "properties" : {
+        "patch" : {
+          "type" : "object",
+          "properties" : {
+            "end_time" : {
+              "type" : "integer",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "status" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            }
+          },
+          "required" : [ "end_time", "status" ],
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
         },
-        "view_mode" : {
+        "run_id" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "session_id" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "subtype" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "task_id" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "uuid" : {
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
@@ -1659,12 +2166,12 @@
           }
         }
       },
-      "required" : [ "additional_directories", "agents", "analytics_disabled", "apiKeySource", "capabilities", "claude_code_version", "cwd", "fast_mode_disabled_reason", "fast_mode_state", "mcp_servers", "memory_paths", "messaging_socket_path", "model", "original_cwd", "output_style", "per_turn_effort_active", "permissionMode", "plugins", "product_feedback_disabled", "session_id", "skills", "slash_commands", "subtype", "terminal_slash_commands", "tools", "type", "uuid", "view_mode" ],
+      "required" : [ "patch", "run_id", "session_id", "subtype", "task_id", "type", "uuid" ],
       "additionalProperties" : false,
-      "title" : "system/init",
+      "title" : "system/task_updated",
       "x-journal-discriminators" : {
         "type" : "system",
-        "subtype" : "init"
+        "subtype" : "task_updated"
       },
       "x-journal-observed-records" : 1
     },
@@ -1675,7 +2182,7 @@
           "type" : "integer",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 19,
+            "present_in_records" : 32,
             "null" : 0
           }
         },
@@ -1683,7 +2190,7 @@
           "type" : "integer",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 19,
+            "present_in_records" : 32,
             "null" : 0
           }
         },
@@ -1691,7 +2198,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 19,
+            "present_in_records" : 32,
             "null" : 0
           }
         },
@@ -1699,7 +2206,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 19,
+            "present_in_records" : 32,
             "null" : 0
           }
         },
@@ -1707,7 +2214,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 19,
+            "present_in_records" : 32,
             "null" : 0
           }
         },
@@ -1715,7 +2222,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 19,
+            "present_in_records" : 32,
             "null" : 0
           }
         }
@@ -1727,11 +2234,152 @@
         "type" : "system",
         "subtype" : "thinking_tokens"
       },
-      "x-journal-observed-records" : 19
+      "x-journal-observed-records" : 32
+    },
+    "user" : {
+      "type" : "object",
+      "properties" : {
+        "agent_id" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "message" : {
+          "type" : "object",
+          "properties" : {
+            "content" : {
+              "type" : "array",
+              "items" : {
+                "type" : "object",
+                "properties" : {
+                  "text" : {
+                    "type" : "string",
+                    "x-journal-observed" : {
+                      "empty" : 0,
+                      "present_in_records" : 1,
+                      "null" : 0
+                    }
+                  },
+                  "type" : {
+                    "type" : "string",
+                    "x-journal-observed" : {
+                      "empty" : 0,
+                      "present_in_records" : 1,
+                      "null" : 0
+                    }
+                  }
+                },
+                "required" : [ "text", "type" ],
+                "additionalProperties" : false,
+                "x-journal-observed" : {
+                  "empty" : 0,
+                  "present_in_records" : 1,
+                  "null" : 0
+                }
+              },
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            },
+            "role" : {
+              "type" : "string",
+              "x-journal-observed" : {
+                "empty" : 0,
+                "present_in_records" : 1,
+                "null" : 0
+              }
+            }
+          },
+          "required" : [ "content", "role" ],
+          "additionalProperties" : false,
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "parent_tool_use_id" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "session_id" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "subagent_type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "task_description" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "timestamp" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "uuid" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        }
+      },
+      "required" : [ "agent_id", "message", "parent_tool_use_id", "session_id", "subagent_type", "task_description", "timestamp", "type", "uuid" ],
+      "additionalProperties" : false,
+      "title" : "user",
+      "x-journal-discriminators" : {
+        "type" : "user",
+        "message.content[].type" : null
+      },
+      "x-journal-observed-records" : 1
     },
     "user_tool_result" : {
       "type" : "object",
       "properties" : {
+        "agent_id" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
         "message" : {
           "type" : "object",
           "properties" : {
@@ -1741,10 +2389,45 @@
                 "type" : "object",
                 "properties" : {
                   "content" : {
-                    "type" : "string",
+                    "type" : [ "array", "string" ],
+                    "items" : {
+                      "type" : "object",
+                      "properties" : {
+                        "text" : {
+                          "type" : "string",
+                          "x-journal-observed" : {
+                            "empty" : 0,
+                            "present_in_records" : 1,
+                            "null" : 0
+                          }
+                        },
+                        "tool_name" : {
+                          "type" : "string",
+                          "x-journal-observed" : {
+                            "empty" : 0,
+                            "present_in_records" : 2,
+                            "null" : 0
+                          }
+                        },
+                        "type" : {
+                          "type" : "string",
+                          "x-journal-observed" : {
+                            "empty" : 0,
+                            "present_in_records" : 3,
+                            "null" : 0
+                          }
+                        }
+                      },
+                      "additionalProperties" : false,
+                      "x-journal-observed" : {
+                        "empty" : 0,
+                        "present_in_records" : 3,
+                        "null" : 0
+                      }
+                    },
                     "x-journal-observed" : {
                       "empty" : 0,
-                      "present_in_records" : 5,
+                      "present_in_records" : 9,
                       "null" : 0
                     }
                   },
@@ -1760,7 +2443,7 @@
                     "type" : "string",
                     "x-journal-observed" : {
                       "empty" : 0,
-                      "present_in_records" : 5,
+                      "present_in_records" : 9,
                       "null" : 0
                     }
                   },
@@ -1768,7 +2451,7 @@
                     "type" : "string",
                     "x-journal-observed" : {
                       "empty" : 0,
-                      "present_in_records" : 5,
+                      "present_in_records" : 9,
                       "null" : 0
                     }
                   }
@@ -1777,13 +2460,13 @@
                 "additionalProperties" : false,
                 "x-journal-observed" : {
                   "empty" : 0,
-                  "present_in_records" : 5,
+                  "present_in_records" : 9,
                   "null" : 0
                 }
               },
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 5,
+                "present_in_records" : 9,
                 "null" : 0
               }
             },
@@ -1791,7 +2474,7 @@
               "type" : "string",
               "x-journal-observed" : {
                 "empty" : 0,
-                "present_in_records" : 5,
+                "present_in_records" : 9,
                 "null" : 0
               }
             }
@@ -1800,23 +2483,39 @@
           "additionalProperties" : false,
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 5,
+            "present_in_records" : 9,
             "null" : 0
           }
         },
         "parent_tool_use_id" : {
-          "type" : "null",
+          "type" : [ "null", "string" ],
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 5,
-            "null" : 5
+            "present_in_records" : 9,
+            "null" : 8
           }
         },
         "session_id" : {
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 5,
+            "present_in_records" : 9,
+            "null" : 0
+          }
+        },
+        "subagent_type" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
+            "null" : 0
+          }
+        },
+        "task_description" : {
+          "type" : "string",
+          "x-journal-observed" : {
+            "empty" : 0,
+            "present_in_records" : 1,
             "null" : 0
           }
         },
@@ -1824,7 +2523,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 5,
+            "present_in_records" : 9,
             "null" : 0
           }
         },
@@ -1837,7 +2536,7 @@
                 "type" : "string",
                 "x-journal-observed" : {
                   "empty" : 0,
-                  "present_in_records" : 5,
+                  "present_in_records" : 9,
                   "null" : 0
                 }
               },
@@ -1848,7 +2547,7 @@
                     "type" : "string",
                     "x-journal-observed" : {
                       "empty" : 0,
-                      "present_in_records" : 5,
+                      "present_in_records" : 9,
                       "null" : 0
                     }
                   },
@@ -1856,7 +2555,7 @@
                     "type" : "string",
                     "x-journal-observed" : {
                       "empty" : 0,
-                      "present_in_records" : 5,
+                      "present_in_records" : 7,
                       "null" : 0
                     }
                   },
@@ -1864,16 +2563,16 @@
                     "type" : "string",
                     "x-journal-observed" : {
                       "empty" : 0,
-                      "present_in_records" : 5,
+                      "present_in_records" : 9,
                       "null" : 0
                     }
                   }
                 },
-                "required" : [ "decision", "reason_type", "source" ],
+                "required" : [ "decision", "source" ],
                 "additionalProperties" : false,
                 "x-journal-observed" : {
                   "empty" : 0,
-                  "present_in_records" : 5,
+                  "present_in_records" : 9,
                   "null" : 0
                 }
               }
@@ -1882,13 +2581,13 @@
             "additionalProperties" : false,
             "x-journal-observed" : {
               "empty" : 0,
-              "present_in_records" : 5,
+              "present_in_records" : 9,
               "null" : 0
             }
           },
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 5,
+            "present_in_records" : 9,
             "null" : 0
           }
         },
@@ -1899,7 +2598,7 @@
           "x-journal-note" : "keys and values here are tool/user data, not vendor envelope structure; only value kinds were inventoried",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 5,
+            "present_in_records" : 8,
             "null" : 0
           }
         },
@@ -1907,7 +2606,7 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 5,
+            "present_in_records" : 9,
             "null" : 0
           }
         },
@@ -1915,19 +2614,19 @@
           "type" : "string",
           "x-journal-observed" : {
             "empty" : 0,
-            "present_in_records" : 5,
+            "present_in_records" : 9,
             "null" : 0
           }
         }
       },
-      "required" : [ "message", "parent_tool_use_id", "session_id", "timestamp", "tool_result_meta", "tool_use_result", "type", "uuid" ],
+      "required" : [ "message", "parent_tool_use_id", "session_id", "timestamp", "tool_result_meta", "type", "uuid" ],
       "additionalProperties" : false,
       "title" : "user/tool_result",
       "x-journal-discriminators" : {
         "type" : "user",
         "message.content[].type" : "tool_result"
       },
-      "x-journal-observed-records" : 5
+      "x-journal-observed-records" : 9
     }
   }
 }

@@ -257,7 +257,7 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.system.init->session_context.settings",
      "implementation": "ClaudeStreamMapper#map"
     },
@@ -634,7 +634,7 @@
      "implementation": "ClaudeTranscriptMapper#map"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.result->prompt_turn.completed",
      "implementation": "ClaudeStreamMapper#map"
     },
@@ -1002,7 +1002,7 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "SourceContext#event"
     },
@@ -1422,9 +1422,9 @@
        "claude-code/stream-json/2.1.304-stdout"
       ],
       "contracts": [
-       "claude-code/stream-json/2.1.303/0.4.0-prototype"
+       "claude-code/stream-json/2.1.303/0.5.0-prototype"
       ],
-      "extension": "agentic_cli 0.11.0-prototype"
+      "extension": "agentic_cli 0.12.0-prototype"
      },
      "semantics": {
       "owner_scope": "the child core whose spawn the record's parent_tool_use_id names",
@@ -1454,7 +1454,7 @@
        "table:owner_routing"
       ],
       "relevant_digest": "sha256:7ce9548d1baeb1fd6a6e6dcf7ed3576360accb1ad71becf387545fea0c5c2354",
-      "digest": "sha256:111e9acd221226a1dc9f30f2a9e9d2678c77658a7575359ad61904d05c9bf9da"
+      "digest": "sha256:e58b975ce1a0fae37346964bf29843db2b660f09cc56040be442d55dacf75d11"
      },
      "approval": {
       "status": "proposed",
@@ -1677,7 +1677,7 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "ClaudeStreamMapper#map"
     },
@@ -2046,7 +2046,7 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "MapperSupport#blocks"
     },
@@ -2449,7 +2449,7 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "MapperSupport#blocks"
     },
@@ -2612,7 +2612,7 @@
       "contracts": [
        "codex-cli/exec-json-stream/0.160.1/0.8.0-prototype"
       ],
-      "extension": "agentic_cli 0.11.0-prototype"
+      "extension": "agentic_cli 0.12.0-prototype"
      },
      "semantics": {
       "identity": "stream-local content-item id; the owning model response is not reported",
@@ -2645,7 +2645,7 @@
        "table:block_kind_table"
       ],
       "relevant_digest": "sha256:4284555480c228a538976d097b2faccaada1679881ee379ee94f6980de66e63f",
-      "digest": "sha256:587d4a8c090a0b8f28f325de31f9e9e0959d0fb8fe52dc8ca4dab426506ffd35"
+      "digest": "sha256:c4e4fff4e4f6eba9db5d946b244018813a667f8f9638de8334a1cdebf643b99a"
      },
      "replaces": "r1 (proposed): each reasoning item was a model_response Completed whose response_uid was the stream-local item id",
      "approval": {
@@ -2812,7 +2812,7 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "MapperSupport#blocks"
     },
@@ -3054,7 +3054,7 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "MapperSupport#blocks"
     },
@@ -3285,7 +3285,7 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "MapperSupport#blocks"
     },
@@ -3544,12 +3544,12 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.result->prompt_turn.completed",
      "implementation": "ClaudeStreamMapper#map"
     },
@@ -3872,7 +3872,7 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "ClaudeStreamMapper#map"
     },
@@ -4227,7 +4227,7 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.assistant.tool_use->tool_call.requested",
      "implementation": "ClaudeStreamMapper#map"
     },
@@ -4460,7 +4460,7 @@
       "contracts": [
        "codex-cli/exec-json-stream/0.160.1/0.8.0-prototype"
       ],
-      "extension": "agentic_cli 0.11.0-prototype"
+      "extension": "agentic_cli 0.12.0-prototype"
      },
      "semantics": {
       "identity": "stream-local item id, unique within (run, invocation, artifact); the started and completed records of one item share it"
@@ -4502,7 +4502,7 @@
        "table:identity"
       ],
       "relevant_digest": "sha256:dfe00ee4784b259ba648619bc9fca1814cc5cc8d6636d8d6b006e8d661ce3b8a",
-      "digest": "sha256:559440a28efe7118e2e36164033ae72ad24a430fb6513273f945303ff33ca96c"
+      "digest": "sha256:e4d48c847ea8deebb014869ea676408409a3031ccfa0eacb651c3e639f1f2be6"
      },
      "replaces": "r1 (proposed): the same ids, but agent messages and reasoning items took the stream-local id as response_uid",
      "approval": {
@@ -4522,7 +4522,7 @@
       "contracts": [
        "codex-cli/exec-json-stream/0.160.1/0.8.0-prototype"
       ],
-      "extension": "agentic_cli 0.11.0-prototype"
+      "extension": "agentic_cli 0.12.0-prototype"
      },
      "semantics": {
       "identity": "stream-local item id shared by the start and its result",
@@ -4567,7 +4567,7 @@
        "table:namespace_kind_bindings"
       ],
       "relevant_digest": "sha256:344fd108a23200241ee2efb475a02c9f7c885c6351f2b31030c2178f885bb0ef",
-      "digest": "sha256:22206327d8758f9ed22ffa7dd5244e0dd364b17537aada08b4a52673bedc5dc8"
+      "digest": "sha256:31bedb54076dac9d972f0d07f3af790e71c7b819bdb3d59c2e6b1cb89cc6d090"
      },
      "replaces": "r1 (proposed): item.started read as the model request (activity 1) and the kind taken from a table over bare tool names",
      "approval": {
@@ -4587,7 +4587,7 @@
       "contracts": [
        "codex-cli/exec-json-stream/0.160.1/0.8.0-prototype"
       ],
-      "extension": "agentic_cli 0.11.0-prototype"
+      "extension": "agentic_cli 0.12.0-prototype"
      },
      "semantics": {
       "identity": "stream-local item id shared by start and completion"
@@ -4623,7 +4623,7 @@
        "table:family_kind_table"
       ],
       "relevant_digest": "sha256:bcbb0734d9835b294580ff3cec3b16ce2f7362d79f65e256fb8a6a28eb392073",
-      "digest": "sha256:fe9b778f3b1f7e7d529a12c1db2de4a5090a6197995058e1ea42334cad620aa4"
+      "digest": "sha256:6f9da7bd52a1722a6aa2ae219dc0953cd59082bf74bc9ffd4dea3038b22a1ff9"
      },
      "replaces": "r1 (proposed): the file-change item type written as tool_name and the start read as the model request",
      "approval": {
@@ -4798,7 +4798,7 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.assistant.tool_use->tool_call.requested",
      "implementation": "MappingContracts#toolKind"
     },
@@ -4896,9 +4896,9 @@
        "claude-code/stream-json/2.1.304-stdout"
       ],
       "contracts": [
-       "claude-code/stream-json/2.1.303/0.4.0-prototype"
+       "claude-code/stream-json/2.1.303/0.5.0-prototype"
       ],
-      "extension": "agentic_cli 0.11.0-prototype"
+      "extension": "agentic_cli 0.12.0-prototype"
      },
      "semantics": {
       "identity": "the tool_use id shared by the request and its result",
@@ -4931,7 +4931,7 @@
        "table:tool_kind_table"
       ],
       "relevant_digest": "sha256:e9424ca4937a637bccafcec2ee3349055cfa4bb2798fc385f821cff50da2ac4c",
-      "digest": "sha256:a318461387619a6eb63d85235ce41a416aba4727b3df0bbaaea74c3fec659746"
+      "digest": "sha256:369175df9caead9e663ea541dad66b29b2e1eb0e7e661ad90ba0131acd261be6"
      },
      "approval": {
       "status": "proposed"
@@ -5118,7 +5118,7 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.user.tool_result->tool_call.result",
      "implementation": "ClaudeStreamMapper#map"
     },
@@ -5505,7 +5505,7 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.user.tool_result->tool_call.result",
      "implementation": "ClaudeStreamMapper#map"
     },
@@ -5822,7 +5822,7 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.user.tool_result->tool_call.result",
      "implementation": "ClaudeStreamMapper#map"
     },
@@ -6249,7 +6249,7 @@
       "contracts": [
        "codex-cli/exec-json-stream/0.160.1/0.8.0-prototype"
       ],
-      "extension": "agentic_cli 0.11.0-prototype"
+      "extension": "agentic_cli 0.12.0-prototype"
      },
      "semantics": {
       "owner_scope": "no owning tool call: the operation is retained at its reported scope"
@@ -6282,7 +6282,7 @@
        "codex.stream.command_execution->tool_call.operation"
       ],
       "relevant_digest": "sha256:cad27d2bb758327529314a1b85e93161398093a590e96ad4dbdd3f88f20e28a7",
-      "digest": "sha256:2cf0a5bc3a2518c89dbc438dfc80cc9641bfaf93416095f7bf98d668e622e162"
+      "digest": "sha256:88beefde0cb272ef86ce25468803c5bac8af8be6f0e0a4758bd77764a68c09ed"
      },
      "replaces": "contract 0.2.0-prototype kept the command string only inside the retained record",
      "approval": {
@@ -6788,7 +6788,7 @@
       "contracts": [
        "codex-cli/exec-json-stream/0.160.1/0.8.0-prototype"
       ],
-      "extension": "agentic_cli 0.11.0-prototype"
+      "extension": "agentic_cli 0.12.0-prototype"
      },
      "semantics": {
       "absence_default": "no exit code is reported for a declined command and none is recorded"
@@ -6815,7 +6815,7 @@
        "codex.stream.command_execution->tool_call.operation"
       ],
       "relevant_digest": "sha256:e5ed6c9387bb402d1a2d4edc4684b36b2a7daee01e8acce8c14df00d083364c2",
-      "digest": "sha256:01851cb404e45d093e1df2814638a90fc928381c823a5ff97e14369ed80945d4"
+      "digest": "sha256:c0ee6917f64970ef7707fb776a2ca539e0d5fd4328d0eb9e89f837789e33375e"
      },
      "replaces": "contract 0.2.0-prototype gave a declined command status 0 Unknown",
      "approval": {
@@ -7009,7 +7009,7 @@
      "implementation": "LineFramer#end"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "common.opaque->source_record",
      "implementation": "OcsfRunWriter#interrupt"
     }
@@ -7423,12 +7423,12 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "UsageTranches#anthropic"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.result->prompt_turn.completed",
      "implementation": "UsageTranches#anthropic"
     },
@@ -7660,7 +7660,7 @@
       "contracts": [
        "codex-cli/exec-json-stream/0.160.1/0.8.0-prototype"
       ],
-      "extension": "agentic_cli 0.11.0-prototype"
+      "extension": "agentic_cli 0.12.0-prototype"
      },
      "semantics": {
       "grouping": "components of one observation; no derived total",
@@ -7705,7 +7705,7 @@
        "codex.stream.turn_completed->prompt_turn.completed"
       ],
       "relevant_digest": "sha256:8f1657149da545f4e396449e573e74ddb73424d7a1a81f5a8654661c0b52d3c0",
-      "digest": "sha256:0e4b2634f6048c7394fb96e1ed07c1f0b798288e26f02dcb74fc9daca36bb46f"
+      "digest": "sha256:7b710658aae9549a97d0fd490186decdef1f11d502ee2697b1dcc113874e0079"
      },
      "replaces": "r4 (proposed, never bound): named the running-total members Lower bounds without stating that the thread's quantity is at least them, and said nothing of prices; r1 (proposed, not approved; the delegated decision required its revision): copied each vendor's components under their native meanings, Codex input_tokens inclusive",
      "approval": {
@@ -7723,9 +7723,9 @@
        "claude-code/stream-json/2.1.304-stdout"
       ],
       "contracts": [
-       "claude-code/stream-json/2.1.303/0.4.0-prototype"
+       "claude-code/stream-json/2.1.303/0.5.0-prototype"
       ],
-      "extension": "agentic_cli 0.11.0-prototype"
+      "extension": "agentic_cli 0.12.0-prototype"
      },
      "semantics": {
       "grouping": "one observation per usage object at its reported scope; never summed",
@@ -7764,7 +7764,7 @@
        "claude.stream.result->prompt_turn.completed"
       ],
       "relevant_digest": "sha256:65a5b19f2aec5daa52a06fbb4dad5462df61a32dba85e605dde59faf96e3aa02",
-      "digest": "sha256:9d608288231497acdf609f10734f5abd35cc4c60f765a5421039ec9e3ed1df13"
+      "digest": "sha256:4ab248bfdd204bd3b50f507dfda167d2f2589898136fa68e9328e70e6754ff78"
      },
      "approval": {
       "status": "proposed"
@@ -7957,7 +7957,7 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.result->prompt_turn.completed",
      "implementation": "ClaudeStreamMapper#map"
     },
@@ -8287,12 +8287,12 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "MapperSupport#usage"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.result->prompt_turn.completed",
      "implementation": "MapperSupport#usage"
     },
@@ -8441,7 +8441,7 @@
       "contracts": [
        "codex-cli/exec-json-stream/0.160.1/0.8.0-prototype"
       ],
-      "extension": "agentic_cli 0.11.0-prototype"
+      "extension": "agentic_cli 0.12.0-prototype"
      },
      "semantics": {
       "owner_scope": "the session (Codex thread) that thread.started names; the observation sits on the prompt_turn Turn completed event of the record",
@@ -8484,8 +8484,8 @@
       "rules": [
        "codex.stream.turn_completed->prompt_turn.completed"
       ],
-      "relevant_digest": "sha256:de78911040f3958d63ec6060f2d08f27a7546921c11ea48b34b3a1d5ac3ccdf4",
-      "digest": "sha256:21c4e5bba8e19d539bd65ae651d962519caa5cee43b1d9884e53208845506919"
+      "relevant_digest": "sha256:8ba552213006f5bb0fbdef6d1f25f78690fb7527ada14c1a2d26959db86e1bf2",
+      "digest": "sha256:f0de06b17ca86016d00e1a3f6e6d89c2a339f6120e0c50ffa6856ea0214dcfc2"
      },
      "replaces": "r1 (approved, contract 0.3.0-prototype): the same reading with vendor-dependent input_tokens and no aggregation facet; contract 0.2.0-prototype read turn.completed usage as scope 3 Prompt turn, never approved, refuted by the pinned emitter",
      "approval": {
@@ -8511,7 +8511,7 @@
       "contracts": [
        "codex-cli/exec-json-stream/0.160.1/0.8.0-prototype"
       ],
-      "extension": "agentic_cli 0.11.0-prototype"
+      "extension": "agentic_cli 0.12.0-prototype"
      },
      "semantics": {
       "absence_default": "all-zero components are kept and marked Possibly default; a missing component stays absent, never zero; a positive running-total component is a Lower bound, not a measurement"
@@ -8547,7 +8547,7 @@
        "codex.stream.turn_completed->prompt_turn.completed"
       ],
       "relevant_digest": "sha256:d300f1eb908290aa558d49759beabdb106c37914ea658527086ef81c32d0d678",
-      "digest": "sha256:bd081865ef3180dbde2dd8583ab43a64b992d0948457aa18e25b1c4fc45f1950"
+      "digest": "sha256:a13d1ddb6d682791127eba568c9fa98b6e437973fad83b13146ba9eafe73beab"
      },
      "approval": {
       "status": "proposed",
@@ -8770,7 +8770,7 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.result->prompt_turn.completed",
      "implementation": "ClaudeStreamMapper#map"
     },
@@ -9113,17 +9113,17 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "MapperSupport#modelRef"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.result->prompt_turn.completed",
      "implementation": "MapperSupport#modelRef"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.system.init->session_context.settings",
      "implementation": "ClaudeStreamMapper#map"
     },
@@ -9506,12 +9506,12 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.user.tool_result->tool_call.result",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.result->prompt_turn.completed",
      "implementation": "ClaudeStreamMapper#map"
     },
@@ -9687,9 +9687,9 @@
        "claude-code/stream-json/2.1.304-stdout"
       ],
       "contracts": [
-       "claude-code/stream-json/2.1.303/0.4.0-prototype"
+       "claude-code/stream-json/2.1.303/0.5.0-prototype"
       ],
-      "extension": "agentic_cli 0.11.0-prototype"
+      "extension": "agentic_cli 0.12.0-prototype"
      },
      "semantics": {
       "owner_scope": "Run scope as reported; the attribution names the call",
@@ -9718,8 +9718,8 @@
       "rules": [
        "claude.stream.result->prompt_turn.completed"
       ],
-      "relevant_digest": "sha256:d17dfb1f9ea03e2172c0125ed53c6bb018e744551901c319a6077181565b2406",
-      "digest": "sha256:4376a7e643563bfc9c2434a6e956bac6865f8f8d45f7457f169f7655e614e3c6"
+      "relevant_digest": "sha256:2728e70a76d417ac4b0d346b5f79f630dc539c779735fe885945faea4f9b07ac",
+      "digest": "sha256:806e9d0f9284fa21e9d4de869db0cfa85028a1b127fd7087731e669c472ecfeb"
      },
      "approval": {
       "status": "proposed",
@@ -9970,7 +9970,7 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.system.init->session_context.settings",
      "implementation": "ClaudeStreamMapper#map"
     },
@@ -10839,12 +10839,12 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "OcsfRunWriter#childFor"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.user.tool_result->tool_call.result",
      "implementation": "OcsfRunWriter#childLinks"
     },
@@ -11200,7 +11200,7 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "SourceContext#sourceRef"
     },
@@ -11364,12 +11364,12 @@
        "codex-cli/rollout/0.160.1"
       ],
       "contracts": [
-       "claude-code/stream-json/2.1.303/0.4.0-prototype",
+       "claude-code/stream-json/2.1.303/0.5.0-prototype",
        "claude-code/session-transcript/2.1.303/0.3.0-prototype",
        "codex-cli/exec-json-stream/0.160.1/0.8.0-prototype",
        "codex-cli/rollout/0.160.1/0.4.0-prototype"
       ],
-      "extension": "agentic_cli 0.11.0-prototype",
+      "extension": "agentic_cli 0.12.0-prototype",
       "condition": "every event of every contract"
      },
      "destinations": [
@@ -11391,7 +11391,7 @@
      "binding": {
       "rules": [],
       "relevant_digest": "sha256:ccaaa2f53fb3d54c68a28d9b7704073f5504b338ec7cd4621d7299bb91f9483e",
-      "digest": "sha256:6f44da669715e921c52ec8fad1012c344b9c4cbcc9a274d35aef1741d415647e"
+      "digest": "sha256:815d9b6a0e92653bc392449e471ef07c26f094039d475203f3f7b97d2ab3a42d"
      },
      "replaces": "extension 0.4.0-prototype and earlier stored the rule as OCSF unmapped.rule_id",
      "approval": {
@@ -11606,12 +11606,12 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.assistant->model_response",
      "implementation": "ClaudeStreamMapper#map"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "common.mapper_exception->source_record",
      "implementation": "OcsfRunWriter#record"
     },
@@ -11981,7 +11981,7 @@
      "implementation": "OpaqueTextMapper#map"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "common.opaque->source_record",
      "implementation": "SourceContext#opaque"
     },
@@ -12068,7 +12068,7 @@
       "contracts": [
        "codex-cli/exec-json-stream/0.160.1/0.8.0-prototype"
       ],
-      "extension": "agentic_cli 0.11.0-prototype"
+      "extension": "agentic_cli 0.12.0-prototype"
      },
      "semantics": {
       "identity": "the first id member (exec item id); the second (the search item's id) is preserved verbatim, not normalized",
@@ -12108,7 +12108,7 @@
        "codex.stream.web_search->tool_call.result"
       ],
       "relevant_digest": "sha256:b98ae933882188ee4295c1dd9be071c252d95cd384b3e8305f6f1ac5666aed76",
-      "digest": "sha256:4df103b7c55c22c14834a243e3ac61f5d1a96502acfb613887311eed56c16497"
+      "digest": "sha256:ed2116cc6bbf088a5a04d020fb36a1e1f15accde78b882d2ee806995d1534c66"
      },
      "replaces": "contract 0.2.0-prototype kept web_search lines only as opaque records",
      "approval": {
@@ -12323,7 +12323,7 @@
      "implementation": "ClaudeTranscriptMapper#map"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.fallback->source_record",
      "implementation": "ClaudeStreamMapper#map"
     },
@@ -12611,7 +12611,7 @@
      "implementation": "ClaudeTranscriptMapper#map"
     },
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.fallback->source_record",
      "implementation": "ClaudeStreamMapper#map"
     },
@@ -12877,7 +12877,7 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.fallback->source_record",
      "implementation": "SourceContext#timeFor"
     },
@@ -13175,7 +13175,7 @@
    ],
    "mapping": [
     {
-     "contract_uid": "claude-code/stream-json/2.1.303/0.4.0-prototype",
+     "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
      "rule_id": "claude.stream.result->prompt_turn.completed",
      "implementation": "ClaudeStreamMapper#map"
     },

@@ -4,7 +4,7 @@
   "extends": "object",
   "name": "usage_observation",
   "attributes": {
-    "scope_id": {"description": "The scope at which the source reported this observation. At 99 Other the unit, named in scope, is the enclosing event's own item: its item_uid (or tool_call_uid) in the namespace that event's identity_basis_id states, within the observation's source artifact.", "requirement": "required"},
+    "scope_id": {"description": "The scope at which the source reported this observation. At 99 Other the unit, named in scope, is the enclosing event's own item: its item_uid (or tool_call_uid) in the namespace that event's identity_basis_id states, within the observation's source artifact. At 7 Child run the unit is the child run spawned by the tool call the enclosing event names in tool_call_uid; an observation of it is never summed with the parent's, the run's or another observation of the same child run.", "requirement": "required"},
     "scope": {"requirement": "optional"},
     "usage_status_id": {"requirement": "required"},
     "usage_status": {"requirement": "optional"},

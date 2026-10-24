@@ -1441,7 +1441,10 @@
    "journal": {
     "behavior": "normalized",
     "rule": "claude.stream.user.tool_result->tool_call.result",
-    "note": "one tool_call Result observed per tool_result block, owned by the block's own tool_use_id; is_error gives status (absent -> Unknown); tool_use_result -> structured_result; the per-call permission decision comes from tool_result_meta[] (matched by id), a member observed on every recorded result line but NOT declared by the published SDK types (nor is tool_result_meta[].non_execution_kind). Non-tool_result blocks of the same record are kept only in the first result event's data"
+    "note": "one tool_call Result observed per tool_result block, owned by the block's own tool_use_id; is_error gives status (absent -> Unknown); tool_use_result -> structured_result; the per-call permission decision comes from tool_result_meta[] (matched by id), a member observed on every recorded result line but NOT declared by the published SDK types (nor is tool_result_meta[].non_execution_kind). Non-tool_result blocks of the same record are kept only in the first result event's data. Since contract 0.5.0-prototype (D1) an Agent result's tool_use_result.usage is also a session_context Accounting reported event (scope 7 Child run, tool_call_uid = the spawning call)",
+    "also_rules": [
+     "claude.stream.user.tool_result.agent_usage->session_context.accounting"
+    ]
    }
   },
   {
@@ -3797,9 +3800,12 @@
    ],
    "vendor_tests": [],
    "journal": {
-    "behavior": "retained-only",
-    "rule": "claude.stream.fallback->source_record",
-    "note": "retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. vendor counters are never copied into usage observations"
+    "behavior": "normalized",
+    "rule": "claude.stream.system.task_usage->session_context.accounting",
+    "note": "since contract 0.5.0-prototype (D1): with a usage object, a session_context Accounting reported event whose one usage observation is at scope 7 Child run for the call tool_use_id names (Provisional, reported_total_tokens = usage.total_tokens, no aggregation); without one, retained whole by the fallback",
+    "also_rules": [
+     "claude.stream.fallback->source_record"
+    ]
    }
   },
   {
@@ -4096,9 +4102,12 @@
    ],
    "vendor_tests": [],
    "journal": {
-    "behavior": "retained-only",
-    "rule": "claude.stream.fallback->source_record",
-    "note": "retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. task end status is not normalized onto the spawning tool_call; observed records also carry undeclared handback/handback_report members"
+    "behavior": "normalized",
+    "rule": "claude.stream.system.task_usage->session_context.accounting",
+    "note": "since contract 0.5.0-prototype (D1): with a usage object, a session_context Accounting reported event whose one usage observation is at scope 7 Child run for the call tool_use_id names (Final, reported_total_tokens = usage.total_tokens, no aggregation); without one, retained whole by the fallback. Task end status is not normalized onto the spawning tool_call; observed records also carry undeclared handback/handback_report members",
+    "also_rules": [
+     "claude.stream.fallback->source_record"
+    ]
    }
   },
   {

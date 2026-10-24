@@ -435,11 +435,13 @@ public final class AnalysisViews {
                     case "2" -> e.text("response_uid");
                     case "3" -> e.text("turn_uid");
                     case "5" -> e.text("session_uid");
+                    // a child run is the one its spawning call names (scope 7); child runs are never pooled
+                    case "7" -> e.text("tool_call_uid") == null ? null : "child run of tool call " + e.text("tool_call_uid");
                     case "99" -> e.text("item_uid") != null ? "item " + e.text("item_uid") : e.text("tool_call_uid") != null ? "tool call " + e.text("tool_call_uid") : null;
                     default -> e.runUid();
                 };
                 final String fOwner = owner != null ? owner
-                        : other ? "item unidentified at " + e.occurrence() : ("3".equals(scope) ? "turn" : "owner") + " unidentified in " + e.artifact();
+                        : other ? "item unidentified at " + e.occurrence() : ("3".equals(scope) ? "turn" : "7".equals(scope) ? "child run" : "owner") + " unidentified in " + e.artifact();
                 owner = fOwner;
                 String model = SchemaCatalog.text(u.member("model_ref"), "name");
                 String artifact = SchemaCatalog.text(u.member("source_ref"), "artifact");
@@ -791,7 +793,8 @@ public final class AnalysisViews {
             row.put("activity", str(e.text("activity_name")));
             row.put("context_kind", e.get("context_kind") == null ? Json.JNull.INSTANCE : e.get("context_kind"));
             Json turn = e.get("turn_uid");
-            row.put("scope", str(turn == null || turn.isNull() ? "session" : "turn"));
+            String spawn = e.text("tool_call_uid");
+            row.put("scope", str(spawn != null ? "child run of tool call " + spawn : turn == null || turn.isNull() ? "session" : "turn"));
             row.put("turn_uid", turn == null ? Json.JNull.INSTANCE : turn);
             row.put("occurrence", occurrence(e));
             Json st = e.get("settings");

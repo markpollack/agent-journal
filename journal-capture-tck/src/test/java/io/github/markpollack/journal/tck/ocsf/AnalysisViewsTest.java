@@ -191,10 +191,10 @@ class AnalysisViewsTest {
         Json sc = views.member("settings_context");
         assertThat(sc.member("settings_rows").scalarText()).isEqualTo("1");
         assertThat(sc.member("context_rows").scalarText()).isEqualTo("4");
-        assertThat(sc.member("accounting_rows").scalarText()).isEqualTo("1");
+        assertThat(sc.member("accounting_rows").scalarText()).isEqualTo("4");
         assertThat(sc.member("rule").text()).isEqualTo("settings.context.v1");
         List<Json> rows = sc.member("rows").elements();
-        assertThat(rows).hasSize(6);
+        assertThat(rows).hasSize(9);
         Json init = rows.get(0);
         assertThat(init.member("activity").text()).isEqualTo("Settings reported");
         assertThat(init.member("context_kind").text()).isEqualTo("system/init");
@@ -204,17 +204,22 @@ class AnalysisViewsTest {
         assertThat(init.path("settings", "tool_names").elements()).isNotEmpty();
         assertThat(init.member("usage_observations").scalarText()).isEqualTo("0");
         assertThat(((Json.JBool) init.member("cost_reported")).value()).isFalse();
-        Json environment = rows.get(1);
+        // the stream's child-run accounting (task progress, task notification, Agent result) is scoped to the child run, not the session
+        for (int i = 1; i <= 3; i++) {
+            assertThat(rows.get(i).member("scope").text()).isEqualTo("child run of tool call " + OcsfFixtures.SPAWN);
+            assertThat(rows.get(i).member("usage_observations").scalarText()).isEqualTo("1");
+        }
+        Json environment = rows.get(4);
         assertThat(environment.member("activity").text()).isEqualTo("Context injected");
         assertThat(environment.member("context_kind").text()).isEqualTo("attachment/environment");
         assertThat(environment.member("rendered_role").text()).isEqualTo("system");
         assertThat(environment.member("context_blocks").scalarText()).isEqualTo("1");
         assertThat(Integer.parseInt(environment.member("context_text_chars").scalarText())).isGreaterThan(20);
-        Json credential = rows.get(3);
+        Json credential = rows.get(6);
         assertThat(credential.member("context_kind").text()).isEqualTo("attachment/credential_org");
         assertThat(credential.member("rendered_role")).isNull();
         assertThat(credential.member("context_blocks")).isNull();
-        Json cost = rows.get(5);
+        Json cost = rows.get(8);
         assertThat(cost.member("activity").text()).isEqualTo("Accounting reported");
         assertThat(cost.member("usage_observations").scalarText()).isEqualTo("1");
         assertThat(((Json.JBool) cost.member("cost_reported")).value()).isTrue();

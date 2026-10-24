@@ -1,0 +1,245 @@
+{
+ "kind": "agent-journal/conformance-baseline",
+ "version": "0.1",
+ "catalog": "schema/vendor/claude-code/stream-json/obligations.json",
+ "meaning": "the reviewed obligation set (id, revision, meaning digest) and the frozen debt by exact finding identity (category and id) with its reason; CanonicalConformanceTest fails on a new finding, on frozen debt that no longer occurs, and on a changed obligation set. Holding the baseline is not acceptance: category 6 keeps the semantic review state",
+ "obligations": [
+  {
+   "id": "claude.stream.usage.child-run.agent-result",
+   "revision": 1,
+   "meaning_digest": "sha256:c5979dc38f468048d424483fbfaf119e418a345345a2dbf7e976a089dec17f18"
+  },
+  {
+   "id": "claude.stream.usage.child-run.task-notification",
+   "revision": 1,
+   "meaning_digest": "sha256:f34bab5b866b4669ef57f713eb76f53de5d61848f4b064158ab5efd2173324e2"
+  },
+  {
+   "id": "claude.stream.usage.child-run.task-progress",
+   "revision": 1,
+   "meaning_digest": "sha256:fbe7d1fc33cf9b8c75fb1479e718de2ae08d7b6fb715d0d88ab8e0f52c82494d"
+  },
+  {
+   "id": "claude.stream.usage.model",
+   "revision": 1,
+   "meaning_digest": "sha256:0139cd83732a54dbc892a25286069a1f4982b08b7ef11afde422a4378245d6f9"
+  },
+  {
+   "id": "claude.stream.usage.model-response",
+   "revision": 1,
+   "meaning_digest": "sha256:22f6b06c89b3840f3eec788f32f937492c466777787af4229c6c8e295631c45a"
+  },
+  {
+   "id": "claude.stream.usage.run",
+   "revision": 1,
+   "meaning_digest": "sha256:8f9082db4601cc159735a1ca939c99ba974adacb077fa0b70379d94fc425faea"
+  }
+ ],
+ "frozen": [
+  {
+   "category": 5,
+   "id": "obligation-catalog:antigravity-cli/stream-json/1.4.6-stdout",
+   "reason": "D2 dependency: no canonical-obligation catalog binds antigravity-cli/stream-json/1.4.6-stdout (required: admitted)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-catalog:claude-code/session-transcript/2.1.304-session-file",
+   "reason": "D2 dependency: no field-disposition catalog lists claude-code/session-transcript/2.1.304-session-file (required: final-assembly profile claude-code/2.1.304/stdout+session-file)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-gate:claude-code/session-transcript/2.1.304-session-file",
+   "reason": "D2 dependency: FieldDispositionTest does not register profile claude_transcript (required: final-assembly profile claude-code/2.1.304/stdout+session-file)"
+  },
+  {
+   "category": 5,
+   "id": "obligation-catalog:claude-code/session-transcript/2.1.304-session-file",
+   "reason": "D2 dependency: no canonical-obligation catalog binds claude-code/session-transcript/2.1.304-session-file (required: final-assembly profile claude-code/2.1.304/stdout+session-file)"
+  },
+  {
+   "category": 5,
+   "id": "obligation-catalog:codex-cli/exec-json-stream/0.160.1",
+   "reason": "D2 dependency: no canonical-obligation catalog binds codex-cli/exec-json-stream/0.160.1 (required: admitted)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-catalog:github-copilot-cli/events/1.0.100-session-file",
+   "reason": "D2 dependency: no field-disposition catalog lists github-copilot-cli/events/1.0.100-session-file (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "oracle-profile:github-copilot-cli/events/1.0.100-session-file",
+   "reason": "D2 dependency: no independent oracle source profile for copilot_events (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-gate:github-copilot-cli/events/1.0.100-session-file",
+   "reason": "D2 dependency: FieldDispositionTest does not register profile copilot_events (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "obligation-catalog:github-copilot-cli/events/1.0.100-session-file",
+   "reason": "D2 dependency: no canonical-obligation catalog binds github-copilot-cli/events/1.0.100-session-file (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-catalog:github-copilot-cli/events/1.0.100-stdout",
+   "reason": "D2 dependency: no field-disposition catalog lists github-copilot-cli/events/1.0.100-stdout (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "oracle-profile:github-copilot-cli/events/1.0.100-stdout",
+   "reason": "D2 dependency: no independent oracle source profile for copilot_events (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-gate:github-copilot-cli/events/1.0.100-stdout",
+   "reason": "D2 dependency: FieldDispositionTest does not register profile copilot_events (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "obligation-catalog:github-copilot-cli/events/1.0.100-stdout",
+   "reason": "D2 dependency: no canonical-obligation catalog binds github-copilot-cli/events/1.0.100-stdout (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-catalog:github-copilot-cli/otel/1.0.100",
+   "reason": "D2 dependency: no field-disposition catalog lists github-copilot-cli/otel/1.0.100 (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "oracle-profile:github-copilot-cli/otel/1.0.100",
+   "reason": "D2 dependency: no independent oracle source profile for copilot_otel (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-gate:github-copilot-cli/otel/1.0.100",
+   "reason": "D2 dependency: FieldDispositionTest does not register profile copilot_otel (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "obligation-catalog:github-copilot-cli/otel/1.0.100",
+   "reason": "D2 dependency: no canonical-obligation catalog binds github-copilot-cli/otel/1.0.100 (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-catalog:github-copilot-cli/usage-report/1.0.100",
+   "reason": "D2 dependency: no field-disposition catalog lists github-copilot-cli/usage-report/1.0.100 (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "oracle-profile:github-copilot-cli/usage-report/1.0.100",
+   "reason": "D2 dependency: no independent oracle source profile for copilot_usage_report (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-gate:github-copilot-cli/usage-report/1.0.100",
+   "reason": "D2 dependency: FieldDispositionTest does not register profile copilot_usage_report (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "obligation-catalog:github-copilot-cli/usage-report/1.0.100",
+   "reason": "D2 dependency: no canonical-obligation catalog binds github-copilot-cli/usage-report/1.0.100 (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-catalog:junie/json-stream/3813.7-stdout",
+   "reason": "D2 dependency: no field-disposition catalog lists junie/json-stream/3813.7-stdout (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+  },
+  {
+   "category": 5,
+   "id": "oracle-profile:junie/json-stream/3813.7-stdout",
+   "reason": "D2 dependency: no independent oracle source profile for junie_stdout (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-gate:junie/json-stream/3813.7-stdout",
+   "reason": "D2 dependency: FieldDispositionTest does not register profile junie_stdout (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+  },
+  {
+   "category": 5,
+   "id": "obligation-catalog:junie/json-stream/3813.7-stdout",
+   "reason": "D2 dependency: no canonical-obligation catalog binds junie/json-stream/3813.7-stdout (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-catalog:junie/session-events/3813.7",
+   "reason": "D2 dependency: no field-disposition catalog lists junie/session-events/3813.7 (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+  },
+  {
+   "category": 5,
+   "id": "oracle-profile:junie/session-events/3813.7",
+   "reason": "D2 dependency: no independent oracle source profile for junie_session_events (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-gate:junie/session-events/3813.7",
+   "reason": "D2 dependency: FieldDispositionTest does not register profile junie_session_events (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+  },
+  {
+   "category": 5,
+   "id": "obligation-catalog:junie/session-events/3813.7",
+   "reason": "D2 dependency: no canonical-obligation catalog binds junie/session-events/3813.7 (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-catalog:junie/session-summary/3813.7",
+   "reason": "D2 dependency: no field-disposition catalog lists junie/session-summary/3813.7 (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+  },
+  {
+   "category": 5,
+   "id": "oracle-profile:junie/session-summary/3813.7",
+   "reason": "D2 dependency: no independent oracle source profile for junie_summary (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-gate:junie/session-summary/3813.7",
+   "reason": "D2 dependency: FieldDispositionTest does not register profile junie_summary (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+  },
+  {
+   "category": 5,
+   "id": "obligation-catalog:junie/session-summary/3813.7",
+   "reason": "D2 dependency: no canonical-obligation catalog binds junie/session-summary/3813.7 (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+  },
+  {
+   "category": 6,
+   "id": "approval:claude.stream.usage.model-response@r1",
+   "reason": "pending semantic review: the D1 return's packet presents this obligation; no Owner decision yet"
+  },
+  {
+   "category": 6,
+   "id": "approval:claude.stream.usage.run@r1",
+   "reason": "pending semantic review: the D1 return's packet presents this obligation; no Owner decision yet"
+  },
+  {
+   "category": 6,
+   "id": "approval:claude.stream.usage.model@r1",
+   "reason": "pending semantic review: the D1 return's packet presents this obligation; no Owner decision yet"
+  },
+  {
+   "category": 6,
+   "id": "approval:claude.stream.usage.child-run.agent-result@r1",
+   "reason": "pending semantic review: the D1 return's packet presents this obligation; no Owner decision yet"
+  },
+  {
+   "category": 6,
+   "id": "approval:claude.stream.usage.child-run.task-progress@r1",
+   "reason": "pending semantic review: the D1 return's packet presents this obligation; no Owner decision yet"
+  },
+  {
+   "category": 6,
+   "id": "approval:claude.stream.usage.child-run.task-notification@r1",
+   "reason": "pending semantic review: the D1 return's packet presents this obligation; no Owner decision yet"
+  },
+  {
+   "category": 6,
+   "id": "unresolved:result:usage.iterations[]",
+   "reason": "open semantic question returned with D1 (does usage.iterations[] owe a final model-response observation?)"
+  },
+  {
+   "category": 6,
+   "id": "unresolved:user/tool_result:tool_use_result.usage.iterations[]",
+   "reason": "open semantic question returned with D1 (does usage.iterations[] owe a final model-response observation?)"
+  }
+ ]
+}

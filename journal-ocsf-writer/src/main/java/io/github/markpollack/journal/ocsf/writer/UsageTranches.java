@@ -70,6 +70,13 @@ final class UsageTranches {
         finish(into, components);
     }
 
+    /** A usage object that reports only a total (Claude Code's task usage): total_tokens is copied as reported_total_tokens; nothing is derived. */
+    static void reportedTotal(Jv.Obj into, Jv usage) {
+        Jv.Arr components = new Jv.Arr();
+        reported(into, components, usage, "", "total_tokens", "reported_total_tokens");
+        finish(into, components);
+    }
+
     /** Claude Code's per-model summary (ModelUsage, camel case): the same tranches under their own member names; thinking is inside output. */
     static void claudeModelUsage(Jv.Obj into, Jv usage) {
         Jv.Arr components = new Jv.Arr();

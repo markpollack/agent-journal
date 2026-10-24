@@ -1,16 +1,17 @@
 {
  "kind": "agent-journal/native-source-specification",
  "version": "0.1",
- "status": "ACCEPTED 0.1.0 (2026-10-21, FULL-1R): baseline inventory frozen from the complete FULL-1 sources; drift reports propose changes, review accepts them by editing this file and bumping specification_version",
- "specification_version": "0.1.0",
+ "status": "ACCEPTED 0.2.0 (2026-10-24, D1 canonical determinism; candidate for review): the sdk-route specification now also admits the labelled 2.1.299 sdk recordings its compatibility entry names (claude-child-2.1.299 and -interrupted), whose drift against 0.1.0 the canonical-conformance gate reported (task_started, task_progress, task_updated, task_notification and the child-scope user prompt variants; agent_id, subagent_type and task_description on child-scope records; parent_tool_use_id strings; result subagent_stats). Inventory = 0.1.0's pair A inventory, reproduced exactly from the pinned stream, united with the two recordings. Same route; a revision of this Journal-owned specification, not a vendor version; 0.1.0 is kept under revisions. Drift reports propose changes, review accepts them by editing this file and bumping specification_version",
+ "specification_version": "0.2.0",
  "profile": "claude_stream",
  "applies_to": {
   "cli": "Claude Code",
-  "version": "2.1.303",
-  "launch_mode": "claude -p --output-format stream-json (via claude-code-sdk 1.7.0 pair driver)",
+  "version": "2.1.299, 2.1.303",
+  "launch_mode": "claude -p --output-format stream-json through the Java claude-code-sdk (2.1.303: the 1.7.0 pair driver; 2.1.299: the sanitized claude-code-capture test stream)",
   "source_kind": "live output",
   "capture_route": "SDK-delivered ParsedMessage.rawJson lines teed from the Iterator<ParsedMessage> seam",
-  "route_limit": "the SDK surface is not proven to be every stdout line the CLI wrote; lines the SDK does not parse are not delivered, so this inventory cannot prove what the unfiltered stdout contained"
+  "route_limit": "the SDK surface is not proven to be every stdout line the CLI wrote; lines the SDK does not parse are not delivered, so this inventory cannot prove what the unfiltered stdout contained",
+  "versions": "exact: 2.1.299 sdk (claude-code/stream-json/2.1.299-sdk) and 2.1.303 sdk (claude-code/stream-json/2.1.303-sdk); the stdout route has its own specification (2.1.304.json)"
  },
  "provenance": {
   "observed_on": [
@@ -18,12 +19,26 @@
     "artifact": "claude pair A stream.jsonl",
     "sha256": "76235b12e3dfcb5c6460ecbb272b48da929d4eff31918b02e5ae34735a24b432",
     "records": 39,
-    "frozen_in": "plans/evidence/2026-10-19-competitor-refresh/journal-side/claude-2.1.303-pairs/A-multitool/sha256.txt (steward, private)",
-    "bytes": 36990
+    "bytes": 36990,
+    "frozen_in": "the steward's private evidence of the 2026-10-19 competitor refresh (its sha256 is recorded here)"
+   },
+   {
+    "artifact": "stream.jsonl of claude-child-2.1.299",
+    "sha256": "bf6177b0d1369d16ad4ac2e770bfe6a2920134ef09875dd355bc06ad6c9748fe",
+    "records": 27,
+    "bytes": 24042,
+    "frozen_in": "journal-capture-tck/src/test/resources/ocsf/fixtures/claude-child-2.1.299/native/expected-sources.json"
+   },
+   {
+    "artifact": "stream.jsonl of claude-child-2.1.299-interrupted",
+    "sha256": "981f19b7148d8f820066224b7e61f3f95faf93ae50a2a2e0c804433fc8bbf8d3",
+    "records": 10,
+    "bytes": 6071,
+    "frozen_in": "journal-capture-tck/src/test/resources/ocsf/fixtures/claude-child-2.1.299-interrupted/native/expected-sources.json"
    }
   ],
-  "produced_by": "journal-capture-tck NativeInventoryTool draft (RawInventory 0.1)",
-  "reviewed": "2026-10-21 FULL-1R execution; owner review pending at OCSF-1"
+  "produced_by": "journal-capture-tck NativeInventoryTool draft (RawInventory 0.1); 0.1.0's inventory is reproduced exactly from the pinned pair A stream before the union",
+  "reviewed": "2026-10-24 D1 (candidate; returned for semantic review)"
  },
  "limits": [
   "one CLI version and one launch mode per profile: the inventory is an observed shape at the stated versions, not a vendor promise",
@@ -31,7 +46,8 @@
   "variants are discriminated by the vendor's own fields; a record with a new discriminator value is a new variant, not an error",
   "data-keyed subtrees (tool inputs, tool-defined results, tool schemas, per-tool wire inputs) are tool/user data: only value kinds are recorded",
   "a change of meaning under an unchanged shape is not visible to this inventory; the semantic oracle judges values",
-  "the SDK route: records the CLI wrote to stdout but the SDK did not parse are not in this inventory"
+  "the SDK route: records the CLI wrote to stdout but the SDK did not parse are not in this inventory",
+  "two sdk versions share this description because their recorded shapes are united here: the 2.1.303 pair A recording spawned no sub-agent, so the task and child-scope variants are observed at 2.1.299 only"
  ],
  "external_cross_checks": [
   {
@@ -42,6 +58,69 @@
   }
  ],
  "open_variants": [],
+ "revisions": [
+  {
+   "specification_version": "0.1.0",
+   "accepted": "2026-10-21",
+   "observed_on": [
+    "76235b12e3dfcb5c6460ecbb272b48da929d4eff31918b02e5ae34735a24b432"
+   ],
+   "change": "baseline inventory of the 2.1.303 sdk pair A stream"
+  },
+  {
+   "specification_version": "0.2.0",
+   "accepted": "2026-10-24 (candidate)",
+   "observed_on": [
+    "76235b12e3dfcb5c6460ecbb272b48da929d4eff31918b02e5ae34735a24b432",
+    "bf6177b0d1369d16ad4ac2e770bfe6a2920134ef09875dd355bc06ad6c9748fe",
+    "981f19b7148d8f820066224b7e61f3f95faf93ae50a2a2e0c804433fc8bbf8d3"
+   ],
+   "change": "adds the 2.1.299 sdk recordings: variants system/task_started, system/task_progress, system/task_updated, system/task_notification and user (child-scope prompt); new paths on assistant and user/tool_result (agent_id, subagent_type, task_description, nested tool_result content blocks) and on result (subagent_stats); kinds widened where the child scope reports strings (parent_tool_use_id). Every 0.1.0 variant and path is kept",
+   "regenerated": "the derived JSON Schema 2.1.303.schema.json"
+  }
+ ],
+ "availability": {
+  "rule": "agent-journal/source-availability 0.1: token usage is present on this route; the Agent tool's result reports the child run's usage inside the data-keyed tool_use_result, a reviewed exception because the canonical-obligation catalog (obligations.json, claude.stream.usage.child-run.agent-result) maps it and classifies its other token-named members",
+  "families": [
+   {
+    "family": "token_usage",
+    "claim": "present",
+    "granularity": "per API message (assistant message.usage, provisional on this route), per run and per model (result usage, modelUsage), and per child run (task_progress and task_notification usage.total_tokens; the Agent result's tool_use_result.usage)",
+    "selectors": [
+     {
+      "variant": "assistant",
+      "path": "message.usage.input_tokens",
+      "matched_records": 22,
+      "exercised": true
+     },
+     {
+      "variant": "result",
+      "path": "usage.input_tokens",
+      "matched_records": 2,
+      "exercised": true
+     },
+     {
+      "variant": "system/task_progress",
+      "path": "usage.total_tokens",
+      "matched_records": 1,
+      "exercised": true
+     },
+     {
+      "variant": "system/task_notification",
+      "path": "usage.total_tokens",
+      "matched_records": 1,
+      "exercised": true
+     }
+    ]
+   }
+  ],
+  "data_keyed_exceptions": [
+   {
+    "path": "tool_use_result",
+    "reason": "on an Agent result the members are Claude Code's own (agentId, usage, totalTokens, ...), not tool-defined data: their token usage is judged by the obligation catalog, so the detector's hidden-usage rule does not apply; on other tools the subtree stays tool-defined data"
+   }
+  ]
+ },
  "inventory": {
   "observed_on": [
    {
@@ -49,6 +128,18 @@
     "sha256": "76235b12e3dfcb5c6460ecbb272b48da929d4eff31918b02e5ae34735a24b432",
     "bytes": 36990,
     "records": 39
+   },
+   {
+    "artifact": "claude-child-2.1.299/stream.jsonl",
+    "sha256": "bf6177b0d1369d16ad4ac2e770bfe6a2920134ef09875dd355bc06ad6c9748fe",
+    "bytes": 24042,
+    "records": 27
+   },
+   {
+    "artifact": "claude-child-2.1.299-interrupted/stream.jsonl",
+    "sha256": "981f19b7148d8f820066224b7e61f3f95faf93ae50a2a2e0c804433fc8bbf8d3",
+    "bytes": 6071,
+    "records": 10
    }
   ],
   "data_keyed": [
@@ -64,7 +155,7 @@
     "discriminators": {
      "type": "assistant"
     },
-    "records": 12,
+    "records": 22,
     "evidence": [
      "stream.jsonl:4",
      "stream.jsonl:5",
@@ -77,16 +168,39 @@
      "stream.jsonl:32",
      "stream.jsonl:33",
      "stream.jsonl:37",
-     "stream.jsonl:38"
+     "stream.jsonl:38",
+     "claude-child-2.1.299/stream.jsonl:4",
+     "claude-child-2.1.299/stream.jsonl:5",
+     "claude-child-2.1.299/stream.jsonl:14",
+     "claude-child-2.1.299/stream.jsonl:15",
+     "claude-child-2.1.299/stream.jsonl:16",
+     "claude-child-2.1.299/stream.jsonl:20",
+     "claude-child-2.1.299/stream.jsonl:25",
+     "claude-child-2.1.299/stream.jsonl:26",
+     "claude-child-2.1.299-interrupted/stream.jsonl:4",
+     "claude-child-2.1.299-interrupted/stream.jsonl:5"
     ],
     "paths": {
+     "agent_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 7,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:20"
+      ]
+     },
      "message": {
       "kinds": {
-       "object": 12
+       "object": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -101,17 +215,27 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.container": {
       "kinds": {
-       "null": 12
+       "null": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
-      "null": 12,
+      "occurrences": 22,
+      "null": 22,
       "empty": 0,
       "evidence": [
        "stream.jsonl:4",
@@ -125,16 +249,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.content": {
       "kinds": {
-       "array": 12
+       "array": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -149,16 +283,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.content[]": {
       "kinds": {
-       "object": 12
+       "object": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -173,16 +317,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.content[].caller": {
       "kinds": {
-       "object": 5
+       "object": 9
       },
-      "present_in_records": 5,
-      "absent_in_records": 7,
-      "occurrences": 5,
+      "present_in_records": 9,
+      "absent_in_records": 13,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -190,16 +344,20 @@
        "stream.jsonl:8",
        "stream.jsonl:14",
        "stream.jsonl:16",
-       "stream.jsonl:33"
+       "stream.jsonl:33",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.content[].caller.type": {
       "kinds": {
-       "string": 5
+       "string": 9
       },
-      "present_in_records": 5,
-      "absent_in_records": 7,
-      "occurrences": 5,
+      "present_in_records": 9,
+      "absent_in_records": 13,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -207,16 +365,20 @@
        "stream.jsonl:8",
        "stream.jsonl:14",
        "stream.jsonl:16",
-       "stream.jsonl:33"
+       "stream.jsonl:33",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.content[].id": {
       "kinds": {
-       "string": 5
+       "string": 9
       },
-      "present_in_records": 5,
-      "absent_in_records": 7,
-      "occurrences": 5,
+      "present_in_records": 9,
+      "absent_in_records": 13,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -224,34 +386,44 @@
        "stream.jsonl:8",
        "stream.jsonl:14",
        "stream.jsonl:16",
-       "stream.jsonl:33"
+       "stream.jsonl:33",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.content[].input": {
       "kinds": {
-       "object": 5
+       "object": 9
       },
-      "present_in_records": 5,
-      "absent_in_records": 7,
-      "occurrences": 5,
+      "present_in_records": 9,
+      "absent_in_records": 13,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
-      "distinct_data_keys": 4,
+      "distinct_data_keys": 6,
       "evidence": [
        "stream.jsonl:6",
        "stream.jsonl:8",
        "stream.jsonl:14",
        "stream.jsonl:16",
-       "stream.jsonl:33"
+       "stream.jsonl:33",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.content[].input.{*}": {
       "kinds": {
-       "string": 8
+       "boolean": 1,
+       "integer": 1,
+       "string": 13
       },
-      "present_in_records": 5,
-      "absent_in_records": 7,
-      "occurrences": 8,
+      "present_in_records": 9,
+      "absent_in_records": 13,
+      "occurrences": 15,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -259,16 +431,20 @@
        "stream.jsonl:8",
        "stream.jsonl:14",
        "stream.jsonl:16",
-       "stream.jsonl:33"
+       "stream.jsonl:33",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.content[].name": {
       "kinds": {
-       "string": 5
+       "string": 9
       },
-      "present_in_records": 5,
-      "absent_in_records": 7,
-      "occurrences": 5,
+      "present_in_records": 9,
+      "absent_in_records": 13,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -276,63 +452,77 @@
        "stream.jsonl:8",
        "stream.jsonl:14",
        "stream.jsonl:16",
-       "stream.jsonl:33"
+       "stream.jsonl:33",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.content[].signature": {
       "kinds": {
-       "string": 4
+       "string": 8
       },
-      "present_in_records": 4,
-      "absent_in_records": 8,
-      "occurrences": 4,
+      "present_in_records": 8,
+      "absent_in_records": 14,
+      "occurrences": 8,
       "null": 0,
       "empty": 0,
       "evidence": [
        "stream.jsonl:4",
        "stream.jsonl:13",
        "stream.jsonl:31",
-       "stream.jsonl:37"
+       "stream.jsonl:37",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4"
       ]
      },
      "message.content[].text": {
       "kinds": {
-       "string": 3
+       "string": 5
       },
-      "present_in_records": 3,
-      "absent_in_records": 9,
-      "occurrences": 3,
+      "present_in_records": 5,
+      "absent_in_records": 15,
+      "occurrences": 5,
       "null": 0,
       "empty": 0,
       "evidence": [
        "stream.jsonl:5",
        "stream.jsonl:32",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:26"
       ]
      },
      "message.content[].thinking": {
       "kinds": {
-       "string": 4
+       "string": 8
       },
-      "present_in_records": 4,
-      "absent_in_records": 8,
-      "occurrences": 4,
+      "present_in_records": 8,
+      "absent_in_records": 14,
+      "occurrences": 8,
       "null": 0,
       "empty": 0,
       "evidence": [
        "stream.jsonl:4",
        "stream.jsonl:13",
        "stream.jsonl:31",
-       "stream.jsonl:37"
+       "stream.jsonl:37",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4"
       ]
      },
      "message.content[].type": {
       "kinds": {
-       "string": 12
+       "string": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -347,17 +537,27 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.context_management": {
       "kinds": {
-       "null": 12
+       "null": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
-      "null": 12,
+      "occurrences": 22,
+      "null": 22,
       "empty": 0,
       "evidence": [
        "stream.jsonl:4",
@@ -371,17 +571,27 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.diagnostics": {
       "kinds": {
-       "null": 12
+       "null": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
-      "null": 12,
+      "occurrences": 22,
+      "null": 22,
       "empty": 0,
       "evidence": [
        "stream.jsonl:4",
@@ -395,16 +605,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.id": {
       "kinds": {
-       "string": 12
+       "string": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -419,18 +639,28 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.input_transformations": {
       "kinds": {
-       "array": 12
+       "array": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
-      "empty": 12,
+      "empty": 22,
       "evidence": [
        "stream.jsonl:4",
        "stream.jsonl:5",
@@ -443,16 +673,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.model": {
       "kinds": {
-       "string": 12
+       "string": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -467,16 +707,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.role": {
       "kinds": {
-       "string": 12
+       "string": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -491,17 +741,27 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.stop_details": {
       "kinds": {
-       "null": 12
+       "null": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
-      "null": 12,
+      "occurrences": 22,
+      "null": 22,
       "empty": 0,
       "evidence": [
        "stream.jsonl:4",
@@ -515,17 +775,27 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.stop_reason": {
       "kinds": {
-       "null": 12
+       "null": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
-      "null": 12,
+      "occurrences": 22,
+      "null": 22,
       "empty": 0,
       "evidence": [
        "stream.jsonl:4",
@@ -539,17 +809,27 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.stop_sequence": {
       "kinds": {
-       "null": 12
+       "null": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
-      "null": 12,
+      "occurrences": 22,
+      "null": 22,
       "empty": 0,
       "evidence": [
        "stream.jsonl:4",
@@ -563,16 +843,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.type": {
       "kinds": {
-       "string": 12
+       "string": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -587,16 +877,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.usage": {
       "kinds": {
-       "object": 12
+       "object": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -611,16 +911,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.usage.cache_creation": {
       "kinds": {
-       "object": 12
+       "object": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -635,16 +945,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.usage.cache_creation.ephemeral_1h_input_tokens": {
       "kinds": {
-       "integer": 12
+       "integer": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -659,16 +979,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.usage.cache_creation.ephemeral_5m_input_tokens": {
       "kinds": {
-       "integer": 12
+       "integer": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -683,16 +1013,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.usage.cache_creation_input_tokens": {
       "kinds": {
-       "integer": 12
+       "integer": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -707,16 +1047,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.usage.cache_read_input_tokens": {
       "kinds": {
-       "integer": 12
+       "integer": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -731,16 +1081,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.usage.inference_geo": {
       "kinds": {
-       "string": 12
+       "string": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -755,16 +1115,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.usage.input_tokens": {
       "kinds": {
-       "integer": 12
+       "integer": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -779,16 +1149,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.usage.output_tokens": {
       "kinds": {
-       "integer": 12
+       "integer": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -803,16 +1183,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.usage.service_tier": {
       "kinds": {
-       "string": 12
+       "string": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -827,7 +1217,17 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "message.usage.speed": {
@@ -856,12 +1256,13 @@
      },
      "parent_tool_use_id": {
       "kinds": {
-       "null": 12
+       "null": 21,
+       "string": 1
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
-      "null": 12,
+      "occurrences": 22,
+      "null": 21,
       "empty": 0,
       "evidence": [
        "stream.jsonl:4",
@@ -875,16 +1276,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "request_id": {
       "kinds": {
-       "string": 12
+       "string": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -899,16 +1310,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "session_id": {
       "kinds": {
-       "string": 12
+       "string": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -923,48 +1344,92 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
+      ]
+     },
+     "subagent_type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 7,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:20"
+      ]
+     },
+     "task_description": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 7,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:20"
       ]
      },
      "thinking_display": {
       "kinds": {
-       "string": 4
+       "string": 8
       },
-      "present_in_records": 4,
-      "absent_in_records": 8,
-      "occurrences": 4,
+      "present_in_records": 8,
+      "absent_in_records": 14,
+      "occurrences": 8,
       "null": 0,
       "empty": 0,
       "evidence": [
        "stream.jsonl:4",
        "stream.jsonl:13",
        "stream.jsonl:31",
-       "stream.jsonl:37"
+       "stream.jsonl:37",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4"
       ]
      },
      "thinking_duration_ms": {
       "kinds": {
-       "integer": 4
+       "integer": 8
       },
-      "present_in_records": 4,
-      "absent_in_records": 8,
-      "occurrences": 4,
+      "present_in_records": 8,
+      "absent_in_records": 14,
+      "occurrences": 8,
       "null": 0,
       "empty": 0,
       "evidence": [
        "stream.jsonl:4",
        "stream.jsonl:13",
        "stream.jsonl:31",
-       "stream.jsonl:37"
+       "stream.jsonl:37",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4"
       ]
      },
      "timestamp": {
       "kinds": {
-       "string": 12
+       "string": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -979,16 +1444,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "type": {
       "kinds": {
-       "string": 12
+       "string": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -1003,16 +1478,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "uuid": {
       "kinds": {
-       "string": 12
+       "string": 22
       },
-      "present_in_records": 12,
+      "present_in_records": 22,
       "absent_in_records": 0,
-      "occurrences": 12,
+      "occurrences": 22,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -1027,16 +1512,26 @@
        "stream.jsonl:32",
        "stream.jsonl:33",
        "stream.jsonl:37",
-       "stream.jsonl:38"
+       "stream.jsonl:38",
+       "claude-child-2.1.299/stream.jsonl:4",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:14",
+       "claude-child-2.1.299/stream.jsonl:15",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299/stream.jsonl:20",
+       "claude-child-2.1.299/stream.jsonl:25",
+       "claude-child-2.1.299/stream.jsonl:26",
+       "claude-child-2.1.299-interrupted/stream.jsonl:4",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "wire_tool_inputs": {
       "kinds": {
-       "object": 5
+       "object": 8
       },
-      "present_in_records": 5,
-      "absent_in_records": 7,
-      "occurrences": 5,
+      "present_in_records": 8,
+      "absent_in_records": 14,
+      "occurrences": 8,
       "null": 0,
       "empty": 0,
       "distinct_data_keys": 5,
@@ -1045,16 +1540,19 @@
        "stream.jsonl:8",
        "stream.jsonl:14",
        "stream.jsonl:16",
-       "stream.jsonl:33"
+       "stream.jsonl:33",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      },
      "wire_tool_inputs.{*}": {
       "kinds": {
-       "object": 5
+       "object": 8
       },
-      "present_in_records": 5,
-      "absent_in_records": 7,
-      "occurrences": 5,
+      "present_in_records": 8,
+      "absent_in_records": 14,
+      "occurrences": 8,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -1062,7 +1560,10 @@
        "stream.jsonl:8",
        "stream.jsonl:14",
        "stream.jsonl:16",
-       "stream.jsonl:33"
+       "stream.jsonl:33",
+       "claude-child-2.1.299/stream.jsonl:5",
+       "claude-child-2.1.299/stream.jsonl:16",
+       "claude-child-2.1.299-interrupted/stream.jsonl:5"
       ]
      }
     }
@@ -1071,230 +1572,266 @@
     "discriminators": {
      "type": "rate_limit_event"
     },
-    "records": 1,
+    "records": 3,
     "evidence": [
-     "stream.jsonl:9"
+     "stream.jsonl:9",
+     "claude-child-2.1.299/stream.jsonl:7",
+     "claude-child-2.1.299-interrupted/stream.jsonl:7"
     ],
     "paths": {
      "rate_limit_info": {
       "kinds": {
-       "object": 1
+       "object": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:9"
+       "stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:7",
+       "claude-child-2.1.299-interrupted/stream.jsonl:7"
       ]
      },
      "rate_limit_info.isUsingOverage": {
       "kinds": {
-       "boolean": 1
+       "boolean": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:9"
+       "stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:7",
+       "claude-child-2.1.299-interrupted/stream.jsonl:7"
       ]
      },
      "rate_limit_info.overageDisabledReason": {
       "kinds": {
-       "string": 1
+       "string": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:9"
+       "stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:7",
+       "claude-child-2.1.299-interrupted/stream.jsonl:7"
       ]
      },
      "rate_limit_info.overageStatus": {
       "kinds": {
-       "string": 1
+       "string": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:9"
+       "stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:7",
+       "claude-child-2.1.299-interrupted/stream.jsonl:7"
       ]
      },
      "rate_limit_info.rateLimitType": {
       "kinds": {
-       "string": 1
+       "string": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:9"
+       "stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:7",
+       "claude-child-2.1.299-interrupted/stream.jsonl:7"
       ]
      },
      "rate_limit_info.resetsAt": {
       "kinds": {
-       "integer": 1
+       "integer": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:9"
+       "stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:7",
+       "claude-child-2.1.299-interrupted/stream.jsonl:7"
       ]
      },
      "rate_limit_info.status": {
       "kinds": {
-       "string": 1
+       "string": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:9"
+       "stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:7",
+       "claude-child-2.1.299-interrupted/stream.jsonl:7"
       ]
      },
      "rate_limit_info.unifiedWindows": {
       "kinds": {
-       "object": 1
+       "object": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:9"
+       "stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:7",
+       "claude-child-2.1.299-interrupted/stream.jsonl:7"
       ]
      },
      "rate_limit_info.unifiedWindows.five_hour": {
       "kinds": {
-       "object": 1
+       "object": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:9"
+       "stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:7",
+       "claude-child-2.1.299-interrupted/stream.jsonl:7"
       ]
      },
      "rate_limit_info.unifiedWindows.five_hour.resetsAt": {
       "kinds": {
-       "integer": 1
+       "integer": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:9"
+       "stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:7",
+       "claude-child-2.1.299-interrupted/stream.jsonl:7"
       ]
      },
      "rate_limit_info.unifiedWindows.five_hour.utilization": {
       "kinds": {
-       "decimal": 1
+       "decimal": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:9"
+       "stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:7",
+       "claude-child-2.1.299-interrupted/stream.jsonl:7"
       ]
      },
      "rate_limit_info.unifiedWindows.seven_day": {
       "kinds": {
-       "object": 1
+       "object": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:9"
+       "stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:7",
+       "claude-child-2.1.299-interrupted/stream.jsonl:7"
       ]
      },
      "rate_limit_info.unifiedWindows.seven_day.resetsAt": {
       "kinds": {
-       "integer": 1
+       "integer": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:9"
+       "stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:7",
+       "claude-child-2.1.299-interrupted/stream.jsonl:7"
       ]
      },
      "rate_limit_info.unifiedWindows.seven_day.utilization": {
       "kinds": {
-       "decimal": 1
+       "decimal": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:9"
+       "stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:7",
+       "claude-child-2.1.299-interrupted/stream.jsonl:7"
       ]
      },
      "session_id": {
       "kinds": {
-       "string": 1
+       "string": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:9"
+       "stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:7",
+       "claude-child-2.1.299-interrupted/stream.jsonl:7"
       ]
      },
      "type": {
       "kinds": {
-       "string": 1
+       "string": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:9"
+       "stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:7",
+       "claude-child-2.1.299-interrupted/stream.jsonl:7"
       ]
      },
      "uuid": {
       "kinds": {
-       "string": 1
+       "string": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:9"
+       "stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:7",
+       "claude-child-2.1.299-interrupted/stream.jsonl:7"
       ]
      }
     }
@@ -1303,1102 +1840,1200 @@
     "discriminators": {
      "type": "result"
     },
-    "records": 1,
+    "records": 2,
     "evidence": [
-     "stream.jsonl:39"
+     "stream.jsonl:39",
+     "claude-child-2.1.299/stream.jsonl:27"
     ],
     "paths": {
      "api_error_status": {
       "kinds": {
-       "null": 1
+       "null": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
-      "null": 1,
+      "occurrences": 2,
+      "null": 2,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "duration_api_ms": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "duration_ms": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "fast_mode_disabled_reason": {
       "kinds": {
-       "string": 1
+       "string": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "fast_mode_state": {
       "kinds": {
-       "string": 1
+       "string": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "first_content_frame_ms": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "is_error": {
       "kinds": {
-       "boolean": 1
+       "boolean": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "modelUsage": {
       "kinds": {
-       "object": 1
+       "object": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "distinct_data_keys": 1,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "modelUsage.{*}": {
       "kinds": {
-       "object": 1
+       "object": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "modelUsage.{*}.cacheCreationInputTokens": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "modelUsage.{*}.cacheReadInputTokens": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "modelUsage.{*}.canonicalModel": {
       "kinds": {
-       "string": 1
+       "string": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "modelUsage.{*}.contextWindow": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "modelUsage.{*}.costBasis": {
       "kinds": {
-       "string": 1
+       "string": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "modelUsage.{*}.costUSD": {
       "kinds": {
-       "decimal": 1
+       "decimal": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "modelUsage.{*}.inputTokens": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "modelUsage.{*}.maxOutputTokens": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "modelUsage.{*}.outputTokens": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "modelUsage.{*}.provider": {
       "kinds": {
-       "string": 1
+       "string": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "modelUsage.{*}.thinkingTokens": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "modelUsage.{*}.webSearchRequests": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "num_turns": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "permission_denials": {
       "kinds": {
-       "array": 1
+       "array": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
-      "empty": 1,
+      "empty": 2,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "queued_turn_count": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "result": {
       "kinds": {
-       "string": 1
+       "string": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "result_index": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "safety_stops": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "session_id": {
       "kinds": {
-       "string": 1
+       "string": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "stop_reason": {
       "kinds": {
-       "string": 1
+       "string": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "subagent_stats": {
       "kinds": {
-       "object": 1
+       "object": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "subagent_stats.by_type": {
       "kinds": {
-       "object": 1
+       "object": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 0,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 1,
+      "evidence": [
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
+      ]
+     },
+     "subagent_stats.by_type.general-purpose": {
+      "kinds": {
+       "integer": 1
       },
       "present_in_records": 1,
       "absent_in_records": 0,
       "occurrences": 1,
       "null": 0,
-      "empty": 1,
+      "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "subagent_stats.completed": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "subagent_stats.failed": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "subagent_stats.killed": {
       "kinds": {
-       "object": 1
+       "object": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "subagent_stats.killed.parent": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "subagent_stats.killed.system": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "subagent_stats.killed.user": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "subagent_stats.max_depth": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "subagent_stats.refused": {
       "kinds": {
-       "object": 1
+       "object": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "subagent_stats.refused.budget": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "subagent_stats.refused.concurrency_limit": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "subagent_stats.refused.depth_limit": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "subagent_stats.requested": {
       "kinds": {
-       "object": 1
+       "object": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "subagent_stats.requested.background": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "subagent_stats.requested.foreground": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "subagent_stats.requested.unset": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "subagent_stats.spawned": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "subagent_stats.spawned_by_subagents": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "subagent_stats.started_in_background": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "subtype": {
       "kinds": {
-       "string": 1
+       "string": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "terminal_reason": {
       "kinds": {
-       "string": 1
+       "string": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "time_to_request_ms": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "total_cost_usd": {
       "kinds": {
-       "decimal": 1
+       "decimal": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "ttft_ms": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "ttft_stream_ms": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "type": {
       "kinds": {
-       "string": 1
+       "string": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage": {
       "kinds": {
-       "object": 1
+       "object": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.cache_creation": {
       "kinds": {
-       "object": 1
+       "object": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.cache_creation.ephemeral_1h_input_tokens": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.cache_creation.ephemeral_5m_input_tokens": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.cache_creation_input_tokens": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.cache_read_input_tokens": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.fallback_credit": {
       "kinds": {
-       "null": 1
+       "null": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
-      "null": 1,
+      "occurrences": 2,
+      "null": 2,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.inference_geo": {
       "kinds": {
-       "string": 1
+       "string": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.input_tokens": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.iterations": {
       "kinds": {
-       "array": 1
+       "array": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.iterations[]": {
       "kinds": {
-       "object": 1
+       "object": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.iterations[].cache_creation": {
       "kinds": {
-       "object": 1
+       "object": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.iterations[].cache_creation.ephemeral_1h_input_tokens": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.iterations[].cache_creation.ephemeral_5m_input_tokens": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.iterations[].cache_creation_input_tokens": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.iterations[].cache_read_input_tokens": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.iterations[].input_tokens": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.iterations[].output_tokens": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.iterations[].type": {
       "kinds": {
-       "string": 1
+       "string": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.output_tokens": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.output_tokens_details": {
       "kinds": {
-       "object": 1
+       "object": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.output_tokens_details.thinking_tokens": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.server_tool_use": {
       "kinds": {
-       "object": 1
+       "object": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.server_tool_use.web_fetch_requests": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.server_tool_use.web_search_requests": {
       "kinds": {
-       "integer": 1
+       "integer": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.service_tier": {
       "kinds": {
-       "string": 1
+       "string": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "usage.speed": {
       "kinds": {
-       "string": 1
+       "string": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      },
      "uuid": {
       "kinds": {
-       "string": 1
+       "string": 2
       },
-      "present_in_records": 1,
+      "present_in_records": 2,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 2,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:39"
+       "stream.jsonl:39",
+       "claude-child-2.1.299/stream.jsonl:27"
       ]
      }
     }
@@ -2408,9 +3043,11 @@
      "type": "system",
      "subtype": "init"
     },
-    "records": 1,
+    "records": 3,
     "evidence": [
-     "stream.jsonl:1"
+     "stream.jsonl:1",
+     "claude-child-2.1.299/stream.jsonl:1",
+     "claude-child-2.1.299-interrupted/stream.jsonl:1"
     ],
     "paths": {
      "additional_directories": {
@@ -2428,15 +3065,17 @@
      },
      "agents": {
       "kinds": {
-       "array": 1
+       "array": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
-      "empty": 0,
+      "empty": 2,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "agents[]": {
@@ -2454,119 +3093,137 @@
      },
      "analytics_disabled": {
       "kinds": {
-       "boolean": 1
+       "boolean": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "apiKeySource": {
       "kinds": {
-       "string": 1
+       "string": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "capabilities": {
       "kinds": {
-       "array": 1
+       "array": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "capabilities[]": {
       "kinds": {
-       "string": 11
+       "string": 31
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 11,
+      "occurrences": 31,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "claude_code_version": {
       "kinds": {
-       "string": 1
+       "string": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "cwd": {
       "kinds": {
-       "string": 1
+       "string": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "fast_mode_disabled_reason": {
       "kinds": {
-       "string": 1
+       "string": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "fast_mode_state": {
       "kinds": {
-       "string": 1
+       "string": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "mcp_servers": {
       "kinds": {
-       "array": 1
+       "array": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
-      "empty": 0,
+      "empty": 2,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "mcp_servers[]": {
@@ -2623,15 +3280,17 @@
      },
      "memory_paths": {
       "kinds": {
-       "object": 1
+       "object": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
-      "empty": 0,
+      "empty": 2,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "memory_paths.auto": {
@@ -2649,28 +3308,32 @@
      },
      "messaging_socket_path": {
       "kinds": {
-       "string": 1
+       "string": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "model": {
       "kinds": {
-       "string": 1
+       "string": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "original_cwd": {
@@ -2688,54 +3351,62 @@
      },
      "output_style": {
       "kinds": {
-       "string": 1
+       "string": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "per_turn_effort_active": {
       "kinds": {
-       "boolean": 1
+       "boolean": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "permissionMode": {
       "kinds": {
-       "string": 1
+       "string": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "plugins": {
       "kinds": {
-       "array": 1
+       "array": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
-      "empty": 0,
+      "empty": 2,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "plugins[]": {
@@ -2792,41 +3463,47 @@
      },
      "product_feedback_disabled": {
       "kinds": {
-       "boolean": 1
+       "boolean": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "session_id": {
       "kinds": {
-       "string": 1
+       "string": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "skills": {
       "kinds": {
-       "array": 1
+       "array": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
-      "empty": 0,
+      "empty": 2,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "skills[]": {
@@ -2844,15 +3521,17 @@
      },
      "slash_commands": {
       "kinds": {
-       "array": 1
+       "array": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
-      "empty": 0,
+      "empty": 2,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "slash_commands[]": {
@@ -2870,28 +3549,32 @@
      },
      "subtype": {
       "kinds": {
-       "string": 1
+       "string": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "terminal_slash_commands": {
       "kinds": {
-       "array": 1
+       "array": 3
       },
-      "present_in_records": 1,
+      "present_in_records": 3,
       "absent_in_records": 0,
-      "occurrences": 1,
+      "occurrences": 3,
       "null": 0,
-      "empty": 0,
+      "empty": 2,
       "evidence": [
-       "stream.jsonl:1"
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
       ]
      },
      "terminal_slash_commands[]": {
@@ -2909,7 +3592,94 @@
      },
      "tools": {
       "kinds": {
-       "array": 1
+       "array": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
+      ]
+     },
+     "tools[]": {
+      "kinds": {
+       "string": 96
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 96,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
+      ]
+     },
+     "uuid": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
+      ]
+     },
+     "view_mode": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 0,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "stream.jsonl:1",
+       "claude-child-2.1.299/stream.jsonl:1",
+       "claude-child-2.1.299-interrupted/stream.jsonl:1"
+      ]
+     }
+    }
+   },
+   "system/task_notification": {
+    "discriminators": {
+     "type": "system",
+     "subtype": "task_notification"
+    },
+    "records": 1,
+    "evidence": [
+     "claude-child-2.1.299/stream.jsonl:23"
+    ],
+    "paths": {
+     "output_file": {
+      "kinds": {
+       "string": 1
       },
       "present_in_records": 1,
       "absent_in_records": 0,
@@ -2917,20 +3687,98 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1"
+       "claude-child-2.1.299/stream.jsonl:23"
       ]
      },
-     "tools[]": {
+     "run_id": {
       "kinds": {
-       "string": 38
+       "string": 1
       },
       "present_in_records": 1,
       "absent_in_records": 0,
-      "occurrences": 38,
+      "occurrences": 1,
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1"
+       "claude-child-2.1.299/stream.jsonl:23"
+      ]
+     },
+     "session_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:23"
+      ]
+     },
+     "status": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:23"
+      ]
+     },
+     "subtype": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:23"
+      ]
+     },
+     "summary": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:23"
+      ]
+     },
+     "task_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:23"
+      ]
+     },
+     "tool_use_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:23"
       ]
      },
      "type": {
@@ -2943,7 +3791,59 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1"
+       "claude-child-2.1.299/stream.jsonl:23"
+      ]
+     },
+     "usage": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:23"
+      ]
+     },
+     "usage.duration_ms": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:23"
+      ]
+     },
+     "usage.tool_uses": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:23"
+      ]
+     },
+     "usage.total_tokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:23"
       ]
      },
      "uuid": {
@@ -2956,10 +3856,22 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1"
+       "claude-child-2.1.299/stream.jsonl:23"
       ]
-     },
-     "view_mode": {
+     }
+    }
+   },
+   "system/task_progress": {
+    "discriminators": {
+     "type": "system",
+     "subtype": "task_progress"
+    },
+    "records": 1,
+    "evidence": [
+     "claude-child-2.1.299/stream.jsonl:19"
+    ],
+    "paths": {
+     "description": {
       "kinds": {
        "string": 1
       },
@@ -2969,7 +3881,486 @@
       "null": 0,
       "empty": 0,
       "evidence": [
-       "stream.jsonl:1"
+       "claude-child-2.1.299/stream.jsonl:19"
+      ]
+     },
+     "last_tool_name": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:19"
+      ]
+     },
+     "run_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:19"
+      ]
+     },
+     "session_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:19"
+      ]
+     },
+     "subagent_type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:19"
+      ]
+     },
+     "subtype": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:19"
+      ]
+     },
+     "task_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:19"
+      ]
+     },
+     "tool_use_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:19"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:19"
+      ]
+     },
+     "usage": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:19"
+      ]
+     },
+     "usage.duration_ms": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:19"
+      ]
+     },
+     "usage.tool_uses": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:19"
+      ]
+     },
+     "usage.total_tokens": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:19"
+      ]
+     },
+     "uuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:19"
+      ]
+     }
+    }
+   },
+   "system/task_started": {
+    "discriminators": {
+     "type": "system",
+     "subtype": "task_started"
+    },
+    "records": 1,
+    "evidence": [
+     "claude-child-2.1.299/stream.jsonl:17"
+    ],
+    "paths": {
+     "description": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:17"
+      ]
+     },
+     "is_backgrounded": {
+      "kinds": {
+       "boolean": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:17"
+      ]
+     },
+     "prompt": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:17"
+      ]
+     },
+     "run_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:17"
+      ]
+     },
+     "session_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:17"
+      ]
+     },
+     "spawn_depth": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:17"
+      ]
+     },
+     "subagent_type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:17"
+      ]
+     },
+     "subtype": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:17"
+      ]
+     },
+     "task_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:17"
+      ]
+     },
+     "task_type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:17"
+      ]
+     },
+     "tool_use_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:17"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:17"
+      ]
+     },
+     "uuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:17"
+      ]
+     }
+    }
+   },
+   "system/task_updated": {
+    "discriminators": {
+     "type": "system",
+     "subtype": "task_updated"
+    },
+    "records": 1,
+    "evidence": [
+     "claude-child-2.1.299/stream.jsonl:22"
+    ],
+    "paths": {
+     "patch": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:22"
+      ]
+     },
+     "patch.end_time": {
+      "kinds": {
+       "integer": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:22"
+      ]
+     },
+     "patch.status": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:22"
+      ]
+     },
+     "run_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:22"
+      ]
+     },
+     "session_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:22"
+      ]
+     },
+     "subtype": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:22"
+      ]
+     },
+     "task_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:22"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:22"
+      ]
+     },
+     "uuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:22"
       ]
      }
     }
@@ -2979,7 +4370,7 @@
      "type": "system",
      "subtype": "thinking_tokens"
     },
-    "records": 19,
+    "records": 32,
     "evidence": [
      "stream.jsonl:2",
      "stream.jsonl:3",
@@ -2999,16 +4390,29 @@
      "stream.jsonl:29",
      "stream.jsonl:30",
      "stream.jsonl:35",
-     "stream.jsonl:36"
+     "stream.jsonl:36",
+     "claude-child-2.1.299/stream.jsonl:2",
+     "claude-child-2.1.299/stream.jsonl:3",
+     "claude-child-2.1.299/stream.jsonl:8",
+     "claude-child-2.1.299/stream.jsonl:9",
+     "claude-child-2.1.299/stream.jsonl:10",
+     "claude-child-2.1.299/stream.jsonl:11",
+     "claude-child-2.1.299/stream.jsonl:12",
+     "claude-child-2.1.299/stream.jsonl:13",
+     "claude-child-2.1.299-interrupted/stream.jsonl:2",
+     "claude-child-2.1.299-interrupted/stream.jsonl:3",
+     "claude-child-2.1.299-interrupted/stream.jsonl:8",
+     "claude-child-2.1.299-interrupted/stream.jsonl:9",
+     "claude-child-2.1.299-interrupted/stream.jsonl:10"
     ],
     "paths": {
      "estimated_tokens": {
       "kinds": {
-       "integer": 19
+       "integer": 32
       },
-      "present_in_records": 19,
+      "present_in_records": 32,
       "absent_in_records": 0,
-      "occurrences": 19,
+      "occurrences": 32,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3030,16 +4434,29 @@
        "stream.jsonl:29",
        "stream.jsonl:30",
        "stream.jsonl:35",
-       "stream.jsonl:36"
+       "stream.jsonl:36",
+       "claude-child-2.1.299/stream.jsonl:2",
+       "claude-child-2.1.299/stream.jsonl:3",
+       "claude-child-2.1.299/stream.jsonl:8",
+       "claude-child-2.1.299/stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:10",
+       "claude-child-2.1.299/stream.jsonl:11",
+       "claude-child-2.1.299/stream.jsonl:12",
+       "claude-child-2.1.299/stream.jsonl:13",
+       "claude-child-2.1.299-interrupted/stream.jsonl:2",
+       "claude-child-2.1.299-interrupted/stream.jsonl:3",
+       "claude-child-2.1.299-interrupted/stream.jsonl:8",
+       "claude-child-2.1.299-interrupted/stream.jsonl:9",
+       "claude-child-2.1.299-interrupted/stream.jsonl:10"
       ]
      },
      "estimated_tokens_delta": {
       "kinds": {
-       "integer": 19
+       "integer": 32
       },
-      "present_in_records": 19,
+      "present_in_records": 32,
       "absent_in_records": 0,
-      "occurrences": 19,
+      "occurrences": 32,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3061,16 +4478,29 @@
        "stream.jsonl:29",
        "stream.jsonl:30",
        "stream.jsonl:35",
-       "stream.jsonl:36"
+       "stream.jsonl:36",
+       "claude-child-2.1.299/stream.jsonl:2",
+       "claude-child-2.1.299/stream.jsonl:3",
+       "claude-child-2.1.299/stream.jsonl:8",
+       "claude-child-2.1.299/stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:10",
+       "claude-child-2.1.299/stream.jsonl:11",
+       "claude-child-2.1.299/stream.jsonl:12",
+       "claude-child-2.1.299/stream.jsonl:13",
+       "claude-child-2.1.299-interrupted/stream.jsonl:2",
+       "claude-child-2.1.299-interrupted/stream.jsonl:3",
+       "claude-child-2.1.299-interrupted/stream.jsonl:8",
+       "claude-child-2.1.299-interrupted/stream.jsonl:9",
+       "claude-child-2.1.299-interrupted/stream.jsonl:10"
       ]
      },
      "session_id": {
       "kinds": {
-       "string": 19
+       "string": 32
       },
-      "present_in_records": 19,
+      "present_in_records": 32,
       "absent_in_records": 0,
-      "occurrences": 19,
+      "occurrences": 32,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3092,16 +4522,29 @@
        "stream.jsonl:29",
        "stream.jsonl:30",
        "stream.jsonl:35",
-       "stream.jsonl:36"
+       "stream.jsonl:36",
+       "claude-child-2.1.299/stream.jsonl:2",
+       "claude-child-2.1.299/stream.jsonl:3",
+       "claude-child-2.1.299/stream.jsonl:8",
+       "claude-child-2.1.299/stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:10",
+       "claude-child-2.1.299/stream.jsonl:11",
+       "claude-child-2.1.299/stream.jsonl:12",
+       "claude-child-2.1.299/stream.jsonl:13",
+       "claude-child-2.1.299-interrupted/stream.jsonl:2",
+       "claude-child-2.1.299-interrupted/stream.jsonl:3",
+       "claude-child-2.1.299-interrupted/stream.jsonl:8",
+       "claude-child-2.1.299-interrupted/stream.jsonl:9",
+       "claude-child-2.1.299-interrupted/stream.jsonl:10"
       ]
      },
      "subtype": {
       "kinds": {
-       "string": 19
+       "string": 32
       },
-      "present_in_records": 19,
+      "present_in_records": 32,
       "absent_in_records": 0,
-      "occurrences": 19,
+      "occurrences": 32,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3123,16 +4566,29 @@
        "stream.jsonl:29",
        "stream.jsonl:30",
        "stream.jsonl:35",
-       "stream.jsonl:36"
+       "stream.jsonl:36",
+       "claude-child-2.1.299/stream.jsonl:2",
+       "claude-child-2.1.299/stream.jsonl:3",
+       "claude-child-2.1.299/stream.jsonl:8",
+       "claude-child-2.1.299/stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:10",
+       "claude-child-2.1.299/stream.jsonl:11",
+       "claude-child-2.1.299/stream.jsonl:12",
+       "claude-child-2.1.299/stream.jsonl:13",
+       "claude-child-2.1.299-interrupted/stream.jsonl:2",
+       "claude-child-2.1.299-interrupted/stream.jsonl:3",
+       "claude-child-2.1.299-interrupted/stream.jsonl:8",
+       "claude-child-2.1.299-interrupted/stream.jsonl:9",
+       "claude-child-2.1.299-interrupted/stream.jsonl:10"
       ]
      },
      "type": {
       "kinds": {
-       "string": 19
+       "string": 32
       },
-      "present_in_records": 19,
+      "present_in_records": 32,
       "absent_in_records": 0,
-      "occurrences": 19,
+      "occurrences": 32,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3154,16 +4610,29 @@
        "stream.jsonl:29",
        "stream.jsonl:30",
        "stream.jsonl:35",
-       "stream.jsonl:36"
+       "stream.jsonl:36",
+       "claude-child-2.1.299/stream.jsonl:2",
+       "claude-child-2.1.299/stream.jsonl:3",
+       "claude-child-2.1.299/stream.jsonl:8",
+       "claude-child-2.1.299/stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:10",
+       "claude-child-2.1.299/stream.jsonl:11",
+       "claude-child-2.1.299/stream.jsonl:12",
+       "claude-child-2.1.299/stream.jsonl:13",
+       "claude-child-2.1.299-interrupted/stream.jsonl:2",
+       "claude-child-2.1.299-interrupted/stream.jsonl:3",
+       "claude-child-2.1.299-interrupted/stream.jsonl:8",
+       "claude-child-2.1.299-interrupted/stream.jsonl:9",
+       "claude-child-2.1.299-interrupted/stream.jsonl:10"
       ]
      },
      "uuid": {
       "kinds": {
-       "string": 19
+       "string": 32
       },
-      "present_in_records": 19,
+      "present_in_records": 32,
       "absent_in_records": 0,
-      "occurrences": 19,
+      "occurrences": 32,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3185,7 +4654,214 @@
        "stream.jsonl:29",
        "stream.jsonl:30",
        "stream.jsonl:35",
-       "stream.jsonl:36"
+       "stream.jsonl:36",
+       "claude-child-2.1.299/stream.jsonl:2",
+       "claude-child-2.1.299/stream.jsonl:3",
+       "claude-child-2.1.299/stream.jsonl:8",
+       "claude-child-2.1.299/stream.jsonl:9",
+       "claude-child-2.1.299/stream.jsonl:10",
+       "claude-child-2.1.299/stream.jsonl:11",
+       "claude-child-2.1.299/stream.jsonl:12",
+       "claude-child-2.1.299/stream.jsonl:13",
+       "claude-child-2.1.299-interrupted/stream.jsonl:2",
+       "claude-child-2.1.299-interrupted/stream.jsonl:3",
+       "claude-child-2.1.299-interrupted/stream.jsonl:8",
+       "claude-child-2.1.299-interrupted/stream.jsonl:9",
+       "claude-child-2.1.299-interrupted/stream.jsonl:10"
+      ]
+     }
+    }
+   },
+   "user": {
+    "discriminators": {
+     "type": "user",
+     "message.content[].type": null
+    },
+    "records": 1,
+    "evidence": [
+     "claude-child-2.1.299/stream.jsonl:18"
+    ],
+    "paths": {
+     "agent_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:18"
+      ]
+     },
+     "message": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:18"
+      ]
+     },
+     "message.content": {
+      "kinds": {
+       "array": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:18"
+      ]
+     },
+     "message.content[]": {
+      "kinds": {
+       "object": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:18"
+      ]
+     },
+     "message.content[].text": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:18"
+      ]
+     },
+     "message.content[].type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:18"
+      ]
+     },
+     "message.role": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:18"
+      ]
+     },
+     "parent_tool_use_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:18"
+      ]
+     },
+     "session_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:18"
+      ]
+     },
+     "subagent_type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:18"
+      ]
+     },
+     "task_description": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:18"
+      ]
+     },
+     "timestamp": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:18"
+      ]
+     },
+     "type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:18"
+      ]
+     },
+     "uuid": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 0,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:18"
       ]
      }
     }
@@ -3195,22 +4871,39 @@
      "type": "user",
      "message.content[].type": "tool_result"
     },
-    "records": 5,
+    "records": 9,
     "evidence": [
      "stream.jsonl:7",
      "stream.jsonl:10",
      "stream.jsonl:15",
      "stream.jsonl:17",
-     "stream.jsonl:34"
+     "stream.jsonl:34",
+     "claude-child-2.1.299/stream.jsonl:6",
+     "claude-child-2.1.299/stream.jsonl:21",
+     "claude-child-2.1.299/stream.jsonl:24",
+     "claude-child-2.1.299-interrupted/stream.jsonl:6"
     ],
     "paths": {
+     "agent_id": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 2,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:21"
+      ]
+     },
      "message": {
       "kinds": {
-       "object": 5
+       "object": 9
       },
-      "present_in_records": 5,
+      "present_in_records": 9,
       "absent_in_records": 0,
-      "occurrences": 5,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3218,16 +4911,20 @@
        "stream.jsonl:10",
        "stream.jsonl:15",
        "stream.jsonl:17",
-       "stream.jsonl:34"
+       "stream.jsonl:34",
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:21",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
       ]
      },
      "message.content": {
       "kinds": {
-       "array": 5
+       "array": 9
       },
-      "present_in_records": 5,
+      "present_in_records": 9,
       "absent_in_records": 0,
-      "occurrences": 5,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3235,16 +4932,20 @@
        "stream.jsonl:10",
        "stream.jsonl:15",
        "stream.jsonl:17",
-       "stream.jsonl:34"
+       "stream.jsonl:34",
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:21",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
       ]
      },
      "message.content[]": {
       "kinds": {
-       "object": 5
+       "object": 9
       },
-      "present_in_records": 5,
+      "present_in_records": 9,
       "absent_in_records": 0,
-      "occurrences": 5,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3252,16 +4953,21 @@
        "stream.jsonl:10",
        "stream.jsonl:15",
        "stream.jsonl:17",
-       "stream.jsonl:34"
+       "stream.jsonl:34",
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:21",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
       ]
      },
      "message.content[].content": {
       "kinds": {
-       "string": 5
+       "array": 3,
+       "string": 6
       },
-      "present_in_records": 5,
+      "present_in_records": 9,
       "absent_in_records": 0,
-      "occurrences": 5,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3269,7 +4975,68 @@
        "stream.jsonl:10",
        "stream.jsonl:15",
        "stream.jsonl:17",
-       "stream.jsonl:34"
+       "stream.jsonl:34",
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:21",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
+      ]
+     },
+     "message.content[].content[]": {
+      "kinds": {
+       "object": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 1,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
+      ]
+     },
+     "message.content[].content[].text": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 2,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:24"
+      ]
+     },
+     "message.content[].content[].tool_name": {
+      "kinds": {
+       "string": 2
+      },
+      "present_in_records": 2,
+      "absent_in_records": 2,
+      "occurrences": 2,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
+      ]
+     },
+     "message.content[].content[].type": {
+      "kinds": {
+       "string": 3
+      },
+      "present_in_records": 3,
+      "absent_in_records": 1,
+      "occurrences": 3,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
       ]
      },
      "message.content[].is_error": {
@@ -3288,11 +5055,11 @@
      },
      "message.content[].tool_use_id": {
       "kinds": {
-       "string": 5
+       "string": 9
       },
-      "present_in_records": 5,
+      "present_in_records": 9,
       "absent_in_records": 0,
-      "occurrences": 5,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3300,16 +5067,20 @@
        "stream.jsonl:10",
        "stream.jsonl:15",
        "stream.jsonl:17",
-       "stream.jsonl:34"
+       "stream.jsonl:34",
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:21",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
       ]
      },
      "message.content[].type": {
       "kinds": {
-       "string": 5
+       "string": 9
       },
-      "present_in_records": 5,
+      "present_in_records": 9,
       "absent_in_records": 0,
-      "occurrences": 5,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3317,16 +5088,20 @@
        "stream.jsonl:10",
        "stream.jsonl:15",
        "stream.jsonl:17",
-       "stream.jsonl:34"
+       "stream.jsonl:34",
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:21",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
       ]
      },
      "message.role": {
       "kinds": {
-       "string": 5
+       "string": 9
       },
-      "present_in_records": 5,
+      "present_in_records": 9,
       "absent_in_records": 0,
-      "occurrences": 5,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3334,33 +5109,42 @@
        "stream.jsonl:10",
        "stream.jsonl:15",
        "stream.jsonl:17",
-       "stream.jsonl:34"
+       "stream.jsonl:34",
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:21",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
       ]
      },
      "parent_tool_use_id": {
       "kinds": {
-       "null": 5
+       "null": 8,
+       "string": 1
       },
-      "present_in_records": 5,
+      "present_in_records": 9,
       "absent_in_records": 0,
-      "occurrences": 5,
-      "null": 5,
+      "occurrences": 9,
+      "null": 8,
       "empty": 0,
       "evidence": [
        "stream.jsonl:7",
        "stream.jsonl:10",
        "stream.jsonl:15",
        "stream.jsonl:17",
-       "stream.jsonl:34"
+       "stream.jsonl:34",
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:21",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
       ]
      },
      "session_id": {
       "kinds": {
-       "string": 5
+       "string": 9
       },
-      "present_in_records": 5,
+      "present_in_records": 9,
       "absent_in_records": 0,
-      "occurrences": 5,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3368,16 +5152,46 @@
        "stream.jsonl:10",
        "stream.jsonl:15",
        "stream.jsonl:17",
-       "stream.jsonl:34"
+       "stream.jsonl:34",
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:21",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
+      ]
+     },
+     "subagent_type": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 2,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:21"
+      ]
+     },
+     "task_description": {
+      "kinds": {
+       "string": 1
+      },
+      "present_in_records": 1,
+      "absent_in_records": 2,
+      "occurrences": 1,
+      "null": 0,
+      "empty": 0,
+      "evidence": [
+       "claude-child-2.1.299/stream.jsonl:21"
       ]
      },
      "timestamp": {
       "kinds": {
-       "string": 5
+       "string": 9
       },
-      "present_in_records": 5,
+      "present_in_records": 9,
       "absent_in_records": 0,
-      "occurrences": 5,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3385,16 +5199,20 @@
        "stream.jsonl:10",
        "stream.jsonl:15",
        "stream.jsonl:17",
-       "stream.jsonl:34"
+       "stream.jsonl:34",
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:21",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
       ]
      },
      "tool_result_meta": {
       "kinds": {
-       "array": 5
+       "array": 9
       },
-      "present_in_records": 5,
+      "present_in_records": 9,
       "absent_in_records": 0,
-      "occurrences": 5,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3402,16 +5220,20 @@
        "stream.jsonl:10",
        "stream.jsonl:15",
        "stream.jsonl:17",
-       "stream.jsonl:34"
+       "stream.jsonl:34",
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:21",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
       ]
      },
      "tool_result_meta[]": {
       "kinds": {
-       "object": 5
+       "object": 9
       },
-      "present_in_records": 5,
+      "present_in_records": 9,
       "absent_in_records": 0,
-      "occurrences": 5,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3419,16 +5241,20 @@
        "stream.jsonl:10",
        "stream.jsonl:15",
        "stream.jsonl:17",
-       "stream.jsonl:34"
+       "stream.jsonl:34",
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:21",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
       ]
      },
      "tool_result_meta[].id": {
       "kinds": {
-       "string": 5
+       "string": 9
       },
-      "present_in_records": 5,
+      "present_in_records": 9,
       "absent_in_records": 0,
-      "occurrences": 5,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3436,16 +5262,20 @@
        "stream.jsonl:10",
        "stream.jsonl:15",
        "stream.jsonl:17",
-       "stream.jsonl:34"
+       "stream.jsonl:34",
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:21",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
       ]
      },
      "tool_result_meta[].permission_decision": {
       "kinds": {
-       "object": 5
+       "object": 9
       },
-      "present_in_records": 5,
+      "present_in_records": 9,
       "absent_in_records": 0,
-      "occurrences": 5,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3453,16 +5283,20 @@
        "stream.jsonl:10",
        "stream.jsonl:15",
        "stream.jsonl:17",
-       "stream.jsonl:34"
+       "stream.jsonl:34",
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:21",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
       ]
      },
      "tool_result_meta[].permission_decision.decision": {
       "kinds": {
-       "string": 5
+       "string": 9
       },
-      "present_in_records": 5,
+      "present_in_records": 9,
       "absent_in_records": 0,
-      "occurrences": 5,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3470,16 +5304,20 @@
        "stream.jsonl:10",
        "stream.jsonl:15",
        "stream.jsonl:17",
-       "stream.jsonl:34"
+       "stream.jsonl:34",
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:21",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
       ]
      },
      "tool_result_meta[].permission_decision.reason_type": {
       "kinds": {
-       "string": 5
+       "string": 7
       },
-      "present_in_records": 5,
-      "absent_in_records": 0,
-      "occurrences": 5,
+      "present_in_records": 7,
+      "absent_in_records": 1,
+      "occurrences": 7,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3487,16 +5325,18 @@
        "stream.jsonl:10",
        "stream.jsonl:15",
        "stream.jsonl:17",
-       "stream.jsonl:34"
+       "stream.jsonl:34",
+       "claude-child-2.1.299/stream.jsonl:21",
+       "claude-child-2.1.299/stream.jsonl:24"
       ]
      },
      "tool_result_meta[].permission_decision.source": {
       "kinds": {
-       "string": 5
+       "string": 9
       },
-      "present_in_records": 5,
+      "present_in_records": 9,
       "absent_in_records": 0,
-      "occurrences": 5,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3504,38 +5344,46 @@
        "stream.jsonl:10",
        "stream.jsonl:15",
        "stream.jsonl:17",
-       "stream.jsonl:34"
+       "stream.jsonl:34",
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:21",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
       ]
      },
      "tool_use_result": {
       "kinds": {
-       "object": 5
+       "object": 8
       },
-      "present_in_records": 5,
-      "absent_in_records": 0,
-      "occurrences": 5,
+      "present_in_records": 8,
+      "absent_in_records": 1,
+      "occurrences": 8,
       "null": 0,
       "empty": 0,
-      "distinct_data_keys": 12,
+      "distinct_data_keys": 18,
       "evidence": [
        "stream.jsonl:7",
        "stream.jsonl:10",
        "stream.jsonl:15",
        "stream.jsonl:17",
-       "stream.jsonl:34"
+       "stream.jsonl:34",
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
       ]
      },
      "tool_use_result.{*}": {
       "kinds": {
-       "array": 1,
-       "boolean": 7,
+       "array": 4,
+       "boolean": 8,
+       "integer": 7,
        "null": 1,
-       "object": 2,
-       "string": 9
+       "object": 4,
+       "string": 17
       },
-      "present_in_records": 5,
-      "absent_in_records": 0,
-      "occurrences": 20,
+      "present_in_records": 8,
+      "absent_in_records": 1,
+      "occurrences": 41,
       "null": 1,
       "empty": 1,
       "evidence": [
@@ -3543,16 +5391,19 @@
        "stream.jsonl:10",
        "stream.jsonl:15",
        "stream.jsonl:17",
-       "stream.jsonl:34"
+       "stream.jsonl:34",
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
       ]
      },
      "type": {
       "kinds": {
-       "string": 5
+       "string": 9
       },
-      "present_in_records": 5,
+      "present_in_records": 9,
       "absent_in_records": 0,
-      "occurrences": 5,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3560,16 +5411,20 @@
        "stream.jsonl:10",
        "stream.jsonl:15",
        "stream.jsonl:17",
-       "stream.jsonl:34"
+       "stream.jsonl:34",
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:21",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
       ]
      },
      "uuid": {
       "kinds": {
-       "string": 5
+       "string": 9
       },
-      "present_in_records": 5,
+      "present_in_records": 9,
       "absent_in_records": 0,
-      "occurrences": 5,
+      "occurrences": 9,
       "null": 0,
       "empty": 0,
       "evidence": [
@@ -3577,7 +5432,11 @@
        "stream.jsonl:10",
        "stream.jsonl:15",
        "stream.jsonl:17",
-       "stream.jsonl:34"
+       "stream.jsonl:34",
+       "claude-child-2.1.299/stream.jsonl:6",
+       "claude-child-2.1.299/stream.jsonl:21",
+       "claude-child-2.1.299/stream.jsonl:24",
+       "claude-child-2.1.299-interrupted/stream.jsonl:6"
       ]
      }
     }

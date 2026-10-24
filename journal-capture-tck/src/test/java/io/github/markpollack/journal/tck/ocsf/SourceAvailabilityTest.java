@@ -40,6 +40,10 @@ class SourceAvailabilityTest {
         SPECIMENS.put("junie/session-events/3813.7", List.of("junie-live-3813.7-view/native/session-events.jsonl", "junie-live-3813.7-terminal/native/session-events.jsonl"));
         SPECIMENS.put("junie/json-stream/3813.7", List.of("junie-live-3813.7-view/native/stdout.jsonl", "junie-live-3813.7-terminal/native/stdout.jsonl"));
         SPECIMENS.put("claude-code/session-transcript/2.1.304", List.of("claude-live-2.1.304-mcp-pair/native/transcript.jsonl"));
+        // the Claude stream routes, each against its own specification (D1): sdk 2.1.299, stdout 2.1.304
+        SPECIMENS.put("claude-code/stream-json/2.1.303", List.of("claude-child-2.1.299/native/stream.jsonl", "claude-child-2.1.299-interrupted/native/stream.jsonl"));
+        SPECIMENS.put("claude-code/stream-json/2.1.304", List.of("claude-live-2.1.304-features/native/stream.jsonl", "claude-live-2.1.304-denial/native/stream.jsonl",
+                "claude-live-2.1.304-cancelled/native/stream.jsonl", "claude-live-2.1.304-mcp/native/stream.jsonl", "claude-live-2.1.304-mcp-pair/native/stream.jsonl"));
     }
 
     @Test
@@ -66,17 +70,16 @@ class SourceAvailabilityTest {
     void theAuditOfTheEarlierRoutesFindsExactlyTheRecordedGaps() {
         assertThat(SourceAvailability.check(read("codex-cli/exec-json-stream/0.160.1"), natives(fixtures("codex-live-", "syn-codex-exec"), "stream.jsonl"))).isEmpty();
         assertThat(SourceAvailability.check(read("antigravity-cli/stream-json/1.4.6"), natives(fixtures("antigravity-live-"), "stream.jsonl"))).isEmpty();
-        // finding A-1 (open): Claude Code's Agent tool result (tool_use_result: agentType, totalTokens, usage, toolStats) reports the
-        // child run's total usage inside a subtree the stream specification inventories as tool data; it is retained whole on the
-        // tool result and not normalized as usage
-        List<String> claude = SourceAvailability.check(read("claude-code/stream-json/2.1.303"), natives(fixtures("claude-child-", "claude-live-"), "stream.jsonl"));
-        assertThat(claude).isNotEmpty().allSatisfy(p -> assertThat(p).satisfiesAnyOf(
-                a -> assertThat(a).startsWith("data-keyed subtree under tool_use_result holds the token-usage key"),
-                // finding A-3 (open): the admitted 2.1.304 stdout entry names the 2.1.303 stream specification; the 2.1.304 recordings'
-                // system/task_progress and system/task_notification records carry usage it lacks (a drift report proposes them; the
-                // specification changes only by review)
-                a -> assertThat(a).containsAnyOf("observes the usage path system/task_progress usage.", "observes the usage path system/task_notification usage.")));
-        assertThat(String.join("\n", claude)).contains("totalTokens").contains("input_tokens").contains("system/task_progress usage.total_tokens");
+        // findings A-1 and A-3 (repaired by D1): the Agent result's child-run usage is normalized by its obligation
+        // (claude.stream.usage.child-run.agent-result), so the specifications list tool_use_result as a reviewed data-keyed
+        // exception, and each route names its own specification (sdk 2.1.303 0.2.0 with the 2.1.299 recordings, stdout
+        // 2.1.304 0.1.0), whose inventory has the task usage paths; both hold on their recordings (theNewRoutesHoldOnTheirSpecimens).
+        // Without the reviewed exception the detector still finds what it found at 24e8ecc: the negative control.
+        Json noException = set(read("claude-code/stream-json/2.1.304"), "availability",
+                set(read("claude-code/stream-json/2.1.304").member("availability"), "data_keyed_exceptions", new Json.JArray(List.of())));
+        List<String> claude = SourceAvailability.check(noException, natives(SPECIMENS.get("claude-code/stream-json/2.1.304")));
+        assertThat(claude).isNotEmpty().allSatisfy(p -> assertThat(p).startsWith("data-keyed subtree under tool_use_result holds the token-usage key").contains("(stream.jsonl:33)"));
+        assertThat(String.join("\n", claude)).contains("totalTokens").contains("input_tokens");
         // finding A-2 (repaired): the 2.1.304 session file entry named the 2.1.303 specification, whose inventory lacks a usage path the
         // labelled synthetic pair transcript carries; the 2.1.304 entry now names its own specification (held above)
         assertThat(SourceAvailability.check(read("claude-code/session-transcript/2.1.303"), natives(List.of("syn-claude-pair-transcript"), "transcript.jsonl")))

@@ -1820,6 +1820,7 @@ public final class OcsfOracle {
             if (!Objects.equals(c.renderedRole(), e.text("rendered_role"))) {
                 problems.add(what + " rendered_role " + e.text("rendered_role") + " != " + c.renderedRole());
             }
+            stated(what + " tool_call_uid (the spawning call of the child run accounted for)", facts.contextToolCalls.get(c.recordIndex() + ":" + c.contextKind()), e.text("tool_call_uid"), problems);
             if (c.blocks() == null) {
                 if (e.get("content_blocks") != null) {
                     problems.add(what + " content_blocks present but the source renders nothing");

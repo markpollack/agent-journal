@@ -66,7 +66,7 @@ class OcsfOracleFixtureTest {
         assertThat(report.check("whole_record.coverage", child).detail()).startsWith("3 owned record(s)");
         assertThat(report.check("population.requests", main).detail()).isEqualTo("2 expected, 2 observed");
         assertThat(report.check("population.requests", child).detail()).isEqualTo("1 expected, 1 observed");
-        assertThat(report.check("population.usage", main).detail()).isEqualTo("9 expected, 9 observed");
+        assertThat(report.check("population.usage", main).detail()).isEqualTo("12 expected, 12 observed");
         assertThat(report.check("population.usage", child).detail()).isEqualTo("1 expected, 1 observed");
         assertThat(report.check("population.cost", main).detail()).isEqualTo("1 expected, 1 observed");
         assertThat(report.outcome("population.cost", child)).isEqualTo(Outcome.NOT_APPLICABLE);
