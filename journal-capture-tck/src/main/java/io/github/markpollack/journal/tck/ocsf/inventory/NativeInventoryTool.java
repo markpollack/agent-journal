@@ -24,6 +24,7 @@ import java.util.List;
  *                                                                    the inventory compared with an external JSON Schema description (cross-check only)
  *   schema &lt;spec.json&gt; [out.json]                                    the JSON Schema derived from the accepted specification
  *   draft &lt;profile&gt; &lt;specification-version&gt; &lt;out.json&gt; &lt;artifact&gt;...  a DRAFT specification from the inventories of the given artifacts
+ *   overlap &lt;join-spec.json&gt; &lt;a[,a...]&gt; &lt;b[,b...]&gt; [report.json]       which facts two sources share, by reported identities only (EXPERIMENTAL; {@link SourceJoin})
  * </pre>
  *
  * Exit status: 0 when the command ran ({@code drift} additionally exits {@link #EXIT_DRIFT} 5 when shape drift was
@@ -85,6 +86,23 @@ public final class NativeInventoryTool {
                 write(SourceSpecification.jsonSchema(spec), args.length > 2 ? Path.of(args[2]) : null, out);
                 return EXIT_OK;
             }
+            case "overlap" -> {
+                if (args.length < 4) {
+                    usage(err);
+                    return EXIT_USAGE;
+                }
+                Json report = SourceJoin.join(NeutralJson.readDocument(Path.of(args[1])), artifacts(args[2]), artifacts(args[3]));
+                write(report, args.length > 4 ? Path.of(args[4]) : null, out);
+                StringBuilder line = new StringBuilder("overlap: session " + report.path("session", "status").text());
+                for (Json k : report.member("keys").elements()) {
+                    line.append("; ").append(k.member("name").text()).append(' ').append(k.member("status").text());
+                    if (k.member("matched") != null) {
+                        line.append(" matched ").append(k.member("matched").scalarText());
+                    }
+                }
+                out.println(line);
+                return EXIT_OK;
+            }
             case "draft" -> {
                 if (args.length < 5) {
                     usage(err);
@@ -105,13 +123,22 @@ public final class NativeInventoryTool {
         }
     }
 
+    private static List<NativeArtifact> artifacts(String commaSeparated) {
+        List<NativeArtifact> out = new ArrayList<>();
+        for (String p : commaSeparated.split(",")) {
+            out.add(NativeArtifact.read(Path.of(p)));
+        }
+        return out;
+    }
+
     static Json inventory(String profile, Path artifact) {
         return RawInventory.inventory(NativeArtifact.read(artifact), artifact.getFileName().toString(), profile);
     }
 
     private static void usage(PrintStream err) {
         err.println("usage: inventory <profile> <artifact> [out.json] | drift <spec.json> <artifact> [report.json] | external <schema.json> <discriminator> <profile> <artifact> [report.json]"
-                + " | schema <spec.json> [out.json] | draft <profile> <specification-version> <out.json> <artifact>...");
+                + " | schema <spec.json> [out.json] | draft <profile> <specification-version> <out.json> <artifact>..."
+                + " | overlap <join-spec.json> <a[,a...]> <b[,b...]> [report.json]");
     }
 
     private static void write(Json json, Path out, PrintStream console) throws IOException {
