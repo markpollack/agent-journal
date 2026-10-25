@@ -42,7 +42,7 @@ class FullOneReviewRegressionTest {
     static final String ROLLOUT = "main/rollout.jsonl";
 
     @Test
-    void controlIsAcceptedWithTheFrozenDenominatorAndCompleteAcquisition(@TempDir Path work) {
+    void controlVerifiesTheFrozenDenominatorAndCompleteAcquisition(@TempDir Path work) {
         OracleReport report = verify(copy(PAIR, work));
         assertThat(report.defects()).as(report.toString()).isEmpty();
         assertThat(report.outcome("source.denominator", "main")).isEqualTo(Outcome.VERIFIED);
@@ -54,7 +54,11 @@ class FullOneReviewRegressionTest {
         assertThat(report.outcome("source.state", STREAM)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("context.values", TRANSCRIPT)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.missingRequired()).isEmpty();
-        assertThat(OcsfReaderTool.acceptance(report).exit()).isEqualTo(OcsfReaderTool.EXIT_OK);
+        // a two-source file without final assembly is an unvalidated evidence log: verified per source, never accepted
+        // as one combined execution (CombinedSourceAdmissionTest)
+        OcsfReaderTool.Acceptance acceptance = OcsfReaderTool.acceptance(report);
+        assertThat(acceptance.exit()).isEqualTo(OcsfReaderTool.EXIT_INCOMPLETE);
+        assertThat(acceptance.reasons()).singleElement().asString().contains("combination.policy");
     }
 
     @Nested
@@ -205,7 +209,9 @@ class FullOneReviewRegressionTest {
 
         @Test
         void aRequiredCheckMissingFromTheReportBlocksAcceptance(@TempDir Path work) {
-            OracleReport report = verify(copy(PAIR, work));
+            // the pair is an unvalidated evidence log (combination.policy UNRESOLVED, judged by CombinedSourceAdmissionTest);
+            // without that check the report isolates the required-check rule this test is about
+            OracleReport report = verify(copy(PAIR, work)).filtered(c -> !"combination.policy".equals(c.property()));
             assertThat(OcsfReaderTool.acceptance(report).exit()).isEqualTo(OcsfReaderTool.EXIT_OK);
             assertThat(report.required()).contains("whole_record.coverage [" + TRANSCRIPT + "]", "acquisition.complete [main]", "source.expected [" + TRANSCRIPT + "]");
             for (String property : List.of("whole_record.coverage", "population.contexts", "context.values", "reconstruction.coverage", "source.state", "source.inventory")) {

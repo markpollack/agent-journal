@@ -5,17 +5,25 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
  * Which declared sources belong to the execution being assembled. A source's session identity is what its own
  * observations report ({@code session_uid}), or, for a role whose identity is held by a companion artifact (Junie's
- * session events, identified by the summary.json beside them), that companion's. The run's identity is the one the
- * sources in precedence order establish first; a source that reports another identity, or several, is refused as
- * another execution; a required source that establishes none is refused as unestablished; a source acquired from the
- * same origin with the same bytes as one already accepted is the same import and contributes nothing again. Identical
- * bytes from distinct origins are distinct sources. A role declared {@code acquisition} is bound by the capture that
- * acquired it, not by a reported identity, and says so.
+ * session events, identified by the summary.json beside them), that companion's, provided both inputs are declared in
+ * the same acquisition. The run's identity is the one the sources in precedence order establish first, and the source
+ * that establishes it is the run's anchor; a source that reports another identity, or several, is refused as another
+ * execution; a required source that establishes none is refused as unestablished. A source that reports no identity
+ * (a role declared {@code acquisition}, or an optional one) belongs only when its declared acquisition is the anchor's:
+ * requirement level or role name is never membership evidence. A declared acquisition is the caller's assertion and is
+ * declared as such.
+ *
+ * <p>Import identity: a source acquired from the same origin with the same bytes as one already accepted is the same
+ * import and contributes nothing again. Identical bytes from a distinct origin are related to the earlier source only
+ * by a declared copy lineage ({@link AssemblyPlan.Binding#copyOf()}), which the equal bytes then verify; without one,
+ * equal content establishes no occurrence relation, and since consolidating by position or counting the copy again
+ * would each be a guess, the source is refused with that reason.
  */
 final class AssemblyGate {
 
@@ -44,38 +52,139 @@ final class AssemblyGate {
         facts.values().stream().filter(f -> f.reportedSessions() != null).forEach(f -> sessions.put(f.artifact(), f.reportedSessions()));
         List<AssemblyPlan.Binding> ordered = new ArrayList<>(plan.bindings());
         ordered.sort((a, b) -> Integer.compare(plan.rank(a.artifact()), plan.rank(b.artifact())));
-        String[] run = {null};
-        Map<String, String> imports = new LinkedHashMap<>();
         Map<String, Verdict> out = new LinkedHashMap<>();
+        // 1. imports, undeclared equal bytes, and every source with an identity of its own or its companion's
+        AssemblyPlan.Binding anchor = identified(plan, ordered, sessions, facts, out);
+        // 2. sources without an identity: members only through the anchor's declared acquisition
         for (AssemblyPlan.Binding b : ordered) {
-            AssemblyProfile.Role role = plan.profile().role(b.role());
-            String importKey = b.origin() + "#" + (facts.containsKey(b.artifact()) ? facts.get(b.artifact()).sha256() : "");
-            Verdict v = verdict(b, role, identity(b, role, plan, sessions), imports.putIfAbsent(importKey, b.artifact()), run[0]);
-            if (v.accepted() && run[0] == null && v.sessions().size() == 1) {
-                run[0] = v.sessions().iterator().next();
+            if (!out.containsKey(b.artifact()) && b.copyOf() == null) {
+                out.put(b.artifact(), identityFree(b, plan.profile().role(b.role()), anchor));
             }
-            out.put(b.artifact(), v);
         }
-        return out;
+        // 3. declared copies, after their originals are decided
+        for (AssemblyPlan.Binding b : ordered) {
+            if (b.copyOf() != null && !out.containsKey(b.artifact())) {
+                out.put(b.artifact(), copy(b, out.get(b.copyOf()), facts));
+            }
+        }
+        Map<String, Verdict> inPlanOrder = new LinkedHashMap<>();
+        ordered.forEach(b -> inPlanOrder.put(b.artifact(), out.get(b.artifact())));
+        return inPlanOrder;
     }
 
-    /** One source's verdict given its identity, whether it repeats an import, and the run's identity so far. */
-    private static Verdict verdict(AssemblyPlan.Binding b, AssemblyProfile.Role role, Set<String> own, String duplicateOf, String run) {
-        String basis = basis(role);
-        if (duplicateOf != null) {
-            return new Verdict(b.artifact(), b.role(), false, "the same import as " + duplicateOf + " (same origin " + b.origin() + " and sha256): replaying it adds nothing", own, basis);
+    /**
+     * Decides every repeated import, undeclared equal bytes and source with an identity into {@code out}, in precedence
+     * order; returns the anchor, the first accepted source that establishes the run's identity.
+     */
+    private static AssemblyPlan.Binding identified(AssemblyPlan plan, List<AssemblyPlan.Binding> ordered, Map<String, Set<String>> sessions,
+            Map<String, SourceFacts> facts, Map<String, Verdict> out) {
+        Map<String, String> imports = new LinkedHashMap<>();
+        Map<String, String> firstBySha = new LinkedHashMap<>();
+        AssemblyPlan.Binding anchor = null;
+        for (AssemblyPlan.Binding b : ordered) {
+            AssemblyProfile.Role role = plan.profile().role(b.role());
+            Set<String> own = identity(b, role, plan, sessions);
+            Verdict v = screened(b, role, own, sha(facts, b.artifact()), imports, firstBySha);
+            if (v == null && b.copyOf() == null && !own.isEmpty()) {
+                v = identified(b, role, own, runOf(anchor, out));
+                anchor = establishes(anchor, v) ? b : anchor;
+            }
+            if (v != null) {
+                out.put(b.artifact(), v);
+            }
         }
+        return anchor;
+    }
+
+    /** The run's session identity, as the anchor established it, or {@code null} before any source did. */
+    private static String runOf(AssemblyPlan.Binding anchor, Map<String, Verdict> out) {
+        return anchor == null ? null : out.get(anchor.artifact()).sessions().iterator().next();
+    }
+
+    /** Whether this verdict makes its source the anchor: the first accepted source with exactly one identity. */
+    private static boolean establishes(AssemblyPlan.Binding anchor, Verdict v) {
+        return anchor == null && v.accepted() && v.sessions().size() == 1;
+    }
+
+    /** A repeated import, or equal bytes from another origin with no declared copy lineage; {@code null} otherwise. */
+    private static Verdict screened(AssemblyPlan.Binding b, AssemblyProfile.Role role, Set<String> own, String sha, Map<String, String> imports, Map<String, String> firstBySha) {
+        String duplicateOf = imports.putIfAbsent(b.origin() + "#" + sha, b.artifact());
+        if (duplicateOf != null) {
+            return new Verdict(b.artifact(), b.role(), false, "the same import as " + duplicateOf + " (same origin " + b.origin() + " and sha256): replaying it adds nothing", own, basis(b, role, null));
+        }
+        if (b.copyOf() != null) {
+            return null;
+        }
+        String sameBytes = sha.isEmpty() ? null : firstBySha.putIfAbsent(sha, b.artifact());
+        return sameBytes == null ? null : new Verdict(b.artifact(), b.role(), false, "identical bytes to " + sameBytes + " from another origin (" + b.origin()
+                + ") with no declared copy lineage: equal content does not establish that they are one native occurrence, and consolidating it by position"
+                + " or counting it again would each be a guess", own, basis(b, role, null));
+    }
+
+    /** A source that reports an identity: one execution's, agreeing with the run's so far. */
+    private static Verdict identified(AssemblyPlan.Binding b, AssemblyProfile.Role role, Set<String> own, String run) {
+        String basis = basis(b, role, null);
         if (own.size() > 1) {
             return new Verdict(b.artifact(), b.role(), false, "reports more than one session identity " + own + ": not one execution", own, basis);
         }
-        if (own.isEmpty() && !"acquisition".equals(role.identity())) {
-            return new Verdict(b.artifact(), b.role(), !role.required(), role.required() ? "a required source establishes no session identity"
-                    : "establishes no session identity; accepted as optional, its facts are scoped to the declared acquisition", own, basis);
-        }
-        if (!own.isEmpty() && run != null && !run.equals(own.iterator().next())) {
+        if (run != null && !run.equals(own.iterator().next())) {
             return new Verdict(b.artifact(), b.role(), false, "reports session " + own.iterator().next() + ", another execution than " + run, own, basis);
         }
         return new Verdict(b.artifact(), b.role(), true, "the session identity agrees with the run's", own, basis);
+    }
+
+    /** A source that reports no identity: refused when required (unless acquisition-bound), else a member only by the anchor's acquisition. */
+    private static Verdict identityFree(AssemblyPlan.Binding b, AssemblyProfile.Role role, AssemblyPlan.Binding anchor) {
+        String refused = refusal(b, role, anchor);
+        if (refused != null) {
+            return new Verdict(b.artifact(), b.role(), false, refused, Set.of(), basis(b, role, anchor));
+        }
+        return new Verdict(b.artifact(), b.role(), true, "acquisition".equals(role.identity()) ? "bound by the acquisition " + b.acquisition() + " that also acquired " + anchor.artifact()
+                : "establishes no session identity; a member by the acquisition " + b.acquisition() + " it shares with " + anchor.artifact() + ", its facts scoped to it", Set.of(), basis(b, role, anchor));
+    }
+
+    private static String declared(String acquisition) {
+        return acquisition == null ? "(none declared)" : acquisition;
+    }
+
+    /** Why a source without an identity is refused, or {@code null} when it is a member. */
+    private static String refusal(AssemblyPlan.Binding b, AssemblyProfile.Role role, AssemblyPlan.Binding anchor) {
+        if (role.identity().startsWith("companion:") && role.required()) {
+            return "a required source establishes no session identity: no " + role.identity().substring("companion:".length()) + " source in the same declared acquisition "
+                    + declared(b.acquisition()) + " reports one";
+        }
+        if (role.required() && !"acquisition".equals(role.identity())) {
+            return "a required source establishes no session identity";
+        }
+        if (anchor == null) {
+            return "reports no session identity and no source established the run's: membership not established";
+        }
+        if (b.acquisition() == null || !b.acquisition().equals(anchor.acquisition())) {
+            return "reports no session identity, and its declared acquisition " + declared(b.acquisition()) + " is not that of " + anchor.artifact()
+                    + ", which established the run (" + declared(anchor.acquisition()) + "): membership not established";
+        }
+        return null;
+    }
+
+    /** A declared copy: the original's verdict when the bytes are equal; refused when they differ or the original is not an earlier input. */
+    private static Verdict copy(AssemblyPlan.Binding b, Verdict original, Map<String, SourceFacts> facts) {
+        String basis = "a declared copy of " + b.copyOf() + " (caller assertion), verified by byte equality";
+        if (original == null) {
+            return new Verdict(b.artifact(), b.role(), false, "declared a copy of " + b.copyOf() + ", which is not another input of this assembly", Set.of(), basis);
+        }
+        if (!Objects.equals(sha(facts, b.artifact()), sha(facts, b.copyOf())) || sha(facts, b.artifact()).isEmpty()) {
+            return new Verdict(b.artifact(), b.role(), false, "declared a copy of " + b.copyOf() + ", but its bytes differ: not a copy", Set.of(), basis);
+        }
+        if (!b.role().equals(original.role())) {
+            return new Verdict(b.artifact(), b.role(), false, "declared a copy of " + b.copyOf() + ", which fills role " + original.role() + ", not " + b.role(), Set.of(), basis);
+        }
+        return new Verdict(b.artifact(), b.role(), original.accepted(), original.accepted()
+                ? "a declared copy of " + b.copyOf() + " with equal bytes: the same native records acquired again from " + b.origin() + ", one entity with the original's, never extra executions"
+                : "a declared copy of " + b.copyOf() + ", which is refused (" + original.reason() + ")", original.sessions(), basis);
+    }
+
+    private static String sha(Map<String, SourceFacts> facts, String artifact) {
+        return facts.containsKey(artifact) ? facts.get(artifact).sha256() : "";
     }
 
     /** The run's session identity: the one the accepted sources report. */
@@ -99,7 +208,10 @@ final class AssemblyGate {
         return out;
     }
 
-    /** The identity of one bound artifact: what its own observations report, or what its companion's report. */
+    /**
+     * The identity of one bound artifact: what its own observations report, or what its companions report, counting
+     * only companions declared in the same acquisition (never a companion role of another acquisition).
+     */
     private static Set<String> identity(AssemblyPlan.Binding b, AssemblyProfile.Role role, AssemblyPlan plan, Map<String, Set<String>> sessions) {
         if (!role.identity().startsWith("companion:")) {
             return sessions.getOrDefault(b.artifact(), Set.of());
@@ -107,18 +219,22 @@ final class AssemblyGate {
         String companion = role.identity().substring("companion:".length());
         Set<String> out = new LinkedHashSet<>();
         for (AssemblyPlan.Binding c : plan.bindings()) {
-            if (c.role().equals(companion)) {
+            if (c.role().equals(companion) && b.acquisition() != null && b.acquisition().equals(c.acquisition())) {
                 out.addAll(sessions.getOrDefault(c.artifact(), Set.of()));
             }
         }
         return out;
     }
 
-    private static String basis(AssemblyProfile.Role role) {
+    private static String basis(AssemblyPlan.Binding b, AssemblyProfile.Role role, AssemblyPlan.Binding anchor) {
         if (role.identity().startsWith("companion:")) {
-            return "the session identity the companion source " + role.identity().substring("companion:".length()) + " reports (the same native session directory)";
+            return "the session identity the companion source " + role.identity().substring("companion:".length()) + " reports, related by the declared acquisition "
+                    + (b.acquisition() == null ? "(none declared)" : b.acquisition()) + " (caller assertion)";
         }
-        return "acquisition".equals(role.identity()) ? "bound by the acquisition that captured it (the launch's own output location); it reports no session identity"
-                : "the session_uid its own observations report";
+        if ("acquisition".equals(role.identity())) {
+            return "bound by its declared acquisition " + (b.acquisition() == null ? "(none declared)" : b.acquisition()) + " (caller assertion), which must be the run anchor's"
+                    + (anchor == null ? "" : " (" + anchor.artifact() + ")") + "; it reports no session identity";
+        }
+        return "the session_uid its own observations report";
     }
 }

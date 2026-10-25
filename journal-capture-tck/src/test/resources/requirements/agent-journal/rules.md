@@ -26,9 +26,10 @@ assembly** writes one new `events.jsonl` from the declared sources of one execut
 Tests: `FinalAssemblyClaudeTest#thePairAssemblesIntoOneCanonicalExecutionTheOracleVerifies`, `FinalAssemblyCopilotTest#theFourSourcesAssembleIntoOneExecutionTheOracleVerifies`, `FinalAssemblyJunieTest#theSessionDirectoryAssemblesWithItsOutputsAndTheOracleVerifiesIt`; single-source capture keeps `CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy`.
 
 ### RULE-2
-**MUST** bind each declared source to the execution by a session identity the source itself reports, by the identity of a declared companion in the same native session directory, or by the acquisition that captured it, and **MUST** refuse a source that reports another execution, several, or (when required) none.
-**Reason:** A source of another execution silently corrupts the record; identity reported by the source, not assumed from its location, is what lets an independent check confirm membership.
-Tests: `FinalAssemblyClaudeTest#anotherExecutionsSessionFileIsRefusedAndWrittenNowhere`, `FinalAssemblyCopilotTest#anotherExecutionsTelemetryIsRefused`, `FinalAssemblyJunieTest#aSummaryOfAnotherSessionTakesItsEventsWithIt`, `FinalAssemblyJunieTest#withoutItsSummaryTheSessionFileHasNoIdentity`.
+**MUST** bind each declared source to the execution by a session identity the source itself reports, by the identity of a declared companion declared in the same acquisition, or by the acquisition that captured it, and **MUST** refuse a source that reports another execution, several, or (when required) none, and a source without an identity of its own whose declared acquisition is not that of the source that established the run. A declared acquisition is the acquiring caller's assertion and the file records it as such; a role's requirement level or name is never membership evidence.
+**Reason:** A source of another execution silently corrupts the record; identity reported by the source, not assumed from its location, is what lets an independent check confirm membership, and where a source reports none, only a stated acquisition relates it to the run.
+Tests: `FinalAssemblyClaudeTest#anotherExecutionsSessionFileIsRefusedAndWrittenNowhere`, `FinalAssemblyCopilotTest#anotherExecutionsTelemetryIsRefused`, `FinalAssemblyJunieTest#aSessionFileOfAnotherAcquisitionTakesNoIdentityFromASummary`, `FinalAssemblyJunieTest#withoutItsSummaryTheSessionFileHasNoIdentity`, `FinalAssemblyClaudeTest#anOptionalSourceWithoutAnIdentityBelongsOnlyThroughTheAnchorsAcquisition`.
+Status: changed meaning 2026-10-24 (R1 candidate, review finding CDX-R1-06; was: a companion or optional source belonged by its role alone).
 
 ### RULE-3
 **MUST NOT** treat a missing adapter, an unknown CLI version or a richer source as grounds to substitute one source for another outside the reviewed profile.
@@ -273,9 +274,10 @@ Tests: `ParityLedgerTest#everyPinnedFieldIsAccountedForExactlyOnce`, `ParityLedg
 ## Final assembly semantics, MCP containment and source availability
 
 ### RULE-48
-**MUST** relate observations of different sources only through identities a reviewed profile declares (namespaced identifiers, bridges through another source, or a declared execution singleton), never by position, timestamp proximity or similar text, and **MUST** leave observations whose identity repeats within one source unpaired and flagged ambiguous.
-**Reason:** A guessed pairing fabricates a fact; a repeated identity cannot say which occurrence is which.
-Tests: `FinalAssemblyClaudeTest#anIdentityRepeatedWithinOneSourceStaysUnpairedAndFlagged`, `FinalAssemblyCopilotTest#theFourSourcesAssembleIntoOneExecutionTheOracleVerifies` (bridges through the provider call id).
+**MUST** relate observations of different sources only through identities a reviewed profile declares (namespaced identifiers, bridges through another source, or a declared execution singleton), never by position, timestamp proximity or similar text, and **MUST** leave observations whose identity repeats within one source at the same lifecycle stage unpaired and flagged ambiguous; one identity at different stages of a declared staged join is one entity's lifecycle, not a repeat.
+**Reason:** A guessed pairing fabricates a fact; a repeated identity cannot say which occurrence is which, while a request and its completion naming one id are what the identity is for.
+Tests: `FinalAssemblyClaudeTest#anIdentityRepeatedWithinOneSourceStaysUnpairedAndFlagged`, `FinalAssemblyCopilotTest#theFourSourcesAssembleIntoOneExecutionTheOracleVerifies` (bridges through the provider call id), `AssemblyLifecycleIdentityTest`.
+Status: changed meaning 2026-10-24 (R1 candidate, review finding CDX-R1-07; was: any repeat of an identity within one source by one rule).
 
 ### RULE-49
 **MUST** merge compatible reports of one entity field by field with per-field evidence, **MUST** keep every conflicting report listed with its occurrence, and **MUST NOT** apply a universal source-wins rule; a value may be selected only by a field authority the profile declares with its reason.
@@ -288,14 +290,16 @@ Tests: `FinalAssemblyClaudeTest#theOracleRejectsAlteredConsolidation`, `FinalAss
 Tests: `FinalAssemblyCopilotTest#aMultiplierSumAndPremiumRequestsAreDistinctQuantities`, `FinalAssemblyJunieTest#theSessionDirectoryAssemblesWithItsOutputsAndTheOracleVerifiesIt`, `FinalAssemblyClaudeTest#theOracleRejectsAlteredConsolidation`.
 
 ### RULE-51
-**MUST** identify an imported source by its acquisition origin and its sha256: replaying the same origin and bytes adds nothing, while identical bytes from distinct origins stay distinct sources whose observations are one entity, never extra executions.
-**Reason:** Idempotent import prevents double counting; distinct provenance must not be erased by equal bytes.
+**MUST** identify an imported source by its acquisition origin and its sha256: replaying the same origin and bytes adds nothing; identical bytes from a distinct origin are related to the earlier source only by a declared copy lineage, which the equal bytes verify, and then their observations are one entity, never extra executions; without that lineage the source is refused with its reason, because equal content never establishes one native occurrence.
+**Reason:** Idempotent import prevents double counting; distinct provenance must not be erased by equal bytes, and equal bytes must not invent an occurrence relation that only the acquisition can state.
 Tests: `FinalAssemblyClaudeTest#replayingTheSameImportAddsNothingWhileIdenticalBytesFromAnotherOriginStayDistinct`.
+Status: changed meaning 2026-10-24 (R1 candidate, review finding CDX-R1-05; was: identical bytes from distinct origins are one entity by their record positions).
 
 ### RULE-52
-**MUST** declare a final assembly in the event file itself: the profile by value, the engine and its contract, the original packages it derives from, every declared source with its role, origin, extent, hash and verdict, and the result with missing required roles and the assembly status.
-**Reason:** The final file must read alone, with native files, `run.json` and schema caches unavailable, and still say how it was assembled and whether it is complete.
-Tests: `FinalAssemblyClaudeTest#theFinalFileReadsAloneWithoutNativeFilesManifestOrSchemaCaches`, `FinalAssemblyClaudeTest#aMissingRequiredSourceMakesTheAssemblyIncomplete`.
+**MUST** declare a final assembly in the event file itself: the profile by value, the engine and its contract, the original packages it derives from, every declared source with its role, origin, declared acquisition and copy lineage, extent, hash and verdict, and the result with missing required roles and the assembly status. **MUST** combine several sources of one execution only by final assembly: a writer that records without assembly records one source, or declares the file an unvalidated evidence log in every core; readers and the oracle never accept a multi-source file without a final assembly, declared or written before this rule, as one combined execution.
+**Reason:** The final file must read alone, with native files, `run.json` and schema caches unavailable, and still say how it was assembled and whether it is complete; a combination no identity check decided must not look like one.
+Tests: `FinalAssemblyClaudeTest#theFinalFileReadsAloneWithoutNativeFilesManifestOrSchemaCaches`, `FinalAssemblyClaudeTest#aMissingRequiredSourceMakesTheAssemblyIncomplete`, `CombinedSourceAdmissionTest`, `WriterAcquisitionRegressionTest#aCompleteTwoSourceEvidenceLogVerifiesPerSourceButIsNotAcceptedAsACombinedExecution`.
+Status: extended 2026-10-24 (R1 candidate, review finding CDX-R1-04: the plain writer's multi-source path).
 
 ### RULE-53
 **MUST** embed MCP protocol data in typed objects generated from the pinned official versioned MCP schemas, declaring a CLI's partial projection with the required members it lacks, and **MUST NOT** synthesize request ids, protocol revision, capabilities, structured content, isError or success; JSON-RPC, tool-result, CLI-reported and capture errors stay distinct.
@@ -396,3 +400,12 @@ identity unpaired), RULE-49 (field-level merge, conflicts kept, no source-wins),
 kinds never mixed), RULE-51 (import identity by origin and sha256), RULE-52 (the assembly declared in the file),
 RULE-53 (MCP in typed objects from the pinned official schemas; nothing synthesized) and RULE-54 (source availability
 gates). No rule removed; `RequirementsRosterTest` pins 54 rules.
+
+2026-10-24, R1 ratchet review and identity repairs (candidates for review; no Owner decision). Retained identifiers with
+changed meaning: RULE-2 (a source without an identity of its own belongs only through a declared acquisition shared with
+the source that established the run; was: by companion role or optionality), RULE-48 (ambiguity is a repeat at the same
+lifecycle stage; was: any repeat within one source by one rule), RULE-51 (identical bytes from another origin relate to
+the earlier source only by a declared copy lineage, otherwise refused; was: one entity by record position). RULE-52 is
+extended with the combination policy: several sources are combined only by final assembly; the plain writer records one
+source or an explicitly unvalidated evidence log that is never accepted as one combined execution. No rule added or
+removed; `RequirementsRosterTest` pins 54 rules.

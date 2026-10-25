@@ -77,7 +77,30 @@ public final class OcsfOracle {
         for (OcsfPackage core : pkg.all()) {
             o.core(core);
         }
+        o.combination(pkg);
         return o.report;
+    }
+
+    /**
+     * The writer's combination policy as the file states it. One source, or a declared final assembly (judged by the
+     * assembly oracle), can be a final execution. Several sources without assembly are an unvalidated evidence log:
+     * no identity relation between them was checked, so whether the file is one execution is unresolved and it cannot
+     * be accepted as a final combined execution, whether it declares that status or predates the policy.
+     */
+    private void combination(OcsfPackage pkg) {
+        if (pkg.refused()) {
+            return; // nothing else is judged on a refused package
+        }
+        OcsfPackage.Combination c = pkg.combination();
+        String owner = pkg.label();
+        switch (c) {
+            case SINGLE_SOURCE, ASSEMBLED -> report.add(Category.COMPLETENESS, "combination.policy", owner, Outcome.VERIFIED,
+                    c == OcsfPackage.Combination.ASSEMBLED ? "a declared final assembly (its sources are judged by the assembly oracle)" : "one declared source");
+            case UNVALIDATED_EVIDENCE_LOG -> report.add(Category.COMPLETENESS, "combination.policy", owner, Outcome.UNRESOLVED,
+                    "a declared unvalidated evidence log (" + pkg.declarations.run().path("combination", "reason").text() + "): no identity relation between its sources was checked; not a final combined execution");
+            case UNVALIDATED_UNDECLARED -> report.add(Category.COMPLETENESS, "combination.policy", owner, Outcome.UNRESOLVED,
+                    "several sources without a final assembly or an evidence-log declaration (written before the combination policy): no identity relation between them was checked; not a final combined execution");
+        }
     }
 
     private void describe(OcsfPackage pkg) {

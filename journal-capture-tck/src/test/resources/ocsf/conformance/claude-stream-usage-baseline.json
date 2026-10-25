@@ -1,38 +1,203 @@
 {
  "kind": "agent-journal/conformance-baseline",
- "version": "0.1",
+ "version": "0.2",
  "catalog": "schema/vendor/claude-code/stream-json/obligations.json",
- "meaning": "the reviewed obligation set (id, revision, meaning digest) and the frozen debt by exact finding identity (category and id) with its reason; CanonicalConformanceTest fails on a new finding, on frozen debt that no longer occurs, and on a changed obligation set. Holding the baseline is not acceptance: category 6 keeps the semantic review state",
+ "meaning": "the reviewed obligation set (id, revision, meaning digest, relevant digest), the reviewed residual set (variant, path, classification, digest), the judged population (per binding: its entry's admission, every recording with its native stream hash, every occurrence id) and the frozen debt by exact finding identity (category and id) with its reason. CanonicalConformanceTest fails on a new finding, on frozen debt that no longer occurs, and on any changed obligation, residual or population: an edit here is the reviewable change, never its approval. Holding the baseline is not acceptance: category 6 keeps the semantic review state",
+ "changes": [
+  {
+   "revision": "0.2 (R1, 2026-10-24)",
+   "summary": "Pinned the residual set and the judged population (CDX-R1-01); the meaning digest now covers owner_path and the semantics statement and a relevant digest covers the destination's extension definitions and the named contract rules (CDX-R1-02), so all six digests were restated (algorithm change; no approval existed to invalidate). Revisions: agent-result r2 (aggregation 3 Single response), task-progress r2 and task-notification r2 (semantics restated with emitter grounds). Frozen debt: the three approval ids move from r1 to r2; the two unresolved iterations[] questions are answered by candidate vendor_specific classifications and leave the unresolved list; the six residual classifications become explicit approval debt (they were unreviewed meanings with no visible debt at d36b8eb). 41 -> 45 frozen ids"
+  }
+ ],
  "obligations": [
   {
    "id": "claude.stream.usage.child-run.agent-result",
-   "revision": 1,
-   "meaning_digest": "sha256:c5979dc38f468048d424483fbfaf119e418a345345a2dbf7e976a089dec17f18"
+   "revision": 2,
+   "meaning_digest": "sha256:f1843fa54553d59acea230c1c33008945ab717bfc4cdbc41d8802a4c0ba04944",
+   "relevant_digest": "sha256:a10267da8ea4474d0c6cdfbf52f0f95851f4bbeb9e0767919bbfc669176435d7"
   },
   {
    "id": "claude.stream.usage.child-run.task-notification",
-   "revision": 1,
-   "meaning_digest": "sha256:f34bab5b866b4669ef57f713eb76f53de5d61848f4b064158ab5efd2173324e2"
+   "revision": 2,
+   "meaning_digest": "sha256:d74cba6970eeb59746f6b78b591e160981b36f813e0f449319d0b75959de21d3",
+   "relevant_digest": "sha256:022acf6ce2c6c5fc3f71c9eccdd3a0baa2a5e05a3c83019ce7bd4f4fd57580c1"
   },
   {
    "id": "claude.stream.usage.child-run.task-progress",
-   "revision": 1,
-   "meaning_digest": "sha256:fbe7d1fc33cf9b8c75fb1479e718de2ae08d7b6fb715d0d88ab8e0f52c82494d"
+   "revision": 2,
+   "meaning_digest": "sha256:ac8cf88e61e1364bcfaa3bd4b8e79f75b917dfe55a7cca5c1ee9c60a0fd0bf94",
+   "relevant_digest": "sha256:022acf6ce2c6c5fc3f71c9eccdd3a0baa2a5e05a3c83019ce7bd4f4fd57580c1"
   },
   {
    "id": "claude.stream.usage.model",
    "revision": 1,
-   "meaning_digest": "sha256:0139cd83732a54dbc892a25286069a1f4982b08b7ef11afde422a4378245d6f9"
+   "meaning_digest": "sha256:a2bd4966177828e82022ac9f64b97b7493b1f33833883e380684281df0e17889",
+   "relevant_digest": "sha256:b95bef9e6525524e2469a635ecdf723db4817174b49fbafa75d40a4ec2359a7e"
   },
   {
    "id": "claude.stream.usage.model-response",
    "revision": 1,
-   "meaning_digest": "sha256:22f6b06c89b3840f3eec788f32f937492c466777787af4229c6c8e295631c45a"
+   "meaning_digest": "sha256:a454b8c98a66e2c59b15c45c527e6d41545af40023e4b562247f5e8d272d69d0",
+   "relevant_digest": "sha256:88db758f582c5d4615bd19bfd9c31071b80d3af7db825501fc0124a1075f0432"
   },
   {
    "id": "claude.stream.usage.run",
    "revision": 1,
-   "meaning_digest": "sha256:8f9082db4601cc159735a1ca939c99ba974adacb077fa0b70379d94fc425faea"
+   "meaning_digest": "sha256:4073cfa1bf08d1c89a3b3834ab37961f5a8d54fd1d62cab05c44cee5a72d6fb1",
+   "relevant_digest": "sha256:b95bef9e6525524e2469a635ecdf723db4817174b49fbafa75d40a4ec2359a7e"
+  }
+ ],
+ "residuals": [
+  {
+   "variant": "system/thinking_tokens",
+   "path": "estimated_tokens",
+   "classification": "vendor_specific",
+   "digest": "sha256:6d5b3fadc5a4921e00a51c44cde602dda4588d0b1aa4a08298bdcfa1c5791d35"
+  },
+  {
+   "variant": "system/thinking_tokens",
+   "path": "estimated_tokens_delta",
+   "classification": "vendor_specific",
+   "digest": "sha256:9099025b67a75d6d3ecd4faa790d1c869d3c22161307762467315b7716a1a45e"
+  },
+  {
+   "variant": "result",
+   "path": "modelUsage.{*}.maxOutputTokens",
+   "classification": "vendor_specific",
+   "digest": "sha256:a14a08fac199e0089e1da69498c4b114e69331659944d16b164b0604b40c5971"
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.totalTokens",
+   "classification": "vendor_specific",
+   "digest": "sha256:80fc2a0bc681847f3c3b52fbc2ab963101e94cbfebf10b7a71e55ba872720c70"
+  },
+  {
+   "variant": "result",
+   "path": "usage.iterations[]",
+   "classification": "vendor_specific",
+   "digest": "sha256:e8aebf7e0a09ff136f6126e37aad7441794dfa55accc0ba229b5bdcbc4a62f41"
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.usage.iterations[]",
+   "classification": "vendor_specific",
+   "digest": "sha256:21bb9de9d67add71cbf0b41d6075ee088c41d4f9ec4891484c078645b1bc7e9d"
+  }
+ ],
+ "population": [
+  {
+   "compatibility_entry": "claude-code/stream-json/2.1.299-sdk",
+   "admission": "historical",
+   "recordings": [
+    {
+     "fixture": "claude-child-2.1.299",
+     "sha256": "bf6177b0d1369d16ad4ac2e770bfe6a2920134ef09875dd355bc06ad6c9748fe"
+    },
+    {
+     "fixture": "claude-child-2.1.299-interrupted",
+     "sha256": "981f19b7148d8f820066224b7e61f3f95faf93ae50a2a2e0c804433fc8bbf8d3"
+    }
+   ],
+   "occurrences": [
+    "claude.stream.usage.child-run.agent-result@r2|claude-child-2.1.299|stream.jsonl:24|/tool_use_result/usage|main",
+    "claude.stream.usage.child-run.task-notification@r2|claude-child-2.1.299|stream.jsonl:23|/usage|main",
+    "claude.stream.usage.child-run.task-progress@r2|claude-child-2.1.299|stream.jsonl:19|/usage|main",
+    "claude.stream.usage.model-response@r1|claude-child-2.1.299-interrupted|stream.jsonl:4|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-child-2.1.299-interrupted|stream.jsonl:5|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-child-2.1.299|stream.jsonl:14|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-child-2.1.299|stream.jsonl:15|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-child-2.1.299|stream.jsonl:16|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-child-2.1.299|stream.jsonl:20|/message/usage|child:toolu_01BnEuCUmZ2Vu1LpADzksmrJ",
+    "claude.stream.usage.model-response@r1|claude-child-2.1.299|stream.jsonl:25|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-child-2.1.299|stream.jsonl:26|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-child-2.1.299|stream.jsonl:4|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-child-2.1.299|stream.jsonl:5|/message/usage|main",
+    "claude.stream.usage.model@r1|claude-child-2.1.299|stream.jsonl:27|/modelUsage/claude-haiku-4-5-20251001|main",
+    "claude.stream.usage.run@r1|claude-child-2.1.299|stream.jsonl:27|/usage|main"
+   ]
+  },
+  {
+   "compatibility_entry": "claude-code/stream-json/2.1.304-stdout",
+   "admission": "admitted",
+   "recordings": [
+    {
+     "fixture": "claude-live-2.1.304-features",
+     "sha256": "6d4beb37f396b6ca21c6dcec3acb929588386f694109e69d6ebb7a610d14ef68"
+    },
+    {
+     "fixture": "claude-live-2.1.304-denial",
+     "sha256": "9ad3dbef780b504ac318d620a5d859459cc5c8fea90e3a8d41b3698e6ec4273e"
+    },
+    {
+     "fixture": "claude-live-2.1.304-cancelled",
+     "sha256": "ba0e798c482a3b235989d85363290c9179100130cb6bc046b3387989704138c3"
+    },
+    {
+     "fixture": "claude-live-2.1.304-mcp",
+     "sha256": "7c020c2d528a478c5fcfd340ae1b1d128af13e00e651ac0e67c72e7927bb656c"
+    },
+    {
+     "fixture": "claude-live-2.1.304-mcp-pair",
+     "sha256": "7c020c2d528a478c5fcfd340ae1b1d128af13e00e651ac0e67c72e7927bb656c"
+    }
+   ],
+   "occurrences": [
+    "claude.stream.usage.child-run.agent-result@r2|claude-live-2.1.304-features|stream.jsonl:33|/tool_use_result/usage|main",
+    "claude.stream.usage.child-run.task-notification@r2|claude-live-2.1.304-features|stream.jsonl:32|/usage|main",
+    "claude.stream.usage.child-run.task-progress@r2|claude-live-2.1.304-features|stream.jsonl:25|/usage|main",
+    "claude.stream.usage.child-run.task-progress@r2|claude-live-2.1.304-features|stream.jsonl:28|/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-cancelled|stream.jsonl:11|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-cancelled|stream.jsonl:4|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-cancelled|stream.jsonl:5|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-cancelled|stream.jsonl:8|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-cancelled|stream.jsonl:9|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-denial|stream.jsonl:14|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-denial|stream.jsonl:15|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-denial|stream.jsonl:17|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-denial|stream.jsonl:4|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-denial|stream.jsonl:5|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-denial|stream.jsonl:8|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-features|stream.jsonl:11|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-features|stream.jsonl:12|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-features|stream.jsonl:14|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-features|stream.jsonl:16|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-features|stream.jsonl:20|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-features|stream.jsonl:21|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-features|stream.jsonl:22|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-features|stream.jsonl:26|/message/usage|child:toolu_01WBvs5eGudfYPm8YvrTYTQK",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-features|stream.jsonl:29|/message/usage|child:toolu_01WBvs5eGudfYPm8YvrTYTQK",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-features|stream.jsonl:36|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-features|stream.jsonl:37|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-features|stream.jsonl:41|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-features|stream.jsonl:42|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-features|stream.jsonl:43|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-features|stream.jsonl:48|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-features|stream.jsonl:49|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-features|stream.jsonl:5|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-features|stream.jsonl:6|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-features|stream.jsonl:8|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-mcp-pair|stream.jsonl:10|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-mcp-pair|stream.jsonl:12|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-mcp-pair|stream.jsonl:14|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-mcp-pair|stream.jsonl:4|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-mcp-pair|stream.jsonl:5|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-mcp-pair|stream.jsonl:8|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-mcp|stream.jsonl:10|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-mcp|stream.jsonl:12|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-mcp|stream.jsonl:14|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-mcp|stream.jsonl:4|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-mcp|stream.jsonl:5|/message/usage|main",
+    "claude.stream.usage.model-response@r1|claude-live-2.1.304-mcp|stream.jsonl:8|/message/usage|main",
+    "claude.stream.usage.model@r1|claude-live-2.1.304-denial|stream.jsonl:18|/modelUsage/claude-haiku-5-5|main",
+    "claude.stream.usage.model@r1|claude-live-2.1.304-features|stream.jsonl:50|/modelUsage/claude-haiku-5-5|main",
+    "claude.stream.usage.model@r1|claude-live-2.1.304-mcp-pair|stream.jsonl:15|/modelUsage/claude-haiku-5-5|main",
+    "claude.stream.usage.model@r1|claude-live-2.1.304-mcp|stream.jsonl:15|/modelUsage/claude-haiku-5-5|main",
+    "claude.stream.usage.run@r1|claude-live-2.1.304-denial|stream.jsonl:18|/usage|main",
+    "claude.stream.usage.run@r1|claude-live-2.1.304-features|stream.jsonl:50|/usage|main",
+    "claude.stream.usage.run@r1|claude-live-2.1.304-mcp-pair|stream.jsonl:15|/usage|main",
+    "claude.stream.usage.run@r1|claude-live-2.1.304-mcp|stream.jsonl:15|/usage|main"
+   ]
   }
  ],
  "frozen": [
@@ -218,28 +383,48 @@
   },
   {
    "category": 6,
-   "id": "approval:claude.stream.usage.child-run.agent-result@r1",
-   "reason": "pending semantic review: the D1 return's packet presents this obligation; no Owner decision yet"
+   "id": "approval:claude.stream.usage.child-run.agent-result@r2",
+   "reason": "R1 candidate revision (aggregation 3 Single response, emitter grounds); no Owner decision approves it"
   },
   {
    "category": 6,
-   "id": "approval:claude.stream.usage.child-run.task-progress@r1",
-   "reason": "pending semantic review: the D1 return's packet presents this obligation; no Owner decision yet"
+   "id": "approval:claude.stream.usage.child-run.task-progress@r2",
+   "reason": "R1 candidate revision (semantics restated with emitter grounds); no Owner decision approves it"
   },
   {
    "category": 6,
-   "id": "approval:claude.stream.usage.child-run.task-notification@r1",
-   "reason": "pending semantic review: the D1 return's packet presents this obligation; no Owner decision yet"
+   "id": "approval:claude.stream.usage.child-run.task-notification@r2",
+   "reason": "R1 candidate revision (semantics restated with emitter grounds); no Owner decision approves it"
   },
   {
    "category": 6,
-   "id": "unresolved:result:usage.iterations[]",
-   "reason": "open semantic question returned with D1 (does usage.iterations[] owe a final model-response observation?)"
+   "id": "approval:residual:system/thinking_tokens:estimated_tokens",
+   "reason": "R1: a residual classification is a reviewable meaning (it decides that a token-named member owes no canonical outcome); no Owner decision approves this one"
   },
   {
    "category": 6,
-   "id": "unresolved:user/tool_result:tool_use_result.usage.iterations[]",
-   "reason": "open semantic question returned with D1 (does usage.iterations[] owe a final model-response observation?)"
+   "id": "approval:residual:system/thinking_tokens:estimated_tokens_delta",
+   "reason": "R1: a residual classification is a reviewable meaning (it decides that a token-named member owes no canonical outcome); no Owner decision approves this one"
+  },
+  {
+   "category": 6,
+   "id": "approval:residual:result:modelUsage.{*}.maxOutputTokens",
+   "reason": "R1: a residual classification is a reviewable meaning (it decides that a token-named member owes no canonical outcome); no Owner decision approves this one"
+  },
+  {
+   "category": 6,
+   "id": "approval:residual:user/tool_result:tool_use_result.totalTokens",
+   "reason": "R1: a residual classification is a reviewable meaning (it decides that a token-named member owes no canonical outcome); no Owner decision approves this one"
+  },
+  {
+   "category": 6,
+   "id": "approval:residual:result:usage.iterations[]",
+   "reason": "R1: a residual classification is a reviewable meaning (it decides that a token-named member owes no canonical outcome); no Owner decision approves this one"
+  },
+  {
+   "category": 6,
+   "id": "approval:residual:user/tool_result:tool_use_result.usage.iterations[]",
+   "reason": "R1: a residual classification is a reviewable meaning (it decides that a token-named member owes no canonical outcome); no Owner decision approves this one"
   }
  ]
 }

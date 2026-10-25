@@ -1,0 +1,26 @@
+{
+ "kind": "agent-journal/upstream-validation-summary",
+ "version": "0.1",
+ "fixture": "syn-claude-child-runs-2.1.304",
+ "core": "children/toolu_01SYNTHETICCHILDRUNBBBBB",
+ "events_jsonl": "fixtures/syn-claude-child-runs-2.1.304/package/children/toolu_01SYNTHETICCHILDRUNBBBBB/events.jsonl",
+ "events_jsonl_sha256": "44c11ebca7612c596ef5d2c167a50bd01c8e4ac04784e5cee160eadcd475ad4c",
+ "execution_records": 1,
+ "declarations_skipped": 36,
+ "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
+ "toolkit": {
+  "name": "ocsf-toolkit",
+  "release": "v0.9.0",
+  "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
+  "exit_code": 0
+ },
+ "compiled_schema_sha256": "da6317bacfd3f579f09331c93109219bf8f4616a23e251eba22928b5bad6f52d",
+ "result": {
+  "event_files_processed": 1,
+  "error_events": 0,
+  "warning_only_events": 0,
+  "issues_reported": 0
+ },
+ "findings": {},
+ "note": "warning-only findings are the toolkit's enum-sibling notice on tool_kind 'other' (a known v0.9.0 limit recorded in the lock); any error event fails UC5-AC11 for this core"
+}

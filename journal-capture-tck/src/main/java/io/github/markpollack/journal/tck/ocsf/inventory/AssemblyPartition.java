@@ -20,9 +20,10 @@ import java.util.TreeSet;
 /**
  * Which observations of an assembled file are one entity, derived from the native records alone: observations whose
  * native records report the same identity under an expectation's entity locator are one entity (directly, or through a
- * chain across a third source); an identity a locator finds in two records of one artifact is ambiguous and its
- * observations stay apart; observations of byte-identical sources from distinct origins are one entity record by
- * record. The partition this gives is compared with the file's: every multi-observation entity must be supporting
+ * chain across a third source); an identity a locator finds in two records of one artifact at the same lifecycle stage
+ * is ambiguous and its observations stay apart (at different stages it is one entity's lifecycle); observations of a
+ * declared copy and its original are one entity record by record, while equal bytes alone relate nothing. The
+ * partition this gives is compared with the file's: every multi-observation entity must be supporting
  * observations of one consolidated event naming exactly them, every other observation a canonical single one, and an
  * ambiguous one flagged as such.
  */
@@ -80,7 +81,7 @@ final class AssemblyPartition {
                 members.addAll(observationsOf(entity, s.name(), r, keysPerRecord.get(r) > 1 ? k.getKey() : null));
             }
             String group = RawInventory.text(entity, "name") + "|" + k.getKey();
-            if (records.size() > 1) {
+            if (records.size() > 1 && repeatsAStage(members)) {
                 ambiguousGroups.add(group);
             }
             if (members.isEmpty()) {
@@ -119,12 +120,28 @@ final class AssemblyPartition {
         return value instanceof Json.JArray a && a.elements().stream().anyMatch(v -> carries(v, identity));
     }
 
-    /** Byte-identical sources from distinct origins: their observations of the same record, class and position are one. */
+    /**
+     * Whether two native records of one source report the identity at the same lifecycle stage (the activity of the
+     * observations they produced). Records at different stages (a request and its completion) are one entity's
+     * lifecycle, not a repeated identity.
+     */
+    private boolean repeatsAStage(List<Integer> members) {
+        Map<Integer, Set<Integer>> recordsByStage = new LinkedHashMap<>();
+        for (int i : members) {
+            Event e = observations.get(i);
+            recordsByStage.computeIfAbsent(e.activityId, a -> new TreeSet<>()).add(e.recordIndex());
+        }
+        return recordsByStage.values().stream().anyMatch(r -> r.size() > 1);
+    }
+
+    /**
+     * Declared copies (the supplier names the source they copy; their equal bytes are checked by the gate): their
+     * observations of the same record, class and position are one. Equal bytes without that declaration relate nothing.
+     */
     private void copies(List<Supplied> accepted) {
-        Map<String, String> first = new LinkedHashMap<>();
         for (Supplied s : accepted) {
-            String original = first.putIfAbsent(s.bytes().sha256(), s.name());
-            if (original == null) {
+            String original = s.copyOf();
+            if (original == null || accepted.stream().noneMatch(a -> a.name().equals(original))) {
                 continue;
             }
             Map<String, Integer> slots = slots(original);

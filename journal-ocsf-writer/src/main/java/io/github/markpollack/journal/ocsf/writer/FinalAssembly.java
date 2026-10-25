@@ -23,8 +23,14 @@ public final class FinalAssembly {
      * @param role the profile's source role it fills
      * @param file the acquired bytes (an independent copy, a snapshot of a native file)
      * @param origin where it was acquired, the source's import identity together with its sha256
+     * @param acquisition the acquisition the caller asserts it belongs to, or {@code null} (see {@link AssemblyPlan.Binding})
+     * @param copyOf the earlier input's artifact this one is a declared copy of, or {@code null}
      */
-    public record Input(String artifact, String role, Path file, String origin) {
+    public record Input(String artifact, String role, Path file, String origin, String acquisition, String copyOf) {
+
+        public Input(String artifact, String role, Path file, String origin, String acquisition) {
+            this(artifact, role, file, origin, acquisition, null);
+        }
     }
 
     private FinalAssembly() {
@@ -38,7 +44,7 @@ public final class FinalAssembly {
      */
     public static OcsfRunWriter.State assemble(Path out, RunDescriptor run, AssemblyProfile profile, List<Input> inputs, Jv lineage, WriterOptions options) {
         List<AssemblyPlan.Binding> bindings = new ArrayList<>();
-        inputs.forEach(i -> bindings.add(new AssemblyPlan.Binding(i.artifact(), i.role(), i.origin())));
+        inputs.forEach(i -> bindings.add(new AssemblyPlan.Binding(i.artifact(), i.role(), i.origin(), i.acquisition(), i.copyOf())));
         AssemblyPlan plan = new AssemblyPlan(profile, bindings, lineage == null ? new Jv.Arr() : lineage);
         List<String> order = AssemblyProfile.strings(profile.document().member("feed_order"));
         List<Input> fed = new ArrayList<>(inputs);

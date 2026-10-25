@@ -36,7 +36,8 @@ public final class OcsfWriterTool {
             System.exit(CliCapture.main(args, System.out, System.err));
         }
         if (args.length < 3 || !"replay".equals(args[0])) {
-            System.err.println("usage: replay <spec.json> <out-dir> [--chunk N] [--flush-every N] [--base DIR] [--stop-after ARTIFACT:RECORDS]");
+            System.err.println("usage: replay <spec.json> <out-dir> [--chunk N] [--flush-every N] [--base DIR] [--stop-after ARTIFACT:RECORDS] [--evidence-log REASON]"
+                    + "  (a spec with several sources needs --evidence-log: an unvalidated evidence log, never a final combined execution)");
             System.err.println("       capture <spec.json> <out-dir> [--artifact NAME] [--profile PROFILE] [--route ROUTE] [--surface TEXT] [--flush-every N] [--interrupt-flag FILE]  (stdin: the live stream)");
             System.err.println("       launch <out-dir> --cli claude|codex|antigravity --prompt TEXT --cwd DIR [--run-uid X] [--model M] [--allowed-tools A,B] [--sandbox MODE] [--executable PATH] [--home DIR] [--cancel-after-records N] [--cancel-after-ms N] [--arg EXTRA]...  (launches the CLI itself)");
             System.exit(64);
@@ -46,8 +47,10 @@ public final class OcsfWriterTool {
         Path base = null;
         String stopArtifact = null;
         int stopRecords = -1;
+        String evidenceLog = null;
         for (int i = 3; i < args.length; i++) {
             switch (args[i]) {
+                case "--evidence-log" -> evidenceLog = args[++i];
                 case "--chunk" -> chunk = Integer.parseInt(args[++i]);
                 case "--flush-every" -> flushEvery = Integer.parseInt(args[++i]);
                 case "--base" -> base = Path.of(args[++i]);
@@ -72,7 +75,12 @@ public final class OcsfWriterTool {
         WriterOptions options = WriterOptions.defaults().withAutoFlush(flushEvery);
         Clock clock = options.clock();
         OcsfRunWriter.State state;
-        try (OcsfRunWriter w = OcsfRunWriter.open(out, run, SchemaPin.bundled(), options)) {
+        if (spec.member("sources").elements().size() > 1 && evidenceLog == null) {
+            System.err.println("the spec declares several sources: combine them by final assembly with a reviewed profile, or replay them as an unvalidated evidence log with --evidence-log REASON");
+            System.exit(64);
+        }
+        try (OcsfRunWriter w = evidenceLog == null ? OcsfRunWriter.open(out, run, SchemaPin.bundled(), options)
+                : OcsfRunWriter.openEvidenceLog(out, run, SchemaPin.bundled(), options, evidenceLog)) {
             boolean stopped = false;
             for (Jv s : spec.member("sources").elements()) {
                 String artifact = s.member("artifact").text();

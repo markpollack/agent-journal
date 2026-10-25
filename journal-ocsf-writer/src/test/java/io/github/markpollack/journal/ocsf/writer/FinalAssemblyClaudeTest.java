@@ -44,7 +44,12 @@ class FinalAssemblyClaudeTest {
     static final String STREAM_ORIGIN = "CliCapture stdout copy of the launch (sanitized)";
     static final String TRANSCRIPT_ORIGIN = "native session file archived after the launch ended (sanitized)";
 
-    record In(String artifact, String role, Path file, String origin) {
+    /** One input with the acquisition its supplier asserts (the fixture's own launch unless a test says otherwise) and its declared copy lineage. */
+    record In(String artifact, String role, Path file, String origin, String acquisition, String copyOf) {
+
+        In(String artifact, String role, Path file, String origin) {
+            this(artifact, role, file, origin, WriterTestSupport.launch(LIVE_CLAUDE_PAIR), null);
+        }
     }
 
     @Test
@@ -131,16 +136,63 @@ class FinalAssemblyClaudeTest {
         assertThat(pkg.declarations.assembly().path("result", "canonical_events").scalarText()).isEqualTo("61");
         assertThat(oracle(out, replay).defects()).as(oracle(out, replay).toString()).isEmpty();
 
+        // CDX-R1-05: the same bytes from another origin, with no declared copy lineage: equal content does not say they
+        // are one native occurrence, so they are neither consolidated by position nor counted again; they are refused
+        List<In> undeclared = new ArrayList<>(pair());
+        undeclared.add(new In("transcript-copy.jsonl", "transcript", nativeOf(LIVE_CLAUDE_PAIR, "transcript.jsonl"), "a second copy taken from the session directory"));
+        Path out1 = assemble(work.resolve("undeclared"), undeclared);
+        OcsfPackage pkg1 = PackageReader.open(out1.resolve("events.jsonl"));
+        assertThat(source(pkg1, "transcript-copy.jsonl").member("accepted").scalarText()).isEqualTo("false");
+        assertThat(source(pkg1, "transcript-copy.jsonl").member("verdict").text()).contains("identical bytes to transcript.jsonl from another origin").contains("no declared copy lineage");
+        assertThat(pkg1.events.stream().filter(e -> "transcript-copy.jsonl".equals(e.artifact()))).isEmpty();
+        assertThat(pkg1.declarations.assembly().path("result", "canonical_events").scalarText()).isEqualTo("61");
+        assertThat(oracle(out1, undeclared).defects()).as(oracle(out1, undeclared).toString()).isEmpty();
+
+        // the same input declared a copy of transcript.jsonl: the declared lineage relates the records, the equal bytes verify it
         List<In> copy = new ArrayList<>(pair());
-        copy.add(new In("transcript-copy.jsonl", "transcript", nativeOf(LIVE_CLAUDE_PAIR, "transcript.jsonl"), "a second copy taken from the session directory"));
+        copy.add(new In("transcript-copy.jsonl", "transcript", nativeOf(LIVE_CLAUDE_PAIR, "transcript.jsonl"), "a second copy taken from the session directory",
+                WriterTestSupport.launch(LIVE_CLAUDE_PAIR), "transcript.jsonl"));
         Path out2 = assemble(work.resolve("copy"), copy);
         OcsfPackage pkg2 = PackageReader.open(out2.resolve("events.jsonl"));
         assertThat(source(pkg2, "transcript-copy.jsonl").member("accepted").scalarText()).isEqualTo("true");
+        assertThat(source(pkg2, "transcript-copy.jsonl").member("copy_of").text()).isEqualTo("transcript.jsonl");
         assertThat(pkg2.events.stream().filter(e -> "transcript-copy.jsonl".equals(e.artifact()))).as("its provenance is kept").isNotEmpty();
         assertThat(pkg2.declarations.assembly().path("result", "canonical_events").scalarText()).as("a copy never becomes extra executions").isEqualTo("61");
         assertThat(pkg2.events("tool_call", 1)).hasSize(4);
         OracleReport report = oracle(out2, copy);
         assertThat(report.defects()).as(report.toString()).isEmpty();
+
+        // a declared copy whose bytes differ is not a copy
+        List<In> notACopy = new ArrayList<>(pair());
+        notACopy.add(new In("transcript-copy.jsonl", "transcript", nativeOf(LIVE_CLAUDE_PAIR, "stream.jsonl"), "a file claimed to copy the session file",
+                WriterTestSupport.launch(LIVE_CLAUDE_PAIR), "transcript.jsonl"));
+        OcsfPackage pkg3 = PackageReader.open(assemble(work.resolve("differs"), notACopy).resolve("events.jsonl"));
+        assertThat(source(pkg3, "transcript-copy.jsonl").member("verdict").text()).contains("its bytes differ");
+        assertThat(pkg3.events.stream().filter(e -> "transcript-copy.jsonl".equals(e.artifact()))).isEmpty();
+    }
+
+    @Test
+    void anOptionalSourceWithoutAnIdentityBelongsOnlyThroughTheAnchorsAcquisition(@TempDir Path work) throws IOException {
+        // CDX-R1-06: a session file whose records report no session; optionality is not membership evidence
+        String text = Files.readString(nativeOf(LIVE_CLAUDE_PAIR, "transcript.jsonl"), StandardCharsets.UTF_8)
+                .replace(",\"sessionId\":\"" + RUN_SESSION + "\"", "").replace("\"sessionId\":\"" + RUN_SESSION + "\",", "");
+        assertThat(text).doesNotContain(RUN_SESSION);
+        Path anonymous = Files.writeString(work.resolve("transcript.jsonl"), text, StandardCharsets.UTF_8);
+        List<In> elsewhere = List.of(stream(), new In("transcript.jsonl", "transcript", anonymous, TRANSCRIPT_ORIGIN, "another acquisition", null));
+        OcsfPackage refused = PackageReader.open(assemble(work.resolve("elsewhere"), elsewhere).resolve("events.jsonl"));
+        assertThat(source(refused, "transcript.jsonl").member("accepted").scalarText()).isEqualTo("false");
+        assertThat(source(refused, "transcript.jsonl").member("verdict").text()).contains("membership not established");
+        assertThat(refused.events.stream().filter(e -> "transcript.jsonl".equals(e.artifact()))).isEmpty();
+        assertThat(oracle(work.resolve("elsewhere"), elsewhere).outcome("assembly.gate", "assembly")).isEqualTo(Check.Outcome.VERIFIED);
+        List<In> unasserted = List.of(stream(), new In("transcript.jsonl", "transcript", anonymous, TRANSCRIPT_ORIGIN, null, null));
+        OcsfPackage none = PackageReader.open(assemble(work.resolve("unasserted"), unasserted).resolve("events.jsonl"));
+        assertThat(source(none, "transcript.jsonl").member("accepted").scalarText()).isEqualTo("false");
+        // asserted as the stream's own acquisition, it is a member, and the file says on what basis
+        List<In> same = List.of(stream(), new In("transcript.jsonl", "transcript", anonymous, TRANSCRIPT_ORIGIN, WriterTestSupport.launch(LIVE_CLAUDE_PAIR), null));
+        OcsfPackage member = PackageReader.open(assemble(work.resolve("same"), same).resolve("events.jsonl"));
+        assertThat(source(member, "transcript.jsonl").member("accepted").scalarText()).isEqualTo("true");
+        assertThat(source(member, "transcript.jsonl").member("verdict").text()).contains("a member by the acquisition");
+        assertThat(oracle(work.resolve("same"), same).outcome("assembly.gate", "assembly")).isEqualTo(Check.Outcome.VERIFIED);
     }
 
     @Test
@@ -189,7 +241,8 @@ class FinalAssemblyClaudeTest {
         String before = NativeArtifact.read(stream).sha256() + NativeArtifact.read(transcript).sha256() + NativeArtifact.read(original.resolve("events.jsonl")).sha256();
         Jv lineage = new Jv.Arr().add(FinalAssembly.lineage(original, "the stream-only package of the same launch"));
         FinalAssembly.assemble(work.resolve("final"), run(LIVE_CLAUDE_PAIR), AssemblyProfile.bundled(PROFILE),
-                List.of(new FinalAssembly.Input("stream.jsonl", "stream", stream, STREAM_ORIGIN), new FinalAssembly.Input("transcript.jsonl", "transcript", transcript, TRANSCRIPT_ORIGIN)),
+                List.of(new FinalAssembly.Input("stream.jsonl", "stream", stream, STREAM_ORIGIN, WriterTestSupport.launch(LIVE_CLAUDE_PAIR)),
+                        new FinalAssembly.Input("transcript.jsonl", "transcript", transcript, TRANSCRIPT_ORIGIN, WriterTestSupport.launch(LIVE_CLAUDE_PAIR))),
                 lineage, options());
         String after = NativeArtifact.read(stream).sha256() + NativeArtifact.read(transcript).sha256() + NativeArtifact.read(original.resolve("events.jsonl")).sha256();
         assertThat(after).isEqualTo(before);
@@ -213,14 +266,14 @@ class FinalAssemblyClaudeTest {
     }
 
     static Path assemble(Path out, List<In> inputs) {
-        List<FinalAssembly.Input> in = inputs.stream().map(i -> new FinalAssembly.Input(i.artifact(), i.role(), i.file(), i.origin())).toList();
+        List<FinalAssembly.Input> in = inputs.stream().map(i -> new FinalAssembly.Input(i.artifact(), i.role(), i.file(), i.origin(), i.acquisition(), i.copyOf())).toList();
         FinalAssembly.assemble(out, run(LIVE_CLAUDE_PAIR), AssemblyProfile.bundled(PROFILE), in, new Jv.Arr(), options());
         return out;
     }
 
     static OracleReport oracle(Path out, List<In> inputs) throws IOException {
         Json spec = NeutralJson.parse(Files.readString(FIXTURES.resolve(LIVE_CLAUDE_PAIR).resolve("native/assembly-expectation.json")));
-        List<AssemblyOracle.Supplied> supplied = inputs.stream().map(i -> new AssemblyOracle.Supplied(i.artifact(), i.role(), i.origin(), NativeArtifact.read(i.file()))).toList();
+        List<AssemblyOracle.Supplied> supplied = inputs.stream().map(i -> new AssemblyOracle.Supplied(i.artifact(), i.role(), i.origin(), NativeArtifact.read(i.file()), i.acquisition(), i.copyOf())).toList();
         return AssemblyOracle.verify(PackageReader.open(out.resolve("events.jsonl")), spec, supplied);
     }
 

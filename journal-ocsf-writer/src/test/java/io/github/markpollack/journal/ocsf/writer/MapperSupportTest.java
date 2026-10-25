@@ -26,7 +26,7 @@ class MapperSupportTest {
     @Test
     void blocksCarryTheirIdsTextsAndKindsAndBareStringsAreOneTextBlock(@TempDir Path work) {
         Path core = work.resolve("core");
-        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), options())) {
+        try (OcsfRunWriter w = OcsfRunWriter.openEvidenceLog(core, run(PAIR), SchemaPin.bundled(), options(), WriterTestSupport.PAIR_LOG)) {
             Replay.feedBytes(w.source(claudeStream()), nativeOf(PAIR, "stream.jsonl"), 4096, options().clock());
             Replay.feedBytes(w.source(claudeTranscript()), nativeOf(PAIR, "transcript.jsonl"), 4096, options().clock());
             w.complete();

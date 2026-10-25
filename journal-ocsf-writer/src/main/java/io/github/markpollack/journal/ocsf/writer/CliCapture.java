@@ -379,13 +379,15 @@ public final class CliCapture {
         }
         AssemblyProfile profile = AssemblyProfile.bundled(launch.assemblyProfile());
         List<FinalAssembly.Input> inputs = new ArrayList<>();
+        // both inputs were acquired by this one launch: that is the acquisition this capture asserts for them
+        String acquisition = "CliCapture launch " + run.runUid();
         for (AssemblyProfile.Role r : profile.roles()) {
             if ("stdout".equals(r.route())) {
-                inputs.add(new FinalAssembly.Input(r.json().member("artifact").text(), r.role(), copyFile, "CliCapture independent copy of standard output"));
+                inputs.add(new FinalAssembly.Input(r.json().member("artifact").text(), r.role(), copyFile, "CliCapture independent copy of standard output", acquisition));
             }
             else if ("native_session_file".equals(r.route()) && archive != null && "archived".equals(archive.get("status").text())) {
                 inputs.add(new FinalAssembly.Input(r.json().member("artifact").text(), r.role(), out.resolve("archive").resolve(archive.get("artifact").text()),
-                        "native session file archived after the launch ended (" + archive.get("sha256").text() + ")"));
+                        "native session file archived after the launch ended (" + archive.get("sha256").text() + ")", acquisition));
             }
         }
         Jv lineage = new Jv.Arr().add(FinalAssembly.lineage(out.resolve("package"), "package"));

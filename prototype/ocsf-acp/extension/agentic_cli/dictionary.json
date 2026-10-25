@@ -896,6 +896,10 @@
         "2": {
           "caption": "Cumulative snapshot",
           "description": "A running total of the scope unit from its start up to the point of observation. It may include consumption before this capture began and is not the unit's completed total; two snapshots of one unit overlap and are never summed."
+        },
+        "3": {
+          "caption": "Single response",
+          "description": "The consumption of one model response within the observation's scope unit, which the source may leave unidentified (for example the usage of a child run's last response that the spawning call's result reports): neither the unit's total nor a running total of it. It is never summed with the unit's other observations, and it is the same quantity as another observation only when both name the same response."
         }
       }
     },

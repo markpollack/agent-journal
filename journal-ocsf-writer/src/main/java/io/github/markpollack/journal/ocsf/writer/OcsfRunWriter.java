@@ -33,8 +33,15 @@ import java.util.TreeMap;
  * <p>Lifecycle: {@code RECORDING} from {@link #open} until {@link #complete()} ({@code COMPLETED}, requires every
  * declared source to have ended), {@link #interrupt} ({@code INTERRUPTED}, ends open sources as interrupted) or a
  * persistence failure ({@code FAILED}, the persisted boundary is recorded). Finalization is idempotent: a second
- * call returns the state already reached. Sources admitted after the live output ended (a saved session file) are
- * appended after the events already persisted; nothing written earlier changes.
+ * call returns the state already reached.
+ *
+ * <p>Combination policy: data of one execution from several sources is combined in exactly one supported way, the
+ * final assembly ({@link #openAssembly}), whose identity gate, grouping and consolidation decide what belongs together.
+ * A writer from {@link #open} records one source (incremental recording); declaring a second one is refused. Several
+ * sources without assembly are written only by {@link #openEvidenceLog}, which declares the file an unvalidated
+ * evidence log in every core's {@code run} declaration: no identity relation between its sources was checked, so it
+ * is never a final combined execution (readers and the oracle say so). Sources admitted after the live output ended
+ * are appended after the events already persisted; nothing written earlier changes.
  */
 public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
 
@@ -70,12 +77,15 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
     private Jv.Obj archive;
     /** Set for a final assembly: mapper events are held as observations and written, consolidated, at finalization. */
     private Assembler assembler;
+    /** Why several sources are recorded without assembly ({@link #openEvidenceLog}), or {@code null}. */
+    private final String evidenceLog;
 
-    private OcsfRunWriter(Path dir, RunDescriptor run, SchemaPin pin, WriterOptions options) throws IOException {
+    private OcsfRunWriter(Path dir, RunDescriptor run, SchemaPin pin, WriterOptions options, String evidenceLog) throws IOException {
         this.dir = dir;
         this.run = run;
         this.pin = pin;
         this.options = options;
+        this.evidenceLog = evidenceLog;
         this.sessionUid = run.sessionUid();
         this.started = options.clock().instant();
         this.extensionSourceSha256 = SchemaPin.extensionSource(extensionSource);
@@ -88,9 +98,29 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         this.lastFlush = started;
     }
 
+    /** A writer that records one source of one run (incremental recording); a second source is refused. */
     public static OcsfRunWriter open(Path dir, RunDescriptor run, SchemaPin pin, WriterOptions options) {
+        return open(dir, run, pin, options, null);
+    }
+
+    /**
+     * A writer that records several sources of one run without final assembly, as an explicitly unvalidated evidence
+     * log: every core's {@code run} declaration says so and why, no identity relation between the sources is checked,
+     * and the file is never a final combined execution. For acquisition evidence and diagnostics; a final combined
+     * file is written only by {@link #openAssembly}.
+     *
+     * @param reason why the sources are recorded together without assembly
+     */
+    public static OcsfRunWriter openEvidenceLog(Path dir, RunDescriptor run, SchemaPin pin, WriterOptions options, String reason) {
+        if (reason == null || reason.isBlank()) {
+            throw new IllegalArgumentException("an unvalidated evidence log states why its sources are recorded without assembly");
+        }
+        return open(dir, run, pin, options, reason);
+    }
+
+    private static OcsfRunWriter open(Path dir, RunDescriptor run, SchemaPin pin, WriterOptions options, String evidenceLog) {
         try {
-            return new OcsfRunWriter(dir, run, pin, options);
+            return new OcsfRunWriter(dir, run, pin, options, evidenceLog);
         }
         catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -268,6 +298,11 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         if (sourceScope != null) {
             r.put("source_scope", sourceScope);
         }
+        if (evidenceLog != null) {
+            r.put("combination", new Jv.Obj().put("status", "unvalidated evidence log").put("reason", evidenceLog)
+                    .put("meaning", "several sources recorded without final assembly: no identity relation between them was checked, an entity two sources report appears once per source,"
+                            + " and the file is not a final combined execution; a final combined file is written only by the final assembly"));
+        }
         r.put("producer", new Jv.Obj().put("name", "agent-journal").put("version", options.producerVersion()).put("vendor_name", "Agent Journal"));
         r.put("written_by", new Jv.Obj().put("name", Pins.WRITER_NAME).put("version", Pins.PACKAGE_VERSION)
                 .put("mode", "incremental: declarations and events appended as native records arrived; no batch conversion or re-layout"));
@@ -282,6 +317,10 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         requireRecording();
         if (sources.containsKey(descriptor.artifact())) {
             throw new IllegalArgumentException("source " + descriptor.artifact() + " is already declared");
+        }
+        if (!sources.isEmpty() && assembler == null && evidenceLog == null) {
+            throw new IllegalStateException("source " + descriptor.artifact() + " refused: this writer records one source; several sources of one execution are combined only by"
+                    + " final assembly (openAssembly with a reviewed profile), or recorded as an explicitly unvalidated evidence log (openEvidenceLog)");
         }
         Source s = new Source(descriptor);
         sources.put(descriptor.artifact(), s);

@@ -17,7 +17,7 @@ import static io.github.markpollack.journal.ocsf.writer.MapperSupport.isIntegral
 final class UsageTranches {
 
     static final Map<Integer, String> COMPONENT_BASIS = Map.of(0, "Unknown", 1, "Reported", 2, "Derived", 3, "Unavailable");
-    static final Map<Integer, String> AGGREGATION = Map.of(0, "Unknown", 1, "Scope total", 2, "Cumulative snapshot");
+    static final Map<Integer, String> AGGREGATION = Map.of(0, "Unknown", 1, "Scope total", 2, "Cumulative snapshot", 3, "Single response");
     static final Map<Integer, String> REASONING_RELATION = Map.of(0, "Unknown", 1, "Part of output", 2, "Separate from output");
     static final Map<Integer, String> MEASUREMENT = Map.of(0, "Unknown", 1, "Measured", 2, "Possibly default", 3, "Conditional", 4, "Lower bound");
 

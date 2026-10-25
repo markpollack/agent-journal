@@ -268,7 +268,7 @@ class WriterLifecycleTest {
     void laterSessionEvidenceIsAppendedWithoutChangingEarlierPrefixAnswers(@TempDir Path work) {
         Path core = work.resolve("core");
         String response = "msg_011Cg2aRQ1iZf8BxQVUnD2jR";
-        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), options())) {
+        try (OcsfRunWriter w = OcsfRunWriter.openEvidenceLog(core, run(PAIR), SchemaPin.bundled(), options(), WriterTestSupport.PAIR_LOG)) {
             Replay.feedBytes(w.source(claudeStream()), nativeOf(PAIR, "stream.jsonl"), 4096, options().clock());
             w.flush();
             byte[] streamOnly = WriterTestSupport.bytes(core.resolve("events.jsonl"));

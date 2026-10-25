@@ -7,7 +7,8 @@
   "associations": "tool_result_meta on records 6 (toolu_0183...) and 24 (toolu_01BnE...) and, in the child, 21 (toolu_018f...) name the tool id and report decision accept: unique, reported identifier, attached to the tool call.",
   "tool_exchanges": "Main: ToolSearch toolu_0183ddwvMmvPzqAU5Jeu5hwZ (5/6), Agent toolu_01BnEuCUmZ2Vu1LpADzksmrJ (16/24). Child: Read toolu_018fX6Mygf8aSE8c8bt7pyu6 (20/21).",
   "amended_2026_10_21": "Amended 2026-10-21 (ACCEPT-1): the child scope's user text record (the sub-agent's prompt as delivered by the spawning call) is a submission on the stream route, so the child counts one; the main thread's -p prompt is still not echoed.",
-  "usage_child_run": "D1, 2026-10-24, authored from stream.jsonl records 19, 23 and 24: task_progress usage.total_tokens 13574 (Provisional), task_notification usage.total_tokens 15062 (Final) and the Agent result's tool_use_result.usage (input 8, cache read 13328, cache creation 1582, output 56, thinking 47; Final) are three observations of the child run toolu_01BnEuCUmZ2Vu1LpADzksmrJ spawned; the two Final ones report different quantities, so the group states a conflict and no applicable final, and nothing is summed"
+  "usage_child_run": "D1, 2026-10-24, authored from stream.jsonl records 19, 23 and 24: task_progress usage.total_tokens 13574 (Provisional), task_notification usage.total_tokens 15062 (Final) and the Agent result's tool_use_result.usage (input 8, cache read 13328, cache creation 1582, output 56, thinking 47; Final) are three observations of the child run toolu_01BnEuCUmZ2Vu1LpADzksmrJ spawned; the two Final ones report different quantities, so the group states a conflict and no applicable final, and nothing is summed",
+  "usage_child_run_amended_2026_10_24_r1": "R1, 2026-10-24, re-authored from stream.jsonl records 19, 23 and 24 and the retained Claude Code 2.1.304 emitter: the task records' usage.total_tokens (19: 13574 Provisional; 23: 15062 Final) are the task tracker's own figure, so they form one group whose Final applies; the Agent result's tool_use_result.usage (24: input 8, cache read 13328, cache creation 1582, output 56, thinking 47; Final) is the usage of the child's last response (aggregation Single response), a different quantity in its own group. The D1 expectation (one group, a conflict, no applicable final) compared unlike quantities; nothing is summed"
  },
  "run_uid": "claude-child-2.1.299",
  "label": "main",
@@ -82,7 +83,7 @@
   ]
  },
  "usage": {
-  "group_count": 6,
+  "group_count": 7,
   "groups": [
    {
     "scope": "Model response",
@@ -103,12 +104,16 @@
    {
     "scope": "Child run",
     "owner": "child run of tool call toolu_01BnEuCUmZ2Vu1LpADzksmrJ",
+    "aggregation": null,
     "model": null,
     "source": "stream.jsonl",
-    "final_observations": 2,
+    "final_observations": 1,
     "provisional_observations": 1,
-    "conflict": true,
-    "applicable_final": null,
+    "conflict": false,
+    "comparability": "single",
+    "applicable_final": {
+     "reported_total_tokens": 15062
+    },
     "observations": [
      {
       "record_index": 19,
@@ -123,7 +128,27 @@
       "components": {
        "reported_total_tokens": 15062
       }
-     },
+     }
+    ]
+   },
+   {
+    "scope": "Child run",
+    "owner": "child run of tool call toolu_01BnEuCUmZ2Vu1LpADzksmrJ",
+    "aggregation": "Single response",
+    "model": null,
+    "source": "stream.jsonl",
+    "final_observations": 1,
+    "provisional_observations": 0,
+    "conflict": false,
+    "comparability": "single",
+    "applicable_final": {
+     "uncached_input_tokens": 8,
+     "output_tokens": 56,
+     "cache_read_tokens": 13328,
+     "cache_write_tokens": 1582,
+     "reasoning_tokens": 47
+    },
+    "observations": [
      {
       "record_index": 24,
       "status": "Final",

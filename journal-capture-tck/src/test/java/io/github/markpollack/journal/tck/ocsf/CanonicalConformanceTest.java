@@ -35,10 +35,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  * is now an unmet obligation or a failed check.
  *
  * <p>The report is written to {@code target/conformance/claude-stream-usage.json} and {@code .md}. The ratchet file
- * {@code ocsf/conformance/claude-stream-usage-baseline.json} pins the reviewed obligation set (id, revision, digest) and
- * the frozen debt by exact finding identity: a new finding fails, a frozen one that no longer occurs fails until it is
- * removed from the file, and a changed obligation set fails until the baseline is edited (a reviewed change). A green
- * ratchet says the baseline holds, not that the scope is accepted: semantic approval stays a separate category.
+ * {@code ocsf/conformance/claude-stream-usage-baseline.json} pins, each by exact identity: the obligation set (id,
+ * revision, meaning digest, relevant digest), the residual set (variant, path, classification, digest), the judged
+ * population (per binding: its entry's admission, each recording with its native hash, every occurrence id) and the
+ * frozen debt. A new finding fails, a frozen one that no longer occurs fails until it is removed from the file, and a
+ * changed obligation, residual or population fails until the baseline is edited: the edit is the reviewable change, not
+ * its approval. A green ratchet says the baseline holds, not that the scope is accepted: the report states baseline
+ * respected, behaviour verified, semantics approved and accepted zero-gap apart.
  */
 class CanonicalConformanceTest {
 
@@ -71,7 +74,7 @@ class CanonicalConformanceTest {
         }
 
         boolean inScope(Finding f) {
-            return f.category() != 5 || catalog.bindings().stream().anyMatch(b -> f.id().endsWith(":" + b.entry()));
+            return f.category() != 5 || catalog.bindings().stream().anyMatch(b -> f.id().endsWith(":" + b.entry()) || f.id().startsWith("recording:" + b.entry() + ":"));
         }
     }
 
@@ -139,6 +142,7 @@ class CanonicalConformanceTest {
                 CanonicalObligations.tokenMembers(c, rec.art(), occurrences, dataKeyed, notices).forEach(f -> findings.putIfAbsent(f.category() + " " + f.id(), f));
             }
             CanonicalObligations.binding(b, natives).forEach(f -> findings.putIfAbsent(f.category() + " " + f.id(), f));
+            CanonicalObligations.population(b).forEach(f -> findings.putIfAbsent(f.category() + " " + f.id(), f));
         }
         CanonicalObligations.registrations(obligationEntries).forEach(f -> findings.putIfAbsent(f.category() + " " + f.id(), f));
         CanonicalObligations.semantics(c).forEach(f -> findings.putIfAbsent(f.category() + " " + f.id(), f));
@@ -167,13 +171,19 @@ class CanonicalConformanceTest {
             sp.put("specification_version", NeutralJson.readDocument(spec).member("specification_version").text());
             bd.put("specification", sp);
             bd.put("contract", pin(PROJECT.resolve("journal-ocsf-writer/src/main/resources/ocsf/mappings/" + SourceProfile.text(e, "contract") + ".json")));
+            bd.put("admission", SourceProfile.text(e, "admission"));
             List<Object> recs = new ArrayList<>();
+            Map<String, List<String>> bySha = new LinkedHashMap<>();
             for (String f : b.recordings()) {
                 NativeArtifact art = recordings.get(f).art();
+                bySha.computeIfAbsent(art.sha256(), k -> new ArrayList<>()).add(f);
                 recs.add(ordered("fixture", f, "artifact", CanonicalObligations.ARTIFACT, "sha256", art.sha256(), "reported_version", CanonicalObligations.reportedVersion(art),
                         "declared_route", CanonicalObligations.declaredRoute(f)));
             }
             bd.put("recordings", recs);
+            bd.put("judged_candidates", b.recordings().size());
+            bd.put("distinct_native_recordings", bySha.size());
+            bd.put("byte_identical_candidates", bySha.values().stream().filter(l -> l.size() > 1).toList());
             List<Object> obligations = new ArrayList<>();
             for (Obligation o : c.obligations()) {
                 List<Judged> mine = r.judged().stream().filter(j -> j.occurrence().obligation().id().equals(o.id()) && j.occurrence().entry().equals(b.entry())).toList();
@@ -186,6 +196,19 @@ class CanonicalConformanceTest {
             bindings.add(bd);
         }
         doc.put("bindings", bindings);
+        SemanticClaims.Definitions defs = SemanticClaims.Definitions.read(FoundationComparisonTest.EXTENSION);
+        List<Object> obligationRows = new ArrayList<>();
+        for (Obligation o : c.obligations()) {
+            obligationRows.add(ordered("id", o.id(), "revision", o.revision(), "meaning_digest", CanonicalObligations.meaningDigest(c, o),
+                    "relevant_digest", CanonicalObligations.relevantDigest(c, o, defs, new ArrayList<>()), "rules", o.rules(), "review_status", o.reviewStatus()));
+        }
+        doc.put("obligations", obligationRows);
+        List<Object> residualRows = new ArrayList<>();
+        for (CanonicalObligations.Residual x : c.residuals()) {
+            residualRows.add(ordered("variant", x.variant(), "path", x.path(), "members", x.members(), "classification", x.classification(),
+                    "digest", CanonicalObligations.residualDigest(x), "review_status", x.reviewStatus()));
+        }
+        doc.put("residuals", residualRows);
         List<Object> occurrences = new ArrayList<>();
         for (Judged j : r.judged()) {
             Occurrence o = j.occurrence();
@@ -204,6 +227,15 @@ class CanonicalConformanceTest {
         doc.put("categories", categories);
         boolean deterministicZero = r.findings().stream().noneMatch(f -> f.category() <= 5 && r.inScope(f));
         doc.put("deterministic_categories_zero_in_scope", deterministicZero);
+        long discharged = r.judged().stream().filter(Judged::discharged).count();
+        long obligationsPending = r.category(6).stream().filter(f -> f.id().startsWith("approval:") && !f.id().startsWith("approval:residual:")).count();
+        long residualsPending = r.category(6).stream().filter(f -> f.id().startsWith("approval:residual:")).count();
+        doc.put("states", ordered(
+                "baseline_respected", "decided by CanonicalConformanceTest#theGeneratedReportHoldsTheReviewedBaselineExactly against " + PROJECT.relativize(BASELINE),
+                "behavior_verified", discharged + " of " + r.judged().size() + " occurrences discharged on the judged population (bindings above; repeated byte-identical candidates are not independent recordings)",
+                "semantics_approved", (c.obligations().size() - obligationsPending) + " of " + c.obligations().size() + " obligations and " + (c.residuals().size() - residualsPending)
+                        + " of " + c.residuals().size() + " residual classifications approved by an Owner decision at their current digests",
+                "accepted_zero_gap", "false: no acceptance is inferred from any count; it needs every category zero for the scope and an Owner decision"));
         doc.put("accepted_zero_gap", false);
         doc.put("acceptance_note", "categories 1 to 5 are deterministic; category 6 carries the semantic review and drift state. The scope is accepted only when every category is zero for it"
                 + " and the Owner approves the obligations; a finite corpus of pinned recordings, not every future vendor behavior.");
@@ -261,6 +293,14 @@ class CanonicalConformanceTest {
             Map<String, Object> c = (Map<String, Object>) v;
             md.append("| ").append(k).append(". ").append(c.get("name")).append(" | ").append(c.get("in_scope")).append(" | ").append(c.get("outside_scope")).append(" |\n");
         });
+        md.append("\n| Binding | Admission | Judged candidates | Distinct native recordings | Byte-identical candidates |\n|---|---|---|---|---|\n");
+        for (Object bo : (List<Object>) doc.get("bindings")) {
+            Map<String, Object> b = (Map<String, Object>) bo;
+            md.append("| ").append(b.get("compatibility_entry")).append(" | ").append(b.get("admission")).append(" | ").append(b.get("judged_candidates")).append(" | ")
+                    .append(b.get("distinct_native_recordings")).append(" | ").append(b.get("byte_identical_candidates")).append(" |\n");
+        }
+        md.append("\n## States\n\n");
+        ((Map<String, Object>) doc.get("states")).forEach((k, v) -> md.append("- ").append(k).append(": ").append(v).append('\n'));
         md.append("\nDeterministic categories 1 to 5 zero in scope: ").append(doc.get("deterministic_categories_zero_in_scope"))
                 .append(". Accepted zero-gap: ").append(doc.get("accepted_zero_gap")).append(" (").append(doc.get("acceptance_note")).append(")\n\n");
         md.append("## Findings\n\n");
@@ -315,8 +355,10 @@ class CanonicalConformanceTest {
         Files.writeString(out.resolve("claude-stream-usage.json"), NeutralJson.write(toJson(r.document())) + "\n", StandardCharsets.UTF_8);
         Files.writeString(out.resolve("claude-stream-usage.md"), markdown(r), StandardCharsets.UTF_8);
         Json baseline = NeutralJson.readDocument(BASELINE);
-        assertThat(obligationKeys(r.catalog())).as("the obligation set is the reviewed one (id, revision, meaning digest); changing it, a reclassification included, is a baseline edit")
+        assertThat(obligationKeys(r.catalog())).as("the obligation set is the reviewed one (id, revision, meaning and relevant digests); changing it, a reclassification included, is a baseline edit")
                 .isEqualTo(reviewedObligations());
+        assertThat(residualKeys(r.catalog())).as("the residual set is the reviewed one (variant, path, classification, digest)").isEqualTo(reviewedResiduals());
+        assertThat(population(r)).as("the judged population is the reviewed one (entry admission, recordings with their hashes, every occurrence id)").isEqualTo(reviewedPopulation());
         Set<String> frozen = new TreeSet<>();
         for (Json d : baseline.member("frozen").elements()) {
             frozen.add(d.member("category").scalarText() + " " + d.member("id").text());
@@ -421,7 +463,7 @@ class CanonicalConformanceTest {
         assertThat(reclassified.obligations()).hasSize(c.obligations().size() - 1);
         Set<String> missing = new TreeSet<>(reviewedObligations());
         missing.removeAll(obligationKeys(reclassified));
-        assertThat(missing).singleElement().asString().startsWith("claude.stream.usage.child-run.task-progress@r1#");
+        assertThat(missing).singleElement().asString().startsWith("claude.stream.usage.child-run.task-progress@r2#");
     }
 
     @Test
@@ -559,7 +601,7 @@ class CanonicalConformanceTest {
         List<Occurrence> occ = CanonicalObligations.occurrences(c, c.bindings().get(1), FEATURES, added);
         List<Finding> found = CanonicalObligations.tokenMembers(c, added, occ, RawInventory.ProfileRules.forProfile("claude_stream").dataKeyed(), new ArrayList<>());
         assertThat(found).extracting(Finding::id).contains("system/task_progress:summary_tokens",
-                "claude.stream.usage.child-run.task-progress@r1|system/task_progress:usage.cache_read_input_tokens");
+                "claude.stream.usage.child-run.task-progress@r2|system/task_progress:usage.cache_read_input_tokens");
         assertThat(found).allMatch(f -> f.category() == 1);
     }
 
@@ -575,6 +617,181 @@ class CanonicalConformanceTest {
         Set<String> without = new TreeSet<>(obligationEntries());
         without.remove("claude-code/stream-json/2.1.304-stdout");
         assertThat(CanonicalObligations.registrations(without)).extracting(Finding::id).contains("obligation-catalog:claude-code/stream-json/2.1.304-stdout");
+    }
+
+    // ---- R1 controls: the ratchet's identities (review findings CDX-R1-01 and CDX-R1-02) -------------------------------
+
+    static Catalog edited(UnaryOperator<Map<String, Json>> edit) {
+        Json raw = NeutralJson.readDocument(CATALOG);
+        return CanonicalObligations.parse(CATALOG, new Json.JObject(edit.apply(new LinkedHashMap<>(((Json.JObject) raw).members()))));
+    }
+
+    static Json obligationEdited(Json raw, String suffix, UnaryOperator<Map<String, Json>> edit) {
+        List<Json> out = new ArrayList<>();
+        for (Json o : raw.member("obligations").elements()) {
+            out.add(o.member("id").text().endsWith(suffix) ? new Json.JObject(edit.apply(new LinkedHashMap<>(((Json.JObject) o).members()))) : o);
+        }
+        return new Json.JArray(out);
+    }
+
+    @Test
+    void aRecordingDroppedFromItsBindingShrinksThePinnedPopulationAndIsReported() {
+        // CDX-R1-01: at d36b8eb removing the nonduplicate denial recording left every finding id and obligation key unchanged
+        Catalog dropped = edited(m -> {
+            List<Json> bindings = new ArrayList<>();
+            for (Json b : m.get("bindings").elements()) {
+                Map<String, Json> x = new LinkedHashMap<>(((Json.JObject) b).members());
+                x.put("recordings", new Json.JArray(b.member("recordings").elements().stream().filter(r -> !r.text().equals("claude-live-2.1.304-denial")).toList()));
+                bindings.add(new Json.JObject(x));
+            }
+            m.put("bindings", new Json.JArray(bindings));
+            return m;
+        });
+        Report r = generate(dropped, recordings(dropped), FieldDispositionTest.catalog("claude_stream"), obligationEntries());
+        Set<String> lost = new TreeSet<>(reviewedPopulation());
+        lost.removeAll(population(r));
+        assertThat(lost).as("the recording and its eight occurrences leave the pinned population").hasSize(9)
+                .anyMatch(l -> l.contains("recording claude-live-2.1.304-denial")).filteredOn(l -> l.contains(" occurrence ")).hasSize(8);
+        assertThat(r.ids()).contains("5 recording:claude-code/stream-json/2.1.304-stdout:claude-live-2.1.304-denial");
+        assertThat(r.findings().stream().filter(f -> f.id().startsWith("recording:"))).allMatch(r::inScope);
+        // a byte-identical candidate is still a registered recording: dropping it is reported too, while the report
+        // counts it as a repeated candidate, not an independent recording
+        assertThat(CanonicalObligations.registered("claude-code/stream-json/2.1.304-stdout")).extracting(CanonicalObligations.Recording::fixture)
+                .containsExactly("claude-live-2.1.304-cancelled", "claude-live-2.1.304-denial", "claude-live-2.1.304-features", "claude-live-2.1.304-mcp", "claude-live-2.1.304-mcp-pair");
+        assertThat(CanonicalObligations.registered("claude-code/stream-json/2.1.299-sdk")).as("the labelled synthetic pair repeats the child stream: an example, not a recording")
+                .extracting(CanonicalObligations.Recording::fixture).containsExactly("claude-child-2.1.299", "claude-child-2.1.299-interrupted");
+    }
+
+    @Test
+    void aChangedSemanticStatementOrOwnerRoutingIsAChangedMeaning() {
+        // CDX-R1-02: at d36b8eb this statement replaced the Agent-result semantics with identical keys and finding ids
+        Catalog reversed = edited(m -> {
+            m.put("obligations", obligationEdited(new Json.JObject(m), "agent-result", o -> put(o, "semantics",
+                    new Json.JString("This is the complete total of all model calls in the entire child run, safe to sum with modelUsage."))));
+            return m;
+        });
+        assertThat(obligationKeys(reversed)).isNotEqualTo(reviewedObligations());
+        assertThat(CanonicalObligations.semantics(reversed)).extracting(Finding::id).contains("digest:claude.stream.usage.child-run.agent-result@r2");
+        // owner routing is part of every meaning
+        Catalog rerouted = edited(m -> put(m, "owner_path", new Json.JString("session_id")));
+        assertThat(CanonicalObligations.semantics(rerouted)).extracting(Finding::id).filteredOn(id -> id.startsWith("digest:")).hasSize(6);
+        // a review label written into the catalog is not an approval
+        Catalog labelled = edited(m -> {
+            m.put("obligations", obligationEdited(new Json.JObject(m), "agent-result", o -> put(o, "review", NeutralJson.parse("{\"status\": \"approved\"}"))));
+            return m;
+        });
+        assertThat(CanonicalObligations.semantics(labelled)).extracting(Finding::id).contains("approval:claude.stream.usage.child-run.agent-result@r2")
+                .doesNotContain("digest:claude.stream.usage.child-run.agent-result@r2");
+    }
+
+    @Test
+    void aChangedDefinitionOrRuleTheMeaningDependsOnMakesItsBindingStale() {
+        Catalog c = CanonicalObligations.read(CATALOG);
+        Obligation agent = c.obligations().stream().filter(o -> o.id().endsWith("agent-result")).findFirst().orElseThrow();
+        SemanticClaims.Definitions defs = SemanticClaims.Definitions.read(FoundationComparisonTest.EXTENSION);
+        assertThat(CanonicalObligations.relevantDigest(c, agent, defs, new ArrayList<>())).isEqualTo(agent.relevantDigest());
+        // the extension's aggregation definition reworded: outside the catalog, so the meaning digest cannot see it
+        Map<String, Json> dictionary = new TreeMap<>(defs.dictionary());
+        dictionary.put("aggregation_id", NeutralJson.parse("{\"caption\": \"Aggregation ID\", \"type\": \"integer_t\", \"enum\": {\"3\": {\"caption\": \"Child run total\"}}}"));
+        SemanticClaims.Definitions reworded = new SemanticClaims.Definitions(defs.classes(), defs.objects(), dictionary);
+        assertThat(CanonicalObligations.relevantDigest(c, agent, reworded, new ArrayList<>())).isNotEqualTo(agent.relevantDigest());
+        assertThat(CanonicalObligations.meaningDigest(c, agent)).isEqualTo(agent.digest());
+        // a named rule the contract no longer has
+        List<String> problems = new ArrayList<>();
+        Obligation renamed = new Obligation(agent.id(), agent.revision(), agent.variant(), agent.payload(), agent.requestedTools(), agent.unitPath(), agent.destinationClass(),
+                agent.destinationActivity(), agent.contextKind(), agent.unitMember(), agent.scopeId(), agent.status(), agent.aggregation(), agent.model(), agent.components(),
+                agent.tiers(), agent.reviewStatus(), agent.digest(), List.of("claude.stream.no_such_rule"), agent.relevantDigest(), agent.raw());
+        assertThat(CanonicalObligations.relevantDigest(c, renamed, defs, problems)).isNotEqualTo(agent.relevantDigest());
+        assertThat(problems).singleElement().asString().contains("claude.stream.no_such_rule");
+    }
+
+    @Test
+    void aSecondDefectOfOneOccurrenceIsASecondFinding() {
+        // a frozen finding cannot mask another reason on the same occurrence: its id names the reason
+        Catalog c = CanonicalObligations.read(CATALOG);
+        Recording rec = recording(c, CanonicalObligations.FIXTURES.resolve(FEATURES));
+        Recording bad = withEvents(rec, e -> childUsage(e) && "system/task_notification".equals(e.text("context_kind")) ? edited(e, m -> {
+            List<Json> obs = new ArrayList<>();
+            for (Json u : m.get("usage_observations").elements()) {
+                Map<String, Json> x = new LinkedHashMap<>(((Json.JObject) u).members());
+                x.put("usage_status_id", new Json.JNumber("1"));
+                x.put("reported_total_tokens", new Json.JNumber("21190"));
+                obs.add(new Json.JObject(x));
+            }
+            m.put("usage_observations", new Json.JArray(obs));
+            return m;
+        }) : e);
+        Judged j = judgeAll(c, bad, "claude-code/stream-json/2.1.304-stdout").stream().filter(x -> x.occurrence().obligation().id().endsWith("task-notification")).findFirst().orElseThrow();
+        assertThat(j.findings()).extracting(Finding::id).contains(j.occurrence().id() + "#value:usage_status_id", j.occurrence().id() + "#value:reported_total_tokens")
+                .doesNotHaveDuplicates();
+    }
+
+    @Test
+    void aResidualCoversOnlyItsReviewedMembersAndANewOneIsAChangedSet(@TempDir Path work) throws IOException {
+        Catalog c = CanonicalObligations.read(CATALOG);
+        // a member added under the reviewed iterations[] residual is not covered by it (a subtree prefix hid it at d36b8eb)
+        Path copy = OcsfFixtures.copy(FEATURES, work);
+        Path stream = copy.resolve("native").resolve("stream.jsonl");
+        List<String> lines = new ArrayList<>(Files.readAllLines(stream, StandardCharsets.UTF_8));
+        int result = 49;
+        assertThat(lines.get(result)).contains("\"type\":\"result\"").contains("\"iterations\":[{\"input_tokens\"");
+        lines.set(result, lines.get(result).replaceFirst("\"iterations\":\\[\\{\"input_tokens\"", "\"iterations\":[{\"advisor_tokens\":3,\"input_tokens\""));
+        Files.write(stream, lines, StandardCharsets.UTF_8);
+        NativeArtifact added = NativeArtifact.read(stream);
+        List<Occurrence> occ = CanonicalObligations.occurrences(c, c.bindings().get(1), FEATURES, added);
+        List<Finding> found = CanonicalObligations.tokenMembers(c, added, occ, RawInventory.ProfileRules.forProfile("claude_stream").dataKeyed(), new ArrayList<>());
+        assertThat(found).extracting(Finding::id).contains("claude.stream.usage.run@r1|result:usage.iterations[].advisor_tokens");
+        // a residual added to the catalog changes the reviewed set and is approval debt until an Owner decision approves it
+        Catalog widened = edited(m -> {
+            List<Json> residuals = new ArrayList<>(m.get("residuals").elements());
+            residuals.add(NeutralJson.parse("{\"variant\": \"user/tool_result\", \"path\": \"tool_use_result.usage.output_tokens\", \"classification\": \"vendor_specific\", \"reason\": \"control\"}"));
+            m.put("residuals", new Json.JArray(residuals));
+            return m;
+        });
+        assertThat(residualKeys(widened)).isNotEqualTo(reviewedResiduals());
+        assertThat(CanonicalObligations.semantics(widened)).extracting(Finding::id).contains("approval:residual:user/tool_result:tool_use_result.usage.output_tokens");
+        // and a residual never removes an obligation's occurrence: the Agent result's usage is still judged
+        assertThat(CanonicalObligations.occurrences(widened, widened.bindings().get(1), FEATURES, rec(widened).art()))
+                .anyMatch(o -> o.obligation().id().endsWith("agent-result"));
+    }
+
+    @Test
+    void childRunExamplesAreJudgedAtTheirOwnOwnerAndUnit() {
+        // the labelled synthetic examples (not part of any binding's population): two Agent calls of one parent, and a
+        // nested Agent result in child A reusing child B's tool-use id. Expected identities authored from its records
+        Catalog c = CanonicalObligations.read(CATALOG);
+        Recording rec = recording(c, CanonicalObligations.FIXTURES.resolve(OcsfFixtures.SYN_CHILD_RUNS));
+        Binding stdout = c.bindings().get(1);
+        List<Judged> judged = CanonicalObligations.occurrences(c, stdout, rec.fixture(), rec.art()).stream()
+                .map(o -> CanonicalObligations.judge(o, rec.cores(), rec.report(), rec.facts())).toList();
+        String a = "toolu_01SYNTHETICCHILDRUNAAAAA";
+        String b = "toolu_01SYNTHETICCHILDRUNBBBBB";
+        assertThat(judged.stream().filter(j -> j.occurrence().obligation().scopeId() == 7).map(j -> j.occurrence().obligation().id().replace("claude.stream.usage.child-run.", "")
+                + " record " + j.occurrence().record() + " owner " + j.occurrence().owner() + " unit " + j.occurrence().unit()))
+                .containsExactlyInAnyOrder("task-progress record 6 owner main unit " + a, "task-progress record 7 owner main unit " + b,
+                        "agent-result record 9 owner child:" + a + " unit " + b,
+                        "task-notification record 11 owner main unit " + a, "task-notification record 12 owner main unit " + b,
+                        "agent-result record 13 owner main unit " + a, "agent-result record 14 owner main unit " + b);
+        assertThat(judged).as(judged.stream().filter(j -> !j.discharged()).map(j -> j.findings().toString()).toList().toString()).allMatch(Judged::discharged);
+        // one unit id under two owners is two occurrences, and moving the nested result to main is an unmet obligation
+        assertThat(judged.stream().map(j -> j.occurrence().id())).doesNotHaveDuplicates();
+        Recording moved = withEvents(rec, e -> e);
+        Map<String, List<Event>> cores = new LinkedHashMap<>(moved.cores());
+        List<Event> nested = cores.get("child:" + a).stream().filter(e -> childUsage(e)).toList();
+        assertThat(nested).hasSize(1);
+        cores.put("child:" + a, cores.get("child:" + a).stream().filter(e -> !childUsage(e)).toList());
+        List<Event> main = new ArrayList<>(cores.get("main"));
+        main.addAll(nested);
+        cores.put("main", main);
+        Recording relocated = new Recording(rec.fixture(), rec.art(), cores, rec.report(), rec.facts());
+        Judged nine = CanonicalObligations.occurrences(c, stdout, rec.fixture(), rec.art()).stream().filter(o -> o.record() == 9)
+                .map(o -> CanonicalObligations.judge(o, relocated.cores(), relocated.report(), relocated.facts())).findFirst().orElseThrow();
+        assertThat(nine.discharged()).isFalse();
+        assertThat(nine.findings()).anyMatch(f -> f.id().endsWith("#no-observation") && f.detail().contains("another owner or unit"));
+    }
+
+    private static Recording rec(Catalog c) {
+        return recording(c, CanonicalObligations.FIXTURES.resolve(FEATURES));
     }
 
     // ---- support ------------------------------------------------------------------------------------------------------------
@@ -623,18 +840,60 @@ class CanonicalConformanceTest {
         return new Json.JString(o.toString());
     }
 
-    /** The reviewed obligation set the baseline pins: id, revision and meaning digest. */
+    /** The reviewed obligation set the baseline pins: id, revision, meaning digest and relevant digest. */
     static Set<String> reviewedObligations() {
         Set<String> out = new TreeSet<>();
         for (Json o : NeutralJson.readDocument(BASELINE).member("obligations").elements()) {
-            out.add(o.member("id").text() + "@r" + o.member("revision").scalarText() + "#" + o.member("meaning_digest").text());
+            out.add(o.member("id").text() + "@r" + o.member("revision").scalarText() + "#" + o.member("meaning_digest").text() + "#" + o.member("relevant_digest").text());
         }
         return out;
     }
 
     static Set<String> obligationKeys(Catalog c) {
+        SemanticClaims.Definitions defs = SemanticClaims.Definitions.read(FoundationComparisonTest.EXTENSION);
         Set<String> out = new TreeSet<>();
-        c.obligations().forEach(o -> out.add(o.key() + "#" + CanonicalObligations.meaningDigest(o)));
+        c.obligations().forEach(o -> out.add(o.key() + "#" + CanonicalObligations.meaningDigest(c, o) + "#" + CanonicalObligations.relevantDigest(c, o, defs, new ArrayList<>())));
+        return out;
+    }
+
+    /** The reviewed residual set the baseline pins: variant, path, classification and digest. */
+    static Set<String> reviewedResiduals() {
+        Set<String> out = new TreeSet<>();
+        for (Json r : NeutralJson.readDocument(BASELINE).member("residuals").elements()) {
+            out.add(r.member("variant").text() + ":" + r.member("path").text() + "|" + r.member("classification").text() + "#" + r.member("digest").text());
+        }
+        return out;
+    }
+
+    static Set<String> residualKeys(Catalog c) {
+        Set<String> out = new TreeSet<>();
+        c.residuals().forEach(r -> out.add(r.key() + "|" + r.classification() + "#" + CanonicalObligations.residualDigest(r)));
+        return out;
+    }
+
+    /** The reviewed population the baseline pins, one line per entry, recording and occurrence. */
+    static Set<String> reviewedPopulation() {
+        Set<String> out = new TreeSet<>();
+        for (Json b : NeutralJson.readDocument(BASELINE).member("population").elements()) {
+            String entry = b.member("compatibility_entry").text();
+            out.add(entry + " admission " + b.member("admission").text());
+            b.member("recordings").elements().forEach(x -> out.add(entry + " recording " + x.member("fixture").text() + " " + x.member("sha256").text()));
+            b.member("occurrences").elements().forEach(x -> out.add(entry + " occurrence " + x.text()));
+        }
+        return out;
+    }
+
+    static Set<String> population(Report r) {
+        Json registry = NeutralJson.readDocument(CanonicalObligations.REGISTRY);
+        Set<String> out = new TreeSet<>();
+        for (Binding b : r.catalog().bindings()) {
+            Json e = registry.member("entries").elements().stream().filter(x -> b.entry().equals(SourceProfile.text(x, "id"))).findFirst().orElseThrow();
+            out.add(b.entry() + " admission " + SourceProfile.text(e, "admission"));
+            for (String f : b.recordings()) {
+                out.add(b.entry() + " recording " + f + " " + NativeArtifact.read(CanonicalObligations.FIXTURES.resolve(f).resolve("native").resolve(CanonicalObligations.ARTIFACT)).sha256());
+            }
+            r.judged().stream().filter(j -> j.occurrence().entry().equals(b.entry())).forEach(j -> out.add(b.entry() + " occurrence " + j.occurrence().id()));
+        }
         return out;
     }
 

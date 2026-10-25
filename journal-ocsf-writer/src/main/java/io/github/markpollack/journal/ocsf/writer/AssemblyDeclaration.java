@@ -35,13 +35,22 @@ final class AssemblyDeclaration {
         return new Jv.Obj().put("profile", plan.profile().document()).put("engine", new Jv.Obj().put("name", Assembler.ENGINE).put("version", Assembler.ENGINE_VERSION).put("contract_uid", contractUid))
                 .put("lineage", plan.lineage()).put("run_session_uid", AssemblyGate.runSession(verdicts)).put("sources", sources).put("result", result)
                 .put("identity_layers", "acquisition (run_uid), source occurrence (assembly.occurrence_uid: artifact, record and emit ordinal), logical entity and stage (assembly.entity_uid in a declared namespace) and provider or protocol identities (tool_call_uid, response_uid, protocol objects) are distinct; a repeated tool call id across start and completion is two stages of one entity, never a duplicate")
-                .put("idempotence", "a source is identified by its acquisition origin and its sha256: replaying the same origin and bytes adds nothing; identical bytes from distinct origins stay distinct sources whose observations consolidate");
+                .put("idempotence", "a source is identified by its acquisition origin and its sha256: replaying the same origin and bytes adds nothing; identical bytes from another origin"
+                        + " are related to the earlier source only by a declared copy lineage (copy_of), which the equal bytes verify, and are otherwise refused: equal content never establishes one native occurrence")
+                .put("membership", "a source that reports no session identity of its own (a companion, an acquisition-bound or an optional role) belongs only through the declared acquisition"
+                        + " it shares with the source that established the run; a declared acquisition is the caller's assertion, never inferred from paths, bytes or a role's requirement");
     }
 
     private static Jv.Obj source(AssemblyPlan plan, AssemblyPlan.Binding b, AssemblyGate.Verdict v, AssemblyGate.SourceFacts f) {
         AssemblyProfile.Role role = plan.profile().role(b.role());
         Jv.Obj s = new Jv.Obj().put("artifact", b.artifact()).put("role", b.role()).put("requirement", role.requirement()).put("profile", role.profile()).put("route", role.route())
                 .put("origin", b.origin());
+        if (b.acquisition() != null) {
+            s.put("acquisition", b.acquisition());
+        }
+        if (b.copyOf() != null) {
+            s.put("copy_of", b.copyOf());
+        }
         if (f != null) {
             s.put("sha256", f.sha256()).put("records", f.records()).put("bytes", f.bytes()).put("ended", f.ended());
         }

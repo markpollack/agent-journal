@@ -38,8 +38,14 @@ public final class AssemblyOracle {
      * @param role the role it was supplied for
      * @param origin where it was acquired (its import identity together with its sha256)
      * @param bytes the native bytes, framed as the role declares
+     * @param acquisition the acquisition the supplier asserts the bytes belong to, or {@code null}
+     * @param copyOf the earlier supplied source these bytes are a declared copy of, or {@code null}
      */
-    public record Supplied(String name, String role, String origin, NativeArtifact bytes) {
+    public record Supplied(String name, String role, String origin, NativeArtifact bytes, String acquisition, String copyOf) {
+
+        public Supplied(String name, String role, String origin, NativeArtifact bytes, String acquisition) {
+            this(name, role, origin, bytes, acquisition, null);
+        }
     }
 
     /** The oracle's own verdict for one supplied source. */
@@ -97,9 +103,11 @@ public final class AssemblyOracle {
         if (d == null) {
             return s.name() + " is not declared";
         }
-        boolean same = s.role().equals(RawInventory.text(d, "role")) && s.origin().equals(RawInventory.text(d, "origin")) && s.bytes().sha256().equals(RawInventory.text(d, "sha256"));
+        boolean same = s.role().equals(RawInventory.text(d, "role")) && s.origin().equals(RawInventory.text(d, "origin")) && s.bytes().sha256().equals(RawInventory.text(d, "sha256"))
+                && java.util.Objects.equals(s.acquisition(), RawInventory.text(d, "acquisition")) && java.util.Objects.equals(s.copyOf(), RawInventory.text(d, "copy_of"));
         return same ? null : s.name() + " declared as role " + RawInventory.text(d, "role") + " from " + RawInventory.text(d, "origin") + " sha256 " + RawInventory.text(d, "sha256")
-                + ", supplied as role " + s.role() + " from " + s.origin() + " sha256 " + s.bytes().sha256();
+                + " acquisition " + RawInventory.text(d, "acquisition") + " copy of " + RawInventory.text(d, "copy_of") + ", supplied as role " + s.role() + " from " + s.origin()
+                + " sha256 " + s.bytes().sha256() + " acquisition " + s.acquisition() + " copy of " + s.copyOf();
     }
 
     static Map<String, Json> declaredSources(Json declared) {
@@ -112,63 +120,9 @@ public final class AssemblyOracle {
 
     // ------------------------------------------------------------------------------------------ gate
 
-    /**
-     * The oracle's verdicts from the native bytes: the run's session is the single identity the first source in the
-     * expectation's precedence reports; a source reporting exactly it belongs to the execution, any other identity or
-     * several do not; a source without one belongs only when its role is optional, bound by acquisition, or identified
-     * by a companion that belongs; the same origin with the same bytes is the same import, accepted once.
-     */
+    /** The oracle's own membership verdicts ({@link AssemblyMembership}). */
     static Map<String, Expected> expect(Json spec, List<Supplied> supplied) {
-        Map<String, Json> roles = roles(spec);
-        List<Supplied> ordered = new ArrayList<>(supplied);
-        List<String> precedence = texts(spec.member("precedence"));
-        ordered.sort((a, b) -> Integer.compare(precedence.indexOf(a.role()), precedence.indexOf(b.role())));
-        Map<String, Set<String>> sessions = new LinkedHashMap<>();
-        for (Supplied s : ordered) {
-            sessions.put(s.name(), sessionsOf(s, roles.get(s.role()), ordered, roles));
-        }
-        String run = null;
-        for (Supplied s : ordered) {
-            if (run == null && sessions.get(s.name()).size() == 1) {
-                run = sessions.get(s.name()).iterator().next();
-            }
-        }
-        Map<String, Expected> out = new LinkedHashMap<>();
-        Set<String> imports = new LinkedHashSet<>();
-        for (Supplied s : ordered) {
-            out.put(s.name(), verdict(s, roles.get(s.role()), sessions.get(s.name()), run, imports.add(s.origin() + "|" + s.bytes().sha256())));
-        }
-        return out;
-    }
-
-    private static Expected verdict(Supplied s, Json role, Set<String> own, String run, boolean firstImport) {
-        boolean required = "required".equals(RawInventory.text(role, "requirement"));
-        if (!firstImport) {
-            return new Expected(s, own, false, "the same origin and bytes as a source already imported");
-        }
-        if ("acquisition".equals(RawInventory.text(role, "identity"))) {
-            return new Expected(s, own, true, "bound by its acquisition");
-        }
-        if (own.isEmpty()) {
-            return new Expected(s, own, !required, required ? "a required source reports no session" : "an optional source without a session");
-        }
-        boolean same = own.size() == 1 && own.contains(run);
-        return new Expected(s, own, same, same ? "reports the run's session " + run : "reports " + own + ", not the run's session " + run);
-    }
-
-    private static Set<String> sessionsOf(Supplied s, Json role, List<Supplied> all, Map<String, Json> roles) {
-        String companion = RawInventory.text(role, "companion");
-        if (companion != null) {
-            Set<String> out = new LinkedHashSet<>();
-            for (Supplied c : all) {
-                if (c.role().equals(companion)) {
-                    out.addAll(sessionsOf(c, roles.get(companion), List.of(), roles));
-                }
-            }
-            return out;
-        }
-        Json locators = role.member("session");
-        return locators == null ? Set.of() : SourceLocator.values(located(s), locators);
+        return AssemblyMembership.expect(spec, supplied);
     }
 
     private static void gate(OracleReport report, Json declared, Map<String, Expected> expected, OcsfPackage pkg) {

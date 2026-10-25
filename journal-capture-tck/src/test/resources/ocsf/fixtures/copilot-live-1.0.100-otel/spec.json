@@ -38,22 +38,26 @@
    {
     "artifact": "session-events.jsonl",
     "role": "session",
-    "origin": "native session directory events.jsonl copied after the run (sanitized)"
+    "origin": "native session directory events.jsonl copied after the run (sanitized)",
+    "acquisition": "the one live launch recorded as fixture copilot-live-1.0.100-otel"
    },
    {
     "artifact": "stdout.jsonl",
     "role": "stdout",
-    "origin": "standard output of the launch (sanitized)"
+    "origin": "standard output of the launch (sanitized)",
+    "acquisition": "the one live launch recorded as fixture copilot-live-1.0.100-otel"
    },
    {
     "artifact": "otel.jsonl",
     "role": "otel",
-    "origin": "the CLI's OTel file exporter output (sanitized)"
+    "origin": "the CLI's OTel file exporter output (sanitized)",
+    "acquisition": "the one live launch recorded as fixture copilot-live-1.0.100-otel"
    },
    {
     "artifact": "usage-output.json",
     "role": "usage_report",
-    "origin": "the usage report the launch named with --usage-output-file"
+    "origin": "the usage report the launch named with --usage-output-file",
+    "acquisition": "the one live launch recorded as fixture copilot-live-1.0.100-otel"
    }
   ]
  },

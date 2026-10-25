@@ -1,0 +1,33 @@
+{
+ "run_uid": "syn-claude-child-runs-2.1.304",
+ "invocation_index": 0,
+ "capture_start": "2026-10-24T12:00:00Z",
+ "cli": {
+  "name": "Claude Code",
+  "vendor_name": "Anthropic",
+  "type_id": 1,
+  "type": "Native"
+ },
+ "launch_settings": {
+  "command": "replay of a hand-authored stream (no live run)",
+  "cwd": "/work",
+  "route": "stdout"
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "kind": 1,
+   "profile": "claude_stream",
+   "route": "stdout",
+   "path": "<fixture>/native/syn-claude-child-runs-2.1.304/stream.jsonl"
+  }
+ ],
+ "synthetic": {
+  "label": "LABELLED SYNTHETIC CHILD-RUN EXAMPLES (R1, 2026-10-24): a hand-authored stream in the Claude Code 2.1.304 stdout shape, not live evidence. One main thread spawns two Agent calls (child A, child B) in one response; each reports task_progress and task_notification usage and an Agent result. Inside child A an Agent call reuses child B's tool-use id, and its result (record 9) is reported in child A's scope. The nested call's own task records and child records are deliberately absent: how Claude Code scopes them under a reused id is not observed. Values are chosen by hand: child B's notification total equals its Agent result's totalTokens (4080) although they are different measures",
+  "purpose": [
+   "two children of one parent stay separate child-run groups, never pooled or summed",
+   "a tool-use id reused under another parent is another owner's unit, in another core",
+   "the task figure and the Agent result's one-response usage are different quantities even when two values are equal"
+  ]
+ }
+}

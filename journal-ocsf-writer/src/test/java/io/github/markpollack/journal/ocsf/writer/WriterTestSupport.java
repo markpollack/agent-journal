@@ -33,6 +33,7 @@ final class WriterTestSupport {
     static final String UNTESTED = "syn-claude-untested-version";
     /** Sanitized real live recordings of ACCEPT-1 (2026-10-21), replayed through the writer to produce their committed packages. */
     static final String LIVE_FEATURES = "claude-live-2.1.304-features";
+    static final String SYN_CHILD_RUNS = "syn-claude-child-runs-2.1.304";
     static final String LIVE_DENIAL = "claude-live-2.1.304-denial";
     static final String LIVE_CANCELLED = "claude-live-2.1.304-cancelled";
     static final String LIVE_CODEX = "codex-live-0.160.1-commands";
@@ -65,6 +66,14 @@ final class WriterTestSupport {
     static final String SPAWN = "toolu_01BnEuCUmZ2Vu1LpADzksmrJ";
 
     private WriterTestSupport() {
+    }
+
+    /** Why tests record the pair fixture's stream and session file together without assembly. */
+    static final String PAIR_LOG = "the pair fixture's stream and session file recorded together without assembly, to exercise both mappers in one file";
+
+    /** The acquisition an assembled fixture's spec asserts for its inputs: the one live launch it records. */
+    static String launch(String fixture) {
+        return "the one live launch recorded as fixture " + fixture;
     }
 
     static Path nativeOf(String fixture, String artifact) {

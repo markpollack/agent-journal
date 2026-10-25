@@ -35,12 +35,20 @@ import java.util.stream.Stream;
  * oracle's source profile does not expect, or an oracle property for that owner that is not VERIFIED;</li>
  * <li>a required source binding without its disposition catalog, oracle profile, disposition-gate registration or
  * obligation catalog, derived from the compatibility registry and the final-assembly profiles;</li>
- * <li>unreviewed drift of a registered recording against its binding's specification, an obligation without an
- * approval, a meaning changed without a new revision, or an unresolved residual.</li>
+ * <li>unreviewed drift of a registered recording against its binding's specification, an obligation or residual
+ * without an approval at its current digests, a meaning changed without a new revision, a relevant definition or rule
+ * changed since the binding was stated, or an unresolved residual.</li>
  * </ol>
  * Occurrences are identified by obligation and revision, recording, artifact hash, record index, JSON pointer and
- * owner; the comparison is by these identities, never by counts. Nothing here calls the writer or a mapper: expected
- * occurrences come from {@link NativeArtifact} records and the catalog, candidate values from the package as written.
+ * owner; an occurrence's finding also names its reason, so a second defect of one occurrence is a second finding. The
+ * comparison is by these identities, never by counts. Nothing here calls the writer or a mapper: expected occurrences
+ * come from {@link NativeArtifact} records and the catalog, candidate values from the package as written.
+ *
+ * <p>Two digests protect a meaning (RULE-38, RULE-41). The meaning digest covers what a reviewer approves: the owner
+ * routing, trigger, destination, observation and the semantics statement; a change needs a new revision. The relevant
+ * digest covers what the meaning depends on outside the catalog: the extension definitions of the destination (the
+ * usage observation with every scope, aggregation and status value, the unit member and context kind) and the contract
+ * rules named in {@code rules}; a change makes the binding stale until it is restated and reviewed.
  */
 final class CanonicalObligations {
 
@@ -51,6 +59,7 @@ final class CanonicalObligations {
     static final Path REGISTRY = PROJECT.resolve("journal-ocsf-writer/src/main/resources/ocsf/compatibility.json");
     static final Path PROFILES = PROJECT.resolve("journal-ocsf-writer/src/main/resources/ocsf/profiles");
     static final Path DECISIONS = PROJECT.resolve("journal-capture-tck/src/test/resources/ocsf/mapping-catalog/owner-decisions.json");
+    static final Path CONTRACTS = PROJECT.resolve("journal-ocsf-writer/src/main/resources/ocsf/mappings");
     static final String ARTIFACT = "stream.jsonl";
 
     private CanonicalObligations() {
@@ -61,7 +70,7 @@ final class CanonicalObligations {
     record Obligation(String id, int revision, String variant, String payload, List<String> requestedTools, String unitPath,
             String destinationClass, Integer destinationActivity, String contextKind, String unitMember,
             int scopeId, Json status, Json aggregation, String model, Map<String, String> components, String tiers,
-            String reviewStatus, String digest, Json raw) {
+            String reviewStatus, String digest, List<String> rules, String relevantDigest, Json raw) {
 
         String key() {
             return id + "@r" + revision;
@@ -73,13 +82,22 @@ final class CanonicalObligations {
         }
     }
 
-    record Residual(String variant, String path, String classification, String reason) {
+    /**
+     * A reviewed token-named member that owes no canonical outcome or whose classification is open. Its {@code path} is
+     * an exact leaf, or, with {@code members}, an array or object whose listed member paths it covers (an added member
+     * under it is not covered and is reported).
+     */
+    record Residual(String variant, String path, List<String> members, String classification, String reason, String reviewStatus, Json raw) {
+
+        String key() {
+            return variant + ":" + path;
+        }
     }
 
     record Binding(String entry, List<String> recordings) {
     }
 
-    record Catalog(Path file, String profile, String ownerPath, Path dispositions, List<Binding> bindings, List<Obligation> obligations,
+    record Catalog(Path file, String profile, String ownerPath, Path dispositions, String contract, List<Binding> bindings, List<Obligation> obligations,
             List<Residual> residuals, Json raw) {
     }
 
@@ -102,10 +120,11 @@ final class CanonicalObligations {
         }
         List<Residual> residuals = new ArrayList<>();
         for (Json r : raw.member("residuals").elements()) {
-            residuals.add(new Residual(r.member("variant").text(), r.member("path").text(), r.member("classification").text(), r.member("reason").text()));
+            residuals.add(new Residual(r.member("variant").text(), r.member("path").text(), texts(r.member("members")), r.member("classification").text(),
+                    r.member("reason").text(), SourceProfile.text(r.member("review"), "status"), r));
         }
         return new Catalog(file, raw.member("profile").text(), raw.member("owner_path").text(), PROJECT.resolve(raw.member("disposition_catalog").text()),
-                bindings, obligations, residuals, raw);
+                SourceProfile.text(raw, "contract"), bindings, obligations, residuals, raw);
     }
 
     private static Obligation obligation(Json o) {
@@ -118,7 +137,7 @@ final class CanonicalObligations {
                 texts(trigger.member("requested_tool")), SourceProfile.text(trigger, "unit"), dest.member("class").text(), Event.integer(dest.member("activity_id")),
                 SourceProfile.text(dest, "context_kind"), SourceProfile.text(dest, "unit_member"), Event.integer(obs.member("scope_id")), obs.member("usage_status"),
                 obs.member("aggregation_id"), SourceProfile.text(obs, "model"), components, SourceProfile.text(obs, "tiers"),
-                SourceProfile.text(o.member("review"), "status"), SourceProfile.text(o, "meaning_digest"), o);
+                SourceProfile.text(o.member("review"), "status"), SourceProfile.text(o, "meaning_digest"), texts(o.member("rules")), SourceProfile.text(o, "relevant_digest"), o);
     }
 
     static List<String> texts(Json array) {
@@ -129,12 +148,61 @@ final class CanonicalObligations {
         return out;
     }
 
-    /** sha256 over the canonical JSON of the obligation's normative content: {trigger, destination, observation}. */
-    static String meaningDigest(Obligation o) {
+    /**
+     * sha256 over the canonical JSON of what a reviewer approves: the catalog's owner routing and the obligation's
+     * trigger, destination, observation and semantics statement.
+     */
+    static String meaningDigest(Catalog c, Obligation o) {
         Map<String, Json> m = new TreeMap<>();
         m.put("destination", o.raw().member("destination"));
         m.put("observation", o.raw().member("observation"));
+        m.put("owner_path", new Json.JString(c.ownerPath()));
+        m.put("semantics", o.raw().member("semantics"));
         m.put("trigger", o.raw().member("trigger"));
+        return SemanticClaims.sha256(SemanticClaims.canonical(new Json.JObject(m)));
+    }
+
+    /**
+     * sha256 over the canonical JSON of the definitions and rules the meaning depends on outside the catalog: the
+     * extension's definitions of the destination's usage observation (with every enum value it names), unit member and
+     * context kind, and the named rules of the catalog's contract. Missing definitions or rules are added to
+     * {@code problems}.
+     */
+    static String relevantDigest(Catalog c, Obligation o, SemanticClaims.Definitions defs, List<String> problems) {
+        Map<String, Json> definitions = new TreeMap<>();
+        List<String> destinations = new ArrayList<>(List.of(o.destinationClass() + ".usage_observations[]"));
+        if (o.unitMember() != null) {
+            destinations.add(o.destinationClass() + "." + o.unitMember());
+        }
+        if (o.contextKind() != null) {
+            destinations.add(o.destinationClass() + ".context_kind");
+        }
+        destinations.forEach(d -> definitions.put(d, SemanticClaims.destinationDefinition(d, defs, problems)));
+        Map<String, Json> rules = new TreeMap<>();
+        Json contract = NeutralJson.readDocument(CONTRACTS.resolve(c.contract() + ".json"));
+        for (String id : o.rules()) {
+            Json found = contract.member("rules").elements().stream().filter(r -> id.equals(SourceProfile.text(r, "id"))).findFirst().orElse(null);
+            if (found == null) {
+                problems.add("rule " + id + " is not in contract " + c.contract());
+            }
+            else {
+                rules.put(id, found);
+            }
+        }
+        Map<String, Json> m = new TreeMap<>();
+        m.put("definitions", new Json.JObject(definitions));
+        m.put("rules", new Json.JObject(rules));
+        return SemanticClaims.sha256(SemanticClaims.canonical(new Json.JObject(m)));
+    }
+
+    /** sha256 over the canonical JSON of a residual's reviewed content: variant, path, members, classification and reason. */
+    static String residualDigest(Residual r) {
+        Map<String, Json> m = new TreeMap<>();
+        m.put("classification", new Json.JString(r.classification()));
+        m.put("members", r.raw().member("members") == null ? Json.JNull.INSTANCE : r.raw().member("members"));
+        m.put("path", new Json.JString(r.path()));
+        m.put("reason", new Json.JString(r.reason()));
+        m.put("variant", new Json.JString(r.variant()));
         return SemanticClaims.sha256(SemanticClaims.canonical(new Json.JObject(m)));
     }
 
@@ -285,33 +353,34 @@ final class CanonicalObligations {
         List<Finding> findings = new ArrayList<>();
         Obligation o = occ.obligation();
         if (occ.unresolved() != null) {
-            findings.add(new Finding(3, occ.id(), "ownership not established: " + occ.unresolved()));
+            findings.add(new Finding(3, occ.id() + "#ownership-unresolved", "ownership not established: " + occ.unresolved()));
             return new Judged(occ, false, findings);
         }
         List<Json> matches = matches(occ, cores.getOrDefault(occ.owner(), List.of()));
         if (matches.isEmpty()) {
-            findings.add(new Finding(3, occ.id(), "no " + o.destinationClass() + " usage observation at scope " + o.scopeId() + unitText(occ) + " for record " + occ.record()
+            findings.add(new Finding(3, occ.id() + "#no-observation", "no " + o.destinationClass() + " usage observation at scope " + o.scopeId() + unitText(occ) + " for record " + occ.record()
                     + " in core " + occ.owner() + ": " + whatIsThere(occ, cores)));
         }
         else if (matches.size() > 1) {
-            findings.add(new Finding(4, occ.id(), matches.size() + " observations match one occurrence"));
+            findings.add(new Finding(4, occ.id() + "#duplicate-observation", matches.size() + " observations match one occurrence"));
         }
         else {
             for (String p : values(occ, matches.get(0))) {
-                findings.add(new Finding(4, occ.id(), p));
+                // the member a value problem names is its reason: two defects of one occurrence are two findings
+                findings.add(new Finding(4, occ.id() + "#value:" + p.substring(0, p.indexOf(' ')), p));
             }
         }
         ExpectedFacts facts = profileFacts.get(occ.owner());
         boolean expected = facts != null && facts.usages.stream().anyMatch(u -> u.recordIndex() == occ.record() && u.scopeId() == o.scopeId()
                 && (occ.model() == null || occ.model().equals(u.model())));
         if (!expected) {
-            findings.add(new Finding(4, occ.id(), "the oracle's source profile does not expect this occurrence (owner " + occ.owner() + ")"));
+            findings.add(new Finding(4, occ.id() + "#not-expected-by-profile", "the oracle's source profile does not expect this occurrence (owner " + occ.owner() + ")"));
         }
         for (String property : oracleProperties(o)) {
             String owner = occ.owner() + "/" + ARTIFACT;
             List<Check> checks = report.checks().stream().filter(ch -> ch.property().equals(property) && ch.owner().equals(owner)).toList();
             if (checks.isEmpty() || checks.stream().anyMatch(ch -> ch.outcome() != Check.Outcome.VERIFIED)) {
-                findings.add(new Finding(4, occ.id(), "oracle " + property + " [" + owner + "] " + (checks.isEmpty() ? "not reported" : checks.stream().map(ch -> ch.outcome().toString()).toList())));
+                findings.add(new Finding(4, occ.id() + "#oracle:" + property, "oracle " + property + " [" + owner + "] " + (checks.isEmpty() ? "not reported" : checks.stream().map(ch -> ch.outcome().toString()).toList())));
             }
         }
         return new Judged(occ, findings.isEmpty(), findings);
@@ -533,9 +602,17 @@ final class CanonicalObligations {
         return false;
     }
 
+    /** The residual that covers a leaf: its exact path, or one of the member paths it lists under its path. */
     static Residual residual(Catalog c, String variant, String path) {
         for (Residual r : c.residuals()) {
-            if (r.variant().equals(variant) && (path.equals(r.path()) || path.startsWith(r.path() + ".") || path.startsWith(r.path() + "["))) {
+            if (!r.variant().equals(variant)) {
+                continue;
+            }
+            if (path.equals(r.path())) {
+                return r;
+            }
+            String under = path.startsWith(r.path() + ".") ? path.substring(r.path().length() + 1) : null;
+            if (under != null && r.members().contains(under)) {
                 return r;
             }
         }
@@ -686,27 +763,102 @@ final class CanonicalObligations {
         return null;
     }
 
-    /** Semantic state of the support claim: approvals, meaning digests, unresolved residuals. */
+    /**
+     * Semantic state of the support claim: each obligation's meaning digest (a changed meaning needs a new revision),
+     * its relevant digest (definitions or rules changed since the binding was stated), and an Owner decision that
+     * approves it at both digests; each residual's approval at its digest; unresolved residuals. A review status
+     * written into the catalog is a label, never an approval.
+     */
     static List<Finding> semantics(Catalog c) {
         Set<String> approved = new LinkedHashSet<>();
+        Set<String> approvedResiduals = new LinkedHashSet<>();
         for (Json d : NeutralJson.readDocument(DECISIONS).member("decisions").elements()) {
             for (Json a : d.member("approves") == null ? List.<Json>of() : d.member("approves").elements()) {
-                approved.add(SourceProfile.text(a, "obligation") + "@r" + (a.member("revision") == null ? null : a.member("revision").scalarText()) + "#" + SourceProfile.text(a, "digest"));
+                if (a.member("obligation") != null) {
+                    approved.add(SourceProfile.text(a, "obligation") + "@r" + (a.member("revision") == null ? null : a.member("revision").scalarText()) + "#" + SourceProfile.text(a, "digest")
+                            + "#" + SourceProfile.text(a, "relevant_digest"));
+                }
+                if (a.member("residual") != null) {
+                    approvedResiduals.add(SourceProfile.text(a, "residual") + "#" + SourceProfile.text(a, "digest"));
+                }
             }
         }
+        SemanticClaims.Definitions defs = SemanticClaims.Definitions.read(FoundationComparisonTest.EXTENSION);
         List<Finding> out = new ArrayList<>();
         for (Obligation o : c.obligations()) {
-            String digest = meaningDigest(o);
+            String digest = meaningDigest(c, o);
             if (!digest.equals(o.digest())) {
                 out.add(new Finding(6, "digest:" + o.key(), "meaning_digest " + o.digest() + " != " + digest + ": the meaning changed without a new revision"));
             }
-            if (!approved.contains(o.key() + "#" + digest)) {
-                out.add(new Finding(6, "approval:" + o.key(), "no Owner decision approves " + o.key() + " at its meaning digest (review status: " + o.reviewStatus() + ")"));
+            List<String> problems = new ArrayList<>();
+            String relevant = relevantDigest(c, o, defs, problems);
+            if (!problems.isEmpty() || !relevant.equals(o.relevantDigest())) {
+                out.add(new Finding(6, "binding:" + o.key(), "relevant_digest " + o.relevantDigest() + " != " + relevant + (problems.isEmpty() ? "" : " " + problems)
+                        + ": a definition or rule this meaning depends on changed since its binding was stated; restate it for review"));
+            }
+            if (!approved.contains(o.key() + "#" + digest + "#" + relevant)) {
+                out.add(new Finding(6, "approval:" + o.key(), "no Owner decision approves " + o.key() + " at its meaning and relevant digests (review status: " + o.reviewStatus() + ")"));
             }
         }
         for (Residual r : c.residuals()) {
+            if (!approvedResiduals.contains(r.key() + "#" + residualDigest(r))) {
+                out.add(new Finding(6, "approval:residual:" + r.key(), "no Owner decision approves the " + r.classification() + " classification of " + r.key()
+                        + " at its digest (review status: " + r.reviewStatus() + "): a residual owes no canonical outcome only once its classification is approved"));
+            }
             if ("unresolved".equals(r.classification())) {
-                out.add(new Finding(6, "unresolved:" + r.variant() + ":" + r.path(), r.reason()));
+                out.add(new Finding(6, "unresolved:" + r.key(), r.reason()));
+            }
+        }
+        return out;
+    }
+
+    // ---- the registered recording population --------------------------------------------------------------------------
+
+    /** One public recording a binding's compatibility entry selects: its fixture and native stream hash. */
+    record Recording(String fixture, String sha256) {
+    }
+
+    /**
+     * The recordings a compatibility entry selects among the public fixtures, derived from the fixtures alone (never the
+     * catalog's list): a stream of the entry's profile on one of its routes that reports a version in its range. A
+     * fixture labelled synthetic is an example, not a recording, and is left out.
+     */
+    static List<Recording> registered(String entry) {
+        Json e = entry(NeutralJson.readDocument(REGISTRY), entry);
+        List<Recording> out = new ArrayList<>();
+        try (Stream<Path> dirs = Files.list(FIXTURES)) {
+            for (Path dir : dirs.sorted().toList()) {
+                Path spec = dir.resolve("spec.json");
+                Path stream = dir.resolve("native").resolve(ARTIFACT);
+                if (!Files.isRegularFile(spec) || !Files.isRegularFile(stream)) {
+                    continue;
+                }
+                Json s = NeutralJson.readDocument(spec);
+                String label = SourceProfile.text(s.member("synthetic"), "label");
+                boolean synthetic = label != null && label.startsWith("LABELLED SYNTHETIC");
+                boolean selected = s.member("sources").elements().stream().anyMatch(src -> ARTIFACT.equals(SourceProfile.text(src, "artifact"))
+                        && Objects.equals(SourceProfile.text(src, "profile"), SourceProfile.text(e, "profile")) && texts(e.member("routes")).contains(SourceProfile.text(src, "route")));
+                if (!synthetic && selected) {
+                    NativeArtifact art = NativeArtifact.read(stream);
+                    if (inRange(reportedVersion(art), e)) {
+                        out.add(new Recording(dir.getFileName().toString(), art.sha256()));
+                    }
+                }
+            }
+        }
+        catch (java.io.IOException x) {
+            throw new java.io.UncheckedIOException(x);
+        }
+        return out;
+    }
+
+    /** A registered recording of the binding's entry that the catalog does not judge: the denominator cannot shrink by omission. */
+    static List<Finding> population(Binding b) {
+        List<Finding> out = new ArrayList<>();
+        for (Recording r : registered(b.entry())) {
+            if (!b.recordings().contains(r.fixture())) {
+                out.add(new Finding(5, "recording:" + b.entry() + ":" + r.fixture(), "the registered recording " + r.fixture() + " (sha256 " + r.sha256() + ") of " + b.entry()
+                        + " is not judged by the obligation catalog"));
             }
         }
         return out;

@@ -37,22 +37,26 @@
    {
     "artifact": "summary.json",
     "role": "summary",
-    "origin": "native session directory summary.json copied after the run (sanitized)"
+    "origin": "native session directory summary.json copied after the run (sanitized)",
+    "acquisition": "the one live launch recorded as fixture junie-live-3813.7-terminal"
    },
    {
     "artifact": "session-events.jsonl",
     "role": "session",
-    "origin": "native session directory events.jsonl copied after the run (sanitized)"
+    "origin": "native session directory events.jsonl copied after the run (sanitized)",
+    "acquisition": "the one live launch recorded as fixture junie-live-3813.7-terminal"
    },
    {
     "artifact": "stdout.jsonl",
     "role": "stdout",
-    "origin": "standard output of the launch (sanitized)"
+    "origin": "standard output of the launch (sanitized)",
+    "acquisition": "the one live launch recorded as fixture junie-live-3813.7-terminal"
    },
    {
     "artifact": "stderr.txt",
     "role": "stderr",
-    "origin": "standard error of the launch (sanitized)"
+    "origin": "standard error of the launch (sanitized)",
+    "acquisition": "the one live launch recorded as fixture junie-live-3813.7-terminal"
    }
   ]
  },

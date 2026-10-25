@@ -67,7 +67,7 @@ final class Assembler {
         Map<String, AssemblyGate.Verdict> verdicts = AssemblyGate.decide(plan, observations, facts);
         List<Observation> accepted = new ArrayList<>(observations.stream().filter(o -> verdicts.containsKey(o.artifact()) && verdicts.get(o.artifact()).accepted()).toList());
         accepted.sort(Comparator.comparingInt((Observation o) -> plan.rank(o.artifact())).thenComparingInt(Observation::arrival));
-        List<AssemblyGrouping.Group> groups = AssemblyGrouping.group(plan, accepted, copies(verdicts, facts));
+        List<AssemblyGrouping.Group> groups = AssemblyGrouping.group(plan, accepted, copies(verdicts));
         Map<Observation, Integer> groupOf = new HashMap<>();
         List<EventMerge.Result> merged = new ArrayList<>();
         for (int i = 0; i < groups.size(); i++) {
@@ -91,18 +91,16 @@ final class Assembler {
         }
     }
 
-    /** Accepted artifacts whose bytes equal an earlier accepted artifact's, mapped to that artifact. */
-    private Map<String, String> copies(Map<String, AssemblyGate.Verdict> verdicts, Map<String, AssemblyGate.SourceFacts> facts) {
-        Map<String, String> firstBySha = new HashMap<>();
+    /**
+     * Accepted declared copies mapped to their originals. Only the declared lineage relates them (the gate verified the
+     * equal bytes); equal hashes alone never do.
+     */
+    private Map<String, String> copies(Map<String, AssemblyGate.Verdict> verdicts) {
         Map<String, String> out = new HashMap<>();
         for (AssemblyPlan.Binding b : plan.bindings()) {
-            AssemblyGate.SourceFacts f = facts.get(b.artifact());
-            if (f == null || verdicts.get(b.artifact()) == null || !verdicts.get(b.artifact()).accepted()) {
-                continue;
-            }
-            String first = firstBySha.putIfAbsent(f.sha256(), b.artifact());
-            if (first != null) {
-                out.put(b.artifact(), first);
+            AssemblyGate.Verdict v = verdicts.get(b.artifact());
+            if (b.copyOf() != null && v != null && v.accepted()) {
+                out.put(b.artifact(), b.copyOf());
             }
         }
         return out;

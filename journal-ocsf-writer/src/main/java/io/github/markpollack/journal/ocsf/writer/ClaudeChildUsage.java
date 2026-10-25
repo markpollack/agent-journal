@@ -12,20 +12,23 @@ import static io.github.markpollack.journal.ocsf.writer.MapperSupport.text;
  * answers an Agent request) and the {@code system/task_progress} and {@code system/task_notification} records
  * ({@code usage.total_tokens} of the task their {@code tool_use_id} spawned). Each becomes a session_context Accounting
  * reported event in the record's own core, whose {@code tool_call_uid} names the spawning call and whose one usage
- * observation is at scope 7 Child run. No aggregation is stated (the recordings do not establish either figure as the
- * child run's total) and nothing is added to a parent or run total. The only state is the set of Agent requests seen.
+ * observation is at scope 7 Child run: the child run is whose activity it is, not what was measured. The Agent result
+ * measures one response, the child's last (aggregation 3 Single response); the task figure is the task tracker's own
+ * measure (no aggregation). Neither is the child run's consumption, they are not one quantity, and nothing is added to
+ * a parent or run total. The only state is the set of Agent requests seen.
  */
 final class ClaudeChildUsage {
 
     static final String AGENT_TOOL = "Agent";
     static final String AGENT_RULE = "claude.stream.user.tool_result.agent_usage->session_context.accounting";
     static final String TASK_RULE = "claude.stream.system.task_usage->session_context.accounting";
-    static final String AGENT_BASIS = "claude.stream.agent_result_usage.v1: the Agent tool's result reports an Anthropic usage object for the child run its call spawned, "
-            + "once, at the call's end (Final); it is not established as the child run's total (in the 2.1.304 recording its input tranches equal the child's last response), "
-            + "so no aggregation is stated and it is never summed with the parent's, the run's or the child's other observations";
-    static final String TASK_BASIS = "claude.stream.task_usage.v1: task_progress reports the spawned task's token figure so far (Provisional), task_notification the figure "
-            + "at the task's end (Final), for the child run of the call tool_use_id names; the recordings do not establish it as a sum of the child's calls, so no aggregation "
-            + "is stated, and progress and terminal figures are never summed with each other or with any parent total";
+    static final String AGENT_BASIS = "claude.stream.agent_result_usage.v2: the Agent tool's result reports, once at the call's end (Final), the usage object of the last metered "
+            + "model response of the child run its call spawned (the retained 2.1.304 emitter takes the last non-unmetered assistant message's usage over zero defaults): one response, "
+            + "not identified (aggregation 3 Single response), never the child run's consumption and never summed with the parent's, the run's or the child's other observations";
+    static final String TASK_BASIS = "claude.stream.task_usage.v2: task_progress reports the task tracker's token figure (Provisional), task_notification the figure at the task's end "
+            + "(Final), for the child run of the call tool_use_id names; in the retained 2.1.304 emitter it is the latest assistant message's input side plus the output so far plus a "
+            + "streaming estimate, and a completed notification the larger of that and the Agent result's totalTokens: a measure of its own, not a sum of the child's calls, so no "
+            + "aggregation is stated, it is never compared with the Agent result's usage, and progress and terminal figures are never summed with each other or with any parent total";
 
     /** Tool-use ids of Agent requests seen so far in this artifact. */
     private final Set<String> agentCalls = new HashSet<>();
@@ -48,6 +51,7 @@ final class ClaudeChildUsage {
             return null;
         }
         Jv.Obj observation = MapperSupport.usage(7, 2, AGENT_BASIS, msg.ctx().sourceRef(msg.r(), msg.uid(), msg.ts(), false), null, usage);
+        observation.put("aggregation_id", 3).put("aggregation", UsageTranches.AGGREGATION.get(3));
         UsageTranches.anthropic(observation, usage);
         Jv.Obj ev = msg.ctx().event("session_context", 3, msg.r(), msg.t(), ClaudeStreamMapper.CONTRACT, AGENT_RULE, msg.ts(), msg.uid(), false, null);
         return ev.put("session_uid", msg.sess()).put("tool_call_uid", resultIds.get(0)).put("context_kind", "user/tool_result")

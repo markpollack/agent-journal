@@ -113,7 +113,7 @@ class AssemblyOracleTest {
             String artifact = i.member("artifact").text();
             Path file = fixture.resolve("native").resolve(artifact);
             out.add(new AssemblyOracle.Supplied(artifact, i.member("role").text(), i.member("origin").text(),
-                    artifact.endsWith(".json") ? NativeArtifact.document(file) : NativeArtifact.read(file)));
+                    artifact.endsWith(".json") ? NativeArtifact.document(file) : NativeArtifact.read(file), i.member("acquisition") == null ? null : i.member("acquisition").text()));
         }
         return out;
     }

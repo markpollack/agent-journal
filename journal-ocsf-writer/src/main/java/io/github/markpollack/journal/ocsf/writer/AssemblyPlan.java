@@ -20,8 +20,19 @@ public record AssemblyPlan(AssemblyProfile profile, List<Binding> bindings, Jv l
      * @param role the profile's source role it fills
      * @param origin where it was acquired (a locator such as the native session directory, the stdout copy, the OTel file);
      *        replaying the same origin with the same bytes is the same import
+     * @param acquisition the acquisition the caller that acquired the input asserts it belongs to (one launch's output
+     *        location, one native session directory), or {@code null} when none is asserted. It is the only membership
+     *        evidence of a source that reports no identity of its own (a companion, an acquisition-bound or an optional
+     *        identity-free role); it is a caller assertion, declared as such, never inferred from paths or bytes
+     * @param copyOf the earlier artifact this input is a declared copy of (the same native file acquired again), or
+     *        {@code null}. Only this declared lineage relates a copy's observations to the original's by record
+     *        position; equal bytes verify the copy, they never establish it
      */
-    public record Binding(String artifact, String role, String origin) {
+    public record Binding(String artifact, String role, String origin, String acquisition, String copyOf) {
+
+        public Binding(String artifact, String role, String origin, String acquisition) {
+            this(artifact, role, origin, acquisition, null);
+        }
     }
 
     /** Artifact to binding. */

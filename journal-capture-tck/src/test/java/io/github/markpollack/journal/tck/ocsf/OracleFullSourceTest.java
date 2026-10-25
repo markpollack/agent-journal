@@ -39,7 +39,8 @@ class OracleFullSourceTest {
         Path fixture = copy(PAIR, work);
         OracleReport report = verify(fixture);
         assertThat(report.defects()).as(report.toString()).isEmpty();
-        assertThat(report.withOutcome(Outcome.UNRESOLVED)).isEmpty();
+        assertThat(report.withOutcome(Outcome.UNRESOLVED)).as("only the combination: the pair is an unvalidated evidence log, never a final combined execution")
+                .singleElement().satisfies(c -> assertThat(c.property()).isEqualTo("combination.policy"));
         assertThat(report.outcome("package.state", "main")).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("whole_record.coverage", TRANSCRIPT)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.check("whole_record.coverage", TRANSCRIPT).detail()).startsWith("17 owned record(s) each retained exactly once");
@@ -54,7 +55,9 @@ class OracleFullSourceTest {
         assertThat(report.outcome("reconstruction.bytes", STREAM)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("population.contexts", STREAM)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.check("population.contexts", TRANSCRIPT).detail()).isEqualTo("5 expected, 5 observed");
-        assertThat(OcsfReaderTool.acceptance(report).exit()).isEqualTo(OcsfReaderTool.EXIT_OK);
+        // every family of both sources verifies; the file as a whole is an evidence log, not one combined execution
+        assertThat(OcsfReaderTool.acceptance(report).exit()).isEqualTo(OcsfReaderTool.EXIT_INCOMPLETE);
+        assertThat(OcsfReaderTool.acceptance(report.filtered(c -> !"combination.policy".equals(c.property()))).exit()).isEqualTo(OcsfReaderTool.EXIT_OK);
     }
 
     @Test

@@ -222,10 +222,13 @@ class CliCaptureTest {
                 .satisfies(l -> assertThat(l.member("events_jsonl_sha256").text()).as("the original package, unchanged").isEqualTo(original));
         assertThat(fin.events("tool_call", 1)).hasSize(4).allSatisfy(e -> assertThat(e.assemblyRole()).isEqualTo(3));
         Path archived = out.resolve("archive").resolve(r.archive().get("artifact").text());
+        // the capture asserts that its one launch acquired both inputs
+        String acquisition = "CliCapture launch " + fin.manifest.runUid();
+        assertThat(FinalAssemblyClaudeTest.source(fin, "transcript.jsonl").member("acquisition").text()).isEqualTo(acquisition);
         List<AssemblyOracle.Supplied> supplied = List.of(
-                new AssemblyOracle.Supplied("stream.jsonl", "stream", "CliCapture independent copy of standard output", NativeArtifact.read(r.independentCopy())),
+                new AssemblyOracle.Supplied("stream.jsonl", "stream", "CliCapture independent copy of standard output", NativeArtifact.read(r.independentCopy()), acquisition),
                 new AssemblyOracle.Supplied("transcript.jsonl", "transcript", "native session file archived after the launch ended (" + r.archive().get("sha256").text() + ")",
-                        NativeArtifact.read(archived)));
+                        NativeArtifact.read(archived), acquisition));
         Json spec = NeutralJson.parse(Files.readString(WriterTestSupport.FIXTURES.resolve(LIVE_CLAUDE_PAIR).resolve("native/assembly-expectation.json")));
         OracleReport report = AssemblyOracle.verify(fin, spec, supplied);
         assertThat(report.defects()).as(report.toString()).isEmpty();

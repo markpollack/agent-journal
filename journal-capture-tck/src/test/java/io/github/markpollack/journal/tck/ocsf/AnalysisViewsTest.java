@@ -137,6 +137,81 @@ class AnalysisViewsTest {
         assertThat(main.member("groups").elements()).extracting(g -> g.member("owner").text()).doesNotContain("msg_011Cg2aSBYeTae2cPghGn3eT");
     }
 
+    /** The child-run groups of a view, keyed {@code <owner> | <aggregation or none>}, each with its applicable final. */
+    static java.util.Map<String, Json> childRunGroups(Json view) {
+        java.util.Map<String, Json> out = new java.util.LinkedHashMap<>();
+        for (Json g : view.member("groups").elements()) {
+            if ("Child run".equals(g.member("scope").text())) {
+                out.put(g.member("owner").text() + " | " + (g.member("aggregation").isNull() ? "none" : g.member("aggregation").text()), g);
+            }
+        }
+        return out;
+    }
+
+    @Test
+    void twoChildrenOfOneParentAndAReusedIdUnderAnotherParentStayApart(@TempDir Path work) {
+        // expectations authored by hand from the labelled synthetic stream (records cited), not from the writer or the views
+        String a = "child run of tool call toolu_01SYNTHETICCHILDRUNAAAAA";
+        String b = "child run of tool call toolu_01SYNTHETICCHILDRUNBBBBB";
+        OcsfPackage p = open(copy(OcsfFixtures.SYN_CHILD_RUNS, work));
+        java.util.Map<String, Json> main = childRunGroups(AnalysisViews.usage(p));
+        assertThat(main.keySet()).as("per child, the task's own figure and the Agent result's one-response usage: four groups, none pooled")
+                .containsExactly(a + " | none", b + " | none", a + " | Single response", b + " | Single response");
+        // records 6/11 and 7/12: task_progress then task_notification, whose Final applies to the task figure
+        assertThat(main.get(a + " | none").member("applicable_final")).isEqualTo(NeutralJson.parse("{\"reported_total_tokens\": 3100}"));
+        assertThat(main.get(b + " | none").member("applicable_final")).isEqualTo(NeutralJson.parse("{\"reported_total_tokens\": 4080}"));
+        assertThat(main.get(a + " | none").member("provisional_observations").scalarText()).isEqualTo("1");
+        // records 13 and 14: each Agent result's tranches, never summed with the task figure or with the other child
+        assertThat(main.get(a + " | Single response").member("applicable_final")).isEqualTo(NeutralJson.parse(
+                "{\"uncached_input_tokens\": 2, \"output_tokens\": 8, \"cache_read_tokens\": 3000, \"cache_write_tokens\": 50, \"reasoning_tokens\": 3}"));
+        assertThat(main.get(b + " | Single response").member("applicable_final")).isEqualTo(NeutralJson.parse(
+                "{\"uncached_input_tokens\": 3, \"output_tokens\": 17, \"cache_read_tokens\": 4000, \"cache_write_tokens\": 60, \"reasoning_tokens\": 5}"));
+        assertThat(main.values()).noneMatch(g -> g.member("conflict").equals(new Json.JBool(true)));
+        // record 9: child A's nested Agent result reuses child B's tool-use id; it is child A's own unit, in child A's core
+        OcsfPackage childA = p.children.stream().filter(c -> c.label().contains("AAAAA")).findFirst().orElseThrow();
+        java.util.Map<String, Json> inA = childRunGroups(AnalysisViews.usage(childA));
+        assertThat(inA.keySet()).containsExactly(b + " | Single response");
+        assertThat(inA.get(b + " | Single response").member("applicable_final")).isEqualTo(NeutralJson.parse(
+                "{\"uncached_input_tokens\": 1, \"output_tokens\": 49, \"cache_read_tokens\": 1000, \"cache_write_tokens\": 200, \"reasoning_tokens\": 9}"));
+        OcsfPackage childB = p.children.stream().filter(c -> c.label().contains("BBBBB")).findFirst().orElseThrow();
+        assertThat(childRunGroups(AnalysisViews.usage(childB))).as("child B reports no child run of its own").isEmpty();
+    }
+
+    @Test
+    void finalObservationsOfDifferentComponentsAreNotAConflict(@TempDir Path work) {
+        // the D1 representation: the Agent result without its Single response aggregation lands in the task figure's
+        // group; a task total and detailed tranches share no component, so neither disagrees with the other
+        Path fixture = copy(CHILD, work);
+        editEvents(pkg(fixture), events -> {
+            for (Json e : events) {
+                if ("user/tool_result".equals(e.member("context_kind") == null ? null : e.member("context_kind").text())) {
+                    for (Json u : e.member("usage_observations").elements()) {
+                        obj(u).members().remove("aggregation_id");
+                        obj(u).members().remove("aggregation");
+                    }
+                }
+            }
+        });
+        Json group = childRunGroups(AnalysisViews.usage(open(fixture))).get("child run of tool call " + OcsfFixtures.SPAWN + " | none");
+        assertThat(group.member("final_observations").scalarText()).isEqualTo("2");
+        assertThat(group.member("conflict")).isEqualTo(new Json.JBool(false));
+        assertThat(group.member("comparability").text()).isEqualTo("different components");
+        assertThat(group.member("applicable_final").isNull()).as("neither is established as the group's measurement").isTrue();
+        // two Final task figures that disagree on the component both report are a conflict
+        editEvents(pkg(fixture), events -> {
+            for (Json e : events) {
+                if ("system/task_progress".equals(e.member("context_kind") == null ? null : e.member("context_kind").text())) {
+                    for (Json u : e.member("usage_observations").elements()) {
+                        obj(u).members().put("usage_status_id", num("2"));
+                    }
+                }
+            }
+        });
+        Json conflicting = childRunGroups(AnalysisViews.usage(open(fixture))).get("child run of tool call " + OcsfFixtures.SPAWN + " | none");
+        assertThat(conflicting.member("comparability").text()).isEqualTo("conflicting on reported_total_tokens");
+        assertThat(conflicting.member("conflict")).isEqualTo(new Json.JBool(true));
+    }
+
     @Test
     void associationsSeparateCandidateCountFromEvidenceMethod(@TempDir Path work) {
         Json a = AnalysisViews.associations(open(copy(CODEX, work)));

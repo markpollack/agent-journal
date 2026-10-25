@@ -23,6 +23,7 @@ public final class AnalysisViews {
     static final Map<String, String> OUTCOME = Map.of("0", "Unknown", "1", "Unique", "2", "Ambiguous", "3", "Unattributed");
     static final Map<String, String> METHOD = Map.of("0", "Unknown", "1", "Reported identifier", "2", "Derived by rule");
     static final Map<String, String> STATUS = Map.of("0", "Unknown", "1", "Provisional", "2", "Final");
+    static final Map<String, String> AGGREGATION = Map.of("0", "Unknown", "1", "Scope total", "2", "Cumulative snapshot", "3", "Single response");
     static final List<String> COMPONENTS = List.of("uncached_input_tokens", "output_tokens", "cache_read_tokens", "cache_write_tokens",
             "reasoning_tokens", "reported_total_tokens");
 
@@ -445,11 +446,15 @@ public final class AnalysisViews {
                 owner = fOwner;
                 String model = SchemaCatalog.text(u.member("model_ref"), "name");
                 String artifact = SchemaCatalog.text(u.member("source_ref"), "artifact");
-                String key = scope + "|" + unit + "|" + owner + "|" + model + "|" + artifact;
+                // the measurement window is part of what was measured: observations of one unit with different
+                // aggregations (one response of a child run, the task's own figure) are different quantities
+                String aggregation = scalar(u.member("aggregation_id"));
+                String key = scope + "|" + unit + "|" + owner + "|" + aggregation + "|" + model + "|" + artifact;
                 groups.computeIfAbsent(key, k -> {
                     Map<String, Json> g = new LinkedHashMap<>();
                     g.put("scope", str(other ? "Other: " + unit : SCOPE.getOrDefault(scope, scope)));
                     g.put("owner", str(fOwner));
+                    g.put("aggregation", aggregation == null ? Json.JNull.INSTANCE : str(AGGREGATION.getOrDefault(aggregation, aggregation)));
                     g.put("model", model == null ? Json.JNull.INSTANCE : str(model));
                     g.put("source", str(artifact));
                     return g;
@@ -488,20 +493,19 @@ public final class AnalysisViews {
                     unknown++;
                 }
             }
-            boolean conflict = false;
-            for (Json f : finals) {
-                if (!Json.sameValue(finals.get(0), f)) {
-                    conflict = true;
-                }
-            }
+            String comparison = compare(finals);
+            boolean equal = "equal".equals(comparison) || "single".equals(comparison);
+            boolean conflict = comparison.startsWith("conflicting");
             row.put("final_observations", num(finals.size()));
-            row.put("repeated_final_observations", num(Math.max(0, finals.size() - 1)));
+            row.put("repeated_final_observations", num(equal ? Math.max(0, finals.size() - 1) : 0));
             row.put("provisional_observations", num(provisional));
             row.put("unknown_observations", num(unknown));
             row.put("conflict", new Json.JBool(conflict));
-            row.put("applicable_final", finals.isEmpty() || conflict ? Json.JNull.INSTANCE : finals.get(0));
+            row.put("comparability", str(comparison));
+            row.put("applicable_final", equal ? finals.get(0) : Json.JNull.INSTANCE);
             row.put("applicable_final_basis", str(finals.isEmpty() ? "none: no Final observation in this group"
-                    : conflict ? "none: Final observations disagree" : finals.size() + " equal Final observation(s), counted once"));
+                    : equal ? finals.size() + " equal Final observation(s), counted once"
+                    : conflict ? "none: Final observations disagree" : "none: the Final observations report different components, so they are not established to be one measurement"));
             List<Json> list = new ArrayList<>();
             for (Map<String, Json> o : obs) {
                 list.add(new Json.JObject(o));
@@ -515,6 +519,40 @@ public final class AnalysisViews {
         out.put("aggregation", str("none: groups are never summed across scopes, sources, models or child runs"));
         out.put("rule", str(SchemaCatalog.text(decl, "id")));
         return new Json.JObject(out);
+    }
+
+    /**
+     * How the Final observations of one group (one unit, aggregation, model and source) compare: {@code single} or
+     * {@code equal} (the same components and values), {@code conflicting on <component>} (a component both report with
+     * different values), or {@code different components} (no shared component disagrees, but they do not report the
+     * same components: equality of a quantity is not established, and an absent member is not a contradicting value).
+     */
+    private static String compare(List<Json> finals) {
+        if (finals.isEmpty()) {
+            return "no final";
+        }
+        boolean sameComponents = true;
+        for (Json f : finals) {
+            for (Json g : finals) {
+                String disagreement = disagreement((Json.JObject) f, g);
+                if (disagreement != null) {
+                    return "conflicting on " + disagreement;
+                }
+                sameComponents &= ((Json.JObject) g).members().keySet().containsAll(((Json.JObject) f).members().keySet());
+            }
+        }
+        return !sameComponents ? "different components" : finals.size() == 1 ? "single" : "equal";
+    }
+
+    /** The first component both observations report with different values, or {@code null}. */
+    private static String disagreement(Json.JObject f, Json g) {
+        for (Map.Entry<String, Json> c : f.members().entrySet()) {
+            Json other = g.member(c.getKey());
+            if (other != null && !Json.sameValue(c.getValue(), other)) {
+                return c.getKey();
+            }
+        }
+        return null;
     }
 
     // ------------------------------------------------------------------------------------------ associations

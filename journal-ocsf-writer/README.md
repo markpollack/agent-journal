@@ -21,11 +21,16 @@ uses it.
   persistence failure leaves a `FAILED` manifest naming the confirmed persisted boundary. Finalization is idempotent.
 - Routes records whose owner path (`parent_tool_use_id`) names a tool call to a child core under
   `children/<id>/`, each core independently portable with its own definition closure.
-- Admits a later source (a saved session file) through the same mechanism; earlier persisted bytes never change.
+- Combines several sources of one execution only by final assembly (`OcsfRunWriter.openAssembly`, `FinalAssembly`
+  with a reviewed profile), whose identity gate decides which sources belong together. A writer from
+  `OcsfRunWriter.open` records one source and refuses a second; `OcsfRunWriter.openEvidenceLog` records several
+  without assembly and declares the file an unvalidated evidence log in every core, which readers and the oracle
+  never accept as one combined execution. A later source (a saved session file) is admitted through the same
+  mechanisms; earlier persisted bytes never change.
 
-`OcsfWriterTool replay <spec.json> <out-dir> [--chunk N] [--flush-every N] [--base DIR] [--stop-after ARTIFACT:N]`
-replays recorded artifacts; `SchemaExcerpt` regenerates the bundled compiled-schema excerpt from the pinned
-compiler's output.
+`OcsfWriterTool replay <spec.json> <out-dir> [--chunk N] [--flush-every N] [--base DIR] [--stop-after ARTIFACT:N] [--evidence-log REASON]`
+replays recorded artifacts (a spec with several sources needs `--evidence-log`); `SchemaExcerpt` regenerates the
+bundled compiled-schema excerpt from the pinned compiler's output.
 
 ## What judges it
 

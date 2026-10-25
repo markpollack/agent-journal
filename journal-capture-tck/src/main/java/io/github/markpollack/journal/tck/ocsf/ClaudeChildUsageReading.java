@@ -8,11 +8,12 @@ import java.util.Map;
 
 /**
  * The oracle's own reading of child-run usage that Claude Code reports in the parent's records, from the native
- * fields alone: the Agent tool's result, whose {@code tool_use_result.usage} is an Anthropic usage object for the child
- * run its call spawned, and the Agent SDK 0.3.304 task messages, whose {@code usage.total_tokens} is the spawned task's
- * token figure (task_progress so far, task_notification at the end). Each is a session_context accounting fact
- * (activity 3) at scope 7 Child run naming the spawning call; none states an aggregation, because neither figure is
- * established as the child run's total.
+ * fields alone: the Agent tool's result, whose {@code tool_use_result.usage} has the shape of one Messages API
+ * response's usage (Agent SDK 0.3.304 {@code AgentOutput.usage}, with that response's {@code iterations[]}) and so
+ * measures one response of the child run its call spawned (aggregation 3 Single response), and the Agent SDK 0.3.304
+ * task messages, whose {@code usage.total_tokens} is the spawned task's own token figure (task_progress so far,
+ * task_notification at the end; no aggregation, it is neither a total nor a running total of the child's usage). Each
+ * is a session_context accounting fact (activity 3) at scope 7 Child run naming the spawning call.
  */
 final class ClaudeChildUsageReading {
 
@@ -40,7 +41,7 @@ final class ClaudeChildUsageReading {
             return;
         }
         account(f, index, "user/tool_result", resultIds.get(0));
-        f.usages.add(new ExpectedFacts.Usage(index, index, 7, 2, TrancheReading.anthropic(usage), null, null, null, null));
+        f.usages.add(new ExpectedFacts.Usage(index, index, 7, 2, TrancheReading.anthropic(usage), null, null, null, 3));
     }
 
     /** A task_progress or task_notification record that reports a usage object; returns whether it does. */

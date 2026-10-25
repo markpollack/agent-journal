@@ -22,12 +22,12 @@ Rule: RULE-1, RULE-5. Tests: `CliCaptureTest#aCompleteCaptureAssemblesTheFinalPa
 ### UC1-AC2: Refuse a source of another execution
 
 If a declared source reports another execution's session identity, or several, then the assembly shall refuse it, write none of its records and state the verdict in its declaration.
-Rule: RULE-2. Tests: `FinalAssemblyClaudeTest#anotherExecutionsSessionFileIsRefusedAndWrittenNowhere`, `FinalAssemblyCopilotTest#anotherExecutionsTelemetryIsRefused`, `FinalAssemblyJunieTest#aSummaryOfAnotherSessionTakesItsEventsWithIt`. Status: changed meaning 2026-10-24 (was: import a native session file only when it is the only source).
+Rule: RULE-2. Tests: `FinalAssemblyClaudeTest#anotherExecutionsSessionFileIsRefusedAndWrittenNowhere`, `FinalAssemblyCopilotTest#anotherExecutionsTelemetryIsRefused`, `FinalAssemblyJunieTest#aSessionFileOfAnotherAcquisitionTakesNoIdentityFromASummary`. Status: changed meaning 2026-10-24 (was: import a native session file only when it is the only source).
 
 ### UC1-AC3: Bind a source without an identity of its own through its companion or acquisition
 
-When a declared source reports no session identity, the assembly shall bind it through its declared companion in the same native session directory or through the acquisition that captured it, and shall state which.
-Rule: RULE-2, RULE-4. Tests: `FinalAssemblyJunieTest#theSessionDirectoryAssemblesWithItsOutputsAndTheOracleVerifiesIt` (the session events through summary.json; standard error and the Copilot usage report by acquisition), `CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy` (archive-only material byte-identical). Status: changed meaning 2026-10-24 (was: archive the native session file unchanged; that obligation is RULE-4's and is kept).
+When a declared source reports no session identity, the assembly shall bind it through its declared companion declared in the same acquisition, or through its declared acquisition when that is the acquisition of the source that established the run, shall otherwise refuse it, and shall state which, as the caller's assertion.
+Rule: RULE-2, RULE-4. Tests: `FinalAssemblyJunieTest#theSessionDirectoryAssemblesWithItsOutputsAndTheOracleVerifiesIt` (the session events through summary.json; standard error and the Copilot usage report by acquisition), `FinalAssemblyClaudeTest#anOptionalSourceWithoutAnIdentityBelongsOnlyThroughTheAnchorsAcquisition`, `CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy` (archive-only material byte-identical). Status: changed meaning 2026-10-24 (was: archive the native session file unchanged; that obligation is RULE-4's and is kept); changed meaning 2026-10-24, R1 candidate (was: bound by a companion role or optionality alone).
 
 ### UC1-AC4: Declare a missing required source
 
@@ -387,8 +387,8 @@ Rule: RULE-5, RULE-48. Tests: `FinalAssemblyClaudeTest#thePairAssemblesIntoOneCa
 
 ### UC6-AC2: Join only on declared identities
 
-If an identity repeats within one source, then the assembly shall pair none of its observations, keeping each canonical and flagged ambiguous; observations are never paired by position, time or similar text.
-Rule: RULE-48. Tests: `FinalAssemblyClaudeTest#anIdentityRepeatedWithinOneSourceStaysUnpairedAndFlagged`.
+If an identity repeats within one source at the same lifecycle stage, then the assembly shall pair none of its observations, keeping each canonical and flagged ambiguous; the same identity at different stages of a declared staged join is one entity's lifecycle; observations are never paired by position, time or similar text.
+Rule: RULE-48. Tests: `FinalAssemblyClaudeTest#anIdentityRepeatedWithinOneSourceStaysUnpairedAndFlagged`, `AssemblyLifecycleIdentityTest`. Status: changed meaning 2026-10-24, R1 candidate (was: any repeat within one source).
 
 ### UC6-AC3: Keep conflicts visible
 
@@ -397,8 +397,8 @@ Rule: RULE-49. Tests: `FinalAssemblyClaudeTest#thePairAssemblesIntoOneCanonicalE
 
 ### UC6-AC4: Import idempotently and keep distinct origins
 
-When the same origin and bytes are imported again, the assembly shall add nothing; when identical bytes arrive from distinct origins, it shall keep both sources and make their observations one entity.
-Rule: RULE-51. Tests: `FinalAssemblyClaudeTest#replayingTheSameImportAddsNothingWhileIdenticalBytesFromAnotherOriginStayDistinct`.
+When the same origin and bytes are imported again, the assembly shall add nothing; when identical bytes arrive from a distinct origin declared a copy of an earlier source, it shall keep both sources and make their observations one entity; without that declared lineage it shall refuse the second with its reason, neither consolidating it by position nor counting it again.
+Rule: RULE-51. Tests: `FinalAssemblyClaudeTest#replayingTheSameImportAddsNothingWhileIdenticalBytesFromAnotherOriginStayDistinct`. Status: changed meaning 2026-10-24, R1 candidate (was: identical bytes from distinct origins are one entity).
 
 ### UC6-AC5: Keep quantity kinds apart
 
@@ -407,8 +407,8 @@ Rule: RULE-50. Tests: `FinalAssemblyCopilotTest#aMultiplierSumAndPremiumRequests
 
 ### UC6-AC6: Read the final file alone
 
-When the final `events.jsonl` is copied alone, a compatible reader shall read the consolidated execution and its assembly declaration without the native files, `run.json` or schema caches.
-Rule: RULE-52. Tests: `FinalAssemblyClaudeTest#theFinalFileReadsAloneWithoutNativeFilesManifestOrSchemaCaches`, `FinalAssemblyCopilotTest#theFinalFileReadsAloneAndTheOriginalsAreUnchanged`, `FinalAssemblyJunieTest#theFinalFileReadsAlone`.
+When the final `events.jsonl` is copied alone, a compatible reader shall read the consolidated execution and its assembly declaration without the native files, `run.json` or schema caches; a file of several sources without an assembly declaration it shall read as an unvalidated evidence log (declared, or written before the combination policy), which the oracle reports unresolved and never accepts as one combined execution.
+Rule: RULE-52. Tests: `FinalAssemblyClaudeTest#theFinalFileReadsAloneWithoutNativeFilesManifestOrSchemaCaches`, `FinalAssemblyCopilotTest#theFinalFileReadsAloneAndTheOriginalsAreUnchanged`, `FinalAssemblyJunieTest#theFinalFileReadsAlone`, `CombinedSourceAdmissionTest`. Status: extended 2026-10-24, R1 candidate (the combination policy).
 
 ### UC6-AC7: Judge the assembly independently
 

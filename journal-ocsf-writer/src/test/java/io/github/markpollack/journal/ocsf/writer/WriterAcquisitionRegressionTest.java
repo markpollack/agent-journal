@@ -120,9 +120,11 @@ class WriterAcquisitionRegressionTest {
     }
 
     @Test
-    void aCompleteTwoSourceRunIsAcceptedByTheCli(@TempDir Path work) throws Exception {
+    void aCompleteTwoSourceEvidenceLogVerifiesPerSourceButIsNotAcceptedAsACombinedExecution(@TempDir Path work) throws Exception {
+        // before the combination policy the plain writer took both sources and the CLI accepted the file (exit 0) with
+        // no identity relation between them checked (CDX-R1-04); now only a declared evidence log records them together
         Path core = work.resolve("core");
-        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), options())) {
+        try (OcsfRunWriter w = OcsfRunWriter.openEvidenceLog(core, run(PAIR), SchemaPin.bundled(), options(), WriterTestSupport.PAIR_LOG)) {
             Replay.feedBytes(w.source(claudeStream()), nativeOf(PAIR, "stream.jsonl"), 4096, options().clock());
             Replay.feedBytes(w.source(claudeTranscript()), nativeOf(PAIR, "transcript.jsonl"), 4096, options().clock());
             assertThat(w.complete()).isEqualTo(OcsfRunWriter.State.COMPLETED);
@@ -138,8 +140,11 @@ class WriterAcquisitionRegressionTest {
         assertThat(report.outcome("acquisition.complete", "main")).isEqualTo(Check.Outcome.VERIFIED);
         assertThat(report.outcome("source.extent", "main/transcript.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
         assertThat(report.outcome("package.children", "main")).isEqualTo(Check.Outcome.VERIFIED);
-        assertThat(OcsfReaderTool.acceptance(report).exit()).isEqualTo(OcsfReaderTool.EXIT_OK);
-        assertThat(cli("verify", core.toString(), nat.toString(), work.resolve("report.json").toString())).isEqualTo(OcsfReaderTool.EXIT_OK);
+        assertThat(report.outcome("combination.policy", "main")).isEqualTo(Check.Outcome.UNRESOLVED);
+        OcsfReaderTool.Acceptance acceptance = OcsfReaderTool.acceptance(report);
+        assertThat(acceptance.exit()).isEqualTo(OcsfReaderTool.EXIT_INCOMPLETE);
+        assertThat(acceptance.reasons()).singleElement().asString().contains("combination.policy").contains("unvalidated evidence log");
+        assertThat(cli("verify", core.toString(), nat.toString(), work.resolve("report.json").toString())).isEqualTo(OcsfReaderTool.EXIT_INCOMPLETE);
         assertThat(Files.readString(work.resolve("report.json"))).contains("\"missingRequired\" : [ ]");
     }
 

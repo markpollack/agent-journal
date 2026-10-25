@@ -29,6 +29,7 @@ final class OcsfFixtures {
     static final String SPAWN = "toolu_01BnEuCUmZ2Vu1LpADzksmrJ";
     /** Sanitized real live recordings of ACCEPT-1 (2026-10-21): recorded replay of a live stream, labelled so in each spec and provenance.json. */
     static final String LIVE_FEATURES = "claude-live-2.1.304-features";
+    static final String SYN_CHILD_RUNS = "syn-claude-child-runs-2.1.304";
     static final String LIVE_DENIAL = "claude-live-2.1.304-denial";
     static final String LIVE_CANCELLED = "claude-live-2.1.304-cancelled";
     static final String LIVE_CODEX = "codex-live-0.160.1-commands";

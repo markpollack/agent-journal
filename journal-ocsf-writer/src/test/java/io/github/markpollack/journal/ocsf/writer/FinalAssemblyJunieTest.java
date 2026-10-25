@@ -40,14 +40,16 @@ class FinalAssemblyJunieTest {
 
     static final String PROFILE = "junie-3813.7-session-primary";
 
-    record In(String artifact, String role, Path file, String origin) {
+    /** One input with the acquisition its supplier asserts (the fixture's own launch unless a test says otherwise). */
+    record In(String artifact, String role, Path file, String origin, String acquisition) {
     }
 
     static List<In> all(String fixture) {
-        return List.of(new In("summary.json", "summary", nativeOf(fixture, "summary.json"), "native session directory summary.json copied after the run (sanitized)"),
-                new In("session-events.jsonl", "session", nativeOf(fixture, "session-events.jsonl"), "native session directory events.jsonl copied after the run (sanitized)"),
-                new In("stdout.jsonl", "stdout", nativeOf(fixture, "stdout.jsonl"), "standard output of the launch (sanitized)"),
-                new In("stderr.txt", "stderr", nativeOf(fixture, "stderr.txt"), "standard error of the launch (sanitized)"));
+        String launch = WriterTestSupport.launch(fixture);
+        return List.of(new In("summary.json", "summary", nativeOf(fixture, "summary.json"), "native session directory summary.json copied after the run (sanitized)", launch),
+                new In("session-events.jsonl", "session", nativeOf(fixture, "session-events.jsonl"), "native session directory events.jsonl copied after the run (sanitized)", launch),
+                new In("stdout.jsonl", "stdout", nativeOf(fixture, "stdout.jsonl"), "standard output of the launch (sanitized)", launch),
+                new In("stderr.txt", "stderr", nativeOf(fixture, "stderr.txt"), "standard error of the launch (sanitized)", launch));
     }
 
     @ParameterizedTest
@@ -97,14 +99,30 @@ class FinalAssemblyJunieTest {
     }
 
     @Test
-    void aSummaryOfAnotherSessionTakesItsEventsWithIt(@TempDir Path work) throws IOException {
-        // the view run's summary beside the terminal run's events: the events belong to whatever session their directory's summary names
+    void aSessionFileOfAnotherAcquisitionTakesNoIdentityFromASummary(@TempDir Path work) throws IOException {
+        // CDX-R1-06: the view run's summary beside the terminal run's session events, stdout and stderr (each asserted
+        // as acquired by its own launch). The role names match, but nothing relates the session file to that summary:
+        // it is refused, and so is the stderr of the other acquisition; the assembly is incomplete, never complete
         List<In> inputs = List.of(all(LIVE_JUNIE_VIEW).get(0), all(LIVE_JUNIE_TERMINAL).get(1), all(LIVE_JUNIE_TERMINAL).get(2), all(LIVE_JUNIE_TERMINAL).get(3));
         Path out = assemble(LIVE_JUNIE_TERMINAL, work.resolve("final"), inputs);
         OcsfPackage pkg = PackageReader.open(out.resolve("events.jsonl"));
-        assertThat(pkg.events.stream().filter(e -> "stdout.jsonl".equals(e.artifact()))).as("standard output reports the other session: refused").isEmpty();
+        Json declared = pkg.declarations.assembly();
+        assertThat(pkg.events.stream().filter(e -> !"summary.json".equals(e.artifact()) && e.className != null)).as("only the summary's own observations are written").isEmpty();
+        assertThat(declared.path("result", "status").text()).isEqualTo("incomplete");
+        assertThat(declared.path("result", "missing_required_roles").elements()).extracting(Json::text).containsExactly("session");
+        assertThat(source(declared, "session-events.jsonl").member("verdict").text()).contains("no summary source in the same declared acquisition");
+        assertThat(source(declared, "stderr.txt").member("verdict").text()).contains("membership not established");
         OracleReport report = oracle(LIVE_JUNIE_TERMINAL, out, inputs);
         assertThat(report.outcome("assembly.gate", "assembly")).as(report.toString()).isEqualTo(Check.Outcome.VERIFIED);
+        assertThat(report.outcome("assembly.required", "assembly")).as(report.toString()).isEqualTo(Check.Outcome.VERIFIED);
+        // the same inputs all asserted as one acquisition: the caller's assertion is what relates them, and the file says so
+        List<In> asserted = inputs.stream().map(i -> new In(i.artifact(), i.role(), i.file(), i.origin(), "one acquisition, as the caller asserts")).toList();
+        Json together = PackageReader.open(assemble(LIVE_JUNIE_TERMINAL, work.resolve("asserted"), asserted).resolve("events.jsonl")).declarations.assembly();
+        assertThat(source(together, "session-events.jsonl").member("identity_basis").text()).contains("caller assertion");
+    }
+
+    static Json source(Json declared, String artifact) {
+        return declared.member("sources").elements().stream().filter(s -> artifact.equals(s.member("artifact").text())).findFirst().orElseThrow();
     }
 
     @Test
@@ -134,7 +152,7 @@ class FinalAssemblyJunieTest {
     // ---- support -----------------------------------------------------------------------------------------------------
 
     static Path assemble(String fixture, Path out, List<In> inputs) {
-        List<FinalAssembly.Input> in = inputs.stream().map(i -> new FinalAssembly.Input(i.artifact(), i.role(), i.file(), i.origin())).toList();
+        List<FinalAssembly.Input> in = inputs.stream().map(i -> new FinalAssembly.Input(i.artifact(), i.role(), i.file(), i.origin(), i.acquisition())).toList();
         FinalAssembly.assemble(out, run(fixture), AssemblyProfile.bundled(PROFILE), in, new Jv.Arr(), options());
         return out;
     }
@@ -142,7 +160,7 @@ class FinalAssemblyJunieTest {
     static OracleReport oracle(String fixture, Path out, List<In> inputs) throws IOException {
         Json spec = NeutralJson.parse(Files.readString(FIXTURES.resolve(fixture).resolve("native/assembly-expectation.json")));
         List<AssemblyOracle.Supplied> supplied = inputs.stream().map(i -> new AssemblyOracle.Supplied(i.artifact(), i.role(), i.origin(),
-                "summary".equals(i.role()) ? NativeArtifact.document(i.file()) : NativeArtifact.read(i.file()))).toList();
+                "summary".equals(i.role()) ? NativeArtifact.document(i.file()) : NativeArtifact.read(i.file()), i.acquisition())).toList();
         return AssemblyOracle.verify(PackageReader.open(out.resolve("events.jsonl")), spec, supplied);
     }
 }

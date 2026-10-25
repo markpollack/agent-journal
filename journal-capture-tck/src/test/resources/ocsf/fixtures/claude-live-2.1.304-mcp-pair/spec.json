@@ -45,12 +45,14 @@
    {
     "artifact": "stream.jsonl",
     "role": "stream",
-    "origin": "CliCapture stdout copy of the launch (sanitized)"
+    "origin": "CliCapture stdout copy of the launch (sanitized)",
+    "acquisition": "the one live launch recorded as fixture claude-live-2.1.304-mcp-pair"
    },
    {
     "artifact": "transcript.jsonl",
     "role": "transcript",
-    "origin": "native session file archived after the launch ended (sanitized)"
+    "origin": "native session file archived after the launch ended (sanitized)",
+    "acquisition": "the one live launch recorded as fixture claude-live-2.1.304-mcp-pair"
    }
   ]
  }

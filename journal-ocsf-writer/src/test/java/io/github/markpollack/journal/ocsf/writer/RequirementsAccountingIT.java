@@ -114,7 +114,7 @@ class RequirementsAccountingIT {
                 junit("FinalAssemblyClaudeTest#thePairAssemblesIntoOneCanonicalExecutionTheOracleVerifies", ASSEMBLED),
                 note("Copilot and Junie assemble from recorded inputs through FinalAssembly; no live launch of them runs in this build")));
         CRITERIA.put("UC1-AC2", List.of(junit("FinalAssemblyClaudeTest#anotherExecutionsSessionFileIsRefusedAndWrittenNowhere", ASSEMBLED),
-                junit("FinalAssemblyCopilotTest#anotherExecutionsTelemetryIsRefused", ASSEMBLED), junit("FinalAssemblyJunieTest#aSummaryOfAnotherSessionTakesItsEventsWithIt", ASSEMBLED)));
+                junit("FinalAssemblyCopilotTest#anotherExecutionsTelemetryIsRefused", ASSEMBLED), junit("FinalAssemblyJunieTest#aSessionFileOfAnotherAcquisitionTakesNoIdentityFromASummary", ASSEMBLED)));
         CRITERIA.put("UC1-AC3", List.of(junit("FinalAssemblyJunieTest#theSessionDirectoryAssemblesWithItsOutputsAndTheOracleVerifiesIt", ASSEMBLED + ": companion and acquisition identities"),
                 junit("CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy", STAND_IN + ": archive-only material byte-identical")));
         CRITERIA.put("UC1-AC4", List.of(junit("FinalAssemblyClaudeTest#aMissingRequiredSourceMakesTheAssemblyIncomplete", ASSEMBLED),

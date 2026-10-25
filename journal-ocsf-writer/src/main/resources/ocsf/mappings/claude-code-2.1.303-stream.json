@@ -1,5 +1,5 @@
 {
-  "contract_uid": "claude-code/stream-json/2.1.303/0.5.0-prototype",
+  "contract_uid": "claude-code/stream-json/2.1.303/0.6.0-prototype",
   "applies_to": {
     "product": "Claude Code",
     "version": "2.1.303",
@@ -134,9 +134,9 @@
       "activity": "3 Accounting reported",
       "cardinality": "one event per such record, after its tool_call result event; a record with several tool_result blocks has no established owner block and gets none",
       "owner": "routed like the record (parent_tool_use_id); tool_call_uid = the block's tool_use_id, the call that spawned the child run",
-      "usage": "tool_use_result.usage -> usage_observation scope 7 Child run, status 2 Final, no aggregation (claude.stream.agent_result_usage.v1: one report at the call's end; not established as the child run's total), canonical tranches as for any Anthropic usage object (anthropic.usage.tranches.v1); data is the usage object exactly; totalTokens, totalDurationMs, totalToolUseCount and toolStats stay in tool_use_result",
+      "usage": "tool_use_result.usage -> usage_observation scope 7 Child run (the child run of the spawning call: whose activity), status 2 Final (one report at the call's end), aggregation 3 Single response (claude.stream.agent_result_usage.v2: the usage object of the child run's last metered model response, which the result does not identify; the retained Claude Code 2.1.304 emitter builds it from the last non-unmetered assistant message's usage over zero defaults, and a 2.1.299 recording is consistent with it: one message entry in iterations[], cache read equal to the earlier child call's cache creation); never the child run's consumption, never summed with any other observation; canonical tranches as for any Anthropic usage object (anthropic.usage.tranches.v1); data is the usage object exactly; totalTokens (the emitter's sum of the last message iteration's input side and output), totalDurationMs, totalToolUseCount and toolStats stay in tool_use_result",
       "residual": "tool_use_result in data; the tool_call result keeps it whole in structured_result",
-      "added": "2026-10-24 (D1): candidate, returned for semantic review"
+      "added": "2026-10-24 (D1), aggregation 3 since 0.6.0-prototype (R1): candidate, returned for semantic review"
     },
     {
       "id": "claude.stream.system.task_usage->session_context.accounting",
@@ -152,9 +152,9 @@
       "activity": "3 Accounting reported",
       "cardinality": "one event per record; without a usage object the record stays retained-only",
       "owner": "routed like the record (parent_tool_use_id); tool_call_uid = tool_use_id, the call that spawned the task's child run",
-      "usage": "usage -> usage_observation scope 7 Child run, status 1 Provisional for task_progress and 2 Final for task_notification, no aggregation (claude.stream.task_usage.v1: the recordings do not establish total_tokens as a sum of the child's calls), reported_total_tokens = total_tokens; data is the usage object exactly (tool_uses and duration_ms stay there: no canonical counterpart)",
+      "usage": "usage -> usage_observation scope 7 Child run, status 1 Provisional for task_progress and 2 Final for task_notification, no aggregation (claude.stream.task_usage.v2: the task tracker's figure, a measure of its own; in the retained 2.1.304 emitter task_progress reports the latest assistant message's input side plus the output of every assistant message so far plus a live streaming estimate, and a completed task_notification the larger of that figure and the Agent result's totalTokens, so it is neither the child run's consumption nor a running total of it), reported_total_tokens = total_tokens; data is the usage object exactly (tool_uses and duration_ms stay there: no canonical counterpart)",
       "residual": "whole record in data",
-      "added": "2026-10-24 (D1): candidate, returned for semantic review"
+      "added": "2026-10-24 (D1), basis restated with emitter evidence in 0.6.0-prototype (R1): candidate, returned for semantic review"
     },
     {
       "id": "claude.stream.fallback->source_record",

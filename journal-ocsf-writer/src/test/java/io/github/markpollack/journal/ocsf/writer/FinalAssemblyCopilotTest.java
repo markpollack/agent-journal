@@ -41,7 +41,12 @@ class FinalAssemblyCopilotTest {
     static final String RUN_SESSION = "00000000-0000-4000-8000-0000000000c1";
     static final String OTHER_SESSION = "11111111-1111-4111-8111-111111111111";
 
-    record In(String artifact, String role, Path file, String origin) {
+    /** One input with the acquisition its supplier asserts (the fixture's own launch). */
+    record In(String artifact, String role, Path file, String origin, String acquisition) {
+
+        In(String artifact, String role, Path file, String origin) {
+            this(artifact, role, file, origin, WriterTestSupport.launch(LIVE_COPILOT));
+        }
     }
 
     static List<In> all() {
@@ -177,7 +182,7 @@ class FinalAssemblyCopilotTest {
     }
 
     static Path assemble(Path out, List<In> inputs) {
-        List<FinalAssembly.Input> in = inputs.stream().map(i -> new FinalAssembly.Input(i.artifact(), i.role(), i.file(), i.origin())).toList();
+        List<FinalAssembly.Input> in = inputs.stream().map(i -> new FinalAssembly.Input(i.artifact(), i.role(), i.file(), i.origin(), i.acquisition())).toList();
         FinalAssembly.assemble(out, run(LIVE_COPILOT), AssemblyProfile.bundled(PROFILE), in, new Jv.Arr(), options());
         return out;
     }
@@ -185,7 +190,7 @@ class FinalAssemblyCopilotTest {
     static OracleReport oracle(Path out, List<In> inputs) throws IOException {
         Json spec = NeutralJson.parse(Files.readString(FIXTURES.resolve(LIVE_COPILOT).resolve("native/assembly-expectation.json")));
         List<AssemblyOracle.Supplied> supplied = inputs.stream().map(i -> new AssemblyOracle.Supplied(i.artifact(), i.role(), i.origin(),
-                "usage_report".equals(i.role()) ? NativeArtifact.document(i.file()) : NativeArtifact.read(i.file()))).toList();
+                "usage_report".equals(i.role()) ? NativeArtifact.document(i.file()) : NativeArtifact.read(i.file()), i.acquisition())).toList();
         return AssemblyOracle.verify(PackageReader.open(out.resolve("events.jsonl")), spec, supplied);
     }
 }

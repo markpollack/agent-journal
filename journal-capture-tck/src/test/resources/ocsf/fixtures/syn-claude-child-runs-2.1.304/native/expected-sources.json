@@ -1,0 +1,33 @@
+{
+ "kind": "agent-journal/expected-sources",
+ "version": "0.1",
+ "run_uid": "syn-claude-child-runs-2.1.304",
+ "complete": true,
+ "frozen": {
+  "at": "after the stream was written by hand, before any package was written or judged",
+  "by": "sha256, bytes and line count of the hand-authored stream; split cores from its distinct non-null parent_tool_use_id values",
+  "basis": "LABELLED SYNTHETIC: no live process; the run is declared complete because the hand-authored stream ends with its result record"
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "profile": "claude_stream",
+   "sha256": "f26ea634e82c570d609cefbc6d1497444a1cfb6fd96bf2758ea2647a9a2d7b03",
+   "bytes": 11349,
+   "records": 16,
+   "required": true
+  }
+ ],
+ "children": [
+  {
+   "spawn_tool_call_uid": "toolu_01SYNTHETICCHILDRUNAAAAA",
+   "artifact": "stream.jsonl",
+   "owner_path": "parent_tool_use_id"
+  },
+  {
+   "spawn_tool_call_uid": "toolu_01SYNTHETICCHILDRUNBBBBB",
+   "artifact": "stream.jsonl",
+   "owner_path": "parent_tool_use_id"
+  }
+ ]
+}

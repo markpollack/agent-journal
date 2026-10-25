@@ -40,6 +40,36 @@ public final class OcsfPackage {
         return declarations != null;
     }
 
+    /** How a file's sources were combined: the writer's combination policy, as the file itself states it. */
+    public enum Combination {
+        /** One declared source: incremental recording, nothing to combine. */
+        SINGLE_SOURCE,
+        /** A final assembly declared in the file: the only supported combination of several sources. */
+        ASSEMBLED,
+        /** Several sources declared as an unvalidated evidence log: no identity relation between them was checked. */
+        UNVALIDATED_EVIDENCE_LOG,
+        /**
+         * Several sources with neither an assembly nor an evidence-log declaration: written before the combination
+         * policy by the plain writer, readable as before, and unvalidated in the same way.
+         */
+        UNVALIDATED_UNDECLARED
+    }
+
+    /**
+     * How this file combined its sources. Only {@link Combination#ASSEMBLED} (and a single source) can be a final
+     * execution; in either unvalidated form an entity two sources report appears once per source.
+     */
+    public Combination combination() {
+        int sources = declarations != null ? declarations.sources().size() : manifest == null ? 0 : manifest.sources().size();
+        if (declarations != null && declarations.assembly() != null) {
+            return Combination.ASSEMBLED;
+        }
+        if (declarations != null && declarations.run() != null && declarations.run().member("combination") != null) {
+            return Combination.UNVALIDATED_EVIDENCE_LOG;
+        }
+        return sources > 1 ? Combination.UNVALIDATED_UNDECLARED : Combination.SINGLE_SOURCE;
+    }
+
     /** Whether the reader refused to interpret this package (its events are then raw only). */
     public boolean refused() {
         for (Diagnostic d : diagnostics) {

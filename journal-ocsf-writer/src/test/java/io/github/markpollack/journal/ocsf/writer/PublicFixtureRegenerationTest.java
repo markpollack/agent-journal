@@ -67,11 +67,13 @@ class PublicFixtureRegenerationTest {
         Assumptions.assumeTrue("true".equals(System.getProperty("ocsf.regenerate")), "no -Docsf.regenerate=true");
         write(CHILD, List.of(claudeStream()), List.of("stream.jsonl"));
         write(CODEX, List.of(codexRollout()), List.of("rollout.jsonl"));
-        write(PAIR, List.of(claudeStream(), claudeTranscript()), List.of("stream.jsonl", "transcript.jsonl"));
+        writeEvidenceLog(PAIR, List.of(claudeStream(), claudeTranscript()), List.of("stream.jsonl", "transcript.jsonl"),
+                "the synthetic stream and session file of one sdk-route run, recorded together without assembly to exercise both mappers and the readers of a multi-source file");
         write(CODEX_STREAM, List.of(codexStream()), List.of("stream.jsonl"));
         writeInterrupted(INTERRUPTED, CHILD, "stream.jsonl", 10);
         write(UNTESTED, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
         write(LIVE_FEATURES, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
+        write(WriterTestSupport.SYN_CHILD_RUNS, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
         write(LIVE_DENIAL, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
         write(LIVE_MCP, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
         write(LIVE_CODEX, List.of(codexStream()), List.of("stream.jsonl"));
@@ -111,7 +113,8 @@ class PublicFixtureRegenerationTest {
         List<FinalAssembly.Input> inputs = new java.util.ArrayList<>();
         for (Jv i : assembly.member("inputs").elements()) {
             String artifact = i.member("artifact").text();
-            inputs.add(new FinalAssembly.Input(artifact, i.member("role").text(), FIXTURES.resolve(fixture).resolve("native").resolve(artifact), i.member("origin").text()));
+            inputs.add(new FinalAssembly.Input(artifact, i.member("role").text(), FIXTURES.resolve(fixture).resolve("native").resolve(artifact), i.member("origin").text(),
+                    i.member("acquisition") == null ? null : i.member("acquisition").text()));
         }
         FinalAssembly.assemble(out, run(fixture), AssemblyProfile.bundled(assembly.member("profile").text()), inputs, new Jv.Arr(), WriterOptions.defaults().withClock(fixed));
         System.out.println("regenerated " + out);
@@ -178,10 +181,17 @@ class PublicFixtureRegenerationTest {
     }
 
     private static void write(String fixture, List<SourceDescriptor> sources, List<String> artifacts) throws IOException {
+        writeEvidenceLog(fixture, sources, artifacts, null);
+    }
+
+    /** One source through the plain writer, or several as a declared unvalidated evidence log ({@code reason}). */
+    private static void writeEvidenceLog(String fixture, List<SourceDescriptor> sources, List<String> artifacts, String reason) throws IOException {
         Path out = FIXTURES.resolve(fixture).resolve("package");
         delete(out);
         Clock fixed = Clock.fixed(Instant.parse("2026-10-21T00:00:00Z"), ZoneOffset.UTC);
-        try (OcsfRunWriter w = OcsfRunWriter.open(out, run(fixture), SchemaPin.bundled(), WriterOptions.defaults().withClock(fixed))) {
+        WriterOptions options = WriterOptions.defaults().withClock(fixed);
+        try (OcsfRunWriter w = reason == null ? OcsfRunWriter.open(out, run(fixture), SchemaPin.bundled(), options)
+                : OcsfRunWriter.openEvidenceLog(out, run(fixture), SchemaPin.bundled(), options, reason)) {
             for (int i = 0; i < sources.size(); i++) {
                 Replay.feedBytes(w.source(sources.get(i)), nativeOf(fixture, artifacts.get(i)), 1024, fixed);
             }

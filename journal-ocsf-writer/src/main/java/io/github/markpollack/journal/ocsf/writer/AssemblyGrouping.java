@@ -12,8 +12,11 @@ import java.util.Set;
  * two observations are one entity at one stage only when a join applies to both and they carry equal values at every
  * key pointer, directly or through a chain of such joins (a bridge through a third source). Position, timestamps and
  * similar text never relate observations. A group in which one source contributes two observations from the same
- * mapping rule is ambiguous (the identity repeats within that source) and is not consolidated; observations of one
- * source from different rules (a message and its usage record) are complementary views of one entity.
+ * mapping rule at the same lifecycle stage is ambiguous (the identity repeats within that source) and is not
+ * consolidated; observations of one source at different stages of a staged join are one entity's lifecycle, and
+ * observations of one source from different rules (a message and its usage record) are complementary views of it.
+ * Equal bytes never relate observations: a copy is consolidated by its record positions only under a declared copy
+ * lineage (see {@link AssemblyPlan.Binding#copyOf()}).
  */
 final class AssemblyGrouping {
 
@@ -43,9 +46,9 @@ final class AssemblyGrouping {
     }
 
     /**
-     * @param copyOf for an accepted artifact whose bytes equal an earlier accepted artifact's (identical bytes from a
-     *        distinct origin), that earlier artifact: the copies' observations of the same record and emit ordinal are
-     *        one entity, so a copy never becomes extra executions while both origins keep their provenance
+     * @param copyOf for an accepted declared copy (its lineage declared and its bytes verified equal), the artifact it
+     *        copies: the copies' observations of the same record and emit ordinal are one entity, so a copy never
+     *        becomes extra executions while both origins keep their provenance
      */
     static List<Group> group(AssemblyPlan plan, List<Assembler.Observation> observations, Map<String, String> copyOf) {
         int n = observations.size();
@@ -90,7 +93,7 @@ final class AssemblyGrouping {
         members.forEach(i -> obs.add(observations.get(i)));
         String entity = members.stream().map(entityOf::get).filter(java.util.Objects::nonNull).findFirst().orElse(null);
         if (entity == null && obs.size() > 1) {
-            // no declared identity: copies of one record from distinct origins are one entity named by its first occurrence
+            // no declared identity: a declared copy's record is one entity with the original's, named by its first occurrence
             entity = obs.get(0).className() + "/occurrence:" + obs.get(0).occurrence();
         }
         return new Group(entity, obs, ambiguous(obs), stagesOf.getOrDefault(members.get(0), List.of()));
@@ -136,10 +139,14 @@ final class AssemblyGrouping {
         }
     }
 
+    /**
+     * Whether one source reports the entity twice at the same lifecycle stage by the same rule. The same identity at
+     * different stages of a staged join (a request and its completion) is one entity's lifecycle, not a repeat.
+     */
     private static boolean ambiguous(List<Assembler.Observation> members) {
         Set<String> seen = new LinkedHashSet<>();
         for (Assembler.Observation o : members) {
-            if (!seen.add(o.artifact() + "#" + rule(o.event()))) {
+            if (!seen.add(o.artifact() + "#" + rule(o.event()) + "#" + activity(o.event()))) {
                 return true;
             }
         }
