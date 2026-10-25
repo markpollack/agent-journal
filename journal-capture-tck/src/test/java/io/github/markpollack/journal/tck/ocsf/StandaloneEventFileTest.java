@@ -76,8 +76,8 @@ class StandaloneEventFileTest {
         assertThat(p.declarations.lineOf("definition:agentic_cli/tool_call#2")).as("a later core attribute was added by an amendment, not a rewrite").isNotNull();
 
         // essential references resolve inside the file
-        assertThat(p.manifest.contracts()).containsKey("claude-code/stream-json/2.1.303/0.6.0-prototype");
-        assertThat(p.manifest.contract("claude-code/stream-json/2.1.303/0.6.0-prototype").path("embedded", "rules")).isNotNull();
+        assertThat(p.manifest.contracts()).containsKey("claude-code/stream-json/2.1.303/0.7.0-prototype");
+        assertThat(p.manifest.contract("claude-code/stream-json/2.1.303/0.7.0-prototype").path("embedded", "rules")).isNotNull();
         Json source = p.manifest.source("stream.jsonl");
         assertThat(source.member("profile").text()).isEqualTo("claude_stream");
         assertThat(source.member("sha256").text()).as("the source end declares the final extent").hasSize(64);
@@ -130,7 +130,7 @@ class StandaloneEventFileTest {
         assertThat(c.events).hasSize(4);
         assertThat(c.catalog.classes()).containsKeys("agentic_cli/tool_call", "agentic_cli/model_response");
         assertThat(c.catalog.classes()).as("a class no event of this file uses is not declared here").doesNotContainKey("agentic_cli/session_context");
-        assertThat(c.manifest.contracts()).containsKey("claude-code/stream-json/2.1.303/0.6.0-prototype");
+        assertThat(c.manifest.contracts()).containsKey("claude-code/stream-json/2.1.303/0.7.0-prototype");
         assertThat(c.manifest.source("stream.jsonl").member("sha256").text()).hasSize(64);
 
         // judged on its own against the frozen native artifact (the parent's obligations are the parent's)

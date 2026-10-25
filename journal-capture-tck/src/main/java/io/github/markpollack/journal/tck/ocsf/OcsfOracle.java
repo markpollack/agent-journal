@@ -82,10 +82,13 @@ public final class OcsfOracle {
     }
 
     /**
-     * The writer's combination policy as the file states it. One source, or a declared final assembly (judged by the
-     * assembly oracle), can be a final execution. Several sources without assembly are an unvalidated evidence log:
-     * no identity relation between them was checked, so whether the file is one execution is unresolved and it cannot
-     * be accepted as a final combined execution, whether it declares that status or predates the policy.
+     * The writer's combination policy as the file states it. One source can be a final execution here. A declared
+     * final assembly is judged only by the assembly oracle ({@code AssemblyOracle.verify}, with an independently supplied
+     * expectation and inputs), which this per-source verification does not run: a declaration states the policy but
+     * does not show its checks ran, so whether the file is one combined execution is unresolved here (review finding
+     * CDX-R1D-01). Several sources without assembly are an unvalidated evidence log: no identity relation between them
+     * was checked, so the file cannot be accepted as a final combined execution, whether it declares that status or
+     * predates the policy. Declaring both is a defect.
      */
     private void combination(OcsfPackage pkg) {
         if (pkg.refused()) {
@@ -94,8 +97,13 @@ public final class OcsfOracle {
         OcsfPackage.Combination c = pkg.combination();
         String owner = pkg.label();
         switch (c) {
-            case SINGLE_SOURCE, ASSEMBLED -> report.add(Category.COMPLETENESS, "combination.policy", owner, Outcome.VERIFIED,
-                    c == OcsfPackage.Combination.ASSEMBLED ? "a declared final assembly (its sources are judged by the assembly oracle)" : "one declared source");
+            case SINGLE_SOURCE -> report.add(Category.COMPLETENESS, "combination.policy", owner, Outcome.VERIFIED, "one declared source");
+            case ASSEMBLED -> report.add(Category.COMPLETENESS, "combination.policy", owner, Outcome.UNRESOLVED,
+                    "a declared final assembly: its membership, grouping and consolidation are judged only by the assembly oracle with an independently supplied "
+                            + "expectation and inputs, which this verification did not run; not accepted here as a combined execution");
+            case CONTRADICTORY -> report.add(Category.COMPLETENESS, "combination.policy", owner, Outcome.DEFECTIVE,
+                    "the file declares both a final assembly and an unvalidated evidence log (" + pkg.declarations.run().path("combination", "reason").text()
+                            + "): two combination policies, neither believed");
             case UNVALIDATED_EVIDENCE_LOG -> report.add(Category.COMPLETENESS, "combination.policy", owner, Outcome.UNRESOLVED,
                     "a declared unvalidated evidence log (" + pkg.declarations.run().path("combination", "reason").text() + "): no identity relation between its sources was checked; not a final combined execution");
             case UNVALIDATED_UNDECLARED -> report.add(Category.COMPLETENESS, "combination.policy", owner, Outcome.UNRESOLVED,
@@ -1386,6 +1394,20 @@ public final class OcsfOracle {
         valueCheck("prompt.values", owner, examined, problems, null);
     }
 
+    /**
+     * The observations an expected usage is judged against: those at its record, scope and model, narrowed to its
+     * measurement window (aggregation) when several share them (a run's total and one unidentified response of that run
+     * are both scope 4 on the result record), so one expectation is never judged against another quantity. A single
+     * candidate is judged whatever its aggregation, so a wrong window remains a value problem.
+     */
+    private static List<Json> sameWindow(List<Json> candidates, Integer aggregation) {
+        if (candidates.size() < 2) {
+            return candidates;
+        }
+        List<Json> window = candidates.stream().filter(o -> Objects.equals(Event.integer(o.member("aggregation_id")), aggregation)).toList();
+        return window.isEmpty() ? candidates : window;
+    }
+
     private void usage(ExpectedFacts facts, List<Event> events, String owner) {
         List<String> expected = new ArrayList<>();
         for (ExpectedFacts.Usage u : facts.usages) {
@@ -1408,12 +1430,14 @@ public final class OcsfOracle {
         int examined = 0;
         for (ExpectedFacts.Usage u : facts.usages) {
             String key = u.eventRecordIndex() + ":" + u.recordIndex() + ":" + u.scopeId() + ":" + u.model();
+            List<Json> candidates = new ArrayList<>();
             for (int i = 0; i < observed.size(); i++) {
-                if (!actual.get(i).equals(key)) {
-                    continue;
+                if (actual.get(i).equals(key)) {
+                    candidates.add(observed.get(i).obs());
                 }
+            }
+            for (Json o : sameWindow(candidates, u.aggregationId())) {
                 examined++;
-                Json o = observed.get(i).obs();
                 if (!Objects.equals(Event.integer(o.member("usage_status_id")), u.statusId())) {
                     problems.add(key + " usage_status_id " + (o.member("usage_status_id") == null ? null : o.member("usage_status_id").scalarText()) + " != " + u.statusId());
                 }

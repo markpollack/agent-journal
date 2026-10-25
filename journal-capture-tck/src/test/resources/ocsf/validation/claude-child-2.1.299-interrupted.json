@@ -4,7 +4,7 @@
  "fixture": "claude-child-2.1.299-interrupted",
  "core": "main",
  "events_jsonl": "fixtures/claude-child-2.1.299-interrupted/package/events.jsonl",
- "events_jsonl_sha256": "0ff58265a4703b0b02170486d12757ba23b1bd627d88c89e0f5009dc7e272fb0",
+ "events_jsonl_sha256": "6a1691d689ccc059c2b427a5ce7c841fa469cc067431b7798a2cdb2109df8c53",
  "execution_records": 11,
  "declarations_skipped": 51,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",

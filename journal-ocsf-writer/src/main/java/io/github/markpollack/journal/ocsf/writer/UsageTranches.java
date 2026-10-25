@@ -70,6 +70,32 @@ final class UsageTranches {
         finish(into, components);
     }
 
+    static final String CLAUDE_LAST_RESPONSE = "claude.stream.last_response_usage.v1: result.usage.iterations[] is the per-sampling-iteration usage of the run's "
+            + "last main-thread response (the retained 2.1.304 emitter's run accumulator sums every response's top-level tranches but carries iterations from the "
+            + "latest one, unsummed; Anthropic SDK 0.135.0 BetaIterationsUsage). When it holds exactly one entry, of type message, that entry is the usage of the "
+            + "whole response (one sampling iteration: no server-side tool loop, compaction, advisor or fallback iteration): scope 4 Run, Final, aggregation 3 "
+            + "Single response (one response of this run, which the record does not identify; the stream records it provisionally under its own id). It is never "
+            + "added to the run total, a model-response observation or any other observation, and never joined to a response by equal values. With several "
+            + "entries or an entry of another type the response's own usage is not reported, and nothing is stated";
+
+    /**
+     * The final usage of the run's last main-thread response that a Claude Code result reports in {@code usage.iterations[]}
+     * (claude.stream.last_response_usage.v1), added to {@code into} when the array holds exactly one entry of type
+     * {@code message}: scope 4 Run, Final, aggregation 3 Single response, canonical tranches of that entry, which is the
+     * observation's data. Any other shape states nothing.
+     */
+    static void claudeLastResponse(Jv.Arr into, Jv usage, Jv sourceRef) {
+        Jv iterations = usage == null ? null : usage.member("iterations");
+        if (!(iterations instanceof Jv.Arr entries) || entries.elements().size() != 1 || !"message".equals(MapperSupport.text(entries.elements().get(0), "type"))) {
+            return;
+        }
+        Jv entry = entries.elements().get(0);
+        Jv.Obj observation = MapperSupport.usage(4, 2, CLAUDE_LAST_RESPONSE, sourceRef, null, entry);
+        observation.put("aggregation_id", 3).put("aggregation", AGGREGATION.get(3));
+        anthropic(observation, entry);
+        into.add(observation);
+    }
+
     /** A usage object that reports only a total (Claude Code's task usage): total_tokens is copied as reported_total_tokens; nothing is derived. */
     static void reportedTotal(Jv.Obj into, Jv usage) {
         Jv.Arr components = new Jv.Arr();

@@ -6,7 +6,7 @@ This guide explains the OCSF-based writer (`journal-ocsf-writer`) and the indepe
 `0.3.0-prototype`, on OCSF 1.9.0 with the `agentic_cli` extension `0.13.0-prototype` (provisional, unregistered uid 901). No
 production default uses them.
 
-Updated 2026-10-25 from the implementation at `2dbd079`. The new algorithm diagrams are hand-authored explanations of
+Updated 2026-10-25 at the `1.13.0-SNAPSHOT` closeout candidate (R1 corrections plus the final delta-review repairs). The new algorithm diagrams are hand-authored explanations of
 code and declared policy, not extracted call traces. The recorded launch in section 4 remains an earlier, explicitly
 bounded execution; it does not exercise final assembly or the conformance ratchet.
 
@@ -131,6 +131,12 @@ flowchart TD
 - `OcsfRunWriter.open` records one source and rejects a second. Several sources use `openAssembly` or explicitly
   `openEvidenceLog(reason)`. An evidence log remains readable but its combination is unvalidated; the oracle cannot
   accept it as one combined execution.
+- A final-assembly declaration states the policy; it does not show that the assembly's checks ran. The per-source
+  oracle (`OcsfOracle.verify`, the reader CLI's `verify`) therefore leaves an assembled file's combination unresolved;
+  only `AssemblyOracle.verify`, with an independently supplied expectation and inputs, judges membership, grouping and
+  consolidation. A file declaring both an assembly and an evidence log is defective. Assembled profiles remain
+  experimental, and the assembly oracle still reads lifecycle stages from candidate events rather than independently
+  from native input, so independently checked lifecycle grouping is not claimed for them.
 
 ## 1.3 What the ratchet protects, and what it does not
 
@@ -143,7 +149,7 @@ generates the report and compares it to the
 
 | Protected item | What is compared | Why it matters |
 |---|---|---|
-| Required meaning | Stable obligation ID, revision, meaning fingerprint and relevant-definition/rule fingerprint | Rewording semantics, changing owner routing or a relevant definition must be visible |
+| Required meaning | Stable obligation ID, revision, meaning fingerprint and relevant-definition/rule fingerprint | Rewording semantics, changing owner routing, a destination definition, the usage object's description, a nested object it reaches or a named rule must be visible |
 | Residual classification | Variant, exact path/listed members, classification and fingerprint | Keeping a field in vendor data must not quietly excuse a required mapping |
 | Evidence population | Binding admission, recordings and their hashes, expected occurrence IDs | Previously successful recordings or occurrences cannot silently disappear |
 | Known debt | Category and exact reason-bearing finding ID | One new problem cannot hide behind one repaired problem |
@@ -153,17 +159,25 @@ changes and their evidence. Token-naming heuristics help discover omissions; the
 payloads or prove that every possible execution meaning has been found. Missing per-source catalogs/profiles remain
 explicit verification debt.
 
+The relevant-definition fingerprint covers the destination's definitions, the destination class's description, every
+extension object the usage observation reaches (whole, descriptions included) and the named contract rules. The
+mapping-catalog claim bindings use an older, narrower definition boundary; widening it is follow-up work because it
+would restate approved claim bindings.
+
 The generated report separates **baseline respected**, **behavior verified**, **semantics approved** and
-**accepted zero-gap**. At the implementation described here, 69 occurrences discharge on seven fixture candidates
-(six distinct native streams). Six obligations and six residual classifications remain proposed; the whole-product
+**accepted zero-gap**. At the implementation described here, 74 occurrences discharge on seven fixture candidates
+(six distinct native streams). Seven obligations and five residual classifications remain proposed; the whole-product
 zero-gap claim is not accepted. These are dated evidence counts, not permanent architectural constants.
 
 For example, Claude's Agent result reports its child's last metered response, while its task figure uses a different
 tracker formula. Both can be final and differ without conflict. Owner, measurement window and finality are separate.
-The run result's `usage.iterations[]` still leaves the last main-thread response's final usage outside common fields on
-stdout. Missing a response ID blocks a reliable join, but does not by itself make an understood usage quantity
-vendor-specific. This remains a coverage limitation for review. Agent-result zero defaults also must not be mistaken
-for independent evidence that a metered response occurred.
+The run result's `usage.iterations[]` carries the last main-thread response's final usage. When it holds exactly one
+`message` entry, that entry becomes a second run-scope observation with aggregation 3 Single response: one response of
+the run that the record does not identify, never added to the run total and never joined to a streamed response by equal
+values. Any other array shape (several entries, a compaction entry) states nothing, and the obligation gate keeps it as
+an explicit not-representable gap. When an Agent result's usage is exactly the emitter's zero defaults (every tranche 0,
+no iterations entry), the observation is Possibly default: neither a metered response nor a measured zero is
+established, and the zeros are kept as reported. These meanings are proposed, not approved.
 
 ## 2. Two flows, kept apart
 

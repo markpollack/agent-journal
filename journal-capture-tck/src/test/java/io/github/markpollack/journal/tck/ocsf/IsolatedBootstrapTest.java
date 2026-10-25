@@ -49,7 +49,7 @@ class IsolatedBootstrapTest {
         assertThat(p.catalog.enumerate()).contains("class agentic_cli/tool_call").contains("object agentic_cli/source_ref");
         assertThat(SemanticContract.validate(p.manifest.semanticContract(), p.catalog)).isEmpty();
         Json views = AnalysisViews.all(p);
-        assertThat(views.path("usage", "group_count").scalarText()).as("the task figure and the Agent result's one-response usage of the child run are two groups").isEqualTo("7");
+        assertThat(views.path("usage", "group_count").scalarText()).as("the task figure and the Agent result's one-response usage of the child run are two groups, and the run total and its last response two more").isEqualTo("8");
         assertThat(views.member("children").elements()).hasSize(1);
         assertThat(views.path("tool_exchanges", "calls").elements()).hasSize(2);
         List<Event> stream = p.events.stream().filter(e -> "stream.jsonl".equals(e.artifact())).toList();

@@ -74,6 +74,7 @@ class PublicFixtureRegenerationTest {
         write(UNTESTED, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
         write(LIVE_FEATURES, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
         write(WriterTestSupport.SYN_CHILD_RUNS, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
+        write(WriterTestSupport.SYN_AGENT_DEFAULTS, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
         write(LIVE_DENIAL, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
         write(LIVE_MCP, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
         write(LIVE_CODEX, List.of(codexStream()), List.of("stream.jsonl"));

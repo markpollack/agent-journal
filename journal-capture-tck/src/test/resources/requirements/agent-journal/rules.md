@@ -296,7 +296,7 @@ Tests: `FinalAssemblyClaudeTest#replayingTheSameImportAddsNothingWhileIdenticalB
 Status: changed meaning 2026-10-24 (R1 candidate, review finding CDX-R1-05; was: identical bytes from distinct origins are one entity by their record positions).
 
 ### RULE-52
-**MUST** declare a final assembly in the event file itself: the profile by value, the engine and its contract, the original packages it derives from, every declared source with its role, origin, declared acquisition and copy lineage, extent, hash and verdict, and the result with missing required roles and the assembly status. **MUST** combine several sources of one execution only by final assembly: a writer that records without assembly records one source, or declares the file an unvalidated evidence log in every core; readers and the oracle never accept a multi-source file without a final assembly, declared or written before this rule, as one combined execution.
+**MUST** declare a final assembly in the event file itself: the profile by value, the engine and its contract, the original packages it derives from, every declared source with its role, origin, declared acquisition and copy lineage, extent, hash and verdict, and the result with missing required roles and the assembly status. **MUST** combine several sources of one execution only by final assembly: a writer that records without assembly records one source, or declares the file an unvalidated evidence log in every core; readers and the oracle never accept a multi-source file without a final assembly, declared or written before this rule, as one combined execution. A final-assembly declaration states the policy but does not show that the assembly's checks ran: only the assembly oracle, with an independently supplied expectation and inputs, accepts an assembled file as one combined execution, and a file that declares both a final assembly and an evidence log is defective.
 **Reason:** The final file must read alone, with native files, `run.json` and schema caches unavailable, and still say how it was assembled and whether it is complete; a combination no identity check decided must not look like one.
 Tests: `FinalAssemblyClaudeTest#theFinalFileReadsAloneWithoutNativeFilesManifestOrSchemaCaches`, `FinalAssemblyClaudeTest#aMissingRequiredSourceMakesTheAssemblyIncomplete`, `CombinedSourceAdmissionTest`, `WriterAcquisitionRegressionTest#aCompleteTwoSourceEvidenceLogVerifiesPerSourceButIsNotAcceptedAsACombinedExecution`.
 Status: extended 2026-10-24 (R1 candidate, review finding CDX-R1-04: the plain writer's multi-source path).
@@ -409,3 +409,8 @@ the earlier source only by a declared copy lineage, otherwise refused; was: one 
 extended with the combination policy: several sources are combined only by final assembly; the plain writer records one
 source or an explicitly unvalidated evidence log that is never accepted as one combined execution. No rule added or
 removed; `RequirementsRosterTest` pins 54 rules.
+
+Closeout candidate (2026-10-25, review finding CDX-R1D-01): RULE-52 further states that a final-assembly declaration
+does not itself show that the assembly's checks ran; the per-source oracle leaves an assembled file's combination
+unresolved, only the assembly oracle accepts it, and a file declaring both an assembly and an evidence log is defective.
+No rule added or removed.

@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -650,8 +651,8 @@ class CanonicalConformanceTest {
         Report r = generate(dropped, recordings(dropped), FieldDispositionTest.catalog("claude_stream"), obligationEntries());
         Set<String> lost = new TreeSet<>(reviewedPopulation());
         lost.removeAll(population(r));
-        assertThat(lost).as("the recording and its eight occurrences leave the pinned population").hasSize(9)
-                .anyMatch(l -> l.contains("recording claude-live-2.1.304-denial")).filteredOn(l -> l.contains(" occurrence ")).hasSize(8);
+        assertThat(lost).as("the recording and its nine occurrences leave the pinned population").hasSize(10)
+                .anyMatch(l -> l.contains("recording claude-live-2.1.304-denial")).filteredOn(l -> l.contains(" occurrence ")).hasSize(9);
         assertThat(r.ids()).contains("5 recording:claude-code/stream-json/2.1.304-stdout:claude-live-2.1.304-denial");
         assertThat(r.findings().stream().filter(f -> f.id().startsWith("recording:"))).allMatch(r::inScope);
         // a byte-identical candidate is still a registered recording: dropping it is reported too, while the report
@@ -671,17 +672,17 @@ class CanonicalConformanceTest {
             return m;
         });
         assertThat(obligationKeys(reversed)).isNotEqualTo(reviewedObligations());
-        assertThat(CanonicalObligations.semantics(reversed)).extracting(Finding::id).contains("digest:claude.stream.usage.child-run.agent-result@r2");
+        assertThat(CanonicalObligations.semantics(reversed)).extracting(Finding::id).contains("digest:claude.stream.usage.child-run.agent-result@r3");
         // owner routing is part of every meaning
         Catalog rerouted = edited(m -> put(m, "owner_path", new Json.JString("session_id")));
-        assertThat(CanonicalObligations.semantics(rerouted)).extracting(Finding::id).filteredOn(id -> id.startsWith("digest:")).hasSize(6);
+        assertThat(CanonicalObligations.semantics(rerouted)).extracting(Finding::id).filteredOn(id -> id.startsWith("digest:")).hasSize(7);
         // a review label written into the catalog is not an approval
         Catalog labelled = edited(m -> {
             m.put("obligations", obligationEdited(new Json.JObject(m), "agent-result", o -> put(o, "review", NeutralJson.parse("{\"status\": \"approved\"}"))));
             return m;
         });
-        assertThat(CanonicalObligations.semantics(labelled)).extracting(Finding::id).contains("approval:claude.stream.usage.child-run.agent-result@r2")
-                .doesNotContain("digest:claude.stream.usage.child-run.agent-result@r2");
+        assertThat(CanonicalObligations.semantics(labelled)).extracting(Finding::id).contains("approval:claude.stream.usage.child-run.agent-result@r3")
+                .doesNotContain("digest:claude.stream.usage.child-run.agent-result@r3");
     }
 
     @Test
@@ -696,6 +697,28 @@ class CanonicalConformanceTest {
         SemanticClaims.Definitions reworded = new SemanticClaims.Definitions(defs.classes(), defs.objects(), dictionary);
         assertThat(CanonicalObligations.relevantDigest(c, agent, reworded, new ArrayList<>())).isNotEqualTo(agent.relevantDigest());
         assertThat(CanonicalObligations.meaningDigest(c, agent)).isEqualTo(agent.digest());
+        // CDX-R1D-02: the usage observation's own description, and a nested object's definition it depends on (a
+        // component's basis enum), are part of the relevant content of every obligation
+        Map<String, Json> objects = new TreeMap<>(defs.objects());
+        Map<String, Json> observation = new LinkedHashMap<>(((Json.JObject) objects.get("usage_observation")).members());
+        observation.put("description", new Json.JString("Absent components mean zero; input includes cache reads and cache writes."));
+        objects.put("usage_observation", new Json.JObject(observation));
+        SemanticClaims.Definitions described = new SemanticClaims.Definitions(defs.classes(), objects, defs.dictionary());
+        Map<String, Json> nestedDictionary = new TreeMap<>(defs.dictionary());
+        Map<String, Json> basis = new LinkedHashMap<>(((Json.JObject) nestedDictionary.get("component_basis_id")).members());
+        basis.put("enum", NeutralJson.parse("{\"1\": {\"caption\": \"Guessed from undocumented assumptions\"}}"));
+        nestedDictionary.put("component_basis_id", new Json.JObject(basis));
+        SemanticClaims.Definitions nested = new SemanticClaims.Definitions(defs.classes(), defs.objects(), nestedDictionary);
+        Map<String, Json> classes = new TreeMap<>(defs.classes());
+        Map<String, Json> context = new LinkedHashMap<>(((Json.JObject) classes.get("session_context")).members());
+        context.put("description", new Json.JString("A reworded class meaning."));
+        classes.put("session_context", new Json.JObject(context));
+        SemanticClaims.Definitions container = new SemanticClaims.Definitions(classes, defs.objects(), defs.dictionary());
+        for (Obligation o : c.obligations()) {
+            assertThat(CanonicalObligations.relevantDigest(c, o, described, new ArrayList<>())).as(o.key() + " under a reworded object description").isNotEqualTo(o.relevantDigest());
+            assertThat(CanonicalObligations.relevantDigest(c, o, nested, new ArrayList<>())).as(o.key() + " under a reworded nested definition").isNotEqualTo(o.relevantDigest());
+        }
+        assertThat(CanonicalObligations.relevantDigest(c, agent, container, new ArrayList<>())).isNotEqualTo(agent.relevantDigest());
         // a named rule the contract no longer has
         List<String> problems = new ArrayList<>();
         Obligation renamed = new Obligation(agent.id(), agent.revision(), agent.variant(), agent.payload(), agent.requestedTools(), agent.unitPath(), agent.destinationClass(),
@@ -788,6 +811,132 @@ class CanonicalConformanceTest {
                 .map(o -> CanonicalObligations.judge(o, relocated.cores(), relocated.report(), relocated.facts())).findFirst().orElseThrow();
         assertThat(nine.discharged()).isFalse();
         assertThat(nine.findings()).anyMatch(f -> f.id().endsWith("#no-observation") && f.detail().contains("another owner or unit"));
+    }
+
+    @Test
+    void aResultReportsItsLastResponseOnlyAsASoleMessageIterationAndOtherShapesAreAGap() {
+        // features record 50: iterations[] holds one message entry, 2/29493/592 input side and 521 output (the streamed
+        // record 49 of the same response says 7, provisionally); expected values authored from the native record
+        Catalog c = CanonicalObligations.read(CATALOG);
+        Recording rec = rec(c);
+        List<Judged> judged = atRecord(judgeAll(c, rec, STDOUT), FEATURES, 50);
+        assertThat(judged).extracting(j -> j.occurrence().obligation().id() + " " + j.occurrence().pointer())
+                .contains("claude.stream.usage.run.last-response /usage/iterations/0", "claude.stream.usage.run /usage");
+        assertThat(judged).allMatch(Judged::discharged);
+        Json last = rec.cores().get("main").stream().filter(e -> Objects.equals(e.recordIndex(), 50)).flatMap(e -> e.elements("usage_observations").stream())
+                .filter(CanonicalConformanceTest::singleResponse).findFirst().orElseThrow();
+        assertThat(List.of(last.member("scope_id").scalarText(), last.member("usage_status_id").scalarText(), last.member("uncached_input_tokens").scalarText(),
+                last.member("cache_read_tokens").scalarText(), last.member("cache_write_tokens").scalarText(), last.member("output_tokens").scalarText()))
+                .containsExactly("4", "2", "2", "29493", "592", "521");
+        assertThat(last.member("reasoning_tokens")).as("an iteration reports no thinking tokens; absence is not zero").isNull();
+        assertThat(last.member("model_ref")).as("the entry names no model, so none is stated").isNull();
+        // without the observation the obligation is unmet: the one scope-4 observation left, the run total, is another
+        // measurement window and fails it, while the run total's own occurrence is not confused by what remains
+        Recording dropped = withLastResponse(rec, u -> null);
+        List<Judged> after = atRecord(judgeAll(c, dropped, STDOUT), FEATURES, 50);
+        assertThat(after).filteredOn(j -> j.occurrence().obligation().id().endsWith("last-response")).singleElement()
+                .satisfies(j -> assertThat(j.findings()).extracting(Finding::id).contains(j.occurrence().id() + "#value:aggregation_id", j.occurrence().id() + "#value:output_tokens"));
+        assertThat(after).filteredOn(j -> j.occurrence().obligation().id().endsWith("usage.run")).allMatch(Judged::discharged);
+        // the streamed provisional output in its place is a value defect of this occurrence only
+        Recording provisional = withLastResponse(rec, u -> put(u, "output_tokens", new Json.JNumber("7")));
+        assertThat(judgeAll(c, provisional, STDOUT).stream().filter(j -> !j.discharged()))
+                .singleElement().satisfies(j -> assertThat(j.findings()).extracting(Finding::id).containsExactly(j.occurrence().id() + "#value:output_tokens"));
+        // the labelled synthetic result (record 9): a compaction and a message entry state no last response, and the gate
+        // keeps that occurrence as an explicit gap instead of a guessed sum or choice
+        Recording shapes = recording(c, CanonicalObligations.FIXTURES.resolve(OcsfFixtures.SYN_AGENT_DEFAULTS));
+        List<Judged> lastResponses = judgeAll(c, shapes, STDOUT).stream().filter(j -> j.occurrence().obligation().id().endsWith("last-response")).toList();
+        assertThat(lastResponses).singleElement().satisfies(j -> {
+            assertThat(j.occurrence().record()).isEqualTo(9);
+            assertThat(j.occurrence().pointer()).isEqualTo("/usage/iterations");
+            assertThat(j.findings()).extracting(Finding::id).containsExactly(j.occurrence().id() + "#not-representable");
+        });
+        assertThat(shapes.cores().get("main").stream().filter(e -> Objects.equals(e.recordIndex(), 9)).flatMap(e -> e.elements("usage_observations").stream())
+                .filter(u -> Integer.valueOf(4).equals(Event.integer(u.member("scope_id"))))).as("only the run total").singleElement()
+                .satisfies(u -> assertThat(u.member("aggregation_id")).isNull());
+    }
+
+    @Test
+    void theAgentResultsZeroDefaultsArePossiblyDefaultWhileAResponsesZerosStayReported() {
+        // the labelled synthetic examples: record 5 is the emitter's default object exactly, record 6 a response's usage
+        // with a real 0 cache-write tranche, record 7 every tranche 0 but one iterations entry, which only a response's
+        // usage over the defaults can carry; expectations authored from those records
+        Catalog c = CanonicalObligations.read(CATALOG);
+        Recording rec = recording(c, CanonicalObligations.FIXTURES.resolve(OcsfFixtures.SYN_AGENT_DEFAULTS));
+        List<Judged> agent = judgeAll(c, rec, STDOUT).stream().filter(j -> j.occurrence().obligation().id().endsWith("agent-result")).toList();
+        assertThat(agent).extracting(j -> j.occurrence().record()).containsExactly(5, 6, 7);
+        assertThat(agent).as(agent.stream().flatMap(j -> j.findings().stream()).toList().toString()).allMatch(Judged::discharged);
+        Map<Integer, Json> byRecord = new TreeMap<>();
+        rec.cores().get("main").stream().filter(CanonicalConformanceTest::childUsage).forEach(e -> byRecord.put(e.recordIndex(), e.elements("usage_observations").get(0)));
+        assertThat(byRecord.keySet()).containsExactly(5, 6, 7);
+        assertThat(Event.integer(byRecord.get(5).member("measurement_status_id"))).isEqualTo(2);
+        assertThat(byRecord.get(5).member("output_tokens").scalarText()).as("the zeros are kept as reported").isEqualTo("0");
+        assertThat(byRecord.get(6).member("measurement_status_id")).isNull();
+        assertThat(byRecord.get(6).member("cache_write_tokens").scalarText()).isEqualTo("0");
+        assertThat(byRecord.get(7).member("measurement_status_id")).isNull();
+        // the oracle's own reading expects the same, independently of the writer
+        assertThat(rec.facts().get("main").usages.stream().filter(u -> u.scopeId() == 7).map(u -> u.recordIndex() + "=" + u.measurementStatusId()))
+                .containsExactly("5=2", "6=null", "7=null");
+        assertThat(rec.report().outcome("usage.values", "main/stream.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
+        // a default object stated as an evidenced response, or a response's zeros stated as possibly default, is a value defect
+        Recording asserted = withEvents(rec, e -> childUsage(e) && List.of(5, 6).contains(e.recordIndex()) ? edited(e, m -> {
+            Map<String, Json> u = new LinkedHashMap<>(((Json.JObject) e.elements("usage_observations").get(0)).members());
+            if (Objects.equals(e.recordIndex(), 5)) {
+                u.remove("measurement_status_id");
+                u.remove("measurement_status");
+            }
+            else {
+                u.put("measurement_status_id", new Json.JNumber("2"));
+            }
+            m.put("usage_observations", new Json.JArray(List.of(new Json.JObject(u))));
+            return m;
+        }) : e);
+        assertThat(judgeAll(c, asserted, STDOUT).stream().filter(j -> j.occurrence().obligation().id().endsWith("agent-result")).filter(j -> !j.discharged())
+                .flatMap(j -> j.findings().stream()).map(Finding::id))
+                .containsExactlyInAnyOrder(agent.get(0).occurrence().id() + "#value:measurement_status_id", agent.get(1).occurrence().id() + "#value:measurement_status_id");
+    }
+
+    @Test
+    void aResidualLimitedToMessageEntriesReportsAnEntryOfAnotherType(@TempDir Path work) throws IOException {
+        // a compaction entry in the Agent result's iterations[] (its tokens are outside the response's top-level usage)
+        // is not covered by the message-entry residual: it is an unaccounted entry, not silently owed nothing
+        Catalog c = CanonicalObligations.read(CATALOG);
+        Path stream = work.resolve(CanonicalObligations.ARTIFACT);
+        List<String> lines = new ArrayList<>(Files.readAllLines(CanonicalObligations.FIXTURES.resolve(FEATURES).resolve("native").resolve(CanonicalObligations.ARTIFACT), StandardCharsets.UTF_8));
+        String agentResult = lines.get(32);
+        assertThat(agentResult).contains("\"totalTokens\":21133").contains("\"iterations\":[{");
+        lines.set(32, agentResult.replace("\"iterations\":[{", "\"iterations\":[{\"input_tokens\":40,\"output_tokens\":600,\"cache_read_input_tokens\":900,\"cache_creation_input_tokens\":0,\"type\":\"compaction\"},{"));
+        Files.write(stream, lines, StandardCharsets.UTF_8);
+        NativeArtifact added = NativeArtifact.read(stream);
+        Set<String> dataKeyed = RawInventory.ProfileRules.forProfile("claude_stream").dataKeyed();
+        List<Finding> found = CanonicalObligations.tokenMembers(c, added, CanonicalObligations.occurrences(c, c.bindings().get(1), FEATURES, added), dataKeyed, new ArrayList<>());
+        assertThat(found).extracting(Finding::id).containsExactly("user/tool_result:tool_use_result.usage.iterations[]{type=compaction}");
+        NativeArtifact original = rec(c).art();
+        assertThat(CanonicalObligations.tokenMembers(c, original, CanonicalObligations.occurrences(c, c.bindings().get(1), FEATURES, original), dataKeyed, new ArrayList<>())).isEmpty();
+    }
+
+    static final String STDOUT = "claude-code/stream-json/2.1.304-stdout";
+
+    static List<Judged> atRecord(List<Judged> judged, String fixture, int record) {
+        return judged.stream().filter(j -> j.occurrence().fixture().equals(fixture) && j.occurrence().record() == record).toList();
+    }
+
+    static boolean singleResponse(Json u) {
+        return Integer.valueOf(4).equals(Event.integer(u.member("scope_id"))) && Integer.valueOf(3).equals(Event.integer(u.member("aggregation_id")));
+    }
+
+    /** The features recording with the result's last-response observation edited, or removed when {@code edit} returns {@code null}. */
+    static Recording withLastResponse(Recording rec, UnaryOperator<Map<String, Json>> edit) {
+        return withEvents(rec, e -> Objects.equals(e.recordIndex(), 50) && "prompt_turn".equals(e.className) ? edited(e, m -> {
+            List<Json> obs = new ArrayList<>();
+            for (Json u : e.elements("usage_observations")) {
+                Map<String, Json> x = singleResponse(u) ? edit.apply(new LinkedHashMap<>(((Json.JObject) u).members())) : ((Json.JObject) u).members();
+                if (x != null) {
+                    obs.add(new Json.JObject(x));
+                }
+            }
+            m.put("usage_observations", new Json.JArray(obs));
+            return m;
+        }) : e);
     }
 
     private static Recording rec(Catalog c) {

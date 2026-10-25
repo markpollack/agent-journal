@@ -147,13 +147,19 @@ final class AssemblyAccounting {
         return out;
     }
 
+    /**
+     * Whether an element has every member value {@code where} names; a {@code null} value requires the member to be
+     * absent (or null), so a declared total can name its measurement window: a run's total states no aggregation, while
+     * one unidentified response of the same run at the same scope states 3 Single response and is not part of it.
+     */
     private static boolean matches(Json element, Json where) {
         if (where == null) {
             return true;
         }
         for (Map.Entry<String, Json> w : ((Json.JObject) where).members().entrySet()) {
             Json v = element.member(w.getKey());
-            if (v == null || !Json.sameValue(v, w.getValue())) {
+            boolean absent = v == null || v.isNull();
+            if (w.getValue().isNull() ? !absent : absent || !Json.sameValue(v, w.getValue())) {
                 return false;
             }
         }

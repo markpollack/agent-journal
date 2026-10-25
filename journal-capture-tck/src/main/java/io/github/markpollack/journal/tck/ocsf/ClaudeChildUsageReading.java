@@ -41,7 +41,22 @@ final class ClaudeChildUsageReading {
             return;
         }
         account(f, index, "user/tool_result", resultIds.get(0));
-        f.usages.add(new ExpectedFacts.Usage(index, index, 7, 2, TrancheReading.anthropic(usage), null, null, null, 3));
+        f.usages.add(new ExpectedFacts.Usage(index, index, 7, 2, TrancheReading.anthropic(usage), null, null, emitterDefaults(usage) ? 2 : null, 3));
+    }
+
+    /**
+     * Whether the Agent result's usage is indistinguishable from the emitter's zero defaults (2 Possibly default): input,
+     * cache creation, cache read and output all reported as 0, and no {@code iterations} entry. The retained 2.1.304
+     * emitter lays the last metered response's usage over exactly these defaults and keeps them when there is none, so
+     * such zeros establish neither a response nor a measured zero.
+     */
+    static boolean emitterDefaults(Json usage) {
+        for (String member : List.of("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens", "output_tokens")) {
+            if (!(usage.member(member) instanceof Json.JNumber n) || n.value().signum() != 0) {
+                return false;
+            }
+        }
+        return !(usage.member("iterations") instanceof Json.JArray entries) || entries.elements().isEmpty();
     }
 
     /** A task_progress or task_notification record that reports a usage object; returns whether it does. */

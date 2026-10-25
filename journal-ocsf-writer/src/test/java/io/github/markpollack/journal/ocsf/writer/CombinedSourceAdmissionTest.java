@@ -86,6 +86,61 @@ class CombinedSourceAdmissionTest {
     }
 
     @Test
+    void anAssemblyDeclarationCopiedIntoAnEvidenceLogIsNeverAnAcceptedExecution(@TempDir Path work) throws IOException {
+        // review finding CDX-R1D-01, reproduced: the foreign-session evidence log above, its standalone event file (no
+        // run.json) with a final-assembly declaration copied from the committed assembled pair appended, was read as
+        // ASSEMBLED and accepted (combination.policy VERIFIED, exit 0) although no assembly check ran
+        aSessionFileOfAnotherSessionInAnEvidenceLogIsNeverAcceptedAsOneExecution(Files.createDirectories(work.resolve("log")));
+        String declaration = Files.readAllLines(WriterTestSupport.FIXTURES.resolve(WriterTestSupport.LIVE_CLAUDE_PAIR).resolve("package/events.jsonl"), StandardCharsets.UTF_8)
+                .stream().filter(l -> l.contains("\"kind\":\"assembly\"")).findFirst().orElseThrow();
+        List<String> log = Files.readAllLines(work.resolve("log/core/events.jsonl"), StandardCharsets.UTF_8);
+        Path both = copiedWith(work.resolve("log/core"), work.resolve("both"), log, declaration);
+        OcsfPackage contradictory = WriterTestSupport.open(both);
+        assertThat(contradictory.combination()).isEqualTo(OcsfPackage.Combination.CONTRADICTORY);
+        OracleReport report = WriterTestSupport.verify(both, work.resolve("log/native"));
+        assertThat(report.outcome("combination.policy", "main")).isEqualTo(Check.Outcome.DEFECTIVE);
+        assertThat(OcsfReaderTool.acceptance(report).verdict()).isNotEqualTo("ACCEPTED");
+        // with the evidence-log declaration removed as well, the file reads as an assembly, which this per-source
+        // verification still never accepts: only the assembly oracle judges a combination
+        List<String> stripped = log.stream().map(l -> l.replaceFirst(",\"combination\":\\{\"status\":\"unvalidated evidence log\",\"reason\":\"[^\"]*\",\"meaning\":\"[^\"]*\"\\}", "")).toList();
+        Path assembled = copiedWith(work.resolve("log/core"), work.resolve("assembled"), stripped, declaration);
+        assertThat(WriterTestSupport.open(assembled).combination()).isEqualTo(OcsfPackage.Combination.ASSEMBLED);
+        OracleReport claimed = WriterTestSupport.verify(assembled, work.resolve("log/native"));
+        assertThat(claimed.outcome("combination.policy", "main")).isEqualTo(Check.Outcome.UNRESOLVED);
+        assertThat(OcsfReaderTool.acceptance(claimed).verdict()).isEqualTo("INCOMPLETE");
+    }
+
+    @Test
+    void aDeclaredFinalAssemblyIsJudgedOnlyByTheAssemblyOracle() {
+        // the committed assembled pair: each source's observations verify, but the per-source verification does not run
+        // the assembly checks, so it does not accept the file as a combined execution (FinalAssemblyClaudeTest runs them)
+        Path fixture = WriterTestSupport.FIXTURES.resolve(WriterTestSupport.LIVE_CLAUDE_PAIR);
+        OracleReport report = WriterTestSupport.verify(fixture.resolve("package"), fixture.resolve("native"));
+        assertThat(report.outcome("combination.policy", "main")).isEqualTo(Check.Outcome.UNRESOLVED);
+        assertThat(report.check("combination.policy", "main").detail()).contains("assembly oracle");
+        assertThat(OcsfReaderTool.acceptance(report).reasons()).anySatisfy(r -> assertThat(r).contains("combination.policy"));
+    }
+
+    /** A standalone copy of a core's event file (child files kept, run.json left out) whose lines are {@code lines} plus {@code appended}. */
+    private static Path copiedWith(Path core, Path out, List<String> lines, String appended) throws IOException {
+        try (var walk = Files.walk(core)) {
+            for (Path p : walk.toList()) {
+                Path dest = out.resolve(core.relativize(p).toString());
+                if (Files.isDirectory(p)) {
+                    Files.createDirectories(dest);
+                }
+                else if (!p.equals(core.resolve("run.json")) && !p.equals(core.resolve("events.jsonl"))) {
+                    Files.copy(p, dest);
+                }
+            }
+        }
+        List<String> all = new java.util.ArrayList<>(lines);
+        all.add(appended);
+        Files.write(out.resolve("events.jsonl"), all, StandardCharsets.UTF_8);
+        return out;
+    }
+
+    @Test
     void everyCoreOfAnEvidenceLogDeclaresItselfUnvalidatedAndReadsAlone(@TempDir Path work) throws IOException {
         Path core = work.resolve("core");
         try (OcsfRunWriter w = OcsfRunWriter.openEvidenceLog(core, run(PAIR), SchemaPin.bundled(), options(), PAIR_LOG)) {

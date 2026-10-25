@@ -83,7 +83,7 @@
   ]
  },
  "usage": {
-  "group_count": 7,
+  "group_count": 8,
   "groups": [
    {
     "scope": "Model response",
@@ -172,6 +172,7 @@
    {
     "scope": "Run",
     "owner": "claude-child-2.1.299",
+    "aggregation": null,
     "source": "stream.jsonl",
     "final_observations": 1,
     "repeated_final_observations": 0,
@@ -202,6 +203,29 @@
      "cache_write_tokens": 22130,
      "reasoning_tokens": 964
     }
+   },
+   {
+    "scope": "Run",
+    "owner": "claude-child-2.1.299",
+    "aggregation": "Single response",
+    "model": null,
+    "source": "stream.jsonl",
+    "final_observations": 1,
+    "repeated_final_observations": 0,
+    "conflict": false,
+    "comparability": "single",
+    "applicable_final": {
+     "uncached_input_tokens": 8,
+     "output_tokens": 58,
+     "cache_read_tokens": 24251,
+     "cache_write_tokens": 1057
+    },
+    "observations": [
+     {
+      "record_index": 27,
+      "status": "Final"
+     }
+    ]
    }
   ],
   "aggregation": "none: groups are never summed across scopes, sources, models or child runs"

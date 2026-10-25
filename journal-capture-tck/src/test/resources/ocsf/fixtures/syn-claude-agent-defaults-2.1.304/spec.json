@@ -1,0 +1,34 @@
+{
+ "run_uid": "syn-claude-agent-defaults-2.1.304",
+ "invocation_index": 0,
+ "capture_start": "2026-10-25T12:00:00Z",
+ "cli": {
+  "name": "Claude Code",
+  "vendor_name": "Anthropic",
+  "type_id": 1,
+  "type": "Native"
+ },
+ "launch_settings": {
+  "command": "replay of a hand-authored stream (no live run)",
+  "cwd": "/work",
+  "route": "stdout"
+ },
+ "sources": [
+  {
+   "artifact": "stream.jsonl",
+   "kind": 1,
+   "profile": "claude_stream",
+   "route": "stdout",
+   "path": "<fixture>/native/syn-claude-agent-defaults-2.1.304/stream.jsonl"
+  }
+ ],
+ "synthetic": {
+  "label": "LABELLED SYNTHETIC AGENT-RESULT DEFAULTS (closeout, 2026-10-25): a hand-authored stream in the Claude Code 2.1.304 stdout shape, not live evidence. One main thread spawns three Agent calls. Child D's result reports exactly the retained 2.1.304 emitter's zero-default usage object (var em: every tranche 0, inference_geo empty, iterations []), what the emitter writes when the child has no metered response; child Z's usage is a response's with a real zero cache-write tranche; child M's usage has every tranche 0 but one iterations entry, which only a response's usage laid over the defaults can carry. The result record's iterations[] holds a compaction entry and a message entry, a shape whose last response's own usage is not reported. No recording exercises any of these cases; values are chosen by hand",
+  "purpose": [
+   "the zero-default Agent result is Possibly default: neither a metered response nor a measured zero is established, and its zeros are kept",
+   "a real zero tranche of a response's usage stays an ordinary reported value",
+   "an iterations entry establishes the response even when every tranche is 0",
+   "a result whose iterations[] is not one message entry states no last-response observation and is an explicit gap of the obligation gate"
+  ]
+ }
+}

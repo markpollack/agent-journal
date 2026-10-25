@@ -1,50 +1,60 @@
 {
  "kind": "agent-journal/conformance-baseline",
- "version": "0.2",
+ "version": "0.3",
  "catalog": "schema/vendor/claude-code/stream-json/obligations.json",
  "meaning": "the reviewed obligation set (id, revision, meaning digest, relevant digest), the reviewed residual set (variant, path, classification, digest), the judged population (per binding: its entry's admission, every recording with its native stream hash, every occurrence id) and the frozen debt by exact finding identity (category and id) with its reason. CanonicalConformanceTest fails on a new finding, on frozen debt that no longer occurs, and on any changed obligation, residual or population: an edit here is the reviewable change, never its approval. Holding the baseline is not acceptance: category 6 keeps the semantic review state",
  "changes": [
   {
    "revision": "0.2 (R1, 2026-10-24)",
    "summary": "Pinned the residual set and the judged population (CDX-R1-01); the meaning digest now covers owner_path and the semantics statement and a relevant digest covers the destination's extension definitions and the named contract rules (CDX-R1-02), so all six digests were restated (algorithm change; no approval existed to invalidate). Revisions: agent-result r2 (aggregation 3 Single response), task-progress r2 and task-notification r2 (semantics restated with emitter grounds). Frozen debt: the three approval ids move from r1 to r2; the two unresolved iterations[] questions are answered by candidate vendor_specific classifications and leave the unresolved list; the six residual classifications become explicit approval debt (they were unreviewed meanings with no visible debt at d36b8eb). 41 -> 45 frozen ids"
+  },
+  {
+   "revision": "0.3 (closeout, 2026-10-25)",
+   "summary": "Relevant digests now cover the destination class's description and every extension object the usage observation reaches, whole with descriptions (CDX-R1D-02), so all seven relevant digests were restated (algorithm change; no approval existed to invalidate); the last-response obligation names the new rule claude.stream.result.last_response_usage->prompt_turn.usage and the agent-result obligation the revised Agent-result rule of contract claude-code/stream-json/2.1.303 0.7.0-prototype (the result rule itself is unchanged). Added obligation claude.stream.usage.run.last-response r1: a sole message entry of result.usage.iterations[] is the final usage of the run's last main-thread response (scope 4, Final, aggregation 3 Single response); it replaces the vendor_specific residual result:usage.iterations[], which owed nothing only because the response was unidentified. agent-result r3: the emitter's zero-default object is Possibly default (measurement status 2), not an evidenced response. Residuals: result:usage.iterations[] removed; tool_use_result.usage.iterations[] limited to message entries (entry_types); tool_use_result.totalTokens reason restated with the emitter's exact iteration selection. Population: five last-response occurrences added (2.1.299 child, 2.1.304 features, denial, mcp, mcp-pair) on unchanged recordings: 69 -> 74. Frozen debt: approval ids agent-result r2 -> r3, last-response r1 added, residual result:usage.iterations[] removed: 45 -> 45"
   }
  ],
  "obligations": [
   {
    "id": "claude.stream.usage.child-run.agent-result",
-   "revision": 2,
-   "meaning_digest": "sha256:f1843fa54553d59acea230c1c33008945ab717bfc4cdbc41d8802a4c0ba04944",
-   "relevant_digest": "sha256:a10267da8ea4474d0c6cdfbf52f0f95851f4bbeb9e0767919bbfc669176435d7"
+   "revision": 3,
+   "meaning_digest": "sha256:65b768f82a677ca46629aef683d54c8958ea7dd4635fcb9b71160b209ededfdd",
+   "relevant_digest": "sha256:9569bf947a6f4d20db7d626b4ecc7c80835df982c585378ea048d7371cdf1bee"
   },
   {
    "id": "claude.stream.usage.child-run.task-notification",
    "revision": 2,
    "meaning_digest": "sha256:d74cba6970eeb59746f6b78b591e160981b36f813e0f449319d0b75959de21d3",
-   "relevant_digest": "sha256:022acf6ce2c6c5fc3f71c9eccdd3a0baa2a5e05a3c83019ce7bd4f4fd57580c1"
+   "relevant_digest": "sha256:168041e823a52d239ac75be722cc6a73b97438a35611f350844a157abfb70a2a"
   },
   {
    "id": "claude.stream.usage.child-run.task-progress",
    "revision": 2,
    "meaning_digest": "sha256:ac8cf88e61e1364bcfaa3bd4b8e79f75b917dfe55a7cca5c1ee9c60a0fd0bf94",
-   "relevant_digest": "sha256:022acf6ce2c6c5fc3f71c9eccdd3a0baa2a5e05a3c83019ce7bd4f4fd57580c1"
+   "relevant_digest": "sha256:168041e823a52d239ac75be722cc6a73b97438a35611f350844a157abfb70a2a"
   },
   {
    "id": "claude.stream.usage.model",
    "revision": 1,
    "meaning_digest": "sha256:a2bd4966177828e82022ac9f64b97b7493b1f33833883e380684281df0e17889",
-   "relevant_digest": "sha256:b95bef9e6525524e2469a635ecdf723db4817174b49fbafa75d40a4ec2359a7e"
+   "relevant_digest": "sha256:0ff61a4278e880158f0cf04f8f1dab10fefc6ab604ecd5525f948170dbcb4a54"
   },
   {
    "id": "claude.stream.usage.model-response",
    "revision": 1,
    "meaning_digest": "sha256:a454b8c98a66e2c59b15c45c527e6d41545af40023e4b562247f5e8d272d69d0",
-   "relevant_digest": "sha256:88db758f582c5d4615bd19bfd9c31071b80d3af7db825501fc0124a1075f0432"
+   "relevant_digest": "sha256:b5ecc6dfd1e8395a07383d52414e2628a730032103b55178bc2d8d1b32109f0a"
   },
   {
    "id": "claude.stream.usage.run",
    "revision": 1,
    "meaning_digest": "sha256:4073cfa1bf08d1c89a3b3834ab37961f5a8d54fd1d62cab05c44cee5a72d6fb1",
-   "relevant_digest": "sha256:b95bef9e6525524e2469a635ecdf723db4817174b49fbafa75d40a4ec2359a7e"
+   "relevant_digest": "sha256:0ff61a4278e880158f0cf04f8f1dab10fefc6ab604ecd5525f948170dbcb4a54"
+  },
+  {
+   "id": "claude.stream.usage.run.last-response",
+   "revision": 1,
+   "meaning_digest": "sha256:99cadd38b70de8276b357be491f3549172ca1f4c4a534bb0286555623d0509d1",
+   "relevant_digest": "sha256:16da1d2125ab4d91172f5593f47ca02a1abae0091853eddf82e136ea05c90443"
   }
  ],
  "residuals": [
@@ -70,19 +80,13 @@
    "variant": "user/tool_result",
    "path": "tool_use_result.totalTokens",
    "classification": "vendor_specific",
-   "digest": "sha256:80fc2a0bc681847f3c3b52fbc2ab963101e94cbfebf10b7a71e55ba872720c70"
-  },
-  {
-   "variant": "result",
-   "path": "usage.iterations[]",
-   "classification": "vendor_specific",
-   "digest": "sha256:e8aebf7e0a09ff136f6126e37aad7441794dfa55accc0ba229b5bdcbc4a62f41"
+   "digest": "sha256:6977b8bd8c62157a0718ef62d2a96b439b2d1e09d4ee2c7083c9fa8026142c80"
   },
   {
    "variant": "user/tool_result",
    "path": "tool_use_result.usage.iterations[]",
    "classification": "vendor_specific",
-   "digest": "sha256:21bb9de9d67add71cbf0b41d6075ee088c41d4f9ec4891484c078645b1bc7e9d"
+   "digest": "sha256:38286cd380ac785c15f732aa8bdbaf143f871d6830867c3670750dcf42dfc8ea"
   }
  ],
  "population": [
@@ -100,7 +104,7 @@
     }
    ],
    "occurrences": [
-    "claude.stream.usage.child-run.agent-result@r2|claude-child-2.1.299|stream.jsonl:24|/tool_use_result/usage|main",
+    "claude.stream.usage.child-run.agent-result@r3|claude-child-2.1.299|stream.jsonl:24|/tool_use_result/usage|main",
     "claude.stream.usage.child-run.task-notification@r2|claude-child-2.1.299|stream.jsonl:23|/usage|main",
     "claude.stream.usage.child-run.task-progress@r2|claude-child-2.1.299|stream.jsonl:19|/usage|main",
     "claude.stream.usage.model-response@r1|claude-child-2.1.299-interrupted|stream.jsonl:4|/message/usage|main",
@@ -114,6 +118,7 @@
     "claude.stream.usage.model-response@r1|claude-child-2.1.299|stream.jsonl:4|/message/usage|main",
     "claude.stream.usage.model-response@r1|claude-child-2.1.299|stream.jsonl:5|/message/usage|main",
     "claude.stream.usage.model@r1|claude-child-2.1.299|stream.jsonl:27|/modelUsage/claude-haiku-4-5-20251001|main",
+    "claude.stream.usage.run.last-response@r1|claude-child-2.1.299|stream.jsonl:27|/usage/iterations/0|main",
     "claude.stream.usage.run@r1|claude-child-2.1.299|stream.jsonl:27|/usage|main"
    ]
   },
@@ -143,7 +148,7 @@
     }
    ],
    "occurrences": [
-    "claude.stream.usage.child-run.agent-result@r2|claude-live-2.1.304-features|stream.jsonl:33|/tool_use_result/usage|main",
+    "claude.stream.usage.child-run.agent-result@r3|claude-live-2.1.304-features|stream.jsonl:33|/tool_use_result/usage|main",
     "claude.stream.usage.child-run.task-notification@r2|claude-live-2.1.304-features|stream.jsonl:32|/usage|main",
     "claude.stream.usage.child-run.task-progress@r2|claude-live-2.1.304-features|stream.jsonl:25|/usage|main",
     "claude.stream.usage.child-run.task-progress@r2|claude-live-2.1.304-features|stream.jsonl:28|/usage|main",
@@ -193,6 +198,10 @@
     "claude.stream.usage.model@r1|claude-live-2.1.304-features|stream.jsonl:50|/modelUsage/claude-haiku-5-5|main",
     "claude.stream.usage.model@r1|claude-live-2.1.304-mcp-pair|stream.jsonl:15|/modelUsage/claude-haiku-5-5|main",
     "claude.stream.usage.model@r1|claude-live-2.1.304-mcp|stream.jsonl:15|/modelUsage/claude-haiku-5-5|main",
+    "claude.stream.usage.run.last-response@r1|claude-live-2.1.304-denial|stream.jsonl:18|/usage/iterations/0|main",
+    "claude.stream.usage.run.last-response@r1|claude-live-2.1.304-features|stream.jsonl:50|/usage/iterations/0|main",
+    "claude.stream.usage.run.last-response@r1|claude-live-2.1.304-mcp-pair|stream.jsonl:15|/usage/iterations/0|main",
+    "claude.stream.usage.run.last-response@r1|claude-live-2.1.304-mcp|stream.jsonl:15|/usage/iterations/0|main",
     "claude.stream.usage.run@r1|claude-live-2.1.304-denial|stream.jsonl:18|/usage|main",
     "claude.stream.usage.run@r1|claude-live-2.1.304-features|stream.jsonl:50|/usage|main",
     "claude.stream.usage.run@r1|claude-live-2.1.304-mcp-pair|stream.jsonl:15|/usage|main",
@@ -203,18 +212,88 @@
  "frozen": [
   {
    "category": 5,
-   "id": "obligation-catalog:antigravity-cli/stream-json/1.4.6-stdout",
-   "reason": "D2 dependency: no canonical-obligation catalog binds antigravity-cli/stream-json/1.4.6-stdout (required: admitted)"
-  },
-  {
-   "category": 5,
    "id": "disposition-catalog:claude-code/session-transcript/2.1.304-session-file",
    "reason": "D2 dependency: no field-disposition catalog lists claude-code/session-transcript/2.1.304-session-file (required: final-assembly profile claude-code/2.1.304/stdout+session-file)"
   },
   {
    "category": 5,
+   "id": "disposition-catalog:github-copilot-cli/events/1.0.100-session-file",
+   "reason": "D2 dependency: no field-disposition catalog lists github-copilot-cli/events/1.0.100-session-file (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-catalog:github-copilot-cli/events/1.0.100-stdout",
+   "reason": "D2 dependency: no field-disposition catalog lists github-copilot-cli/events/1.0.100-stdout (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-catalog:github-copilot-cli/otel/1.0.100",
+   "reason": "D2 dependency: no field-disposition catalog lists github-copilot-cli/otel/1.0.100 (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-catalog:github-copilot-cli/usage-report/1.0.100",
+   "reason": "D2 dependency: no field-disposition catalog lists github-copilot-cli/usage-report/1.0.100 (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-catalog:junie/json-stream/3813.7-stdout",
+   "reason": "D2 dependency: no field-disposition catalog lists junie/json-stream/3813.7-stdout (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-catalog:junie/session-events/3813.7",
+   "reason": "D2 dependency: no field-disposition catalog lists junie/session-events/3813.7 (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-catalog:junie/session-summary/3813.7",
+   "reason": "D2 dependency: no field-disposition catalog lists junie/session-summary/3813.7 (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+  },
+  {
+   "category": 5,
    "id": "disposition-gate:claude-code/session-transcript/2.1.304-session-file",
    "reason": "D2 dependency: FieldDispositionTest does not register profile claude_transcript (required: final-assembly profile claude-code/2.1.304/stdout+session-file)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-gate:github-copilot-cli/events/1.0.100-session-file",
+   "reason": "D2 dependency: FieldDispositionTest does not register profile copilot_events (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-gate:github-copilot-cli/events/1.0.100-stdout",
+   "reason": "D2 dependency: FieldDispositionTest does not register profile copilot_events (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-gate:github-copilot-cli/otel/1.0.100",
+   "reason": "D2 dependency: FieldDispositionTest does not register profile copilot_otel (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-gate:github-copilot-cli/usage-report/1.0.100",
+   "reason": "D2 dependency: FieldDispositionTest does not register profile copilot_usage_report (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-gate:junie/json-stream/3813.7-stdout",
+   "reason": "D2 dependency: FieldDispositionTest does not register profile junie_stdout (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-gate:junie/session-events/3813.7",
+   "reason": "D2 dependency: FieldDispositionTest does not register profile junie_session_events (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+  },
+  {
+   "category": 5,
+   "id": "disposition-gate:junie/session-summary/3813.7",
+   "reason": "D2 dependency: FieldDispositionTest does not register profile junie_summary (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+  },
+  {
+   "category": 5,
+   "id": "obligation-catalog:antigravity-cli/stream-json/1.4.6-stdout",
+   "reason": "D2 dependency: no canonical-obligation catalog binds antigravity-cli/stream-json/1.4.6-stdout (required: admitted)"
   },
   {
    "category": 5,
@@ -228,38 +307,8 @@
   },
   {
    "category": 5,
-   "id": "disposition-catalog:github-copilot-cli/events/1.0.100-session-file",
-   "reason": "D2 dependency: no field-disposition catalog lists github-copilot-cli/events/1.0.100-session-file (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "oracle-profile:github-copilot-cli/events/1.0.100-session-file",
-   "reason": "D2 dependency: no independent oracle source profile for copilot_events (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-gate:github-copilot-cli/events/1.0.100-session-file",
-   "reason": "D2 dependency: FieldDispositionTest does not register profile copilot_events (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
    "id": "obligation-catalog:github-copilot-cli/events/1.0.100-session-file",
    "reason": "D2 dependency: no canonical-obligation catalog binds github-copilot-cli/events/1.0.100-session-file (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-catalog:github-copilot-cli/events/1.0.100-stdout",
-   "reason": "D2 dependency: no field-disposition catalog lists github-copilot-cli/events/1.0.100-stdout (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "oracle-profile:github-copilot-cli/events/1.0.100-stdout",
-   "reason": "D2 dependency: no independent oracle source profile for copilot_events (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-gate:github-copilot-cli/events/1.0.100-stdout",
-   "reason": "D2 dependency: FieldDispositionTest does not register profile copilot_events (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
   },
   {
    "category": 5,
@@ -268,38 +317,8 @@
   },
   {
    "category": 5,
-   "id": "disposition-catalog:github-copilot-cli/otel/1.0.100",
-   "reason": "D2 dependency: no field-disposition catalog lists github-copilot-cli/otel/1.0.100 (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "oracle-profile:github-copilot-cli/otel/1.0.100",
-   "reason": "D2 dependency: no independent oracle source profile for copilot_otel (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-gate:github-copilot-cli/otel/1.0.100",
-   "reason": "D2 dependency: FieldDispositionTest does not register profile copilot_otel (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
    "id": "obligation-catalog:github-copilot-cli/otel/1.0.100",
    "reason": "D2 dependency: no canonical-obligation catalog binds github-copilot-cli/otel/1.0.100 (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-catalog:github-copilot-cli/usage-report/1.0.100",
-   "reason": "D2 dependency: no field-disposition catalog lists github-copilot-cli/usage-report/1.0.100 (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "oracle-profile:github-copilot-cli/usage-report/1.0.100",
-   "reason": "D2 dependency: no independent oracle source profile for copilot_usage_report (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-gate:github-copilot-cli/usage-report/1.0.100",
-   "reason": "D2 dependency: FieldDispositionTest does not register profile copilot_usage_report (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
   },
   {
    "category": 5,
@@ -308,38 +327,8 @@
   },
   {
    "category": 5,
-   "id": "disposition-catalog:junie/json-stream/3813.7-stdout",
-   "reason": "D2 dependency: no field-disposition catalog lists junie/json-stream/3813.7-stdout (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
-  },
-  {
-   "category": 5,
-   "id": "oracle-profile:junie/json-stream/3813.7-stdout",
-   "reason": "D2 dependency: no independent oracle source profile for junie_stdout (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-gate:junie/json-stream/3813.7-stdout",
-   "reason": "D2 dependency: FieldDispositionTest does not register profile junie_stdout (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
-  },
-  {
-   "category": 5,
    "id": "obligation-catalog:junie/json-stream/3813.7-stdout",
    "reason": "D2 dependency: no canonical-obligation catalog binds junie/json-stream/3813.7-stdout (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-catalog:junie/session-events/3813.7",
-   "reason": "D2 dependency: no field-disposition catalog lists junie/session-events/3813.7 (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
-  },
-  {
-   "category": 5,
-   "id": "oracle-profile:junie/session-events/3813.7",
-   "reason": "D2 dependency: no independent oracle source profile for junie_session_events (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-gate:junie/session-events/3813.7",
-   "reason": "D2 dependency: FieldDispositionTest does not register profile junie_session_events (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
   },
   {
    "category": 5,
@@ -348,8 +337,38 @@
   },
   {
    "category": 5,
-   "id": "disposition-catalog:junie/session-summary/3813.7",
-   "reason": "D2 dependency: no field-disposition catalog lists junie/session-summary/3813.7 (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+   "id": "obligation-catalog:junie/session-summary/3813.7",
+   "reason": "D2 dependency: no canonical-obligation catalog binds junie/session-summary/3813.7 (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+  },
+  {
+   "category": 5,
+   "id": "oracle-profile:github-copilot-cli/events/1.0.100-session-file",
+   "reason": "D2 dependency: no independent oracle source profile for copilot_events (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "oracle-profile:github-copilot-cli/events/1.0.100-stdout",
+   "reason": "D2 dependency: no independent oracle source profile for copilot_events (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "oracle-profile:github-copilot-cli/otel/1.0.100",
+   "reason": "D2 dependency: no independent oracle source profile for copilot_otel (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "oracle-profile:github-copilot-cli/usage-report/1.0.100",
+   "reason": "D2 dependency: no independent oracle source profile for copilot_usage_report (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
+  },
+  {
+   "category": 5,
+   "id": "oracle-profile:junie/json-stream/3813.7-stdout",
+   "reason": "D2 dependency: no independent oracle source profile for junie_stdout (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+  },
+  {
+   "category": 5,
+   "id": "oracle-profile:junie/session-events/3813.7",
+   "reason": "D2 dependency: no independent oracle source profile for junie_session_events (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
   },
   {
    "category": 5,
@@ -357,23 +376,23 @@
    "reason": "D2 dependency: no independent oracle source profile for junie_summary (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
   },
   {
-   "category": 5,
-   "id": "disposition-gate:junie/session-summary/3813.7",
-   "reason": "D2 dependency: FieldDispositionTest does not register profile junie_summary (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+   "category": 6,
+   "id": "approval:claude.stream.usage.child-run.agent-result@r3",
+   "reason": "closeout candidate revision (the zero-default object is Possibly default, not an evidenced response; r2 aggregation 3 Single response with emitter grounds); no Owner decision approves it"
   },
   {
-   "category": 5,
-   "id": "obligation-catalog:junie/session-summary/3813.7",
-   "reason": "D2 dependency: no canonical-obligation catalog binds junie/session-summary/3813.7 (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
+   "category": 6,
+   "id": "approval:claude.stream.usage.child-run.task-notification@r2",
+   "reason": "R1 candidate revision (semantics restated with emitter grounds); no Owner decision approves it"
+  },
+  {
+   "category": 6,
+   "id": "approval:claude.stream.usage.child-run.task-progress@r2",
+   "reason": "R1 candidate revision (semantics restated with emitter grounds); no Owner decision approves it"
   },
   {
    "category": 6,
    "id": "approval:claude.stream.usage.model-response@r1",
-   "reason": "pending semantic review: the D1 return's packet presents this obligation; no Owner decision yet"
-  },
-  {
-   "category": 6,
-   "id": "approval:claude.stream.usage.run@r1",
    "reason": "pending semantic review: the D1 return's packet presents this obligation; no Owner decision yet"
   },
   {
@@ -383,18 +402,18 @@
   },
   {
    "category": 6,
-   "id": "approval:claude.stream.usage.child-run.agent-result@r2",
-   "reason": "R1 candidate revision (aggregation 3 Single response, emitter grounds); no Owner decision approves it"
+   "id": "approval:claude.stream.usage.run.last-response@r1",
+   "reason": "closeout candidate obligation (a sole message entry of result.usage.iterations[] is the final usage of the run's last main-thread response, aggregation 3 Single response); no Owner decision approves it"
   },
   {
    "category": 6,
-   "id": "approval:claude.stream.usage.child-run.task-progress@r2",
-   "reason": "R1 candidate revision (semantics restated with emitter grounds); no Owner decision approves it"
+   "id": "approval:claude.stream.usage.run@r1",
+   "reason": "pending semantic review: the D1 return's packet presents this obligation; no Owner decision yet"
   },
   {
    "category": 6,
-   "id": "approval:claude.stream.usage.child-run.task-notification@r2",
-   "reason": "R1 candidate revision (semantics restated with emitter grounds); no Owner decision approves it"
+   "id": "approval:residual:result:modelUsage.{*}.maxOutputTokens",
+   "reason": "R1: a residual classification is a reviewable meaning (it decides that a token-named member owes no canonical outcome); no Owner decision approves this one"
   },
   {
    "category": 6,
@@ -408,17 +427,7 @@
   },
   {
    "category": 6,
-   "id": "approval:residual:result:modelUsage.{*}.maxOutputTokens",
-   "reason": "R1: a residual classification is a reviewable meaning (it decides that a token-named member owes no canonical outcome); no Owner decision approves this one"
-  },
-  {
-   "category": 6,
    "id": "approval:residual:user/tool_result:tool_use_result.totalTokens",
-   "reason": "R1: a residual classification is a reviewable meaning (it decides that a token-named member owes no canonical outcome); no Owner decision approves this one"
-  },
-  {
-   "category": 6,
-   "id": "approval:residual:result:usage.iterations[]",
    "reason": "R1: a residual classification is a reviewable meaning (it decides that a token-named member owes no canonical outcome); no Owner decision approves this one"
   },
   {

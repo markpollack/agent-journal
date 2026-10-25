@@ -1,13 +1,13 @@
 {
  "kind": "agent-journal/canonical-obligations",
- "version": "0.2",
+ "version": "0.3",
  "profile": "claude_stream",
  "scope": "token usage of the Claude Code stream-json profile: every native member whose key names tokens (SourceAvailability.TOKEN_KEY) in the registered recordings of the bindings below, and every member inside an obligation's payload. Members outside this family (durations, counts, statuses, content) are not judged by this catalog; the field-disposition catalog still accounts for them.",
  "disposition_catalog": "schema/vendor/claude-code/stream-json/dispositions.json",
  "contract": "claude-code-2.1.303-stream",
  "owner_path": "parent_tool_use_id",
  "owner_rule": "a record whose parent_tool_use_id names a tool call belongs to the child core of that call (child:<id>); a record without one belongs to main (the contract's owner_routing)",
- "rule_of_obligation": "An obligation is a required canonical outcome: every native occurrence its trigger selects in a registered recording (counted from the native record alone, before any candidate output is read) must reach its destination in the owner's core with every stated value, and the oracle's own source profile must expect it. Retention of the containing record, a broad subtree disposition or another owner's passing check never discharges it. A residual is a reviewed token-named member that owes no canonical outcome (vendor_specific) or whose classification is an open question (unresolved); its path is an exact leaf, or an array or object whose listed members it covers; a residual owes nothing only once an Owner decision approves its classification at its digest. meaning_digest is sha256 over the canonical JSON of {owner_path, trigger, destination, observation, semantics}: a changed meaning needs a new revision. relevant_digest is sha256 over the canonical JSON of the extension definitions of the destination (its usage observation with every enum value, the unit member and the context kind) and the contract rules the obligation names: a change makes the binding stale until it is restated and reviewed. The review status written here is a label; only owner-decisions.json approves",
+ "rule_of_obligation": "An obligation is a required canonical outcome: every native occurrence its trigger selects in a registered recording (counted from the native record alone, before any candidate output is read) must reach its destination in the owner's core with every stated value, and the oracle's own source profile must expect it. Retention of the containing record, a broad subtree disposition or another owner's passing check never discharges it. A residual is a reviewed token-named member that owes no canonical outcome (vendor_specific) or whose classification is an open question (unresolved); its path is an exact leaf, or an array or object whose listed members it covers (an array residual with entry_types covers only entries of those types); a residual owes nothing only once an Owner decision approves its classification at its digest. meaning_digest is sha256 over the canonical JSON of {owner_path, trigger, destination, observation, semantics}: a changed meaning needs a new revision. relevant_digest is sha256 over the canonical JSON of the extension definitions of the destination (its usage observation with every enum value, the unit member and the context kind), the destination class's description, every extension object the usage observation reaches (whole, descriptions included, with their attributes' dictionary entries) and the contract rules the obligation names: a change makes the binding stale until it is restated and reviewed. The review status written here is a label; only owner-decisions.json approves",
  "bindings": [
   {
    "compatibility_entry": "claude-code/stream-json/2.1.299-sdk",
@@ -39,7 +39,7 @@
    "review": {"status": "proposed", "note": "the claim claude.stream.usage-tranches r2 is not approved"},
    "rules": ["claude.stream.assistant->model_response"],
    "meaning_digest": "sha256:a454b8c98a66e2c59b15c45c527e6d41545af40023e4b562247f5e8d272d69d0",
-   "relevant_digest": "sha256:88db758f582c5d4615bd19bfd9c31071b80d3af7db825501fc0124a1075f0432"
+   "relevant_digest": "sha256:b5ecc6dfd1e8395a07383d52414e2628a730032103b55178bc2d8d1b32109f0a"
   },
   {
    "id": "claude.stream.usage.run",
@@ -60,7 +60,28 @@
    "review": {"status": "proposed", "note": "the claim claude.stream.usage-tranches r2 is not approved"},
    "rules": ["claude.stream.result->prompt_turn.completed"],
    "meaning_digest": "sha256:4073cfa1bf08d1c89a3b3834ab37961f5a8d54fd1d62cab05c44cee5a72d6fb1",
-   "relevant_digest": "sha256:b95bef9e6525524e2469a635ecdf723db4817174b49fbafa75d40a4ec2359a7e"
+   "relevant_digest": "sha256:0ff61a4278e880158f0cf04f8f1dab10fefc6ab604ecd5525f948170dbcb4a54"
+  },
+  {
+   "id": "claude.stream.usage.run.last-response",
+   "revision": 1,
+   "concepts": ["usage-components-and-cache", "usage-scope-finality-and-repeats"],
+   "claims": [],
+   "trigger": {"variant": "result", "payload": "usage.iterations[]", "sole_entry_type": "message"},
+   "destination": {"class": "prompt_turn", "activity_id": 2},
+   "observation": {
+    "scope_id": 4,
+    "usage_status": {"value": 2},
+    "aggregation_id": 3,
+    "components": {"uncached_input_tokens": "input_tokens", "cache_read_tokens": "cache_read_input_tokens", "cache_write_tokens": "cache_creation_input_tokens", "output_tokens": "output_tokens"},
+    "tiers": "cache_creation"
+   },
+   "semantics": "the result record's usage.iterations[] is the per-sampling-iteration usage of the run's last main-thread API response, carried unsummed (retained Claude Code 2.1.304 emitter: the run accumulator sums every response's top-level tranches but takes iterations from the latest one; Anthropic SDK 0.135.0 BetaIterationsUsage: one entry per sampling iteration of one response, typed message, compaction, advisor_message or fallback_message, a compaction entry's tokens outside the top-level usage). When the array holds exactly one entry, of type message, that entry is the whole usage of that one response: scope 4 Run (whose activity: this run), Final (reported once at the run's end), aggregation 3 Single response (one response of the run, which the record does not identify); the stream records the same response provisionally under its own id and its final output there is not otherwise canonical on this route. It is never added to the run total or any other observation, never joined to a response by equal values, and no model is stated (the entry names none in the recordings). An array of several entries, or one of another type, does not report that response's own usage (no source rule combines iterations), so such an occurrence is not representable: an explicit gap, never a guessed sum or choice. Recordings: the 2.1.299 child run and the 2.1.304 stdout runs with a result record (features, denial, mcp and its byte-identical mcp-pair) each hold one message entry whose input tranches equal the last main-thread streamed record's (for example 2.1.304 features: 2/29493/592 input side, 521 output against the streamed record's provisional 7)",
+   "checks": ["CanonicalObligations#judge", "OcsfOracle population.usage", "OcsfOracle usage.values"],
+   "review": {"status": "proposed", "note": "closeout candidate (2026-10-25): replaces the R1 vendor_specific residual of result:usage.iterations[], whose missing response identity did not justify owing nothing; returned for semantic review, not approved"},
+   "rules": ["claude.stream.result.last_response_usage->prompt_turn.usage"],
+   "meaning_digest": "sha256:99cadd38b70de8276b357be491f3549172ca1f4c4a534bb0286555623d0509d1",
+   "relevant_digest": "sha256:16da1d2125ab4d91172f5593f47ca02a1abae0091853eddf82e136ea05c90443"
   },
   {
    "id": "claude.stream.usage.model",
@@ -81,11 +102,11 @@
    "review": {"status": "proposed", "note": "no approved claim covers ModelUsage on this route"},
    "rules": ["claude.stream.result->prompt_turn.completed"],
    "meaning_digest": "sha256:a2bd4966177828e82022ac9f64b97b7493b1f33833883e380684281df0e17889",
-   "relevant_digest": "sha256:b95bef9e6525524e2469a635ecdf723db4817174b49fbafa75d40a4ec2359a7e"
+   "relevant_digest": "sha256:0ff61a4278e880158f0cf04f8f1dab10fefc6ab604ecd5525f948170dbcb4a54"
   },
   {
    "id": "claude.stream.usage.child-run.agent-result",
-   "revision": 2,
+   "revision": 3,
    "concepts": ["usage-components-and-cache", "usage-scope-finality-and-repeats", "child-runs"],
    "claims": [],
    "trigger": {"variant": "user/tool_result", "payload": "tool_use_result.usage", "requested_tool": ["Agent"], "unit": "message.content[].tool_use_id"},
@@ -94,15 +115,16 @@
     "scope_id": 7,
     "usage_status": {"value": 2},
     "aggregation_id": 3,
+    "measurement_status": {"possibly_default_when_zero": ["input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens", "output_tokens"], "and_no_entry_in": "iterations"},
     "components": {"uncached_input_tokens": "input_tokens", "cache_read_tokens": "cache_read_input_tokens", "cache_write_tokens": "cache_creation_input_tokens", "output_tokens": "output_tokens", "reasoning_tokens": "output_tokens_details.thinking_tokens"},
     "tiers": "cache_creation"
    },
-   "semantics": "the Agent tool's result (tool_use_result of the record whose single tool_result block answers an Agent request) reports, once at the call's end, the usage object of the child run's last metered model response: scope 7 Child run (whose activity: the child run the call spawned, unit = tool_call_uid), Final (the report is not revised), aggregation 3 Single response (what was measured: one response, not identified). Grounds: the retained Claude Code 2.1.304 emitter builds it from the last non-unmetered assistant message's usage over zero defaults; the Agent SDK 0.3.304 type gives it the shape of one response's usage with that response's iterations[]; in the 2.1.304 recording its input tranches equal the child's last streamed response (record 29), and in the 2.1.299 recording its cache read (13328) equals the earlier child call's cache creation. It is never the child run's consumption, never summed with the parent's, the run's or another observation, and never compared with the task figure as one measurement. A child without a metered response would report the zero defaults; no recording exercises that case",
+   "semantics": "the Agent tool's result (tool_use_result of the record whose single tool_result block answers an Agent request) reports, once at the call's end, the usage object of the child run's last metered model response: scope 7 Child run (whose activity: the child run the call spawned, unit = tool_call_uid), Final (the report is not revised), aggregation 3 Single response (what was measured: one response, not identified). Grounds: the retained Claude Code 2.1.304 emitter builds it from the last non-unmetered assistant message's usage laid over zero defaults (input, cache creation, cache read and output 0, iterations []); the Agent SDK 0.3.304 type gives it the shape of one response's usage with that response's iterations[]; in the 2.1.304 recording its input tranches equal the child's last streamed response (record 29), and in the 2.1.299 recording its cache read (13328) equals the earlier child call's cache creation. It is never the child run's consumption, never summed with the parent's, the run's or another observation, and never compared with the task figure as one measurement. The emitter keeps the defaults whole when the child has no metered response or that response's usage has no numeric input_tokens, so with every tranche 0 and no iterations entry the reported object establishes neither a metered response nor a measured zero: the observation is 2 Possibly default and its zeros stay as reported. A non-zero tranche or an iterations entry can come only from a response's usage, so its zero members stay ordinary reported values. No recording exercises the default case; a labelled synthetic example does",
    "checks": ["CanonicalObligations#judge", "OcsfOracle population.usage", "OcsfOracle usage.values", "OcsfOracle population.contexts", "OcsfOracle context.values"],
-   "review": {"status": "proposed", "note": "R1 candidate revision (2026-10-24): aggregation 3 Single response and emitter grounds; r1 stated no aggregation; returned for semantic review, not approved"},
+   "review": {"status": "proposed", "note": "closeout candidate revision (2026-10-25): the zero-default object is Possibly default, not an evidenced response (r2: aggregation 3 Single response with emitter grounds, R1); returned for semantic review, not approved"},
    "rules": ["claude.stream.user.tool_result.agent_usage->session_context.accounting"],
-   "meaning_digest": "sha256:f1843fa54553d59acea230c1c33008945ab717bfc4cdbc41d8802a4c0ba04944",
-   "relevant_digest": "sha256:a10267da8ea4474d0c6cdfbf52f0f95851f4bbeb9e0767919bbfc669176435d7"
+   "meaning_digest": "sha256:65b768f82a677ca46629aef683d54c8958ea7dd4635fcb9b71160b209ededfdd",
+   "relevant_digest": "sha256:9569bf947a6f4d20db7d626b4ecc7c80835df982c585378ea048d7371cdf1bee"
   },
   {
    "id": "claude.stream.usage.child-run.task-progress",
@@ -122,7 +144,7 @@
    "review": {"status": "proposed", "note": "R1 candidate revision (2026-10-24): semantics restated with emitter grounds; trigger, destination and observation unchanged from r1; returned for semantic review, not approved"},
    "rules": ["claude.stream.system.task_usage->session_context.accounting"],
    "meaning_digest": "sha256:ac8cf88e61e1364bcfaa3bd4b8e79f75b917dfe55a7cca5c1ee9c60a0fd0bf94",
-   "relevant_digest": "sha256:022acf6ce2c6c5fc3f71c9eccdd3a0baa2a5e05a3c83019ce7bd4f4fd57580c1"
+   "relevant_digest": "sha256:168041e823a52d239ac75be722cc6a73b97438a35611f350844a157abfb70a2a"
   },
   {
    "id": "claude.stream.usage.child-run.task-notification",
@@ -142,15 +164,14 @@
    "review": {"status": "proposed", "note": "R1 candidate revision (2026-10-24): semantics restated with emitter grounds; trigger, destination and observation unchanged from r1; returned for semantic review, not approved"},
    "rules": ["claude.stream.system.task_usage->session_context.accounting"],
    "meaning_digest": "sha256:d74cba6970eeb59746f6b78b591e160981b36f813e0f449319d0b75959de21d3",
-   "relevant_digest": "sha256:022acf6ce2c6c5fc3f71c9eccdd3a0baa2a5e05a3c83019ce7bd4f4fd57580c1"
+   "relevant_digest": "sha256:168041e823a52d239ac75be722cc6a73b97438a35611f350844a157abfb70a2a"
   }
  ],
  "residuals": [
   {"variant": "system/thinking_tokens", "path": "estimated_tokens", "classification": "vendor_specific", "reason": "the CLI's running estimate of thinking tokens while a response streams; not reported usage of any unit (the mapper retains the record whole)", "review": {"status": "proposed", "note": "R1 (2026-10-24): a residual classification is a reviewable meaning; no Owner decision approves this one"}},
   {"variant": "system/thinking_tokens", "path": "estimated_tokens_delta", "classification": "vendor_specific", "reason": "increment of the same estimate; not reported usage", "review": {"status": "proposed", "note": "R1 (2026-10-24): a residual classification is a reviewable meaning; no Owner decision approves this one"}},
   {"variant": "result", "path": "modelUsage.{*}.maxOutputTokens", "classification": "vendor_specific", "reason": "the model's output-token limit, a configuration figure, not consumption", "review": {"status": "proposed", "note": "R1 (2026-10-24): a residual classification is a reviewable meaning; no Owner decision approves this one"}},
-  {"variant": "user/tool_result", "path": "tool_use_result.totalTokens", "classification": "vendor_specific", "reason": "on an Agent result: the CLI's derivation from the same result's usage (retained 2.1.304 emitter: the last message iteration's input side plus its output, or the top-level tranches without iterations; with the one iteration of both recordings it equals the four tranches, 8 + 1582 + 13328 + 56 = 14974 and 2 + 2397 + 18492 + 242 = 21133). Every operand is preserved, canonically as the observation's tranches and exactly in its data with iterations[], so it measures no further quantity. It is not mapped as reported_total_tokens, which would state a total of the observation's tranches that differs from them when the response had several iterations. Kept in the tool result's structured_result", "review": {"status": "proposed", "note": "R1 (2026-10-24): a residual classification is a reviewable meaning; no Owner decision approves this one"}},
-  {"variant": "result", "path": "usage.iterations[]", "members": ["input_tokens", "output_tokens", "cache_read_input_tokens", "cache_creation_input_tokens", "cache_creation.ephemeral_1h_input_tokens", "cache_creation.ephemeral_5m_input_tokens"], "classification": "vendor_specific", "reason": "the per-sampling-iteration breakdown of the run's last main-thread API response (Anthropic SDK 0.135.0 BetaIterationsUsage: one entry per sampling iteration of one response; retained 2.1.304 emitter: the run accumulator sums the tokens of every response but carries iterations from the latest one, un-summed). It is not part of the run total, the response it belongs to is not identified in the record, and a model-response observation from it would manufacture an unidentified response or duplicate the stream's own record of it, so it owes none; retained exactly in the run usage observation's data. Limitation: on the stdout route the final usage of the run's last main-thread response is not otherwise canonical (its stream records are provisional); the session-file route reports it. Answers the D1 open question as a candidate", "review": {"status": "proposed", "note": "R1 (2026-10-24): a residual classification is a reviewable meaning; no Owner decision approves this one"}},
-  {"variant": "user/tool_result", "path": "tool_use_result.usage.iterations[]", "members": ["input_tokens", "output_tokens", "cache_read_input_tokens", "cache_creation_input_tokens", "cache_creation.ephemeral_1h_input_tokens", "cache_creation.ephemeral_5m_input_tokens"], "classification": "vendor_specific", "reason": "the per-sampling-iteration breakdown of the one response whose usage the Agent result reports (Anthropic SDK 0.135.0 BetaIterationsUsage); its one message entry equals that usage in both recordings. It is part of that response, not a further model response, so it owes no observation of its own; retained exactly in the child-run observation's data. Answers the D1 open question as a candidate", "review": {"status": "proposed", "note": "R1 (2026-10-24): a residual classification is a reviewable meaning; no Owner decision approves this one"}}
+  {"variant": "user/tool_result", "path": "tool_use_result.totalTokens", "classification": "vendor_specific", "reason": "on an Agent result: the CLI's derivation from the same result's usage (retained 2.1.304 emitter PI/rJ: the input side (input, cache creation, cache read) plus output of the last iterations[] entry that is neither advisor_message nor compaction, when it is a message or fallback_message entry with a positive input side, otherwise of the top-level tranches); a context-size figure of that iteration, not a further consumption. With the one message iteration of both recordings it equals the four tranches, 8 + 1582 + 13328 + 56 = 14974 and 2 + 2397 + 18492 + 242 = 21133. Every operand is preserved, canonically as the observation's tranches and exactly in its data with iterations[], so it measures no further quantity. It is not mapped as reported_total_tokens, which would state a total of the observation's tranches that differs from them when the response had several iterations. Kept in the tool result's structured_result", "review": {"status": "proposed", "note": "closeout (2026-10-25): reason restated with the emitter's exact iteration selection; no Owner decision approves this classification"}},
+  {"variant": "user/tool_result", "path": "tool_use_result.usage.iterations[]", "members": ["input_tokens", "output_tokens", "cache_read_input_tokens", "cache_creation_input_tokens", "cache_creation.ephemeral_1h_input_tokens", "cache_creation.ephemeral_5m_input_tokens"], "entry_types": ["message"], "classification": "vendor_specific", "reason": "a message entry of the per-sampling-iteration breakdown of the one response whose usage the Agent result reports (Anthropic SDK 0.135.0 BetaIterationsUsage: message entries are the sampling iterations, such as the turns of a server-side tool loop, whose tokens the response's top-level usage accumulates); its one message entry equals that usage in both recordings. Such an entry is part of the reported response, not a further model response, and the response's usage is already the observation, so it owes no observation of its own; retained exactly in the child-run observation's data. Only message entries are covered: a compaction entry's tokens are outside the top-level usage (the SDK), and advisor_message and fallback_message entries are not reviewed, so an entry of another type is reported as unaccounted until it is. A missing response identity is not the ground", "review": {"status": "proposed", "note": "closeout (2026-10-25): limited to message entries; no Owner decision approves this classification"}}
  ]
 }

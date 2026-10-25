@@ -1,5 +1,5 @@
 {
-  "contract_uid": "claude-code/stream-json/2.1.303/0.6.0-prototype",
+  "contract_uid": "claude-code/stream-json/2.1.303/0.7.0-prototype",
   "applies_to": {
     "product": "Claude Code",
     "version": "2.1.303",
@@ -100,6 +100,18 @@
       "residual": "whole record in data"
     },
     {
+      "id": "claude.stream.result.last_response_usage->prompt_turn.usage",
+      "selector": {
+        "type": "result",
+        "member": "usage.iterations[] holds exactly one entry, and its type is message"
+      },
+      "target": "agentic_cli/prompt_turn (the Turn completed event of claude.stream.result->prompt_turn.completed)",
+      "cardinality": "one more usage_observation in that event, after the run and modelUsage observations; none for any other shape of usage.iterations[]",
+      "usage": "usage.iterations[0] -> usage_observation scope 4 Run status 2 Final aggregation 3 Single response (claude.stream.last_response_usage.v1: the final usage of the run's last main-thread response, which the record does not identify; the retained 2.1.304 emitter's run accumulator carries iterations from the latest response unsummed, and Anthropic SDK 0.135.0 BetaIterationsUsage gives one entry per sampling iteration, a compaction entry's tokens outside the top-level usage), canonical tranches of that entry as for any Anthropic usage object (anthropic.usage.tranches.v1; the entry reports no thinking tokens), no model stated; never added to the run total or another observation, never joined to a streamed response by equal values; several entries or another entry type state nothing, because the response's own usage is then not reported",
+      "residual": "the entry is the observation's data exactly; the record stays whole in the event's data",
+      "added": "0.7.0-prototype (closeout, 2026-10-25): candidate, returned for semantic review"
+    },
+    {
       "id": "claude.stream.system.init->session_context.settings",
       "selector": {
         "type": "system",
@@ -134,9 +146,9 @@
       "activity": "3 Accounting reported",
       "cardinality": "one event per such record, after its tool_call result event; a record with several tool_result blocks has no established owner block and gets none",
       "owner": "routed like the record (parent_tool_use_id); tool_call_uid = the block's tool_use_id, the call that spawned the child run",
-      "usage": "tool_use_result.usage -> usage_observation scope 7 Child run (the child run of the spawning call: whose activity), status 2 Final (one report at the call's end), aggregation 3 Single response (claude.stream.agent_result_usage.v2: the usage object of the child run's last metered model response, which the result does not identify; the retained Claude Code 2.1.304 emitter builds it from the last non-unmetered assistant message's usage over zero defaults, and a 2.1.299 recording is consistent with it: one message entry in iterations[], cache read equal to the earlier child call's cache creation); never the child run's consumption, never summed with any other observation; canonical tranches as for any Anthropic usage object (anthropic.usage.tranches.v1); data is the usage object exactly; totalTokens (the emitter's sum of the last message iteration's input side and output), totalDurationMs, totalToolUseCount and toolStats stay in tool_use_result",
+      "usage": "tool_use_result.usage -> usage_observation scope 7 Child run (the child run of the spawning call: whose activity), status 2 Final (one report at the call's end), aggregation 3 Single response (claude.stream.agent_result_usage.v2: the usage object of the child run's last metered model response, which the result does not identify; the retained Claude Code 2.1.304 emitter builds it from the last non-unmetered assistant message's usage over zero defaults, and a 2.1.299 recording is consistent with it: one message entry in iterations[], cache read equal to the earlier child call's cache creation); never the child run's consumption, never summed with any other observation; canonical tranches as for any Anthropic usage object (anthropic.usage.tranches.v1); with input, cache creation, cache read and output all 0 and no iterations entry the observation is measurement status 2 Possibly default (claude.stream.agent_result_default.v1: the emitter keeps its zero defaults whole when the child has no metered response, so neither a response nor a measured zero is established; the zeros are kept as reported); data is the usage object exactly; totalTokens (the emitter's sum of the last message iteration's input side and output), totalDurationMs, totalToolUseCount and toolStats stay in tool_use_result",
       "residual": "tool_use_result in data; the tool_call result keeps it whole in structured_result",
-      "added": "2026-10-24 (D1), aggregation 3 since 0.6.0-prototype (R1): candidate, returned for semantic review"
+      "added": "2026-10-24 (D1), aggregation 3 since 0.6.0-prototype (R1), Possibly default for the zero-default object since 0.7.0-prototype (closeout): candidate, returned for semantic review"
     },
     {
       "id": "claude.stream.system.task_usage->session_context.accounting",

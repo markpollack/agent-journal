@@ -138,6 +138,7 @@ final class ClaudeStreamMapper implements SourceMapper {
                     costBasis = models.members().size() == 1 ? text(m.getValue(), "costBasis") : null;
                 }
             }
+            UsageTranches.claudeLastResponse(obs, u, ctx.sourceRef(r, uid, ts, false));
             boolean success = "success".equals(subtype) && o.member("is_error") instanceof Jv.Bool b && !b.value();
             Jv.Obj ev = ctx.event("prompt_turn", 2, r, t, CONTRACT, "claude.stream.result->prompt_turn.completed", ts, uid, true,
                     new MapperSupport.Status(success ? 1 : 2, 1, "reported: result.subtype and result.is_error"));

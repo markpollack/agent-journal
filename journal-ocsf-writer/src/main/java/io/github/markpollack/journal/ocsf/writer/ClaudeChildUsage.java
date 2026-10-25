@@ -25,7 +25,13 @@ final class ClaudeChildUsage {
     static final String AGENT_BASIS = "claude.stream.agent_result_usage.v2: the Agent tool's result reports, once at the call's end (Final), the usage object of the last metered "
             + "model response of the child run its call spawned (the retained 2.1.304 emitter takes the last non-unmetered assistant message's usage over zero defaults): one response, "
             + "not identified (aggregation 3 Single response), never the child run's consumption and never summed with the parent's, the run's or the child's other observations";
-    static final String TASK_BASIS = "claude.stream.task_usage.v2: task_progress reports the task tracker's token figure (Provisional), task_notification the figure at the task's end "
+    /** The tranches the emitter's zero defaults set (the Agent result's usage before a response's usage is laid over them). */
+    static final List<String> DEFAULT_TRANCHES = List.of("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens", "output_tokens");
+    static final String AGENT_DEFAULT = "claude.stream.agent_result_default.v1: the retained 2.1.304 emitter lays the last metered response's usage over zero "
+            + "defaults (input, cache creation, cache read and output 0, iterations []) and keeps the defaults whole when the child has no metered response or "
+            + "that response's usage has no numeric input_tokens; with every tranche 0 and no iterations entry the object is exactly what the emitter writes "
+            + "without a measurement, so neither a metered response nor a measured zero is established (2 Possibly default); the zeros are kept as reported";
+    static final String TASK_BASIS ="claude.stream.task_usage.v2: task_progress reports the task tracker's token figure (Provisional), task_notification the figure at the task's end "
             + "(Final), for the child run of the call tool_use_id names; in the retained 2.1.304 emitter it is the latest assistant message's input side plus the output so far plus a "
             + "streaming estimate, and a completed notification the larger of that and the Agent result's totalTokens: a measure of its own, not a sum of the child's calls, so no "
             + "aggregation is stated, it is never compared with the Agent result's usage, and progress and terminal figures are never summed with each other or with any parent total";
@@ -53,9 +59,30 @@ final class ClaudeChildUsage {
         Jv.Obj observation = MapperSupport.usage(7, 2, AGENT_BASIS, msg.ctx().sourceRef(msg.r(), msg.uid(), msg.ts(), false), null, usage);
         observation.put("aggregation_id", 3).put("aggregation", UsageTranches.AGGREGATION.get(3));
         UsageTranches.anthropic(observation, usage);
+        defaults(observation, usage);
         Jv.Obj ev = msg.ctx().event("session_context", 3, msg.r(), msg.t(), ClaudeStreamMapper.CONTRACT, AGENT_RULE, msg.ts(), msg.uid(), false, null);
         return ev.put("session_uid", msg.sess()).put("tool_call_uid", resultIds.get(0)).put("context_kind", "user/tool_result")
                 .put("usage_observations", new Jv.Arr(List.of(observation))).put("basis", AGENT_BASIS).put("data", result);
+    }
+
+    /**
+     * claude.stream.agent_result_default.v1: with every tranche 0 and no iterations entry, the Agent result's usage is
+     * exactly what the emitter writes without a metered response, so the observation is Possibly default (measurement
+     * status 2); the reported zeros are kept. A non-zero tranche or an iterations entry comes only from a response's
+     * usage over the defaults, and its zero members stay ordinary reported values.
+     */
+    static void defaults(Jv.Obj observation, Jv usage) {
+        for (String member : DEFAULT_TRANCHES) {
+            if (!(usage.member(member) instanceof Jv.Num n) || n.value().signum() != 0) {
+                return;
+            }
+        }
+        if (usage.member("iterations") instanceof Jv.Arr entries && !entries.elements().isEmpty()) {
+            return;
+        }
+        observation.put("measurement_status_id", 2).put("measurement_status", UsageTranches.MEASUREMENT.get(2));
+        observation.put("basis", observation.member("basis").text() + "; " + AGENT_DEFAULT);
+        UsageTranches.dataLast(observation);
     }
 
     /**

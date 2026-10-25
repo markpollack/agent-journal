@@ -630,7 +630,7 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "subtree default for run-usage members that are not reported components (iterations[], server_tool_use, fallback_credit, service_tier, speed, inference_geo): whole record and usage_observation.data"
+   "note": "subtree default for run-usage members that are not reported components (iterations[] apart from the tranches of a sole message entry, which have their own entries; server_tool_use, fallback_credit, service_tier, speed, inference_geo): whole record and usage_observation.data"
   },
   {
    "variant": "result",
@@ -742,6 +742,99 @@
     "OcsfOracleMutationTest#aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero"
    ],
    "note": "the reported final thinking count; the running system/thinking_tokens estimates are retained-only"
+  },
+  {
+   "variant": "result",
+   "path": "usage.iterations[].input_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.usage_observations[].uncached_input_tokens"
+   ],
+   "rule": "claude.stream.result.last_response_usage->prompt_turn.usage",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "CanonicalConformanceTest#aResultReportsItsLastResponseOnlyAsASoleMessageIterationAndOtherShapesAreAGap"
+   ],
+   "note": "closeout (2026-10-25): a sole message entry of result.usage.iterations[] is the final usage of the run's last main-thread response, a second scope 4 Run observation with aggregation 3 Single response (claude.stream.last_response_usage.v1; obligation claude.stream.usage.run.last-response); other array shapes state nothing and are an explicit gap in the obligation gate"
+  },
+  {
+   "variant": "result",
+   "path": "usage.iterations[].cache_read_input_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.usage_observations[].cache_read_tokens"
+   ],
+   "rule": "claude.stream.result.last_response_usage->prompt_turn.usage",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "CanonicalConformanceTest#aResultReportsItsLastResponseOnlyAsASoleMessageIterationAndOtherShapesAreAGap"
+   ]
+  },
+  {
+   "variant": "result",
+   "path": "usage.iterations[].cache_creation_input_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.usage_observations[].cache_write_tokens"
+   ],
+   "rule": "claude.stream.result.last_response_usage->prompt_turn.usage",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "CanonicalConformanceTest#aResultReportsItsLastResponseOnlyAsASoleMessageIterationAndOtherShapesAreAGap"
+   ]
+  },
+  {
+   "variant": "result",
+   "path": "usage.iterations[].cache_creation.ephemeral_5m_input_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.usage_observations[].cache_write_tiers[].token_count",
+    "prompt_turn.usage_observations[].cache_write_tiers[].tier"
+   ],
+   "rule": "claude.stream.result.last_response_usage->prompt_turn.usage",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "CanonicalConformanceTest#aResultReportsItsLastResponseOnlyAsASoleMessageIterationAndOtherShapesAreAGap"
+   ]
+  },
+  {
+   "variant": "result",
+   "path": "usage.iterations[].cache_creation.ephemeral_1h_input_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.usage_observations[].cache_write_tiers[].token_count",
+    "prompt_turn.usage_observations[].cache_write_tiers[].tier"
+   ],
+   "rule": "claude.stream.result.last_response_usage->prompt_turn.usage",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "CanonicalConformanceTest#aResultReportsItsLastResponseOnlyAsASoleMessageIterationAndOtherShapesAreAGap"
+   ]
+  },
+  {
+   "variant": "result",
+   "path": "usage.iterations[].output_tokens",
+   "disposition": "normalized",
+   "destination": [
+    "prompt_turn.usage_observations[].output_tokens"
+   ],
+   "rule": "claude.stream.result.last_response_usage->prompt_turn.usage",
+   "evidence": {
+    "property": "usage.values"
+   },
+   "tests": [
+    "CanonicalConformanceTest#aResultReportsItsLastResponseOnlyAsASoleMessageIterationAndOtherShapesAreAGap"
+   ]
   },
   {
    "variant": "result",

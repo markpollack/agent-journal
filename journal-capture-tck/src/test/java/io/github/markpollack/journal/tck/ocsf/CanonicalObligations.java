@@ -29,8 +29,9 @@ import java.util.stream.Stream;
  * <li>an observed token-named vendor member that no obligation maps and no reviewed residual classifies, or that has no
  * disposition at all;</li>
  * <li>an ambiguous disposition (two exact entries, or an entry whose destination disagrees with the obligation);</li>
- * <li>an unmet required canonical outcome: no observation at the exact owner, record, scope, unit and model, or a
- * disposition that keeps the member retained-only or hides it inside a broad subtree;</li>
+ * <li>an unmet required canonical outcome: no observation at the exact owner, record, scope, unit and model, a
+ * disposition that keeps the member retained-only or hides it inside a broad subtree, or a payload whose shape has no
+ * canonical representation (an explicit gap, never a guessed sum or choice);</li>
  * <li>a failed or missing check: a wrong value, status, aggregation or native data, a duplicate, an occurrence the
  * oracle's source profile does not expect, or an oracle property for that owner that is not VERIFIED;</li>
  * <li>a required source binding without its disposition catalog, oracle profile, disposition-gate registration or
@@ -47,8 +48,10 @@ import java.util.stream.Stream;
  * <p>Two digests protect a meaning (RULE-38, RULE-41). The meaning digest covers what a reviewer approves: the owner
  * routing, trigger, destination, observation and the semantics statement; a change needs a new revision. The relevant
  * digest covers what the meaning depends on outside the catalog: the extension definitions of the destination (the
- * usage observation with every scope, aggregation and status value, the unit member and context kind) and the contract
- * rules named in {@code rules}; a change makes the binding stale until it is restated and reviewed.
+ * usage observation with every scope, aggregation and status value, the unit member and context kind), the destination
+ * class's description, every extension object the usage observation reaches (whole, descriptions included, with the
+ * dictionary entries of their attributes) and the contract rules named in {@code rules}; a change makes the binding
+ * stale until it is restated and reviewed.
  */
 final class CanonicalObligations {
 
@@ -80,7 +83,28 @@ final class CanonicalObligations {
         String destination(String component) {
             return destinationClass + ".usage_observations[]." + component;
         }
+
+        /**
+         * With an array payload ({@code a.b[]}), the entry type ({@code type} member) of the one entry that is the
+         * occurrence; any other non-empty array is an occurrence that is not representable. {@code null}: each entry.
+         */
+        String soleEntryType() {
+            return SourceProfile.text(raw.member("trigger"), "sole_entry_type");
+        }
+
+        /** The observation's measurement-status rule, or {@code null}: then no measurement status is stated. */
+        Json measurementStatus() {
+            return raw.member("observation").member("measurement_status");
+        }
+
+        /** The aggregation the observation states, or {@code null} when none is established. */
+        Integer aggregationId() {
+            return aggregation == null || aggregation.isNull() ? null : Event.integer(aggregation);
+        }
     }
+
+    /** The prefix of an occurrence's {@code unresolved} reason when the payload's shape has no canonical representation. */
+    static final String NOT_REPRESENTABLE = "not representable: ";
 
     /**
      * A reviewed token-named member that owes no canonical outcome or whose classification is open. Its {@code path} is
@@ -91,6 +115,11 @@ final class CanonicalObligations {
 
         String key() {
             return variant + ":" + path;
+        }
+
+        /** For an array path, the entry types ({@code type} member) it covers; empty: every entry. */
+        List<String> entryTypes() {
+            return texts(raw.member("entry_types"));
         }
     }
 
@@ -178,6 +207,13 @@ final class CanonicalObligations {
             destinations.add(o.destinationClass() + ".context_kind");
         }
         destinations.forEach(d -> definitions.put(d, SemanticClaims.destinationDefinition(d, defs, problems)));
+        // the normative meaning of the containers too (CDX-R1D-02): the destination class's description and every
+        // extension object the usage observation reaches, whole (descriptions included), with its dictionary entries
+        Json destinationClass = defs.classes().get(o.destinationClass());
+        definitions.put("class " + o.destinationClass() + " description", destinationClass == null || destinationClass.member("description") == null
+                ? Json.JNull.INSTANCE : destinationClass.member("description"));
+        String observation = SourceProfile.text(defs.dictionary().get("usage_observations"), "type");
+        definitions.put("objects", objectClosure(observation, defs, problems));
         Map<String, Json> rules = new TreeMap<>();
         Json contract = NeutralJson.readDocument(CONTRACTS.resolve(c.contract() + ".json"));
         for (String id : o.rules()) {
@@ -195,10 +231,45 @@ final class CanonicalObligations {
         return SemanticClaims.sha256(SemanticClaims.canonical(new Json.JObject(m)));
     }
 
-    /** sha256 over the canonical JSON of a residual's reviewed content: variant, path, members, classification and reason. */
+    /**
+     * Every extension object reachable from {@code root} through its attributes' dictionary types, each whole (its
+     * description and declarations) with the dictionary entries of its attributes; a cycle is visited once.
+     */
+    static Json objectClosure(String root, SemanticClaims.Definitions defs, List<String> problems) {
+        Map<String, Json> out = new TreeMap<>();
+        List<String> pending = new ArrayList<>(List.of(String.valueOf(root)));
+        while (!pending.isEmpty()) {
+            String name = pending.remove(0);
+            Json object = defs.objects().get(name);
+            if (out.containsKey(name)) {
+                continue;
+            }
+            if (object == null) {
+                problems.add("object " + name + " is not an extension object");
+                out.put(name, Json.JNull.INSTANCE);
+                continue;
+            }
+            Map<String, Json> dictionary = new TreeMap<>();
+            for (String attribute : ((Json.JObject) object.member("attributes")).members().keySet()) {
+                Json d = defs.dictionary().get(attribute);
+                dictionary.put(attribute, d == null ? Json.JNull.INSTANCE : d);
+                String type = d == null ? null : SourceProfile.text(d, "type");
+                if (type != null && defs.objects().containsKey(type) && !out.containsKey(type)) {
+                    pending.add(type);
+                }
+            }
+            out.put(name, new Json.JObject(Map.of("definition", object, "dictionary", new Json.JObject(dictionary))));
+        }
+        return new Json.JObject(out);
+    }
+
+    /** sha256 over the canonical JSON of a residual's reviewed content: variant, path, members, entry types (when stated), classification and reason. */
     static String residualDigest(Residual r) {
         Map<String, Json> m = new TreeMap<>();
         m.put("classification", new Json.JString(r.classification()));
+        if (r.raw().member("entry_types") != null) {
+            m.put("entry_types", r.raw().member("entry_types"));
+        }
         m.put("members", r.raw().member("members") == null ? Json.JNull.INSTANCE : r.raw().member("members"));
         m.put("path", new Json.JString(r.path()));
         m.put("reason", new Json.JString(r.reason()));
@@ -266,7 +337,16 @@ final class CanonicalObligations {
                 unresolved = "no " + o.unitPath() + ": the child run is not identified";
             }
         }
-        for (Map.Entry<String, Json> p : payloads(rec, o.payload()).entrySet()) {
+        Map<String, Json> selected = payloads(rec, o.payload());
+        String shape = shape(o, selected);
+        if (shape != null) {
+            // an array whose entries are not one representable occurrence: an explicit gap, never a guessed sum or choice
+            String base = o.payload().substring(0, o.payload().length() - 2);
+            out.add(new Occurrence(o, b.entry(), fixture, sha, r.index(), "/" + base.replace(".", "/"), owner, unit, null, rec.path(base.split("\\.")), status(o, rec),
+                    NOT_REPRESENTABLE + shape));
+            return out;
+        }
+        for (Map.Entry<String, Json> p : selected.entrySet()) {
             if (!(p.getValue() instanceof Json.JObject)) {
                 continue;
             }
@@ -301,17 +381,41 @@ final class CanonicalObligations {
         return out;
     }
 
-    /** The payload objects a dotted path with an optional trailing {@code {*}} selects, by JSON pointer. */
+    /**
+     * Why the entries an array payload selects are not one representable occurrence of an obligation with a sole entry
+     * type, or {@code null} (no such rule, no entry, or exactly one entry of that type).
+     */
+    static String shape(Obligation o, Map<String, Json> selected) {
+        String type = o.soleEntryType();
+        if (type == null || selected.isEmpty()) {
+            return null;
+        }
+        List<String> types = selected.values().stream().map(e -> String.valueOf(SourceProfile.text(e, "type"))).toList();
+        return types.equals(List.of(type)) ? null : selected.size() + " entries of types " + types + "; only a sole " + type + " entry is reported as one unit's own usage";
+    }
+
+    /**
+     * The payload objects a dotted path selects, by JSON pointer: a trailing {@code {*}} selects each member of an
+     * object, a trailing {@code []} each entry of an array.
+     */
     static Map<String, Json> payloads(Json rec, String path) {
         Map<String, Json> out = new LinkedHashMap<>();
         boolean each = path.endsWith(".{*}");
-        String base = each ? path.substring(0, path.length() - 4) : path;
+        boolean entries = path.endsWith("[]");
+        String base = each ? path.substring(0, path.length() - 4) : entries ? path.substring(0, path.length() - 2) : path;
         Json v = rec.path(base.split("\\."));
         String pointer = "/" + base.replace(".", "/");
         if (v == null) {
             return out;
         }
-        if (each) {
+        if (entries) {
+            if (v instanceof Json.JArray a) {
+                for (int i = 0; i < a.elements().size(); i++) {
+                    out.put(pointer + "/" + i, a.elements().get(i));
+                }
+            }
+        }
+        else if (each) {
             if (v instanceof Json.JObject o) {
                 o.members().forEach((k, x) -> out.put(pointer + "/" + k.replace("~", "~0").replace("/", "~1"), x));
             }
@@ -353,7 +457,9 @@ final class CanonicalObligations {
         List<Finding> findings = new ArrayList<>();
         Obligation o = occ.obligation();
         if (occ.unresolved() != null) {
-            findings.add(new Finding(3, occ.id() + "#ownership-unresolved", "ownership not established: " + occ.unresolved()));
+            findings.add(occ.unresolved().startsWith(NOT_REPRESENTABLE)
+                    ? new Finding(3, occ.id() + "#not-representable", "no canonical representation of this payload: " + occ.unresolved().substring(NOT_REPRESENTABLE.length()))
+                    : new Finding(3, occ.id() + "#ownership-unresolved", "ownership not established: " + occ.unresolved()));
             return new Judged(occ, false, findings);
         }
         List<Json> matches = matches(occ, cores.getOrDefault(occ.owner(), List.of()));
@@ -371,8 +477,9 @@ final class CanonicalObligations {
             }
         }
         ExpectedFacts facts = profileFacts.get(occ.owner());
+        // the profile must expect this measurement window too: another quantity of the same record and scope is not this one
         boolean expected = facts != null && facts.usages.stream().anyMatch(u -> u.recordIndex() == occ.record() && u.scopeId() == o.scopeId()
-                && (occ.model() == null || occ.model().equals(u.model())));
+                && Objects.equals(u.aggregationId(), o.aggregationId()) && (occ.model() == null || occ.model().equals(u.model())));
         if (!expected) {
             findings.add(new Finding(4, occ.id() + "#not-expected-by-profile", "the oracle's source profile does not expect this occurrence (owner " + occ.owner() + ")"));
         }
@@ -418,7 +525,20 @@ final class CanonicalObligations {
                 }
             }
         }
-        return out;
+        return sameWindow(out, o.aggregationId());
+    }
+
+    /**
+     * Several observations at one record, scope and model are narrowed to the obligation's measurement window (a run's
+     * total and one unidentified response of that run share scope 4 on the result record). One observation is judged
+     * whatever its aggregation, so a wrong window stays a value finding, and two of the same window stay a duplicate.
+     */
+    static List<Json> sameWindow(List<Json> observations, Integer aggregation) {
+        if (observations.size() < 2) {
+            return observations;
+        }
+        List<Json> window = observations.stream().filter(u -> Objects.equals(Event.integer(u.member("aggregation_id")), aggregation)).toList();
+        return window.isEmpty() ? observations : window;
     }
 
     /** Why nothing matched: what the owner core holds for the record, and whether another core or unit has it. */
@@ -458,9 +578,14 @@ final class CanonicalObligations {
             problems.add("usage_status_id " + status + " != " + occ.status());
         }
         Integer aggregation = Event.integer(u.member("aggregation_id"));
-        Integer wantAggregation = o.aggregation() == null || o.aggregation().isNull() ? null : Event.integer(o.aggregation());
+        Integer wantAggregation = o.aggregationId();
         if (!Objects.equals(aggregation, wantAggregation)) {
             problems.add("aggregation_id " + aggregation + " != " + (wantAggregation == null ? "absent (no aggregation is established)" : wantAggregation));
+        }
+        Integer measurement = Event.integer(u.member("measurement_status_id"));
+        Integer wantMeasurement = measurementStatus(o, occ.payload());
+        if (!Objects.equals(measurement, wantMeasurement)) {
+            problems.add("measurement_status_id " + measurement + " != " + (wantMeasurement == null ? "absent (no rule states one)" : wantMeasurement));
         }
         for (String c : AnalysisViews.COMPONENTS) {
             String nativePath = o.components().get(c);
@@ -496,6 +621,26 @@ final class CanonicalObligations {
             problems.add("data is not the native " + o.payload() + " object exactly");
         }
         return problems;
+    }
+
+    /**
+     * The measurement status the obligation's rule expects for a native payload: 2 Possibly default when every member
+     * named in {@code possibly_default_when_zero} is reported as 0 and the array named in {@code and_no_entry_in} has no
+     * entry (the payload is then exactly what the emitter writes without a measurement); otherwise, and without a rule,
+     * none.
+     */
+    static Integer measurementStatus(Obligation o, Json payload) {
+        Json rule = o.measurementStatus();
+        if (rule == null) {
+            return null;
+        }
+        for (String member : texts(rule.member("possibly_default_when_zero"))) {
+            if (!(payload.member(member) instanceof Json.JNumber n) || n.value().signum() != 0) {
+                return null;
+            }
+        }
+        String array = SourceProfile.text(rule, "and_no_entry_in");
+        return array != null && payload.member(array) instanceof Json.JArray a && !a.elements().isEmpty() ? null : Integer.valueOf(2);
     }
 
     // ---- static checks of the catalogs ---------------------------------------------------------------------------------
@@ -563,6 +708,7 @@ final class CanonicalObligations {
                 continue;
             }
             String variant = rules.variant(r.json());
+            out.addAll(uncoveredEntries(c, variant, r, seen));
             List<Occurrence> here = byRecord.getOrDefault(r.index(), List.of());
             List<String> leaves = new ArrayList<>();
             leaves(r.json(), "", leaves, rules.mapKeyed());
@@ -581,6 +727,29 @@ final class CanonicalObligations {
                 }
                 else {
                     out.add(new Finding(1, id, "token-named vendor member that no obligation maps and no reviewed residual classifies (record " + r.index() + ")"));
+                }
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Entries of a type-scoped residual's array ({@code entry_types}) of a type it does not cover: their token members
+     * are not reviewed as owing nothing, so each such entry type is a category-1 finding.
+     */
+    static List<Finding> uncoveredEntries(Catalog c, String variant, NativeArtifact.Record r, Set<String> seen) {
+        List<Finding> out = new ArrayList<>();
+        for (Residual res : c.residuals()) {
+            if (!res.variant().equals(variant) || res.entryTypes().isEmpty() || !res.path().endsWith("[]")) {
+                continue;
+            }
+            Json array = r.json().path(res.path().substring(0, res.path().length() - 2).split("\\."));
+            for (Json e : array instanceof Json.JArray a ? a.elements() : List.<Json>of()) {
+                String type = SourceProfile.text(e, "type");
+                String id = res.key() + "{type=" + type + "}";
+                if (!res.entryTypes().contains(type) && seen.add(id)) {
+                    out.add(new Finding(1, id, "an entry of type " + type + " under " + res.key() + ", whose reviewed residual covers only " + res.entryTypes()
+                            + " entries (record " + r.index() + ")"));
                 }
             }
         }

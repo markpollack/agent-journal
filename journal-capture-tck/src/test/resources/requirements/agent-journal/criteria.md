@@ -407,8 +407,8 @@ Rule: RULE-50. Tests: `FinalAssemblyCopilotTest#aMultiplierSumAndPremiumRequests
 
 ### UC6-AC6: Read the final file alone
 
-When the final `events.jsonl` is copied alone, a compatible reader shall read the consolidated execution and its assembly declaration without the native files, `run.json` or schema caches; a file of several sources without an assembly declaration it shall read as an unvalidated evidence log (declared, or written before the combination policy), which the oracle reports unresolved and never accepts as one combined execution.
-Rule: RULE-52. Tests: `FinalAssemblyClaudeTest#theFinalFileReadsAloneWithoutNativeFilesManifestOrSchemaCaches`, `FinalAssemblyCopilotTest#theFinalFileReadsAloneAndTheOriginalsAreUnchanged`, `FinalAssemblyJunieTest#theFinalFileReadsAlone`, `CombinedSourceAdmissionTest`. Status: extended 2026-10-24, R1 candidate (the combination policy).
+When the final `events.jsonl` is copied alone, a compatible reader shall read the consolidated execution and its assembly declaration without the native files, `run.json` or schema caches; a file of several sources without an assembly declaration it shall read as an unvalidated evidence log (declared, or written before the combination policy), which the oracle reports unresolved and never accepts as one combined execution; and a file that declares an assembly the per-source oracle shall leave unresolved as a combination (the assembly oracle judges it), or report defective when the file also declares an evidence log.
+Rule: RULE-52. Tests: `FinalAssemblyClaudeTest#theFinalFileReadsAloneWithoutNativeFilesManifestOrSchemaCaches`, `FinalAssemblyCopilotTest#theFinalFileReadsAloneAndTheOriginalsAreUnchanged`, `FinalAssemblyJunieTest#theFinalFileReadsAlone`, `CombinedSourceAdmissionTest`. Status: extended 2026-10-24, R1 candidate (the combination policy); 2026-10-25 closeout candidate (a declaration alone is not an accepted combination, CDX-R1D-01).
 
 ### UC6-AC7: Judge the assembly independently
 

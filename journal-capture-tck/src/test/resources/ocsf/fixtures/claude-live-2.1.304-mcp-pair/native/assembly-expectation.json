@@ -139,7 +139,7 @@
   },
   {
    "name": "run_output_tokens",
-   "basis": "the result record's run usage, once",
+   "basis": "the result record's run usage, once: the scope 4 observation that states no aggregation (the run's last response, at the same scope with aggregation 3 Single response, is not part of it)",
    "native": {
     "stream": {
      "locator": {
@@ -156,7 +156,8 @@
     "key": "/session_uid",
     "array": "usage_observations",
     "where": {
-     "scope_id": 4
+     "scope_id": 4,
+     "aggregation_id": null
     },
     "member": "output_tokens"
    }

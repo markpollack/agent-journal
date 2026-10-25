@@ -89,6 +89,23 @@ class AssemblyOracleTest {
     }
 
     @Test
+    void aRunTotalSelectedByScopeAloneCountsTheRunsLastResponseTwice(@TempDir Path work) throws IOException {
+        // the result record carries the run total (no aggregation) and, at the same scope 4, the final usage of the run's
+        // last response (aggregation 3 Single response): a total that does not name its window adds the two
+        Path fixture = copy(CLAUDE, work);
+        assertThat(AssemblyOracle.verify(OcsfFixtures.open(fixture), expectation(fixture), supplied(fixture)).outcome("assembly.accounting.run_output_tokens", "assembly"))
+                .isEqualTo(Check.Outcome.VERIFIED);
+        Path spec = fixture.resolve("native/assembly-expectation.json");
+        String windowed = Files.readString(spec, StandardCharsets.UTF_8);
+        String scopeOnly = windowed.replaceFirst("\"scope_id\": 4,\\s*\"aggregation_id\": null", "\"scope_id\": 4");
+        assertThat(scopeOnly).isNotEqualTo(windowed);
+        Files.writeString(spec, scopeOnly, StandardCharsets.UTF_8);
+        OracleReport report = AssemblyOracle.verify(OcsfFixtures.open(fixture), expectation(fixture), supplied(fixture));
+        assertThat(report.outcome("assembly.accounting.run_output_tokens", "assembly")).isEqualTo(Check.Outcome.DEFECTIVE);
+        assertThat(report.check("assembly.accounting.run_output_tokens", "assembly").detail()).contains("native 425").contains("canonical 468");
+    }
+
+    @Test
     void nativeInputsThatDisagreeWithTheFileAreRejected(@TempDir Path work) throws IOException {
         Path fixture = copy(COPILOT, work);
         // the committed file accepted this telemetry; supplied with another execution's session it must have been refused

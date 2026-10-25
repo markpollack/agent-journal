@@ -52,19 +52,26 @@ public final class OcsfPackage {
          * Several sources with neither an assembly nor an evidence-log declaration: written before the combination
          * policy by the plain writer, readable as before, and unvalidated in the same way.
          */
-        UNVALIDATED_UNDECLARED
+        UNVALIDATED_UNDECLARED,
+        /**
+         * Both a final-assembly declaration and an evidence-log declaration: the file states two combination policies,
+         * so neither is believed (review finding CDX-R1D-01: an assembly declaration copied into an evidence log).
+         */
+        CONTRADICTORY
     }
 
     /**
      * How this file combined its sources. Only {@link Combination#ASSEMBLED} (and a single source) can be a final
-     * execution; in either unvalidated form an entity two sources report appears once per source.
+     * execution; in either unvalidated form an entity two sources report appears once per source. A declaration states
+     * the policy; it does not show that the policy's checks ran (the assembly oracle judges an assembly).
      */
     public Combination combination() {
         int sources = declarations != null ? declarations.sources().size() : manifest == null ? 0 : manifest.sources().size();
+        boolean evidenceLog = declarations != null && declarations.run() != null && declarations.run().member("combination") != null;
         if (declarations != null && declarations.assembly() != null) {
-            return Combination.ASSEMBLED;
+            return evidenceLog ? Combination.CONTRADICTORY : Combination.ASSEMBLED;
         }
-        if (declarations != null && declarations.run() != null && declarations.run().member("combination") != null) {
+        if (evidenceLog) {
             return Combination.UNVALIDATED_EVIDENCE_LOG;
         }
         return sources > 1 ? Combination.UNVALIDATED_UNDECLARED : Combination.SINGLE_SOURCE;

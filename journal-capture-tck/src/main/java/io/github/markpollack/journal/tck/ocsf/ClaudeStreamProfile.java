@@ -118,6 +118,7 @@ final class ClaudeStreamProfile implements SourceProfile {
                                 SourceProfile.text(m.getValue(), "provider"), null, 2));
                     }
                 }
+                lastResponse(f, r.index(), usage);
                 if (o.member("total_cost_usd") instanceof Json.JNumber) {
                     String basis = null;
                     if (modelUsage instanceof Json.JObject mu && mu.members().size() == 1) {
@@ -135,6 +136,20 @@ final class ClaudeStreamProfile implements SourceProfile {
             }
         }
         return f;
+    }
+
+    /**
+     * The final usage of the run's last main-thread response that a result reports, when it reports it: Anthropic SDK
+     * 0.135.0 {@code BetaIterationsUsage} lists one entry per sampling iteration of one response (a compaction entry's
+     * tokens are outside the top-level usage), and Claude Code's run accumulator carries the latest response's array
+     * unsummed, so only a sole entry of type {@code message} is that response's whole usage: scope 4 Run, Final,
+     * aggregation 3 Single response (the record does not identify the response). Any other shape expects nothing.
+     */
+    static void lastResponse(ExpectedFacts f, int index, Json usage) {
+        Json iterations = usage == null ? null : usage.member("iterations");
+        if (iterations instanceof Json.JArray entries && entries.elements().size() == 1 && "message".equals(SourceProfile.text(entries.elements().get(0), "type"))) {
+            f.usages.add(new ExpectedFacts.Usage(index, index, 4, 2, TrancheReading.anthropic(entries.elements().get(0)), null, null, null, 3));
+        }
     }
 
     /** A task_progress or task_notification record (Agent SDK 0.3.304 SDKTaskProgressMessage, SDKTaskNotificationMessage). */
