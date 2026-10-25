@@ -3,8 +3,12 @@
 This guide explains the OCSF-based writer (`journal-ocsf-writer`) and the independent reader and oracle that judge it
 (`journal-capture-tck`, the TCK: the project's compatibility kit of reader, oracle and tools). It is written for a capable colleague who does not know the code. The older `journal-core` and
 `<cli>-capture` modules are out of scope. Both modules here are **non-production prototypes**: the event file layout is
-`0.3.0-prototype`, on OCSF 1.9.0 with the `agentic_cli` extension `0.10.0-prototype` (provisional, unregistered uid 901). No
+`0.3.0-prototype`, on OCSF 1.9.0 with the `agentic_cli` extension `0.13.0-prototype` (provisional, unregistered uid 901). No
 production default uses them.
+
+Updated 2026-10-25 from the implementation at `2dbd079`. The new algorithm diagrams are hand-authored explanations of
+code and declared policy, not extracted call traces. The recorded launch in section 4 remains an earlier, explicitly
+bounded execution; it does not exercise final assembly or the conformance ratchet.
 
 Every statement carries one of these labels:
 
@@ -20,12 +24,13 @@ Every statement carries one of these labels:
 ## 1. The system on one page
 
 **Problem.** AI coding CLIs (Claude Code, Codex CLI and others) report their activity in vendor-specific streams. Journal
-records what one CLI run reported as `events.jsonl`, a portable file that another program can interpret without Journal's
-code. Vendor detail it cannot yet map is kept, not dropped.
+records what one CLI run reported as `events.jsonl`, a portable file that a compatible reader can interpret without the original CLI or native source artifacts. Vendor detail it cannot yet map is kept, not dropped.
 
 **Boundary** (declared design). Journal records explicit tool invocations and the observations the CLI reports. A shell
-command containing `grep` or a pipe is one invocation; Journal derives no extra calls from command text. Live capture reads
-the stream the CLI offers. The CLI's own saved session file is archived unchanged and never parsed to enrich the stream.
+command containing `grep` or a pipe is one invocation; Journal derives no extra calls from command text. Acquisition preserves the raw sources selected by a version/route-specific source profile. A live stdout-derived
+file can be provisional. Final assembly reads the declared useful sources, including native session artifacts and OTel
+where the profile supplies them, to produce a separate portable analysis file. Undeclared material remains archived;
+there is no universal preference for stdout.
 
 **Key mechanism: two independent readings of the same bytes.** The writer maps each native record into OCSF events as it
 arrives. Separately, the TCK's source profiles read the same native bytes and state what they report. The oracle then
@@ -43,9 +48,122 @@ That duplication is deliberate: "a checker built from the code it checks cannot 
 implementations to maintain, and they can still share a wrong premise. Reviewed examples, authored from the CLI's own pinned
 source, are a third reading that challenges both.
 
-**Reading path.** Section 2 separates the two flows. Section 3 covers the structure and its enforced boundary, section 4 one
+**Reading path.** Sections 1.1–1.3 explain mapping, assembly and the ratchet in plain terms. Section 2 separates the two flows. Section 3 covers the structure and its enforced boundary, section 4 one
 observed run, and section 5 one tool call from start to finish. Sections 6 to 8 cover contracts, rationale and where to make
 changes.
+
+## 1.1 The algorithm in plain terms
+
+Think of a native record as a receipt, a canonical event as a common ledger entry, and an obligation as an instruction
+saying which entry that receipt owes. Saving the receipt does not satisfy an instruction to enter its known amount in
+the ledger.
+
+The work has two parts. The Java writer translates and combines observations. An independent Java reading determines
+what the native evidence requires and checks the result. Determinism means fixed inputs, definitions, source profiles and
+ordering produce reproducible judgments; it does not mean a machine can discover the correct interpretation of a new
+vendor field without evidence and review.
+
+```mermaid
+flowchart TD
+    N["Pinned native inputs"] --> M["Writer mappings"]
+    N --> E["Independent expected facts"]
+    O["Versioned meaning catalog"] --> M
+    O --> E
+    M --> F["Canonical event file"]
+    F --> C["Compare each owed occurrence"]
+    E --> C
+    C --> R["Compare exact sets with baseline"]
+    B["Pinned meanings, population and debt"] --> R
+    R --> Q["Scoped conformance report"]
+```
+
+*Declared design, illustrated from code. The catalog informs interpretation and checking; it is not an executable
+mapping language. The conformance gate is test code in the ordinary build, not a service or an LLM.*
+
+1. **Choose and preserve the inputs.** The compatibility registry selects an exact tested CLI/version/route. Preserve
+   acquired bytes and their origin. A source profile declares useful roles, framing, precedence and identity locators.
+   There may be several files per source family; stdout, session files and OTel are not a fixed three-file requirement.
+2. **Translate what each source reports.** Each `SourceMapper` reads its own records and emits typed observations with
+   source references and correct ownership. A broad `data` or `structured_result` copy preserves evidence but cannot
+   replace an owed common usage, tool or other execution fact.
+3. **Assemble when several sources describe the execution.** Check membership, relate only evidenced identities and
+   combine compatible fields under the profile's declared authorities. Keep supporting observations, conflicts and
+   unmatched accepted observations visible. Write a new final file; leave original packages unchanged.
+4. **Derive expected facts independently.** Source profiles and the bounded obligation gate read native bytes without
+   calling writer mappings. For each owed occurrence, compare its exact destination, value, owner, unit, model, scope
+   and finality as applicable. A passing property for another child or record cannot substitute for this check.
+5. **Enforce the ratchet.** Compare the exact meaning keys, residual classifications, judged population and debt IDs
+   with the committed baseline. An addition, removal or changed fingerprint fails until its expectation change is made
+   explicit for review. A removed problem cannot offset a newly introduced one.
+
+The two readings can agree on a mistaken premise. Source-grounded semantic review and independently authored
+counterexamples challenge that premise; structural independence alone does not establish semantic correctness.
+
+## 1.2 How several sources become one final file
+
+```mermaid
+flowchart TD
+    I["Declared source observations"] --> G{"Membership established?"}
+    G -->|No| X["Exclude from canonical output; declare reason"]
+    G -->|Yes| K["Group by declared identity and owner"]
+    K --> U["Keep unmatched or ambiguous observations explicit"]
+    K --> M["Merge compatible fields; retain conflicts and support"]
+    U --> F["New portable final events.jsonl"]
+    M --> F
+```
+
+*Declared design. Raw acquisitions remain preserved even when a source is refused.*
+
+- `FinalAssembly` feeds sources through the same writer and source mappers. `Assembler` buffers observations until the
+  declared sources end, then `AssemblyGate`, `AssemblyGrouping` and `EventMerge` decide membership, entities and fields.
+  This is separate from the incremental live writer, which flushes readable prefixes.
+- A source's own session identity is stronger evidence than role or filename. Identity-free companion/acquisition roles
+  require an acquisition shared with the run's anchor. That acquisition is a **caller assertion**, explicitly recorded;
+  it is not independently proved directory membership.
+- Reimporting the same origin with identical bytes contributes nothing again. Equal bytes from a different origin need
+  explicit `copy_of` lineage verified by those bytes; otherwise that input is refused rather than guessed to be one or
+  two occurrences. Equal text, record position or timestamps alone never establish an ordinary join.
+- An entity may legitimately appear at several declared lifecycle stages. Competing occurrences at the same stage are
+  flagged ambiguous. Owner scope remains part of identity, so two children cannot merge through a reused call ID.
+- The final file separates canonical single observations, supporting observations and consolidated canonical events.
+  `OcsfPackage.canonical()` selects canonical roles; summing every physical row would count supporting evidence again.
+  Usage snapshots, child observations and overlapping totals are not automatically additive.
+- `OcsfRunWriter.open` records one source and rejects a second. Several sources use `openAssembly` or explicitly
+  `openEvidenceLog(reason)`. An evidence log remains readable but its combination is unvalidated; the oracle cannot
+  accept it as one combined execution.
+
+## 1.3 What the ratchet protects, and what it does not
+
+The first catalog covers **Claude stream token usage**, not every CLI or every field family.
+[`CanonicalObligations`](../../journal-capture-tck/src/test/java/io/github/markpollack/journal/tck/ocsf/CanonicalObligations.java)
+derives and judges native occurrences.
+[`CanonicalConformanceTest`](../../journal-capture-tck/src/test/java/io/github/markpollack/journal/tck/ocsf/CanonicalConformanceTest.java)
+generates the report and compares it to the
+[baseline](../../journal-capture-tck/src/test/resources/ocsf/conformance/claude-stream-usage-baseline.json).
+
+| Protected item | What is compared | Why it matters |
+|---|---|---|
+| Required meaning | Stable obligation ID, revision, meaning fingerprint and relevant-definition/rule fingerprint | Rewording semantics, changing owner routing or a relevant definition must be visible |
+| Residual classification | Variant, exact path/listed members, classification and fingerprint | Keeping a field in vendor data must not quietly excuse a required mapping |
+| Evidence population | Binding admission, recordings and their hashes, expected occurrence IDs | Previously successful recordings or occurrences cannot silently disappear |
+| Known debt | Category and exact reason-bearing finding ID | One new problem cannot hide behind one repaired problem |
+
+The baseline is an editable Git file, not a cryptographic seal or an approval. Review must examine intentional baseline
+changes and their evidence. Token-naming heuristics help discover omissions; they do not interpret arbitrary application
+payloads or prove that every possible execution meaning has been found. Missing per-source catalogs/profiles remain
+explicit verification debt.
+
+The generated report separates **baseline respected**, **behavior verified**, **semantics approved** and
+**accepted zero-gap**. At the implementation described here, 69 occurrences discharge on seven fixture candidates
+(six distinct native streams). Six obligations and six residual classifications remain proposed; the whole-product
+zero-gap claim is not accepted. These are dated evidence counts, not permanent architectural constants.
+
+For example, Claude's Agent result reports its child's last metered response, while its task figure uses a different
+tracker formula. Both can be final and differ without conflict. Owner, measurement window and finality are separate.
+The run result's `usage.iterations[]` still leaves the last main-thread response's final usage outside common fields on
+stdout. Missing a response ID blocks a reliable join, but does not by itself make an understood usage quantity
+vendor-specific. This remains a coverage limitation for review. Agent-result zero defaults also must not be mistaken
+for independent evidence that a metered response occurred.
 
 ## 2. Two flows, kept apart
 
@@ -61,7 +179,8 @@ A call trace cannot show why a definition was chosen, and a design narrative can
 
 **Question:** which code owns capture, mapping, persistence and independent checking, and what may depend on what?
 
-The diagram above groups the 84 top-level production classes of both modules into 19 components; 15 are drawn. The grouping
+The generated component table gives the current production-class membership; avoid treating a saved diagram's old
+class count as a permanent invariant. The grouping
 ([`ArchitectureComponents`](../../journal-ocsf-writer/src/test/java/io/github/markpollack/journal/architecture/ArchitectureComponents.java))
 is a design judgment made once. It uses package roots, implementations of `SourceMapper` and `SourceProfile`, and short
 explicit lists. A test fails when a class belongs to no component or to two. The responsibility of each component is in
@@ -228,16 +347,17 @@ replay, not a new live run.
   (`SemanticExampleProfileTest`) separately.
 - **Record what the source reports.** Source-reported values, declared derivations and Journal-generated values stay
   distinguishable. A value that holds only under an assumption is saved as conditional, never as an established quantity.
-- **Stream first, archive unchanged** ([AGENTS.md](../../AGENTS.md)). Live capture normalizes the stream the CLI offers. The CLI's
-  saved session file is archived with its checksum and never parsed to supplement the stream. Importing a saved session is a
-  separate, explicitly requested offline mode with its own provenance.
+- **Source-aware acquisition and final assembly** ([AGENTS.md](../../AGENTS.md)). Capture preserves the sources selected by
+  the exact profile. Useful session/OTel observations may supplement stdout in a new final package. Original packages and
+  acquired native files remain unchanged. Explicit retrospective import uses declared native inputs and its own provenance;
+  a supported backup-import workflow is separate from the existence of a transcript mapper.
 
 ## 8. Where to make a change
 
 | Task | Where |
 |---|---|
-| Add a CLI route | A registry entry in `compatibility.json`, a mapping contract under `journal-ocsf-writer/src/main/resources/ocsf/mappings/`, a `SourceMapper` (registered in `SourceMapper.forProfile`), an independent `SourceProfile`, a sanitized fixture, and reviewed examples in the mapping catalog. The new mapper and profile fall into their components automatically through those interfaces; regenerate the view. |
-| Change what a field means | The claim and reviewed example in the mapping catalog first, then the contract rule, the mapper and the profile, each separately |
+| Add a CLI route | A registry entry in `compatibility.json`, a mapping contract under `journal-ocsf-writer/src/main/resources/ocsf/mappings/`, a `SourceMapper` (registered in `SourceMapper.forProfile`), an independent `SourceProfile`, a sanitized fixture, field dispositions and reviewed examples in the mapping catalog. Declare useful source roles and assembly policy; required catalogs and per-source profiles must be explicit before claiming their coverage. The new mapper and profile fall into their components automatically through those interfaces; regenerate the view. |
+| Change what a field means | The claim and reviewed example in the mapping catalog first, then the contract rule, mapper and profile separately; restate affected obligation/residual fingerprints, population and debt deliberately, preserving approval state |
 | Investigate an oracle defect | The check's detail names the record and value. Compare the native record, the saved event's `data` and `journal.rule_uid`, and the profile's reading |
 | Add a class | Its component in `ArchitectureComponents`, if no package or interface rule covers it; the build says so |
 
