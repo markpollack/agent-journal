@@ -196,21 +196,31 @@ public final class OcsfReaderTool {
         for (String missing : report.missingRequired()) {
             reasons.add("required check missing from the report: " + missing);
         }
-        for (Check c : report.checks()) {
-            if (c.outcome() == Check.Outcome.UNRESOLVED) {
-                reasons.add(c.toString());
-            }
-            else if (c.outcome() == Check.Outcome.UNSUPPORTED && !OPTIONAL_PROPERTIES.contains(c.property())) {
-                reasons.add(c.toString());
-            }
-            else if (c.outcome() == Check.Outcome.NOT_APPLICABLE && "whole_record.excluded".equals(c.property())) {
-                reasons.add("declared exclusion waives acquired records: " + c);
-            }
+        for (OracleReport.JsonExpectation fact : report.uncheckedFacts()) {
+            reasons.add("required fact unchecked: " + fact.owner() + "|" + fact.fact());
         }
+        for (AssertionAccounting.Assertion assertion : report.uncheckedAssertions()) {
+            reasons.add("actual assertion unchecked: " + assertion.address());
+        }
+        report.checks().stream().map(OcsfReaderTool::incompleteReason).filter(java.util.Objects::nonNull).forEach(reasons::add);
         if (!reasons.isEmpty()) {
             return new Acceptance(EXIT_INCOMPLETE, "INCOMPLETE", reasons);
         }
         return new Acceptance(EXIT_OK, "ACCEPTED", reasons);
+    }
+
+    private static String incompleteReason(Check c) {
+
+            if (c.outcome() == Check.Outcome.UNRESOLVED) {
+                return c.toString();
+            }
+            else if (c.outcome() == Check.Outcome.UNSUPPORTED && !OPTIONAL_PROPERTIES.contains(c.property())) {
+                return c.toString();
+            }
+            else if (c.outcome() == Check.Outcome.NOT_APPLICABLE && "whole_record.excluded".equals(c.property())) {
+                return "declared exclusion waives acquired records: " + c;
+            }
+                return null;
     }
 
     private static void write(Json json, Path out, PrintStream console) throws IOException {

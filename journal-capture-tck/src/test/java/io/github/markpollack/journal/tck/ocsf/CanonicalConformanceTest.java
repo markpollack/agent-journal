@@ -242,10 +242,8 @@ class CanonicalConformanceTest {
                 + " and the Owner approves the obligations; a finite corpus of pinned recordings, not every future vendor behavior.");
         doc.put("heuristic_notices", r.notices());
         doc.put("not_measured", List.of(
-                "members of this profile outside the stated obligations (token usage, per-model cost, run duration, the Agent result's status and duration): accounted by the"
-                        + " field-disposition catalog's reviewed classification and reported by the cross-CLI occurrence ledger (CrossCliAccountingTest), not judged against obligations;"
-                        + " candidate and common_capacity_gap classifications there are visible debt",
-                "every other profile, route and source kind: no obligation catalog yet (category 5 lists the required ones)",
+                "this legacy obligation report covers its eleven declared Claude obligations; the executed F/E/A report in target/accounting covers the remaining selected meanings and routes",
+                "semantic approval of proposed meanings and source behaviors beyond the frozen population",
                 "the overall canonical-coverage gap count of the product"));
         return doc;
     }
@@ -333,8 +331,9 @@ class CanonicalConformanceTest {
     static Set<String> obligationEntries() {
         Set<String> out = new TreeSet<>();
         try (var s = Files.walk(PROJECT.resolve("schema/vendor"))) {
-            for (Path p : s.filter(x -> x.getFileName().toString().equals("obligations.json")).toList()) {
-                CanonicalObligations.read(p).bindings().forEach(b -> out.add(b.entry()));
+            for (Path p : s.filter(x -> List.of("obligations.json", "expected-facts.json").contains(x.getFileName().toString())).toList()) {
+                if ("java-expected-facts".equals(SourceProfile.text(NeutralJson.readDocument(p), "implementation"))) { out.addAll(ExpectedFactCatalogTest.entries(p)); }
+                else { CanonicalObligations.read(p).bindings().forEach(b -> out.add(b.entry())); }
             }
         }
         catch (IOException e) {
@@ -499,7 +498,7 @@ class CanonicalConformanceTest {
         // and the earlier disposition gate accepted the structured_result destination on any owner's VERIFIED result.values
         FieldDispositionTest.Catalog dispositions = FieldDispositionTest.catalog("claude_stream");
         FieldDispositionTest.Entry subtree = FieldDispositionTest.applicable(dispositions, "user/tool_result", "tool_use_result.usage.input_tokens").get(0);
-        assertThat(subtree.key()).isEqualTo("user/tool_result:tool_use_result");
+        assertThat(subtree.key()).isEqualTo("user/tool_result:tool_use_result.usage.input_tokens");
         assertThat(subtree.disposition()).isEqualTo("normalized");
     }
 
@@ -512,7 +511,7 @@ class CanonicalConformanceTest {
         FieldDispositionTest.Catalog dispositions = FieldDispositionTest.catalog("claude_stream");
         assertThat(occ.stream().flatMap(o -> CanonicalObligations.dispositions(o, dispositions).stream())).isEmpty();
         // the Agent result's subtree without its carve-out: the usage is hidden inside structured_result
-        FieldDispositionTest.Catalog noCarveOut = replaced(dispositions, "user/tool_result:tool_use_result", e -> without(e, "carve_outs"));
+        FieldDispositionTest.Catalog noCarveOut = replaced(dispositions, "user/tool_result:tool_use_result.usage.input_tokens", e -> without(e, "carve_outs"));
         assertThat(occ.stream().filter(o -> o.obligation().id().endsWith("agent-result")).flatMap(o -> CanonicalObligations.dispositions(o, noCarveOut).stream()))
                 .isNotEmpty().allMatch(f -> f.category() == 3 && f.detail().contains("hidden inside the broad disposition user/tool_result:tool_use_result"));
         // task progress usage reclassified as retained: a required canonical mapping cannot be retained-only
@@ -675,9 +674,8 @@ class CanonicalConformanceTest {
         List<Finding> all = CanonicalObligations.registrations(obligationEntries());
         // the Claude stream binding is fully registered
         assertThat(all).noneMatch(f -> f.id().endsWith(":claude-code/stream-json/2.1.304-stdout"));
-        // the final-assembly profiles name sources that have no catalog or oracle profile yet (the D2 dependencies)
-        assertThat(all).extracting(Finding::id).contains("disposition-catalog:claude-code/session-transcript/2.1.304-session-file",
-                "oracle-profile:github-copilot-cli/events/1.0.100-session-file", "disposition-catalog:junie/session-summary/3813.7");
+        // Every selected source now has its independent reader and catalogs.
+        assertThat(all).isEmpty();
         // a binding dropped from the obligation catalog is reported, not silently out of the denominator
         Set<String> without = new TreeSet<>(obligationEntries());
         without.remove("claude-code/stream-json/2.1.304-stdout");

@@ -76,9 +76,10 @@ final class AssemblyAccounting {
             report.add(Category.NORMALIZATION, "assembly.accounting." + name, AssemblyOracle.OWNER, Outcome.NOT_APPLICABLE, "no native record reports this quantity: absent, not zero");
             return;
         }
-        boolean equal = expected.compareTo(actual) == 0 && natives.keySet().equals(canonical.keySet());
+        boolean equal = natives.keySet().equals(canonical.keySet()) && natives.entrySet().stream()
+                .allMatch(e -> canonical.get(e.getKey()) != null && e.getValue().compareTo(canonical.get(e.getKey())) == 0);
         if (!equal) {
-            problems.add("native " + expected.toPlainString() + " over " + natives.keySet() + "; canonical " + actual.toPlainString() + " over " + canonical.keySet());
+            problems.add("native " + expected.toPlainString() + " by identity " + natives + "; canonical " + actual.toPlainString() + " by identity " + canonical);
         }
         report.add(Category.NORMALIZATION, "assembly.accounting." + name, AssemblyOracle.OWNER, problems.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
                 problems.isEmpty() ? expected.toPlainString() + " over " + natives.size() + " native identities, counted once each" : AssemblyConsolidation.limit(problems));

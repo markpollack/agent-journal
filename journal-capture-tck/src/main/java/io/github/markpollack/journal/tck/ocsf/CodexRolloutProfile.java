@@ -26,6 +26,7 @@ final class CodexRolloutProfile implements SourceProfile {
         List<Call> calls = new ArrayList<>();
         List<NativeArtifact.Record> tokenCounts = new ArrayList<>();
         String currentTurn = null;
+        String session = null;
         for (NativeArtifact.Record r : artifact.records()) {
             f.owned.add(r.index());
             if (!r.parsed()) {
@@ -39,6 +40,11 @@ final class CodexRolloutProfile implements SourceProfile {
             String type = SourceProfile.text(o, "type");
             Json p = o.member("payload");
             String pt = SourceProfile.text(p, "type");
+            if ("session_meta".equals(type)) { session = SourceProfile.text(p, "id"); }
+            if (session != null) { f.sessionOf.put(r.index(), session); }
+            String uid = "session_meta".equals(type) ? SourceProfile.text(p, "id") : "response_item".equals(type) ? SourceProfile.text(p, "id")
+                    : "item_completed".equals(pt) ? SourceProfile.text(p, "item", "id") : null;
+            if (uid != null) { f.nativeUid.put(r.index(), uid); }
             if ("turn_context".equals(type)) {
                 currentTurn = SourceProfile.text(p, "turn_id");
                 f.normalized.add(r.index());
@@ -57,6 +63,10 @@ final class CodexRolloutProfile implements SourceProfile {
             if ("world_state".equals(type)) {
                 f.normalized.add(r.index());
                 Map<String, Json> settings = ClaudeTranscriptProfile.settings(p, "state.collaboration_mode.model", "model");
+                if (p.path("state", "collaboration_mode", "settings") instanceof Json.JObject nested) {
+                    if (nested.member("model") != null) { settings.putIfAbsent("model", nested.member("model")); }
+                    if (nested.member("reasoning_effort") != null) { settings.put("reasoning_effort", nested.member("reasoning_effort")); }
+                }
                 f.contexts.add(new ExpectedFacts.Context(r.index(), 1, "world_state", null, settings, null, null));
                 continue;
             }
@@ -64,9 +74,9 @@ final class CodexRolloutProfile implements SourceProfile {
                 f.normalized.add(r.index());
                 f.contexts.add(new ExpectedFacts.Context(r.index(), 3, "token_usage_record", SourceProfile.text(p, "turn_id"), Map.of(), null, null));
                 // experimental route: the tranches as on the exec stream, no aggregation stated
-                f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 2, 2, TrancheReading.codex(p.member("usage"), ""), null, null, null, null));
-                f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 3, 1, TrancheReading.codex(p.member("turn_token_usage"), ""), null, null, null, null));
-                f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 5, 1, TrancheReading.codex(p.member("thread_token_usage"), ""), null, null, null, null));
+                f.addUsage(new ExpectedFacts.Usage(r.index(), r.index(), 2, 2, TrancheReading.codex(p.member("usage"), ""), null, null, null, null), "/payload/usage", p.member("usage"));
+                f.addUsage(new ExpectedFacts.Usage(r.index(), r.index(), 3, 1, TrancheReading.codex(p.member("turn_token_usage"), ""), null, null, null, null), "/payload/turn_token_usage", p.member("turn_token_usage"));
+                f.addUsage(new ExpectedFacts.Usage(r.index(), r.index(), 5, 1, TrancheReading.codex(p.member("thread_token_usage"), ""), null, null, null, null), "/payload/thread_token_usage", p.member("thread_token_usage"));
                 continue;
             }
             if ("event_msg".equals(type) && "task_started".equals(pt)) {
@@ -94,6 +104,7 @@ final class CodexRolloutProfile implements SourceProfile {
                     }
                     f.contexts.add(new ExpectedFacts.Context(r.index(), 2, "response_item/message/developer", currentTurn, Map.of(), "developer", rendered));
                 }
+                else { f.unresolvedMeanings.put(r.index(), "No declared meaning for rollout message role " + role); }
                 continue;
             }
             if ("response_item".equals(type) && "custom_tool_call".equals(pt)) {
@@ -142,7 +153,8 @@ final class CodexRolloutProfile implements SourceProfile {
                             item.member("exit_code"), state, status, outcome, 2, candidates));
                     continue;
                 }
-                continue; // other items: whole-record fallback
+                f.unresolvedMeanings.put(r.index(), "No declared meaning for rollout completed item type " + itemType);
+                continue; // preserved; unknown item remains non-passing
             }
             if ("event_msg".equals(type) && "token_count".equals(pt)) {
                 tokenCounts.add(r); // retained whole; its usage rides on the turn completion
@@ -153,11 +165,17 @@ final class CodexRolloutProfile implements SourceProfile {
                 for (int i = 0; i < tokenCounts.size(); i++) {
                     NativeArtifact.Record tc = tokenCounts.get(i);
                     Json total = tc.json().path("payload", "info", "total_token_usage");
-                    f.usages.add(new ExpectedFacts.Usage(r.index(), tc.index(), 3, i == tokenCounts.size() - 1 ? 2 : 1, TrancheReading.codex(total, "/total_token_usage"), null, null, null, null));
+                    f.addUsage(new ExpectedFacts.Usage(r.index(), tc.index(), 3, i == tokenCounts.size() - 1 ? 2 : 1, TrancheReading.codex(total, "/total_token_usage"), null, null, null, null), "/payload/info", tc.json().path("payload", "info"));
+                    Json last = tc.json().path("payload", "info", "last_token_usage");
+                    if (last != null) {
+                        f.addUsage(new ExpectedFacts.Usage(r.index(), tc.index(), "Last reported usage", 0,
+                                TrancheReading.codex(last, "/last_token_usage"), null), "/payload/info", tc.json().path("payload", "info"));
+                    }
                 }
                 tokenCounts.clear();
                 f.completed.add(new ExpectedFacts.TurnCompleted(r.index(), 0, null));
             }
+            else { f.unresolvedMeanings.put(r.index(), "No declared meaning for rollout record " + type + "/" + pt); }
         }
         return f;
     }

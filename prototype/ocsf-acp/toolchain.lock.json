@@ -39,10 +39,14 @@
     "name": "agentic_cli",
     "uid": 901,
     "uid_status": "PROVISIONAL, UNREGISTERED; alternate assignment 902 is compiled only to demonstrate reader refusal",
-    "version": "0.13.0-prototype",
-    "compiled_sha256_uid_901": "da6317bacfd3f579f09331c93109219bf8f4616a23e251eba22928b5bad6f52d",
+    "version": "0.14.0-prototype",
+    "compiled_sha256_uid_901": "3d3d274392817bbfa63844212becc9d23916078c4bdfc7db40b260df66144b3a",
     "category": "agent_execution (uid 11 -> scoped 90111)",
     "previous_versions": [
+      {
+        "version": "0.13.0-prototype",
+        "compiled_sha256_uid_901": "da6317bacfd3f579f09331c93109219bf8f4616a23e251eba22928b5bad6f52d"
+      },
       {
         "version": "0.12.0-prototype",
         "compiled_sha256_uid_901": "de565525b04241cc31adfdb4db17f971abcf71afd2b79af118f76f5067dcde25"
@@ -92,7 +96,7 @@
         "compiled_sha256_uid_901": "3c37c8d887c31cff656783480be35e130c920574b49f731d24e0f816892d8c9f"
       }
     ],
-    "bundled_excerpt": "journal-ocsf-writer/src/main/resources/ocsf/compiled-excerpt-agentic_cli-0.11.0-prototype.json (derived by SchemaExcerpt from the whole compiled.json; carries source_compiled_schema.sha256)"
+    "bundled_excerpt": "journal-ocsf-writer/src/main/resources/ocsf/compiled-excerpt-agentic_cli-0.14.0-prototype.json (derived by SchemaExcerpt from the whole compiled.json; carries source_compiled_schema.sha256)"
   },
   "mcp_protocol_schemas": {
     "pins": "schema/protocol/mcp/PINS.json",

@@ -24,7 +24,7 @@ import java.util.TreeMap;
 public final class SchemaPin {
 
     public static final String EXTENSION = "agentic_cli";
-    public static final String BUNDLED_EXCERPT = "/ocsf/compiled-excerpt-agentic_cli-0.13.0-prototype.json";
+    public static final String BUNDLED_EXCERPT = "/ocsf/compiled-excerpt-agentic_cli-0.14.0-prototype.json";
 
     /** One written class as the compiled schema defines it. */
     public record ClassDef(String name, String caption, int classUid, int categoryUid, String categoryName, Map<String, String> activities) {
@@ -58,6 +58,10 @@ public final class SchemaPin {
         }
         this.extensionUid = (int) ((Jv.Num) ext.member("uid")).value().longValueExact();
         this.extensionVersion = ext.member("version").text();
+        readClasses();
+    }
+
+    private void readClasses() {
         for (Map.Entry<String, Jv> c : ((Jv.Obj) compiled.member("classes")).members().entrySet()) {
             if (!c.getKey().startsWith(EXTENSION + "/")) {
                 continue;
@@ -161,6 +165,7 @@ public final class SchemaPin {
             "objects/field_evidence.json", "objects/journal_provenance.json", "objects/json_schema.json", "objects/mcp_observation.json",
             "objects/model_ref.json", "objects/observation_ref.json", "objects/operation.json", "objects/permission_decision.json",
             "objects/session_settings.json", "objects/source_ref.json", "objects/tool_definition.json", "objects/tool_result.json",
+            "objects/execution_metric.json", "objects/file_change.json", "objects/plan_item.json", "objects/agent_state.json", "objects/server_connection.json",
             "objects/usage_component.json", "objects/usage_observation.json");
 
     /**

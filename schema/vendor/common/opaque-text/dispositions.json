@@ -1,0 +1,24 @@
+{
+ "kind": "agent-journal/field-dispositions",
+ "version": "0.1",
+ "profile": "opaque_text",
+ "reviewed": "proposed 2026-10-26: opaque retention has no vendor semantics",
+ "contract_file": "opaque-text",
+ "evidence_fixtures": [
+  "junie-live-3813.7-view",
+  "junie-live-3813.7-terminal"
+ ],
+ "entries": [
+  {
+   "variant": "*",
+   "path": "*",
+   "subtree": true,
+   "disposition": "retained",
+   "classification": "opaque_payload",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "note": "The complete text artifact is opaque; JSON-shaped application text creates no common facts."
+  }
+ ]
+}

@@ -15,7 +15,14 @@
    "sha256": "bf6177b0d1369d16ad4ac2e770bfe6a2920134ef09875dd355bc06ad6c9748fe",
    "bytes": 24042,
    "records": 27,
-   "required": true
+   "required": true,
+   "binding": {
+    "entry_id": "claude-code/stream-json/2.1.299-sdk",
+    "version": "2.1.299",
+    "route": "sdk",
+    "source_specification": "schema/vendor/claude-code/stream-json/2.1.303.json",
+    "specification_sha256": "7e8173afd6c9498b21cb23c6546227abb23878c0f6395106458f717ca83f2767"
+   }
   },
   {
    "artifact": "transcript.jsonl",
@@ -23,7 +30,14 @@
    "sha256": "79518ce8ebe02cd6eb3c3284ce7a78c886020064758f293b9fea63b6604bcfe2",
    "bytes": 7569,
    "records": 17,
-   "required": true
+   "required": true,
+   "binding": {
+    "entry_id": "claude-code/session-transcript/2.1.299-session-file",
+    "version": "2.1.299",
+    "route": "native_session_file",
+    "source_specification": "schema/vendor/claude-code/session-transcript/2.1.303.json",
+    "specification_sha256": "6b22f08796acb150521fbf2c960d0000584f9b75ff8889822ccffc203adbfafc"
+   }
   }
  ],
  "children": [

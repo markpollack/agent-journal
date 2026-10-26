@@ -133,6 +133,16 @@
       "target": "agentic_cli/source_record",
       "activity": "1 Parsed",
       "residual": "whole record in data; basis names the exception. A defect of the writer is visible, never a lost record"
+    },
+    {
+      "id": "claude.transcript.api_shape->session_context.settings",
+      "selector": {
+        "type": "api-request-shape"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "1 Settings reported",
+      "fields": "shape.tools -> tool_definitions, with exact names, descriptions and input_schema documents. No tool invocation or protocol negotiation follows.",
+      "residual": "whole record in data"
     }
   ],
   "retained_only_families": {

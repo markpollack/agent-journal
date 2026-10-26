@@ -24,7 +24,14 @@
    "bytes": 1094,
    "records": 1,
    "required": true,
-   "framing": "document"
+   "framing": "document",
+   "binding": {
+    "entry_id": "junie/session-summary/3813.7",
+    "version": "3813.7",
+    "route": "native_session_file",
+    "source_specification": "schema/vendor/junie/session-summary/3813.7.json",
+    "specification_sha256": "01964cfb1c57ccef6cd89158846d2327420fb09064aefa0a9a5d41db58769f81"
+   }
   },
   {
    "artifact": "session-events.jsonl",
@@ -32,7 +39,14 @@
    "sha256": "b7a67807130502d59da3643a542f83a35fd78495a075b751560de5de35c25a4f",
    "bytes": 32625,
    "records": 65,
-   "required": true
+   "required": true,
+   "binding": {
+    "entry_id": "junie/session-events/3813.7",
+    "version": "3813.7",
+    "route": "native_session_file",
+    "source_specification": "schema/vendor/junie/session-events/3813.7.json",
+    "specification_sha256": "7b1aabd3785fa35dcb1a68d587a1881b8ec1cac955ff8c04a1c89de7dacfeb1f"
+   }
   },
   {
    "artifact": "stdout.jsonl",
@@ -40,7 +54,14 @@
    "sha256": "3a943fda8914746df86a8cafeb563cdacf75d1aa075ba4174ba0ffc464f2b2e8",
    "bytes": 2104,
    "records": 4,
-   "required": true
+   "required": true,
+   "binding": {
+    "entry_id": "junie/json-stream/3813.7-stdout",
+    "version": "3813.7",
+    "route": "stdout",
+    "source_specification": "schema/vendor/junie/json-stream/3813.7.json",
+    "specification_sha256": "de2d399a4df450f1c2d062eb7cc4ee04506b969b5c74be56c17b5b8dc97c6d31"
+   }
   },
   {
    "artifact": "stderr.txt",

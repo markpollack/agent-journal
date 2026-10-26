@@ -701,7 +701,9 @@
    "subtree": true,
    "disposition": "normalized",
    "destination": [
-    "tool_call.tool_result.structured_result"
+    "tool_call.tool_result.structured_result",
+    "session_context.usage_observations",
+    "session_context.data"
    ],
    "rule": "claude.stream.user.tool_result->tool_call.result",
    "evidence": {
@@ -710,7 +712,7 @@
    "tests": [
     "OcsfOracleValueCheckTest#resultStructuredDetailAndMissingResultAreEachChecked"
    ],
-   "note": "data-keyed: the tool-defined structured result preserved whole as a value; carve-out (D1): on an Agent result, tool_use_result.usage is also a scope 7 Child run usage observation (session_context Accounting reported, rule claude.stream.user.tool_result.agent_usage->session_context.accounting), judged by its obligation, not by this subtree's structured_result evidence ACCT-1: on an Agent result the envelope's status and totalDurationMs are carved out to the accounting event's reported_state and duration; resolvedModel, totalToolUseCount, toolStats, agentId and agentType remain inside the envelope (no session_context model_ref or counter capacity: see the obligation catalog's residuals)",
+   "note": "The tool-defined structured result is preserved whole. Independently matched Agent results additionally classify their native envelope members by the narrower entries; all required child facts owe executed typed comparisons.",
    "carve_outs": [
     "claude.stream.usage.child-run.agent-result",
     "claude.stream.child-run.agent-result.status",
@@ -861,16 +863,20 @@
   {
    "variant": "result",
    "path": "usage.server_tool_use",
-   "disposition": "retained",
-   "classification": "common_capacity_gap",
+   "disposition": "normalized",
+   "classification": "canonical",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "server-side tool-use counters (web_search_requests, web_fetch_requests): execution facts with no canonical counter attribute; 0 on every observed record, non-zero unexercised",
-   "subtree": true
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
+   "subtree": true,
+   "destination": [
+    "*.execution_metrics"
+   ],
+   "rule": "claude.stream.result->prompt_turn.completed"
   },
   {
    "variant": "result",
@@ -1192,15 +1198,19 @@
   {
    "variant": "result",
    "path": "modelUsage.{*}.webSearchRequests",
-   "disposition": "retained",
-   "classification": "common_capacity_gap",
+   "disposition": "normalized",
+   "classification": "canonical",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "per-model server-side web-search counter: no canonical counter attribute; 0 on every observed record"
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
+   "destination": [
+    "*.execution_metrics"
+   ],
+   "rule": "claude.stream.result->prompt_turn.completed"
   },
   {
    "variant": "result",
@@ -1284,8 +1294,8 @@
    "path": "modelUsage.{*}.provider",
    "disposition": "normalized",
    "destination": [
-    "usage_observation.model_ref.provider_kind",
-    "model_ref.provider_basis_id"
+    "prompt_turn.usage_observations[].model_ref.provider_kind",
+    "session_context.cost_observations[].model_ref.provider_kind"
    ],
    "rule": "claude.stream.result->prompt_turn.completed",
    "evidence": {
@@ -1319,7 +1329,8 @@
    "disposition": "normalized",
    "destination": [
     "prompt_turn.permission_decisions[].scope_id",
-    "prompt_turn.permission_decisions[].attribution.candidates"
+    "prompt_turn.permission_decisions[].attribution.candidates",
+    "prompt_turn.permission_decisions"
    ],
    "rule": "claude.stream.result->prompt_turn.completed",
    "evidence": {
@@ -1333,31 +1344,37 @@
   {
    "variant": "result",
    "path": "result",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "the final assistant text repeated on the result line; a repeat representation of the last response's text block, kept whole, not a second response",
-   "classification": "redundant",
-   "classification_note": "the last response's text repeated; checked against the last assistant text block by CrossCliAccountingTest#redundantRepresentationsAreCheckedAgainstTheirOriginals"
+   "note": "The final turn result text is preserved as its own content, with native support; it is not another model response. The prior last-text equality check remains a regression check, not an identity rule.",
+   "classification": "canonical",
+   "destination": [
+    "prompt_turn.content_blocks"
+   ],
+   "rule": "claude.stream.result->prompt_turn.completed"
   },
   {
    "variant": "result",
    "path": "subagent_stats",
    "subtree": true,
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "vendor sub-agent counters (requested, spawned, completed, refused, killed, max_depth); known meaning, not a per-child fact",
-   "classification": "common_capacity_gap",
-   "classification_note": "sub-agent lifecycle counters (requested, spawned, completed, refused, killed, max_depth): child-run facts with no canonical counter attribute"
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
+   "classification": "canonical",
+   "destination": [
+    "*.execution_metrics"
+   ],
+   "rule": "claude.stream.result->prompt_turn.completed"
   },
   {
    "variant": "result",
@@ -1378,30 +1395,36 @@
   {
    "variant": "result",
    "path": "duration_api_ms",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "reported duration",
-   "classification": "common_capacity_gap",
-   "classification_note": "API time within the run: the one duration attribute carries duration_ms; no second duration attribute"
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
+   "classification": "canonical",
+   "destination": [
+    "*.execution_metrics"
+   ],
+   "rule": "claude.stream.result->prompt_turn.completed"
   },
   {
    "variant": "result",
    "path": "num_turns",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "vendor turn counter; Journal does not compute or copy counts",
-   "classification": "common_capacity_gap",
-   "classification_note": "the run's turn count: no canonical counter attribute"
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
+   "classification": "canonical",
+   "destination": [
+    "*.execution_metrics"
+   ],
+   "rule": "claude.stream.result->prompt_turn.completed"
   },
   {
    "variant": "result",
@@ -1420,58 +1443,70 @@
   {
    "variant": "result",
    "path": "first_content_frame_ms",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "reported latency",
-   "classification": "common_capacity_gap",
-   "classification_note": "a reported latency facet (OTel GenAI time-to-first-token family): no canonical latency attribute"
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
+   "classification": "canonical",
+   "destination": [
+    "*.execution_metrics"
+   ],
+   "rule": "claude.stream.result->prompt_turn.completed"
   },
   {
    "variant": "result",
    "path": "ttft_ms",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "reported latency",
-   "classification": "common_capacity_gap",
-   "classification_note": "a reported latency facet (OTel GenAI time-to-first-token family): no canonical latency attribute"
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
+   "classification": "canonical",
+   "destination": [
+    "*.execution_metrics"
+   ],
+   "rule": "claude.stream.result->prompt_turn.completed"
   },
   {
    "variant": "result",
    "path": "ttft_stream_ms",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "reported latency",
-   "classification": "common_capacity_gap",
-   "classification_note": "a reported latency facet (OTel GenAI time-to-first-token family): no canonical latency attribute"
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
+   "classification": "canonical",
+   "destination": [
+    "*.execution_metrics"
+   ],
+   "rule": "claude.stream.result->prompt_turn.completed"
   },
   {
    "variant": "result",
    "path": "time_to_request_ms",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "reported latency",
-   "classification": "common_capacity_gap",
-   "classification_note": "a reported latency facet (OTel GenAI time-to-first-token family): no canonical latency attribute"
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
+   "classification": "canonical",
+   "destination": [
+    "*.execution_metrics"
+   ],
+   "rule": "claude.stream.result->prompt_turn.completed"
   },
   {
    "variant": "result",
@@ -1637,16 +1672,19 @@
    "variant": "system/init",
    "path": "mcp_servers",
    "subtree": true,
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "configured connections (name, source, status); ACP session settings concept, retained whole pending a reviewed settings object",
-   "classification": "candidate",
-   "classification_note": "configured MCP connections with status: session_context has mcp and tool_definitions capacity; an obligation is not stated yet (the init registration is read for MCP target derivation only)"
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
+   "classification": "canonical",
+   "destination": [
+    "session_context.settings.server_connections"
+   ],
+   "rule": "claude.stream.system.init->session_context.settings"
   },
   {
    "variant": "system/init",
@@ -1977,16 +2015,19 @@
   {
    "variant": "system/task_notification",
    "path": "handback",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "the sub-agent's handback text as the parent receives it (2.1.304); content, kept whole; retained whole in the record's data",
-   "classification": "candidate",
-   "classification_note": "the sub-agent's handback text: content with session_context content_blocks capacity; no obligation stated yet"
+   "note": "Text returned by the child task, on its accounting event; the spawning tool call provides the child association. Each reported handback field is retained as a distinct content block.",
+   "classification": "canonical",
+   "destination": [
+    "session_context.content_blocks"
+   ],
+   "rule": "claude.stream.system.task_usage->session_context.accounting"
   },
   {
    "variant": "system/task_notification",
@@ -1999,36 +2040,42 @@
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
    "note": "the sub-agent's structured handback report (2.1.304); its members have their own entries; retained whole in the record's data",
-   "classification": "candidate",
-   "classification_note": "structured handback report; as handback"
+   "classification": "structural",
+   "classification_note": "Container of the independently checked handback text; exact original object is preserved."
   },
   {
    "variant": "system/task_notification",
    "path": "handback_report.text",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "text of the handback report; content, kept whole; retained whole in the record's data",
-   "classification": "candidate",
-   "classification_note": "as handback"
+   "note": "Text returned by the child task, on its accounting event; the spawning tool call provides the child association. Each reported handback field is retained as a distinct content block.",
+   "classification": "canonical",
+   "destination": [
+    "session_context.content_blocks"
+   ],
+   "rule": "claude.stream.system.task_usage->session_context.accounting"
   },
   {
    "variant": "system/task_updated",
    "path": "patch",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "the task's state patch object (status, end_time, ...); its members have their own entries. Replaces the whole-variant wildcard (D1): a new member is a new disposition, never swallowed",
-   "classification": "candidate",
-   "classification_note": "the task's state patch (status, end_time): child lifecycle with reported_state capacity on the accounting event; no obligation stated yet"
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
+   "classification": "canonical",
+   "destination": [
+    "session_context.reported_state"
+   ],
+   "rule": "claude.stream.system.task_state->session_context.state"
   },
   {
    "variant": "system/init",
@@ -4039,20 +4086,21 @@
   {
    "variant": "system/task_started",
    "path": "prompt",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "session_context.content_blocks"
+   ],
+   "rule": "claude.stream.system.task_state->session_context.state",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction",
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
-   "note": "sub-agent task lifecycle notification (task_id, tool_use_id of the spawning call, subagent_type, description, prompt, spawn_depth, is_backgrounded, task_type): known meaning; the child run itself is represented by owner routing of the child's records, these notifications stay whole in the parent | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): task prompt; retained whole by claude.stream.fallback->source_record, no normalized destination",
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
    "vendor_declared": true,
-   "classification": "candidate",
-   "classification_note": "the child task's prompt: content with capacity (the child core's prompt_turn carries the echoed prompt when the child echoes it); no obligation stated yet"
+   "classification": "canonical"
   },
   {
    "variant": "system/task_started",
@@ -4189,36 +4237,38 @@
   {
    "variant": "system/task_progress",
    "path": "usage.tool_uses",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "*.execution_metrics"
+   ],
+   "rule": "claude.stream.system.task_usage->session_context.accounting",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
-   "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): tool uses so far; retained whole by claude.stream.fallback->source_record, no normalized destination",
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
    "vendor_declared": true,
-   "classification": "common_capacity_gap",
-   "classification_note": "tool-use count so far: no canonical counter attribute"
+   "classification": "canonical"
   },
   {
    "variant": "system/task_progress",
    "path": "usage.duration_ms",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "session_context.duration"
+   ],
+   "rule": "claude.stream.system.task_usage->session_context.accounting",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
-   "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): elapsed time; retained whole by claude.stream.fallback->source_record, no normalized destination",
+   "note": "The native child task duration in milliseconds or its reported state, on the accounting event identified by the spawning tool call; no parent tool outcome is inferred.",
    "vendor_declared": true,
-   "classification": "common_capacity_gap",
-   "classification_note": "the task's elapsed time so far"
+   "classification": "canonical"
   },
   {
    "variant": "system/task_progress",
@@ -4286,19 +4336,20 @@
   {
    "variant": "system/task_updated",
    "path": "patch.status",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "session_context.reported_state"
+   ],
+   "rule": "claude.stream.system.task_state->session_context.state",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
-   "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): task status; retained whole by claude.stream.fallback->source_record, no normalized destination",
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
    "vendor_declared": true,
-   "classification": "candidate",
-   "classification_note": "as patch"
+   "classification": "canonical"
   },
   {
    "variant": "system/task_updated",
@@ -4318,19 +4369,20 @@
   {
    "variant": "system/task_updated",
    "path": "patch.end_time",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "session_context.end_time"
+   ],
+   "rule": "claude.stream.system.task_state->session_context.state",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
-   "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): end time; retained whole by claude.stream.fallback->source_record, no normalized destination",
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
    "vendor_declared": true,
-   "classification": "candidate",
-   "classification_note": "as patch"
+   "classification": "canonical"
   },
   {
    "variant": "system/task_updated",
@@ -4430,19 +4482,20 @@
   {
    "variant": "system/task_notification",
    "path": "status",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "session_context.reported_state"
+   ],
+   "rule": "claude.stream.system.task_usage->session_context.accounting",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
-   "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): terminal status; retained whole by claude.stream.fallback->source_record, no normalized destination",
+   "note": "The native child task duration in milliseconds or its reported state, on the accounting event identified by the spawning tool call; no parent tool outcome is inferred.",
    "vendor_declared": true,
-   "classification": "candidate",
-   "classification_note": "the task's terminal status: child lifecycle with reported_state capacity on the accounting event; no obligation stated yet"
+   "classification": "canonical"
   },
   {
    "variant": "system/task_notification",
@@ -4512,36 +4565,38 @@
   {
    "variant": "system/task_notification",
    "path": "usage.tool_uses",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "*.execution_metrics"
+   ],
+   "rule": "claude.stream.system.task_usage->session_context.accounting",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
-   "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): tool uses; retained whole by claude.stream.fallback->source_record, no normalized destination",
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
    "vendor_declared": true,
-   "classification": "common_capacity_gap",
-   "classification_note": "the task's tool-use count: no canonical counter attribute"
+   "classification": "canonical"
   },
   {
    "variant": "system/task_notification",
    "path": "usage.duration_ms",
-   "disposition": "retained",
-   "destination": [],
-   "rule": null,
+   "disposition": "normalized",
+   "destination": [
+    "session_context.duration"
+   ],
+   "rule": "claude.stream.system.task_usage->session_context.accounting",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
-   "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): task duration; retained whole by claude.stream.fallback->source_record, no normalized destination",
+   "note": "The native child task duration in milliseconds or its reported state, on the accounting event identified by the spawning tool call; no parent tool outcome is inferred.",
    "vendor_declared": true,
-   "classification": "common_capacity_gap",
-   "classification_note": "the task's duration: the accounting event's duration attribute could carry it; no obligation stated yet (candidate)"
+   "classification": "canonical"
   },
   {
    "variant": "system/task_notification",
@@ -5379,6 +5434,451 @@
    ],
    "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): the withdrawn request; retained whole by claude.stream.fallback->source_record, no normalized destination",
    "vendor_declared": true
+  },
+  {
+   "variant": "system/task_notification",
+   "path": "description",
+   "disposition": "normalized",
+   "classification": "canonical",
+   "evidence": {
+    "property": "fact.value"
+   },
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Compared to the exact native occurrence; newly interpreted meaning remains proposed.",
+   "destination": [
+    "session_context.task_description"
+   ],
+   "rule": "claude.stream.system.task_usage->session_context.accounting"
+  },
+  {
+   "variant": "system/task_notification",
+   "path": "subagent_type",
+   "disposition": "normalized",
+   "classification": "canonical",
+   "evidence": {
+    "property": "fact.value"
+   },
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Compared to the exact native occurrence; newly interpreted meaning remains proposed.",
+   "destination": [
+    "session_context.agent_type"
+   ],
+   "rule": "claude.stream.system.task_usage->session_context.accounting"
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.status",
+   "subtree": true,
+   "disposition": "normalized",
+   "rule": "claude.stream.user.tool_result.agent_usage->session_context.accounting",
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Only when native tool-use identity establishes the unique Agent result. Exact typed comparison; interpretation proposed, not Owner-approved.",
+   "destination": [
+    "session_context.reported_state"
+   ],
+   "evidence": {
+    "property": "fact.value"
+   },
+   "carve_outs": [
+    "claude.stream.child-run.agent-result.status"
+   ]
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.totalDurationMs",
+   "subtree": true,
+   "disposition": "normalized",
+   "rule": "claude.stream.user.tool_result.agent_usage->session_context.accounting",
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Only when native tool-use identity establishes the unique Agent result. Exact typed comparison; interpretation proposed, not Owner-approved.",
+   "destination": [
+    "session_context.duration"
+   ],
+   "evidence": {
+    "property": "fact.value"
+   },
+   "carve_outs": [
+    "claude.stream.child-run.agent-result.duration"
+   ]
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.agentId",
+   "subtree": true,
+   "disposition": "normalized",
+   "rule": "claude.stream.user.tool_result.agent_usage->session_context.accounting",
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Only when native tool-use identity establishes the unique Agent result. Exact typed comparison; interpretation proposed, not Owner-approved.",
+   "destination": [
+    "session_context.agent_uid"
+   ],
+   "evidence": {
+    "property": "fact.value"
+   }
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.agentType",
+   "subtree": true,
+   "disposition": "normalized",
+   "rule": "claude.stream.user.tool_result.agent_usage->session_context.accounting",
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Only when native tool-use identity establishes the unique Agent result. Exact typed comparison; interpretation proposed, not Owner-approved.",
+   "destination": [
+    "session_context.agent_type"
+   ],
+   "evidence": {
+    "property": "fact.value"
+   }
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.prompt",
+   "subtree": true,
+   "disposition": "normalized",
+   "rule": "claude.stream.user.tool_result.agent_usage->session_context.accounting",
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Only when native tool-use identity establishes the unique Agent result. Exact typed comparison; interpretation proposed, not Owner-approved.",
+   "destination": [
+    "session_context.task_description"
+   ],
+   "evidence": {
+    "property": "fact.value"
+   }
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.resolvedModel",
+   "subtree": true,
+   "disposition": "normalized",
+   "rule": "claude.stream.user.tool_result.agent_usage->session_context.accounting",
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Only when native tool-use identity establishes the unique Agent result. Exact typed comparison; interpretation proposed, not Owner-approved.",
+   "destination": [
+    "session_context.model_ref.name"
+   ],
+   "evidence": {
+    "property": "fact.value"
+   }
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.content",
+   "subtree": true,
+   "disposition": "normalized",
+   "rule": "claude.stream.user.tool_result.agent_usage->session_context.accounting",
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Only when native tool-use identity establishes the unique Agent result. Exact typed comparison; interpretation proposed, not Owner-approved.",
+   "destination": [
+    "session_context.content_blocks"
+   ],
+   "evidence": {
+    "property": "fact.value"
+   }
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.totalToolUseCount",
+   "subtree": true,
+   "disposition": "normalized",
+   "rule": "claude.stream.user.tool_result.agent_usage->session_context.accounting",
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Only when native tool-use identity establishes the unique Agent result. Exact typed comparison; interpretation proposed, not Owner-approved.",
+   "destination": [
+    "session_context.execution_metrics"
+   ],
+   "evidence": {
+    "property": "fact.value"
+   }
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.toolStats",
+   "subtree": true,
+   "disposition": "normalized",
+   "rule": "claude.stream.user.tool_result.agent_usage->session_context.accounting",
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Only when native tool-use identity establishes the unique Agent result. Exact typed comparison; interpretation proposed, not Owner-approved.",
+   "destination": [
+    "session_context.execution_metrics"
+   ],
+   "evidence": {
+    "property": "fact.value"
+   }
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.usage.server_tool_use",
+   "subtree": true,
+   "disposition": "normalized",
+   "rule": "claude.stream.user.tool_result.agent_usage->session_context.accounting",
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Only when native tool-use identity establishes the unique Agent result. Exact typed comparison; interpretation proposed, not Owner-approved.",
+   "destination": [
+    "session_context.execution_metrics"
+   ],
+   "evidence": {
+    "property": "fact.value"
+   },
+   "carve_outs": [
+    "claude.stream.usage.child-run.agent-result"
+   ]
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.usage.input_tokens",
+   "subtree": true,
+   "disposition": "normalized",
+   "rule": "claude.stream.user.tool_result.agent_usage->session_context.accounting",
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Only when native tool-use identity establishes the unique Agent result. Exact typed comparison; interpretation proposed, not Owner-approved.",
+   "destination": [
+    "session_context.usage_observations[].uncached_input_tokens"
+   ],
+   "evidence": {
+    "property": "fact.usage.value"
+   },
+   "carve_outs": [
+    "claude.stream.usage.child-run.agent-result"
+   ]
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.usage.cache_read_input_tokens",
+   "subtree": true,
+   "disposition": "normalized",
+   "rule": "claude.stream.user.tool_result.agent_usage->session_context.accounting",
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Only when native tool-use identity establishes the unique Agent result. Exact typed comparison; interpretation proposed, not Owner-approved.",
+   "destination": [
+    "session_context.usage_observations[].cache_read_tokens"
+   ],
+   "evidence": {
+    "property": "fact.usage.value"
+   },
+   "carve_outs": [
+    "claude.stream.usage.child-run.agent-result"
+   ]
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.usage.cache_creation_input_tokens",
+   "subtree": true,
+   "disposition": "normalized",
+   "rule": "claude.stream.user.tool_result.agent_usage->session_context.accounting",
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Only when native tool-use identity establishes the unique Agent result. Exact typed comparison; interpretation proposed, not Owner-approved.",
+   "destination": [
+    "session_context.usage_observations[].cache_write_tokens"
+   ],
+   "evidence": {
+    "property": "fact.usage.value"
+   },
+   "carve_outs": [
+    "claude.stream.usage.child-run.agent-result"
+   ]
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.usage.output_tokens",
+   "subtree": true,
+   "disposition": "normalized",
+   "rule": "claude.stream.user.tool_result.agent_usage->session_context.accounting",
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Only when native tool-use identity establishes the unique Agent result. Exact typed comparison; interpretation proposed, not Owner-approved.",
+   "destination": [
+    "session_context.usage_observations[].output_tokens"
+   ],
+   "evidence": {
+    "property": "fact.usage.value"
+   },
+   "carve_outs": [
+    "claude.stream.usage.child-run.agent-result"
+   ]
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.usage.output_tokens_details.thinking_tokens",
+   "subtree": true,
+   "disposition": "normalized",
+   "rule": "claude.stream.user.tool_result.agent_usage->session_context.accounting",
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Only when native tool-use identity establishes the unique Agent result. Exact typed comparison; interpretation proposed, not Owner-approved.",
+   "destination": [
+    "session_context.usage_observations[].reasoning_tokens"
+   ],
+   "evidence": {
+    "property": "fact.usage.value"
+   },
+   "carve_outs": [
+    "claude.stream.usage.child-run.agent-result"
+   ]
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.usage.cache_creation",
+   "subtree": true,
+   "disposition": "normalized",
+   "rule": "claude.stream.user.tool_result.agent_usage->session_context.accounting",
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Only when native tool-use identity establishes the unique Agent result. Exact typed comparison; interpretation proposed, not Owner-approved.",
+   "destination": [
+    "session_context.usage_observations[].cache_write_tiers"
+   ],
+   "evidence": {
+    "property": "fact.usage.value"
+   },
+   "carve_outs": [
+    "claude.stream.usage.child-run.agent-result"
+   ]
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.usage",
+   "subtree": true,
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Exact native usage metadata: service tier, inference geography, speed and fallback credit have no consumption meaning. Narrower entries map token components and server-tool counters. Message iterations are a breakdown within this same reported response, preserved under the existing SDK-grounded interpretation, not additional model responses. Proposed interpretation; no semantic approval granted."
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.handback",
+   "subtree": true,
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Native handback transport control. Proposed interpretation; no semantic approval granted."
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.handbackReport",
+   "subtree": true,
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Native handback report payload retained exactly alongside the reported tool-result content. Proposed interpretation; no semantic approval granted."
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.harnessNoteCount",
+   "subtree": true,
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Internal harness annotation count, not an execution tool count. Proposed interpretation; no semantic approval granted."
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.harnessTailCount",
+   "subtree": true,
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Internal harness annotation count, not an execution tool count. Proposed interpretation; no semantic approval granted."
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.harnessSectionHash",
+   "subtree": true,
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Native harness-section digest. Proposed interpretation; no semantic approval granted."
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.totalTokens",
+   "subtree": true,
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Native context-size derivation, not consumption; existing SDK/emitter interpretation and exact operands are preserved. Proposed interpretation; no semantic approval granted."
+  },
+  {
+   "variant": "user/tool_result",
+   "path": "tool_use_result.canContinueAgent",
+   "subtree": true,
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+   ],
+   "note": "Native continuation capability flag; no future execution is asserted. Proposed interpretation; no semantic approval granted."
   }
  ],
  "vendor_inventory": "2.1.304-vendor-inventory.json",

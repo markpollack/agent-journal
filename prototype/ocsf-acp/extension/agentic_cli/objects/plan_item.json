@@ -1,0 +1,17 @@
+{
+  "caption": "Plan Item",
+  "description": "One item in the source's plan snapshot.",
+  "extends": "object",
+  "name": "plan_item",
+  "attributes": {
+    "element_index": {
+      "requirement": "optional"
+    },
+    "text": {
+      "requirement": "optional"
+    },
+    "reported_completed": {
+      "requirement": "optional"
+    }
+  }
+}

@@ -142,7 +142,7 @@ class StandaloneEventFileTest {
     }
 
     @Test
-    void theWholeRunAloneIsAcceptedByTheOracleAndTheToolWithoutAnyManifest(@TempDir Path work) throws Exception {
+    void theWholeRunAloneIsReadableButUnknownMeaningsStillBlockAcceptance(@TempDir Path work) throws Exception {
         Path fixture = copy(CODEX, work.resolve("src"));
         Path alone = alone(pkg(fixture), work.resolve("alone"));
         OcsfPackage p = PackageReader.open(alone.resolve("events.jsonl"));
@@ -153,7 +153,8 @@ class StandaloneEventFileTest {
         assertThat(report.outcome("package.state", "main")).isEqualTo(Check.Outcome.VERIFIED);
         assertThat(report.outcome("acquisition.complete", "main")).isEqualTo(Check.Outcome.VERIFIED);
         assertThat(report.outcome("source.extent", "main/rollout.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
-        assertThat(OcsfReaderTool.acceptance(report).exit()).isEqualTo(OcsfReaderTool.EXIT_OK);
+        assertThat(OcsfReaderTool.acceptance(report).exit()).isEqualTo(OcsfReaderTool.EXIT_INCOMPLETE);
+        assertThat(report.withOutcome(Check.Outcome.UNRESOLVED)).hasSize(3).allMatch(c -> c.property().equals("source.meaning"));
         Json measure = PackageMeasure.measure(p);
         assertThat(measure.member("declaration_lines")).isNotNull();
         assertThat(Integer.parseInt(measure.member("declaration_bytes").scalarText())).isPositive();
@@ -245,9 +246,12 @@ class StandaloneEventFileTest {
         assertThat(p.diagnosticsWithCode("READER_CONTRACT_MINOR_DIFFERS")).hasSize(1);
         assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
         assertThat(p.events).hasSize(39);
+        // The old fixture predates exact compatibility bindings; exercise its historical contract.
+        OcsfFixtures.editExpected(fixture, manifest -> manifest.member("sources").elements()
+                .forEach(source -> obj(source).members().remove("binding")));
         OracleReport report = OcsfOracle.verify(p, natives(fixture));
-        // the layout reads; under the current reading its usage predates the canonical tranches (no component bases, no conditional uncached value)
-        assertThat(report.defects()).as(report.toString()).extracting(Check::property).containsOnly("usage.values");
+        // The layout reads; its older projection lacks last-usage observations, tranche bases and newly read settings.
+        assertThat(report.defects()).as(report.toString()).extracting(Check::property).containsOnly("population.usage", "usage.values", "context.values");
         assertThat(report.check("usage.values", "main/rollout.jsonl").detail()).contains("components[] has no entry for uncached_input_tokens");
 
         Path alone = alone(pkg(fixture), work.resolve("hist-alone"));

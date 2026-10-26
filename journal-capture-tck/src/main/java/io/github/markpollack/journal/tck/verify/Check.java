@@ -14,7 +14,22 @@ package io.github.markpollack.journal.tck.verify;
  *        the checks that count them (populations, values, children, opaque bytes); {@code null} when the check does not
  *        count occurrences. The coverage summary compares it with the native population it derives independently.
  */
-public record Check(Category category, String property, String owner, Outcome outcome, String detail, Integer occurrences) {
+public record Check(Category category, String property, String owner, Outcome outcome, String detail, Integer occurrences, Evidence evidence) {
+
+    /** Exact inputs and outputs of an executed comparison; null JSON means missing, not JSON null. */
+    public record Evidence(String meaning, String fact, java.util.List<String> nativeAddresses,
+            String assertion, Json expected, Json actual, Json assertionValue) {
+        public Evidence(String meaning, String fact, java.util.List<String> nativeAddresses, String assertion, Json expected, Json actual) {
+            this(meaning, fact, nativeAddresses, assertion, expected, actual, actual);
+        }
+        public Evidence {
+            nativeAddresses = java.util.List.copyOf(nativeAddresses);
+        }
+    }
+
+    public Check(Category category, String property, String owner, Outcome outcome, String detail, Integer occurrences) {
+        this(category, property, owner, outcome, detail, occurrences, null);
+    }
 
     /** A check that does not count occurrences. */
     public Check(Category category, String property, String owner, Outcome outcome, String detail) {

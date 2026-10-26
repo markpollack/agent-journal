@@ -23,6 +23,10 @@
         "4": {
           "caption": "Outcome reported",
           "description": "The CLI reports how its run or session ended (an exit code, a lifecycle state, a cancellation flag) in its own record. It is the CLI's report, kept apart from Journal's observation of the process."
+        },
+        "5": {
+          "caption": "State reported",
+          "description": "The source reports task or plan state. No model invocation, prompt submission or tool lifecycle stage is inferred."
         }
       }
     },
@@ -118,6 +122,54 @@
       "group": "context",
       "requirement": "optional",
       "description": "The native record exactly as reported."
+    },
+    "execution_metrics": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "duration": {
+      "description": "The source-reported elapsed execution time in integral milliseconds. No start/end timestamps or aggregation window are inferred. Exact non-integral durations use execution_metrics in their native unit.",
+      "group": "occurrence",
+      "requirement": "optional"
+    },
+    "errors": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "plan_items": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "task_uid": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "end_time": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "task_description": {
+      "requirement": "optional"
+    },
+    "agent_type": {
+      "requirement": "optional"
+    },
+    "status_basis_id": {
+      "requirement": "optional"
+    },
+    "status_basis": {
+      "requirement": "optional"
+    },
+    "model_ref": {
+      "requirement": "optional"
+    },
+    "agent_uid": {
+      "requirement": "optional",
+      "group": "primary"
+    },
+    "derivation": {
+      "group": "primary",
+      "requirement": "optional"
     }
   }
 }

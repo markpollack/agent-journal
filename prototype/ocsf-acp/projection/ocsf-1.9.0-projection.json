@@ -6,7 +6,7 @@
  },
  "extension": {
   "name": "agentic_cli",
-  "version": "0.13.0-prototype"
+  "version": "0.14.0-prototype"
  },
  "purpose": "Comparison inventory only: for each attribute our extension defines, the upstream attribute it means, if any, and the verdict. It does not reshape the extension; our attributes and names are kept.",
  "evidence_class": "source-verified",
@@ -2520,6 +2520,407 @@
    "upstream": null,
    "verdict": "no_counterpart",
    "caveat": "OCSF 1.9.0 has no notion of assembling one execution from several native sources; the assembly role, entity and per-field evidence are Journal provenance with no upstream attribute."
+  },
+  {
+   "ours": "agent_state.session_uid",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "agent_state.reported_state",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "agent_state.text",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "execution_metric.metric_name",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "execution_metric.reported_value",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "execution_metric.metric_unit",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "execution_metric.scope_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "execution_metric.scope",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "execution_metric.measurement_status_id",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "execution_metric.source_ref",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "execution_metric.native_pointers",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "execution_metric.model_ref",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "file_change.element_index",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "file_change.file_path",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "file_change.change_kind",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "server_connection.element_index",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "server_connection.name",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "server_connection.reported_state",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "server_connection.configuration_source",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "plan_item.element_index",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "plan_item.text",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "plan_item.reported_completed",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "session_settings.server_connections",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "session_settings.reasoning_effort",
+   "ours_kind": "object",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "model_response.execution_metrics",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "model_response.duration",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "prompt_turn.execution_metrics",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "prompt_turn.duration",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "prompt_turn.errors",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "session_context.execution_metrics",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "session_context.duration",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "session_context.errors",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "session_context.plan_items",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "session_context.task_uid",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "session_context.end_time",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "session_context.task_description",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "session_context.agent_type",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "session_context.status_basis_id",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "session_context.status_basis",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "session_context.model_ref",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "session_context.agent_uid",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "source_record.execution_metrics",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "source_record.duration",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "tool_call.execution_metrics",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "tool_call.duration",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "tool_call.errors",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "tool_call.file_changes",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "tool_call.sender_session_uid",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "tool_call.recipient_session_uids",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "tool_call.agent_states",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "tool_call.content_blocks",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "execution_metric.data",
+   "ours_kind": "object",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute retains the native usage object exactly."
+  },
+  {
+   "ours": "session_context.derivation",
+   "ours_kind": "class",
+   "upstream": null,
+   "upstream_file": null,
+   "verdict": "no_counterpart",
+   "caveat": "No upstream attribute names the rule and inputs behind a derived value."
+  },
+  {
+   "ours": "model_response.agent_uid",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "prompt_turn.agent_uid",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "source_record.agent_uid",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
+  },
+  {
+   "ours": "tool_call.agent_uid",
+   "ours_kind": "class",
+   "upstream": null,
+   "verdict": "no_counterpart",
+   "caveat": "Source-reported agent execution detail with native provenance and uncertainty; the pinned OCSF 1.9.0 model has no equivalent at this execution scope."
   }
  ],
  "generated_mcp_objects": "The mcp_* objects under objects/mcp/ (0.11.0-prototype) are generated from the pinned MCP JSON Schemas by McpBindingGenerator and are not rowed one by one: OCSF 1.9.0 has no MCP vocabulary, so every one would be no_counterpart; their coverage of the pinned MCP definitions is checked by McpProtocolContainmentTest."

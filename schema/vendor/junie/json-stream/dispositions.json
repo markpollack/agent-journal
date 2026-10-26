@@ -1,0 +1,373 @@
+{
+  "kind": "agent-journal/field-dispositions",
+  "version": "0.2",
+  "reviewed": "proposed 2026-10-26; execution does not grant semantic approval",
+  "profile": "junie_stdout",
+  "compatibility_entries": [
+    "junie/json-stream/3813.7-stdout"
+  ],
+  "source_bindings": [
+    {
+      "entry": "junie/json-stream/3813.7-stdout",
+      "version": "3813.7",
+      "routes": [
+        "stdout"
+      ],
+      "specification": "schema/vendor/junie/json-stream/3813.7.json",
+      "specification_sha256": "de2d399a4df450f1c2d062eb7cc4ee04506b969b5c74be56c17b5b8dc97c6d31"
+    }
+  ],
+  "specifications": [
+    "schema/vendor/junie/json-stream/3813.7.json"
+  ],
+  "contract_file": "junie-3813.7-stdout",
+  "evidence_fixtures": [
+    "junie-live-3813.7-terminal",
+    "junie-live-3813.7-view"
+  ],
+  "rule_of_coverage": "Concrete native occurrences use the exact source binding; declarations are assignments only. ExecutedAccounting reports missing comparisons as UNCHECKED. All new classifications remain proposed.",
+  "entries": [
+    {
+      "variant": "result",
+      "path": "changes",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "result",
+      "path": "errorCode",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "result",
+      "path": "errorCode[]",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "result",
+      "path": "errorCode[].cacheCreateTokens",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "session_context.usage_observations[].cache_write_tokens"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "result",
+      "path": "errorCode[].cacheInputTokens",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "session_context.usage_observations[].cache_read_tokens"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "result",
+      "path": "errorCode[].calls",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Reported per-model task call count, with exact model and native array occurrence; no sum with tokens.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "session_context.execution_metrics[].reported_value"
+      ],
+      "rule": "junie.stdout.result->session_context.accounting"
+    },
+    {
+      "variant": "result",
+      "path": "errorCode[].cost",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "session_context.cost_observations[].total_cost"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "result",
+      "path": "errorCode[].inputTokens",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "session_context.usage_observations[].uncached_input_tokens"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "result",
+      "path": "errorCode[].model",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "session_context.usage_observations[].model_ref.name"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "result",
+      "path": "errorCode[].outputTokens",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "session_context.usage_observations[].output_tokens"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "result",
+      "path": "result",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "model_response.content_blocks[].text"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "result",
+      "path": "timestamp",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "*.metadata.original_time"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "result",
+      "path": "type",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "session",
+      "path": "sessionId",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "*.session_uid"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "session",
+      "path": "timestamp",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "*.metadata.original_time"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "session",
+      "path": "type",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "step",
+      "path": "details",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "step",
+      "path": "name",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "step",
+      "path": "output",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "step",
+      "path": "timestamp",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "*.metadata.original_time"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "step",
+      "path": "type",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    }
+  ]
+}

@@ -218,6 +218,23 @@ public final class ExpectedFacts {
     public record ToolError(int recordIndex, String id, int layer, Json code, String message) {
     }
 
+    /**
+     * An independently read fact whose subject is an event or an identified member of one of its collections.
+     * Identity and member keys are native identities or declared scope/window keys, never measured values.
+     * Fields and support are concrete RFC 6901 pointers; a null field value means required absence.
+     * This complements the original family records for source shapes they cannot express.
+     */
+    public record Fact(int recordIndex, String className, int activityId, Map<String, Json> identity,
+            String collection, Map<String, Json> memberIdentity, Map<String, Json> fields,
+            List<String> support, String meaning) {
+        public Fact {
+            identity = java.util.Collections.unmodifiableMap(new LinkedHashMap<>(identity));
+            memberIdentity = java.util.Collections.unmodifiableMap(new LinkedHashMap<>(memberIdentity));
+            fields = java.util.Collections.unmodifiableMap(new LinkedHashMap<>(fields));
+            support = List.copyOf(support);
+        }
+    }
+
     public final String artifact;
     public final List<Mcp> mcp = new ArrayList<>();
     public final List<ToolError> toolErrors = new ArrayList<>();
@@ -226,6 +243,15 @@ public final class ExpectedFacts {
     public final List<Response> responses = new ArrayList<>();
     public final List<Prompt> prompts = new ArrayList<>();
     public final List<Usage> usages = new ArrayList<>();
+    public final Map<Usage, String> usagePointers = new LinkedHashMap<>();
+    public final Map<Usage, Json> usageData = new LinkedHashMap<>();
+
+    void addUsage(Usage usage, String pointer, Json data) {
+        usages.add(usage);
+        usagePointers.put(usage, pointer);
+        usageData.put(usage, data);
+    }
+
     public final List<Cost> costs = new ArrayList<>();
     public final List<Decision> decisions = new ArrayList<>();
     public final List<Operation> operations = new ArrayList<>();
@@ -233,6 +259,9 @@ public final class ExpectedFacts {
     public final List<TurnStarted> started = new ArrayList<>();
     public final List<Context> contexts = new ArrayList<>();
     public final List<Attribute> attributes = new ArrayList<>();
+    public final List<Fact> facts = new ArrayList<>();
+    /** These profiles express their normalized families as attributed facts rather than the legacy family records. */
+    public boolean directFacts;
     /** The tool call a context names as the spawner of the child run it accounts for, by {@code recordIndex:contextKind}; absent means none. */
     public final Map<String, String> contextToolCalls = new LinkedHashMap<>();
     /** Records this core owns and must retain (owner-scoped for a split core; admission-scoped for a bounded source). */
@@ -244,6 +273,8 @@ public final class ExpectedFacts {
     /** Owned records that a normalization rule covers; every other owned record is expected as a whole-record fallback. */
     public final Set<Integer> normalized = new LinkedHashSet<>();
     /** Whether the oracle has no profile for the source: which records a rule normalizes is then not judged, only retention. */
+    public final Map<Integer, String> unresolvedMeanings = new java.util.LinkedHashMap<>();
+
     public boolean classUnjudged;
     /** Records excluded by a declared admission, by record index, with the declared family name. */
     public final Map<Integer, String> excluded = new LinkedHashMap<>();
@@ -261,6 +292,8 @@ public final class ExpectedFacts {
      */
     public ExpectedFacts without(Set<Integer> records) {
         ExpectedFacts f = new ExpectedFacts(artifact);
+        f.usagePointers.putAll(usagePointers);
+        f.usageData.putAll(usageData);
         requests.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.requests::add);
         results.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.results::add);
         responses.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.responses::add);
@@ -273,6 +306,10 @@ public final class ExpectedFacts {
         started.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.started::add);
         contexts.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.contexts::add);
         attributes.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.attributes::add);
+        facts.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.facts::add);
+        f.directFacts = directFacts;
+        f.classUnjudged = classUnjudged;
+        unresolvedMeanings.forEach((record, reason) -> { if (!records.contains(record)) { f.unresolvedMeanings.put(record, reason); } });
         contextToolCalls.forEach((k, v) -> {
             if (!records.contains(Integer.valueOf(k.substring(0, k.indexOf(':'))))) {
                 f.contextToolCalls.put(k, v);
@@ -283,6 +320,11 @@ public final class ExpectedFacts {
         f.owned.addAll(owned);
         normalized.stream().filter(i -> !records.contains(i)).forEach(f.normalized::add);
         f.excluded.putAll(excluded);
+        provenanceWithout(records, f);
+        return f;
+    }
+
+    private void provenanceWithout(Set<Integer> records, ExpectedFacts f) {
         sessionOf.forEach((i, v) -> {
             if (!records.contains(i)) {
                 f.sessionOf.put(i, v);
@@ -298,7 +340,6 @@ public final class ExpectedFacts {
                 f.nativeTime.put(i, v);
             }
         });
-        return f;
     }
 
     public Map<String, Integer> counts() {
@@ -318,6 +359,7 @@ public final class ExpectedFacts {
         m.put("turn_started", started.size());
         m.put("contexts", contexts.size());
         m.put("attributes", attributes.size());
+        m.put("facts", facts.size());
         m.put("mcp", mcp.size());
         m.put("tool_errors", toolErrors.size());
         return m;

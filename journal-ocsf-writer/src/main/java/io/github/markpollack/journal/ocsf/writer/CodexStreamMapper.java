@@ -54,6 +54,7 @@ final class CodexStreamMapper implements SourceMapper {
         if ("thread.started".equals(type) && threadId == null) {
             threadId = text(o, "thread_id");
         }
+        if (ExecutionState.codex(r, ctx, session(ctx))) { return; }
         String family = itype == null ? String.valueOf(type) : type + "/" + itype;
         switch (CodexItems.kind(type, itype)) {
             case RESPONSE -> response(r, ctx, o, itype, family);
@@ -66,7 +67,7 @@ final class CodexStreamMapper implements SourceMapper {
             case OTHER -> {
                 ctx.family(family, r.raw().length, "thread.started".equals(type) ? "retained whole; thread_id is the session identity (session_uid of every later event, rule codex.stream.thread_started->session)"
                         : "turn.started".equals(type) ? "retained-only: turn start without a turn id (meaning known)" : "retained-only: no normalization rule");
-                ctx.emit(ctx.fallback(r, CONTRACT, "codex.stream.fallback->source_record", family, null, null, session(ctx), null));
+                ctx.emit(ExecutionMetrics.add(ctx.fallback(r, CONTRACT, "codex.stream.fallback->source_record", family, null, null, session(ctx), null), r, ctx));
             }
         }
     }
@@ -76,13 +77,13 @@ final class CodexStreamMapper implements SourceMapper {
         Jv.WithDuplicates web = CodexItems.declaredWebSearch(r);
         if (web == null) {
             ctx.family("opaque", r.raw().length, "retained-only: not one JSON object (bytes kept verbatim)");
-            ctx.emit(ctx.opaque(r, CONTRACT));
+            ctx.emit(ExecutionMetrics.add(ctx.opaque(r, CONTRACT), r, ctx));
             return;
         }
         String type = text(web.value(), "type");
         ctx.family(type + "/web_search", r.raw().length, "normalized: tool_call " + ("item.started".equals(type) ? "Requested" : "Result observed")
                 + " from the declared form with item.id twice (exec item id, then the search item's own id); the record is retained verbatim, both ids in raw_data");
-        ctx.emit(ctx.opaque(r, CONTRACT));
+        ctx.emit(ExecutionMetrics.add(ctx.opaque(r, CONTRACT), r, ctx));
         toolCall(r, ctx, web.value(), type, "web_search", false);
     }
 
@@ -118,7 +119,7 @@ final class CodexStreamMapper implements SourceMapper {
         ev.put("session_uid", session(ctx)).put("item_uid", text(it, "id")).put("identity_basis_id", 2).put("identity_basis", IDENTITY_BASIS.get(2)).put("content_blocks", blocks)
                 .put("basis", "codex.stream.content_item.v1: item.completed completes this content item; item_uid is the stream-local item id (the exec processor's item_N); "
                         + "the model response it belongs to is not reported, so no response_uid is written").put("data", o);
-        ctx.emit(ev);
+        ctx.emit(ExecutionMetrics.add(ev, r, ctx));
     }
 
     /** A command execution: a standalone operation observation with its reported command string, state and output. */
@@ -139,7 +140,7 @@ final class CodexStreamMapper implements SourceMapper {
                 : new MapperSupport.Status("completed".equals(state) ? 1 : "failed".equals(state) ? 2 : 0, 1, "reported: item.status");
         Jv.Obj ev = ctx.event("tool_call", 3, r, ctx.timeFor(r, null), CONTRACT, "codex.stream.command_execution->tool_call.operation", null, text(it, "id"), true, status);
         ev.put("session_uid", session(ctx)).put("tool_operation", op).put("data", o);
-        ctx.emit(ev);
+        ctx.emit(ExecutionMetrics.add(ev, r, ctx));
     }
 
     /**
@@ -163,7 +164,7 @@ final class CodexStreamMapper implements SourceMapper {
                 .put("arguments", CodexItems.arguments(itype, it)).put("reported_state", text(it, "status"))
                 .put("tool_result", started ? null : CodexItems.result(itype, it)).put("mcp", "mcp_tool_call".equals(itype) ? CodexItems.mcp(it, started) : null)
                 .put("data", whole ? o : null);
-        ctx.emit(ev);
+        ctx.emit(ExecutionMetrics.add(ExecutionState.tool(ev, it), r, ctx));
     }
 
     /** turn.completed: the thread's cumulative usage as of this turn's completion, with its measurement status. */
@@ -183,6 +184,6 @@ final class CodexStreamMapper implements SourceMapper {
         Jv.Obj ev = ctx.event("prompt_turn", 2, r, ctx.timeFor(r, null), CONTRACT, "codex.stream.turn_completed->prompt_turn.completed", null, null, true,
                 new MapperSupport.Status(0, 3, "turn.completed carries no status"));
         ev.put("session_uid", session(ctx)).put("usage_observations", new Jv.Arr(List.of(ob))).put("data", o);
-        ctx.emit(ev);
+        ctx.emit(ExecutionMetrics.add(ev, r, ctx));
     }
 }

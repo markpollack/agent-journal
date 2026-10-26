@@ -72,10 +72,11 @@ class FinalAssemblyCopilotTest {
         OcsfPackage pkg = PackageReader.open(out.resolve("events.jsonl"));
         // five model calls, each one canonical response consolidating the message, its usage record and its chat span
         assertThat(pkg.events("model_response")).hasSize(5).allSatisfy(e -> assertThat(e.assemblyRole()).isEqualTo(3));
-        // five tool calls: one canonical request, start and result each, however many sources observed them
+        // Five completions plus two separately reported partial results; partial output never becomes another completion.
         assertThat(pkg.events("tool_call", 1)).hasSize(5);
         assertThat(pkg.events("tool_call", 4)).hasSize(5);
-        assertThat(pkg.events("tool_call", 2)).hasSize(5);
+        assertThat(pkg.events("tool_call", 2)).hasSize(7);
+        assertThat(pkg.events("tool_call", 2).stream().filter(e -> "tool.execution_partial_result".equals(e.text("data", "type")))).hasSize(2);
         Json declared = pkg.declarations.assembly();
         assertThat(declared.path("result", "missing_required_roles").elements()).isEmpty();
         assertThat(declared.path("result", "refused_sources").elements()).isEmpty();

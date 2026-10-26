@@ -262,6 +262,7 @@ final class OccurrenceLedger {
         Map<Integer, Map<String, String>> out = new TreeMap<>();
         try (Stream<Path> files = Files.walk(PROJECT.resolve("schema/vendor"))) {
             for (Path p : files.filter(x -> x.getFileName().toString().equals("obligations.json")).toList()) {
+                if ("java-expected-facts".equals(SourceProfile.text(NeutralJson.readDocument(p), "implementation"))) { continue; }
                 CanonicalObligations.Catalog c = CanonicalObligations.read(p);
                 if (!profile.equals(c.profile()) || c.bindings().isEmpty()) {
                     continue;
@@ -271,6 +272,9 @@ final class OccurrenceLedger {
                 for (CanonicalObligations.Occurrence o : CanonicalObligations.occurrences(c, b, fixture, art)) {
                     if (o.unresolved() == null) {
                         out.computeIfAbsent(o.record(), k -> new LinkedHashMap<>()).put(o.pointer(), o.obligation().id());
+                        if ("claude.stream.usage.child-run.agent-result".equals(o.obligation().id())) {
+                            out.get(o.record()).put("/tool_use_result", o.obligation().id());
+                        }
                     }
                 }
             }
@@ -281,6 +285,10 @@ final class OccurrenceLedger {
         return out;
     }
 
+    static String childPath(Occurrence o) {
+        return o.pointer().substring(1).replace("~1", "/").replace("~0", "~").replaceAll("/[0-9]+(?=/|$)", "[]").replace('/', '.');
+    }
+
     static List<Classified> classify(List<Occurrence> occurrences, FieldDispositionTest.Catalog catalog, Families families, String profile,
             Map<Integer, Map<String, String>> carveOuts) {
         List<Classified> out = new ArrayList<>();
@@ -289,6 +297,17 @@ final class OccurrenceLedger {
             String family = families.family(profile, o.key());
             if (o.kind().equals("opaque")) {
                 out.add(new Classified(o, null, catalog == null ? "no_catalog" : "retained", catalog == null ? "no_catalog" : "structural", family));
+                continue;
+            }
+            if (o.opaque() && carveOuts.getOrDefault(o.record(), Map.of()).containsKey("/tool_use_result")
+                    && o.pointer().startsWith("/tool_use_result/")) {
+                String concrete = childPath(o);
+                List<FieldDispositionTest.Entry> selected = FieldDispositionTest.applicable(catalog, o.variant(), concrete);
+                if (selected.size() == 1) {
+                    FieldDispositionTest.Entry entry = selected.get(0);
+                    out.add(new Classified(o, entry.key(), entry.disposition(), classification(entry), families.family(profile, entry.key())));
+                }
+                else { out.add(new Classified(o, null, "unresolved", "unclassified", family)); }
                 continue;
             }
             if (o.opaque()) {
@@ -471,7 +490,7 @@ final class OccurrenceLedger {
             return out;
         }
 
-        /** journal, caller, basis_text, judged:<property> or unjudged. */
+        /** journal, caller, basis_text, assigned:<property> or unjudged. */
         String origin(String key) {
             for (Pattern p : basis) {
                 if (p.matcher(key).matches()) {
@@ -490,7 +509,7 @@ final class OccurrenceLedger {
             }
             for (Map.Entry<Pattern, String> j : judged) {
                 if (j.getKey().matcher(key).matches()) {
-                    return "judged:" + j.getValue();
+                    return "assigned:" + j.getValue();
                 }
             }
             return "unjudged";
@@ -550,7 +569,7 @@ final class OccurrenceLedger {
         for (Assertion a : assertions) {
             String cls = a.key().substring(a.key().indexOf('|') + 1, a.key().indexOf('/'));
             String origin = coverage.origin(a.key());
-            String bucket = origin.startsWith("judged:") ? "judged" : origin;
+            String bucket = origin.startsWith("assigned:") ? "assigned" : origin;
             out.computeIfAbsent(cls, k -> new TreeMap<>()).computeIfAbsent(bucket, k -> new TreeMap<>()).merge(a.key(), 1, Integer::sum);
         }
         return out;

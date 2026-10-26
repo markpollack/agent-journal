@@ -15,7 +15,14 @@
    "sha256": "bf6177b0d1369d16ad4ac2e770bfe6a2920134ef09875dd355bc06ad6c9748fe",
    "bytes": 24042,
    "records": 27,
-   "required": true
+   "required": true,
+   "binding": {
+    "entry_id": "claude-code/stream-json/2.1.299-sdk",
+    "version": "2.1.299",
+    "route": "sdk",
+    "source_specification": "schema/vendor/claude-code/stream-json/2.1.303.json",
+    "specification_sha256": "7e8173afd6c9498b21cb23c6546227abb23878c0f6395106458f717ca83f2767"
+   }
   }
  ],
  "children": [

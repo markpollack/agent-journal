@@ -31,6 +31,6 @@ final class CopilotUsageReportMapper implements SourceMapper {
         ev.put("session_uid", ctx.sessionFor(null)).put("usage_observations", CopilotAccounting.sessionUsage(report, 2, ref)).put("cost_observations", CopilotAccounting.sessionCosts(report, ref))
                 .put("basis", "copilot.usage_report.v1: the usage report the CLI wrote at exit for the launch that named it; a final cumulative snapshot of the session")
                 .put("data", report);
-        ctx.emit(ev);
+        ctx.emit(ReportedQuantities.add(ExecutionMetrics.copilot(ev, report, ""), r, "copilot_usage_report"));
     }
 }

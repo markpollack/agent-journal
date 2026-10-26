@@ -30,7 +30,7 @@ class OcsfReaderToolTest {
 
     @Test
     void everyCommandReadsAnEventsFileAloneAndOnlyTheOptionalViewsNeedTheAncillaryManifest(@TempDir Path work) throws Exception {
-        Path fixture = copy(CODEX, work);
+        Path fixture = copy(OcsfFixtures.LIVE_CODEX, work);
         Path alone = work.resolve("alone");
         Files.createDirectories(alone);
         Files.copy(pkg(fixture).resolve("events.jsonl"), alone.resolve("events.jsonl"));
@@ -67,7 +67,7 @@ class OcsfReaderToolTest {
 
     @Test
     void verifyExitsZeroOnlyWhenAccepted(@TempDir Path work) throws Exception {
-        Path fixture = copy(CODEX, work);
+        Path fixture = copy(OcsfFixtures.LIVE_CODEX, work);
         Result ok = run("verify", pkg(fixture).toString(), natives(fixture).toString(), work.resolve("report.json").toString());
         assertThat(ok.exit()).as(ok.out()).isEqualTo(OcsfReaderTool.EXIT_OK);
         assertThat(ok.out()).contains("acceptance: ACCEPTED");

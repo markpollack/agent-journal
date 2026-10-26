@@ -1,6 +1,6 @@
 {
  "kind": "agent-journal/conformance-baseline",
- "version": "0.4",
+ "version": "0.5",
  "catalog": "schema/vendor/claude-code/stream-json/obligations.json",
  "meaning": "the reviewed obligation set (id, revision, meaning digest, relevant digest), the reviewed residual set (variant, path, classification, digest), the judged population (per binding: its entry's admission, every recording with its native stream hash, every occurrence id) and the frozen debt by exact finding identity (category and id) with its reason. CanonicalConformanceTest fails on a new finding, on frozen debt that no longer occurs, and on any changed obligation, residual or population: an edit here is the reviewable change, never its approval. Holding the baseline is not acceptance: category 6 keeps the semantic review state",
  "changes": [
@@ -15,57 +15,13 @@
   {
    "revision": "0.4 (ACCT-1, 2026-10-26)",
    "summary": "Four non-token obligations added (claude.stream.cost.model r1: per-model running USD cost on the result record's accounting event; claude.stream.run.duration r1: duration_ms to the Turn completed event's duration; claude.stream.child-run.agent-result.status r1 and .duration r1: the Agent envelope's status and totalDurationMs on the child-run accounting event), each with its own kind (cost, attribute); one unresolved residual for the Agent envelope's remaining members (resolvedModel, counters, agentId, agentType: capacity gaps). Every obligation now binds the writer's basis prefixes (writer.basis_prefixes) and the gate checks the event's rule_uid against rules and the basis against the prefixes, so all seven meaning digests were restated (algorithm change; no approval existed to invalidate) and the last-response obligation names the event rule too (relevant digest restated). Population: 14 occurrences added on unchanged recordings (2.1.299: cost, run duration, agent status and duration; 2.1.304: cost x4, run duration x4, agent status, agent duration): 74 -> 88. Frozen debt: 4 approval ids and 1 residual approval and 1 unresolved id added: 45 -> 51"
+  },
+  {
+   "revision": "0.5 (executed accounting, 2026-10-26)",
+   "summary": "All selected independent readers and catalogs now exist: remove 33 obsolete missing-registration findings. Child model, identity and execution counters have typed comparisons, removing the obsolete unresolved residual and its approval row. The child-state meaning r2 removes its obsolete capacity-gap statement; its proposed approval remains pending. Three relevant digests change with execution-time and child-context schema semantics. Native recordings and the 88 legacy obligation occurrences are unchanged apart from that revision. Exactly 16 pending approvals remain: eleven obligations and five residual classifications. No semantic approval or route admission is granted."
   }
  ],
  "obligations": [
-  {
-   "id": "claude.stream.child-run.agent-result.duration",
-   "revision": 1,
-   "meaning_digest": "sha256:58931b1bec14e147be814dd5709b23ecd394618b5fe7db6d0285d124f3a5c1ba",
-   "relevant_digest": "sha256:98c3ecb12332be8ff7184b894b03153b6dea4d188cc30aeacc416d824dd422f4"
-  },
-  {
-   "id": "claude.stream.child-run.agent-result.status",
-   "revision": 1,
-   "meaning_digest": "sha256:f0b559f1e5773395e4934cdf0b1e27877a0c774667eeb992ee9ad379207a4c2b",
-   "relevant_digest": "sha256:b85a51334c4fe247b36658d3f5996e0aadb386ccf1b595321a3ef085d8fc8666"
-  },
-  {
-   "id": "claude.stream.cost.model",
-   "revision": 1,
-   "meaning_digest": "sha256:4123d49b9734ba6bcceb3bc7417575402ea09f3b1f618fe819e2e27a057e9045",
-   "relevant_digest": "sha256:34ed09172ede57939f30ddd9c611ef7ba8607b5400f9561551c419ef3b0e0f36"
-  },
-  {
-   "id": "claude.stream.run.duration",
-   "revision": 1,
-   "meaning_digest": "sha256:ce4f0d1ed63841c7bb431e48b8d72503960c1ff8aa4e24d65d1374095c8977b9",
-   "relevant_digest": "sha256:1ccac8843d8afd8eb5b844b139a1e1a5cb18bd92ff5968407bf34f7a6acf60dd"
-  },
-  {
-   "id": "claude.stream.usage.child-run.agent-result",
-   "revision": 3,
-   "meaning_digest": "sha256:def36909c43c702241f70a2ce607aa08a72d4b4d5b4aba33274f1a9570cef290",
-   "relevant_digest": "sha256:9569bf947a6f4d20db7d626b4ecc7c80835df982c585378ea048d7371cdf1bee"
-  },
-  {
-   "id": "claude.stream.usage.child-run.task-notification",
-   "revision": 2,
-   "meaning_digest": "sha256:6d3d85e2f615aafd554d094ab3b27b362e03ae357ee6dff88fd0a09413ae15ac",
-   "relevant_digest": "sha256:168041e823a52d239ac75be722cc6a73b97438a35611f350844a157abfb70a2a"
-  },
-  {
-   "id": "claude.stream.usage.child-run.task-progress",
-   "revision": 2,
-   "meaning_digest": "sha256:adacb96c2034dfb0168f609d04323ef2670383096189fde960a81285330cb4f0",
-   "relevant_digest": "sha256:168041e823a52d239ac75be722cc6a73b97438a35611f350844a157abfb70a2a"
-  },
-  {
-   "id": "claude.stream.usage.model",
-   "revision": 1,
-   "meaning_digest": "sha256:fceec05bd0a9faeb86b9a48f23bdd730ab0f4d1cd16d14a27a0219524c1d6123",
-   "relevant_digest": "sha256:0ff61a4278e880158f0cf04f8f1dab10fefc6ab604ecd5525f948170dbcb4a54"
-  },
   {
    "id": "claude.stream.usage.model-response",
    "revision": 1,
@@ -83,44 +39,103 @@
    "revision": 1,
    "meaning_digest": "sha256:f2d10fd3f4ffa2e13ea113fc20d333b88f3bc9ca70824d57313000222d75fd2f",
    "relevant_digest": "sha256:0297dafd2b2e74fda69a326e38efeab05e1f6a89693c66231edbb65c08200adf"
+  },
+  {
+   "id": "claude.stream.usage.model",
+   "revision": 1,
+   "meaning_digest": "sha256:fceec05bd0a9faeb86b9a48f23bdd730ab0f4d1cd16d14a27a0219524c1d6123",
+   "relevant_digest": "sha256:0ff61a4278e880158f0cf04f8f1dab10fefc6ab604ecd5525f948170dbcb4a54"
+  },
+  {
+   "id": "claude.stream.usage.child-run.agent-result",
+   "revision": 3,
+   "meaning_digest": "sha256:def36909c43c702241f70a2ce607aa08a72d4b4d5b4aba33274f1a9570cef290",
+   "relevant_digest": "sha256:9569bf947a6f4d20db7d626b4ecc7c80835df982c585378ea048d7371cdf1bee"
+  },
+  {
+   "id": "claude.stream.usage.child-run.task-progress",
+   "revision": 2,
+   "meaning_digest": "sha256:adacb96c2034dfb0168f609d04323ef2670383096189fde960a81285330cb4f0",
+   "relevant_digest": "sha256:168041e823a52d239ac75be722cc6a73b97438a35611f350844a157abfb70a2a"
+  },
+  {
+   "id": "claude.stream.usage.child-run.task-notification",
+   "revision": 2,
+   "meaning_digest": "sha256:6d3d85e2f615aafd554d094ab3b27b362e03ae357ee6dff88fd0a09413ae15ac",
+   "relevant_digest": "sha256:168041e823a52d239ac75be722cc6a73b97438a35611f350844a157abfb70a2a"
+  },
+  {
+   "id": "claude.stream.cost.model",
+   "revision": 1,
+   "meaning_digest": "sha256:4123d49b9734ba6bcceb3bc7417575402ea09f3b1f618fe819e2e27a057e9045",
+   "relevant_digest": "sha256:34ed09172ede57939f30ddd9c611ef7ba8607b5400f9561551c419ef3b0e0f36"
+  },
+  {
+   "id": "claude.stream.run.duration",
+   "revision": 1,
+   "meaning_digest": "sha256:ce4f0d1ed63841c7bb431e48b8d72503960c1ff8aa4e24d65d1374095c8977b9",
+   "relevant_digest": "sha256:231d3c635c1675f5e6eb1b9154f66b2c6fc16b5aa54db42a0c8959730edccebb"
+  },
+  {
+   "id": "claude.stream.child-run.agent-result.status",
+   "revision": 2,
+   "meaning_digest": "sha256:f28919519d6d0c4f212758cf9199d49771d7957f95409d9f826a1a3d8255d152",
+   "relevant_digest": "sha256:b85a51334c4fe247b36658d3f5996e0aadb386ccf1b595321a3ef085d8fc8666"
+  },
+  {
+   "id": "claude.stream.child-run.agent-result.duration",
+   "revision": 1,
+   "meaning_digest": "sha256:58931b1bec14e147be814dd5709b23ecd394618b5fe7db6d0285d124f3a5c1ba",
+   "relevant_digest": "sha256:2de5fbc33a328bf26ff3c94c3d66795961e8bccd7a3010818634b4046f40004f"
   }
  ],
  "residuals": [
   {
    "variant": "system/thinking_tokens",
    "path": "estimated_tokens",
+   "members": [],
    "classification": "vendor_specific",
-   "digest": "sha256:6d5b3fadc5a4921e00a51c44cde602dda4588d0b1aa4a08298bdcfa1c5791d35"
+   "digest": "sha256:6d5b3fadc5a4921e00a51c44cde602dda4588d0b1aa4a08298bdcfa1c5791d35",
+   "review_status": "proposed"
   },
   {
    "variant": "system/thinking_tokens",
    "path": "estimated_tokens_delta",
+   "members": [],
    "classification": "vendor_specific",
-   "digest": "sha256:9099025b67a75d6d3ecd4faa790d1c869d3c22161307762467315b7716a1a45e"
+   "digest": "sha256:9099025b67a75d6d3ecd4faa790d1c869d3c22161307762467315b7716a1a45e",
+   "review_status": "proposed"
   },
   {
    "variant": "result",
    "path": "modelUsage.{*}.maxOutputTokens",
+   "members": [],
    "classification": "vendor_specific",
-   "digest": "sha256:a14a08fac199e0089e1da69498c4b114e69331659944d16b164b0604b40c5971"
+   "digest": "sha256:a14a08fac199e0089e1da69498c4b114e69331659944d16b164b0604b40c5971",
+   "review_status": "proposed"
   },
   {
    "variant": "user/tool_result",
    "path": "tool_use_result.totalTokens",
+   "members": [],
    "classification": "vendor_specific",
-   "digest": "sha256:6977b8bd8c62157a0718ef62d2a96b439b2d1e09d4ee2c7083c9fa8026142c80"
+   "digest": "sha256:6977b8bd8c62157a0718ef62d2a96b439b2d1e09d4ee2c7083c9fa8026142c80",
+   "review_status": "proposed"
   },
   {
    "variant": "user/tool_result",
    "path": "tool_use_result.usage.iterations[]",
+   "members": [
+    "input_tokens",
+    "output_tokens",
+    "cache_read_input_tokens",
+    "cache_creation_input_tokens",
+    "cache_creation.ephemeral_1h_input_tokens",
+    "cache_creation.ephemeral_5m_input_tokens"
+   ],
    "classification": "vendor_specific",
-   "digest": "sha256:38286cd380ac785c15f732aa8bdbaf143f871d6830867c3670750dcf42dfc8ea"
-  },
-  {
-   "variant": "user/tool_result",
-   "path": "tool_use_result",
-   "classification": "unresolved",
-   "digest": "sha256:c34b10077b3798c5f34ed89c8f4436ce3b1702991fe81631a65222fb08f22a1a"
+   "digest": "sha256:38286cd380ac785c15f732aa8bdbaf143f871d6830867c3670750dcf42dfc8ea",
+   "review_status": "proposed"
   }
  ],
  "population": [
@@ -139,7 +154,7 @@
    ],
    "occurrences": [
     "claude.stream.child-run.agent-result.duration@r1|claude-child-2.1.299|stream.jsonl:24|/tool_use_result/totalDurationMs|main",
-    "claude.stream.child-run.agent-result.status@r1|claude-child-2.1.299|stream.jsonl:24|/tool_use_result/status|main",
+    "claude.stream.child-run.agent-result.status@r2|claude-child-2.1.299|stream.jsonl:24|/tool_use_result/status|main",
     "claude.stream.cost.model@r1|claude-child-2.1.299|stream.jsonl:27|/modelUsage/claude-haiku-4-5-20251001/costUSD|main",
     "claude.stream.run.duration@r1|claude-child-2.1.299|stream.jsonl:27|/duration_ms|main",
     "claude.stream.usage.child-run.agent-result@r3|claude-child-2.1.299|stream.jsonl:24|/tool_use_result/usage|main",
@@ -187,7 +202,7 @@
    ],
    "occurrences": [
     "claude.stream.child-run.agent-result.duration@r1|claude-live-2.1.304-features|stream.jsonl:33|/tool_use_result/totalDurationMs|main",
-    "claude.stream.child-run.agent-result.status@r1|claude-live-2.1.304-features|stream.jsonl:33|/tool_use_result/status|main",
+    "claude.stream.child-run.agent-result.status@r2|claude-live-2.1.304-features|stream.jsonl:33|/tool_use_result/status|main",
     "claude.stream.cost.model@r1|claude-live-2.1.304-denial|stream.jsonl:18|/modelUsage/claude-haiku-5-5/costUSD|main",
     "claude.stream.cost.model@r1|claude-live-2.1.304-features|stream.jsonl:50|/modelUsage/claude-haiku-5-5/costUSD|main",
     "claude.stream.cost.model@r1|claude-live-2.1.304-mcp-pair|stream.jsonl:15|/modelUsage/claude-haiku-5-5/costUSD|main",
@@ -259,259 +274,84 @@
  ],
  "frozen": [
   {
-   "category": 5,
-   "id": "disposition-catalog:claude-code/session-transcript/2.1.304-session-file",
-   "reason": "D2 dependency: no field-disposition catalog lists claude-code/session-transcript/2.1.304-session-file (required: final-assembly profile claude-code/2.1.304/stdout+session-file)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-catalog:github-copilot-cli/events/1.0.100-session-file",
-   "reason": "D2 dependency: no field-disposition catalog lists github-copilot-cli/events/1.0.100-session-file (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-catalog:github-copilot-cli/events/1.0.100-stdout",
-   "reason": "D2 dependency: no field-disposition catalog lists github-copilot-cli/events/1.0.100-stdout (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-catalog:github-copilot-cli/otel/1.0.100",
-   "reason": "D2 dependency: no field-disposition catalog lists github-copilot-cli/otel/1.0.100 (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-catalog:github-copilot-cli/usage-report/1.0.100",
-   "reason": "D2 dependency: no field-disposition catalog lists github-copilot-cli/usage-report/1.0.100 (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-catalog:junie/json-stream/3813.7-stdout",
-   "reason": "D2 dependency: no field-disposition catalog lists junie/json-stream/3813.7-stdout (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-catalog:junie/session-events/3813.7",
-   "reason": "D2 dependency: no field-disposition catalog lists junie/session-events/3813.7 (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-catalog:junie/session-summary/3813.7",
-   "reason": "D2 dependency: no field-disposition catalog lists junie/session-summary/3813.7 (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-gate:claude-code/session-transcript/2.1.304-session-file",
-   "reason": "D2 dependency: FieldDispositionTest does not register profile claude_transcript (required: final-assembly profile claude-code/2.1.304/stdout+session-file)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-gate:github-copilot-cli/events/1.0.100-session-file",
-   "reason": "D2 dependency: FieldDispositionTest does not register profile copilot_events (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-gate:github-copilot-cli/events/1.0.100-stdout",
-   "reason": "D2 dependency: FieldDispositionTest does not register profile copilot_events (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-gate:github-copilot-cli/otel/1.0.100",
-   "reason": "D2 dependency: FieldDispositionTest does not register profile copilot_otel (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-gate:github-copilot-cli/usage-report/1.0.100",
-   "reason": "D2 dependency: FieldDispositionTest does not register profile copilot_usage_report (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-gate:junie/json-stream/3813.7-stdout",
-   "reason": "D2 dependency: FieldDispositionTest does not register profile junie_stdout (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-gate:junie/session-events/3813.7",
-   "reason": "D2 dependency: FieldDispositionTest does not register profile junie_session_events (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
-  },
-  {
-   "category": 5,
-   "id": "disposition-gate:junie/session-summary/3813.7",
-   "reason": "D2 dependency: FieldDispositionTest does not register profile junie_summary (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
-  },
-  {
-   "category": 5,
-   "id": "obligation-catalog:antigravity-cli/stream-json/1.4.6-stdout",
-   "reason": "D2 dependency: no canonical-obligation catalog binds antigravity-cli/stream-json/1.4.6-stdout (required: admitted)"
-  },
-  {
-   "category": 5,
-   "id": "obligation-catalog:claude-code/session-transcript/2.1.304-session-file",
-   "reason": "D2 dependency: no canonical-obligation catalog binds claude-code/session-transcript/2.1.304-session-file (required: final-assembly profile claude-code/2.1.304/stdout+session-file)"
-  },
-  {
-   "category": 5,
-   "id": "obligation-catalog:codex-cli/exec-json-stream/0.160.1",
-   "reason": "D2 dependency: no canonical-obligation catalog binds codex-cli/exec-json-stream/0.160.1 (required: admitted)"
-  },
-  {
-   "category": 5,
-   "id": "obligation-catalog:github-copilot-cli/events/1.0.100-session-file",
-   "reason": "D2 dependency: no canonical-obligation catalog binds github-copilot-cli/events/1.0.100-session-file (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "obligation-catalog:github-copilot-cli/events/1.0.100-stdout",
-   "reason": "D2 dependency: no canonical-obligation catalog binds github-copilot-cli/events/1.0.100-stdout (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "obligation-catalog:github-copilot-cli/otel/1.0.100",
-   "reason": "D2 dependency: no canonical-obligation catalog binds github-copilot-cli/otel/1.0.100 (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "obligation-catalog:github-copilot-cli/usage-report/1.0.100",
-   "reason": "D2 dependency: no canonical-obligation catalog binds github-copilot-cli/usage-report/1.0.100 (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "obligation-catalog:junie/json-stream/3813.7-stdout",
-   "reason": "D2 dependency: no canonical-obligation catalog binds junie/json-stream/3813.7-stdout (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
-  },
-  {
-   "category": 5,
-   "id": "obligation-catalog:junie/session-events/3813.7",
-   "reason": "D2 dependency: no canonical-obligation catalog binds junie/session-events/3813.7 (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
-  },
-  {
-   "category": 5,
-   "id": "obligation-catalog:junie/session-summary/3813.7",
-   "reason": "D2 dependency: no canonical-obligation catalog binds junie/session-summary/3813.7 (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
-  },
-  {
-   "category": 5,
-   "id": "oracle-profile:github-copilot-cli/events/1.0.100-session-file",
-   "reason": "D2 dependency: no independent oracle source profile for copilot_events (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "oracle-profile:github-copilot-cli/events/1.0.100-stdout",
-   "reason": "D2 dependency: no independent oracle source profile for copilot_events (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report; final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "oracle-profile:github-copilot-cli/otel/1.0.100",
-   "reason": "D2 dependency: no independent oracle source profile for copilot_otel (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "oracle-profile:github-copilot-cli/usage-report/1.0.100",
-   "reason": "D2 dependency: no independent oracle source profile for copilot_usage_report (required: final-assembly profile github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report)"
-  },
-  {
-   "category": 5,
-   "id": "oracle-profile:junie/json-stream/3813.7-stdout",
-   "reason": "D2 dependency: no independent oracle source profile for junie_stdout (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
-  },
-  {
-   "category": 5,
-   "id": "oracle-profile:junie/session-events/3813.7",
-   "reason": "D2 dependency: no independent oracle source profile for junie_session_events (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
-  },
-  {
-   "category": 5,
-   "id": "oracle-profile:junie/session-summary/3813.7",
-   "reason": "D2 dependency: no independent oracle source profile for junie_summary (required: final-assembly profile junie/3813.7/session-summary+session-events+stdout+stderr)"
-  },
-  {
-   "category": 6,
-   "id": "approval:claude.stream.child-run.agent-result.duration@r1",
-   "reason": "ACCT-1 candidate obligation (the Agent envelope's totalDurationMs as the child-run accounting event's duration); no Owner decision approves it"
-  },
-  {
-   "category": 6,
-   "id": "approval:claude.stream.child-run.agent-result.status@r1",
-   "reason": "ACCT-1 candidate obligation (the Agent envelope's status as the child-run accounting event's reported_state); no Owner decision approves it"
-  },
-  {
-   "category": 6,
-   "id": "approval:claude.stream.cost.model@r1",
-   "reason": "ACCT-1 candidate obligation (per-model running USD cost on the result record's accounting event); no Owner decision approves it"
-  },
-  {
-   "category": 6,
-   "id": "approval:claude.stream.run.duration@r1",
-   "reason": "ACCT-1 candidate obligation (the run's reported duration_ms as the Turn completed event's duration); no Owner decision approves it"
-  },
-  {
-   "category": 6,
-   "id": "approval:claude.stream.usage.child-run.agent-result@r3",
-   "reason": "closeout candidate revision (the zero-default object is Possibly default, not an evidenced response; r2 aggregation 3 Single response with emitter grounds); no Owner decision approves it"
-  },
-  {
-   "category": 6,
-   "id": "approval:claude.stream.usage.child-run.task-notification@r2",
-   "reason": "R1 candidate revision (semantics restated with emitter grounds); no Owner decision approves it"
-  },
-  {
-   "category": 6,
-   "id": "approval:claude.stream.usage.child-run.task-progress@r2",
-   "reason": "R1 candidate revision (semantics restated with emitter grounds); no Owner decision approves it"
-  },
-  {
    "category": 6,
    "id": "approval:claude.stream.usage.model-response@r1",
-   "reason": "pending semantic review: the D1 return's packet presents this obligation; no Owner decision yet"
-  },
-  {
-   "category": 6,
-   "id": "approval:claude.stream.usage.model@r1",
-   "reason": "pending semantic review: the D1 return's packet presents this obligation; no Owner decision yet"
-  },
-  {
-   "category": 6,
-   "id": "approval:claude.stream.usage.run.last-response@r1",
-   "reason": "closeout candidate obligation (a sole message entry of result.usage.iterations[] is the final usage of the run's last main-thread response, aggregation 3 Single response); no Owner decision approves it"
+   "reason": "no Owner decision approves claude.stream.usage.model-response@r1 at its meaning and relevant digests (review status: proposed)"
   },
   {
    "category": 6,
    "id": "approval:claude.stream.usage.run@r1",
-   "reason": "pending semantic review: the D1 return's packet presents this obligation; no Owner decision yet"
+   "reason": "no Owner decision approves claude.stream.usage.run@r1 at its meaning and relevant digests (review status: proposed)"
   },
   {
    "category": 6,
-   "id": "approval:residual:result:modelUsage.{*}.maxOutputTokens",
-   "reason": "R1: a residual classification is a reviewable meaning (it decides that a token-named member owes no canonical outcome); no Owner decision approves this one"
+   "id": "approval:claude.stream.usage.run.last-response@r1",
+   "reason": "no Owner decision approves claude.stream.usage.run.last-response@r1 at its meaning and relevant digests (review status: proposed)"
+  },
+  {
+   "category": 6,
+   "id": "approval:claude.stream.usage.model@r1",
+   "reason": "no Owner decision approves claude.stream.usage.model@r1 at its meaning and relevant digests (review status: proposed)"
+  },
+  {
+   "category": 6,
+   "id": "approval:claude.stream.usage.child-run.agent-result@r3",
+   "reason": "no Owner decision approves claude.stream.usage.child-run.agent-result@r3 at its meaning and relevant digests (review status: proposed)"
+  },
+  {
+   "category": 6,
+   "id": "approval:claude.stream.usage.child-run.task-progress@r2",
+   "reason": "no Owner decision approves claude.stream.usage.child-run.task-progress@r2 at its meaning and relevant digests (review status: proposed)"
+  },
+  {
+   "category": 6,
+   "id": "approval:claude.stream.usage.child-run.task-notification@r2",
+   "reason": "no Owner decision approves claude.stream.usage.child-run.task-notification@r2 at its meaning and relevant digests (review status: proposed)"
+  },
+  {
+   "category": 6,
+   "id": "approval:claude.stream.cost.model@r1",
+   "reason": "no Owner decision approves claude.stream.cost.model@r1 at its meaning and relevant digests (review status: proposed)"
+  },
+  {
+   "category": 6,
+   "id": "approval:claude.stream.run.duration@r1",
+   "reason": "no Owner decision approves claude.stream.run.duration@r1 at its meaning and relevant digests (review status: proposed)"
+  },
+  {
+   "category": 6,
+   "id": "approval:claude.stream.child-run.agent-result.status@r2",
+   "reason": "no Owner decision approves claude.stream.child-run.agent-result.status@r2 at its meaning and relevant digests (review status: proposed)"
+  },
+  {
+   "category": 6,
+   "id": "approval:claude.stream.child-run.agent-result.duration@r1",
+   "reason": "no Owner decision approves claude.stream.child-run.agent-result.duration@r1 at its meaning and relevant digests (review status: proposed)"
   },
   {
    "category": 6,
    "id": "approval:residual:system/thinking_tokens:estimated_tokens",
-   "reason": "R1: a residual classification is a reviewable meaning (it decides that a token-named member owes no canonical outcome); no Owner decision approves this one"
+   "reason": "no Owner decision approves the vendor_specific classification of system/thinking_tokens:estimated_tokens at its digest (review status: proposed): a residual owes no canonical outcome only once its classification is approved"
   },
   {
    "category": 6,
    "id": "approval:residual:system/thinking_tokens:estimated_tokens_delta",
-   "reason": "R1: a residual classification is a reviewable meaning (it decides that a token-named member owes no canonical outcome); no Owner decision approves this one"
+   "reason": "no Owner decision approves the vendor_specific classification of system/thinking_tokens:estimated_tokens_delta at its digest (review status: proposed): a residual owes no canonical outcome only once its classification is approved"
   },
   {
    "category": 6,
-   "id": "approval:residual:user/tool_result:tool_use_result",
-   "reason": "ACCT-1: the Agent envelope's remaining members are an explicit unresolved residual (capacity gaps); no Owner decision approves this classification"
+   "id": "approval:residual:result:modelUsage.{*}.maxOutputTokens",
+   "reason": "no Owner decision approves the vendor_specific classification of result:modelUsage.{*}.maxOutputTokens at its digest (review status: proposed): a residual owes no canonical outcome only once its classification is approved"
   },
   {
    "category": 6,
    "id": "approval:residual:user/tool_result:tool_use_result.totalTokens",
-   "reason": "R1: a residual classification is a reviewable meaning (it decides that a token-named member owes no canonical outcome); no Owner decision approves this one"
+   "reason": "no Owner decision approves the vendor_specific classification of user/tool_result:tool_use_result.totalTokens at its digest (review status: proposed): a residual owes no canonical outcome only once its classification is approved"
   },
   {
    "category": 6,
    "id": "approval:residual:user/tool_result:tool_use_result.usage.iterations[]",
-   "reason": "R1: a residual classification is a reviewable meaning (it decides that a token-named member owes no canonical outcome); no Owner decision approves this one"
-  },
-  {
-   "category": 6,
-   "id": "unresolved:user/tool_result:tool_use_result",
-   "reason": "ACCT-1: resolvedModel, totalToolUseCount, toolStats, agentId and agentType have no canonical capacity on session_context; a schema addition or an Owner rejection resolves them"
+   "reason": "no Owner decision approves the vendor_specific classification of user/tool_result:tool_use_result.usage.iterations[] at its digest (review status: proposed): a residual owes no canonical outcome only once its classification is approved"
   }
  ]
 }

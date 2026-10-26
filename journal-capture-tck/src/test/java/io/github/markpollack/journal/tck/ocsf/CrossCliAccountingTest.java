@@ -44,7 +44,7 @@ class CrossCliAccountingTest {
 
     /** The generated result: every ledger, the assertion census and the snapshot lines the baseline pins. */
     record Result(List<Ledger> ledgers, Map<String, Map<String, Map<String, Integer>>> census, Map<String, FieldDispositionTest.Catalog> catalogs, Families families,
-            Coverage coverage, List<String> snapshot) {
+            Coverage coverage, Map<String, ExecutedAccounting.Run> executed, List<String> snapshot) {
     }
 
     static Result generate() {
@@ -66,7 +66,12 @@ class CrossCliAccountingTest {
             assertions.addAll(OccurrenceLedger.assertions(fixture, PackageReader.open(OccurrenceLedger.FIXTURES.resolve(fixture).resolve("package").resolve("events.jsonl")), profiles));
         }
         Map<String, Map<String, Map<String, Integer>>> census = OccurrenceLedger.census(assertions, coverage);
-        return new Result(ledgers, census, catalogs, families, coverage, snapshot(ledgers, census, catalogs, families, coverage));
+        Map<String, ExecutedAccounting.Run> executed = ExecutedAccounting.run(fixtures);
+        List<String> snapshot = snapshot(ledgers, census, catalogs, families, coverage);
+        snapshot.addAll(ExecutedAccounting.snapshot(executed));
+        snapshot.addAll(dependencies(PROJECT));
+        java.util.Collections.sort(snapshot);
+        return new Result(ledgers, census, catalogs, families, coverage, executed, snapshot);
     }
 
     /** The pinned identity of the result, one line per fact, sorted: a change in any line is a reviewable delta. */
@@ -104,12 +109,59 @@ class CrossCliAccountingTest {
         return new ArrayList<>(out);
     }
 
+    /** Content dependencies of the executed procedure, including readers, checks, meanings and native manifests. */
+    static List<String> dependencies(Path project) {
+        List<String> result = new ArrayList<>();
+        for (String path : List.of("journal-capture-tck/src/main", "journal-capture-tck/src/test/java",
+                "journal-capture-tck/src/test/resources/ocsf/fixtures", "journal-capture-tck/src/test/resources/ocsf/mapping-catalog",
+                "journal-capture-tck/src/test/resources/ocsf/conformance", "journal-ocsf-writer/src/main",
+                "schema/vendor", "prototype/ocsf-acp/extension", "prototype/ocsf-acp/toolchain.lock.json")) {
+            result.add("dependency " + path + " sha256:" + dependencyDigest(project.resolve(path)));
+        }
+        return result;
+    }
+
+    static String dependencyDigest(Path path) {
+        try (var files = Files.walk(path)) {
+            List<String> content = new ArrayList<>();
+            for (Path file : files.filter(Files::isRegularFile)
+                    .filter(p -> !p.getFileName().toString().endsWith("baseline.json")).sorted().toList()) {
+                content.add(path.relativize(file) + " " + NativeArtifact.sha256(Files.readAllBytes(file)));
+            }
+            return NativeArtifact.sha256(String.join("\n", content).getBytes(StandardCharsets.UTF_8));
+        }
+        catch (IOException e) {
+            throw new java.io.UncheckedIOException(e);
+        }
+    }
+
+    @Test
+    void aChangedCheckerOrAddedMeaningInvalidatesTheDependencySnapshot(@TempDir Path work) throws IOException {
+        Path reader = work.resolve("Reader.java");
+        Files.writeString(reader, "exact comparison");
+        String original = dependencyDigest(work);
+        Files.writeString(reader, "comparison removed");
+        assertThat(dependencyDigest(work)).isNotEqualTo(original);
+        Files.writeString(reader, "exact comparison");
+        assertThat(dependencyDigest(work)).isEqualTo(original);
+        Files.writeString(work.resolve("new-meaning.json"), "new native meaning");
+        assertThat(dependencyDigest(work)).isNotEqualTo(original);
+    }
+
     // ---- the report ----------------------------------------------------------------------------------------------------------
 
     @Test
     void theLedgerHoldsTheReviewedBaselineExactly() throws IOException {
         Result r = generate();
         write(r);
+        // A snapshot may preserve unresolved meanings or an unsupported version, never unfinished comparisons.
+        for (Ledger ledger : r.ledgers()) {
+            assertThat(NativeAccounting.account(ledger, r.executed().get(ledger.source().fixture()).report()))
+                    .as(ledger.source().fixture() + "/" + ledger.source().artifact() + " executed native accounting")
+                    .allMatch(o -> o.status().equals("VERIFIED")
+                            || o.status().equals("UNRESOLVED") && o.classification().equals("unresolved")
+                            || o.status().equals("UNSUPPORTED_VERSION") && ledger.source().entry() == null);
+        }
         Json baseline = NeutralJson.readDocument(BASELINE);
         Set<String> pinned = new TreeSet<>(CanonicalObligations.texts(baseline.member("snapshot")));
         Set<String> added = new TreeSet<>(r.snapshot());
@@ -130,6 +182,7 @@ class CrossCliAccountingTest {
 
     static void write(Result r) throws IOException {
         Files.createDirectories(OUT.resolve("ledgers"));
+        ExecutedAccounting.write(r.executed(), OUT);
         Map<String, Object> doc = document(r);
         Files.writeString(OUT.resolve("cross-cli-matrix.json"), NeutralJson.write(CanonicalConformanceTest.toJson(doc)) + "\n", StandardCharsets.UTF_8);
         Files.writeString(OUT.resolve("cross-cli-matrix.md"), markdown(r, doc), StandardCharsets.UTF_8);
@@ -150,6 +203,10 @@ class CrossCliAccountingTest {
                         "entry", c.entryKey(), "disposition", c.disposition(), "classification", c.classification(), "family", c.family()));
             }
             ld.put("rows", rows);
+            List<NativeAccounting.Outcome> outcomes = NativeAccounting.account(l, r.executed().get(l.source().fixture()).report());
+            ld.put("executed_outcomes", outcomes.stream().map(o -> CanonicalConformanceTest.ordered("record", o.record(), "pointer", o.pointer(), "classification", o.classification(),
+                    "status", o.status(), "comparisons", o.comparisons())).toList());
+            ld.put("executed_counts", NativeAccounting.counts(outcomes));
             Files.writeString(OUT.resolve("ledgers").resolve(l.source().fixture() + "__" + l.source().artifact() + ".json"),
                     NeutralJson.write(CanonicalConformanceTest.toJson(ld)) + "\n", StandardCharsets.UTF_8);
         }
@@ -164,9 +221,11 @@ class CrossCliAccountingTest {
     static Map<String, Object> document(Result r) {
         Map<String, Object> doc = new LinkedHashMap<>();
         doc.put("kind", "agent-journal/cross-cli-accounting");
-        doc.put("version", "0.1");
-        doc.put("meaning", "step 1 and 2 of the accounting procedure over every registered recorded source (concrete occurrences classified by the exact source catalog), "
-                + "and step 4's assertion census over every package; counts are per source, never summed across CLIs, and a gap is reported by exact id");
+        doc.put("version", "0.2");
+        doc.put("meaning", "Native occurrences F are enumerated and classified from frozen sources. Independent readers construct E; the candidate supplies A. "
+                + "Only attributed, executed comparisons discharge required facts and support assertions. Declared checker assignments grant no execution credit. "
+                + "Exact populations, non-passing outcomes and content dependencies are ratcheted separately from semantic approvals.");
+        doc.put("dependencies", dependencies(PROJECT));
         doc.put("families", r.families().names());
         doc.put("classifications", OccurrenceLedger.CLASSIFICATIONS);
         List<Object> sources = new ArrayList<>();
@@ -179,6 +238,7 @@ class CrossCliAccountingTest {
             }
             Map<String, Object> row = new LinkedHashMap<>(source(s));
             row.put("occurrences", l.rows().size());
+            row.put("native_comparisons", NativeAccounting.counts(NativeAccounting.account(l, r.executed().get(s.fixture()).report())));
             Map<String, Object> matrix = new LinkedHashMap<>();
             l.matrix().forEach((family, byClass) -> {
                 Map<String, Object> cells = new LinkedHashMap<>();
@@ -201,11 +261,12 @@ class CrossCliAccountingTest {
                     "list", "unjudged".equals(origin) ? new ArrayList<>(paths.keySet()) : List.of())));
             census.put(cls, c);
         });
-        doc.put("assertions", census);
+        doc.put("declared_assertion_assignments", census);
+        doc.put("executed_comparisons", ExecutedAccounting.summary(r.executed(), r.ledgers()));
         doc.put("not_measured", List.of(
                 "whether a canonical classification is semantically right: that is the obligation gate and the Owner's approval, not this ledger",
-                "sources with no disposition catalog: every occurrence is no_catalog, a per-source gap count, not an accounting",
-                "assembled packages: the census lists their assertions by role; lifecycle and joins are the assembly oracle's"));
+                "future source versions, unrecorded behaviors, and unverified acquisition options; no live acquisition is performed by this report",
+                "semantic approvals: a passed comparison does not approve its meaning; existing Owner decisions remain authoritative"));
         return doc;
     }
 
@@ -241,9 +302,10 @@ class CrossCliAccountingTest {
             Map<String, Object> d = (Map<String, Object>) o;
             md.append("| ").append(d.get("source")).append(" | ").append(d.get("distinct_native_recordings")).append(" |\n");
         }
-        md.append("\n## Assertions per class (all packages)\n\n| Class | judged | journal | caller | unjudged |\n|---|---|---|---|---|\n");
-        r.census().forEach((cls, byOrigin) -> md.append("| ").append(cls).append(" | ").append(count(byOrigin, "judged")).append(" | ").append(count(byOrigin, "journal"))
+        md.append("\n## Declared checker assignments per class (no execution credit)\n\n| Class | assigned | journal | caller | unjudged |\n|---|---|---|---|---|\n");
+        r.census().forEach((cls, byOrigin) -> md.append("| ").append(cls).append(" | ").append(count(byOrigin, "assigned")).append(" | ").append(count(byOrigin, "journal"))
                 .append(" | ").append(count(byOrigin, "caller")).append(" | ").append(count(byOrigin, "unjudged")).append(" |\n"));
+        md.append(ExecutedAccounting.markdown(r.executed()));
         md.append("\n## Exact gaps per source\n\n");
         for (Ledger l : r.ledgers()) {
             if (!l.gaps().isEmpty()) {

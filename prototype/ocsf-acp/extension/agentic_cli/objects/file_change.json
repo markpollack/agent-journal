@@ -1,0 +1,17 @@
+{
+  "caption": "File Change",
+  "description": "One reported file change at its source position.",
+  "extends": "object",
+  "name": "file_change",
+  "attributes": {
+    "element_index": {
+      "requirement": "optional"
+    },
+    "file_path": {
+      "requirement": "optional"
+    },
+    "change_kind": {
+      "requirement": "optional"
+    }
+  }
+}

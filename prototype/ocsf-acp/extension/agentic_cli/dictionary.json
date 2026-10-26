@@ -1471,6 +1471,112 @@
       "description": "unresolved, or the declared authority that selected the canonical value.",
       "type": "string_t"
     },
+    "execution_metrics": {
+      "caption": "Execution Metrics",
+      "description": "Source-reported non-token execution quantities. Each occurrence keeps its source metric name, native unit, scope and exact numeric value. These are separate observations, never totals of one another.",
+      "type": "execution_metric",
+      "is_array": true
+    },
+    "reported_value": {
+      "caption": "Reported Value",
+      "description": "The exact numeric value reported by the source, with no rounding or inference that a zero is a measured zero.",
+      "type": "float_t"
+    },
+    "metric_name": {
+      "caption": "Metric Name",
+      "description": "The source-qualified metric name. Matching names alone do not establish equal windows or additive quantities.",
+      "type": "string_t"
+    },
+    "metric_unit": {
+      "caption": "Metric Unit",
+      "description": "The native quantity unit: ms, s, count or another explicitly named source unit.",
+      "type": "string_t"
+    },
+    "file_changes": {
+      "caption": "File Changes",
+      "description": "Files the source reports as changed by this operation, at the observed lifecycle stage. A reported change is not an independently verified filesystem effect.",
+      "type": "file_change",
+      "is_array": true
+    },
+    "file_path": {
+      "caption": "File Path",
+      "description": "The path exactly as the source reported it; no resolution against a guessed working directory.",
+      "type": "string_t"
+    },
+    "change_kind": {
+      "caption": "Change Kind",
+      "description": "The native file-change kind exactly as reported.",
+      "type": "string_t"
+    },
+    "element_index": {
+      "caption": "Element Index",
+      "description": "Zero-based position in the source collection. Preserves multiplicity within this source occurrence; never a cross-source identity.",
+      "type": "integer_t"
+    },
+    "plan_items": {
+      "caption": "Plan Items",
+      "description": "The ordered plan items and completion flags exactly as the source reports them. Each snapshot is retained separately.",
+      "type": "plan_item",
+      "is_array": true
+    },
+    "reported_completed": {
+      "caption": "Reported Completed",
+      "description": "Whether the source marks this item complete; absence is not false.",
+      "type": "boolean_t"
+    },
+    "task_uid": {
+      "caption": "Task Uid",
+      "description": "The task tracker identifier reported by the source; not a tool call, response or session identifier.",
+      "type": "string_t"
+    },
+    "sender_session_uid": {
+      "caption": "Sender Session Uid",
+      "description": "The sending session identifier explicitly reported by a collaboration tool observation.",
+      "type": "string_t"
+    },
+    "recipient_session_uids": {
+      "caption": "Recipient Session Uids",
+      "description": "The receiving session identifiers explicitly reported by a collaboration tool observation. They do not establish spawned child runs or acquired child recordings.",
+      "type": "string_t",
+      "is_array": true
+    },
+    "agent_states": {
+      "caption": "Agent States",
+      "description": "Reported states of explicitly identified collaborating sessions.",
+      "type": "agent_state",
+      "is_array": true
+    },
+    "configuration_source": {
+      "caption": "Configuration Source",
+      "description": "The configuration origin exactly as the source reports it.",
+      "type": "string_t"
+    },
+    "reasoning_effort": {
+      "caption": "Reasoning Effort",
+      "description": "The configured reasoning-effort label exactly as the source reports it; no numeric scale is inferred.",
+      "type": "string_t"
+    },
+    "task_description": {
+      "caption": "Task Description",
+      "description": "The task tracker description exactly as reported.",
+      "type": "string_t"
+    },
+    "agent_type": {
+      "caption": "Agent Type",
+      "description": "The task tracker agent type exactly as reported; not a model name.",
+      "type": "string_t"
+    },
+    "agent_uid": {
+      "caption": "Agent ID",
+      "type": "string_t",
+      "description": "The native identifier of the child agent whose state or accounting is reported. No session identity is inferred."
+    },
+    "server_connections": {
+      "caption": "Server Connections",
+      "description": "Configured MCP server connections and their reported state; no inferred protocol capabilities.",
+      "type": "server_connection",
+      "is_array": true
+    },
     "mcp_action": {
       "caption": "MCP Action",
       "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",

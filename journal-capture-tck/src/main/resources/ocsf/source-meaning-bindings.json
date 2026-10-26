@@ -1,0 +1,119 @@
+{
+  "kind": "agent-journal/source-meaning-bindings",
+  "version": "1",
+  "meaning": "Exact source specifications implemented by the Java source readers; shared implementations are explicitly bound, never selected by nearest version. These bindings do not grant semantic approval.",
+  "bindings": [
+    {
+      "profile": "agy_stream",
+      "entry_id": "antigravity-cli/stream-json/1.4.6-stdout",
+      "version": "1.4.6",
+      "route": "stdout",
+      "source_specification": "schema/vendor/antigravity-cli/stream-json/1.4.6.json",
+      "specification_sha256": "5c35edcabc98023ee77469ef3beebb43dc2d5603f4fa62ffb4081874ae0e8d41"
+    },
+    {
+      "profile": "claude_transcript",
+      "entry_id": "claude-code/session-transcript/2.1.299-session-file",
+      "version": "2.1.299",
+      "route": "native_session_file",
+      "source_specification": "schema/vendor/claude-code/session-transcript/2.1.303.json",
+      "specification_sha256": "6b22f08796acb150521fbf2c960d0000584f9b75ff8889822ccffc203adbfafc"
+    },
+    {
+      "profile": "claude_transcript",
+      "entry_id": "claude-code/session-transcript/2.1.304-session-file",
+      "version": "2.1.304",
+      "route": "native_session_file",
+      "source_specification": "schema/vendor/claude-code/session-transcript/2.1.304.json",
+      "specification_sha256": "b84358fc7f407f2ba8cf4166ddcc397cc543a0d84f071f96423448f21be7ec6d"
+    },
+    {
+      "profile": "claude_stream",
+      "entry_id": "claude-code/stream-json/2.1.299-sdk",
+      "version": "2.1.299",
+      "route": "sdk",
+      "source_specification": "schema/vendor/claude-code/stream-json/2.1.303.json",
+      "specification_sha256": "7e8173afd6c9498b21cb23c6546227abb23878c0f6395106458f717ca83f2767"
+    },
+    {
+      "profile": "claude_stream",
+      "entry_id": "claude-code/stream-json/2.1.304-stdout",
+      "version": "2.1.304",
+      "route": "stdout",
+      "source_specification": "schema/vendor/claude-code/stream-json/2.1.304.json",
+      "specification_sha256": "3bd9dfbb25ad57617aa272d521ba7d0b6d0f29173e1c46a36d8b7bafce42cd66"
+    },
+    {
+      "profile": "codex_stream",
+      "entry_id": "codex-cli/exec-json-stream/0.160.1",
+      "version": "0.160.1",
+      "route": "stdout",
+      "source_specification": "schema/vendor/codex-cli/exec-json-stream/0.160.1.json",
+      "specification_sha256": "5d3f69f7d28f3ebcb9f3011d0b5c48e89c87ecd6f5d26928015e2c5e56b7f513"
+    },
+    {
+      "profile": "codex_rollout",
+      "entry_id": "codex-cli/rollout/0.160.1",
+      "version": "0.160.1",
+      "route": "native_session_file",
+      "source_specification": "schema/vendor/codex-cli/rollout/0.160.1.json",
+      "specification_sha256": "62cec5538fa1917c91f726b9f078ad92b72ca460dea976df08feb50adc624363"
+    },
+    {
+      "profile": "copilot_events",
+      "entry_id": "github-copilot-cli/events/1.0.100-session-file",
+      "version": "1.0.100",
+      "route": "native_session_file",
+      "source_specification": "schema/vendor/github-copilot-cli/session-events/1.0.100.json",
+      "specification_sha256": "785bb3bccbaaa0ed6895fd8a854250f44ce8b0a5fc4157e67c3d5d0b16bbc25b"
+    },
+    {
+      "profile": "copilot_events",
+      "entry_id": "github-copilot-cli/events/1.0.100-stdout",
+      "version": "1.0.100",
+      "route": "stdout",
+      "source_specification": "schema/vendor/github-copilot-cli/stdout-json/1.0.100.json",
+      "specification_sha256": "23b90590d6ac21086f2d86519901b525d21ec9cfcc9ad00a7fc9a067da1e9960"
+    },
+    {
+      "profile": "copilot_otel",
+      "entry_id": "github-copilot-cli/otel/1.0.100",
+      "version": "1.0.100",
+      "route": "otel_file",
+      "source_specification": "schema/vendor/github-copilot-cli/otel-file/1.0.100.json",
+      "specification_sha256": "fb0bb66ab0234ea0b328e95fd01cc8186fa9c311957e3e70fae4480816e8c158"
+    },
+    {
+      "profile": "copilot_usage_report",
+      "entry_id": "github-copilot-cli/usage-report/1.0.100",
+      "version": "1.0.100",
+      "route": "usage_report_file",
+      "source_specification": "schema/vendor/github-copilot-cli/usage-report/1.0.100.json",
+      "specification_sha256": "bc87e59deb9241f163399ef3e75c8ceda28ec0eb849db925dd1466dcafb19f1c"
+    },
+    {
+      "profile": "junie_stdout",
+      "entry_id": "junie/json-stream/3813.7-stdout",
+      "version": "3813.7",
+      "route": "stdout",
+      "source_specification": "schema/vendor/junie/json-stream/3813.7.json",
+      "specification_sha256": "de2d399a4df450f1c2d062eb7cc4ee04506b969b5c74be56c17b5b8dc97c6d31"
+    },
+    {
+      "profile": "junie_session_events",
+      "entry_id": "junie/session-events/3813.7",
+      "version": "3813.7",
+      "route": "native_session_file",
+      "source_specification": "schema/vendor/junie/session-events/3813.7.json",
+      "specification_sha256": "7b1aabd3785fa35dcb1a68d587a1881b8ec1cac955ff8c04a1c89de7dacfeb1f"
+    },
+    {
+      "profile": "junie_summary",
+      "entry_id": "junie/session-summary/3813.7",
+      "version": "3813.7",
+      "route": "native_session_file",
+      "source_specification": "schema/vendor/junie/session-summary/3813.7.json",
+      "specification_sha256": "01964cfb1c57ccef6cd89158846d2327420fb09064aefa0a9a5d41db58769f81"
+    }
+  ]
+}

@@ -1,0 +1,2901 @@
+{
+  "kind": "agent-journal/field-dispositions",
+  "version": "0.2",
+  "reviewed": "proposed 2026-10-26; execution does not grant semantic approval",
+  "profile": "junie_session_events",
+  "compatibility_entries": [
+    "junie/session-events/3813.7"
+  ],
+  "source_bindings": [
+    {
+      "entry": "junie/session-events/3813.7",
+      "version": "3813.7",
+      "routes": [
+        "native_session_file"
+      ],
+      "specification": "schema/vendor/junie/session-events/3813.7.json",
+      "specification_sha256": "7b1aabd3785fa35dcb1a68d587a1881b8ec1cac955ff8c04a1c89de7dacfeb1f"
+    }
+  ],
+  "specifications": [
+    "schema/vendor/junie/session-events/3813.7.json"
+  ],
+  "contract_file": "junie-3813.7-session-events",
+  "evidence_fixtures": [
+    "junie-live-3813.7-terminal",
+    "junie-live-3813.7-view"
+  ],
+  "rule_of_coverage": "Concrete native occurrences use the exact source binding; declarations are assignments only. ExecutedAccounting reports missing comparisons as UNCHECKED. All new classifications remain proposed.",
+  "entries": [
+    {
+      "variant": "SessionA2uxEvent/AgentCurrentStatusUpdatedEvent",
+      "path": "event",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentCurrentStatusUpdatedEvent",
+      "path": "event.agentEvent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentCurrentStatusUpdatedEvent",
+      "path": "event.agentEvent.agent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentCurrentStatusUpdatedEvent",
+      "path": "event.agentEvent.agent.id",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Source-reported meaning; exact owner, native occurrence, value and unit require an executed comparison. No inferred summability or cross-source equality.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "*.agent_uid"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentCurrentStatusUpdatedEvent",
+      "path": "event.agentEvent.agent.kind",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentCurrentStatusUpdatedEvent",
+      "path": "event.agentEvent.agent.name",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentCurrentStatusUpdatedEvent",
+      "path": "event.agentEvent.agent.type",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentCurrentStatusUpdatedEvent",
+      "path": "event.agentEvent.kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentCurrentStatusUpdatedEvent",
+      "path": "event.agentEvent.status",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Native agent progress text and local agent identity, with source record provenance; no success/failure is inferred.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "session_context.reported_state"
+      ],
+      "rule": "junie.session.state->session_context.state"
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentCurrentStatusUpdatedEvent",
+      "path": "event.agentEvent.statusKind",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentCurrentStatusUpdatedEvent",
+      "path": "event.state",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentCurrentStatusUpdatedEvent",
+      "path": "kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentCurrentStatusUpdatedEvent",
+      "path": "timestampMs",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "*.metadata.original_time"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentPatchCreatedEvent",
+      "path": "event",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentPatchCreatedEvent",
+      "path": "event.agentEvent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentPatchCreatedEvent",
+      "path": "event.agentEvent.agent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentPatchCreatedEvent",
+      "path": "event.agentEvent.agent.id",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Source-reported meaning; exact owner, native occurrence, value and unit require an executed comparison. No inferred summability or cross-source equality.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "*.agent_uid"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentPatchCreatedEvent",
+      "path": "event.agentEvent.agent.kind",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentPatchCreatedEvent",
+      "path": "event.agentEvent.agent.name",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentPatchCreatedEvent",
+      "path": "event.agentEvent.agent.type",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentPatchCreatedEvent",
+      "path": "event.agentEvent.kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentPatchCreatedEvent",
+      "path": "event.agentEvent.patch",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentPatchCreatedEvent",
+      "path": "event.agentEvent.stats",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentPatchCreatedEvent",
+      "path": "event.agentEvent.stats.filesChanged",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Source-reported meaning; exact owner, native occurrence, value and unit require an executed comparison. No inferred summability or cross-source equality.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "source_record.execution_metrics[].reported_value"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentPatchCreatedEvent",
+      "path": "event.agentEvent.stats.linesAdded",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Source-reported meaning; exact owner, native occurrence, value and unit require an executed comparison. No inferred summability or cross-source equality.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "source_record.execution_metrics[].reported_value"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentPatchCreatedEvent",
+      "path": "event.agentEvent.stats.linesRemoved",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Source-reported meaning; exact owner, native occurrence, value and unit require an executed comparison. No inferred summability or cross-source equality.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "source_record.execution_metrics[].reported_value"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentPatchCreatedEvent",
+      "path": "event.state",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentPatchCreatedEvent",
+      "path": "kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentPatchCreatedEvent",
+      "path": "timestampMs",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "*.metadata.original_time"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentTaskNameUpdatedEvent",
+      "path": "event",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentTaskNameUpdatedEvent",
+      "path": "event.agentEvent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentTaskNameUpdatedEvent",
+      "path": "event.agentEvent.agent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentTaskNameUpdatedEvent",
+      "path": "event.agentEvent.agent.id",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Source-reported meaning; exact owner, native occurrence, value and unit require an executed comparison. No inferred summability or cross-source equality.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "*.agent_uid"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentTaskNameUpdatedEvent",
+      "path": "event.agentEvent.agent.kind",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentTaskNameUpdatedEvent",
+      "path": "event.agentEvent.agent.name",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentTaskNameUpdatedEvent",
+      "path": "event.agentEvent.agent.type",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentTaskNameUpdatedEvent",
+      "path": "event.agentEvent.kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentTaskNameUpdatedEvent",
+      "path": "event.agentEvent.name",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentTaskNameUpdatedEvent",
+      "path": "event.state",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentTaskNameUpdatedEvent",
+      "path": "kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/AgentTaskNameUpdatedEvent",
+      "path": "timestampMs",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "*.metadata.original_time"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ContextWindowReportEvent",
+      "path": "event",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ContextWindowReportEvent",
+      "path": "event.agentEvent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ContextWindowReportEvent",
+      "path": "event.agentEvent.agent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ContextWindowReportEvent",
+      "path": "event.agentEvent.agent.id",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Source-reported meaning; exact owner, native occurrence, value and unit require an executed comparison. No inferred summability or cross-source equality.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "*.agent_uid"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "SessionA2uxEvent/ContextWindowReportEvent",
+      "path": "event.agentEvent.agent.kind",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ContextWindowReportEvent",
+      "path": "event.agentEvent.agent.name",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ContextWindowReportEvent",
+      "path": "event.agentEvent.agent.type",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ContextWindowReportEvent",
+      "path": "event.agentEvent.kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ContextWindowReportEvent",
+      "path": "event.agentEvent.percentage",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Source-reported meaning; exact owner, native occurrence, value and unit require an executed comparison. No inferred summability or cross-source equality.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "source_record.execution_metrics[].reported_value"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "SessionA2uxEvent/ContextWindowReportEvent",
+      "path": "event.agentEvent.size",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Source-reported meaning; exact owner, native occurrence, value and unit require an executed comparison. No inferred summability or cross-source equality.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "source_record.execution_metrics[].reported_value"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "SessionA2uxEvent/ContextWindowReportEvent",
+      "path": "event.agentEvent.used",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Source-reported meaning; exact owner, native occurrence, value and unit require an executed comparison. No inferred summability or cross-source equality.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "source_record.execution_metrics[].reported_value"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "SessionA2uxEvent/ContextWindowReportEvent",
+      "path": "event.state",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ContextWindowReportEvent",
+      "path": "kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ContextWindowReportEvent",
+      "path": "timestampMs",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "*.metadata.original_time"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/CurrentDirectoryUpdatedEvent",
+      "path": "event",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/CurrentDirectoryUpdatedEvent",
+      "path": "event.agentEvent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/CurrentDirectoryUpdatedEvent",
+      "path": "event.agentEvent.agent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/CurrentDirectoryUpdatedEvent",
+      "path": "event.agentEvent.agent.id",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Source-reported meaning; exact owner, native occurrence, value and unit require an executed comparison. No inferred summability or cross-source equality.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "*.agent_uid"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "SessionA2uxEvent/CurrentDirectoryUpdatedEvent",
+      "path": "event.agentEvent.agent.kind",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/CurrentDirectoryUpdatedEvent",
+      "path": "event.agentEvent.agent.name",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/CurrentDirectoryUpdatedEvent",
+      "path": "event.agentEvent.agent.type",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/CurrentDirectoryUpdatedEvent",
+      "path": "event.agentEvent.currentDirectory",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/CurrentDirectoryUpdatedEvent",
+      "path": "event.agentEvent.kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/CurrentDirectoryUpdatedEvent",
+      "path": "event.state",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/CurrentDirectoryUpdatedEvent",
+      "path": "kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/CurrentDirectoryUpdatedEvent",
+      "path": "timestampMs",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "*.metadata.original_time"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/EnvironmentVariablesUpdatedEvent",
+      "path": "event",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/EnvironmentVariablesUpdatedEvent",
+      "path": "event.agentEvent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/EnvironmentVariablesUpdatedEvent",
+      "path": "event.agentEvent.agent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/EnvironmentVariablesUpdatedEvent",
+      "path": "event.agentEvent.agent.id",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Source-reported meaning; exact owner, native occurrence, value and unit require an executed comparison. No inferred summability or cross-source equality.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "*.agent_uid"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "SessionA2uxEvent/EnvironmentVariablesUpdatedEvent",
+      "path": "event.agentEvent.agent.kind",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/EnvironmentVariablesUpdatedEvent",
+      "path": "event.agentEvent.agent.name",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/EnvironmentVariablesUpdatedEvent",
+      "path": "event.agentEvent.agent.type",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/EnvironmentVariablesUpdatedEvent",
+      "path": "event.agentEvent.env",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/EnvironmentVariablesUpdatedEvent",
+      "path": "event.agentEvent.env[]",
+      "disposition": "retained",
+      "classification": "opaque_payload",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "An environment variable entry is application configuration (name/value payload), preserved exactly. It is not parsed as execution, usage, or shell activity.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "subtree": true
+    },
+    {
+      "variant": "SessionA2uxEvent/EnvironmentVariablesUpdatedEvent",
+      "path": "event.agentEvent.kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/EnvironmentVariablesUpdatedEvent",
+      "path": "event.state",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/EnvironmentVariablesUpdatedEvent",
+      "path": "kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/EnvironmentVariablesUpdatedEvent",
+      "path": "timestampMs",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "*.metadata.original_time"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "event",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "event.agentEvent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "event.agentEvent.agent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "event.agentEvent.agent.id",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Source-reported meaning; exact owner, native occurrence, value and unit require an executed comparison. No inferred summability or cross-source equality.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "*.agent_uid"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "event.agentEvent.agent.kind",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "event.agentEvent.agent.name",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "event.agentEvent.agent.type",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "event.agentEvent.kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "event.agentEvent.modelUsage",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "event.agentEvent.modelUsage[]",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "event.agentEvent.modelUsage[].cacheCreateTokens",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "model_response.usage_observations[].cache_write_tokens"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "event.agentEvent.modelUsage[].cacheInputTokens",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "model_response.usage_observations[].cache_read_tokens"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "event.agentEvent.modelUsage[].cost",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "model_response.cost_observations[].total_cost"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "event.agentEvent.modelUsage[].inputTokens",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "model_response.usage_observations[].uncached_input_tokens"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "event.agentEvent.modelUsage[].model",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "model_response.usage_observations[].model_ref.name"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "event.agentEvent.modelUsage[].outputTokens",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "model_response.usage_observations[].output_tokens"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "event.agentEvent.modelUsage[].time",
+      "disposition": "unresolved",
+      "classification": "unresolved",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "The frozen empirical specification does not establish the timing unit or interval (and Junie zero may be a default). Whole-record preservation passes independently; semantic completeness does not.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "note": "The frozen empirical specification does not establish the timing unit or interval (and Junie zero may be a default). Whole-record preservation passes independently; semantic completeness does not."
+    },
+    {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "event.state",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
+      "path": "timestampMs",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "*.metadata.original_time"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "completion",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "completion.endedAtMs",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "completion.quota",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "completion.quota.balanceLeft",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "completion.quota.balanceUnit",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "completion.quota.type",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "completion.taskCostUsd",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "session_context.cost_observations[].total_cost"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "event",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "event.agentEvent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "event.agentEvent.agent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "event.agentEvent.agent.id",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Source-reported meaning; exact owner, native occurrence, value and unit require an executed comparison. No inferred summability or cross-source equality.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "*.agent_uid"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "event.agentEvent.agent.kind",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "event.agentEvent.agent.name",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "event.agentEvent.agent.type",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "event.agentEvent.cancelled",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "event.agentEvent.changes",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "event.agentEvent.errorCode",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "model_response.reported_state"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "event.agentEvent.kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "event.agentEvent.result",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "model_response.content_blocks[].text"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "event.agentEvent.stepId",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "model_response.item_uid"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "event.agentEvent.title",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "event.state",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
+      "path": "timestampMs",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "*.metadata.original_time"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TerminalBlockUpdatedEvent",
+      "path": "event",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TerminalBlockUpdatedEvent",
+      "path": "event.agentEvent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TerminalBlockUpdatedEvent",
+      "path": "event.agentEvent.agent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TerminalBlockUpdatedEvent",
+      "path": "event.agentEvent.agent.id",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Source-reported meaning; exact owner, native occurrence, value and unit require an executed comparison. No inferred summability or cross-source equality.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "*.agent_uid"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "SessionA2uxEvent/TerminalBlockUpdatedEvent",
+      "path": "event.agentEvent.agent.kind",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TerminalBlockUpdatedEvent",
+      "path": "event.agentEvent.agent.name",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TerminalBlockUpdatedEvent",
+      "path": "event.agentEvent.agent.type",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TerminalBlockUpdatedEvent",
+      "path": "event.agentEvent.command",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "tool_call.tool_operation.command_line"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TerminalBlockUpdatedEvent",
+      "path": "event.agentEvent.details",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TerminalBlockUpdatedEvent",
+      "path": "event.agentEvent.exitCode",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "tool_call.tool_operation.exit_code"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TerminalBlockUpdatedEvent",
+      "path": "event.agentEvent.kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TerminalBlockUpdatedEvent",
+      "path": "event.agentEvent.output",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "tool_call.tool_operation.stdout"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TerminalBlockUpdatedEvent",
+      "path": "event.agentEvent.outputLinesCount",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TerminalBlockUpdatedEvent",
+      "path": "event.agentEvent.presentableOutput",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TerminalBlockUpdatedEvent",
+      "path": "event.agentEvent.status",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "tool_call.reported_state"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TerminalBlockUpdatedEvent",
+      "path": "event.agentEvent.stepId",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "tool_call.tool_operation.uid"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TerminalBlockUpdatedEvent",
+      "path": "event.state",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TerminalBlockUpdatedEvent",
+      "path": "kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TerminalBlockUpdatedEvent",
+      "path": "timestampMs",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "*.metadata.original_time"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TipSuggestionCreatedEvent",
+      "path": "event",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TipSuggestionCreatedEvent",
+      "path": "event.agentEvent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TipSuggestionCreatedEvent",
+      "path": "event.agentEvent.agent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TipSuggestionCreatedEvent",
+      "path": "event.agentEvent.agent.id",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Source-reported meaning; exact owner, native occurrence, value and unit require an executed comparison. No inferred summability or cross-source equality.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "*.agent_uid"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "SessionA2uxEvent/TipSuggestionCreatedEvent",
+      "path": "event.agentEvent.agent.kind",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TipSuggestionCreatedEvent",
+      "path": "event.agentEvent.agent.name",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TipSuggestionCreatedEvent",
+      "path": "event.agentEvent.agent.type",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TipSuggestionCreatedEvent",
+      "path": "event.agentEvent.description",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TipSuggestionCreatedEvent",
+      "path": "event.agentEvent.id",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TipSuggestionCreatedEvent",
+      "path": "event.agentEvent.kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TipSuggestionCreatedEvent",
+      "path": "event.state",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TipSuggestionCreatedEvent",
+      "path": "kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/TipSuggestionCreatedEvent",
+      "path": "timestampMs",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "*.metadata.original_time"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ToolBlockUpdatedEvent",
+      "path": "event",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ToolBlockUpdatedEvent",
+      "path": "event.agentEvent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ToolBlockUpdatedEvent",
+      "path": "event.agentEvent.agent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ToolBlockUpdatedEvent",
+      "path": "event.agentEvent.agent.id",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Source-reported meaning; exact owner, native occurrence, value and unit require an executed comparison. No inferred summability or cross-source equality.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "*.agent_uid"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "SessionA2uxEvent/ToolBlockUpdatedEvent",
+      "path": "event.agentEvent.agent.kind",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ToolBlockUpdatedEvent",
+      "path": "event.agentEvent.agent.name",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ToolBlockUpdatedEvent",
+      "path": "event.agentEvent.agent.type",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ToolBlockUpdatedEvent",
+      "path": "event.agentEvent.kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ToolBlockUpdatedEvent",
+      "path": "event.agentEvent.status",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "tool_call.reported_state"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ToolBlockUpdatedEvent",
+      "path": "event.agentEvent.stepId",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "tool_call.tool_operation.uid"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ToolBlockUpdatedEvent",
+      "path": "event.agentEvent.text",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ToolBlockUpdatedEvent",
+      "path": "event.state",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ToolBlockUpdatedEvent",
+      "path": "kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ToolBlockUpdatedEvent",
+      "path": "timestampMs",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "*.metadata.original_time"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ViewFilesBlockUpdatedEvent",
+      "path": "event",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ViewFilesBlockUpdatedEvent",
+      "path": "event.agentEvent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ViewFilesBlockUpdatedEvent",
+      "path": "event.agentEvent.agent",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ViewFilesBlockUpdatedEvent",
+      "path": "event.agentEvent.agent.id",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Source-reported meaning; exact owner, native occurrence, value and unit require an executed comparison. No inferred summability or cross-source equality.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "*.agent_uid"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "SessionA2uxEvent/ViewFilesBlockUpdatedEvent",
+      "path": "event.agentEvent.agent.kind",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ViewFilesBlockUpdatedEvent",
+      "path": "event.agentEvent.agent.name",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ViewFilesBlockUpdatedEvent",
+      "path": "event.agentEvent.agent.type",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ViewFilesBlockUpdatedEvent",
+      "path": "event.agentEvent.details",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ViewFilesBlockUpdatedEvent",
+      "path": "event.agentEvent.files",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ViewFilesBlockUpdatedEvent",
+      "path": "event.agentEvent.files[]",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ViewFilesBlockUpdatedEvent",
+      "path": "event.agentEvent.files[].relativePath",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ViewFilesBlockUpdatedEvent",
+      "path": "event.agentEvent.kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ViewFilesBlockUpdatedEvent",
+      "path": "event.agentEvent.status",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "tool_call.reported_state"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ViewFilesBlockUpdatedEvent",
+      "path": "event.agentEvent.stepId",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "tool_call.tool_operation.uid"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ViewFilesBlockUpdatedEvent",
+      "path": "event.state",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ViewFilesBlockUpdatedEvent",
+      "path": "kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "SessionA2uxEvent/ViewFilesBlockUpdatedEvent",
+      "path": "timestampMs",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "*.metadata.original_time"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "TaskStartedEvent",
+      "path": "kind",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "TaskStartedEvent",
+      "path": "taskId",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "The task-start record explicitly names its task; compare the exact native identity.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "session_context.task_uid"
+      ],
+      "rule": "junie.session.state->session_context.state"
+    },
+    {
+      "variant": "TaskStartedEvent",
+      "path": "timestampMs",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "*.metadata.original_time"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    }
+  ]
+}

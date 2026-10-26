@@ -191,6 +191,15 @@
       "target": "agentic_cli/source_record",
       "activity": "1 Parsed",
       "owner": "the record retained whole with the failure"
+    },
+    {
+      "id": "copilot.events.tool_execution_partial_result->tool_call.result",
+      "selector": {
+        "type": "tool.execution_partial_result"
+      },
+      "target": "agentic_cli/tool_call",
+      "activity": "2 Result observed",
+      "owner": "data.toolCallId identifies the call; data.partialOutput is one partial result observation. reported_state retains the native record type, status Unknown with Unavailable basis. Distinct native event ids preserve repeated partial outputs; no terminal outcome is inferred."
     }
   ],
   "candidate": {

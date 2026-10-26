@@ -46,6 +46,6 @@ final class JunieSummaryMapper implements SourceMapper {
         Jv.Obj accounting = ctx.event("session_context", 3, r, ctx.timeFor(r, updated), CONTRACT, "junie.summary->session_context.accounting", updated, session, false, null);
         accounting.put("session_uid", ctx.sessionFor(session)).put("usage_observations", usage).put("cost_observations", costs)
                 .put("basis", "junie.summary.accounting.v1: the session's per-model usage and unnamed-unit costs (junie.usage.unnamed_cost.v1)");
-        ctx.emit(accounting);
+        ctx.emit(ExecutionMetrics.junieCalls(accounting, s.path("mainAgent", "modelUsage"), "/mainAgent/modelUsage", 6));
     }
 }

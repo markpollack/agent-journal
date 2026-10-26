@@ -1,0 +1,225 @@
+{
+  "kind": "agent-journal/canonical-obligations",
+  "version": "0.2",
+  "implementation": "java-expected-facts",
+  "profile": "codex_rollout",
+  "disposition_catalog": "schema/vendor/codex-cli/rollout/dispositions.json",
+  "reader": "CodexRolloutProfile",
+  "bindings": [
+    {
+      "profile": "codex_rollout",
+      "entry_id": "codex-cli/rollout/0.160.1",
+      "version": "0.160.1",
+      "route": "native_session_file",
+      "source_specification": "schema/vendor/codex-cli/rollout/0.160.1.json",
+      "specification_sha256": "62cec5538fa1917c91f726b9f078ad92b72ca460dea976df08feb50adc624363"
+    }
+  ],
+  "review": {
+    "status": "proposed",
+    "approval": "No semantic approval is granted by these assignments or passing comparisons."
+  },
+  "procedure": "The disposition catalog enumerates native obligations. This catalog names Java meanings that construct ExpectedFacts from native bytes. The oracle registers each precise expectation before executing a Check. NativeAccounting requires attributed occurrence and destination evidence; missing results remain UNCHECKED. No expressions or transformations execute from this catalog.",
+  "obligations": [
+    {
+      "meaning": "caller.cli_product/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "caller.invocation/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "caller.source_contract/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "caller.source_kind/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "canonical-usage/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "exact-source-binding/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "journal.activity/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "journal.category/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "journal.class/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "journal.datetime/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "journal.datetime_profile/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "journal.enum_caption/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "journal.extension/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "journal.native_rule/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "journal.run/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "journal.schema/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "journal.sequence/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "journal.type/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "journal.unspecified_severity/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "source.address/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "source.context/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "source.fallback/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "source.framing/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "source.native_details/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "source.opaque_text/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "source.operation/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "source.prompt/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "source.reader_binding/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "source.record_identity/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "source.request/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "source.response/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "source.result/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "source.session/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "source.timestamp/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "source.timestamp_milliseconds/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "source.turn_completed/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "source.turn_started/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "source.whole_record/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "source.whole_record_marker/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "usage-occurrence/v1",
+      "revision": 1,
+      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    }
+  ]
+}

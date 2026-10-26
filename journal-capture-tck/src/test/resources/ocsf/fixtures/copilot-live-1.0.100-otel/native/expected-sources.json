@@ -24,7 +24,14 @@
    "sha256": "09cb968f98afe808d96b199a2bdb8d617dd783949ce13cd5860383ff30fac54d",
    "bytes": 38811,
    "records": 37,
-   "required": true
+   "required": true,
+   "binding": {
+    "entry_id": "github-copilot-cli/events/1.0.100-session-file",
+    "version": "1.0.100",
+    "route": "native_session_file",
+    "source_specification": "schema/vendor/github-copilot-cli/session-events/1.0.100.json",
+    "specification_sha256": "785bb3bccbaaa0ed6895fd8a854250f44ce8b0a5fc4157e67c3d5d0b16bbc25b"
+   }
   },
   {
    "artifact": "stdout.jsonl",
@@ -32,7 +39,14 @@
    "sha256": "3f954b70de1e69001448189a4aa04cda940755a3b1e3e916a5d54812f4f430c9",
    "bytes": 48044,
    "records": 115,
-   "required": true
+   "required": true,
+   "binding": {
+    "entry_id": "github-copilot-cli/events/1.0.100-stdout",
+    "version": "1.0.100",
+    "route": "stdout",
+    "source_specification": "schema/vendor/github-copilot-cli/stdout-json/1.0.100.json",
+    "specification_sha256": "23b90590d6ac21086f2d86519901b525d21ec9cfcc9ad00a7fc9a067da1e9960"
+   }
   },
   {
    "artifact": "otel.jsonl",
@@ -40,7 +54,14 @@
    "sha256": "1b156025474ef394459f1424170a04e8b7cdb803a7bff60ed703dab513ac8f77",
    "bytes": 69618,
    "records": 31,
-   "required": true
+   "required": true,
+   "binding": {
+    "entry_id": "github-copilot-cli/otel/1.0.100",
+    "version": "1.0.100",
+    "route": "otel_file",
+    "source_specification": "schema/vendor/github-copilot-cli/otel-file/1.0.100.json",
+    "specification_sha256": "fb0bb66ab0234ea0b328e95fd01cc8186fa9c311957e3e70fae4480816e8c158"
+   }
   },
   {
    "artifact": "usage-output.json",
@@ -49,7 +70,14 @@
    "bytes": 3119,
    "records": 1,
    "required": true,
-   "framing": "document"
+   "framing": "document",
+   "binding": {
+    "entry_id": "github-copilot-cli/usage-report/1.0.100",
+    "version": "1.0.100",
+    "route": "usage_report_file",
+    "source_specification": "schema/vendor/github-copilot-cli/usage-report/1.0.100.json",
+    "specification_sha256": "bc87e59deb9241f163399ef3e75c8ceda28ec0eb849db925dd1466dcafb19f1c"
+   }
   }
  ]
 }

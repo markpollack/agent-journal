@@ -34,6 +34,7 @@ final class EventMerge {
     static final Set<String> PROVENANCE = Set.of("source_ref", "basis", "derivation", "native_pointers", "tool_kind_basis", "projection_basis", "components");
     /** Arrays whose elements carry an identity, with the members that form it. */
     static final Map<String, List<String>> ARRAY_KEYS = Map.of(
+            "execution_metrics", List.of("metric_name", "metric_unit", "scope_id", "scope", "model_ref"),
             "usage_observations", List.of("scope_id", "scope", "aggregation_id", "model_ref"),
             "cost_observations", List.of("quantity_kind_id", "scope_id", "currency", "quantity_unit", "model_ref"),
             "content_blocks", List.of("block_index"),
@@ -162,21 +163,29 @@ final class EventMerge {
         Jv.Obj out = new Jv.Obj();
         boolean observation = members.containsKey("basis") || members.containsKey("source_ref");
         for (Map.Entry<String, List<Contribution>> m : members.entrySet()) {
-            Jv v;
-            if (observation && "data".equals(m.getKey())) {
-                v = Jv.copy(m.getValue().get(0).value());
-            }
-            else if (MISSING.equals(m.getKey())) {
-                v = stillMissing(pointer + "/" + MISSING, entries);
-            }
-            else {
-                v = at(pointer + "/" + escape(m.getKey()), m.getKey(), m.getValue());
-            }
+            Jv v = member(pointer, m.getKey(), m.getValue(), entries, observation);
             if (v != null) {
                 out.put(m.getKey(), v);
             }
         }
         return out;
+    }
+
+    private Jv member(String pointer, String name, List<Contribution> values, List<Contribution> entries, boolean observation) {
+            if (observation && "data".equals(name)) {
+                return Jv.copy(values.get(0).value());
+            }
+            else if (pointer.endsWith("/model_ref") && ("provider_basis_id".equals(name) || "provider_basis".equals(name))) {
+                List<Contribution> reported = entries.stream().filter(c -> c.value().member("provider_kind") != null)
+                        .map(c -> new Contribution(c.occurrence(), c.value().member(name))).filter(c -> c.value() != null).toList();
+                return at(pointer + "/" + name, name, reported.isEmpty() ? values : reported);
+            }
+            else if (MISSING.equals(name)) {
+                return stillMissing(pointer + "/" + MISSING, entries);
+            }
+            else {
+                return at(pointer + "/" + escape(name), name, values);
+            }
     }
 
     /** Merges arrays element by element by the declared identity; {@code null} when an identity repeats within one array. */

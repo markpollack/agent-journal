@@ -49,7 +49,10 @@ final class JunieSessionMapper implements SourceMapper {
         String kind = text(ae, "kind") != null ? text(ae, "kind") : text(o, "kind");
         String ts = o.member("timestampMs") instanceof Jv.Num n ? MapperSupport.msToRfc3339(n.value().longValueExact()) : null;
         Rec rec = new Rec(r, ctx, o, ae, kind, ts);
-        if (STEP_BLOCKS.contains(kind)) {
+        if (Set.of("TaskStartedEvent", "AgentCurrentStatusUpdatedEvent").contains(String.valueOf(kind))) {
+            reportedState(rec);
+        }
+        else if (STEP_BLOCKS.contains(kind)) {
             step(rec);
         }
         else if ("LlmResponseMetadataEvent".equals(kind)) {
@@ -63,11 +66,20 @@ final class JunieSessionMapper implements SourceMapper {
         }
     }
 
+    private static void reportedState(Rec e) {
+        e.ctx().family(e.kind(), e.r().raw().length, "normalized: native task or agent progress state; no terminal success is inferred");
+        Jv.Obj event = e.event("session_context", 5, "junie.session.state->session_context.state", true, null);
+        event.put("session_uid", e.ctx().sessionFor(null)).put("context_kind", e.kind())
+                .put("task_uid", e.o().member("taskId")).put("agent_uid", e.ae().path("agent", "id"))
+                .put("reported_state", e.ae().member("status")).put("data", e.o());
+        e.ctx().emit(ReportedQuantities.add(event, e.r(), "junie_session_events"));
+    }
+
     private static void retained(Rec e) {
         String meaning = "TaskStartedEvent".equals(e.kind()) ? "the task started (taskId)" : RETAINED.get(e.kind());
         e.ctx().family(e.kind(), e.r().raw().length, meaning == null ? "retained-only: no normalization rule" : "retained whole: " + meaning);
-        e.ctx().emit(e.ctx().fallback(e.r(), CONTRACT, "junie.session.fallback->source_record", e.kind(), e.ts(), null, e.ctx().sessionFor(null),
-                meaning == null ? "no normalization rule for this event; retained whole" : "junie.session.retained.v1: " + meaning + "; retained whole"));
+        e.ctx().emit(ReportedQuantities.add(e.ctx().fallback(e.r(), CONTRACT, "junie.session.fallback->source_record", e.kind(), e.ts(), null, e.ctx().sessionFor(null),
+                meaning == null ? "no normalization rule for this event; retained whole" : "junie.session.retained.v1: " + meaning + "; retained whole"), e.r(), "junie_session_events"));
     }
 
     /** One session event being mapped. */
@@ -95,7 +107,7 @@ final class JunieSessionMapper implements SourceMapper {
                 : "FAILED".equals(status) ? new MapperSupport.Status(2, 1, "reported: status FAILED") : null;
         Jv.Obj ev = e.event("tool_call", 3, "junie.session.step_block->tool_call.operation", true, st);
         ev.put("session_uid", e.ctx().sessionFor(null)).put("tool_family", e.kind()).put("tool_operation", op).put("reported_state", status).put("data", e.o());
-        e.ctx().emit(ev);
+        e.ctx().emit(ReportedQuantities.add(ev, e.r(), "junie_session_events"));
     }
 
     /** An LLM response metadata event: one model call's usage and unnamed-unit cost, per model entry; the call has no id. */
@@ -114,7 +126,7 @@ final class JunieSessionMapper implements SourceMapper {
         Jv.Obj ev = e.event("model_response", 2, "junie.session.llm_response_metadata->model_response", true, null);
         ev.put("session_uid", e.ctx().sessionFor(null)).put("usage_observations", usage).put("cost_observations", costs)
                 .put("basis", "junie.session.llm_call.v1: one model call, unidentified: the event reports no call or response id").put("data", e.o());
-        e.ctx().emit(ev);
+        e.ctx().emit(ReportedQuantities.add(ev, e.r(), "junie_session_events"));
     }
 
     /** The result block: the task's final answer, and its completion block's end time and named USD total. */
@@ -128,7 +140,7 @@ final class JunieSessionMapper implements SourceMapper {
         answer.put("session_uid", e.ctx().sessionFor(null)).put("item_uid", text(e.ae(), "stepId")).put("identity_basis_id", 2).put("identity_basis", IDENTITY_BASIS.get(2))
                 .put("content_blocks", blocks).put("reported_state", text(e.ae(), "errorCode"))
                 .put("basis", "junie.session.result.v1: the result block is the task's final answer; its errorCode (\"Submit\") is the block's reported state").put("data", e.o());
-        e.ctx().emit(answer);
+        e.ctx().emit(ReportedQuantities.add(answer, e.r(), "junie_session_events"));
         Jv completion = e.o().member("completion");
         if (completion instanceof Jv.Obj c && c.member("taskCostUsd") instanceof Jv.Num usd) {
             Jv ref = e.ctx().sourceRef(e.r(), null, e.ts(), false);
@@ -138,7 +150,7 @@ final class JunieSessionMapper implements SourceMapper {
             Jv.Obj acct = e.event("session_context", 3, "junie.session.completion->session_context.accounting", false, null);
             acct.put("session_uid", e.ctx().sessionFor(null)).put("cost_observations", new Jv.Arr(List.of(cost)))
                     .put("basis", "junie.session.completion.v1: completion.taskCostUsd is the task's total in USD, named by the source; completion.quota is a balance, not a consumption");
-            e.ctx().emit(acct);
+            e.ctx().emit(ReportedQuantities.add(acct, e.r(), "junie_session_events"));
         }
     }
 }

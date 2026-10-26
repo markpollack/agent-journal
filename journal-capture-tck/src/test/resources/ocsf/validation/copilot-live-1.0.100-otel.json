@@ -4,9 +4,9 @@
  "fixture": "copilot-live-1.0.100-otel",
  "core": "main",
  "events_jsonl": "fixtures/copilot-live-1.0.100-otel/package/events.jsonl",
- "events_jsonl_sha256": "3d5ce2e016792968c8b9a50e8a8ebf5159161ef2fdc503cf70a6bec1733687d3",
+ "events_jsonl_sha256": "7b84142d798d4d75ac28aa355ffc72bb42e301dfb94c21bbd0f5879453050b5c",
  "execution_records": 231,
- "declarations_skipped": 74,
+ "declarations_skipped": 79,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
  "toolkit": {
   "name": "ocsf-toolkit",
@@ -14,11 +14,11 @@
   "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
   "exit_code": 0
  },
- "compiled_schema_sha256": "da6317bacfd3f579f09331c93109219bf8f4616a23e251eba22928b5bad6f52d",
+ "compiled_schema_sha256": "3d3d274392817bbfa63844212becc9d23916078c4bdfc7db40b260df66144b3a",
  "result": {
   "event_files_processed": 231,
   "error_events": 0,
-  "warning_only_events": 24,
+  "warning_only_events": 30,
   "issues_reported": 0
  },
  "findings": {
@@ -127,6 +127,34 @@
     "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
    }
   ],
+  "0073.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"cost_observations[2].quantity_kind\" enum sibling suspiciously matches the schema caption of enum \"cost_observations[2].quantity_kind_id\" value 99 (\"Other\")."
+   }
+  ],
+  "0074.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"cost_observations[2].quantity_kind\" enum sibling suspiciously matches the schema caption of enum \"cost_observations[2].quantity_kind_id\" value 99 (\"Other\")."
+   }
+  ],
+  "0076.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"cost_observations[2].quantity_kind\" enum sibling suspiciously matches the schema caption of enum \"cost_observations[2].quantity_kind_id\" value 99 (\"Other\")."
+   }
+  ],
+  "0077.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"cost_observations[2].quantity_kind\" enum sibling suspiciously matches the schema caption of enum \"cost_observations[2].quantity_kind_id\" value 99 (\"Other\")."
+   }
+  ],
   "0138.report.json": [
    {
     "level": "warning",
@@ -169,6 +197,13 @@
     "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
    }
   ],
+  "0190.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"cost_observations[2].quantity_kind\" enum sibling suspiciously matches the schema caption of enum \"cost_observations[2].quantity_kind_id\" value 99 (\"Other\")."
+   }
+  ],
   "0202.report.json": [
    {
     "level": "warning",
@@ -188,6 +223,13 @@
     "level": "warning",
     "code": "validation_attribute_enum_sibling_suspicious_other",
     "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
+   }
+  ],
+  "0231.report.json": [
+   {
+    "level": "warning",
+    "code": "validation_attribute_enum_sibling_suspicious_other",
+    "message": "Attribute \"cost_observations[2].quantity_kind\" enum sibling suspiciously matches the schema caption of enum \"cost_observations[2].quantity_kind_id\" value 99 (\"Other\")."
    }
   ]
  },

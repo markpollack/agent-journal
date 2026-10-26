@@ -34,6 +34,12 @@
     },
     "git_branch": {
       "requirement": "optional"
+    },
+    "server_connections": {
+      "requirement": "optional"
+    },
+    "reasoning_effort": {
+      "requirement": "optional"
     }
   }
 }

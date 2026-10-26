@@ -58,13 +58,22 @@ class FieldDispositionTest {
 
     /** Profile to (catalog, native fixtures whose stream artifact is inventoried). */
     static final Map<String, List<String>> PROFILE_FIXTURES = Map.of(
-            "claude_stream", List.of(OcsfFixtures.CHILD, OcsfFixtures.INTERRUPTED, "syn-claude-untested-version", OcsfFixtures.LIVE_FEATURES, OcsfFixtures.LIVE_DENIAL, OcsfFixtures.LIVE_CANCELLED, OcsfFixtures.LIVE_MCP, OcsfFixtures.SYN_AGENT_DEFAULTS),
+            "claude_stream", List.of(OcsfFixtures.CHILD, OcsfFixtures.INTERRUPTED, "syn-claude-untested-version", OcsfFixtures.LIVE_FEATURES, OcsfFixtures.LIVE_DENIAL, OcsfFixtures.LIVE_CANCELLED, OcsfFixtures.LIVE_MCP, OcsfFixtures.SYN_AGENT_DEFAULTS, OcsfFixtures.SYN_CHILD_RUNS),
             "codex_stream", List.of(OcsfFixtures.CODEX_STREAM, OcsfFixtures.LIVE_CODEX, OcsfFixtures.LIVE_CODEX_CANCELLED, OcsfFixtures.CODEX_FAMILIES, OcsfFixtures.CODEX_TURN_FAILED, OcsfFixtures.LIVE_CODEX_FILE_CHANGE, OcsfFixtures.LIVE_CODEX_MCP, OcsfFixtures.LIVE_CODEX_REASONING, OcsfFixtures.LIVE_CODEX_PLAN, OcsfFixtures.LIVE_CODEX_WEB_SEARCH, OcsfFixtures.LIVE_CODEX_COLLAB_WAIT, OcsfFixtures.LIVE_CODEX_INTERRUPT_OPEN, OcsfFixtures.LIVE_CODEX_SANDBOX_REFUSAL),
             "agy_stream", List.of(OcsfFixtures.LIVE_AGY_FEATURES, OcsfFixtures.LIVE_AGY_DENIAL, OcsfFixtures.LIVE_AGY_INTERRUPT_OPEN, OcsfFixtures.LIVE_AGY_SUBAGENT, OcsfFixtures.LIVE_AGY_MCP_DENIED, OcsfFixtures.LIVE_AGY_MCP));
-    static final Map<String, String> CATALOGS = Map.of(
-            "claude_stream", "schema/vendor/claude-code/stream-json/dispositions.json",
-            "codex_stream", "schema/vendor/codex-cli/exec-json-stream/dispositions.json",
-            "agy_stream", "schema/vendor/antigravity-cli/stream-json/dispositions.json");
+    static final Map<String, String> CATALOGS = Map.ofEntries(
+            Map.entry("claude_stream", "schema/vendor/claude-code/stream-json/dispositions.json"),
+            Map.entry("codex_stream", "schema/vendor/codex-cli/exec-json-stream/dispositions.json"),
+            Map.entry("agy_stream", "schema/vendor/antigravity-cli/stream-json/dispositions.json"),
+            Map.entry("claude_transcript", "schema/vendor/claude-code/session-transcript/dispositions.json"),
+            Map.entry("codex_rollout", "schema/vendor/codex-cli/rollout/dispositions.json"),
+            Map.entry("copilot_events", "schema/vendor/github-copilot-cli/session-events/dispositions.json"),
+            Map.entry("copilot_otel", "schema/vendor/github-copilot-cli/otel-file/dispositions.json"),
+            Map.entry("copilot_usage_report", "schema/vendor/github-copilot-cli/usage-report/dispositions.json"),
+            Map.entry("junie_summary", "schema/vendor/junie/session-summary/dispositions.json"),
+            Map.entry("junie_session_events", "schema/vendor/junie/session-events/dispositions.json"),
+            Map.entry("junie_stdout", "schema/vendor/junie/json-stream/dispositions.json"),
+            Map.entry("opaque_text", "schema/vendor/common/opaque-text/dispositions.json"));
 
     record Entry(String variant, String path, boolean subtree, String disposition, List<String> destinations, String rule, String property, List<String> tests, String note, Json raw) {
         String key() {
@@ -82,7 +91,7 @@ class FieldDispositionTest {
 
     @Test
     void everyObservedStreamFieldHasExactlyOneBackedDisposition(@TempDir Path work) {
-        for (String profile : CATALOGS.keySet()) {
+        for (String profile : PROFILE_FIXTURES.keySet()) {
             Catalog catalog = catalog(profile);
             Map<String, Set<String>> observed = observed(profile, work.resolve(profile));
             List<String> problems = check(catalog, observed, reports(catalog, work.resolve(profile)), schema(work.resolve(profile)));
@@ -90,6 +99,31 @@ class FieldDispositionTest {
             int paths = observed.values().stream().mapToInt(Set::size).sum();
             System.out.println(profile + ": " + catalog.entries().size() + " disposition entries cover " + paths + " observed variant paths across " + observed.size() + " variants; " + summary(catalog));
         }
+    }
+
+    @Test
+    void everySelectedSourceCatalogResolvesAndHasExecutedEvidence(@TempDir Path work) {
+        List<OccurrenceLedger.Source> sources = OccurrenceLedger.sources();
+        Map<String, ExecutedAccounting.Run> executions = ExecutedAccounting.run(sources.stream().map(OccurrenceLedger.Source::fixture).collect(java.util.stream.Collectors.toSet()));
+        SchemaCatalog schema = schema(work);
+        List<String> allProblems = new ArrayList<>();
+        for (String profile : CATALOGS.keySet()) {
+            Catalog catalog = catalog(profile);
+            Map<String, Set<String>> observed = new TreeMap<>();
+            for (OccurrenceLedger.Source source : sources.stream().filter(s -> s.profile().equals(profile)).toList()) {
+                Path file = OccurrenceLedger.FIXTURES.resolve(source.fixture()).resolve("native").resolve(source.artifact());
+                NativeArtifact artifact = source.document() ? NativeArtifact.document(file) : NativeArtifact.read(file);
+                Map<Integer, Map<String, String>> carve = OccurrenceLedger.carveOuts(profile, source.fixture(), artifact);
+                for (OccurrenceLedger.Occurrence occurrence : OccurrenceLedger.occurrences(artifact, profile, OccurrenceLedger.ownerPath(profile))) {
+                    observed.computeIfAbsent(occurrence.variant(), k -> new TreeSet<>()).add(occurrence.path());
+                    childPath(observed, occurrence, carve);
+                }
+            }
+            Map<String, OracleReport> reports = new TreeMap<>();
+            executions.forEach((fixture, run) -> reports.put(fixture, run.report()));
+            check(catalog, observed, reports, schema).forEach(problem -> allProblems.add(profile + ": " + problem));
+        }
+        assertThat(allProblems).isEmpty();
     }
 
     @Test
@@ -196,7 +230,7 @@ class FieldDispositionTest {
                     problems.addAll(exercised(e, catalog, reports, Set.of(Check.Outcome.VERIFIED, Check.Outcome.REPRESENTATION_DIFFERS)));
                 }
                 case "retained", "unresolved" -> {
-                    if (!"whole_record.coverage".equals(e.property())) {
+                    if (!("whole_record.coverage".equals(e.property()) || "redundant".equals(OccurrenceLedger.classification(e)) && "fact.redundancy".equals(e.property()))) {
                         problems.add(e.key() + ": a " + e.disposition() + " field is backed by whole_record.coverage, not " + e.property());
                     }
                     problems.addAll(exercised(e, catalog, reports, Set.of(Check.Outcome.VERIFIED)));
@@ -427,8 +461,24 @@ class FieldDispositionTest {
             Path copy = OcsfFixtures.copy(fixture, work.resolve("obs").resolve(fixture));
             NativeArtifact art = NativeArtifact.read(copy.resolve("native").resolve("stream.jsonl"));
             absorb(out, RawInventory.inventory(art, "stream.jsonl", profile).member("variants"));
+            OccurrenceLedger.occurrences(art, profile, OccurrenceLedger.ownerPath(profile)).stream().filter(o -> o.opaque() || "opaque".equals(o.kind()))
+                    .forEach(o -> out.computeIfAbsent(o.variant(), k -> new TreeSet<>()).add(o.path()));
+        }
+        for (OccurrenceLedger.Source source : OccurrenceLedger.sources().stream().filter(s -> s.profile().equals(profile)).toList()) {
+            NativeArtifact art = NativeArtifact.read(OccurrenceLedger.FIXTURES.resolve(source.fixture()).resolve("native").resolve(source.artifact()));
+            Map<Integer, Map<String, String>> carve = OccurrenceLedger.carveOuts(profile, source.fixture(), art);
+            for (OccurrenceLedger.Occurrence occurrence : OccurrenceLedger.occurrences(art, profile, OccurrenceLedger.ownerPath(profile))) {
+                out.computeIfAbsent(occurrence.variant(), k -> new TreeSet<>()).add(occurrence.path());
+                childPath(out, occurrence, carve);
+            }
         }
         return out;
+    }
+
+    private static void childPath(Map<String, Set<String>> observed, OccurrenceLedger.Occurrence occurrence, Map<Integer, Map<String, String>> carve) {
+        if (carve.getOrDefault(occurrence.record(), Map.of()).containsKey("/tool_use_result") && occurrence.pointer().startsWith("/tool_use_result/")) {
+            observed.computeIfAbsent(occurrence.variant(), k -> new TreeSet<>()).add(OccurrenceLedger.childPath(occurrence));
+        }
     }
 
     private static void absorb(Map<String, Set<String>> out, Json variants) {
@@ -456,8 +506,8 @@ class FieldDispositionTest {
         Map<String, Json> objects = new LinkedHashMap<>();
         Map<String, Json> types = new LinkedHashMap<>();
         Json format = null;
-        for (String fixture : List.of(OcsfFixtures.CHILD, OcsfFixtures.CODEX, OcsfFixtures.CODEX_STREAM, "syn-claude-pair-transcript")) {
-            OcsfPackage p = OcsfFixtures.open(OcsfFixtures.copy(fixture, work.resolve("schema").resolve(fixture)));
+        for (String fixture : OccurrenceLedger.sources().stream().map(OccurrenceLedger.Source::fixture).distinct().toList()) {
+            OcsfPackage p = PackageReader.open(OccurrenceLedger.FIXTURES.resolve(fixture).resolve("package/events.jsonl"));
             if (format == null) {
                 format = p.declarations.format();
             }

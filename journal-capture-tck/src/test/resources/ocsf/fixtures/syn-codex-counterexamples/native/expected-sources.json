@@ -15,7 +15,14 @@
    "sha256": "ba5d5524ec8406323ea32566231dff43e763845f9641729b35b84e7b85625298",
    "bytes": 13114,
    "records": 39,
-   "required": true
+   "required": true,
+   "binding": {
+    "entry_id": "codex-cli/rollout/0.160.1",
+    "version": "0.160.1",
+    "route": "native_session_file",
+    "source_specification": "schema/vendor/codex-cli/rollout/0.160.1.json",
+    "specification_sha256": "62cec5538fa1917c91f726b9f078ad92b72ca460dea976df08feb50adc624363"
+   }
   }
  ],
  "children": []

@@ -1,0 +1,39 @@
+{
+  "caption": "Execution Metric",
+  "description": "A source-reported execution quantity. Exact native value/unit, scope and source pointer are retained. Unknown measurement semantics stay Unknown; no sum or cross-source equivalence follows.",
+  "extends": "object",
+  "name": "execution_metric",
+  "attributes": {
+    "metric_name": {
+      "requirement": "optional"
+    },
+    "reported_value": {
+      "requirement": "optional"
+    },
+    "metric_unit": {
+      "requirement": "optional"
+    },
+    "scope_id": {
+      "requirement": "optional"
+    },
+    "scope": {
+      "requirement": "optional"
+    },
+    "measurement_status_id": {
+      "requirement": "optional"
+    },
+    "source_ref": {
+      "requirement": "optional"
+    },
+    "native_pointers": {
+      "requirement": "optional"
+    },
+    "model_ref": {
+      "requirement": "optional"
+    },
+    "data": {
+      "requirement": "optional",
+      "description": "Exact source dimensions and window for a source-named metric. No join or cross-source aggregation is inferred."
+    }
+  }
+}

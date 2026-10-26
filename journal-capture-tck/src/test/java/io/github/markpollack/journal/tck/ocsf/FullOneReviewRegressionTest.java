@@ -74,8 +74,8 @@ class FullOneReviewRegressionTest {
             assertThat(report.outcome("source.inventory", TRANSCRIPT)).isEqualTo(Outcome.DEFECTIVE);
             assertThat(report.outcome("source.extent", TRANSCRIPT)).isEqualTo(Outcome.DEFECTIVE);
             assertThat(report.check("whole_record.coverage", TRANSCRIPT).detail()).contains("record 1: 0 whole-record events").contains("record 17: 0 whole-record events");
-            assertThat(report.check("population.contexts", TRANSCRIPT).detail()).contains("missing").contains("(expected 5, observed 0)");
-            assertThat(report.check("population.cost", TRANSCRIPT).detail()).contains("(expected 1, observed 0)");
+            assertThat(report.check("population.contexts", TRANSCRIPT).detail()).contains("missing").contains("(expected 6, observed 0)");
+            assertThat(report.check("population.cost", TRANSCRIPT).detail()).contains("(expected 2, observed 0)");
             assertThat(report.outcome("reconstruction.coverage", TRANSCRIPT)).isEqualTo(Outcome.DEFECTIVE);
             assertThat(report.missingRequired()).as("the denominator did not shrink").isEmpty();
             assertThat(OcsfReaderTool.acceptance(report).exit()).isEqualTo(OcsfReaderTool.EXIT_DEFECTS);
@@ -130,7 +130,7 @@ class FullOneReviewRegressionTest {
             editManifest(pkg(fixture), run -> obj(run.member("sources").elements().get(1)).members().put("profile", str("claude_stream")));
             OracleReport report = verify(fixture);
             assertThat(report.check("source.expected", TRANSCRIPT).detail()).isEqualTo("declared under profile claude_stream; the frozen manifest expects claude_transcript (the expected profile is applied)");
-            assertThat(report.check("population.contexts", TRANSCRIPT).detail()).as("judged with the transcript profile's expectations, not the candidate's").isEqualTo("5 expected, 5 observed");
+            assertThat(report.check("population.contexts", TRANSCRIPT).detail()).as("judged with the transcript profile's expectations, not the candidate's").isEqualTo("6 expected, 6 observed");
         }
 
         @Test

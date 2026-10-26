@@ -32,6 +32,15 @@ final class ClaudeTranscriptProfile implements SourceProfile {
                 continue;
             }
             Json o = r.json();
+            if (SourceProfile.text(o, "sessionId") != null) {
+                f.sessionOf.put(r.index(), SourceProfile.text(o, "sessionId"));
+            }
+            if (SourceProfile.text(o, "uuid") != null) {
+                f.nativeUid.put(r.index(), SourceProfile.text(o, "uuid"));
+            }
+            else if (SourceProfile.text(o, "id") != null) {
+                f.nativeUid.put(r.index(), SourceProfile.text(o, "id"));
+            }
             String type = SourceProfile.text(o, "type");
             Json message = o.member("message") instanceof Json.JObject m ? m : null;
             String ts = SourceProfile.text(o, "timestamp");
@@ -124,7 +133,10 @@ final class ClaudeTranscriptProfile implements SourceProfile {
                 f.contexts.add(new ExpectedFacts.Context(r.index(), 3, "cost-state", null, Map.of(), null, null));
                 if (o.member("modelUsage") instanceof Json.JObject mu) {
                     for (Map.Entry<String, Json> m : mu.members().entrySet()) {
-                        f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 5, 2, TrancheReading.claudeModelUsage(m.getValue()), m.getKey(), null, null, 2));
+                        f.addUsage(new ExpectedFacts.Usage(r.index(), r.index(), 5, 2, TrancheReading.claudeModelUsage(m.getValue()), m.getKey(), null, null, 2), "/modelUsage/" + FactComparison.escape(m.getKey()), m.getValue());
+                        if (m.getValue().member("costUSD") instanceof Json.JNumber) {
+                            f.costs.add(new ExpectedFacts.Cost(r.index(), m.getValue().member("costUSD"), "USD", 6, null, m.getKey(), 1, 2));
+                        }
                     }
                 }
                 if (o.member("totalCostUSD") instanceof Json.JNumber) {

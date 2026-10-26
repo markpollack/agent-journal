@@ -25,7 +25,14 @@
    "sha256": "9ad3dbef780b504ac318d620a5d859459cc5c8fea90e3a8d41b3698e6ec4273e",
    "bytes": 15926,
    "records": 18,
-   "required": true
+   "required": true,
+   "binding": {
+    "entry_id": "claude-code/stream-json/2.1.304-stdout",
+    "version": "2.1.304",
+    "route": "stdout",
+    "source_specification": "schema/vendor/claude-code/stream-json/2.1.304.json",
+    "specification_sha256": "3bd9dfbb25ad57617aa272d521ba7d0b6d0f29173e1c46a36d8b7bafce42cd66"
+   }
   }
  ],
  "children": []

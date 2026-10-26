@@ -25,13 +25,13 @@ class OcsfOracleFixtureTest {
     void syntheticCodexRolloutIsJudgedWithoutDefectAndWithNonEmptyPopulations(@TempDir Path work) {
         OracleReport report = verify(copy(CODEX, work));
         assertThat(report.defects()).isEmpty();
-        assertThat(report.withOutcome(Outcome.UNRESOLVED)).isEmpty();
+        assertThat(report.withOutcome(Outcome.UNRESOLVED)).hasSize(3).allMatch(c -> c.property().equals("source.meaning"));
         String owner = "main/rollout.jsonl";
         assertThat(report.check("population.requests", owner).detail()).isEqualTo("3 expected, 3 observed");
         assertThat(report.check("population.results", owner).detail()).isEqualTo("3 expected, 3 observed");
         assertThat(report.check("population.responses", owner).detail()).isEqualTo("6 expected, 6 observed");
         assertThat(report.check("population.prompts", owner).detail()).isEqualTo("5 expected, 5 observed");
-        assertThat(report.check("population.usage", owner).detail()).isEqualTo("6 expected, 6 observed");
+        assertThat(report.check("population.usage", owner).detail()).isEqualTo("9 expected, 9 observed");
         assertThat(report.check("population.contexts", owner).detail()).isEqualTo("7 expected, 7 observed");
         assertThat(report.check("population.operations", owner).detail()).isEqualTo("4 expected, 4 observed");
         assertThat(report.check("population.turn_completed", owner).detail()).isEqualTo("2 expected, 2 observed");
@@ -52,7 +52,7 @@ class OcsfOracleFixtureTest {
         assertThat(report.outcome("event.order", "main")).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("package.readable", "main")).isEqualTo(Outcome.VERIFIED);
         Map<String, Map<String, Object>> summary = report.summary();
-        assertThat(summary.get("NORMALIZATION").get("noDefects")).isEqualTo(true);
+        assertThat(summary.get("NORMALIZATION").get("noDefects")).as("unknown synthetic meanings remain non-passing").isEqualTo(false);
         assertThat(summary.get("PRESERVATION").get("noDefects")).isEqualTo(true);
     }
 

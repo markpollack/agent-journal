@@ -1,0 +1,21 @@
+{
+  "caption": "Server Connection",
+  "description": "One configured MCP connection, without inferred protocol negotiation or capabilities.",
+  "extends": "object",
+  "name": "server_connection",
+  "attributes": {
+    "element_index": {
+      "requirement": "optional"
+    },
+    "name": {
+      "requirement": "optional",
+      "description": "The MCP server name reported by the source configuration."
+    },
+    "reported_state": {
+      "requirement": "optional"
+    },
+    "configuration_source": {
+      "requirement": "optional"
+    }
+  }
+}

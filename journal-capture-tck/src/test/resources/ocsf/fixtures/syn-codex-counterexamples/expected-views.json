@@ -6,19 +6,57 @@
     "responses": "Each assistant message is written twice with one id: item_completed AgentMessage (block type Text) then response_item message (block type output_text). The text is equal; the native block structure is not. msg_a_3 (28/29) has the same text as msg_a_1 (7/8) and a different id: a separate response.",
     "usage": "Turn 1 token_count at record 13 (input 1000) is superseded by record 16 (input 2100) before task_complete 17: 16 is the applicable final, 13 provisional; they are not summed (3100 would be wrong). Turn 2 has one token_count (30, input 3300) before task_complete 31. Record 35 (token_usage_record, added 2026-10-21 in the shape of the real pair B records) reports the cited response msg_a_3 own usage (final at Model-response scope), the turn cumulative so far (provisional, a second observation of the turn-0002 group beside the token_count final) and the thread cumulative (provisional at Session scope, no final): three scopes, never summed.",
     "associations": "Records 10 and 11 (CommandExecution) carry no call id; their command text occurs in exactly one exec call input of the turn (record 9, call_0001aaaa): a derived unique association, not a reported parent. Records 24 and 25 match two exec calls with identical input (22 call_0002bbbb, 23 call_0003cccc): ambiguous, no tool_call_uid.",
-    "tool_exchanges": "Records 26 and 27 return identical content for call_0002bbbb and call_0003cccc (payload.call_id of each record): kept separate. Record 12 quotes call_FOREIGN0000000000000000 in its text; its owner is call_0001aaaa."
+    "tool_exchanges": "Records 26 and 27 return identical content for call_0002bbbb and call_0003cccc (payload.call_id of each record): kept separate. Record 12 quotes call_FOREIGN0000000000000000 in its text; its owner is call_0001aaaa.",
+    "last_reported_usage": "Native records 13, 16 and 30 independently report last_token_usage: output 20, 5 and 6, cache reads 500, 1000 and 1000. No response identity or finality is supplied, so these remain separate unknown-finality observations, never added to cumulative usage."
   },
   "run_uid": "syn-codex-counterexamples",
   "label": "main",
   "submissions": {
     "submission_count": 2,
     "rows": [
-      {"classification": "environment_context", "counts_as_submission": false, "rule": "codex.user_role_context.v1",
-       "occurrences": [{"artifact": "rollout.jsonl", "record_index": 3}]},
-      {"classification": "submission", "counts_as_submission": true, "identity_basis": "turn_uid + exact text", "turn_uid": "turn-0001-synthetic",
-       "occurrences": [{"artifact": "rollout.jsonl", "record_index": 5}, {"artifact": "rollout.jsonl", "record_index": 6}]},
-      {"classification": "submission", "counts_as_submission": true, "identity_basis": "turn_uid + exact text", "turn_uid": "turn-0002-synthetic",
-       "occurrences": [{"artifact": "rollout.jsonl", "record_index": 20}, {"artifact": "rollout.jsonl", "record_index": 21}]}
+      {
+        "classification": "environment_context",
+        "counts_as_submission": false,
+        "rule": "codex.user_role_context.v1",
+        "occurrences": [
+          {
+            "artifact": "rollout.jsonl",
+            "record_index": 3
+          }
+        ]
+      },
+      {
+        "classification": "submission",
+        "counts_as_submission": true,
+        "identity_basis": "turn_uid + exact text",
+        "turn_uid": "turn-0001-synthetic",
+        "occurrences": [
+          {
+            "artifact": "rollout.jsonl",
+            "record_index": 5
+          },
+          {
+            "artifact": "rollout.jsonl",
+            "record_index": 6
+          }
+        ]
+      },
+      {
+        "classification": "submission",
+        "counts_as_submission": true,
+        "identity_basis": "turn_uid + exact text",
+        "turn_uid": "turn-0002-synthetic",
+        "occurrences": [
+          {
+            "artifact": "rollout.jsonl",
+            "record_index": 20
+          },
+          {
+            "artifact": "rollout.jsonl",
+            "record_index": 21
+          }
+        ]
+      }
     ],
     "rule": "submission.identity.v1"
   },
@@ -26,51 +64,307 @@
     "identity_count": 3,
     "unresolved_count": 0,
     "rows": [
-      {"response_uid": "msg_a_1", "identity_scope": "run", "occurrence_count": 2,
-       "artifacts": {"rollout.jsonl": {"update_semantics": "SNAPSHOT", "snapshot_consistency": "text equal; native block structure differs",
-         "occurrences": [{"record_index": 7, "block_types": ["Text"]}, {"record_index": 8, "block_types": ["output_text"]}]}}},
-      {"response_uid": "msg_a_2", "occurrence_count": 2,
-       "artifacts": {"rollout.jsonl": {"occurrences": [{"record_index": 14}, {"record_index": 15}]}}},
-      {"response_uid": "msg_a_3", "occurrence_count": 2,
-       "artifacts": {"rollout.jsonl": {"occurrences": [{"record_index": 28}, {"record_index": 29}]}}}
+      {
+        "response_uid": "msg_a_1",
+        "identity_scope": "run",
+        "occurrence_count": 2,
+        "artifacts": {
+          "rollout.jsonl": {
+            "update_semantics": "SNAPSHOT",
+            "snapshot_consistency": "text equal; native block structure differs",
+            "occurrences": [
+              {
+                "record_index": 7,
+                "block_types": [
+                  "Text"
+                ]
+              },
+              {
+                "record_index": 8,
+                "block_types": [
+                  "output_text"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "response_uid": "msg_a_2",
+        "occurrence_count": 2,
+        "artifacts": {
+          "rollout.jsonl": {
+            "occurrences": [
+              {
+                "record_index": 14
+              },
+              {
+                "record_index": 15
+              }
+            ]
+          }
+        }
+      },
+      {
+        "response_uid": "msg_a_3",
+        "occurrence_count": 2,
+        "artifacts": {
+          "rollout.jsonl": {
+            "occurrences": [
+              {
+                "record_index": 28
+              },
+              {
+                "record_index": 29
+              }
+            ]
+          }
+        }
+      }
     ]
   },
   "usage": {
-    "group_count": 4,
+    "group_count": 6,
     "groups": [
-      {"scope": "Prompt turn", "owner": "turn-0001-synthetic", "source": "rollout.jsonl", "final_observations": 1, "repeated_final_observations": 0,
-       "provisional_observations": 1, "conflict": false,
-       "applicable_final": {"output_tokens": 25, "cache_read_tokens": 1500, "cache_write_tokens": 0, "reasoning_tokens": 0, "reported_total_tokens": 2125},
-       "observations": [{"record_index": 13, "status": "Provisional", "components": {"output_tokens": 20}}, {"record_index": 16, "status": "Final"}]},
-      {"scope": "Prompt turn", "owner": "turn-0002-synthetic", "source": "rollout.jsonl", "final_observations": 1, "provisional_observations": 1,
-       "applicable_final": {"output_tokens": 31, "reported_total_tokens": 3331},
-       "observations": [{"record_index": 30, "status": "Final"}, {"record_index": 35, "status": "Provisional"}]},
-      {"scope": "Model response", "owner": "msg_a_3", "source": "rollout.jsonl", "final_observations": 1, "provisional_observations": 0,
-       "applicable_final": {"output_tokens": 6, "cache_read_tokens": 1000, "cache_write_tokens": 0, "reasoning_tokens": 0, "reported_total_tokens": 1206},
-       "observations": [{"record_index": 35, "status": "Final"}]},
-      {"scope": "Session", "owner": "11111111-2222-4333-8444-555555555555", "source": "rollout.jsonl", "final_observations": 0, "provisional_observations": 1,
-       "applicable_final": null, "observations": [{"record_index": 35, "status": "Provisional", "components": {"reported_total_tokens": 5456}}]}
+      {
+        "scope": "Prompt turn",
+        "owner": "turn-0001-synthetic",
+        "source": "rollout.jsonl",
+        "final_observations": 1,
+        "repeated_final_observations": 0,
+        "provisional_observations": 1,
+        "conflict": false,
+        "applicable_final": {
+          "output_tokens": 25,
+          "cache_read_tokens": 1500,
+          "cache_write_tokens": 0,
+          "reasoning_tokens": 0,
+          "reported_total_tokens": 2125
+        },
+        "observations": [
+          {
+            "record_index": 13,
+            "status": "Provisional",
+            "components": {
+              "output_tokens": 20
+            }
+          },
+          {
+            "record_index": 16,
+            "status": "Final"
+          }
+        ]
+      },
+      {
+        "scope": "Other: Last reported usage",
+        "source": "rollout.jsonl",
+        "final_observations": 0,
+        "provisional_observations": 0,
+        "unknown_observations": 2,
+        "applicable_final": null,
+        "observations": [
+          {
+            "record_index": 13,
+            "status": "Unknown",
+            "components": {
+              "output_tokens": 20,
+              "cache_read_tokens": 500
+            }
+          },
+          {
+            "record_index": 16,
+            "status": "Unknown",
+            "components": {
+              "output_tokens": 5,
+              "cache_read_tokens": 1000
+            }
+          }
+        ]
+      },
+      {
+        "scope": "Prompt turn",
+        "owner": "turn-0002-synthetic",
+        "source": "rollout.jsonl",
+        "final_observations": 1,
+        "provisional_observations": 1,
+        "applicable_final": {
+          "output_tokens": 31,
+          "reported_total_tokens": 3331
+        },
+        "observations": [
+          {
+            "record_index": 30,
+            "status": "Final"
+          },
+          {
+            "record_index": 35,
+            "status": "Provisional"
+          }
+        ]
+      },
+      {
+        "scope": "Other: Last reported usage",
+        "source": "rollout.jsonl",
+        "final_observations": 0,
+        "provisional_observations": 0,
+        "unknown_observations": 1,
+        "applicable_final": null,
+        "observations": [
+          {
+            "record_index": 30,
+            "status": "Unknown",
+            "components": {
+              "output_tokens": 6,
+              "cache_read_tokens": 1000
+            }
+          }
+        ]
+      },
+      {
+        "scope": "Model response",
+        "owner": "msg_a_3",
+        "source": "rollout.jsonl",
+        "final_observations": 1,
+        "provisional_observations": 0,
+        "applicable_final": {
+          "output_tokens": 6,
+          "cache_read_tokens": 1000,
+          "cache_write_tokens": 0,
+          "reasoning_tokens": 0,
+          "reported_total_tokens": 1206
+        },
+        "observations": [
+          {
+            "record_index": 35,
+            "status": "Final"
+          }
+        ]
+      },
+      {
+        "scope": "Session",
+        "owner": "11111111-2222-4333-8444-555555555555",
+        "source": "rollout.jsonl",
+        "final_observations": 0,
+        "provisional_observations": 1,
+        "applicable_final": null,
+        "observations": [
+          {
+            "record_index": 35,
+            "status": "Provisional",
+            "components": {
+              "reported_total_tokens": 5456
+            }
+          }
+        ]
+      }
     ],
     "aggregation": "none: groups are never summed across scopes, sources, models or child runs"
   },
   "associations": {
     "rows": [
-      {"fact": "operation", "uid": "exec-0001", "occurrence": "rollout.jsonl:10", "outcome": "Unique", "method": "Derived by rule", "candidate_count": 1,
-       "candidates": ["call_0001aaaa"], "reported_parent": null, "derived_association": "call_0001aaaa"},
-      {"fact": "operation", "uid": "exec-0002", "occurrence": "rollout.jsonl:11", "outcome": "Unique", "method": "Derived by rule", "candidate_count": 1,
-       "reported_parent": null, "derived_association": "call_0001aaaa"},
-      {"fact": "operation", "uid": "exec-0003", "occurrence": "rollout.jsonl:24", "outcome": "Ambiguous", "method": "Derived by rule", "candidate_count": 2,
-       "candidates": ["call_0002bbbb", "call_0003cccc"], "stored_tool_call_uid": null, "reported_parent": null, "derived_association": null},
-      {"fact": "operation", "uid": "exec-0004", "occurrence": "rollout.jsonl:25", "outcome": "Ambiguous", "candidate_count": 2, "stored_tool_call_uid": null}
+      {
+        "fact": "operation",
+        "uid": "exec-0001",
+        "occurrence": "rollout.jsonl:10",
+        "outcome": "Unique",
+        "method": "Derived by rule",
+        "candidate_count": 1,
+        "candidates": [
+          "call_0001aaaa"
+        ],
+        "reported_parent": null,
+        "derived_association": "call_0001aaaa"
+      },
+      {
+        "fact": "operation",
+        "uid": "exec-0002",
+        "occurrence": "rollout.jsonl:11",
+        "outcome": "Unique",
+        "method": "Derived by rule",
+        "candidate_count": 1,
+        "reported_parent": null,
+        "derived_association": "call_0001aaaa"
+      },
+      {
+        "fact": "operation",
+        "uid": "exec-0003",
+        "occurrence": "rollout.jsonl:24",
+        "outcome": "Ambiguous",
+        "method": "Derived by rule",
+        "candidate_count": 2,
+        "candidates": [
+          "call_0002bbbb",
+          "call_0003cccc"
+        ],
+        "stored_tool_call_uid": null,
+        "reported_parent": null,
+        "derived_association": null
+      },
+      {
+        "fact": "operation",
+        "uid": "exec-0004",
+        "occurrence": "rollout.jsonl:25",
+        "outcome": "Ambiguous",
+        "candidate_count": 2,
+        "stored_tool_call_uid": null
+      }
     ]
   },
   "tool_exchanges": {
     "calls": [
-      {"tool_call_uid": "call_0001aaaa", "requests": [{"occurrence": "rollout.jsonl:9", "name": "exec", "kind": "execute"}], "results": [{"occurrence": "rollout.jsonl:12", "status": "Unknown", "status_basis": "Not derivable"}]},
-      {"tool_call_uid": "call_0002bbbb", "requests": [{"occurrence": "rollout.jsonl:22"}], "results": [{"occurrence": "rollout.jsonl:26"}]},
-      {"tool_call_uid": "call_0003cccc", "requests": [{"occurrence": "rollout.jsonl:23"}], "results": [{"occurrence": "rollout.jsonl:27"}]}
+      {
+        "tool_call_uid": "call_0001aaaa",
+        "requests": [
+          {
+            "occurrence": "rollout.jsonl:9",
+            "name": "exec",
+            "kind": "execute"
+          }
+        ],
+        "results": [
+          {
+            "occurrence": "rollout.jsonl:12",
+            "status": "Unknown",
+            "status_basis": "Not derivable"
+          }
+        ]
+      },
+      {
+        "tool_call_uid": "call_0002bbbb",
+        "requests": [
+          {
+            "occurrence": "rollout.jsonl:22"
+          }
+        ],
+        "results": [
+          {
+            "occurrence": "rollout.jsonl:26"
+          }
+        ]
+      },
+      {
+        "tool_call_uid": "call_0003cccc",
+        "requests": [
+          {
+            "occurrence": "rollout.jsonl:23"
+          }
+        ],
+        "results": [
+          {
+            "occurrence": "rollout.jsonl:27"
+          }
+        ]
+      }
     ],
-    "identical_content_distinct_owners": [{"owners": ["call_0002bbbb", "call_0003cccc"], "kept_separate": true}]
+    "identical_content_distinct_owners": [
+      {
+        "owners": [
+          "call_0002bbbb",
+          "call_0003cccc"
+        ],
+        "kept_separate": true
+      }
+    ]
   },
   "children": []
 }

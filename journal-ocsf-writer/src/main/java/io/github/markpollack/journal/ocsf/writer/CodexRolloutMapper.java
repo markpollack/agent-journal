@@ -74,6 +74,10 @@ final class CodexRolloutMapper implements SourceMapper {
             ctx.family(family, r.raw().length, "normalized: session_context Settings reported (configuration snapshot; model from collaboration_mode)");
             MapperSupport.Time t = ctx.timeFor(r, ts);
             Jv.Obj settings = new Jv.Obj().put("model", text(p, "state", "collaboration_mode", "model"));
+            if (p.path("state", "collaboration_mode", "settings") instanceof Jv.Obj nested) {
+                if (settings.member("model") == null) { settings.put("model", nested.member("model")); }
+                settings.put("reasoning_effort", nested.member("reasoning_effort"));
+            }
             Jv.Obj ev = ctx.event("session_context", 1, r, t, CONTRACT, "codex.rollout.world_state->session_context.settings", ts, null, true, null);
             ev.put("session_uid", session).put("context_kind", "world_state").put("settings", settings)
                     .put("basis", "codex.rollout.settings.v1: world_state is the CLI's configuration snapshot; only the model is normalized, the rest is retained in data").put("data", o);
@@ -253,6 +257,13 @@ final class CodexRolloutMapper implements SourceMapper {
                         ctx.sourceRef(tc, null, text(tc.json(), "timestamp"), false), null, info);
                 UsageTranches.codex(ob, total, "/total_token_usage");
                 obs.add(ob);
+                if (info != null && info.member("last_token_usage") != null) {
+                    Jv.Obj recent = MapperSupport.usage(99, 0,
+                            "codex.rollout.last_usage.v1: last_token_usage is a separate reported measurement; the recording supplies no response identity or finality for it",
+                            ctx.sourceRef(tc, null, text(tc.json(), "timestamp"), false), null, info).put("scope", "Last reported usage");
+                    UsageTranches.codex(recent, info.member("last_token_usage"), "/last_token_usage");
+                    obs.add(recent);
+                }
             }
             tokenCounts.clear();
             Jv.Obj ev = ctx.event("prompt_turn", 2, r, t, CONTRACT, "codex.rollout.task_complete->prompt_turn.completed", ts, null, true,

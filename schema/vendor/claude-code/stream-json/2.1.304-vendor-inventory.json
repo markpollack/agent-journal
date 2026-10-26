@@ -3668,9 +3668,9 @@
    ],
    "vendor_tests": [],
    "journal": {
-    "behavior": "retained-only",
-    "rule": "claude.stream.fallback->source_record",
-    "note": "retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination. the child run is represented by owner routing of parent_tool_use_id records, not by these events; parent_task_id nesting is not normalized"
+    "behavior": "normalized",
+    "rule": "claude.stream.system.task_state->session_context.state",
+    "note": "Native task state, description, agent type and identity are mapped without inventing child-run linkage."
    }
   },
   {
@@ -3936,9 +3936,9 @@
    ],
    "vendor_tests": [],
    "journal": {
-    "behavior": "retained-only",
-    "rule": "claude.stream.fallback->source_record",
-    "note": "retained whole as a source_record by the generic fallback (the mapper's last branch takes every record no rule selects, not only the system/rate_limit selector the contract names); no normalized destination"
+    "behavior": "normalized",
+    "rule": "claude.stream.system.task_state->session_context.state",
+    "note": "Native task state, description, agent type and identity are mapped without inventing child-run linkage."
    }
   },
   {
@@ -5720,6 +5720,16 @@
    "variant": "user/tool_result",
    "path": "tool_result_meta",
    "note": "emitted by Claude Code 2.1.304 and observed on its committed recordings; the published sdk.d.ts omits it (a CLI-internal member: blank lines inside the type body); reviewed as a vendor-envelope field and dispositioned in dispositions.json"
+  },
+  {
+   "variant": "system/task_notification",
+   "path": "description",
+   "note": "Present in the frozen synthetic SDK-family example. Retained native task metadata is compared to task_description/agent_type; this example is not live acquisition evidence."
+  },
+  {
+   "variant": "system/task_notification",
+   "path": "subagent_type",
+   "note": "Present in the frozen synthetic SDK-family example. Retained native task metadata is compared to task_description/agent_type; this example is not live acquisition evidence."
   }
  ]
 }

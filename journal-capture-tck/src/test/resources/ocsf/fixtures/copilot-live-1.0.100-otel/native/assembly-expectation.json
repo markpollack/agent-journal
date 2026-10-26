@@ -406,5 +406,14 @@
     "member": "total_cost"
    }
   }
+ ],
+ "authorities": [
+  {
+   "class": "tool_call",
+   "pointer": "/tool_result/data",
+   "role": "stdout",
+   "native_pointer": "/data/result",
+   "basis": "The stdout event reports the CLI result object; the OTel tool-call result is a rendered string. Preserve the rendering on its source observation."
+  }
  ]
 }

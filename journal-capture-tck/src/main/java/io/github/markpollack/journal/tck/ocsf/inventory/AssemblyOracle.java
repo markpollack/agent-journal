@@ -1,6 +1,7 @@
 package io.github.markpollack.journal.tck.ocsf.inventory;
 
 import io.github.markpollack.journal.tck.ocsf.Event;
+import io.github.markpollack.journal.tck.ocsf.FactComparison;
 import io.github.markpollack.journal.tck.ocsf.NativeArtifact;
 import io.github.markpollack.journal.tck.ocsf.OcsfPackage;
 import io.github.markpollack.journal.tck.ocsf.OracleReport;
@@ -55,6 +56,21 @@ public final class AssemblyOracle {
     private AssemblyOracle() {
     }
 
+    /** Executes source comparisons and the independently supplied native assembly specification in one report. */
+    public static OracleReport verifyAll(OcsfPackage pkg, java.nio.file.Path nativeDir, io.github.markpollack.journal.tck.ocsf.ExpectedSources expected, Json assemblySpecification,
+            List<io.github.markpollack.journal.tck.ocsf.inventory.AssemblyOracle.Supplied> inputs) {
+        OracleReport source = io.github.markpollack.journal.tck.ocsf.OcsfOracle.verify(pkg, nativeDir, expected);
+        OracleReport assembly = io.github.markpollack.journal.tck.ocsf.inventory.AssemblyOracle.verify(pkg, assemblySpecification, inputs);
+        source = source.replaced(c -> "combination.policy".equals(c.property()), c -> new io.github.markpollack.journal.tck.verify.Check(c.category(), c.property(), c.owner(),
+                assembly.checks().stream().allMatch(a -> a.outcome() == Outcome.VERIFIED || a.outcome() == Outcome.NOT_APPLICABLE) ? Outcome.VERIFIED : Outcome.UNRESOLVED,
+                "independent assembly comparison executed; its individual results are included"));
+        assembly.checks().forEach(source::add);
+        Map<String, String> roles = new LinkedHashMap<>();
+        inputs.forEach(input -> roles.put(input.name(), input.role()));
+        io.github.markpollack.journal.tck.ocsf.FinalComparisons.check(pkg, source, assembly, assemblySpecification, roles);
+        return source;
+    }
+
     public static OracleReport verify(OcsfPackage pkg, Json spec, List<Supplied> supplied) {
         if (!SPECIFICATION_KIND.equals(RawInventory.text(spec, "kind"))) {
             throw new IllegalArgumentException("not an assembly expectation: kind " + RawInventory.text(spec, "kind"));
@@ -68,6 +84,7 @@ public final class AssemblyOracle {
         declaration(report, declared, spec, supplied);
         Map<String, Expected> expected = expect(spec, supplied);
         gate(report, declared, expected, pkg);
+        sessions(report, pkg, expected);
         required(report, declared, spec, expected);
         List<Supplied> accepted = new ArrayList<>();
         expected.values().stream().filter(Expected::accepted).forEach(e -> accepted.add(e.source()));
@@ -75,6 +92,23 @@ public final class AssemblyOracle {
         AssemblyConsolidation.check(report, pkg);
         AssemblyAccounting.check(report, pkg, spec, accepted);
         return report;
+    }
+
+    private static void sessions(OracleReport report, OcsfPackage pkg, Map<String, Expected> expected) {
+        Set<String> sessions = new LinkedHashSet<>();
+        expected.values().stream().filter(Expected::accepted).forEach(e -> sessions.addAll(e.sessions()));
+        if (sessions.size() != 1) { return; }
+        String session = sessions.iterator().next();
+        List<String> support = new ArrayList<>();
+        expected.values().stream().filter(e -> e.accepted() && !e.sessions().isEmpty()).forEach(e ->
+                e.source().bytes().records().forEach(r -> support.add(e.source().name() + ":record=" + r.index() + "#")));
+        for (Event event : pkg.events) {
+            Expected source = expected.get(event.artifact());
+            if (event.className == null || source == null || !source.accepted()) { continue; }
+            String owner = "main/" + event.artifact();
+            FactComparison.compare(report, "assembly.session.value", owner,
+                new io.github.markpollack.journal.tck.verify.Check.Evidence("assembly.membership_session/v1", event.line + "/session_uid", support, owner + ":line=" + event.line + "#/session_uid", FactComparison.value("stderr".equals(source.source().role()) ? null : session), event.get("session_uid")));
+        }
     }
 
     // ------------------------------------------------------------------------------------------ declaration

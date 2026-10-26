@@ -36,7 +36,7 @@ final class ClaudeStreamMapper implements SourceMapper {
     public void map(NativeRecord r, SourceContext ctx) {
         if (!r.parsed()) {
             ctx.family("opaque", r.raw().length, "retained-only: not one JSON object (bytes kept verbatim)");
-            ctx.emit(ctx.opaque(r, CONTRACT));
+            ctx.emit(ExecutionMetrics.add(ctx.opaque(r, CONTRACT), r, ctx));
             return;
         }
         Jv o = r.json();
@@ -52,13 +52,13 @@ final class ClaudeStreamMapper implements SourceMapper {
             MapperSupport.Time t = ctx.timeFor(r, ts);
             MapperSupport.ClaudeMessage msg = new MapperSupport.ClaudeMessage(ctx, r, t, ts, uid, sess);
             Jv.Obj ev = MapperSupport.claudeModelResponse(ROUTE, msg, m, o);
-            ctx.emit(owner, ev);
+            ctx.emit(owner, ExecutionMetrics.add(ev, r, ctx));
             for (Jv b : m.member("content") == null ? List.<Jv>of() : m.member("content").elements()) {
                 if ("tool_use".equals(text(b, "type"))) {
                     Jv.Obj req = MapperSupport.claudeToolRequest(ROUTE, msg, text(m, "id"), b);
                     req.put("mcp", mcp.request(b));
                     childUsage.request(b);
-                    ctx.emit(owner, req);
+                    ctx.emit(owner, ExecutionMetrics.add(req, r, ctx));
                 }
             }
             return;
@@ -80,7 +80,7 @@ final class ClaudeStreamMapper implements SourceMapper {
                 ctx.family("user (prompt)", r.raw().length, "normalized: prompt_turn Prompt submitted (user record without tool_result; observed in child scopes only)");
                 Jv.Obj ev = ctx.event("prompt_turn", 1, r, t, CONTRACT, "claude.stream.user.prompt->prompt_turn.submitted", ts, uid, true, null);
                 ev.put("session_uid", sess).put("content_blocks", MapperSupport.blocks(ctx.contracts, CONTRACT, content)).put("data", o);
-                ctx.emit(owner, ev);
+                ctx.emit(owner, ExecutionMetrics.add(ev, r, ctx));
                 return;
             }
             ctx.family("user", r.raw().length, "normalized: tool_call Result observed per tool_result block (+ permission_decision from tool_result_meta; "
@@ -108,12 +108,12 @@ final class ClaudeStreamMapper implements SourceMapper {
                     }
                 }
                 ev.put("data", first ? o : b);
-                ctx.emit(owner, ev);
+                ctx.emit(owner, ExecutionMetrics.add(ev, r, ctx));
                 first = false;
             }
             Jv.Obj accounting = childUsage.agentResult(msg, o, resultIds);
             if (accounting != null) {
-                ctx.emit(owner, accounting);
+                ctx.emit(owner, ExecutionMetrics.add(accounting, r, ctx));
             }
             return;
         }
@@ -143,6 +143,9 @@ final class ClaudeStreamMapper implements SourceMapper {
             Jv.Obj ev = ctx.event("prompt_turn", 2, r, t, CONTRACT, "claude.stream.result->prompt_turn.completed", ts, uid, true,
                     new MapperSupport.Status(success ? 1 : 2, 1, "reported: result.subtype and result.is_error"));
             ev.put("session_uid", sess).put("stop_reason", text(o, "stop_reason")).put("usage_observations", obs);
+            if (o.member("result") instanceof Jv.Str) {
+                ev.put("content_blocks", MapperSupport.blocks(ctx.contracts, CONTRACT, o.member("result")));
+            }
             if (o.member("duration_ms") instanceof Jv.Num duration && duration.value().stripTrailingZeros().scale() <= 0) {
                 // claude.stream.result.duration->prompt_turn.duration: the run's reported wall-clock milliseconds, copied
                 ev.put("duration", duration);
@@ -168,10 +171,10 @@ final class ClaudeStreamMapper implements SourceMapper {
                 ev.put("permission_decisions", pds);
             }
             ev.put("data", o);
-            ctx.emit(owner, ev);
+            ctx.emit(owner, ExecutionMetrics.add(ev, r, ctx));
             Jv.Obj modelCosts = modelCosts(ctx, r, o, sess);
             if (modelCosts != null) {
-                ctx.emit(owner, modelCosts);
+                ctx.emit(owner, ExecutionMetrics.add(modelCosts, r, ctx));
             }
             return;
         }
@@ -194,18 +197,25 @@ final class ClaudeStreamMapper implements SourceMapper {
             Jv.Obj ev = ctx.event("session_context", 1, r, t, CONTRACT, "claude.stream.system.init->session_context.settings", ts, uid, true, null);
             ev.put("session_uid", sess).put("context_kind", "system/init").put("settings", settings)
                     .put("basis", "claude.stream.init.v1: the init record reports the session's launch settings once").put("data", o);
-            ctx.emit(owner, ev);
+            ((Jv.Obj) ev.member("settings")).put("server_connections", ExecutionState.connections(o.member("mcp_servers")));
+            ctx.emit(owner, ExecutionMetrics.add(ev, r, ctx));
+            return;
+        }
+        Jv.Obj state = "system".equals(type) ? ExecutionState.claudeTask(r, ctx) : null;
+        if (state != null) {
+            ctx.family(family, r.raw().length, "normalized: task state and reported prompt");
+            ctx.emit(owner, state);
             return;
         }
         Jv.Obj task = "system/task_progress".equals(family) || "system/task_notification".equals(family) ? ClaudeChildUsage.task(ctx, r, family, o) : null;
         if (task != null) {
             ctx.family(family, r.raw().length, "normalized: session_context Accounting reported (the spawned task's child-run usage, scope 7)");
-            ctx.emit(owner, task);
+            ctx.emit(owner, ExecutionMetrics.add(task, r, ctx));
             return;
         }
         ctx.family(family, r.raw().length, "system/thinking_tokens".equals(family) ? "retained-only: vendor estimate of thinking tokens so far (not reported usage)"
                 : "rate_limit_event".equals(family) ? "retained-only: vendor rate-limit status" : "retained-only: no normalization rule");
-        ctx.emit(owner, ctx.fallback(r, CONTRACT, "claude.stream.fallback->source_record", family, ts, uid, sess, null));
+        ctx.emit(owner, ExecutionMetrics.add(ctx.fallback(r, CONTRACT, "claude.stream.fallback->source_record", family, ts, uid, sess, null), r, ctx));
     }
 
     static final String MODEL_COST_RULE = "claude.stream.result.model_cost->session_context.accounting";

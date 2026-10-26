@@ -40,8 +40,8 @@ final class ClaudeChildUsageReading {
         if (resultIds.size() != 1 || !AGENT_TOOL.equals(requested.get(resultIds.get(0))) || !(usage instanceof Json.JObject)) {
             return;
         }
-        account(f, index, "user/tool_result", resultIds.get(0));
-        f.usages.add(new ExpectedFacts.Usage(index, index, 7, 2, TrancheReading.anthropic(usage), null, null, emitterDefaults(usage) ? 2 : null, 3));
+        account(f, index, "user/tool_result", resultIds.get(0), result.member("content") instanceof Json.JArray content ? content.elements().stream().map(b -> new ExpectedFacts.Block(SourceProfile.text(b, "type"), SourceProfile.text(b, "text"), b)).toList() : null);
+        f.addUsage(new ExpectedFacts.Usage(index, index, 7, 2, TrancheReading.anthropic(usage), null, null, emitterDefaults(usage) ? 2 : null, 3), "/tool_use_result/usage", usage);
         // the envelope's own members (Agent SDK 0.3.304 AgentOutput): the child run's reported terminal status and its
         // total duration in milliseconds are the accounting event's reported_state and duration; the child's status is
         // never the outer tool call's status (that stays the result block's is_error)
@@ -74,13 +74,23 @@ final class ClaudeChildUsageReading {
             return false;
         }
         f.normalized.add(index);
-        account(f, index, family, SourceProfile.text(record, "tool_use_id"));
-        f.usages.add(new ExpectedFacts.Usage(index, index, 7, "system/task_notification".equals(family) ? 2 : 1, TrancheReading.claudeTaskUsage(usage), null, null, null, null));
+        List<ExpectedFacts.Block> blocks = new java.util.ArrayList<>();
+        for (Json value : java.util.Arrays.asList(record.member("handback"), record.path("handback_report", "text"))) {
+            if (value instanceof Json.JString text) { blocks.add(new ExpectedFacts.Block("string", text.value(), value)); }
+        }
+        account(f, index, family, SourceProfile.text(record, "tool_use_id"), blocks.isEmpty() ? null : blocks);
+        f.addUsage(new ExpectedFacts.Usage(index, index, 7, "system/task_notification".equals(family) ? 2 : 1, TrancheReading.claudeTaskUsage(usage), null, null, null, null), "/usage", usage);
+        if (SourceProfile.isIntegral(usage.member("duration_ms"))) {
+            f.attributes.add(new ExpectedFacts.Attribute(index, "session_context", 3, "duration", usage.member("duration_ms")));
+        }
+        if (record.member("status") instanceof Json.JString) {
+            f.attributes.add(new ExpectedFacts.Attribute(index, "session_context", 3, "reported_state", record.member("status")));
+        }
         return true;
     }
 
-    private static void account(ExpectedFacts f, int index, String kind, String spawn) {
-        f.contexts.add(new ExpectedFacts.Context(index, 3, kind, null, Map.of(), null, null));
+    private static void account(ExpectedFacts f, int index, String kind, String spawn, List<ExpectedFacts.Block> blocks) {
+        f.contexts.add(new ExpectedFacts.Context(index, 3, kind, null, Map.of(), null, blocks));
         if (spawn != null) {
             f.contextToolCalls.put(index + ":" + kind, spawn);
         }

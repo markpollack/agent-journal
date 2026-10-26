@@ -309,16 +309,19 @@
   {
    "variant": "step_update/agent_response/DONE",
    "path": "step_update.duration_seconds",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "a reported step duration (retained-only, known meaning: no common duration attribute)",
-   "classification": "candidate",
-   "classification_note": "a step's duration in seconds: the event's base duration attribute (milliseconds) has capacity; unit conversion pending"
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
+   "classification": "canonical",
+   "destination": [
+    "*.execution_metrics"
+   ],
+   "rule": "agy.stream.agent_response.done->model_response.item"
   },
   {
    "variant": "step_update/agent_response/DONE",
@@ -536,16 +539,19 @@
   {
    "variant": "step_update/tool/DONE",
    "path": "step_update.duration_seconds",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "a reported step duration (retained-only, known meaning: no common duration attribute)",
-   "classification": "candidate",
-   "classification_note": "a step's duration in seconds: the event's base duration attribute (milliseconds) has capacity; unit conversion pending"
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
+   "classification": "canonical",
+   "destination": [
+    "*.execution_metrics"
+   ],
+   "rule": "agy.stream.tool.done->tool_call.result"
   },
   {
    "variant": "step_update/tool/DONE",
@@ -642,16 +648,19 @@
   {
    "variant": "step_update/tool/ERROR",
    "path": "step_update.duration_seconds",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "a reported step duration (retained-only, known meaning: no common duration attribute)",
-   "classification": "candidate",
-   "classification_note": "a step's duration in seconds: the event's base duration attribute (milliseconds) has capacity; unit conversion pending"
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
+   "classification": "canonical",
+   "destination": [
+    "*.execution_metrics"
+   ],
+   "rule": "agy.stream.tool.done->tool_call.result"
   },
   {
    "variant": "step_update/tool/ERROR",
@@ -802,16 +811,19 @@
   {
    "variant": "step_update/subagent/DONE",
    "path": "step_update.duration_seconds",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "a reported step duration (retained-only, known meaning: no common duration attribute)",
-   "classification": "candidate",
-   "classification_note": "a step's duration in seconds: the event's base duration attribute (milliseconds) has capacity; unit conversion pending"
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
+   "classification": "canonical",
+   "destination": [
+    "*.execution_metrics"
+   ],
+   "rule": "agy.stream.subagent.done->tool_call.result"
   },
   {
    "variant": "step_update/subagent/DONE",
@@ -932,30 +944,36 @@
   {
    "variant": "step_update/system_message/DONE",
    "path": "step_update.duration_seconds",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "a reported step duration (retained-only, known meaning: no common duration attribute)",
-   "classification": "candidate",
-   "classification_note": "a step's duration in seconds: the event's base duration attribute (milliseconds) has capacity; unit conversion pending"
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
+   "classification": "canonical",
+   "destination": [
+    "*.execution_metrics"
+   ],
+   "rule": "agy.stream.fallback->source_record"
   },
   {
    "variant": "step_update/system_message/DONE",
    "path": "step_update.conversation_id",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.origin"
    },
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "the fallback event carries it as session_uid; the step itself is not normalized",
-   "classification": "redundant",
-   "classification_note": "the fallback event carries it as session_uid"
+   "note": "The fallback event retains this step's own reported conversation identifier as session_uid.",
+   "classification": "canonical",
+   "destination": [
+    "source_record.session_uid"
+   ],
+   "rule": "agy.stream.fallback->source_record"
   },
   {
    "variant": "step_update/system_message/DONE",
@@ -1023,44 +1041,53 @@
   {
    "variant": "result",
    "path": "result.error",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "the failure message (observed: interrupted on SIGTERM); the status carries the outcome",
-   "classification": "common_capacity_gap",
-   "classification_note": "the failure message; the status is normalized, no message attribute"
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
+   "classification": "canonical",
+   "destination": [
+    "prompt_turn.errors"
+   ],
+   "rule": "agy.stream.result->prompt_turn.completed"
   },
   {
    "variant": "result",
    "path": "result.duration_seconds",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "wall-clock duration, cumulative over the session (retained-only, known meaning)",
-   "classification": "candidate",
-   "classification_note": "the session's wall-clock duration in seconds: the base duration attribute (milliseconds) has capacity; the unit conversion of a decimal is a pending decision"
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
+   "classification": "canonical",
+   "destination": [
+    "*.execution_metrics"
+   ],
+   "rule": "agy.stream.result->prompt_turn.completed"
   },
   {
    "variant": "result",
    "path": "result.num_turns",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "fact.value"
    },
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "user turns, cumulative over the session (retained-only, known meaning)",
-   "classification": "common_capacity_gap",
-   "classification_note": "user turn count: no canonical counter attribute"
+   "note": "Independent native expectations compare the exact reported value, identity, unit and occurrence with this canonical destination; proposed interpretation pending review.",
+   "classification": "canonical",
+   "destination": [
+    "*.execution_metrics"
+   ],
+   "rule": "agy.stream.result->prompt_turn.completed"
   },
   {
    "variant": "result",

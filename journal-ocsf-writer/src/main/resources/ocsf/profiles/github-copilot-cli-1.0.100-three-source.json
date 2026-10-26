@@ -168,7 +168,11 @@
         "stdout",
         "otel"
       ],
-      "basis": "tool.execution_complete data.toolCallId and an execute_tool span's gen_ai.tool.call.id name the same model-facing call"
+      "basis": "tool.execution_complete data.toolCallId and an execute_tool span's gen_ai.tool.call.id name the same model-facing call; partial result events remain separate observations by their distinct native event ids",
+      "rules": [
+        "copilot.events.tool_execution_complete->tool_call.result",
+        "copilot.otel.execute_tool->tool_call.result"
+      ]
     },
     {
       "id": "copilot.final_accounting",

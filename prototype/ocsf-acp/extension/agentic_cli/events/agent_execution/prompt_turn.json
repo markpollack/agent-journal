@@ -88,6 +88,23 @@
       "description": "The native record exactly as reported, when retained on the event.",
       "group": "context",
       "requirement": "optional"
+    },
+    "execution_metrics": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "duration": {
+      "description": "The source-reported elapsed execution time in integral milliseconds. No start/end timestamps or aggregation window are inferred. Exact non-integral durations use execution_metrics in their native unit.",
+      "group": "occurrence",
+      "requirement": "optional"
+    },
+    "errors": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "agent_uid": {
+      "requirement": "optional",
+      "group": "primary"
     }
   }
 }

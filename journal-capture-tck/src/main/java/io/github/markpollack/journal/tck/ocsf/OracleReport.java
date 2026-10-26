@@ -18,7 +18,59 @@ import java.util.function.UnaryOperator;
  */
 public final class OracleReport extends CheckReport {
 
+    private OcsfPackage candidatePackage;
+
     private final List<String> required = new ArrayList<>();
+    private final Map<String, JsonExpectation> expectedFacts = new LinkedHashMap<>();
+
+    /** One required comparison, registered from native expectations before the candidate is examined. */
+    public record JsonExpectation(String owner, String fact, String meaning, io.github.markpollack.journal.tck.verify.Json value, List<String> support) {
+        public JsonExpectation {
+            support = List.copyOf(support);
+        }
+    }
+
+    public void expect(JsonExpectation expectation) {
+        String key = expectation.owner() + "|" + expectation.fact();
+        JsonExpectation previous = expectedFacts.putIfAbsent(key, expectation);
+        if (previous != null && !previous.equals(expectation)) {
+            add(Check.Category.NORMALIZATION, "fact.expectation_ambiguous", expectation.owner(), Check.Outcome.UNRESOLVED, key + " has conflicting native expectations");
+        }
+    }
+
+    public List<JsonExpectation> expectedFacts() {
+        return List.copyOf(expectedFacts.values());
+    }
+
+    /** Required facts without their own executed comparison. A same-named property on another fact grants no credit. */
+    public List<JsonExpectation> uncheckedFacts() {
+        Map<String, List<Check>> byFact = new LinkedHashMap<>();
+        for (Check check : checks()) {
+            if (check.evidence() != null) {
+                byFact.computeIfAbsent(check.owner() + "|" + check.evidence().fact(), k -> new ArrayList<>()).add(check);
+            }
+        }
+        return expectedFacts.values().stream().filter(e -> byFact.getOrDefault(e.owner() + "|" + e.fact(), List.of()).stream().noneMatch(c ->
+                c.evidence().meaning().equals(e.meaning()) && io.github.markpollack.journal.tck.verify.Json.sameValue(c.evidence().expected(), e.value())
+                        && c.evidence().nativeAddresses().equals(e.support()))).toList();
+    }
+
+    void candidatePackage(OcsfPackage pkg) {
+        candidatePackage = pkg;
+    }
+
+    public List<AssertionAccounting.Assertion> actualAssertions() {
+        return candidatePackage == null ? List.of() : AssertionAccounting.inspect(candidatePackage, this);
+    }
+
+    public List<AssertionAccounting.Assertion> uncheckedAssertions() {
+        return actualAssertions().stream().filter(a -> "UNCHECKED".equals(a.status())).toList();
+    }
+
+    /** Retain an occurrence-specific result, including the exact compared values and addresses. */
+    public void add(Check check) {
+        checks.add(check);
+    }
 
     /** Registers a property the oracle is obliged to report for an owner; acceptance refuses a report that lacks it. */
     void require(String owner, String... properties) {
@@ -64,6 +116,8 @@ public final class OracleReport extends CheckReport {
         copy.candidate.putAll(candidate);
         copy.denominator.putAll(denominator);
         copy.required.addAll(required);
+        copy.candidatePackage = candidatePackage;
+        copy.expectedFacts.putAll(expectedFacts);
         for (Check c : checks) {
             if (keep.test(c)) {
                 copy.checks.add(c);
@@ -107,6 +161,9 @@ public final class OracleReport extends CheckReport {
         out.put("notVerified", checks.notVerified());
         out.put("required", List.copyOf(required));
         out.put("missingRequired", missingRequired());
+        out.put("factsRequired", expectedFacts.size());
+        out.put("assertionsUnchecked", uncheckedAssertions().stream().map(AssertionAccounting.Assertion::address).toList());
+        out.put("factsUnchecked", uncheckedFacts().stream().map(e -> e.owner() + "|" + e.fact()).toList());
         return out;
     }
 

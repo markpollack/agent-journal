@@ -215,7 +215,7 @@ Rule: RULE-18, RULE-19. Tests: `CliCaptureTest#aCompleteRunIsReadableBeforeExitC
 ### UC5-AC1: Bootstrap from a copied event file
 
 When `events.jsonl` alone is copied to a fresh directory without `run.json`, sibling files, network access or a schema cache, a compatible Java reader shall discover the declared schema, enumerate its fields, types and enumerations, resolve the essential references and read the recorded execution facts and vendor data.
-Rule: RULE-24, RULE-25, RULE-26. Tests: `StandaloneEventFileTest#theParentEventFileAloneIsInterpretedFromItsDeclarations`, `StandaloneEventFileTest#theWholeRunAloneIsAcceptedByTheOracleAndTheToolWithoutAnyManifest`, `StandalonePrefixTest` (flushed prefix, interruption, cut, failure, child); `IsolatedBootstrapTest` (two-file core). Status: changed meaning 2026-10-21, from the copied two-file core to the event file alone; implemented in layout 0.3.0-prototype.
+Rule: RULE-24, RULE-25, RULE-26. Tests: `StandaloneEventFileTest#theParentEventFileAloneIsInterpretedFromItsDeclarations`, `StandaloneEventFileTest#theWholeRunAloneIsReadableButUnknownMeaningsStillBlockAcceptance`, `StandalonePrefixTest` (flushed prefix, interruption, cut, failure, child); `IsolatedBootstrapTest` (two-file core). Status: changed meaning 2026-10-21, from the copied two-file core to the event file alone; implemented in layout 0.3.0-prototype.
 
 ### UC5-AC2: Fail explicitly on a missing or altered declaration
 

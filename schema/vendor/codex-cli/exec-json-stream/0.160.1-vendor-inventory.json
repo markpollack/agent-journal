@@ -186,9 +186,9 @@
     "failed_turn_clears_stale_final_message"
    ],
    "journal": {
-    "behavior": "retained-only",
-    "rule": "codex.stream.fallback->source_record",
-    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+    "behavior": "normalized",
+    "rule": "codex.stream.failure->session_context.outcome",
+    "note": "The native error message and occurrence identity are reported as an execution failure; no error code is invented."
    }
   },
   {
@@ -217,9 +217,9 @@
    ],
    "vendor_tests": [],
    "journal": {
-    "behavior": "retained-only",
-    "rule": "codex.stream.fallback->source_record",
-    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+    "behavior": "normalized",
+    "rule": "codex.stream.failure->session_context.outcome",
+    "note": "The native error message and occurrence identity are reported as an execution failure; no error code is invented."
    }
   },
   {
@@ -1399,9 +1399,9 @@
     "plan_update_emits_started_then_updated_then_completed"
    ],
    "journal": {
-    "behavior": "retained-only",
-    "rule": "codex.stream.fallback->source_record",
-    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+    "behavior": "normalized",
+    "rule": "codex.stream.todo_list->session_context.state",
+    "note": "Native plan item text and completed flags, item identity and lifecycle are reported as session state."
    }
   },
   {
@@ -1471,9 +1471,9 @@
     "plan_update_emits_started_then_updated_then_completed"
    ],
    "journal": {
-    "behavior": "retained-only",
-    "rule": "codex.stream.fallback->source_record",
-    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+    "behavior": "normalized",
+    "rule": "codex.stream.todo_list->session_context.state",
+    "note": "Native plan item text and completed flags, item identity and lifecycle are reported as session state."
    }
   },
   {
@@ -1544,9 +1544,9 @@
     "plan_update_after_completion_starts_new_todo_list_with_new_id"
    ],
    "journal": {
-    "behavior": "retained-only",
-    "rule": "codex.stream.fallback->source_record",
-    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+    "behavior": "normalized",
+    "rule": "codex.stream.todo_list->session_context.state",
+    "note": "Native plan item text and completed flags, item identity and lifecycle are reported as session state."
    }
   },
   {
@@ -1603,9 +1603,9 @@
     "model_reroute_surfaces_as_error_item"
    ],
    "journal": {
-    "behavior": "retained-only",
-    "rule": "codex.stream.fallback->source_record",
-    "note": "retained whole as a source_record by the generic fallback; no normalized destination"
+    "behavior": "normalized",
+    "rule": "codex.stream.failure->session_context.outcome",
+    "note": "The native error message and occurrence identity are reported as an execution failure; no error code is invented."
    }
   }
  ],

@@ -81,6 +81,19 @@
       "target": "agentic_cli/source_record",
       "activity": "1 Parsed",
       "owner": "the record retained whole with the failure"
+    },
+    {
+      "id": "junie.session.state->session_context.state",
+      "target": "agentic_cli/session_context",
+      "meaning": "Task identity and agent progress state as reported; no terminal outcome is inferred from progress text.",
+      "selector": {
+        "kind": [
+          "TaskStartedEvent",
+          "AgentCurrentStatusUpdatedEvent"
+        ]
+      },
+      "activity": "5 State reported",
+      "owner": "Native taskId on task start, or agent.id on progress; no global agent identity inferred"
     }
   ],
   "candidate": {

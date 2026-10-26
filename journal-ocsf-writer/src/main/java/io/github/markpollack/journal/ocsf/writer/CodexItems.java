@@ -76,20 +76,30 @@ final class CodexItems {
         if ("web_search".equals(itype)) {
             return it.member("results") == null ? null : new Jv.Obj().put("data", it.member("results"));
         }
-        if (!"mcp_tool_call".equals(itype) || !(it.member("result") instanceof Jv.Obj res)) {
+        if (!"mcp_tool_call".equals(itype)) {
             return null;
         }
-        Jv.Obj out = new Jv.Obj().put("data", res.member("content") == null ? Jv.Null.INSTANCE : res.member("content"));
+        return mcpResult(it);
+    }
+
+    private static Jv.Obj mcpResult(Jv it) {
+        Jv res = it.member("result") instanceof Jv.Obj ? it.member("result") : null;
+        if (res == null && !(it.member("error") instanceof Jv.Obj)) { return null; }
+        Jv.Obj out = new Jv.Obj().put("data", res == null ? it.member("error") : res.member("content") == null ? Jv.Null.INSTANCE : res.member("content"));
         String state = text(it, "status");
         if ("completed".equals(state) || "failed".equals(state)) {
             out.put("error_reported", "failed".equals(state));
         }
-        Jv structured = res.member("structured_content");
+        Jv structured = res == null ? null : res.member("structured_content");
+        error(out, it, state);
+        return structured == null || structured.isNull() ? out : out.put("structured_result", structured);
+        }
+
+    private static void error(Jv.Obj out, Jv it, String state) {
         if ("failed".equals(state) || it.member("error") instanceof Jv.Obj) {
             out.put("errors", McpObservations.errors(McpObservations.error(3, null, text(it, "error", "message"), it.member("error") instanceof Jv.Obj e ? e : null,
                     "codex.stream.mcp_error.v1: item.status failed or item.error reported by the CLI; whether the server returned isError or a JSON-RPC error is not reported")));
         }
-        return structured == null || structured.isNull() ? out : out.put("structured_result", structured);
     }
 
     /**

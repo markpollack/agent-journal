@@ -26,7 +26,14 @@
    "sha256": "bf2b9309998c1cbe16f3030c6230e371fca312c1e6f189b56e97056761722e0c",
    "bytes": 10303,
    "records": 7,
-   "required": true
+   "required": true,
+   "binding": {
+    "entry_id": "codex-cli/exec-json-stream/0.160.1",
+    "version": "0.160.1",
+    "route": "stdout",
+    "source_specification": "schema/vendor/codex-cli/exec-json-stream/0.160.1.json",
+    "specification_sha256": "5d3f69f7d28f3ebcb9f3011d0b5c48e89c87ecd6f5d26928015e2c5e56b7f513"
+   }
   }
  ],
  "children": []

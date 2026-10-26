@@ -34,7 +34,7 @@ final class ClaudeTranscriptMapper implements SourceMapper {
         Jv o = r.json();
         String type = text(o, "type");
         String ts = text(o, "timestamp");
-        String uid = text(o, "uuid");
+        String uid = text(o, "uuid") == null ? text(o, "id") : text(o, "uuid");
         String sess = text(o, "sessionId");
         Jv.Obj m = o.member("message") instanceof Jv.Obj mm ? mm : null;
         if ("assistant".equals(type) && m != null) {
@@ -104,7 +104,15 @@ final class ClaudeTranscriptMapper implements SourceMapper {
                 ev.put("content_blocks", MapperSupport.renderedBlocks(rendered));
             }
             ev.put("basis", "claude.transcript.attachment.v1: an attachment record is context the CLI injected into the model input; rendered[] is the text as rendered, when present").put("data", o);
+            ev.put("tool_definitions", ClaudeDefinitions.read(o.path("attachment", "tools"), "schema"));
             ctx.emit(ev);
+            return;
+        }
+        if ("api-request-shape".equals(type)) {
+            ctx.family(type, r.raw().length, "normalized: tool declarations in the reported API request shape");
+            Jv.Obj event = ctx.event("session_context", 1, r, ctx.timeFor(r, ts), CONTRACT, "claude.transcript.api_shape->session_context.settings", ts, uid, true, null);
+            event.put("session_uid", sess).put("context_kind", type).put("tool_definitions", ClaudeDefinitions.read(o.path("shape", "tools"), "input_schema")).put("data", o);
+            ctx.emit(event);
             return;
         }
         if ("cost-state".equals(type)) {
@@ -112,6 +120,7 @@ final class ClaudeTranscriptMapper implements SourceMapper {
             MapperSupport.Time t = ctx.timeFor(r, ts);
             Jv.Obj ev = ctx.event("session_context", 3, r, t, CONTRACT, "claude.transcript.cost_state->session_context.accounting", ts, uid, true, null);
             Jv.Arr obs = new Jv.Arr();
+            Jv.Arr costs = new Jv.Arr();
             if (o.member("modelUsage") instanceof Jv.Obj models) {
                 for (var e : models.members().entrySet()) {
                     Jv.Obj mo = MapperSupport.usage(5, 2, "claude.transcript.cost_state.v1: cost-state is the session's cumulative per-model usage, written after the turn",
@@ -119,15 +128,24 @@ final class ClaudeTranscriptMapper implements SourceMapper {
                     UsageTranches.aggregation(mo, 2, ClaudeStreamMapper.CUMULATIVE_MODEL_USAGE);
                     UsageTranches.claudeModelUsage(mo, e.getValue());
                     obs.add(mo);
+                    if (e.getValue().member("costUSD") instanceof Jv.Num amount) {
+                        costs.add(new Jv.Obj().put("total_cost", amount).put("currency", "USD").put("scope_id", 6).put("scope", "Model")
+                                .put("aggregation_id", 2).put("aggregation", "Cumulative snapshot").put("quantity_kind_id", 1).put("quantity_kind", "Monetary amount")
+                                .put("model_ref", MapperSupport.modelRef(e.getKey(), 3, text(e.getValue(), "provider")))
+                                .put("source_ref", ctx.sourceRef(r, uid, ts, false)).put("data", new Jv.Obj().put("costUSD", amount)));
+                    }
                 }
             }
             ev.put("session_uid", sess).put("context_kind", "cost-state").put("usage_observations", obs);
+            if (!costs.elements().isEmpty()) {
+                ev.put("cost_observations", costs);
+            }
             if (o.member("totalCostUSD") instanceof Jv.Num cost) {
                 ev.put("cost_observation", new Jv.Obj().put("total_cost", cost).put("currency", "USD").put("scope_id", 5).put("scope", "Session")
                         .put("source_ref", ctx.sourceRef(r, uid, ts, false)).put("data", new Jv.Obj().put("totalCostUSD", cost)));
             }
             ev.put("basis", "claude.transcript.cost_state.v1").put("data", o);
-            ctx.emit(ev);
+            ctx.emit(ExecutionMetrics.add(ev, r, ctx));
             return;
         }
         String disposition = switch (type == null ? "" : type) {

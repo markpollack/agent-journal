@@ -97,8 +97,10 @@ class LiveFixtureFeaturesTest {
         for (Event e : p.events("source_record", 1)) {
             families.add(e.text("record_type"));
         }
-        assertThat(families).contains("rate_limit_event", "system/thinking_tokens", "system/task_started", "system/task_updated")
-                .doesNotContain("system/task_progress", "system/task_notification");
+        assertThat(families).contains("rate_limit_event", "system/thinking_tokens")
+                .doesNotContain("system/task_started", "system/task_updated", "system/task_progress", "system/task_notification");
+        assertThat(p.events("session_context", 5)).extracting(e -> e.text("context_kind"))
+                .contains("task_started", "task_updated");
         // the task's usage and the Agent result's usage are child-run accounting at the spawning call (D1), whole records kept in data
         assertThat(p.events("session_context", 3)).extracting(e -> e.text("context_kind") + " " + e.text("tool_call_uid") + " " + e.recordIndex())
                 .containsExactly("system/task_progress " + LIVE_SPAWN + " 25", "system/task_progress " + LIVE_SPAWN + " 28", "system/task_notification " + LIVE_SPAWN + " 32",

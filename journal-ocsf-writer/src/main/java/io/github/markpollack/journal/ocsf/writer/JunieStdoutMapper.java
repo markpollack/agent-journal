@@ -64,6 +64,7 @@ final class JunieStdoutMapper implements SourceMapper {
                 "junie.stdout.error_code_usage.v1: despite its name, the result's errorCode member is a list of per-model usage entries (model, calls, cost, token counts) "
                         + "for the task; no error is reported there", ref, usage, costs);
         Jv.Obj acct = ctx.event("session_context", 3, r, ctx.timeFor(r, ts), CONTRACT, "junie.stdout.result->session_context.accounting", ts, null, false, null);
+        ExecutionMetrics.junieCalls(acct, o.member("errorCode"), "/errorCode", 6);
         ctx.emit(acct.put("session_uid", ctx.sessionFor(session)).put("usage_observations", usage).put("cost_observations", costs)
                 .put("basis", "junie.stdout.error_code_usage.v1: the task's per-model usage and unnamed-unit costs as the result's errorCode member reports them"));
     }

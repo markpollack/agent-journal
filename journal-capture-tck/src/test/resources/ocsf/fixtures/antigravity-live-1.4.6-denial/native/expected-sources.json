@@ -26,7 +26,14 @@
    "sha256": "2ba182de66186317e245e71c18351a46f4c0b0a6bd58eaa6dba0114d24110894",
    "bytes": 3481,
    "records": 9,
-   "required": true
+   "required": true,
+   "binding": {
+    "entry_id": "antigravity-cli/stream-json/1.4.6-stdout",
+    "version": "1.4.6",
+    "route": "stdout",
+    "source_specification": "schema/vendor/antigravity-cli/stream-json/1.4.6.json",
+    "specification_sha256": "5c35edcabc98023ee77469ef3beebb43dc2d5603f4fa62ffb4081874ae0e8d41"
+   }
   }
  ],
  "children": []

@@ -74,6 +74,7 @@ public final class OcsfOracle {
     public static OracleReport verify(OcsfPackage pkg, Path nativeDir, ExpectedSources expected) {
         OcsfOracle o = new OcsfOracle(nativeDir, expected);
         o.describe(pkg);
+        o.report.candidatePackage(pkg);
         for (OcsfPackage core : pkg.all()) {
             o.core(core);
         }
@@ -119,12 +120,8 @@ public final class OcsfOracle {
         report.candidate("packageVersion", pkg.manifest == null ? null : pkg.manifest.packageVersion());
         report.candidate("packageState", pkg.manifest == null ? null : pkg.manifest.packageState());
         report.candidate("extension", pkg.manifest == null ? null : pkg.manifest.extensionName() + " uid " + pkg.manifest.extensionUid() + " " + pkg.manifest.extensionVersion());
-        List<String> diags = new ArrayList<>();
-        for (OcsfPackage core : pkg.all()) {
-            for (Diagnostic d : core.diagnostics) {
-                diags.add(core.label() + " " + d);
-            }
-        }
+        List<String> diags = pkg.all().stream()
+                .flatMap(core -> core.diagnostics.stream().map(d -> core.label() + " " + d)).toList();
         report.candidate("readerDiagnostics", diags);
         List<String> cores = new ArrayList<>();
         for (OcsfPackage core : pkg.all()) {
@@ -241,8 +238,14 @@ public final class OcsfOracle {
                 continue;
             }
             ExpectedFacts facts = profile.expected(art, source, scope);
+            if ("0.14.0-prototype".equals(core.manifest.extensionVersion())) {
+                ExecutionStateReading.read(facts, art, profileName);
+                ExecutionMetricReading.read(facts, art, profileName);
+                ReportedQuantityReading.read(facts, art, profileName);
+            }
             boolean declared = core.manifest.source(artifact) != null;
             CompatibilityHistory history = CompatibilityHistory.of(declared ? source : null);
+            binding(artifact, source, history, owner);
             Set<Integer> unselected = history.unselected(art.records().size());
             if (scope != null) {
                 // routing a record to a child core is normalization: one retained under a non-normalizing selection stays in the root core
@@ -254,7 +257,8 @@ public final class OcsfOracle {
                 }
             }
             report.denominator(owner, facts.counts());
-            report.require(owner, MANDATORY_SOURCE.toArray(String[]::new));
+            report.require(owner, MANDATORY_SOURCE.stream().filter(p -> !facts.directFacts || p.startsWith("source.") || p.startsWith("whole_record.")
+                    || p.startsWith("reconstruction.") || p.equals("time.basis") || p.equals("identity.values")).toArray(String[]::new));
             List<Event> events = new ArrayList<>();
             for (Event e : core.events) {
                 // a consolidated event of a final assembly is judged by the assembly oracle, never as this source's own
@@ -280,10 +284,12 @@ public final class OcsfOracle {
             retention(art, facts, events, owner, core, unselected);
             CompatibilityHistory.Step inForce = history.inForce();
             if (facts.classUnjudged) {
+                OriginComparisons.preservation(report, facts, art, events, owner);
                 unjudged(facts, owner, "no oracle profile for this source's profile: its normalized facts are not judged here (an assembly is judged by the assembly oracle)",
                         "this oracle does not judge here", "this oracle does not judge here");
             }
             else if (inForce != null && !CompatibilityHistory.normalizing(inForce.status())) {
+                new OriginComparisons(report, core, facts, art, owner, profileName).retained(events, unselected);
                 // the candidate declares no normalization for this source; every normalization family is reported UNSUPPORTED,
                 // never VERIFIED and never silently absent, so acceptance cannot credit it
                 String why = switch (String.valueOf(inForce.status())) {
@@ -298,20 +304,47 @@ public final class OcsfOracle {
             }
             else {
                 ExpectedFacts owed = unselected.isEmpty() ? facts : facts.without(unselected);
-                requests(owed, events, owner, core);
-                results(owed, events, owner);
-                responses(owed, events, owner);
-                prompts(owed, events, owner);
-                usage(owed, events, owner);
-                cost(owed, events, owner);
-                decisions(owed, events, owner);
-                operations(owed, events, owner);
-                turns(owed, events, owner);
-                started(owed, events, owner);
-                contexts(owed, events, owner);
-                attributes(owed, events, owner);
-                mcp(owed, events, owner, core);
-                toolErrors(owed, events, owner);
+                boolean attributed = List.of("0.13.0-prototype", "0.14.0-prototype").contains(core.manifest.extensionVersion());
+                if (attributed) {
+                    owed.unresolvedMeanings.forEach((record, reason) -> report.add(Category.NORMALIZATION, "source.meaning", owner, Outcome.UNRESOLVED,
+                            artifact + ":record=" + record + "# " + reason));
+                    if (!owed.directFacts) {
+                        FamilyFacts.expand(owed);
+                        UsageComparisons.register(report, owed, owner);
+                    }
+                    NativeDetails.expand(owed, art, profileName);
+                    NativeRedundancy.check(report, art, owed, owner, profileName);
+                    FamilyFacts.fallbacks(owed, art, profileName, unselected);
+                    FamilyFacts.protocolFacts(owed);
+                    ProtocolComparisons.register(report, owed, owner);
+                    AttributedFacts.register(report, owed, owner);
+                    AttributedFacts.check(report, owed, events, owner);
+                    new OriginComparisons(report, core, owed, art, owner, profileName).check(events);
+                    ProtocolComparisons.check(report, owed, events, owner, McpProtocol.fromDeclarations(core.declarations));
+                }
+                else {
+                    report.add(Category.NORMALIZATION, "accounting.binding", owner, Outcome.UNSUPPORTED,
+                            "attributed accounting is bound to extension 0.13.0-prototype; historical family checks still execute under their original regression expectations");
+                }
+                if (!owed.directFacts) {
+                    requests(owed, events, owner, core);
+                    results(owed, events, owner);
+                    responses(owed, events, owner);
+                    prompts(owed, events, owner);
+                    usage(owed, events, owner);
+                    if (attributed) {
+                        UsageComparisons.check(report, owed, events, owner);
+                    }
+                    cost(owed, events, owner);
+                    decisions(owed, events, owner);
+                    operations(owed, events, owner);
+                    turns(owed, events, owner);
+                    started(owed, events, owner);
+                    contexts(owed, events, owner);
+                    attributes(owed, events, owner);
+                    mcp(owed, events, owner, core);
+                    toolErrors(owed, events, owner);
+                }
                 time(owed, events, owner);
                 identity(owed, events, owner);
             }
@@ -413,6 +446,28 @@ public final class OcsfOracle {
     }
 
     /** The supplied native artifact must be the frozen one; otherwise the comparison proves nothing and is unresolved. */
+    private void binding(String artifact, Json source, CompatibilityHistory history, String owner) {
+        Json binding = expected == null ? null : expected.binding(artifact);
+        if (binding == null) {
+            return;
+        }
+        SourceBindings.check(report, owner, SchemaCatalog.text(source, "profile"), artifact, binding);
+        CompatibilityHistory.Step selected = history.inForce();
+        Json actual = selected == null ? null : selected.declaration();
+        for (String member : List.of("entry_id", "version", "route")) {
+            Json want = binding.member(member);
+            Json have = actual == null ? null : actual.member(member);
+            if ("route".equals(member)) {
+                have = source.member("route");
+            }
+            String fact = "binding:" + artifact + ":" + member;
+            List<String> support = List.of("expected-sources.json#/sources/" + expected.sources().indexOf(expected.source(artifact)) + "/binding/" + member);
+            report.expect(new OracleReport.JsonExpectation(owner, fact, "exact-source-binding/v1", want, support));
+            FactComparison.compare(report, "source.binding", owner,
+                new io.github.markpollack.journal.tck.verify.Check.Evidence("exact-source-binding/v1", fact, support, null, want, have));
+        }
+    }
+
     private boolean sourceFrozen(ExpectedSources.Source exp, NativeArtifact art, String owner) {
         List<String> problems = new ArrayList<>();
         if (exp.sha256() != null && !exp.sha256().equals(art.sha256())) {
@@ -1871,12 +1926,8 @@ public final class OcsfOracle {
         for (ExpectedFacts.TurnStarted t : facts.started) {
             expected.add(Integer.toString(t.recordIndex()));
         }
-        List<String> actual = new ArrayList<>();
-        for (Event e : events) {
-            if (e.is("prompt_turn", 3)) {
-                actual.add(String.valueOf(e.recordIndex()));
-            }
-        }
+        List<String> actual = events.stream().filter(e -> e.is("prompt_turn", 3))
+                .map(e -> String.valueOf(e.recordIndex())).toList();
         populationCheck("population.turn_started", owner, expected, actual);
         List<String> problems = new ArrayList<>();
         int examined = 0;

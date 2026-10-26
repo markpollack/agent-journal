@@ -1,0 +1,1526 @@
+{
+  "kind": "agent-journal/field-dispositions",
+  "version": "0.2",
+  "reviewed": "proposed 2026-10-26; execution does not grant semantic approval",
+  "profile": "copilot_usage_report",
+  "compatibility_entries": [
+    "github-copilot-cli/usage-report/1.0.100"
+  ],
+  "source_bindings": [
+    {
+      "entry": "github-copilot-cli/usage-report/1.0.100",
+      "version": "1.0.100",
+      "routes": [
+        "usage_report_file"
+      ],
+      "specification": "schema/vendor/github-copilot-cli/usage-report/1.0.100.json",
+      "specification_sha256": "bc87e59deb9241f163399ef3e75c8ceda28ec0eb849db925dd1466dcafb19f1c"
+    }
+  ],
+  "specifications": [
+    "schema/vendor/github-copilot-cli/usage-report/1.0.100.json"
+  ],
+  "contract_file": "github-copilot-cli-1.0.100-usage-report",
+  "evidence_fixtures": [
+    "copilot-live-1.0.100-otel"
+  ],
+  "rule_of_coverage": "Concrete native occurrences use the exact source binding; declarations are assignments only. ExecutedAccounting reports missing comparisons as UNCHECKED. All new classifications remain proposed.",
+  "entries": [
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.modelMetrics",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.modelMetrics.{*}",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.modelMetrics.{*}.requests",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.modelMetrics.{*}.requests.cost",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "classification_note": "Exact per-model reported request cost with unnamed unit and no currency; duplicate views are compared by native model identity.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.modelMetrics.{*}.requests.count",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "classification_note": "Exact reported API milliseconds or per-model request count; repeated views are checked at the explicit model/main-agent identity.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.modelMetrics.{*}.tokenDetails",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.modelMetrics.{*}.tokenDetails.cache_read",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.modelMetrics.{*}.tokenDetails.cache_read.tokenCount",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "classification_note": "Repeated accounting view checked against the named model key/provider modelId or the sole main agent scope; tokenDetails is compared component by component to usage (inclusive input minus cache reads). Equal numeric values never select an association."
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.modelMetrics.{*}.tokenDetails.cache_write",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.modelMetrics.{*}.tokenDetails.cache_write.tokenCount",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "classification_note": "Repeated accounting view checked against the named model key/provider modelId or the sole main agent scope; tokenDetails is compared component by component to usage (inclusive input minus cache reads). Equal numeric values never select an association."
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.modelMetrics.{*}.tokenDetails.input",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.modelMetrics.{*}.tokenDetails.input.tokenCount",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "classification_note": "Repeated accounting view checked against the named model key/provider modelId or the sole main agent scope; tokenDetails is compared component by component to usage (inclusive input minus cache reads). Equal numeric values never select an association."
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.modelMetrics.{*}.tokenDetails.output",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.modelMetrics.{*}.tokenDetails.output.tokenCount",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "classification_note": "Repeated accounting view checked against the named model key/provider modelId or the sole main agent scope; tokenDetails is compared component by component to usage (inclusive input minus cache reads). Equal numeric values never select an association."
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.modelMetrics.{*}.totalNanoAiu",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "classification_note": "Repeated accounting view checked against the named model key/provider modelId or the sole main agent scope; tokenDetails is compared component by component to usage (inclusive input minus cache reads). Equal numeric values never select an association."
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.modelMetrics.{*}.usage",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.modelMetrics.{*}.usage.cacheReadTokens",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "classification_note": "Repeated accounting view checked against the named model key/provider modelId or the sole main agent scope; tokenDetails is compared component by component to usage (inclusive input minus cache reads). Equal numeric values never select an association."
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.modelMetrics.{*}.usage.cacheWriteTokens",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "classification_note": "Repeated accounting view checked against the named model key/provider modelId or the sole main agent scope; tokenDetails is compared component by component to usage (inclusive input minus cache reads). Equal numeric values never select an association."
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.modelMetrics.{*}.usage.inputTokens",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "classification_note": "Repeated accounting view checked against the named model key/provider modelId or the sole main agent scope; tokenDetails is compared component by component to usage (inclusive input minus cache reads). Equal numeric values never select an association."
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.modelMetrics.{*}.usage.outputTokens",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "classification_note": "Repeated accounting view checked against the named model key/provider modelId or the sole main agent scope; tokenDetails is compared component by component to usage (inclusive input minus cache reads). Equal numeric values never select an association."
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.modelMetrics.{*}.usage.reasoningTokens",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "classification_note": "Repeated accounting view checked against the named model key/provider modelId or the sole main agent scope; tokenDetails is compared component by component to usage (inclusive input minus cache reads). Equal numeric values never select an association."
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.totalApiDurationMs",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "classification_note": "Exact reported API milliseconds or per-model request count; repeated views are checked at the explicit model/main-agent identity.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "agentMetrics.{*}.totalNanoAiu",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "classification_note": "Repeated accounting view checked against the named model key/provider modelId or the sole main agent scope; tokenDetails is compared component by component to usage (inclusive input minus cache reads). Equal numeric values never select an association."
+    },
+    {
+      "variant": "(untyped)",
+      "path": "aiCreditsStatus",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "codeChanges",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "codeChanges.filesModified",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "codeChanges.filesModifiedCount",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "codeChanges.linesAdded",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "codeChanges.linesRemoved",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "currentModel",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "lastCallInputTokens",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Source-reported meaning; exact owner, native occurrence, value and unit require an executed comparison. No inferred summability or cross-source equality.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "session_context.execution_metrics[].reported_value"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "(untyped)",
+      "path": "lastCallOutputTokens",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Source-reported meaning; exact owner, native occurrence, value and unit require an executed comparison. No inferred summability or cross-source equality.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "session_context.execution_metrics[].reported_value"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.aiCreditsStatus",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.cacheExpiresAt",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.requests",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.requests.cost",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Exact per-model reported request cost with unnamed unit and no currency; duplicate views are compared by native model identity.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "session_context.cost_observations[].total_cost"
+      ],
+      "rule": "copilot.usage_report->session_context.accounting"
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.requests.count",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Exact reported API milliseconds or per-model request count; repeated views are checked at the explicit model/main-agent identity.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "session_context.execution_metrics[].reported_value"
+      ],
+      "rule": "copilot.usage_report->session_context.accounting"
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.tokenDetails",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.tokenDetails.cache_read",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.tokenDetails.cache_read.tokenCount",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "classification_note": "Repeated accounting view checked against the named model key/provider modelId or the sole main agent scope; tokenDetails is compared component by component to usage (inclusive input minus cache reads). Equal numeric values never select an association."
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.tokenDetails.cache_write",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.tokenDetails.cache_write.tokenCount",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "classification_note": "Repeated accounting view checked against the named model key/provider modelId or the sole main agent scope; tokenDetails is compared component by component to usage (inclusive input minus cache reads). Equal numeric values never select an association."
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.tokenDetails.input",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.tokenDetails.input.tokenCount",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "classification_note": "Repeated accounting view checked against the named model key/provider modelId or the sole main agent scope; tokenDetails is compared component by component to usage (inclusive input minus cache reads). Equal numeric values never select an association."
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.tokenDetails.output",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.tokenDetails.output.tokenCount",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "classification_note": "Repeated accounting view checked against the named model key/provider modelId or the sole main agent scope; tokenDetails is compared component by component to usage (inclusive input minus cache reads). Equal numeric values never select an association."
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.totalNanoAiu",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "session_context.cost_observations[].total_cost"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.usage",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.usage.cacheReadTokens",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "session_context.usage_observations[].cache_read_tokens"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.usage.cacheWriteTokens",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "session_context.usage_observations[].cache_write_tokens"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.usage.inputTokens",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "session_context.usage_observations[].uncached_input_tokens"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.usage.outputTokens",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "session_context.usage_observations[].output_tokens"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "modelMetrics.{*}.usage.reasoningTokens",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "session_context.usage_observations[].reasoning_tokens"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[]",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].metrics",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].metrics.aiCreditsStatus",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].metrics.requests",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].metrics.requests.cost",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "classification_note": "Exact per-model reported request cost with unnamed unit and no currency; duplicate views are compared by native model identity.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].metrics.requests.count",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "classification_note": "Exact reported API milliseconds or per-model request count; repeated views are checked at the explicit model/main-agent identity.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].metrics.tokenDetails",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].metrics.tokenDetails.cache_read",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].metrics.tokenDetails.cache_read.tokenCount",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "classification_note": "Repeated accounting view checked against the named model key/provider modelId or the sole main agent scope; tokenDetails is compared component by component to usage (inclusive input minus cache reads). Equal numeric values never select an association."
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].metrics.tokenDetails.cache_write",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].metrics.tokenDetails.cache_write.tokenCount",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "classification_note": "Repeated accounting view checked against the named model key/provider modelId or the sole main agent scope; tokenDetails is compared component by component to usage (inclusive input minus cache reads). Equal numeric values never select an association."
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].metrics.tokenDetails.input",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].metrics.tokenDetails.input.tokenCount",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "classification_note": "Repeated accounting view checked against the named model key/provider modelId or the sole main agent scope; tokenDetails is compared component by component to usage (inclusive input minus cache reads). Equal numeric values never select an association."
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].metrics.tokenDetails.output",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].metrics.tokenDetails.output.tokenCount",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "classification_note": "Repeated accounting view checked against the named model key/provider modelId or the sole main agent scope; tokenDetails is compared component by component to usage (inclusive input minus cache reads). Equal numeric values never select an association."
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].metrics.totalNanoAiu",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "classification_note": "Repeated accounting view checked against the named model key/provider modelId or the sole main agent scope; tokenDetails is compared component by component to usage (inclusive input minus cache reads). Equal numeric values never select an association."
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].metrics.usage",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].metrics.usage.cacheReadTokens",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "classification_note": "Checked against modelMetrics at the uniquely matching native modelId; no value-based identity.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].metrics.usage.cacheWriteTokens",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "classification_note": "Checked against modelMetrics at the uniquely matching native modelId; no value-based identity.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].metrics.usage.inputTokens",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "classification_note": "Checked against modelMetrics at the uniquely matching native modelId; no value-based identity.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].metrics.usage.outputTokens",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "classification_note": "Checked against modelMetrics at the uniquely matching native modelId; no value-based identity.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].metrics.usage.reasoningTokens",
+      "disposition": "retained",
+      "classification": "redundant",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.redundancy"
+      },
+      "classification_note": "Checked against modelMetrics at the uniquely matching native modelId; no value-based identity.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].modelDisplayName",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].modelId",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].provider",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].provider.id",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].provider.kind",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Provider kind is attributed by the unique native modelId; no inference from a model name.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "session_context.usage_observations[].model_ref.provider_kind"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "(untyped)",
+      "path": "providerModelMetrics[].provider.label",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "sessionStartTime",
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Source-specific state or diagnostic member, retained with the whole native record; no additional common meaning is asserted by this proposed classification.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "tokenDetails",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "tokenDetails.cache_read",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "tokenDetails.cache_read.tokenCount",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "session_context.usage_observations[].cache_read_tokens"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "tokenDetails.cache_write",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "tokenDetails.cache_write.tokenCount",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "session_context.usage_observations[].cache_write_tokens"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "tokenDetails.input",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "tokenDetails.input.tokenCount",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "session_context.usage_observations[].uncached_input_tokens"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "tokenDetails.output",
+      "disposition": "retained",
+      "classification": "structural",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "classification_note": "Native container or discriminator; retained and used for source structure, not a measurement.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "tokenDetails.output.tokenCount",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "session_context.usage_observations[].output_tokens"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "totalApiDurationMs",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Exact reported API milliseconds or per-model request count; repeated views are checked at the explicit model/main-agent identity.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "session_context.execution_metrics[].reported_value"
+      ],
+      "rule": "copilot.usage_report->session_context.accounting"
+    },
+    {
+      "variant": "(untyped)",
+      "path": "totalNanoAiu",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "session_context.cost_observations[].total_cost"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "totalPremiumRequestCost",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "destination": [
+        "session_context.cost_observations[].total_cost"
+      ],
+      "rule": "record_discriminator",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "note": "Required native fact; this assignment grants no execution credit. Its occurrence needs its own attributed expected-versus-actual comparison.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "(untyped)",
+      "path": "totalUserRequests",
+      "disposition": "normalized",
+      "classification": "canonical",
+      "vendor_declared": true,
+      "evidence": {
+        "property": "fact.value"
+      },
+      "classification_note": "Source-reported meaning; exact owner, native occurrence, value and unit require an executed comparison. No inferred summability or cross-source equality.",
+      "tests": [
+        "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ],
+      "destination": [
+        "session_context.execution_metrics[].reported_value"
+      ],
+      "rule": "record_discriminator"
+    }
+  ]
+}

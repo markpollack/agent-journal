@@ -55,11 +55,19 @@ final class CodexStreamProfile implements SourceProfile {
                 // the stream states its session identity once, in thread.started; every later record belongs to that thread
                 f.sessionOf.put(r.index(), threadId);
             }
-            if (record(f, r.index(), o) && r.parsed()) {
-                f.normalized.add(r.index()); // the web_search form is retained verbatim, not as a parsed record
-            }
+            facts(f, r, o);
         }
         return f;
+    }
+
+    private static void facts(ExpectedFacts f, NativeArtifact.Record r, Json o) {
+            boolean known = record(f, r.index(), o);
+            if (known && SourceProfile.text(o, "item", "id") != null) {
+                f.nativeUid.put(r.index(), SourceProfile.text(o, "item", "id"));
+            }
+            if (known && r.parsed()) {
+                f.normalized.add(r.index()); // the web_search form is retained verbatim, not as a parsed record
+            }
     }
 
     /** The facts one record states; {@code true} when a normalization rule covers it. */
@@ -76,7 +84,17 @@ final class CodexStreamProfile implements SourceProfile {
                     SourceProfile.text(item, "status"), operationStatus(SourceProfile.text(item, "status")), 3, 2, List.of(), SourceProfile.text(item, "command"), STREAM_LOCAL));
             return true;
         }
-        if (TOOL_ITEMS.contains(itemType)) {
+        if (TOOL_ITEMS.contains(itemType)) { return tool(f, index, itemType, item, started); }
+        if (!started && ("agent_message".equals(itemType) || "reasoning".equals(itemType))) {
+            f.responses.add(new ExpectedFacts.Response(index, SourceProfile.text(item, "id"),
+                    item.member("text") == null ? List.of() : List.of(item.member("text")), null, true, null, "reasoning".equals(itemType) ? 2 : null, STREAM_LOCAL));
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean tool(ExpectedFacts f, int index, String itemType, Json item, boolean started) {
+
             McpReadings.codex(f, index, item, started);
             if (started) {
                 f.requests.add(request(index, itemType, item));
@@ -85,14 +103,7 @@ final class CodexStreamProfile implements SourceProfile {
                 f.results.add(result(index, itemType, item));
             }
             return true;
-        }
-        if (!started && ("agent_message".equals(itemType) || "reasoning".equals(itemType))) {
-            f.responses.add(new ExpectedFacts.Response(index, SourceProfile.text(item, "id"),
-                    item.member("text") == null ? List.of() : List.of(item.member("text")), null, true, null, "reasoning".equals(itemType) ? 2 : null, STREAM_LOCAL));
-            return true;
-        }
-        return false;
-    }
+            }
 
     private static int operationStatus(String state) {
         return switch (state == null ? "" : state) {
@@ -104,7 +115,7 @@ final class CodexStreamProfile implements SourceProfile {
     }
 
     private static boolean turn(ExpectedFacts f, int index, Json o) {
-        f.usages.add(new ExpectedFacts.Usage(index, index, 5, 2, TrancheReading.codex(o.member("usage"), "", true), null, null, measurement(o.member("usage")), 2));
+        f.addUsage(new ExpectedFacts.Usage(index, index, 5, 2, TrancheReading.codex(o.member("usage"), "", true), null, null, measurement(o.member("usage")), 2), "/usage", o.member("usage"));
         f.completed.add(new ExpectedFacts.TurnCompleted(index, 0, null));
         return true;
     }
@@ -127,6 +138,11 @@ final class CodexStreamProfile implements SourceProfile {
     }
 
     /** The result a completed tool item reports: MCP result content and structured content, search results; the outcome its status reports. */
+    private static Json reportedError(String state) {
+        if ("completed".equals(state)) { return new Json.JBool(false); }
+        return "failed".equals(state) ? new Json.JBool(true) : null;
+    }
+
     private static ExpectedFacts.Result result(int index, String itemType, Json item) {
         Json content = null;
         Json structured = null;
@@ -137,8 +153,11 @@ final class CodexStreamProfile implements SourceProfile {
         else if ("web_search".equals(itemType)) {
             content = item.member("results");
         }
+        else if ("mcp_tool_call".equals(itemType) && item.member("error") instanceof Json.JObject) {
+            content = item.member("error");
+        }
         String state = SourceProfile.text(item, "status");
-        Json isError = "completed".equals(state) ? new Json.JBool(false) : "failed".equals(state) ? new Json.JBool(true) : null;
+        Json isError = reportedError(state);
         return new ExpectedFacts.Result(index, SourceProfile.text(item, "id"), content, isError, structured, null, state, STREAM_LOCAL, itemType);
     }
 
@@ -167,7 +186,7 @@ final class CodexStreamProfile implements SourceProfile {
      * line is {@code id} inside the root's {@code item}, exactly two string values, on item.started or item.completed. A
      * root member literally named {@code item.id} is another location and never this form.
      */
-    private static Json webSearchLine(NativeArtifact.Record r) {
+    static Json webSearchLine(NativeArtifact.Record r) {
         if (r.text() == null) {
             return null;
         }

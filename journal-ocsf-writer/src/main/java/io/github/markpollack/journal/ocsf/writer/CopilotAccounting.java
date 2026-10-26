@@ -65,7 +65,7 @@ final class CopilotAccounting {
         ev.put("session_uid", e.session()).put("response_uid", text(usage, "apiCallId")).put("identity_basis_id", 99).put("identity_basis", "Provider call identifier (apiCallId)")
                 .put("model_ref", model).put("usage_observations", new Jv.Arr(List.of(ob))).put("cost_observations", costs)
                 .put("basis", "copilot.events.usage_record.v1: the per-call usage record of the model response data.usage.apiCallId").put("data", e.o());
-        e.ctx().emit(ev);
+        e.ctx().emit(ReportedQuantities.add(ev, e.r(), "copilot_events"));
     }
 
     /**
@@ -82,7 +82,8 @@ final class CopilotAccounting {
         ev.put("session_uid", e.session()).put("usage_observations", sessionUsage(acct, shutdown ? 2 : 1, ref)).put("cost_observations", sessionCosts(acct, ref))
                 .put("basis", "copilot.events.accounting_snapshot.v1: the session's cumulative accounting as of this event; a snapshot, never summed with another")
                 .put("data", e.o());
-        e.ctx().emit(ev);
+        ExecutionMetrics.copilot(ev, acct, e.data().member("accountingSnapshot") instanceof Jv.Obj ? "/data/accountingSnapshot" : "/data");
+        e.ctx().emit(ReportedQuantities.add(ev, e.r(), "copilot_events"));
         if (!shutdown) {
             lastCall(e, acct);
         }
@@ -113,7 +114,7 @@ final class CopilotAccounting {
         ev.put("session_uid", e.session()).put("response_uid", text(call, "model_call_id")).put("identity_basis_id", 99).put("identity_basis", "Provider call identifier (apiCallId)")
                 .put("model_ref", MapperSupport.modelRef(model, 1, null)).put("usage_observations", new Jv.Arr(List.of(ob)))
                 .put("basis", "copilot.events.last_call_usage.v1: the checkpoint's last-call usage, attributed to the call its promptCacheBreakState names");
-        e.ctx().emit(ev);
+        e.ctx().emit(ReportedQuantities.add(ev, e.r(), "copilot_events"));
     }
 
     /** The last call's tranches: uncached derived when cache writes are 0, cache reads and writes from its entry, output reported. */
@@ -155,13 +156,19 @@ final class CopilotAccounting {
             for (Map.Entry<String, Jv> m : models.members().entrySet()) {
                 Jv usage = m.getValue().member("usage");
                 Jv.Obj ob = MapperSupport.usage(6, status, "copilot.usage.model_metrics.v1: modelMetrics is keyed by model; its usage is that model's cumulative usage in the session",
-                        ref, MapperSupport.modelRef(m.getKey(), 1, null), usage);
+                        ref, MapperSupport.modelRef(m.getKey(), 1, providerKind(acct, m.getKey())), usage);
                 UsageTranches.aggregation(ob, 2, "a cumulative snapshot of the model's usage in the session");
                 UsageTranches.copilot(ob, usage, SESSION_USAGE);
                 out.add(ob);
             }
         }
         return out;
+    }
+
+    private static String providerKind(Jv snapshot, String model) {
+        if (!(snapshot.member("providerModelMetrics") instanceof Jv.Arr providers)) return null;
+        List<Jv> matching = providers.elements().stream().filter(p -> model.equals(text(p, "modelId"))).toList();
+        return matching.size() == 1 ? text(matching.get(0), "provider", "kind") : null;
     }
 
     private static void tokenDetails(Jv.Obj ob, Jv details) {
@@ -188,6 +195,18 @@ final class CopilotAccounting {
         if (acct.member("totalNanoAiu") instanceof Jv.Num n) {
             out.add(cost(NANO_AIU, n, 5, 2, "accountingSnapshot.totalNanoAiu", ref));
         }
+        if (acct.member("modelMetrics") instanceof Jv.Obj models) {
+            models.members().forEach((model, metrics) -> {
+                if (metrics.path("requests", "cost") instanceof Jv.Num amount) {
+                    out.add(cost(new Quantity(99, "request cost (unit not named by the source)"), amount, 6, 2,
+                            "requests.cost", ref).put("model_ref", MapperSupport.modelRef(model, 1, null)));
+                }
+                if (metrics.member("totalNanoAiu") instanceof Jv.Num amount) {
+                    out.add(cost(NANO_AIU, amount, 6, 2, "accountingSnapshot.totalNanoAiu", ref)
+                            .put("model_ref", MapperSupport.modelRef(model, 1, null)));
+                }
+            });
+        }
         return out;
     }
 
@@ -204,6 +223,6 @@ final class CopilotAccounting {
         ev.put("session_uid", e.session()).put("exit_code", e.o().member("exitCode")).put("reported_state", "result").put("cost_observations", costs)
                 .put("basis", "copilot.events.result.v1: the CLI's final result record: its exit code, the session it reports and the run's premium requests")
                 .put("data", e.o());
-        e.ctx().emit(ev);
+        e.ctx().emit(ReportedQuantities.add(ev, e.r(), "copilot_events"));
     }
 }

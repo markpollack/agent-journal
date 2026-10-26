@@ -64,6 +64,7 @@ final class CopilotEventsMapper implements SourceMapper {
             Map.entry("assistant.message", this::assistantMessage),
             Map.entry("tool.execution_start", e -> toolStage(e, 4, "copilot.events.tool_execution_start->tool_call.started")),
             Map.entry("tool.execution_complete", e -> toolStage(e, 2, "copilot.events.tool_execution_complete->tool_call.result")),
+            Map.entry("tool.execution_partial_result", CopilotEventsMapper::partialResult),
             Map.entry("session.usage_record", CopilotAccounting::usageRecord),
             Map.entry("session.usage_checkpoint", e -> CopilotAccounting.snapshot(e, e.data(), "copilot.events.usage_checkpoint->session_context.accounting")),
             Map.entry("session.shutdown", e -> CopilotAccounting.snapshot(e, e.data().member("accountingSnapshot"), "copilot.events.shutdown->session_context.accounting")),
@@ -113,7 +114,7 @@ final class CopilotEventsMapper implements SourceMapper {
         ev.put("session_uid", e.session()).put("settings", settings)
                 .put("basis", "copilot.events.settings.v1: " + e.type() + " reports " + meaning + "; the canonical settings are its working directory, CLI version and model "
                         + "where it states them, the rest stays in the record").put("data", e.o());
-        e.ctx().emit(ev);
+        e.ctx().emit(ReportedQuantities.add(ev, e.r(), "copilot_events"));
     }
 
     private static Jv first(Jv data, String... members) {
@@ -134,7 +135,7 @@ final class CopilotEventsMapper implements SourceMapper {
                     .put("text", text(e.data(), "content")).put("basis", "data.content is the prompt as submitted").put("data", e.data().member("content")));
         }
         ev.put("session_uid", e.session()).put("turn_uid", text(e.data(), "interactionId")).put("content_blocks", blocks).put("data", e.o());
-        e.ctx().emit(ev);
+        e.ctx().emit(ReportedQuantities.add(ev, e.r(), "copilot_events"));
     }
 
     private void systemMessage(Event e) {
@@ -145,7 +146,7 @@ final class CopilotEventsMapper implements SourceMapper {
                 .put("text", text(e.data(), "content")).put("basis", "data.content is the system message").put("data", e.data().member("content")));
         ev.put("session_uid", e.session()).put("turn_uid", text(e.data(), "interactionId")).put("context_kind", "system message").put("rendered_role", text(e.data(), "role"))
                 .put("content_blocks", blocks).put("data", e.o());
-        e.ctx().emit(ev);
+        e.ctx().emit(ReportedQuantities.add(ev, e.r(), "copilot_events"));
     }
 
     /** An assistant message: the model response it completes (by provider call id) and one tool request per toolRequests element. */
@@ -164,7 +165,7 @@ final class CopilotEventsMapper implements SourceMapper {
                 .put("model_ref", MapperSupport.modelRef(text(e.data(), "model"), 1, text(e.data(), "providerId"))).put("content_blocks", blocks)
                 .put("basis", "copilot.events.assistant_message.v1: an assistant message completes the model response of its provider call (data.apiCallId); "
                         + "data.messageId is the CLI's message id").put("data", e.o());
-        e.ctx().emit(ev);
+        e.ctx().emit(ReportedQuantities.add(ev, e.r(), "copilot_events"));
         int index = 0;
         for (Jv request : e.data().member("toolRequests") == null ? List.<Jv>of() : e.data().member("toolRequests").elements()) {
             toolRequest(e, response, request, index++);
@@ -180,7 +181,7 @@ final class CopilotEventsMapper implements SourceMapper {
                 .put("tool_kind_id", kind.id()).put("tool_kind", TOOL_KIND.get(kind.id())).put("tool_kind_basis", kind.rule() + "; copilot.events.tool_request.v1: data.toolRequests["
                         + index + "] is a tool call the response requests by its model-facing call id").put("arguments", request.member("arguments"))
                 .put("data", request);
-        e.ctx().emit(ev);
+        e.ctx().emit(ReportedQuantities.add(ev, e.r(), "copilot_events"));
     }
 
     /** A tool execution stage: started (4) with the invoked tool and arguments, or the observed result (2) with its success flag. */
@@ -198,7 +199,7 @@ final class CopilotEventsMapper implements SourceMapper {
         ev.put("arguments", e.data().member("arguments")).put("tool_result", started ? null : CopilotTools.result(e.data()))
                 .put("mcp", CopilotTools.mcp(e.data(), started, call == null ? null : mcpCalls.get(call)))
                 .put("data", e.o());
-        e.ctx().emit(ev);
+        e.ctx().emit(ReportedQuantities.add(ev, e.r(), "copilot_events"));
     }
 
     /** The tool name the stage reports, with its kind (an MCP tool's from its namespace binding, never its name). */
@@ -212,6 +213,16 @@ final class CopilotEventsMapper implements SourceMapper {
         ev.put("tool_name", name).put("tool_kind_id", kind.id()).put("tool_kind", TOOL_KIND.get(kind.id())).put("tool_kind_basis", kind.rule());
     }
 
+    private static void partialResult(Event e) {
+        e.ctx().family(e.type(), e.r().raw().length, "normalized: a partial result observation, without terminal status");
+        Jv.Obj event = e.event("tool_call", 2, "copilot.events.tool_execution_partial_result->tool_call.result", true,
+                new MapperSupport.Status(0, 3, "partial output reports no terminal outcome"));
+        event.put("session_uid", e.session()).put("tool_call_uid", text(e.data(), "toolCallId"))
+                .put("identity_basis_id", 1).put("identity_basis", IDENTITY_BASIS.get(1)).put("reported_state", e.type())
+                .put("tool_result", new Jv.Obj().put("data", e.data().member("partialOutput"))).put("data", e.o());
+        e.ctx().emit(ReportedQuantities.add(event, e.r(), "copilot_events"));
+    }
+
     private void other(Event e) {
         if (SETTINGS.contains(e.type())) {
             settings(e, "copilot.events.session_settings->session_context.settings", "a session setting as the event reports it");
@@ -219,7 +230,7 @@ final class CopilotEventsMapper implements SourceMapper {
         }
         String meaning = RETAINED.get(e.type());
         e.ctx().family(e.type(), e.r().raw().length, meaning == null ? "retained-only: no normalization rule" : "retained whole: " + meaning);
-        e.ctx().emit(e.ctx().fallback(e.r(), CONTRACT, "copilot.events.fallback->source_record", e.type(), e.ts(), e.id(), e.session(),
-                meaning == null ? "no normalization rule for this event type; retained whole" : "copilot.events.retained.v1: " + meaning + "; retained whole"));
+        e.ctx().emit(ReportedQuantities.add(e.ctx().fallback(e.r(), CONTRACT, "copilot.events.fallback->source_record", e.type(), e.ts(), e.id(), e.session(),
+                meaning == null ? "no normalization rule for this event type; retained whole" : "copilot.events.retained.v1: " + meaning + "; retained whole"), e.r(), "copilot_events"));
     }
 }

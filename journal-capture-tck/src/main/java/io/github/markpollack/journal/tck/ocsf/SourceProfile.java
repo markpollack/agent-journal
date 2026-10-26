@@ -25,17 +25,7 @@ public interface SourceProfile {
      */
     ExpectedFacts expected(NativeArtifact artifact, Json source, Json scope);
 
-    static SourceProfile forName(String profile) {
-        return switch (profile == null ? "" : profile) {
-            case "claude_stream" -> new ClaudeStreamProfile();
-            case "claude_transcript" -> new ClaudeTranscriptProfile();
-            case "codex_rollout" -> new CodexRolloutProfile();
-            case "codex_stream" -> new CodexStreamProfile();
-            case "agy_stream" -> new AntigravityStreamProfile();
-            case "opaque_text" -> new OpaqueTextProfile();
-            default -> null;
-        };
-    }
+    static SourceProfile forName(String profile) { return SourceReaders.forName(profile); }
 
     // ------------------------------------------------------------------------------------------ shared helpers
 
@@ -73,7 +63,7 @@ public interface SourceProfile {
         f.responses.add(new ExpectedFacts.Response(index, text(message, "id"), blocks, stop, stop != null, text(message, "model")));
         Json usage = message.member("usage");
         if (usage != null) {
-            f.usages.add(new ExpectedFacts.Usage(index, index, 2, stop == null ? 1 : 2, TrancheReading.anthropic(usage), text(message, "model"), null, null, 1));
+            f.addUsage(new ExpectedFacts.Usage(index, index, 2, stop == null ? 1 : 2, TrancheReading.anthropic(usage), text(message, "model"), null, null, 1), "/message/usage", usage);
         }
         return blocks == null ? List.of() : blocks;
     }

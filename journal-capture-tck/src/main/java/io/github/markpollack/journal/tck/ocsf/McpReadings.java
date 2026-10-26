@@ -36,7 +36,7 @@ final class McpReadings {
         f.mcp.add(new ExpectedFacts.Mcp(index, id, started ? 4 : 2, SourceProfile.text(item, "server"), basis(item, "server", REPORTED_MEMBERS),
                 SourceProfile.text(item, "tool"), basis(item, "tool", REPORTED_MEMBERS), arguments(item) == null ? null : "", codexProjections(item, started)));
         boolean failed = "failed".equals(SourceProfile.text(item, "status")) || item.member("error") instanceof Json.JObject;
-        if (!started && failed && item.member("result") instanceof Json.JObject) {
+        if (!started && failed && (item.member("result") instanceof Json.JObject || item.member("error") instanceof Json.JObject)) {
             f.toolErrors.add(new ExpectedFacts.ToolError(index, id, CLI_FAILURE, null, SourceProfile.text(item, "error", "message")));
         }
     }

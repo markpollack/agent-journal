@@ -74,7 +74,7 @@ class OcsfOracleStateAndContextTest {
                 .contains("4:attachment/environment content_blocks absent != 1")
                 .contains("6:attachment/credential_org content_blocks present but the source renders nothing");
         String stream = report.check("context.values", STREAM).detail();
-        assertThat(stream).contains("1:system/init settings absent; the record reports [working_directory, model, permission_mode, version, tool_names]")
+        assertThat(stream).contains("1:system/init settings absent; the record reports [working_directory, model, permission_mode, version, tool_names, server_connections]")
                 .contains("1:system/init whole record (data) not retained");
     }
 

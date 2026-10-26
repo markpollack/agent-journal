@@ -196,7 +196,7 @@ class RequirementsAccountingIT {
         CRITERIA.put("UC4-AC8", List.of(junit("CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy", STAND_IN + ": read before exit, judged against the independent copy frozen after acquisition"),
                 live("five live runs through the launching capture, each judged by the oracle against its frozen independent copy; three ACCEPTED, two INCOMPLETE as cancelled")));
         CRITERIA.put("UC5-AC1", List.of(junit("StandaloneEventFileTest#theParentEventFileAloneIsInterpretedFromItsDeclarations", "parent alone"),
-                junit("StandaloneEventFileTest#theWholeRunAloneIsAcceptedByTheOracleAndTheToolWithoutAnyManifest", "whole run alone"),
+                junit("StandaloneEventFileTest#theWholeRunAloneIsReadableButUnknownMeaningsStillBlockAcceptance", "whole run alone"),
                 junit("StandalonePrefixTest#aChildFileWrittenDuringTheRunIsInterpretableAloneBeforeTheRunEnds", "child file alone during the run"),
                 junit("IsolatedBootstrapTest#aCopiedCoreWithItsChildBootstrapsWithoutAnythingElse", "copied core, no network, no cache")));
         CRITERIA.put("UC5-AC2", List.of(junit("StandaloneEventFileTest#removingOrAlteringAMandatoryDeclarationFailsInterpretationExplicitly", "nine removal/alteration controls"),

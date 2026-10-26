@@ -71,6 +71,9 @@ schema --> mcp_binding
 oracle --> reader
 oracle --> profiles
 oracle --> views
+profiles --> reader
+profiles --> oracle
+profiles --> views
 views --> reader
 reader_tool --> reader
 reader_tool --> oracle

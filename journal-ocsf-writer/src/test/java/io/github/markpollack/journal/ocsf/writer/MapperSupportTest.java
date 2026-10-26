@@ -60,9 +60,14 @@ class MapperSupportTest {
                         assertThat(((Jv.Num) b.member("block_kind_id")).value().intValue()).isEqualTo(2);
                     }
                     case "string" -> {
-                        bare++;
                         assertThat(b.member("text").text()).isEqualTo(b.member("data").text());
-                        assertThat(b.member("basis").text()).isEqualTo("message.content is a bare string");
+                        if (List.of("user/tool_result", "task_started", "system/task_notification").contains(String.valueOf(MapperSupport.text(e, "context_kind")))) {
+                            assertThat(b.member("basis")).as("Task content has no message-content basis").isNull();
+                        }
+                        else {
+                            bare++;
+                            assertThat(b.member("basis").text()).isEqualTo("message.content is a bare string");
+                        }
                     }
                     case "rendered" -> {
                         rendered++;
@@ -97,7 +102,7 @@ class MapperSupportTest {
         assertThat(((Jv.Num) renderedDirect.elements().get(1).member("block_index")).value().intValue()).isEqualTo(1);
         assertThat(MapperSupport.renderedBlocks(null).elements()).isEmpty();
         assertThat(thinking).as("the sanitized stream carries thinking blocks").isPositive();
-        assertThat(bare).as("the transcript prompt is a bare string").isEqualTo(1);
+        assertThat(bare).as("transcript prompt record 3 and stream task-notification message record 27 are bare strings").isEqualTo(2);
         assertThat(rendered).as("three rendered attachments: records 4, 5 and 15; credential_org renders nothing").isEqualTo(3);
         // rendered blocks are indexed from zero in order
         for (Jv e : events) {

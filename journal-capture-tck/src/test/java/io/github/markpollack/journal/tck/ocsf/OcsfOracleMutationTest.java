@@ -127,7 +127,9 @@ class OcsfOracleMutationTest {
                 for (Json u : turn.member("usage_observations").elements()) {
                     if ("16".equals(u.path("source_ref", "record_index").scalarText())) {
                         // the native inclusive input 2^53+1 with 1500 cached gives the exact conditional uncached value 9007199254739493
-                        obj(u.member("components").elements().get(0)).members().put("conditional_value", num("9007199254739493"));
+                        if ("3".equals(u.member("scope_id").scalarText())) {
+                            obj(u.member("components").elements().get(0)).members().put("conditional_value", num("9007199254739493"));
+                        }
                         obj(u.member("data").member("total_token_usage")).members().put("input_tokens", num("9007199254740993"));
                     }
                 }
@@ -140,7 +142,7 @@ class OcsfOracleMutationTest {
             editEvents(pkg(fixture), events -> {
                 Json turn = at(events, "prompt_turn", 2, 17);
                 for (Json u : turn.member("usage_observations").elements()) {
-                    if ("16".equals(u.path("source_ref", "record_index").scalarText())) {
+                    if ("16".equals(u.path("source_ref", "record_index").scalarText()) && "3".equals(u.member("scope_id").scalarText())) {
                         obj(u.member("components").elements().get(0)).members().put("conditional_value", num("9007199254739492"));
                     }
                 }

@@ -111,6 +111,20 @@ public final class CheckLedger implements Iterable<Check> {
             if (c.occurrences() != null) {
                 row.put("occurrences", c.occurrences());
             }
+            if (c.evidence() != null) {
+                Check.Evidence e = c.evidence();
+                Map<String, Object> evidence = new LinkedHashMap<>();
+                evidence.put("meaning", e.meaning());
+                evidence.put("fact", e.fact());
+                evidence.put("nativeAddresses", e.nativeAddresses());
+                evidence.put("assertion", e.assertion());
+                evidence.put("expectedKind", Json.kindOf(e.expected()));
+                evidence.put("actualKind", Json.kindOf(e.actual()));
+                evidence.put("expectedJson", e.expected() == null ? null : NeutralJson.write(e.expected()));
+                evidence.put("actualJson", e.actual() == null ? null : NeutralJson.write(e.actual()));
+                evidence.put("assertionValueJson", e.assertionValue() == null ? null : NeutralJson.write(e.assertionValue()));
+                row.put("evidence", evidence);
+            }
             rows.add(row);
         }
         return rows;

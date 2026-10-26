@@ -60,8 +60,8 @@ final class CopilotOtelMapper implements SourceMapper {
         String family = span ? "span/" + op : "metric/" + text(s.o(), "name");
         s.ctx().family(family, s.r().raw().length, span ? "retained-only: no normalization rule for this span operation"
                 : "retained whole: a run aggregate metric (data points by attribute set); not a per-call fact");
-        s.ctx().emit(s.ctx().fallback(s.r(), CONTRACT, "copilot.otel.fallback->source_record", family, s.end(), null, s.session(),
-                "copilot.otel.retained.v1: " + (span ? "no rule for this span operation; retained whole" : "an exporter metric (a run aggregate); retained whole")));
+        s.ctx().emit(ReportedQuantities.add(s.ctx().fallback(s.r(), CONTRACT, "copilot.otel.fallback->source_record", family, s.end(), null, s.session(),
+                "copilot.otel.retained.v1: " + (span ? "no rule for this span operation; retained whole" : "an exporter metric (a run aggregate); retained whole")), s.r(), "copilot_otel"));
     }
 
     /** One span being mapped, with its end time as RFC 3339 (millisecond precision), or {@code null}. */
@@ -114,7 +114,7 @@ final class CopilotOtelMapper implements SourceMapper {
                 .put("identity_basis_id", 99).put("identity_basis", "Provider call identifier (apiCallId)").put("model_ref", model)
                 .put("usage_observations", new Jv.Arr(List.of(ob))).put("cost_observations", costs)
                 .put("basis", "copilot.otel.chat.v1: a chat span is one model call; gen_ai.response.id is its provider call id").put("data", s.o());
-        s.ctx().emit(ev);
+        s.ctx().emit(ReportedQuantities.add(ev, s.r(), "copilot_otel"));
     }
 
     /** An execute_tool span: the tool execution's call id, arguments (a JSON string, parsed), result text and status. */
@@ -141,7 +141,7 @@ final class CopilotOtelMapper implements SourceMapper {
                 .put("mcp", server == null ? null : McpObservations.target(server, McpObservations.REPORTED_MEMBERS, text(s.attrs(), "github.copilot.tool.parameters.mcp_tool_name"),
                         McpObservations.REPORTED_MEMBERS, null, "copilot.otel.mcp.v1: the span's github.copilot.tool.parameters.mcp_server_name and mcp_tool_name; the span reports the result as text only, so no protocol object is projected"))
                 .put("data", s.o());
-        s.ctx().emit(ev);
+        s.ctx().emit(ReportedQuantities.add(ev, s.r(), "copilot_otel"));
     }
 
     /** The span's gen_ai.usage attributes, as the observation's native data. */
@@ -183,7 +183,7 @@ final class CopilotOtelMapper implements SourceMapper {
         settings.put("session_uid", s.session()).put("settings", definitions == null ? null : new Jv.Obj().put("tool_names", names)).put("tool_definitions", definitions)
                 .put("basis", "copilot.otel.invoke_agent_settings.v1: the agent invocation's tool definitions (gen_ai.tool.definitions, present under content capture) and MCP servers")
                 .put("data", s.o());
-        s.ctx().emit(settings);
+        s.ctx().emit(ReportedQuantities.add(settings, s.r(), "copilot_otel"));
         Jv ref = s.ctx().sourceRef(s.r(), text(s.o(), "spanId"), s.end(), false);
         Jv.Obj ob = MapperSupport.usage(4, 2, "copilot.otel.invoke_agent_usage.v1: the invocation's total usage; input includes cache reads, which the span does not report, so "
                 + "no uncached tranche is derived", ref, null, s.attrs());
@@ -200,6 +200,6 @@ final class CopilotOtelMapper implements SourceMapper {
         Jv.Obj acct = s.event("session_context", 3, "copilot.otel.invoke_agent->session_context.accounting", text(s.o(), "spanId"), null, false);
         acct.put("session_uid", s.session()).put("usage_observations", new Jv.Arr(List.of(ob))).put("cost_observations", costs)
                 .put("basis", "copilot.otel.invoke_agent_accounting.v1: the agent invocation's totals (the whole span is retained on its settings event)");
-        s.ctx().emit(acct);
+        s.ctx().emit(ReportedQuantities.add(acct, s.r(), "copilot_otel"));
     }
 }

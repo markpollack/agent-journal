@@ -72,7 +72,8 @@ final class MapperSupport {
         if (providerKind != null) {
             m.put("provider_kind", providerKind);
         }
-        return m.put("provider_basis_id", providerBasis).put("provider_basis", PROVIDER_BASIS.get(providerBasis));
+        int basis = providerKind == null ? 3 : providerBasis;
+        return m.put("provider_basis_id", basis).put("provider_basis", PROVIDER_BASIS.get(basis));
     }
 
     /** At scope 99 Other the caller replaces the caption with the name of the source-defined unit (for example Conversation step). */

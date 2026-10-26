@@ -63,6 +63,11 @@ final class ClaudeChildUsage {
         Jv.Obj ev = msg.ctx().event("session_context", 3, msg.r(), msg.t(), ClaudeStreamMapper.CONTRACT, AGENT_RULE, msg.ts(), msg.uid(), false, null);
         ev.put("session_uid", msg.sess()).put("tool_call_uid", resultIds.get(0)).put("context_kind", "user/tool_result")
                 .put("usage_observations", new Jv.Arr(List.of(observation))).put("basis", AGENT_BASIS).put("data", result);
+        agentMetadata(ev, result, msg);
+        return ExecutionMetrics.child(ev, result);
+    }
+
+    private static void agentMetadata(Jv.Obj ev, Jv result, MapperSupport.ClaudeMessage msg) {
         // claude.stream.user.tool_result.agent_state->session_context.accounting: the envelope's own status and total
         // duration (Agent SDK 0.3.304 AgentOutput) are the child run's reported state and duration in milliseconds, on
         // the accounting event, never the outer tool call's status
@@ -72,7 +77,10 @@ final class ClaudeChildUsage {
         if (result.member("totalDurationMs") instanceof Jv.Num duration && duration.value().stripTrailingZeros().scale() <= 0) {
             ev.put("duration", duration);
         }
-        return ev;
+        ev.put("agent_uid", result.member("agentId")).put("agent_type", result.member("agentType"))
+                .put("task_description", result.member("prompt"));
+        if (result.member("resolvedModel") instanceof Jv.Str model) { ev.put("model_ref", MapperSupport.modelRef(model.value(), 3, null)); }
+        if (result.member("content") instanceof Jv.Arr blocks) { ev.put("content_blocks", MapperSupport.blocks(msg.ctx().contracts, ClaudeStreamMapper.CONTRACT, blocks)); }
     }
 
     /**
@@ -110,7 +118,29 @@ final class ClaudeChildUsage {
         Jv.Obj observation = MapperSupport.usage(7, status, TASK_BASIS, ctx.sourceRef(r, uid, ts, false), null, usage);
         UsageTranches.reportedTotal(observation, usage);
         Jv.Obj ev = ctx.event("session_context", 3, r, t, ClaudeStreamMapper.CONTRACT, TASK_RULE, ts, uid, true, null);
-        return ev.put("session_uid", text(record, "session_id")).put("tool_call_uid", text(record, "tool_use_id")).put("context_kind", family)
+        if (usage.member("duration_ms") instanceof Jv.Num duration && duration.value().stripTrailingZeros().scale() <= 0) {
+            ev.put("duration", duration);
+        }
+        if (record.member("status") instanceof Jv.Str statusName) {
+            ev.put("reported_state", statusName);
+        }
+        handback(ev, record);
+        return ev.put("task_description", record.member("description")).put("agent_type", record.member("subagent_type")).put("task_uid", record.member("task_id"))
+                .put("session_uid", text(record, "session_id")).put("tool_call_uid", text(record, "tool_use_id")).put("context_kind", family)
                 .put("usage_observations", new Jv.Arr(List.of(observation))).put("basis", TASK_BASIS).put("data", record);
+    }
+
+    private static void handback(Jv.Obj ev, Jv record) {
+        Jv.Arr handback = new Jv.Arr();
+        if (record.member("handback") instanceof Jv.Str value) { handback.add(value); }
+        if (record.path("handback_report", "text") instanceof Jv.Str value) { handback.add(value); }
+        if (!handback.elements().isEmpty()) {
+            Jv.Arr blocks = new Jv.Arr();
+            for (Jv value : handback.elements()) {
+                blocks.add(new Jv.Obj().put("block_index", blocks.elements().size()).put("block_type", "string").put("block_kind_id", 1)
+                        .put("block_kind", "Text").put("text", value).put("data", value));
+            }
+            ev.put("content_blocks", blocks);
+        }
     }
 }

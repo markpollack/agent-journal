@@ -75,8 +75,13 @@ public final class ExpectedSources {
             throw new IllegalArgumentException("expected-sources manifest version " + SchemaCatalog.text(json, "version") + "; this oracle implements " + VERSION);
         }
         ExpectedSources e = new ExpectedSources(json);
+        e.validateNames();
+        return e;
+    }
+
+    private void validateNames() {
         List<String> names = new ArrayList<>();
-        for (Source s : e.sources) {
+        for (Source s : sources) {
             if (s.artifact() == null || s.profile() == null) {
                 throw new IllegalArgumentException("every expected source names an artifact and a profile");
             }
@@ -85,7 +90,6 @@ public final class ExpectedSources {
             }
             names.add(s.artifact());
         }
-        return e;
     }
 
     public static ExpectedSources read(Path file) {
@@ -102,6 +106,16 @@ public final class ExpectedSources {
 
     public Json json() {
         return json;
+    }
+
+    /** The independently pinned source meaning binding, when the acquisition manifest supplies one. */
+    public Json binding(String artifact) {
+        for (Json source : json.member("sources").elements()) {
+            if (artifact.equals(SchemaCatalog.text(source, "artifact"))) {
+                return source.member("binding");
+            }
+        }
+        return null;
     }
 
     public String runUid() {

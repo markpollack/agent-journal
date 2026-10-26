@@ -96,7 +96,7 @@ class AnalysisViewsTest {
         Path fixture = copy(CODEX, work);
         Json u = AnalysisViews.usage(open(fixture));
         List<Json> groups = u.member("groups").elements();
-        assertThat(groups).as("turn-0001, turn-0002, the msg_a_3 response scope and the session scope from token_usage_record").hasSize(4);
+        assertThat(groups).as("turn-0001, turn-0002, the msg_a_3 response scope and the session scope from token_usage_record, and two separate last-reported groups").hasSize(6);
         Json turn1 = groups.get(0);
         assertThat(turn1.member("owner").text()).isEqualTo("turn-0001-synthetic");
         assertThat(turn1.path("applicable_final", "cache_read_tokens").scalarText()).as("the cache reads of the last cumulative token_count, not a sum").isEqualTo("1500");
@@ -108,7 +108,7 @@ class AnalysisViewsTest {
         editEvents(pkg(fixture), events -> {
             Json turn = at(events, "prompt_turn", 2, 17);
             List<Json> obs = turn.member("usage_observations").elements();
-            Json finalObs = obs.get(obs.size() - 1);
+            Json finalObs = obs.stream().filter(x -> "3".equals(x.member("scope_id").scalarText()) && "2".equals(x.member("usage_status_id").scalarText())).findFirst().orElseThrow();
             obs.add(OcsfFixtures.copy(finalObs));
         });
         Json repeated = AnalysisViews.usage(open(fixture)).member("groups").elements().get(0);
@@ -264,12 +264,12 @@ class AnalysisViewsTest {
         Path fixture = copy(OracleFullSourceTest.PAIR, work);
         Json views = AnalysisViews.all(open(fixture));
         Json sc = views.member("settings_context");
-        assertThat(sc.member("settings_rows").scalarText()).isEqualTo("1");
+        assertThat(sc.member("settings_rows").scalarText()).isEqualTo("2");
         assertThat(sc.member("context_rows").scalarText()).isEqualTo("4");
         assertThat(sc.member("accounting_rows").scalarText()).as("task progress, notification, Agent result, cost-state and the result's per-model cost (ACCT-1)").isEqualTo("5");
         assertThat(sc.member("rule").text()).isEqualTo("settings.context.v1");
         List<Json> rows = sc.member("rows").elements();
-        assertThat(rows).hasSize(10);
+        assertThat(rows).hasSize(13);
         Json init = rows.get(0);
         assertThat(init.member("activity").text()).isEqualTo("Settings reported");
         assertThat(init.member("context_kind").text()).isEqualTo("system/init");
@@ -280,28 +280,29 @@ class AnalysisViewsTest {
         assertThat(init.member("usage_observations").scalarText()).isEqualTo("0");
         assertThat(((Json.JBool) init.member("cost_reported")).value()).isFalse();
         // the stream's child-run accounting (task progress, task notification, Agent result) is scoped to the child run, not the session
-        for (int i = 1; i <= 3; i++) {
-            assertThat(rows.get(i).member("scope").text()).isEqualTo("child run of tool call " + OcsfFixtures.SPAWN);
-            assertThat(rows.get(i).member("usage_observations").scalarText()).isEqualTo("1");
-        }
+        assertThat(rows.stream().filter(row -> List.of("system/task_progress", "system/task_notification", "user/tool_result")
+                .contains(row.member("context_kind").text()))).hasSize(3).allSatisfy(row -> {
+                    assertThat(row.member("scope").text()).isEqualTo("child run of tool call " + OcsfFixtures.SPAWN);
+                    assertThat(row.member("usage_observations").scalarText()).isEqualTo("1");
+                });
         // ACCT-1: the result record's per-model running cost is a session-scope accounting row with plural cost observations
-        Json modelCosts = rows.get(4);
+        Json modelCosts = rows.stream().filter(row -> "result/modelUsage".equals(row.member("context_kind").text())).findFirst().orElseThrow();
         assertThat(modelCosts.member("activity").text()).isEqualTo("Accounting reported");
         assertThat(modelCosts.member("context_kind").text()).isEqualTo("result/modelUsage");
         assertThat(modelCosts.member("scope").text()).isEqualTo("session");
         assertThat(modelCosts.member("cost_observations").scalarText()).isEqualTo("1");
         assertThat(((Json.JBool) modelCosts.member("cost_reported")).value()).isFalse();
-        Json environment = rows.get(5);
+        Json environment = rows.stream().filter(row -> "attachment/environment".equals(row.member("context_kind").text())).findFirst().orElseThrow();
         assertThat(environment.member("activity").text()).isEqualTo("Context injected");
         assertThat(environment.member("context_kind").text()).isEqualTo("attachment/environment");
         assertThat(environment.member("rendered_role").text()).isEqualTo("system");
         assertThat(environment.member("context_blocks").scalarText()).isEqualTo("1");
         assertThat(Integer.parseInt(environment.member("context_text_chars").scalarText())).isGreaterThan(20);
-        Json credential = rows.get(7);
+        Json credential = rows.stream().filter(row -> "attachment/credential_org".equals(row.member("context_kind").text())).findFirst().orElseThrow();
         assertThat(credential.member("context_kind").text()).isEqualTo("attachment/credential_org");
         assertThat(credential.member("rendered_role")).isNull();
         assertThat(credential.member("context_blocks")).isNull();
-        Json cost = rows.get(9);
+        Json cost = rows.stream().filter(row -> "cost-state".equals(row.member("context_kind").text())).findFirst().orElseThrow();
         assertThat(cost.member("activity").text()).isEqualTo("Accounting reported");
         assertThat(cost.member("usage_observations").scalarText()).isEqualTo("1");
         assertThat(((Json.JBool) cost.member("cost_reported")).value()).isTrue();

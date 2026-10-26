@@ -27,7 +27,7 @@ final class AssemblyConsolidation {
 
     static final Set<String> ENVELOPE = Set.of("class_uid", "class_name", "category_uid", "category_name", "activity_id", "activity_name", "type_uid", "type_name",
             "severity_id", "severity", "time", "time_dt", "metadata", "journal", "source_ref", "assembly", "data", "raw_data", "raw_bytes_b64");
-    static final Set<String> PROVENANCE = Set.of("source_ref", "basis", "derivation", "native_pointers", "tool_kind_basis", "projection_basis", "components");
+    static final Set<String> PROVENANCE = Set.of("source_ref", "basis", "derivation", "native_pointers", "tool_kind_basis", "projection_basis", "components", "provider_basis_id", "provider_basis");
 
     private AssemblyConsolidation() {
     }

@@ -4,9 +4,9 @@
  "fixture": "antigravity-live-1.4.6-subagent",
  "core": "main",
  "events_jsonl": "fixtures/antigravity-live-1.4.6-subagent/package/events.jsonl",
- "events_jsonl_sha256": "ff9e58ecc223981729335fb369006c3dc1a50766cc624e64e1db6643da8b0ed9",
+ "events_jsonl_sha256": "37cfa62a294710e683bb3548b1b3e145e69a145d1705a6dc185fa7120cdfb11b",
  "execution_records": 20,
- "declarations_skipped": 51,
+ "declarations_skipped": 56,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
  "toolkit": {
   "name": "ocsf-toolkit",
@@ -14,7 +14,7 @@
   "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
   "exit_code": 0
  },
- "compiled_schema_sha256": "da6317bacfd3f579f09331c93109219bf8f4616a23e251eba22928b5bad6f52d",
+ "compiled_schema_sha256": "3d3d274392817bbfa63844212becc9d23916078c4bdfc7db40b260df66144b3a",
  "result": {
   "event_files_processed": 20,
   "error_events": 0,

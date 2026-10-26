@@ -1,0 +1,17 @@
+{
+  "caption": "Agent State",
+  "description": "The state of the explicitly named collaborating session, with its reported message.",
+  "extends": "object",
+  "name": "agent_state",
+  "attributes": {
+    "session_uid": {
+      "requirement": "optional"
+    },
+    "reported_state": {
+      "requirement": "optional"
+    },
+    "text": {
+      "requirement": "optional"
+    }
+  }
+}

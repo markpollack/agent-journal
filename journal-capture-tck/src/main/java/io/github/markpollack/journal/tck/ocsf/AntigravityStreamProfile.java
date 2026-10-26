@@ -140,7 +140,7 @@ final class AntigravityStreamProfile implements SourceProfile {
         boolean text = delta instanceof Json.JString;
         f.responses.add(new ExpectedFacts.Response(index, id(s), text ? List.of(delta) : null, null, done, null, null, STEP_INDEX, done ? 3 : 1, text ? INCREMENT : null));
         if (s.member("usage") instanceof Json.JObject usage) {
-            f.usages.add(new ExpectedFacts.Usage(index, index, STEP_SCOPE, done ? 2 : 1, TrancheReading.antigravity(usage), 1));
+            f.addUsage(new ExpectedFacts.Usage(index, index, STEP_SCOPE, done ? 2 : 1, TrancheReading.antigravity(usage), 1), "/step_update/usage", usage);
         }
     }
 
@@ -171,7 +171,7 @@ final class AntigravityStreamProfile implements SourceProfile {
         Json response = res.member("response");
         f.completed.add(new ExpectedFacts.TurnCompleted(index, statusId, null, response instanceof Json.JString t ? List.of(t.value()) : null));
         if (res.member("usage") instanceof Json.JObject usage) {
-            f.usages.add(new ExpectedFacts.Usage(index, index, 5, 2, TrancheReading.antigravity(usage), null, null, null, 2));
+            f.addUsage(new ExpectedFacts.Usage(index, index, 5, 2, TrancheReading.antigravity(usage), null, null, null, 2), "/result/usage", usage);
         }
         int denied = res.member("denied_actions") == null ? 0 : res.member("denied_actions").elements().size();
         for (int i = 0; i < denied; i++) {

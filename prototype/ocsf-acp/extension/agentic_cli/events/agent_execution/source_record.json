@@ -2,7 +2,7 @@
   "uid": 4,
   "caption": "Source Record",
   "category": "agent_execution",
-  "description": "A native source record retained whole because no normalization rule covers it, or because it could not be parsed. This is the whole-record fallback; it makes vendor detail reachable in Level 1 without Level 0.",
+  "description": "A native source record retained whole because no normalization rule covers it, or because it could not be parsed. This is the whole-record fallback; it makes vendor detail reachable in Level 1 without Level 0. Independently understood execution metrics may accompany a record whose remaining meaning has no normalization rule.",
   "name": "source_record",
   "extends": "base_event",
   "attributes": {
@@ -70,6 +70,19 @@
       "description": "The parsed record exactly as reported.",
       "group": "context",
       "requirement": "optional"
+    },
+    "execution_metrics": {
+      "group": "primary",
+      "requirement": "optional"
+    },
+    "duration": {
+      "description": "The source-reported elapsed execution time in integral milliseconds. No start/end timestamps or aggregation window are inferred. Exact non-integral durations use execution_metrics in their native unit.",
+      "group": "occurrence",
+      "requirement": "optional"
+    },
+    "agent_uid": {
+      "requirement": "optional",
+      "group": "primary"
     }
   }
 }

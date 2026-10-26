@@ -42,7 +42,7 @@ final class AntigravityStreamMapper implements SourceMapper {
     public void map(NativeRecord r, SourceContext ctx) {
         if (!r.parsed()) {
             ctx.family("opaque", r.raw().length, "retained-only: not one JSON object (bytes kept verbatim)");
-            ctx.emit(ctx.opaque(r, CONTRACT));
+            ctx.emit(ExecutionMetrics.add(ctx.opaque(r, CONTRACT), r, ctx));
             return;
         }
         Jv o = r.json();
@@ -58,7 +58,7 @@ final class AntigravityStreamMapper implements SourceMapper {
         }
         else {
             ctx.family(String.valueOf(event), r.raw().length, "retained-only: no normalization rule");
-            ctx.emit(ctx.fallback(r, CONTRACT, "agy.stream.fallback->source_record", String.valueOf(event), null, null, text(o, "conversation_id"), null));
+            ctx.emit(ExecutionMetrics.add(ctx.fallback(r, CONTRACT, "agy.stream.fallback->source_record", String.valueOf(event), null, null, text(o, "conversation_id"), null), r, ctx));
         }
     }
 
@@ -71,7 +71,7 @@ final class AntigravityStreamMapper implements SourceMapper {
         if ("user_input".equals(type) && "DONE".equals(state)) {
             ctx.family(family, r.raw().length, "normalized: prompt_turn Prompt submitted (the stream carries no prompt text)");
             Jv.Obj ev = ctx.event("prompt_turn", 1, r, ctx.timeFor(r, null), CONTRACT, "agy.stream.user_input->prompt_turn.submitted", null, null, true, null);
-            ctx.emit(ev.put("session_uid", text(s, "conversation_id")).put("data", o));
+            ctx.emit(ExecutionMetrics.add(ev.put("session_uid", text(s, "conversation_id")).put("data", o), r, ctx));
         }
         else if ("agent_response".equals(type) && live) {
             response(r, ctx, o, s, family, "DONE".equals(state));
@@ -81,7 +81,7 @@ final class AntigravityStreamMapper implements SourceMapper {
         }
         else {
             ctx.family(family, r.raw().length, retainedOnly(type));
-            ctx.emit(ctx.fallback(r, CONTRACT, "agy.stream.fallback->source_record", family, null, null, text(s, "conversation_id"), null));
+            ctx.emit(ExecutionMetrics.add(ctx.fallback(r, CONTRACT, "agy.stream.fallback->source_record", family, null, null, text(s, "conversation_id"), null), r, ctx));
         }
     }
 
@@ -108,7 +108,7 @@ final class AntigravityStreamMapper implements SourceMapper {
         Jv.Obj ev = ctx.event("session_context", 1, r, ctx.timeFor(r, null), CONTRACT, "agy.stream.init->session_context.settings", null, null, true, null);
         ev.put("session_uid", text(o, "conversation_id")).put("context_kind", "init").put("settings", settings)
                 .put("basis", "agy.stream.init.v1: the init event reports the run configuration once, at stream start").put("data", o);
-        ctx.emit(ev);
+        ctx.emit(ExecutionMetrics.add(ev, r, ctx));
     }
 
     /** An agent-response step: a Partial view while ACTIVE (its text fragment), Item completed when DONE with the step's usage. */
@@ -136,7 +136,7 @@ final class AntigravityStreamMapper implements SourceMapper {
         }
         ev.put("basis", "agy.stream.agent_response.v1: an agent_response step is a content item of a model response the stream does not identify; " + IDENTITY
                 + ": item_uid is the conversation's step_index").put("data", o);
-        ctx.emit(ev);
+        ctx.emit(ExecutionMetrics.add(ev, r, ctx));
     }
 
     /**
@@ -161,7 +161,7 @@ final class AntigravityStreamMapper implements SourceMapper {
             result.put("errors", AntigravityMcp.errors(text(s, "tool_name"), error));
         }
         ev.put("reported_state", text(s, "state")).put("tool_result", result).put("data", o);
-        ctx.emit(ev);
+        ctx.emit(ExecutionMetrics.add(ev, r, ctx));
     }
 
     private static String toolDisposition(boolean active, boolean subagent) {
@@ -223,7 +223,8 @@ final class AntigravityStreamMapper implements SourceMapper {
         if (!decisions.elements().isEmpty()) {
             ev.put("permission_decisions", decisions);
         }
-        ctx.emit(ev.put("data", o));
+        ev.put("errors", ExecutionState.errors(res.member("error")));
+        ctx.emit(ExecutionMetrics.add(ev.put("data", o), r, ctx));
     }
 
     /** result.status as reported: SUCCESS 1, ERROR 2, any other word 99 with that word as its label, absent not derivable. */

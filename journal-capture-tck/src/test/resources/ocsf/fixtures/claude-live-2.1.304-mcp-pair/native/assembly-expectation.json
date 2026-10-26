@@ -172,5 +172,14 @@
     "member": "output_tokens"
    }
   }
+ ],
+ "authorities": [
+  {
+   "class": "tool_call",
+   "pointer": "/tool_result/structured_result",
+   "role": "stream",
+   "native_pointer": "/tool_use_result",
+   "basis": "The stream reports the CLI structured result object. The session file toolUseResult can be rendered text; that distinct representation stays on its source observation."
+  }
  ]
 }

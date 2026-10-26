@@ -289,14 +289,14 @@ class CompatibilityAndIdentityOracleTest {
     }
 
     @Test
-    void identityIsNotApplicableWhereTheProfileReadsNoSessionOrRecordIdentifier(@TempDir Path work) {
+    void identityIncludesNativePlanIdentifiersAndEachChildCore(@TempDir Path work) {
         OracleReport rollout = verify(copy(CODEX, work.resolve("rollout")));
-        assertThat(rollout.outcome("identity.values", "main/rollout.jsonl")).isEqualTo(Outcome.NOT_APPLICABLE);
-        assertThat(rollout.check("identity.values", "main/rollout.jsonl").detail()).contains("no normalized event of a record with a readable session or native identifier");
+        assertThat(rollout.outcome("identity.values", "main/rollout.jsonl")).isEqualTo(Outcome.VERIFIED);
+        assertThat(rollout.check("identity.values", "main/rollout.jsonl").detail()).contains("normalized event(s)");
         // on the Claude child core the check examines the child's own normalized events
         OracleReport claude = verify(copy(CHILD, work.resolve("claude")));
         assertThat(claude.outcome("identity.values", "child:" + SPAWN + "/stream.jsonl")).isEqualTo(Outcome.VERIFIED);
         assertThat(claude.check("identity.values", "child:" + SPAWN + "/stream.jsonl").detail()).startsWith("4 normalized event(s)");
-        assertThat(claude.check("identity.values", MAIN).detail()).startsWith("17 normalized event(s)");
+        assertThat(claude.check("identity.values", MAIN).detail()).startsWith("19 normalized event(s)");
     }
 }

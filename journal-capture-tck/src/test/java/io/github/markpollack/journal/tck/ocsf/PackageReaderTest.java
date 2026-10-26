@@ -46,7 +46,7 @@ class PackageReaderTest {
         assertThat(fromEvents.standalone()).as("read from the file's declarations; run.json is ancillary").isTrue();
         assertThat(fromEvents.manifest.packageState()).isEqualTo("COMPLETED");
         assertThat(fromEvents.manifest.extensionUid()).isEqualTo(901);
-        assertThat(fromEvents.manifest.extensionVersion()).isEqualTo("0.13.0-prototype");
+        assertThat(fromEvents.manifest.extensionVersion()).isEqualTo("0.14.0-prototype");
         assertThat(fromEvents.manifest.contracts()).containsKey("codex-cli/rollout/0.160.1/0.4.0-prototype");
     }
 
@@ -93,7 +93,7 @@ class PackageReaderTest {
         assertThat(report.defects()).extracting(Check::property).containsOnly("population.usage", "operation.values", "population.responses");
         assertThat(report.missingRequired()).isEmpty();
         Path current = copy(OcsfFixtures.LIVE_CODEX, work.resolve("current"));
-        assertThat(open(current).manifest.extensionVersion()).isEqualTo("0.13.0-prototype");
+        assertThat(open(current).manifest.extensionVersion()).isEqualTo("0.14.0-prototype");
     }
 
     /**

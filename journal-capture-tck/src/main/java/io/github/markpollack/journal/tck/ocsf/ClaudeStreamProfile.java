@@ -32,6 +32,10 @@ final class ClaudeStreamProfile implements SourceProfile {
             if ("system".equals(SourceProfile.text(o, "type")) && "init".equals(SourceProfile.text(o, "subtype"))) {
                 mcp.init(o); // registration is a fact of the session, whichever core owns the record
             }
+            String ts = SourceProfile.text(o, "timestamp");
+            if (ts != null) {
+                f.nativeTime.put(r.index(), ts);
+            }
             if (!SourceProfile.owned(o, scope)) {
                 continue;
             }
@@ -41,10 +45,6 @@ final class ClaudeStreamProfile implements SourceProfile {
             }
             if (SourceProfile.text(o, "uuid") != null) {
                 f.nativeUid.put(r.index(), SourceProfile.text(o, "uuid"));
-            }
-            String ts = SourceProfile.text(o, "timestamp");
-            if (ts != null) {
-                f.nativeTime.put(r.index(), ts);
             }
             String type = SourceProfile.text(o, "type");
             Json message = o.member("message");
@@ -106,16 +106,17 @@ final class ClaudeStreamProfile implements SourceProfile {
             else if ("result".equals(type)) {
                 f.normalized.add(r.index());
                 boolean success = "success".equals(SourceProfile.text(o, "subtype")) && o.member("is_error") instanceof Json.JBool b && !b.value();
-                f.completed.add(new ExpectedFacts.TurnCompleted(r.index(), success ? 1 : 2, SourceProfile.text(o, "stop_reason")));
+                f.completed.add(new ExpectedFacts.TurnCompleted(r.index(), success ? 1 : 2, SourceProfile.text(o, "stop_reason"),
+                        o.member("result") instanceof Json.JString result ? List.of(result.value()) : null));
                 Json usage = o.member("usage");
                 // whether the result's usage covers the run's sub-agents is not established: no aggregation is expected
-                f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 4, 2, TrancheReading.anthropic(usage), null, null, null, null));
+                f.addUsage(new ExpectedFacts.Usage(r.index(), r.index(), 4, 2, TrancheReading.anthropic(usage), null, null, null, null), "/usage", usage);
                 Json modelUsage = o.member("modelUsage");
                 if (modelUsage instanceof Json.JObject mu) {
                     for (Map.Entry<String, Json> m : mu.members().entrySet()) {
                         // ModelUsage is Claude Code's running total per model: a cumulative snapshot
-                        f.usages.add(new ExpectedFacts.Usage(r.index(), r.index(), 6, 2, TrancheReading.claudeModelUsage(m.getValue()), m.getKey(),
-                                SourceProfile.text(m.getValue(), "provider"), null, 2));
+                        f.addUsage(new ExpectedFacts.Usage(r.index(), r.index(), 6, 2, TrancheReading.claudeModelUsage(m.getValue()), m.getKey(),
+                                SourceProfile.text(m.getValue(), "provider"), null, 2), "/modelUsage/" + FactComparison.escape(m.getKey()), m.getValue());
                     }
                 }
                 lastResponse(f, r.index(), usage);
@@ -153,7 +154,7 @@ final class ClaudeStreamProfile implements SourceProfile {
     static void lastResponse(ExpectedFacts f, int index, Json usage) {
         Json iterations = usage == null ? null : usage.member("iterations");
         if (iterations instanceof Json.JArray entries && entries.elements().size() == 1 && "message".equals(SourceProfile.text(entries.elements().get(0), "type"))) {
-            f.usages.add(new ExpectedFacts.Usage(index, index, 4, 2, TrancheReading.anthropic(entries.elements().get(0)), null, null, null, 3));
+            f.addUsage(new ExpectedFacts.Usage(index, index, 4, 2, TrancheReading.anthropic(entries.elements().get(0)), null, null, null, 3), "/usage/iterations/0", entries.elements().get(0));
         }
     }
 

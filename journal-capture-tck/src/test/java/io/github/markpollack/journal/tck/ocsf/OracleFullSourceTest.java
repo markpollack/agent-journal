@@ -44,7 +44,7 @@ class OracleFullSourceTest {
         assertThat(report.outcome("package.state", "main")).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("whole_record.coverage", TRANSCRIPT)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.check("whole_record.coverage", TRANSCRIPT).detail()).startsWith("17 owned record(s) each retained exactly once");
-        assertThat(report.check("whole_record.class", TRANSCRIPT).detail()).isEqualTo("9 normalized, 8 fallback");
+        assertThat(report.check("whole_record.class", TRANSCRIPT).detail()).isEqualTo("10 normalized, 7 fallback");
         for (String property : List.of("population.requests", "population.results", "population.responses", "population.prompts", "population.usage",
                 "population.cost", "population.decisions", "population.contexts", "context.values", "usage.values", "cost.values", "result.values",
                 "response.values", "prompt.values", "decision.values", "reconstruction.coverage", "reconstruction.structure_value", "time.basis")) {
@@ -54,7 +54,7 @@ class OracleFullSourceTest {
         assertThat(report.outcome("reconstruction.bytes", TRANSCRIPT)).isEqualTo(Outcome.UNSUPPORTED);
         assertThat(report.outcome("reconstruction.bytes", STREAM)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("population.contexts", STREAM)).isEqualTo(Outcome.VERIFIED);
-        assertThat(report.check("population.contexts", TRANSCRIPT).detail()).isEqualTo("5 expected, 5 observed");
+        assertThat(report.check("population.contexts", TRANSCRIPT).detail()).isEqualTo("6 expected, 6 observed");
         // every family of both sources verifies; the file as a whole is an evidence log, not one combined execution
         assertThat(OcsfReaderTool.acceptance(report).exit()).isEqualTo(OcsfReaderTool.EXIT_INCOMPLETE);
         assertThat(OcsfReaderTool.acceptance(report.filtered(c -> !"combination.policy".equals(c.property()))).exit()).isEqualTo(OcsfReaderTool.EXIT_OK);
