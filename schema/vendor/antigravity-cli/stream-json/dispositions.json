@@ -1,7 +1,7 @@
 {
  "kind": "agent-journal/field-dispositions",
  "version": "0.1",
- "reviewed": "2026-10-23 (Antigravity onboarding)",
+ "reviewed": "2026-10-23 (Antigravity onboarding); 2026-10-26 (ACCT-1): every exercised retained entry carries a reviewed classification",
  "profile": "agy_stream",
  "compatibility_entries": [
   "antigravity-cli/stream-json/1.4.6-stdout"
@@ -84,7 +84,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "subtree default for members not named below: the whole record is the event's data"
+   "note": "subtree default for members not named below: the whole record is the event's data",
+   "classification": "structural",
+   "classification_note": "subtree default container"
   },
   {
    "variant": "*",
@@ -97,7 +99,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "subtree default for members not named below: the whole record is the event's data"
+   "note": "subtree default for members not named below: the whole record is the event's data",
+   "classification": "structural",
+   "classification_note": "subtree default container"
   },
   {
    "variant": "*",
@@ -110,7 +114,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "subtree default for members not named below: the whole record is the event's data"
+   "note": "subtree default for members not named below: the whole record is the event's data",
+   "classification": "structural",
+   "classification_note": "subtree default container"
   },
   {
    "variant": "init",
@@ -247,7 +253,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "no event of this step carries an id"
+   "note": "no event of this step carries an id",
+   "classification": "vendor_residual",
+   "classification_note": "no event of this step carries an id"
   },
   {
    "variant": "step_update/agent_response/ACTIVE",
@@ -308,7 +316,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "a reported step duration (retained-only, known meaning: no common duration attribute)"
+   "note": "a reported step duration (retained-only, known meaning: no common duration attribute)",
+   "classification": "candidate",
+   "classification_note": "a step's duration in seconds: the event's base duration attribute (milliseconds) has capacity; unit conversion pending"
   },
   {
    "variant": "step_update/agent_response/DONE",
@@ -519,7 +529,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "the same name as step_update.tool_name, kept in data"
+   "note": "the same name as step_update.tool_name, kept in data",
+   "classification": "redundant",
+   "classification_note": "equals step_update.tool_name of the same record; checked by CrossCliAccountingTest#redundantRepresentationsAreCheckedAgainstTheirOriginals"
   },
   {
    "variant": "step_update/tool/DONE",
@@ -531,7 +543,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "a reported step duration (retained-only, known meaning: no common duration attribute)"
+   "note": "a reported step duration (retained-only, known meaning: no common duration attribute)",
+   "classification": "candidate",
+   "classification_note": "a step's duration in seconds: the event's base duration attribute (milliseconds) has capacity; unit conversion pending"
   },
   {
    "variant": "step_update/tool/DONE",
@@ -575,7 +589,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "the start carries the normalized name; the result's copy stays in data (joined by tool_call_uid)"
+   "note": "the start carries the normalized name; the result's copy stays in data (joined by tool_call_uid)",
+   "classification": "redundant",
+   "classification_note": "the ACTIVE step of the same step_index carries the normalized name; checked by CrossCliAccountingTest#redundantRepresentationsAreCheckedAgainstTheirOriginals"
   },
   {
    "variant": "step_update/tool/DONE",
@@ -588,7 +604,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "the start carries the normalized arguments; the result's copy stays in data"
+   "note": "the start carries the normalized arguments; the result's copy stays in data",
+   "classification": "redundant",
+   "classification_note": "the ACTIVE step carries the normalized arguments; checked as tool_name"
   },
   {
    "variant": "step_update/tool/DONE",
@@ -600,7 +618,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "kept in data"
+   "note": "kept in data",
+   "classification": "redundant",
+   "classification_note": "as tool_name"
   },
   {
    "variant": "step_update/tool/DONE",
@@ -629,7 +649,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "a reported step duration (retained-only, known meaning: no common duration attribute)"
+   "note": "a reported step duration (retained-only, known meaning: no common duration attribute)",
+   "classification": "candidate",
+   "classification_note": "a step's duration in seconds: the event's base duration attribute (milliseconds) has capacity; unit conversion pending"
   },
   {
    "variant": "step_update/tool/ERROR",
@@ -673,7 +695,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "the start carries the normalized name; the result's copy stays in data (joined by tool_call_uid)"
+   "note": "the start carries the normalized name; the result's copy stays in data (joined by tool_call_uid)",
+   "classification": "redundant",
+   "classification_note": "the ACTIVE step of the same step_index carries the normalized name; checked by CrossCliAccountingTest#redundantRepresentationsAreCheckedAgainstTheirOriginals"
   },
   {
    "variant": "step_update/tool/ERROR",
@@ -686,7 +710,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "the start carries the normalized arguments; the result's copy stays in data"
+   "note": "the start carries the normalized arguments; the result's copy stays in data",
+   "classification": "redundant",
+   "classification_note": "the ACTIVE step carries the normalized arguments; checked as tool_name"
   },
   {
    "variant": "step_update/tool/ERROR",
@@ -698,7 +724,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "kept in data"
+   "note": "kept in data",
+   "classification": "redundant",
+   "classification_note": "as tool_name"
   },
   {
    "variant": "step_update/tool/ERROR",
@@ -781,7 +809,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "a reported step duration (retained-only, known meaning: no common duration attribute)"
+   "note": "a reported step duration (retained-only, known meaning: no common duration attribute)",
+   "classification": "candidate",
+   "classification_note": "a step's duration in seconds: the event's base duration attribute (milliseconds) has capacity; unit conversion pending"
   },
   {
    "variant": "step_update/subagent/DONE",
@@ -825,7 +855,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "the start carries the normalized name; the result's copy stays in data (joined by tool_call_uid)"
+   "note": "the start carries the normalized name; the result's copy stays in data (joined by tool_call_uid)",
+   "classification": "vendor_residual",
+   "classification_note": "the subagent step's tool label; the step carries no normalized request"
   },
   {
    "variant": "step_update/subagent/DONE",
@@ -907,7 +939,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "a reported step duration (retained-only, known meaning: no common duration attribute)"
+   "note": "a reported step duration (retained-only, known meaning: no common duration attribute)",
+   "classification": "candidate",
+   "classification_note": "a step's duration in seconds: the event's base duration attribute (milliseconds) has capacity; unit conversion pending"
   },
   {
    "variant": "step_update/system_message/DONE",
@@ -919,7 +953,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "the fallback event carries it as session_uid; the step itself is not normalized"
+   "note": "the fallback event carries it as session_uid; the step itself is not normalized",
+   "classification": "redundant",
+   "classification_note": "the fallback event carries it as session_uid"
   },
   {
    "variant": "step_update/system_message/DONE",
@@ -931,7 +967,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "no event of this step carries an id"
+   "note": "no event of this step carries an id",
+   "classification": "vendor_residual",
+   "classification_note": "no event of this step carries an id"
   },
   {
    "variant": "result",
@@ -992,7 +1030,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "the failure message (observed: interrupted on SIGTERM); the status carries the outcome"
+   "note": "the failure message (observed: interrupted on SIGTERM); the status carries the outcome",
+   "classification": "common_capacity_gap",
+   "classification_note": "the failure message; the status is normalized, no message attribute"
   },
   {
    "variant": "result",
@@ -1004,7 +1044,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "wall-clock duration, cumulative over the session (retained-only, known meaning)"
+   "note": "wall-clock duration, cumulative over the session (retained-only, known meaning)",
+   "classification": "candidate",
+   "classification_note": "the session's wall-clock duration in seconds: the base duration attribute (milliseconds) has capacity; the unit conversion of a decimal is a pending decision"
   },
   {
    "variant": "result",
@@ -1016,7 +1058,9 @@
    "tests": [
     "AntigravityStreamTest#theFourLiveRecordingsVerifyWithTheirOwedPopulations"
    ],
-   "note": "user turns, cumulative over the session (retained-only, known meaning)"
+   "note": "user turns, cumulative over the session (retained-only, known meaning)",
+   "classification": "common_capacity_gap",
+   "classification_note": "user turn count: no canonical counter attribute"
   },
   {
    "variant": "result",

@@ -42,6 +42,15 @@ final class ClaudeChildUsageReading {
         }
         account(f, index, "user/tool_result", resultIds.get(0));
         f.usages.add(new ExpectedFacts.Usage(index, index, 7, 2, TrancheReading.anthropic(usage), null, null, emitterDefaults(usage) ? 2 : null, 3));
+        // the envelope's own members (Agent SDK 0.3.304 AgentOutput): the child run's reported terminal status and its
+        // total duration in milliseconds are the accounting event's reported_state and duration; the child's status is
+        // never the outer tool call's status (that stays the result block's is_error)
+        if (result.member("status") instanceof Json.JString) {
+            f.attributes.add(new ExpectedFacts.Attribute(index, "session_context", 3, "reported_state", result.member("status")));
+        }
+        if (SourceProfile.isIntegral(result.member("totalDurationMs"))) {
+            f.attributes.add(new ExpectedFacts.Attribute(index, "session_context", 3, "duration", result.member("totalDurationMs")));
+        }
     }
 
     /**

@@ -1,0 +1,158 @@
+{
+ "kind": "agent-journal/assertion-coverage",
+ "version": "0.1",
+ "reviewed": "2026-10-26 (ACCT-1)",
+ "meaning": "which typed canonical assertions (class/activity:attribute path, Java regex, whole match) an independent oracle property judges against native evidence, which are Journal's own provenance or caption siblings of a judged id, and which the caller declares; every other path is unjudged and inventoried by CrossCliAccountingTest. A basis string is text the writer wrote and is never judged: it stays unjudged on purpose. The property names are the oracle's (OcsfOracle.MANDATORY_SOURCE or the assembly oracle); this table is the reviewer's reading of OcsfOracle's value checks, pinned by hash so a change is a reviewable event. basis_text names the writer's free-text basis and derivation members: inventoried in their own bucket, never judged and never counted as judged. Keys are <profile>|<class>/<activity>:<path>, the profile being the source profile of the event's native artifact (assembly for an event consolidated from several), so a judgement can be stated for one source profile and left unjudged for another",
+ "journal_origin": [
+  "[a-z_]+\\|[a-z_]+/[0-9]+:(class_name|category_uid|category_name|type_uid|type_name|activity_name|severity|severity_id|time_dt)",
+  "[a-z_]+\\|[a-z_]+/[0-9]+:metadata",
+  "[a-z_]+\\|[a-z_]+/[0-9]+:metadata\\.(version|profiles|profiles\\[\\]|extensions|extensions\\[\\]|extensions\\[\\]\\.(name|uid|version)|product|product\\.(name|vendor_name|version))",
+  "[a-z_]+\\|[a-z_]+/[0-9]+:journal",
+  "[a-z_]+\\|[a-z_]+/[0-9]+:journal\\.(run_uid|invocation_index|sequence|contract_uid|time_basis)",
+  "[a-z_]+\\|[a-z_]+/[0-9]+:source_ref",
+  "[a-z_]+\\|[a-z_]+/[0-9]+:source_ref\\.(source_kind_id|is_whole_record|native_uid|native_time)",
+  "[a-z_]+\\|[a-z_]+/[0-9]+:.*\\.source_ref",
+  "[a-z_]+\\|[a-z_]+/[0-9]+:.*\\.source_ref\\.(artifact|record_index|record_bytes|line_ending|source_kind_id|is_whole_record|native_uid|native_time)",
+  "[a-z_]+\\|[a-z_]+/[0-9]+:(.*\\.)?(scope|aggregation|usage_status|measurement_status|quantity_kind|decision|outcome|method|reasoning_relation|component_basis|identity_basis|status_basis|tool_kind|parse_status|source_kind|block_kind|assembly_role|relation_class|error_layer|time_basis|provider_basis|text_update|reasoning_form|projection|status|definition_format)"
+ ],
+ "caller_origin": [
+  "[a-z_]+\\|[a-z_]+/[0-9]+:cli_agent(\\..*)?"
+ ],
+ "judged": [
+  {
+   "match": "[a-z_]+\\|[a-z_]+/[0-9]+:(class_uid|activity_id)",
+   "property": "whole_record.class"
+  },
+  {
+   "match": "[a-z_]+\\|[a-z_]+/[0-9]+:journal\\.rule_uid",
+   "property": "whole_record.class"
+  },
+  {
+   "match": "[a-z_]+\\|source_record/[0-9]+:record_type",
+   "property": "whole_record.class"
+  },
+  {
+   "match": "[a-z_]+\\|source_record/[0-9]+:parse_status_id",
+   "property": "whole_record.coverage"
+  },
+  {
+   "match": "[a-z_]+\\|[a-z_]+/[0-9]+:data",
+   "property": "whole_record.coverage"
+  },
+  {
+   "match": "[a-z_]+\\|source_record/[0-9]+:(raw_data|raw_bytes_b64)",
+   "property": "whole_record.bytes"
+  },
+  {
+   "match": "[a-z_]+\\|[a-z_]+/[0-9]+:source_ref\\.(artifact|record_index)",
+   "property": "source.inventory"
+  },
+  {
+   "match": "[a-z_]+\\|[a-z_]+/[0-9]+:source_ref\\.(record_bytes|line_ending)",
+   "property": "whole_record.framing"
+  },
+  {
+   "match": "[a-z_]+\\|[a-z_]+/[0-9]+:(time|metadata\\.original_time|journal\\.time_basis_id)",
+   "property": "time.basis"
+  },
+  {
+   "match": "[a-z_]+\\|[a-z_]+/[0-9]+:(session_uid|metadata\\.original_event_uid)",
+   "property": "identity.values"
+  },
+  {
+   "match": "[a-z_]+\\|[a-z_]+/[0-9]+:assembly(\\..*)?",
+   "property": "assembly.entities"
+  },
+  {
+   "match": "[a-z_]+\\|tool_call/1:(tool_call_uid|tool_name|arguments|response_uid|reported_state|tool_namespace|identity_basis_id|tool_kind_id|tool_family)",
+   "property": "request.values"
+  },
+  {
+   "match": "[a-z_]+\\|tool_call/4:(tool_call_uid|tool_name|arguments|response_uid|reported_state|tool_namespace|identity_basis_id|tool_kind_id|tool_family)",
+   "property": "request.values"
+  },
+  {
+   "match": "[a-z_]+\\|tool_call/2:(tool_call_uid|tool_result|tool_result\\.(data|error_reported|structured_result)|reported_state|identity_basis_id|tool_family|status_id|status_basis_id)",
+   "property": "result.values"
+  },
+  {
+   "match": "[a-z_]+\\|tool_call/[0-9]+:tool_result\\.errors(\\[\\](\\..*)?)?",
+   "property": "tool_error.values"
+  },
+  {
+   "match": "[a-z_]+\\|tool_call/[0-9]+:mcp(\\..*)?",
+   "property": "mcp.values"
+  },
+  {
+   "match": "[a-z_]+\\|tool_call/[0-9]+:tool_operation(\\..*)?",
+   "property": "operation.values"
+  },
+  {
+   "match": "[a-z_]+\\|tool_call/[0-9]+:permission_decision(\\..*)?",
+   "property": "decision.values"
+  },
+  {
+   "match": "[a-z_]+\\|prompt_turn/2:permission_decisions(\\[\\](\\..*)?)?",
+   "property": "decision.values"
+  },
+  {
+   "match": "[a-z_]+\\|model_response/[0-9]+:(response_uid|item_uid|identity_basis_id|stop_reason|model_ref|model_ref\\.name)",
+   "property": "response.values"
+  },
+  {
+   "match": "[a-z_]+\\|model_response/[0-9]+:content_blocks(\\[\\](\\..*)?)?",
+   "property": "response.values"
+  },
+  {
+   "match": "[a-z_]+\\|prompt_turn/1:(turn_uid|content_blocks(\\[\\](\\..*)?)?)",
+   "property": "prompt.values"
+  },
+  {
+   "match": "[a-z_]+\\|prompt_turn/1:turn_uid",
+   "property": "turn_started.values"
+  },
+  {
+   "match": "[a-z_]+\\|prompt_turn/2:(status_id|stop_reason|content_blocks(\\[\\](\\..*)?)?)",
+   "property": "turn.values"
+  },
+  {
+   "match": "[a-z_]+\\|prompt_turn/2:cost_observation(\\.(total_cost|currency|scope_id|cost_basis|data))?",
+   "property": "cost.values"
+  },
+  {
+   "match": "[a-z_]+\\|session_context/[0-9]+:cost_observation(\\.(total_cost|currency|scope_id|cost_basis|data))?",
+   "property": "cost.values"
+  },
+  {
+   "match": "[a-z_]+\\|session_context/[0-9]+:context_kind",
+   "property": "population.contexts"
+  },
+  {
+   "match": "[a-z_]+\\|session_context/[0-9]+:(turn_uid|rendered_role|tool_call_uid|content_blocks(\\[\\](\\..*)?)?|settings(\\..*)?)",
+   "property": "context.values"
+  },
+  {
+   "match": "[a-z_]+\\|[a-z_]+/[0-9]+:usage_observations(\\[\\])?",
+   "property": "population.usage"
+  },
+  {
+   "match": "[a-z_]+\\|[a-z_]+/[0-9]+:usage_observations\\[\\]\\.(scope_id|usage_status_id|aggregation_id|measurement_status_id|model_ref|model_ref\\.name|model_ref\\.provider_kind|model_ref\\.provider_basis_id|uncached_input_tokens|cache_read_tokens|cache_write_tokens|cache_write_tiers|cache_write_tiers\\[\\]|cache_write_tiers\\[\\]\\.(tier|token_count|native_pointers|native_pointers\\[\\])|output_tokens|reasoning_tokens|reasoning_relation_id|reported_total_tokens|components|components\\[\\]|components\\[\\]\\.(name|component_basis_id|measurement_status_id|conditional_value|derivation|native_pointers|native_pointers\\[\\])|data)",
+   "property": "usage.values"
+  },
+  {
+   "match": "claude_stream\\|prompt_turn/2:duration",
+   "property": "attribute.values"
+  },
+  {
+   "match": "claude_stream\\|session_context/3:(reported_state|duration)",
+   "property": "attribute.values"
+  },
+  {
+   "match": "claude_stream\\|session_context/3:cost_observations(\\[\\](\\.(total_cost|currency|scope_id|model_ref|model_ref\\.name|quantity_kind_id|aggregation_id|data))?)?",
+   "property": "cost.values"
+  }
+ ],
+ "basis_text": [
+  "[a-z_]+\\|[a-z_]+/[0-9]+:(.*\\.)?(basis|tool_kind_basis|selection_basis|derivation|projection_basis)"
+ ]
+}

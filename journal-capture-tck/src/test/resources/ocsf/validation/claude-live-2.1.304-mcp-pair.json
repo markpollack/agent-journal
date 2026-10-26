@@ -4,8 +4,8 @@
  "fixture": "claude-live-2.1.304-mcp-pair",
  "core": "main",
  "events_jsonl": "fixtures/claude-live-2.1.304-mcp-pair/package/events.jsonl",
- "events_jsonl_sha256": "3b6b15bc3638c47c61727a568cfe52f4cb8a8f8c8a5c08fde36e7156e004cc36",
- "execution_records": 89,
+ "events_jsonl_sha256": "020196566c77f1b8373077acdadcc3883df6718d570dec1ad5e2adb57404803e",
+ "execution_records": 90,
  "declarations_skipped": 65,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
  "toolkit": {
@@ -16,7 +16,7 @@
  },
  "compiled_schema_sha256": "da6317bacfd3f579f09331c93109219bf8f4616a23e251eba22928b5bad6f52d",
  "result": {
-  "event_files_processed": 89,
+  "event_files_processed": 90,
   "error_events": 0,
   "warning_only_events": 12,
   "issues_reported": 0
@@ -78,28 +78,28 @@
     "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
    }
   ],
-  "0058.report.json": [
+  "0059.report.json": [
    {
     "level": "warning",
     "code": "validation_attribute_enum_sibling_suspicious_other",
     "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
    }
   ],
-  "0070.report.json": [
+  "0071.report.json": [
    {
     "level": "warning",
     "code": "validation_attribute_enum_sibling_suspicious_other",
     "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
    }
   ],
-  "0076.report.json": [
+  "0077.report.json": [
    {
     "level": "warning",
     "code": "validation_attribute_enum_sibling_suspicious_other",
     "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
    }
   ],
-  "0082.report.json": [
+  "0083.report.json": [
    {
     "level": "warning",
     "code": "validation_attribute_enum_sibling_suspicious_other",

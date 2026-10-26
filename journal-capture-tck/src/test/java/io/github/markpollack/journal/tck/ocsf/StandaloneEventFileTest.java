@@ -62,7 +62,7 @@ class StandaloneEventFileTest {
         assertThat(p.manifest.runUid()).isEqualTo("claude-child-2.1.299");
         assertThat(p.manifest.sessionUid()).isEqualTo("00000000-0000-4000-8000-000000000000");
         assertThat(p.manifest.eventsSha256()).as("no whole-file hash lives inside the file").isNull();
-        assertThat(p.events).hasSize(27);
+        assertThat(p.events).as("27 plus the result record's per-model cost accounting event (ACCT-1)").hasSize(28);
 
         // the actual schema: classes, objects, attributes, types and enumerations, from the file alone
         String model = p.catalog.enumerate();

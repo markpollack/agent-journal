@@ -102,7 +102,20 @@ class LiveFixtureFeaturesTest {
         // the task's usage and the Agent result's usage are child-run accounting at the spawning call (D1), whole records kept in data
         assertThat(p.events("session_context", 3)).extracting(e -> e.text("context_kind") + " " + e.text("tool_call_uid") + " " + e.recordIndex())
                 .containsExactly("system/task_progress " + LIVE_SPAWN + " 25", "system/task_progress " + LIVE_SPAWN + " 28", "system/task_notification " + LIVE_SPAWN + " 32",
-                        "user/tool_result " + LIVE_SPAWN + " 33");
+                        "user/tool_result " + LIVE_SPAWN + " 33", "result/modelUsage null 50");
+        // ACCT-1: the result record's per-model running cost is its own accounting event, and the Agent result's envelope
+        // state and duration ride on the child-run accounting event (never on the outer tool call)
+        Event modelCosts = p.events("session_context", 3).stream().filter(e -> "result/modelUsage".equals(e.text("context_kind"))).findFirst().orElseThrow();
+        assertThat(modelCosts.elements("cost_observations")).singleElement().satisfies(c -> {
+            assertThat(c.member("total_cost").scalarText()).isEqualTo("0.009542775");
+            assertThat(c.member("scope_id").scalarText()).isEqualTo("6");
+            assertThat(SchemaCatalog.text(c.member("model_ref"), "name")).isEqualTo("claude-haiku-5-5");
+        });
+        Event agent = p.events("session_context", 3).stream().filter(e -> "user/tool_result".equals(e.text("context_kind"))).findFirst().orElseThrow();
+        assertThat(agent.text("reported_state")).isEqualTo("completed");
+        assertThat(agent.get("duration").scalarText()).isEqualTo("3973");
+        assertThat(p.events("prompt_turn", 2).get(0).get("duration").scalarText()).isEqualTo("22832");
+        assertThat(report.outcome("attribute.values", MAIN)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("context.values", MAIN)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("whole_record.coverage", MAIN)).isEqualTo(Outcome.VERIFIED);
         assertThat(p.events("model_response", 1).stream().anyMatch(e -> e.elements("content_blocks").stream().anyMatch(b -> "thinking".equals(SchemaCatalog.text(b, "block_type"))))).isTrue();

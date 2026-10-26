@@ -19,7 +19,7 @@ public final class Event {
     public final Integer activityId;
     public final Integer sequence;
 
-    Event(int line, Json json, String className) {
+    public Event(int line, Json json, String className) {
         this.line = line;
         this.json = json;
         this.className = className;

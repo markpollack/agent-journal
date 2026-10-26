@@ -79,6 +79,44 @@ final class CanonicalObligations {
             return id + "@r" + revision;
         }
 
+        /**
+         * The kind of required outcome: {@code usage} (a usage observation, the default), {@code cost} (an entry of the
+         * destination's {@code cost_observations[]}) or {@code attribute} (one attribute of the destination event).
+         */
+        String kind() {
+            String k = SourceProfile.text(raw, "kind");
+            return k == null ? "usage" : k;
+        }
+
+        /** For an {@code attribute} obligation, the destination attribute the payload value must equal. */
+        String attribute() {
+            return SourceProfile.text(raw.member("destination"), "attribute");
+        }
+
+        /** For a {@code cost} obligation, the currency the observation must state, or {@code null} for none. */
+        String currency() {
+            return SourceProfile.text(raw.member("observation"), "currency");
+        }
+
+        /** For a {@code cost} obligation, the quantity kind the observation must state, or {@code null}. */
+        Integer quantityKindId() {
+            Json q = raw.member("observation").member("quantity_kind_id");
+            return q == null || q.isNull() ? null : Event.integer(q);
+        }
+
+        /** For a {@code cost} obligation, the member of the observation's {@code data} that carries the native value. */
+        String dataMember() {
+            return SourceProfile.text(raw.member("observation"), "data_member");
+        }
+
+        /**
+         * The writer basis labels this meaning is asserted under ({@code writer.basis_prefixes}): the observation's (or
+         * event's) {@code basis} must start with one of them. Empty: no binding stated, which is itself reported.
+         */
+        List<String> basisPrefixes() {
+            return texts(raw.member("writer") == null ? null : raw.member("writer").member("basis_prefixes"));
+        }
+
         /** The destination path of a canonical component, in the disposition catalog's notation. */
         String destination(String component) {
             return destinationClass + ".usage_observations[]." + component;
@@ -161,10 +199,13 @@ final class CanonicalObligations {
         Json dest = o.member("destination");
         Json obs = o.member("observation");
         Map<String, String> components = new LinkedHashMap<>();
-        ((Json.JObject) obs.member("components")).members().forEach((k, v) -> components.put(k, v.text()));
+        if (obs.member("components") instanceof Json.JObject c) {
+            c.members().forEach((k, v) -> components.put(k, v.text()));
+        }
+        Integer scope = obs.member("scope_id") == null ? null : Event.integer(obs.member("scope_id"));
         return new Obligation(o.member("id").text(), Event.integer(o.member("revision")), trigger.member("variant").text(), trigger.member("payload").text(),
                 texts(trigger.member("requested_tool")), SourceProfile.text(trigger, "unit"), dest.member("class").text(), Event.integer(dest.member("activity_id")),
-                SourceProfile.text(dest, "context_kind"), SourceProfile.text(dest, "unit_member"), Event.integer(obs.member("scope_id")), obs.member("usage_status"),
+                SourceProfile.text(dest, "context_kind"), SourceProfile.text(dest, "unit_member"), scope == null ? 0 : scope, obs.member("usage_status"),
                 obs.member("aggregation_id"), SourceProfile.text(obs, "model"), components, SourceProfile.text(obs, "tiers"),
                 SourceProfile.text(o.member("review"), "status"), SourceProfile.text(o, "meaning_digest"), texts(o.member("rules")), SourceProfile.text(o, "relevant_digest"), o);
     }
@@ -188,6 +229,13 @@ final class CanonicalObligations {
         m.put("owner_path", new Json.JString(c.ownerPath()));
         m.put("semantics", o.raw().member("semantics"));
         m.put("trigger", o.raw().member("trigger"));
+        if (o.raw().member("kind") != null) {
+            m.put("kind", o.raw().member("kind"));
+        }
+        if (o.raw().member("writer") != null) {
+            // the writer identities (rule ids are in rules; basis prefixes here) that assert this meaning are part of what is approved
+            m.put("writer", o.raw().member("writer"));
+        }
         return SemanticClaims.sha256(SemanticClaims.canonical(new Json.JObject(m)));
     }
 
@@ -199,7 +247,12 @@ final class CanonicalObligations {
      */
     static String relevantDigest(Catalog c, Obligation o, SemanticClaims.Definitions defs, List<String> problems) {
         Map<String, Json> definitions = new TreeMap<>();
-        List<String> destinations = new ArrayList<>(List.of(o.destinationClass() + ".usage_observations[]"));
+        String member = switch (o.kind()) {
+            case "cost" -> "cost_observations[]";
+            case "attribute" -> o.attribute();
+            default -> "usage_observations[]";
+        };
+        List<String> destinations = new ArrayList<>(List.of(o.destinationClass() + "." + member));
         if (o.unitMember() != null) {
             destinations.add(o.destinationClass() + "." + o.unitMember());
         }
@@ -212,8 +265,8 @@ final class CanonicalObligations {
         Json destinationClass = defs.classes().get(o.destinationClass());
         definitions.put("class " + o.destinationClass() + " description", destinationClass == null || destinationClass.member("description") == null
                 ? Json.JNull.INSTANCE : destinationClass.member("description"));
-        String observation = SourceProfile.text(defs.dictionary().get("usage_observations"), "type");
-        definitions.put("objects", objectClosure(observation, defs, problems));
+        String observation = "attribute".equals(o.kind()) ? null : SourceProfile.text(defs.dictionary().get("cost".equals(o.kind()) ? "cost_observations" : "usage_observations"), "type");
+        definitions.put("objects", observation == null ? new Json.JObject(Map.of()) : objectClosure(observation, defs, problems));
         Map<String, Json> rules = new TreeMap<>();
         Json contract = NeutralJson.readDocument(CONTRACTS.resolve(c.contract() + ".json"));
         for (String id : o.rules()) {
@@ -347,10 +400,12 @@ final class CanonicalObligations {
             return out;
         }
         for (Map.Entry<String, Json> p : selected.entrySet()) {
-            if (!(p.getValue() instanceof Json.JObject)) {
-                continue;
+            boolean usable = "usage".equals(o.kind()) ? p.getValue() instanceof Json.JObject : p.getValue() != null && !p.getValue().isNull()
+                    && !(p.getValue() instanceof Json.JObject) && !(p.getValue() instanceof Json.JArray);
+            if (!usable) {
+                continue; // a usage obligation selects objects; an attribute or cost obligation selects present scalar members (null and absent owe nothing)
             }
-            String model = o.model() == null ? null : "{key}".equals(o.model()) ? key(p.getKey()) : SourceProfile.text(rec, o.model().split("\\."));
+            String model = o.model() == null ? null : "{key}".equals(o.model()) ? modelKey(o, p.getKey()) : SourceProfile.text(rec, o.model().split("\\."));
             out.add(new Occurrence(o, b.entry(), fixture, sha, r.index(), p.getKey(), owner, unit, model, p.getValue(), status(o, rec), unresolved));
         }
         return out;
@@ -400,6 +455,18 @@ final class CanonicalObligations {
      */
     static Map<String, Json> payloads(Json rec, String path) {
         Map<String, Json> out = new LinkedHashMap<>();
+        int star = path.indexOf(".{*}.");
+        if (star >= 0) {
+            // a member beneath each map entry: modelUsage.{*}.costUSD selects costUSD of every model
+            String rest = path.substring(star + ".{*}.".length());
+            payloads(rec, path.substring(0, star + ".{*}".length())).forEach((pointer, entry) -> {
+                Json v = entry.path(rest.split("\\."));
+                if (v != null) {
+                    out.put(pointer + "/" + rest.replace(".", "/"), v);
+                }
+            });
+            return out;
+        }
         boolean each = path.endsWith(".{*}");
         boolean entries = path.endsWith("[]");
         String base = each ? path.substring(0, path.length() - 4) : entries ? path.substring(0, path.length() - 2) : path;
@@ -430,8 +497,23 @@ final class CanonicalObligations {
         return pointer.substring(pointer.lastIndexOf('/') + 1).replace("~1", "/").replace("~0", "~");
     }
 
+    /** The map key of a payload pointer: the last segment for a {@code {*}} payload, the segment at the {@code {*}} position for a scalar beneath it. */
+    private static String modelKey(Obligation o, String pointer) {
+        String[] parts = o.payload().split("\\.");
+        String[] segments = pointer.substring(1).split("/");
+        for (int i = 0; i < parts.length && i < segments.length; i++) {
+            if ("{*}".equals(parts[i])) {
+                return segments[i].replace("~1", "/").replace("~0", "~");
+            }
+        }
+        return key(pointer);
+    }
+
     private static int status(Obligation o, Json rec) {
         Json s = o.status();
+        if (s == null || s.isNull()) {
+            return 0; // not a usage observation: no usage status is stated
+        }
         if (s.member("value") != null) {
             return Event.integer(s.member("value"));
         }
@@ -451,7 +533,11 @@ final class CanonicalObligations {
 
     /**
      * Judges one occurrence against the candidate's per-owner events (each core's own observations of {@link #ARTIFACT}),
-     * the oracle's report and the oracle's own source-profile expectation for that owner.
+     * the oracle's report and the oracle's own source-profile expectation for that owner. The kind of obligation decides
+     * what is matched: a usage observation, an entry of {@code cost_observations[]}, or one attribute of the destination
+     * event. Every kind also checks that the event was written under one of the obligation's named contract rules and,
+     * when the catalog binds writer basis labels, that the observation's (or event's) basis starts with one of them: the
+     * writer's self-description is bound to the reviewed meaning, never trusted by its wording.
      */
     static Judged judge(Occurrence occ, Map<String, List<Event>> cores, OracleReport report, Map<String, ExpectedFacts> profileFacts) {
         List<Finding> findings = new ArrayList<>();
@@ -462,26 +548,11 @@ final class CanonicalObligations {
                     : new Finding(3, occ.id() + "#ownership-unresolved", "ownership not established: " + occ.unresolved()));
             return new Judged(occ, false, findings);
         }
-        List<Json> matches = matches(occ, cores.getOrDefault(occ.owner(), List.of()));
-        if (matches.isEmpty()) {
-            findings.add(new Finding(3, occ.id() + "#no-observation", "no " + o.destinationClass() + " usage observation at scope " + o.scopeId() + unitText(occ) + " for record " + occ.record()
-                    + " in core " + occ.owner() + ": " + whatIsThere(occ, cores)));
-        }
-        else if (matches.size() > 1) {
-            findings.add(new Finding(4, occ.id() + "#duplicate-observation", matches.size() + " observations match one occurrence"));
-        }
-        else {
-            for (String p : values(occ, matches.get(0))) {
-                // the member a value problem names is its reason: two defects of one occurrence are two findings
-                findings.add(new Finding(4, occ.id() + "#value:" + p.substring(0, p.indexOf(' ')), p));
-            }
-        }
         ExpectedFacts facts = profileFacts.get(occ.owner());
-        // the profile must expect this measurement window too: another quantity of the same record and scope is not this one
-        boolean expected = facts != null && facts.usages.stream().anyMatch(u -> u.recordIndex() == occ.record() && u.scopeId() == o.scopeId()
-                && Objects.equals(u.aggregationId(), o.aggregationId()) && (occ.model() == null || occ.model().equals(u.model())));
-        if (!expected) {
-            findings.add(new Finding(4, occ.id() + "#not-expected-by-profile", "the oracle's source profile does not expect this occurrence (owner " + occ.owner() + ")"));
+        switch (o.kind()) {
+            case "attribute" -> attributeJudgement(occ, cores, facts, findings);
+            case "cost" -> costJudgement(occ, cores, facts, findings);
+            default -> usageJudgement(occ, cores, facts, findings);
         }
         for (String property : oracleProperties(o)) {
             String owner = occ.owner() + "/" + ARTIFACT;
@@ -493,8 +564,131 @@ final class CanonicalObligations {
         return new Judged(occ, findings.isEmpty(), findings);
     }
 
+    private static void usageJudgement(Occurrence occ, Map<String, List<Event>> cores, ExpectedFacts facts, List<Finding> findings) {
+        Obligation o = occ.obligation();
+        List<Match> matches = matches(occ, cores.getOrDefault(occ.owner(), List.of()));
+        if (matches.isEmpty()) {
+            findings.add(new Finding(3, occ.id() + "#no-observation", "no " + o.destinationClass() + " usage observation at scope " + o.scopeId() + unitText(occ) + " for record " + occ.record()
+                    + " in core " + occ.owner() + ": " + whatIsThere(occ, cores)));
+        }
+        else if (matches.size() > 1) {
+            findings.add(new Finding(4, occ.id() + "#duplicate-observation", matches.size() + " observations match one occurrence"));
+        }
+        else {
+            for (String p : values(occ, matches.get(0).observation())) {
+                // the member a value problem names is its reason: two defects of one occurrence are two findings
+                findings.add(new Finding(4, occ.id() + "#value:" + p.substring(0, p.indexOf(' ')), p));
+            }
+            writerBinding(occ, matches.get(0).event(), matches.get(0).observation().member("basis"), findings);
+        }
+        // the profile must expect this measurement window too: another quantity of the same record and scope is not this one
+        boolean expected = facts != null && facts.usages.stream().anyMatch(u -> u.recordIndex() == occ.record() && u.scopeId() == o.scopeId()
+                && Objects.equals(u.aggregationId(), o.aggregationId()) && (occ.model() == null || occ.model().equals(u.model())));
+        if (!expected) {
+            findings.add(new Finding(4, occ.id() + "#not-expected-by-profile", "the oracle's source profile does not expect this occurrence (owner " + occ.owner() + ")"));
+        }
+    }
+
+    /** An attribute obligation: exactly one destination event of the record carries the attribute with the native value. */
+    private static void attributeJudgement(Occurrence occ, Map<String, List<Event>> cores, ExpectedFacts facts, List<Finding> findings) {
+        Obligation o = occ.obligation();
+        List<Event> at = destinationEvents(occ, cores.getOrDefault(occ.owner(), List.of()));
+        if (at.isEmpty()) {
+            findings.add(new Finding(3, occ.id() + "#no-event", "no " + o.destinationClass() + "/" + o.destinationActivity() + unitText(occ) + " event for record " + occ.record()
+                    + " in core " + occ.owner() + ": " + whatIsThere(occ, cores)));
+        }
+        else if (at.size() > 1) {
+            findings.add(new Finding(4, occ.id() + "#duplicate-event", at.size() + " destination events match one occurrence"));
+        }
+        else if (at.get(0).get(o.attribute()) == null) {
+            findings.add(new Finding(3, occ.id() + "#no-assertion", "the " + o.destinationClass() + " event carries no " + o.attribute() + ": the native " + o.payload()
+                    + " (" + occ.payload().scalarText() + ") is retained only"));
+        }
+        else {
+            if (!Json.sameValue(occ.payload(), at.get(0).get(o.attribute()))) {
+                findings.add(new Finding(4, occ.id() + "#value:" + o.attribute(), o.attribute() + " " + at.get(0).get(o.attribute()).scalarText() + " != native " + o.payload() + " " + occ.payload().scalarText()));
+            }
+            writerBinding(occ, at.get(0), at.get(0).get("basis"), findings);
+        }
+        boolean expected = facts != null && facts.attributes.stream().anyMatch(a -> a.recordIndex() == occ.record() && a.className().equals(o.destinationClass())
+                && Objects.equals(a.activityId(), o.destinationActivity()) && a.attribute().equals(o.attribute()));
+        if (!expected) {
+            findings.add(new Finding(4, occ.id() + "#not-expected-by-profile", "the oracle's source profile does not expect this attribute (owner " + occ.owner() + ")"));
+        }
+    }
+
+    /** A cost obligation: exactly one entry of the destination event's cost_observations[] at the scope and model carries the native amount. */
+    private static void costJudgement(Occurrence occ, Map<String, List<Event>> cores, ExpectedFacts facts, List<Finding> findings) {
+        Obligation o = occ.obligation();
+        List<Match> matches = new ArrayList<>();
+        for (Event e : destinationEvents(occ, cores.getOrDefault(occ.owner(), List.of()))) {
+            for (Json c : e.elements("cost_observations")) {
+                Integer at = Event.integer(c.path("source_ref", "record_index"));
+                if (Objects.equals(Event.integer(c.member("scope_id")), o.scopeId()) && (at == null || at == occ.record())
+                        && (occ.model() == null || occ.model().equals(SourceProfile.text(c.member("model_ref"), "name")))) {
+                    matches.add(new Match(e, c));
+                }
+            }
+        }
+        if (matches.isEmpty()) {
+            findings.add(new Finding(3, occ.id() + "#no-observation", "no " + o.destinationClass() + " cost observation at scope " + o.scopeId() + unitText(occ) + " for record " + occ.record()
+                    + " in core " + occ.owner() + ": " + whatIsThere(occ, cores)));
+        }
+        else if (matches.size() > 1) {
+            findings.add(new Finding(4, occ.id() + "#duplicate-observation", matches.size() + " cost observations match one occurrence"));
+        }
+        else {
+            Json c = matches.get(0).observation();
+            if (!Json.sameValue(occ.payload(), c.member("total_cost"))) {
+                findings.add(new Finding(4, occ.id() + "#value:total_cost", "total_cost " + (c.member("total_cost") == null ? "absent" : c.member("total_cost").scalarText()) + " != native " + o.payload() + " " + occ.payload().scalarText()));
+            }
+            if (o.currency() != null && !o.currency().equals(SourceProfile.text(c, "currency"))) {
+                findings.add(new Finding(4, occ.id() + "#value:currency", "currency " + SourceProfile.text(c, "currency") + " != " + o.currency()));
+            }
+            if (o.quantityKindId() != null && !o.quantityKindId().equals(Event.integer(c.member("quantity_kind_id")))) {
+                findings.add(new Finding(4, occ.id() + "#value:quantity_kind_id", "quantity_kind_id " + Event.integer(c.member("quantity_kind_id")) + " != " + o.quantityKindId()));
+            }
+            if (!Objects.equals(Event.integer(c.member("aggregation_id")), o.aggregationId())) {
+                findings.add(new Finding(4, occ.id() + "#value:aggregation_id", "aggregation_id " + Event.integer(c.member("aggregation_id")) + " != " + o.aggregationId()));
+            }
+            Json data = o.dataMember() == null ? null : c.member("data") == null ? null : c.member("data").member(o.dataMember());
+            if (o.dataMember() != null && (data == null || !Json.sameValue(occ.payload(), data))) {
+                findings.add(new Finding(4, occ.id() + "#value:data", "data." + o.dataMember() + " is not the native " + o.payload() + " value exactly"));
+            }
+            writerBinding(occ, matches.get(0).event(), matches.get(0).event().get("basis"), findings);
+        }
+        boolean expected = facts != null && facts.costs.stream().anyMatch(x -> x.recordIndex() == occ.record() && x.scopeId() == o.scopeId() && Objects.equals(x.model(), occ.model()));
+        if (!expected) {
+            findings.add(new Finding(4, occ.id() + "#not-expected-by-profile", "the oracle's source profile does not expect this cost (owner " + occ.owner() + ")"));
+        }
+    }
+
+    /**
+     * The event must have been written under one of the obligation's named contract rules ({@code journal.rule_uid}), and
+     * the basis text under one of the catalog's writer basis prefixes: a checked relationship between the writer's
+     * identities and the reviewed meaning, never equal revision numbers.
+     */
+    static void writerBinding(Occurrence occ, Event e, Json basis, List<Finding> findings) {
+        Obligation o = occ.obligation();
+        String rule = e.text("journal", "rule_uid");
+        if (rule == null || !o.rules().contains(rule)) {
+            findings.add(new Finding(4, occ.id() + "#rule", "the event was written under rule " + rule + ", not one of the obligation's " + o.rules()));
+        }
+        if (!o.basisPrefixes().isEmpty()) {
+            String text = basis == null ? null : basis.text();
+            if (text == null || o.basisPrefixes().stream().noneMatch(text::startsWith)) {
+                findings.add(new Finding(4, occ.id() + "#basis", "basis " + (text == null ? "absent" : "'" + text.substring(0, Math.min(60, text.length())) + "...'")
+                        + " does not start with one of the bound writer labels " + o.basisPrefixes()));
+            }
+        }
+    }
+
     static List<String> oracleProperties(Obligation o) {
-        List<String> out = new ArrayList<>(List.of("population.usage", "usage.values"));
+        List<String> out = new ArrayList<>(switch (o.kind()) {
+            case "attribute" -> List.of("attribute.values");
+            case "cost" -> List.of("population.cost", "cost.values");
+            default -> List.of("population.usage", "usage.values");
+        });
         if ("session_context".equals(o.destinationClass())) {
             out.addAll(List.of("population.contexts", "context.values"));
         }
@@ -505,23 +699,36 @@ final class CanonicalObligations {
         return (occ.unit() == null ? "" : " for unit " + occ.unit()) + (occ.model() == null ? "" : " for model " + occ.model());
     }
 
-    /** The observations of the destination class at this record, scope, unit and model in one core. */
-    static List<Json> matches(Occurrence occ, List<Event> events) {
+    /** One matched observation with the event that carries it. */
+    record Match(Event event, Json observation) {
+    }
+
+    /** The destination events of the occurrence's record in one core: class, activity, context kind and unit as the obligation states. */
+    static List<Event> destinationEvents(Occurrence occ, List<Event> events) {
         Obligation o = occ.obligation();
-        List<Json> out = new ArrayList<>();
+        List<Event> out = new ArrayList<>();
         for (Event e : events) {
-            if (!Objects.equals(e.recordIndex(), occ.record()) || !o.destinationClass().equals(e.className)
-                    || o.destinationActivity() != null && !o.destinationActivity().equals(e.activityId)
-                    || o.contextKind() != null && !o.contextKind().equals(e.text("context_kind"))
-                    || o.unitMember() != null && !Objects.equals(occ.unit(), e.text(o.unitMember()))) {
-                continue;
+            if (Objects.equals(e.recordIndex(), occ.record()) && o.destinationClass().equals(e.className)
+                    && (o.destinationActivity() == null || o.destinationActivity().equals(e.activityId))
+                    && (o.contextKind() == null || o.contextKind().equals(e.text("context_kind")))
+                    && (o.unitMember() == null || Objects.equals(occ.unit(), e.text(o.unitMember())))) {
+                out.add(e);
             }
+        }
+        return out;
+    }
+
+    /** The usage observations of the destination class at this record, scope, unit and model in one core. */
+    static List<Match> matches(Occurrence occ, List<Event> events) {
+        Obligation o = occ.obligation();
+        List<Match> out = new ArrayList<>();
+        for (Event e : destinationEvents(occ, events)) {
             for (Json u : e.elements("usage_observations")) {
                 Integer scope = Event.integer(u.member("scope_id"));
                 Integer at = Event.integer(u.path("source_ref", "record_index"));
                 if (Objects.equals(scope, o.scopeId()) && (at == null || at == occ.record())
                         && (occ.model() == null || occ.model().equals(SourceProfile.text(u.member("model_ref"), "name")))) {
-                    out.add(u);
+                    out.add(new Match(e, u));
                 }
             }
         }
@@ -533,11 +740,11 @@ final class CanonicalObligations {
      * total and one unidentified response of that run share scope 4 on the result record). One observation is judged
      * whatever its aggregation, so a wrong window stays a value finding, and two of the same window stay a duplicate.
      */
-    static List<Json> sameWindow(List<Json> observations, Integer aggregation) {
+    static List<Match> sameWindow(List<Match> observations, Integer aggregation) {
         if (observations.size() < 2) {
             return observations;
         }
-        List<Json> window = observations.stream().filter(u -> Objects.equals(Event.integer(u.member("aggregation_id")), aggregation)).toList();
+        List<Match> window = observations.stream().filter(m -> Objects.equals(Event.integer(m.observation().member("aggregation_id")), aggregation)).toList();
         return window.isEmpty() ? observations : window;
     }
 
@@ -654,13 +861,19 @@ final class CanonicalObligations {
         Obligation o = occ.obligation();
         String base = inventoryPath(o.payload());
         Map<String, String> members = new LinkedHashMap<>();
-        o.components().forEach((canonical, nativePath) -> {
-            if (occ.payload().path(nativePath.split("\\.")) instanceof Json.JNumber) {
-                members.put(base + "." + nativePath, canonical);
+        switch (o.kind()) {
+            case "attribute" -> members.put(base, o.attribute());
+            case "cost" -> members.put(base, "cost_observations[].total_cost");
+            default -> {
+                o.components().forEach((canonical, nativePath) -> {
+                    if (occ.payload().path(nativePath.split("\\.")) instanceof Json.JNumber) {
+                        members.put(base + "." + nativePath, canonical);
+                    }
+                });
+                if (o.tiers() != null && occ.payload().member(o.tiers()) instanceof Json.JObject t) {
+                    t.members().keySet().forEach(k -> members.put(base + "." + o.tiers() + "." + k, "cache_write_tiers[].token_count"));
+                }
             }
-        });
-        if (o.tiers() != null && occ.payload().member(o.tiers()) instanceof Json.JObject t) {
-            t.members().keySet().forEach(k -> members.put(base + "." + o.tiers() + "." + k, "cache_write_tiers[].token_count"));
         }
         for (Map.Entry<String, String> m : members.entrySet()) {
             String id = o.key() + "|" + o.variant() + ":" + m.getKey();
@@ -674,14 +887,15 @@ final class CanonicalObligations {
                 continue;
             }
             FieldDispositionTest.Entry e = applicable.get(0);
+            String destination = "usage".equals(o.kind()) ? o.destination(m.getValue()) : o.destinationClass() + "." + m.getValue();
             if (!"normalized".equals(e.disposition())) {
                 out.add(new Finding(3, id, "disposition " + e.key() + " is " + e.disposition() + ": a required canonical mapping cannot be retained-only"));
             }
             else if (e.subtree() && !texts(e.raw() == null ? null : e.raw().member("carve_outs")).contains(o.id())) {
                 out.add(new Finding(3, id, "hidden inside the broad disposition " + e.key() + " (" + e.destinations() + "), which names no carve-out for " + o.id()));
             }
-            else if (!e.subtree() && !e.destinations().contains(o.destination(m.getValue()))) {
-                out.add(new Finding(2, id, "disposition " + e.key() + " names " + e.destinations() + ", not the obligation's " + o.destination(m.getValue())));
+            else if (!e.subtree() && !e.destinations().contains(destination)) {
+                out.add(new Finding(2, id, "disposition " + e.key() + " names " + e.destinations() + ", not the obligation's " + destination));
             }
         }
         return out;

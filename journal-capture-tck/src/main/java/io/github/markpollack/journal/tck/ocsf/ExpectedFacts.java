@@ -121,10 +121,38 @@ public final class ExpectedFacts {
         }
     }
 
-    /** @param basis the vendor's stated cost basis when the record reports one (single-model {@code costBasis}), else {@code null} */
-    public record Cost(int recordIndex, Json amount, String currency, int scopeId, String basis) {
+    /**
+     * @param basis the vendor's stated cost basis when the record reports one (single-model {@code costBasis}), else {@code null}
+     * @param model the model the cost is reported for (a per-model cost, carried in the event's {@code cost_observations[]}
+     *        with its {@code model_ref}), or {@code null} for the event's one {@code cost_observation}
+     * @param quantityKindId the quantity kind the observation must state (1 Monetary amount), or {@code null} when the
+     *        profile states none
+     * @param aggregationId the aggregation the observation must state (2 Cumulative snapshot), or {@code null} when none
+     */
+    public record Cost(int recordIndex, Json amount, String currency, int scopeId, String basis, String model, Integer quantityKindId, Integer aggregationId) {
         public Cost(int recordIndex, Json amount, String currency, int scopeId) {
-            this(recordIndex, amount, currency, scopeId, null);
+            this(recordIndex, amount, currency, scopeId, null, null, null, null);
+        }
+
+        public Cost(int recordIndex, Json amount, String currency, int scopeId, String basis) {
+            this(recordIndex, amount, currency, scopeId, basis, null, null, null);
+        }
+
+        /** The key the population check uses: record and model ({@code -} for the event's singular cost); the scope is a value check. */
+        public String key() {
+            return recordIndex + ":" + (model == null ? "-" : model);
+        }
+    }
+
+    /**
+     * One canonical attribute value a native record establishes on one event, read from the record alone: the event of
+     * {@code className} and {@code activityId} that the record produced (one per record and activity for the classes
+     * this is used with) must carry {@code attribute} equal to {@code value}. Used for established facts outside the
+     * usage and cost families: a run's reported duration, a child run's reported status.
+     */
+    public record Attribute(int recordIndex, String className, int activityId, String attribute, Json value) {
+        public String key() {
+            return recordIndex + ":" + className + "/" + activityId + ":" + attribute;
         }
     }
 
@@ -204,6 +232,7 @@ public final class ExpectedFacts {
     public final List<TurnCompleted> completed = new ArrayList<>();
     public final List<TurnStarted> started = new ArrayList<>();
     public final List<Context> contexts = new ArrayList<>();
+    public final List<Attribute> attributes = new ArrayList<>();
     /** The tool call a context names as the spawner of the child run it accounts for, by {@code recordIndex:contextKind}; absent means none. */
     public final Map<String, String> contextToolCalls = new LinkedHashMap<>();
     /** Records this core owns and must retain (owner-scoped for a split core; admission-scoped for a bounded source). */
@@ -243,6 +272,7 @@ public final class ExpectedFacts {
         completed.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.completed::add);
         started.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.started::add);
         contexts.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.contexts::add);
+        attributes.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.attributes::add);
         contextToolCalls.forEach((k, v) -> {
             if (!records.contains(Integer.valueOf(k.substring(0, k.indexOf(':'))))) {
                 f.contextToolCalls.put(k, v);
@@ -287,6 +317,7 @@ public final class ExpectedFacts {
         m.put("turn_completed", completed.size());
         m.put("turn_started", started.size());
         m.put("contexts", contexts.size());
+        m.put("attributes", attributes.size());
         m.put("mcp", mcp.size());
         m.put("tool_errors", toolErrors.size());
         return m;

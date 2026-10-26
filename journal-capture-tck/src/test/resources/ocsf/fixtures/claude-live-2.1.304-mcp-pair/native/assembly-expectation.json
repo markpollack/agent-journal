@@ -3,7 +3,7 @@
  "version": "0.1",
  "written": {
   "at": "2026-10-24",
-  "basis": "from the Claude Code stream-json and session-file record shapes (RFC 6901 pointers into the native records), before the assembled package was judged; independent of the writer's profile, mappers and assembly"
+  "basis": "from the Claude Code stream-json and session-file record shapes (RFC 6901 pointers into the native records), before the assembled package was judged; independent of the writer's profile, mappers and assembly; ACCT-1 (2026-10-26): native stage rules added for the assistant record"
  },
  "profile_id": "claude-code/2.1.304/stdout+session-file",
  "precedence": [
@@ -39,16 +39,26 @@
      "select": {
       "/type": "assistant"
      },
-     "pointer": "/uuid"
+     "pointer": "/uuid",
+     "stage": {
+      "pointer": "/message/stop_reason",
+      "null": "streamed (stop_reason null)",
+      "otherwise": "final (stop_reason reported)"
+     }
     },
     "transcript": {
      "select": {
       "/type": "assistant"
      },
-     "pointer": "/uuid"
+     "pointer": "/uuid",
+     "stage": {
+      "pointer": "/message/stop_reason",
+      "null": "streamed (stop_reason null)",
+      "otherwise": "final (stop_reason reported)"
+     }
     }
    },
-   "basis": "both sources write each assistant record under its uuid"
+   "basis": "both sources write each assistant record under its uuid; the lifecycle stage of each record is read from its own stop_reason (streamed or final), never from the candidate (ACCT-1)"
   },
   {
    "name": "tool request",

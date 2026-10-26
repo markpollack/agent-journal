@@ -3,7 +3,7 @@
  "version": "0.1",
  "written": {
   "at": "2026-10-24",
-  "basis": "from the Copilot CLI 1.0.100 event, OTel and usage-report record shapes (RFC 6901 pointers into the native records), before the assembled package was judged; independent of the writer's profile, mappers and assembly"
+  "basis": "from the Copilot CLI 1.0.100 event, OTel and usage-report record shapes (RFC 6901 pointers into the native records), before the assembled package was judged; independent of the writer's profile, mappers and assembly; ACCT-1 (2026-10-26): native stage rules (the record type) added for the entities without a single declared activity"
  },
  "profile_id": "github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report",
  "precedence": [
@@ -61,37 +61,57 @@
    "class": "session_context",
    "locators": {
     "session": {
-     "pointer": "/id"
+     "pointer": "/id",
+     "stage": {
+      "pointer": "/type"
+     }
     },
     "stdout": {
-     "pointer": "/id"
+     "pointer": "/id",
+     "stage": {
+      "pointer": "/type"
+     }
     }
    },
-   "basis": "a persisted event's own id on both routes"
+   "basis": "a persisted event's own id on both routes; the lifecycle stage of each record is its native record type (ACCT-1), so a repeated type under one identity is ambiguous whatever the candidate labels it"
   },
   {
    "name": "persisted event (prompt)",
    "class": "prompt_turn",
    "locators": {
     "session": {
-     "pointer": "/id"
+     "pointer": "/id",
+     "stage": {
+      "pointer": "/type"
+     }
     },
     "stdout": {
-     "pointer": "/id"
+     "pointer": "/id",
+     "stage": {
+      "pointer": "/type"
+     }
     }
-   }
+   },
+   "basis": "; the lifecycle stage of each record is its native record type (ACCT-1), so a repeated type under one identity is ambiguous whatever the candidate labels it"
   },
   {
    "name": "persisted event (retained)",
    "class": "source_record",
    "locators": {
     "session": {
-     "pointer": "/id"
+     "pointer": "/id",
+     "stage": {
+      "pointer": "/type"
+     }
     },
     "stdout": {
-     "pointer": "/id"
+     "pointer": "/id",
+     "stage": {
+      "pointer": "/type"
+     }
     }
-   }
+   },
+   "basis": "; the lifecycle stage of each record is its native record type (ACCT-1), so a repeated type under one identity is ambiguous whatever the candidate labels it"
   },
   {
    "name": "model call",
@@ -102,20 +122,29 @@
       "select": {
        "/type": "assistant.message"
       },
-      "pointer": "/data/apiCallId"
+      "pointer": "/data/apiCallId",
+      "stage": {
+       "pointer": "/type"
+      }
      },
      {
       "select": {
        "/type": "session.usage_record"
       },
-      "pointer": "/data/usage/apiCallId"
+      "pointer": "/data/usage/apiCallId",
+      "stage": {
+       "pointer": "/type"
+      }
      },
      {
       "select": {
        "/type": "session.usage_checkpoint"
       },
       "each": "/data/promptCacheBreakState",
-      "pointer": "/models/mai-code-1.1-flash/model_call_id"
+      "pointer": "/models/mai-code-1.1-flash/model_call_id",
+      "stage": {
+       "pointer": "/type"
+      }
      }
     ],
     "stdout": [
@@ -123,14 +152,20 @@
       "select": {
        "/type": "assistant.message"
       },
-      "pointer": "/data/apiCallId"
+      "pointer": "/data/apiCallId",
+      "stage": {
+       "pointer": "/type"
+      }
      },
      {
       "select": {
        "/type": "session.usage_checkpoint"
       },
       "each": "/data/promptCacheBreakState",
-      "pointer": "/models/mai-code-1.1-flash/model_call_id"
+      "pointer": "/models/mai-code-1.1-flash/model_call_id",
+      "stage": {
+       "pointer": "/type"
+      }
      }
     ],
     "otel": {
@@ -138,10 +173,13 @@
       "/type": "span",
       "/attributes/gen_ai.operation.name": "chat"
      },
-     "pointer": "/attributes/gen_ai.response.id"
+     "pointer": "/attributes/gen_ai.response.id",
+     "stage": {
+      "pointer": "/attributes/gen_ai.operation.name"
+     }
     }
    },
-   "basis": "the provider call id: apiCallId, the checkpoint's last model_call_id, gen_ai.response.id"
+   "basis": "the provider call id: apiCallId, the checkpoint's last model_call_id, gen_ai.response.id; the lifecycle stage of each record is its native record type (ACCT-1), so a repeated type under one identity is ambiguous whatever the candidate labels it"
   },
   {
    "name": "tool request",

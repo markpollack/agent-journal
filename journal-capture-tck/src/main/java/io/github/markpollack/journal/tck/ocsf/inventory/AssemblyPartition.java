@@ -15,6 +15,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
@@ -26,6 +27,13 @@ import java.util.TreeSet;
  * partition this gives is compared with the file's: every multi-observation entity must be supporting
  * observations of one consolidated event naming exactly them, every other observation a canonical single one, and an
  * ambiguous one flagged as such.
+ *
+ * <p>The lifecycle stage of a native record is read from the record, never from the candidate (ACCT-1, review finding
+ * CDX-R1D-03): an entity's {@code activities} with one value is that stage, and a locator's {@code stage} rule reads it
+ * from the record ({@code {"pointer": "/type"}} names the native discriminator as the stage, {@code {"pointer":
+ * "/message/stop_reason", "null": "streamed", "otherwise": "final"}} maps a member's presence). Where neither is
+ * stated the candidate's activity is used as before, and the check is then reported UNRESOLVED, naming the entity and
+ * role, instead of VERIFIED: a stage the candidate chose cannot prove the candidate's own grouping.
  */
 final class AssemblyPartition {
 
@@ -35,6 +43,8 @@ final class AssemblyPartition {
     private final List<String> unmatched = new ArrayList<>();
     private final Map<String, List<Integer>> groups = new LinkedHashMap<>();
     private final Set<String> ambiguousGroups = new LinkedHashSet<>();
+    /** Entity and role pairs whose records carry no native stage rule, so the candidate's activity stood in. */
+    private final Set<String> candidateStages = new LinkedHashSet<>();
 
     private AssemblyPartition(List<Event> observations) {
         this.observations = observations;
@@ -45,7 +55,12 @@ final class AssemblyPartition {
     }
 
     static void check(OracleReport report, OcsfPackage pkg, Json spec, List<Supplied> accepted) {
-        AssemblyPartition p = new AssemblyPartition(pkg.observations().stream().filter(e -> e.className != null).toList());
+        check(report, pkg.observations().stream().filter(e -> e.className != null).toList(), spec, accepted, AssemblyConsolidation.refsByEntity(pkg));
+    }
+
+    /** The partition over given observations and consolidated references (the seam the package-free controls use). */
+    static void check(OracleReport report, List<Event> observations, Json spec, List<Supplied> accepted, Map<String, Set<String>> consolidatedRefs) {
+        AssemblyPartition p = new AssemblyPartition(observations);
         for (Json entity : spec.member("entities").elements()) {
             for (Supplied s : accepted) {
                 for (Json locator : locators(entity, s.role())) {
@@ -54,7 +69,7 @@ final class AssemblyPartition {
             }
         }
         p.copies(accepted);
-        p.compare(report, AssemblyConsolidation.refsByEntity(pkg));
+        p.compare(report, consolidatedRefs);
     }
 
     private static List<Json> locators(Json entity, String role) {
@@ -74,14 +89,14 @@ final class AssemblyPartition {
         Map<Integer, Integer> keysPerRecord = new LinkedHashMap<>();
         keyed.values().forEach(rs -> rs.forEach(r -> keysPerRecord.merge(r.index(), 1, Integer::sum)));
         for (Map.Entry<String, List<Located>> k : keyed.entrySet()) {
-            Set<Integer> records = new TreeSet<>();
-            k.getValue().forEach(r -> records.add(r.index()));
+            Map<Integer, String> stages = stages(entity, s, locator, k.getValue());
+            Set<Integer> records = new TreeSet<>(stages.keySet());
             List<Integer> members = new ArrayList<>();
             for (int r : records) {
                 members.addAll(observationsOf(entity, s.name(), r, keysPerRecord.get(r) > 1 ? k.getKey() : null));
             }
             String group = RawInventory.text(entity, "name") + "|" + k.getKey();
-            if (records.size() > 1 && repeatsAStage(members)) {
+            if (records.size() > 1 && repeatsAStage(members, stages)) {
                 ambiguousGroups.add(group);
             }
             if (members.isEmpty()) {
@@ -120,16 +135,60 @@ final class AssemblyPartition {
         return value instanceof Json.JArray a && a.elements().stream().anyMatch(v -> carries(v, identity));
     }
 
+    /** The native stage of each located record (by index), noting the entity and role when none is derivable. */
+    private Map<Integer, String> stages(Json entity, Supplied s, Json locator, List<Located> located) {
+        Map<Integer, String> stages = new TreeMap<>();
+        for (Located r : located) {
+            String stage = nativeStage(entity, locator, r.json());
+            if (stage == null) {
+                candidateStages.add(RawInventory.text(entity, "name") + " in " + s.role());
+            }
+            stages.put(r.index(), stage);
+        }
+        return stages;
+    }
+
     /**
-     * Whether two native records of one source report the identity at the same lifecycle stage (the activity of the
-     * observations they produced). Records at different stages (a request and its completion) are one entity's
-     * lifecycle, not a repeated identity.
+     * The lifecycle stage a native record reports under the entity's expectation: the entity's single declared activity,
+     * else the locator's {@code stage} rule applied to the record; {@code null} when the expectation states neither.
      */
-    private boolean repeatsAStage(List<Integer> members) {
-        Map<Integer, Set<Integer>> recordsByStage = new LinkedHashMap<>();
+    static String nativeStage(Json entity, Json locator, Json record) {
+        List<Integer> activities = AssemblyOracle.integers(entity.member("activities"));
+        Json rule = locator.member("stage");
+        if (rule == null) {
+            return activities.size() == 1 ? "activity " + activities.get(0) : null;
+        }
+        return rule instanceof Json.JString s ? s.value() : stageByRule(rule, record);
+    }
+
+    /** A stage rule over the record: the value at {@code pointer}, mapped through {@code values} or through {@code null}/{@code otherwise}. */
+    private static String stageByRule(Json rule, Json record) {
+        String pointer = RawInventory.text(rule, "pointer");
+        Json at = pointer == null ? null : SourceLocator.pointer(record, pointer);
+        boolean absent = at == null || at.isNull();
+        if (rule.member("values") instanceof Json.JObject values) {
+            Json mapped = at instanceof Json.JString v ? values.get(v.value()) : null;
+            return mapped == null ? "unmapped " + (absent ? "absent" : at.scalarText()) : mapped.text();
+        }
+        if (rule.member("null") != null || rule.member("otherwise") != null) {
+            Json chosen = absent ? rule.member("null") : rule.member("otherwise");
+            return chosen == null ? null : chosen.text();
+        }
+        return absent ? "absent" : at.scalarText();
+    }
+
+    /**
+     * Whether two native records of one source report the identity at the same lifecycle stage. The stage is the native
+     * one where the expectation derives it; otherwise the activity of the observations the record produced (the
+     * candidate's choice, reported as such). Records at different stages (a request and its completion) are one
+     * entity's lifecycle, not a repeated identity.
+     */
+    private boolean repeatsAStage(List<Integer> members, Map<Integer, String> stages) {
+        Map<String, Set<Integer>> recordsByStage = new LinkedHashMap<>();
         for (int i : members) {
             Event e = observations.get(i);
-            recordsByStage.computeIfAbsent(e.activityId, a -> new TreeSet<>()).add(e.recordIndex());
+            String stage = stages.get(e.recordIndex());
+            recordsByStage.computeIfAbsent(stage != null ? stage : "candidate activity " + e.activityId, a -> new TreeSet<>()).add(e.recordIndex());
         }
         return recordsByStage.values().stream().anyMatch(r -> r.size() > 1);
     }
@@ -189,9 +248,16 @@ final class AssemblyPartition {
             multi += group.size() > 1 ? 1 : 0;
             problems.addAll(judge(group, consolidatedRefs));
         }
-        String detail = byRoot.size() + " entities from the native identities, " + multi + " observed by more than one occurrence, " + ambiguous.size()
-                + " ambiguous observation(s)" + (unmatched.isEmpty() ? "" : "; native identities with no observation of their class: " + unmatched);
-        report.add(Category.NORMALIZATION, "assembly.entities", AssemblyOracle.OWNER, problems.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
+        verdict(report, byRoot.size(), multi, problems);
+    }
+
+    /** The one check: DEFECTIVE on any problem, VERIFIED with native stages throughout, UNRESOLVED where a candidate stage stood in. */
+    private void verdict(OracleReport report, int entities, int multi, List<String> problems) {
+        String detail = entities + " entities from the native identities, " + multi + " observed by more than one occurrence, " + ambiguous.size()
+                + " ambiguous observation(s)" + (unmatched.isEmpty() ? "" : "; native identities with no observation of their class: " + unmatched)
+                + (candidateStages.isEmpty() ? "; lifecycle stages read from the native records" : "; lifecycle stage taken from the candidate (no native stage rule) for " + candidateStages);
+        Outcome outcome = !problems.isEmpty() ? Outcome.DEFECTIVE : candidateStages.isEmpty() ? Outcome.VERIFIED : Outcome.UNRESOLVED;
+        report.add(Category.NORMALIZATION, "assembly.entities", AssemblyOracle.OWNER, outcome,
                 problems.isEmpty() ? detail : String.join("; ", problems.subList(0, Math.min(12, problems.size()))) + (problems.size() > 12 ? "; ... " + problems.size() + " in all" : ""));
     }
 

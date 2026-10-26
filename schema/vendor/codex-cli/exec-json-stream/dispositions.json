@@ -1,7 +1,7 @@
 {
  "kind": "agent-journal/field-dispositions",
  "version": "0.1",
- "reviewed": "2026-10-21 (ACCEPT-1)",
+ "reviewed": "2026-10-21 (ACCEPT-1); 2026-10-26 (ACCT-1): every exercised retained entry carries a reviewed classification",
  "profile": "codex_stream",
  "compatibility_entries": [
   "codex-cli/exec-json-stream/0.160.1"
@@ -54,7 +54,9 @@
    "tests": [
     "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
    ],
-   "note": "subtree default for item members not named below: whole record in data (and the whole item in tool_operation.data / content block data)"
+   "note": "subtree default for item members not named below: whole record in data (and the whole item in tool_operation.data / content block data)",
+   "classification": "structural",
+   "classification_note": "subtree default container"
   },
   {
    "variant": "*",
@@ -291,7 +293,9 @@
    "tests": [
     "CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted"
    ],
-   "note": "subtree default: the usage object is kept whole in the record and in usage_observation.data; the five components below are normalized"
+   "note": "subtree default: the usage object is kept whole in the record and in usage_observation.data; the five components below are normalized",
+   "classification": "structural",
+   "classification_note": "container; its five components are normalized"
   },
   {
    "variant": "turn.completed",
@@ -396,7 +400,9 @@
    "tests": [
     "CodexExecStreamTest#anAgentMessageTextChangedOrAnUnknownRecordDroppedIsDetected"
    ],
-   "note": "LABELLED SYNTHETIC unknown top-level event of the fixture: retained whole under the fallback rule; stands for any event type the contract does not know"
+   "note": "LABELLED SYNTHETIC unknown top-level event of the fixture: retained whole under the fallback rule; stands for any event type the contract does not know",
+   "classification": "structural",
+   "classification_note": "labelled synthetic unknown event retained whole"
   },
   {
    "variant": "turn.failed",
@@ -411,7 +417,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): structured turn error message (with additional details appended in parentheses), else the last critical error, else 'turn failed'; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "common_capacity_gap",
+   "classification_note": "as error"
   },
   {
    "variant": "error",
@@ -426,7 +434,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): error message with additional details appended; also emitted when an event cannot be serialized; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "common_capacity_gap",
+   "classification_note": "a stream-level error message: the run's failure has status capacity on prompt_turn but no message attribute"
   },
   {
    "variant": "item.completed/reasoning",
@@ -493,7 +503,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): changed file path; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "common_capacity_gap",
+   "classification_note": "as kind"
   },
   {
    "variant": "item.completed/file_change",
@@ -508,7 +520,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): change kind; the patch contents are not emitted; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "common_capacity_gap",
+   "classification_note": "file-change list (kind, path): a tool operation on files with no canonical file-change attribute"
   },
   {
    "variant": "item.completed/file_change",
@@ -558,7 +572,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): changed file path; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "common_capacity_gap",
+   "classification_note": "as kind"
   },
   {
    "variant": "item.started/file_change",
@@ -573,7 +589,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): change kind; the patch contents are not emitted; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "common_capacity_gap",
+   "classification_note": "file-change list (kind, path): a tool operation on files with no canonical file-change attribute"
   },
   {
    "variant": "item.started/file_change",
@@ -771,7 +789,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): MCP server name; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "redundant",
+   "classification_note": "the start carries the normalized namespace; checked as arguments"
   },
   {
    "variant": "item.completed/mcp_tool_call",
@@ -786,7 +806,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): MCP tool name; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "redundant",
+   "classification_note": "the start carries the normalized name; checked as arguments"
   },
   {
    "variant": "item.completed/mcp_tool_call",
@@ -802,7 +824,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): structured tool arguments (null when none); retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "redundant",
+   "classification_note": "the start carries the normalized arguments; checked by CrossCliAccountingTest#redundantRepresentationsAreCheckedAgainstTheirOriginals"
   },
   {
    "variant": "item.completed/mcp_tool_call",
@@ -836,7 +860,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): MCP result metadata; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual",
+   "classification_note": "MCP protocol _meta of the result; preserved in data"
   },
   {
    "variant": "item.completed/mcp_tool_call",
@@ -869,7 +895,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): failure message; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "candidate",
+   "classification_note": "the MCP call's error message: tool_result.errors has capacity; the status is normalized, the message is not yet"
   },
   {
    "variant": "item.completed/mcp_tool_call",
@@ -937,7 +965,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): thread that invoked the operation; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "candidate",
+   "classification_note": "as receiver_thread_ids"
   },
   {
    "variant": "item.started/collab_tool_call",
@@ -952,7 +982,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): threads the operation targets (spawned agents once known); retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "candidate",
+   "classification_note": "child thread identities: a child-run identity with session capacity; no obligation stated"
   },
   {
    "variant": "item.started/collab_tool_call",
@@ -967,7 +999,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): prompt sent to the agent; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "candidate",
+   "classification_note": "the prompt sent to the collaborating agents: content with capacity; no obligation stated"
   },
   {
    "variant": "item.started/collab_tool_call",
@@ -983,7 +1017,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): last known state per receiver thread id: {status, message}; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "common_capacity_gap",
+   "classification_note": "per-thread child agent states keyed by thread id: child-run status map with no canonical capacity"
   },
   {
    "variant": "item.started/collab_tool_call",
@@ -1032,7 +1068,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): collaboration operation; send_message, followup_task, interrupt_agent and list_agents are suppressed and resume_agent is reported as wait; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "redundant",
+   "classification_note": "the start carries the normalized tool name; checked by CrossCliAccountingTest#redundantRepresentationsAreCheckedAgainstTheirOriginals"
   },
   {
    "variant": "item.completed/collab_tool_call",
@@ -1047,7 +1085,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): thread that invoked the operation; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "candidate",
+   "classification_note": "as receiver_thread_ids"
   },
   {
    "variant": "item.completed/collab_tool_call",
@@ -1062,7 +1102,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): threads the operation targets (spawned agents once known); retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "candidate",
+   "classification_note": "child thread identities: a child-run identity with session capacity; no obligation stated"
   },
   {
    "variant": "item.completed/collab_tool_call",
@@ -1077,7 +1119,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): prompt sent to the agent; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "candidate",
+   "classification_note": "the prompt sent to the collaborating agents: content with capacity; no obligation stated"
   },
   {
    "variant": "item.completed/collab_tool_call",
@@ -1093,7 +1137,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): last known state per receiver thread id: {status, message}; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "common_capacity_gap",
+   "classification_note": "per-thread child agent states keyed by thread id: child-run status map with no canonical capacity"
   },
   {
    "variant": "item.completed/collab_tool_call",
@@ -1256,7 +1302,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual",
+   "classification_note": "identity of a plan item; no event is written for a plan"
   },
   {
    "variant": "item.started/todo_list",
@@ -1271,7 +1319,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): step text; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "candidate",
+   "classification_note": "the agent's plan text: content with capacity; no obligation stated"
   },
   {
    "variant": "item.started/todo_list",
@@ -1286,7 +1336,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): whether the step is completed; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "candidate",
+   "classification_note": "as text"
   },
   {
    "variant": "item.updated/todo_list",
@@ -1301,7 +1353,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual",
+   "classification_note": "identity of a plan item; no event is written for a plan"
   },
   {
    "variant": "item.updated/todo_list",
@@ -1316,7 +1370,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): step text; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "candidate",
+   "classification_note": "the agent's plan text: content with capacity; no obligation stated"
   },
   {
    "variant": "item.updated/todo_list",
@@ -1331,7 +1387,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): whether the step is completed; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "candidate",
+   "classification_note": "as text"
   },
   {
    "variant": "item.completed/todo_list",
@@ -1346,7 +1404,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual",
+   "classification_note": "identity of a plan item; no event is written for a plan"
   },
   {
    "variant": "item.completed/todo_list",
@@ -1361,7 +1421,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): step text; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "candidate",
+   "classification_note": "the agent's plan text: content with capacity; no obligation stated"
   },
   {
    "variant": "item.completed/todo_list",
@@ -1376,7 +1438,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): whether the step is completed; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "candidate",
+   "classification_note": "as text"
   },
   {
    "variant": "item.completed/error",
@@ -1391,7 +1455,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): stream-local item id 'item_N' assigned by the exec processor; start, updates and completion of one item share it; it is not the model-facing call id or the app-server item id; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual",
+   "classification_note": "identity of an error item"
   },
   {
    "variant": "item.completed/error",
@@ -1406,7 +1472,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs): the non-fatal message (a reroute names both models in this text); retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "common_capacity_gap",
+   "classification_note": "an error item's message: no canonical message attribute outside tool_result.errors"
   },
   {
    "variant": "turn.failed",
@@ -1421,7 +1489,9 @@
     "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
    ],
    "note": "vendor-declared (Codex 0.160.1 exec_events.rs TurnFailedEvent): the turn's error object; retained whole by codex.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "common_capacity_gap",
+   "classification_note": "the turn failure's error object: status capacity only"
   }
  ],
  "vendor_inventory": "0.160.1-vendor-inventory.json"

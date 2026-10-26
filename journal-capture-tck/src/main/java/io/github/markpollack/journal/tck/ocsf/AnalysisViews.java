@@ -24,6 +24,7 @@ public final class AnalysisViews {
     static final Map<String, String> METHOD = Map.of("0", "Unknown", "1", "Reported identifier", "2", "Derived by rule");
     static final Map<String, String> STATUS = Map.of("0", "Unknown", "1", "Provisional", "2", "Final");
     static final Map<String, String> AGGREGATION = Map.of("0", "Unknown", "1", "Scope total", "2", "Cumulative snapshot", "3", "Single response");
+    static final Map<String, String> MEASUREMENT = Map.of("0", "Unknown", "1", "Measured", "2", "Possibly default", "3", "Conditional", "4", "Lower bound");
     static final List<String> COMPONENTS = List.of("uncached_input_tokens", "output_tokens", "cache_read_tokens", "cache_write_tokens",
             "reasoning_tokens", "reported_total_tokens");
 
@@ -464,6 +465,9 @@ public final class AnalysisViews {
                 obs.put("event_sequence", num(e.sequence));
                 String status = scalar(u.member("usage_status_id"));
                 obs.put("status", str(STATUS.getOrDefault(status, status)));
+                // the uncertainty of the quantity reaches the consumer: a Possibly default observation is not a measured zero
+                String measurement = scalar(u.member("measurement_status_id"));
+                obs.put("measurement_status", measurement == null ? str("Measured (no status stated)") : str(MEASUREMENT.getOrDefault(measurement, measurement)));
                 Map<String, Json> comps = new LinkedHashMap<>();
                 for (String c : COMPONENTS) {
                     if (u.member(c) != null) {
@@ -481,8 +485,12 @@ public final class AnalysisViews {
             List<Json> finals = new ArrayList<>();
             int provisional = 0;
             int unknown = 0;
+            int uncertain = 0;
             for (Map<String, Json> o : obs) {
                 String s = o.get("status").text();
+                if (!o.get("measurement_status").text().startsWith("Measured")) {
+                    uncertain++;
+                }
                 if ("Final".equals(s)) {
                     finals.add(o.get("components"));
                 }
@@ -500,6 +508,7 @@ public final class AnalysisViews {
             row.put("repeated_final_observations", num(equal ? Math.max(0, finals.size() - 1) : 0));
             row.put("provisional_observations", num(provisional));
             row.put("unknown_observations", num(unknown));
+            row.put("uncertain_observations", num(uncertain));
             row.put("conflict", new Json.JBool(conflict));
             row.put("comparability", str(comparison));
             row.put("applicable_final", equal ? finals.get(0) : Json.JNull.INSTANCE);
@@ -855,6 +864,7 @@ public final class AnalysisViews {
             }
             row.put("usage_observations", num(e.elements("usage_observations").size()));
             row.put("cost_reported", new Json.JBool(e.get("cost_observation") != null));
+            row.put("cost_observations", num(e.elements("cost_observations").size()));
             if (e.activityId != null && e.activityId == 1) {
                 settings++;
             }

@@ -140,7 +140,7 @@ No `tool_call` event with activity 1 exists for record 4 (as expected): the stre
 | `population.results` | VERIFIED | 2 expected, 2 observed |
 | `result.owner` | VERIFIED | 2 result(s) owned by the id of their own record |
 
-Whole report: 0 defects among 56 checks.
+Whole report: 0 defects among 57 checks.
 
 ## 7. Misleading interpretations and what catches them
 

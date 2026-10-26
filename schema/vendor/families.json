@@ -1,0 +1,806 @@
+{
+ "kind": "agent-journal/occurrence-families",
+ "version": "0.1",
+ "reviewed": "2026-10-26 (ACCT-1)",
+ "meaning": "ordered first-match rules per source profile over variant:path (Java regex, whole match) that assign each native occurrence to one execution family for the cross-CLI matrix; an occurrence no rule names is unassigned and reported as a gap of this table. A family is a reporting column, never a semantic classification: the disposition catalog decides what an occurrence is, this table only decides where it is counted",
+ "families": [
+  "content",
+  "identities",
+  "tools",
+  "failures",
+  "permissions",
+  "children",
+  "mcp",
+  "usage",
+  "economics",
+  "provenance",
+  "other"
+ ],
+ "family_meaning": {
+  "content": "prompts, model text and reasoning, injected context, final answers and lifecycle members of a response",
+  "identities": "response, call, turn, thread and session identifiers and the owner routing of a record",
+  "tools": "tool requests, arguments, operations, results and their reported states",
+  "failures": "errors, outcome statuses and failure reasons of runs, calls and model requests",
+  "permissions": "permission modes, decisions, denials and their attribution",
+  "children": "sub-agent and task lifecycle, child-run identity, counters and handbacks",
+  "mcp": "MCP registration, server status, dispatcher and target identity and protocol metadata",
+  "usage": "token usage, context windows and per-model usage figures",
+  "economics": "monetary cost, billing quantities, credits, rate limits and quota",
+  "provenance": "record identity, time, versions, settings, environment and request metadata",
+  "other": "vendor members outside the ten families (durations, latencies, counters, mode flags, display hints, envelope containers)"
+ },
+ "profiles": {
+  "claude_stream": [
+   {
+    "match": "\\(opaque:.*",
+    "family": "other"
+   },
+   {
+    "match": "obligation:claude\\.stream\\.usage\\..*",
+    "family": "usage"
+   },
+   {
+    "match": "obligation:claude\\.stream\\.cost\\..*",
+    "family": "economics"
+   },
+   {
+    "match": "obligation:claude\\.stream\\.child-run\\..*",
+    "family": "children"
+   },
+   {
+    "match": "obligation:claude\\.stream\\..*",
+    "family": "other"
+   },
+   {
+    "match": "[^:]+:(type|subtype|uuid|session_id|timestamp)",
+    "family": "provenance"
+   },
+   {
+    "match": "[^:]+:parent_tool_use_id",
+    "family": "identities"
+   },
+   {
+    "match": "[^:]+:(agent_id|subagent_type|task_description)",
+    "family": "children"
+   },
+   {
+    "match": "assistant:request_id",
+    "family": "identities"
+   },
+   {
+    "match": "assistant:message\\.(id|model)",
+    "family": "identities"
+   },
+   {
+    "match": "assistant:message\\.content\\[\\]\\.(id|name|input|caller.*)",
+    "family": "tools"
+   },
+   {
+    "match": "assistant:message\\.usage.*",
+    "family": "usage"
+   },
+   {
+    "match": "assistant:message\\.(stop_reason|stop_details|stop_sequence)",
+    "family": "content"
+   },
+   {
+    "match": "assistant:message(\\.content.*)?",
+    "family": "content"
+   },
+   {
+    "match": "assistant:message\\..*",
+    "family": "other"
+   },
+   {
+    "match": "assistant:(thinking_display|thinking_duration_ms)",
+    "family": "other"
+   },
+   {
+    "match": "assistant:tool_use_meta.*",
+    "family": "mcp"
+   },
+   {
+    "match": "assistant:wire_tool_inputs.*",
+    "family": "tools"
+   },
+   {
+    "match": "user:message.*",
+    "family": "content"
+   },
+   {
+    "match": "user/tool_result:message\\.content\\[\\]\\.is_error",
+    "family": "failures"
+   },
+   {
+    "match": "user/tool_result:tool_result_meta.*",
+    "family": "permissions"
+   },
+   {
+    "match": "user/tool_result:tool_use_result\\.\\{\\*\\}.*",
+    "family": "tools"
+   },
+   {
+    "match": "user/tool_result:.*",
+    "family": "tools"
+   },
+   {
+    "match": "result:(is_error|subtype|stop_reason|api_error_status|terminal_reason|safety_stops)",
+    "family": "failures"
+   },
+   {
+    "match": "result:(total_cost_usd|usage\\.fallback_credit)",
+    "family": "economics"
+   },
+   {
+    "match": "result:modelUsage\\.\\{\\*\\}\\.(costUSD|costBasis)",
+    "family": "economics"
+   },
+   {
+    "match": "result:(usage|modelUsage).*",
+    "family": "usage"
+   },
+   {
+    "match": "result:permission_denials.*",
+    "family": "permissions"
+   },
+   {
+    "match": "result:subagent_stats.*",
+    "family": "children"
+   },
+   {
+    "match": "result:result",
+    "family": "content"
+   },
+   {
+    "match": "result:.*",
+    "family": "other"
+   },
+   {
+    "match": "system/init:permissionMode",
+    "family": "permissions"
+   },
+   {
+    "match": "system/init:mcp_servers.*",
+    "family": "mcp"
+   },
+   {
+    "match": "system/init:(agents|skills|plugins|slash_commands|terminal_slash_commands|capabilities|output_style|view_mode|fast_mode_state|fast_mode_disabled_reason|per_turn_effort_active|analytics_disabled|product_feedback_disabled)(\\[\\])?",
+    "family": "other"
+   },
+   {
+    "match": "system/init:.*",
+    "family": "provenance"
+   },
+   {
+    "match": "system/thinking_tokens:.*",
+    "family": "usage"
+   },
+   {
+    "match": "rate_limit_event:.*",
+    "family": "economics"
+   },
+   {
+    "match": "system/permission_denied:.*",
+    "family": "permissions"
+   },
+   {
+    "match": "system/task_(started|progress|notification|updated):usage\\.total_tokens",
+    "family": "usage"
+   },
+   {
+    "match": "system/task_(started|progress|notification|updated):.*",
+    "family": "children"
+   }
+  ],
+  "codex_stream": [
+   {
+    "match": "\\(opaque:.*",
+    "family": "other"
+   },
+   {
+    "match": "[^:]+:type",
+    "family": "provenance"
+   },
+   {
+    "match": "[^:]+:item\\.(id|type)",
+    "family": "identities"
+   },
+   {
+    "match": "thread\\.started:.*",
+    "family": "identities"
+   },
+   {
+    "match": "turn\\.(started|completed):type",
+    "family": "provenance"
+   },
+   {
+    "match": "turn\\.completed:usage.*",
+    "family": "usage"
+   },
+   {
+    "match": "turn\\.failed:.*",
+    "family": "failures"
+   },
+   {
+    "match": "error:.*",
+    "family": "failures"
+   },
+   {
+    "match": "item\\.[a-z]+/error:.*",
+    "family": "failures"
+   },
+   {
+    "match": "item\\.[a-z]+/(agent_message|reasoning):.*",
+    "family": "content"
+   },
+   {
+    "match": "item\\.[a-z]+/mcp_tool_call:item\\.error.*",
+    "family": "failures"
+   },
+   {
+    "match": "item\\.[a-z]+/mcp_tool_call:.*",
+    "family": "mcp"
+   },
+   {
+    "match": "item\\.[a-z]+/collab_tool_call:item\\.(agents_states.*|receiver_thread_ids.*|sender_thread_id|prompt)",
+    "family": "children"
+   },
+   {
+    "match": "item\\.[a-z]+/(command_execution|file_change|todo_list|web_search|collab_tool_call):.*",
+    "family": "tools"
+   },
+   {
+    "match": "item\\.[a-z]+/synthetic_unknown_item:.*",
+    "family": "other"
+   },
+   {
+    "match": "synthetic\\..*",
+    "family": "other"
+   }
+  ],
+  "agy_stream": [
+   {
+    "match": "\\(opaque:.*",
+    "family": "other"
+   },
+   {
+    "match": "[^:]+:event",
+    "family": "provenance"
+   },
+   {
+    "match": "[^:]+:(step_update|init|result)",
+    "family": "other"
+   },
+   {
+    "match": "[^:]+:(step_update|result)\\.conversation_id",
+    "family": "identities"
+   },
+   {
+    "match": "[^:]+:step_update\\.(step_type|state)",
+    "family": "provenance"
+   },
+   {
+    "match": "[^:]+:step_update\\.step_index",
+    "family": "identities"
+   },
+   {
+    "match": "[^:]+:step_update\\.duration_seconds",
+    "family": "other"
+   },
+   {
+    "match": "init:init\\.permission_mode",
+    "family": "permissions"
+   },
+   {
+    "match": "init:init\\.tools(\\[\\])?",
+    "family": "tools"
+   },
+   {
+    "match": "init:.*",
+    "family": "provenance"
+   },
+   {
+    "match": "step_update/user_input/[A-Z]+:.*",
+    "family": "content"
+   },
+   {
+    "match": "step_update/agent_response/[A-Z]+:step_update\\.usage.*",
+    "family": "usage"
+   },
+   {
+    "match": "step_update/agent_response/[A-Z]+:.*",
+    "family": "content"
+   },
+   {
+    "match": "step_update/tool/[A-Z]+:step_update\\.tool_info\\.error.*",
+    "family": "failures"
+   },
+   {
+    "match": "step_update/tool/[A-Z]+:.*",
+    "family": "tools"
+   },
+   {
+    "match": "step_update/subagent/[A-Z]+:.*",
+    "family": "children"
+   },
+   {
+    "match": "step_update/system_message/[A-Z]+:.*",
+    "family": "other"
+   },
+   {
+    "match": "step_update/checkpoint/[A-Z]+:step_update\\.usage.*",
+    "family": "usage"
+   },
+   {
+    "match": "step_update/checkpoint/[A-Z]+:.*",
+    "family": "other"
+   },
+   {
+    "match": "result:result\\.(status|error)",
+    "family": "failures"
+   },
+   {
+    "match": "result:result\\.denied_actions.*",
+    "family": "permissions"
+   },
+   {
+    "match": "result:result\\.usage.*",
+    "family": "usage"
+   },
+   {
+    "match": "result:result\\.response",
+    "family": "content"
+   },
+   {
+    "match": "result:result\\.(duration_seconds|num_turns)",
+    "family": "other"
+   },
+   {
+    "match": "result:.*",
+    "family": "other"
+   }
+  ],
+  "claude_transcript": [
+   {
+    "match": "\\(opaque:.*",
+    "family": "other"
+   },
+   {
+    "match": "[^:]+:(type|uuid|parentUuid|sessionId|timestamp|version|userType|isSidechain|gitBranch|entrypoint|cwd|promptId|turnOrigin|turnPosition.*|requestRef|requestId)",
+    "family": "provenance"
+   },
+   {
+    "match": "assistant:message\\.(id|model)",
+    "family": "identities"
+   },
+   {
+    "match": "assistant:message\\.content\\[\\]\\.(id|name|input|caller.*)",
+    "family": "tools"
+   },
+   {
+    "match": "assistant:message\\.usage.*",
+    "family": "usage"
+   },
+   {
+    "match": "assistant:message\\.(stop_reason|stop_details|stop_sequence)",
+    "family": "content"
+   },
+   {
+    "match": "assistant:message(\\.content.*)?",
+    "family": "content"
+   },
+   {
+    "match": "assistant:message\\..*",
+    "family": "other"
+   },
+   {
+    "match": "assistant:(attributionMcpServer|attributionMcpTool)",
+    "family": "mcp"
+   },
+   {
+    "match": "assistant:wireToolInputs.*",
+    "family": "tools"
+   },
+   {
+    "match": "assistant:(requestedModel|advisorModel)",
+    "family": "identities"
+   },
+   {
+    "match": "assistant:.*",
+    "family": "other"
+   },
+   {
+    "match": "user/prompt:.*",
+    "family": "content"
+   },
+   {
+    "match": "user/tool_result:message\\.content\\[\\]\\.is_error",
+    "family": "failures"
+   },
+   {
+    "match": "user/tool_result:mcpMeta.*",
+    "family": "mcp"
+   },
+   {
+    "match": "user/tool_result:.*",
+    "family": "tools"
+   },
+   {
+    "match": "cost-state:modelUsage\\.\\{\\*\\}\\.(costUSD|costBasis)",
+    "family": "economics"
+   },
+   {
+    "match": "cost-state:totalCostUSD",
+    "family": "economics"
+   },
+   {
+    "match": "cost-state:modelUsage.*",
+    "family": "usage"
+   },
+   {
+    "match": "cost-state:.*",
+    "family": "other"
+   },
+   {
+    "match": "attachment/total_tokens_reminder:.*",
+    "family": "usage"
+   },
+   {
+    "match": "attachment/[a-z_]+:.*",
+    "family": "content"
+   },
+   {
+    "match": "api-request.*:.*",
+    "family": "provenance"
+   },
+   {
+    "match": "(atis-latch|last-prompt|queue-operation):.*",
+    "family": "other"
+   }
+  ],
+  "codex_rollout": [
+   {
+    "match": "\\(opaque:.*",
+    "family": "other"
+   },
+   {
+    "match": "[^:]+:(type|timestamp|ordinal|payload|payload\\.type|payload\\.timestamp)",
+    "family": "provenance"
+   },
+   {
+    "match": "[^:]+:payload\\.(thread_id|turn_id|root_turn_id|id|call_id|session_id|response_id|internal_chat_message_metadata_passthrough.*)",
+    "family": "identities"
+   },
+   {
+    "match": "(session_meta|turn_context):.*",
+    "family": "provenance"
+   },
+   {
+    "match": "token_usage_record:.*",
+    "family": "usage"
+   },
+   {
+    "match": "event_msg/token_count:payload\\.rate_limits.*",
+    "family": "economics"
+   },
+   {
+    "match": "event_msg/token_count:.*",
+    "family": "usage"
+   },
+   {
+    "match": "event_msg/item_completed/CommandExecution:.*",
+    "family": "tools"
+   },
+   {
+    "match": "event_msg/item_completed/.*",
+    "family": "content"
+   },
+   {
+    "match": "event_msg/task_complete:payload\\.duration_ms",
+    "family": "other"
+   },
+   {
+    "match": "event_msg/task_(started|complete):.*",
+    "family": "provenance"
+   },
+   {
+    "match": "response_item/custom_tool_call.*:.*",
+    "family": "tools"
+   },
+   {
+    "match": "response_item/message/.*",
+    "family": "content"
+   },
+   {
+    "match": "(world_state|synthetic_record_type):.*",
+    "family": "other"
+   }
+  ],
+  "copilot_events": [
+   {
+    "match": "\\(opaque:.*",
+    "family": "other"
+   },
+   {
+    "match": "[^:]+:(id|parentId|timestamp|type|ephemeral|data|sessionId)",
+    "family": "provenance"
+   },
+   {
+    "match": "[^:]+:data\\.(turnId|interactionId|messageId|apiCallId|originatingMessageId|toolCallId|model|providerId)",
+    "family": "identities"
+   },
+   {
+    "match": "[^:]+:data\\.toolRequests\\[\\]\\.(mcpServerName|mcpToolName)",
+    "family": "mcp"
+   },
+   {
+    "match": "[^:]+:data\\.toolRequests.*",
+    "family": "tools"
+   },
+   {
+    "match": "session\\.mcp_.*:.*",
+    "family": "mcp"
+   },
+   {
+    "match": "tool\\.[a-z_]+:data\\.error.*",
+    "family": "failures"
+   },
+   {
+    "match": "tool\\.[a-z_]+:.*",
+    "family": "tools"
+   },
+   {
+    "match": "[^:]+:.*(PremiumRequest|premiumRequest|NanoAiu|nanoAiu|[Cc]ost|[Mm]ultiplier|[Cc]redit).*",
+    "family": "economics"
+   },
+   {
+    "match": "[^:]+:.*(DurationMs|durationMs|Duration|codeChanges).*",
+    "family": "other"
+   },
+   {
+    "match": "[^:]+:.*(toolTelemetry|toolCounts).*",
+    "family": "tools"
+   },
+   {
+    "match": "[^:]+:.*(accountingSnapshot|usage|tokenDetails|modelMetrics|agentMetrics|providerModelMetrics|promptCacheBreakState|[Tt]okens|usageAccountingWatermarks|modelCacheState|contextTier|context).*",
+    "family": "usage"
+   },
+   {
+    "match": "assistant\\.message[a-z_]*:data\\.(content|deltaContent|phase|transformedContent)",
+    "family": "content"
+   },
+   {
+    "match": "assistant\\.message[a-z_]*:data\\.(rte|serverTools.*)",
+    "family": "other"
+   },
+   {
+    "match": "assistant\\.tool_call_delta:.*",
+    "family": "tools"
+   },
+   {
+    "match": "assistant\\.(turn_start|turn_end|idle):.*",
+    "family": "provenance"
+   },
+   {
+    "match": "model\\.call_finished:data\\.outcome",
+    "family": "failures"
+   },
+   {
+    "match": "model\\.[a-z_]+:.*",
+    "family": "other"
+   },
+   {
+    "match": "(user|system)\\.message:.*",
+    "family": "content"
+   },
+   {
+    "match": "result:(exitCode|data\\.success)",
+    "family": "failures"
+   },
+   {
+    "match": "result:.*",
+    "family": "other"
+   },
+   {
+    "match": "session\\.[a-z_]+:.*",
+    "family": "provenance"
+   }
+  ],
+  "copilot_otel": [
+   {
+    "match": "\\(opaque:.*",
+    "family": "other"
+   },
+   {
+    "match": "[^:]+:(startTime|endTime)(\\[\\])?",
+    "family": "provenance"
+   },
+   {
+    "match": "[^:]+:(resource.*|instrumentationScope.*|type|name|traceId|spanId|parentSpanId|startTime|endTime|kind|unit|description|dataPoints|dataPoints\\[\\]|dataPoints\\[\\]\\.(startTime|endTime|attributes))",
+    "family": "provenance"
+   },
+   {
+    "match": "[^:]+:(status.*|attributes\\.error.*)",
+    "family": "failures"
+   },
+   {
+    "match": "[^:]+:attributes\\.gen_ai\\.(request|response)\\.model.*",
+    "family": "identities"
+   },
+   {
+    "match": "[^:]+:attributes\\.gen_ai\\.(response\\.id|conversation\\.id|agent\\..*)",
+    "family": "identities"
+   },
+   {
+    "match": "[^:]+:attributes\\.github\\.copilot\\.(cost|multiplier|nano_aiu|premium).*",
+    "family": "economics"
+   },
+   {
+    "match": "[^:]+:attributes\\.gen_ai\\.usage.*",
+    "family": "usage"
+   },
+   {
+    "match": "[^:]+:attributes\\.gen_ai\\.tool.*",
+    "family": "tools"
+   },
+   {
+    "match": "[^:]+:attributes\\.gen_ai\\.(input|output)\\.messages.*|[^:]+:attributes\\.gen_ai\\.system_instructions.*|[^:]+:events.*",
+    "family": "content"
+   },
+   {
+    "match": "[^:]+:attributes\\.github\\.copilot\\.mcp.*",
+    "family": "mcp"
+   },
+   {
+    "match": "metric/.*mcp.*:.*",
+    "family": "mcp"
+   },
+   {
+    "match": "metric/.*tool.*:.*",
+    "family": "tools"
+   },
+   {
+    "match": "metric/.*(token|input|output|usage).*:.*",
+    "family": "usage"
+   },
+   {
+    "match": "metric/.*:.*",
+    "family": "other"
+   },
+   {
+    "match": "span/execute_tool:.*",
+    "family": "tools"
+   },
+   {
+    "match": "span/.*:attributes(\\.gen_ai|\\.github|\\.process|\\.enduser)?(\\..*)?",
+    "family": "other"
+   }
+  ],
+  "copilot_usage_report": [
+   {
+    "match": "\\(opaque:.*",
+    "family": "other"
+   },
+   {
+    "match": "[^:]+:.*(PremiumRequest|premiumRequest|NanoAiu|nanoAiu|[Cc]ost|[Mm]ultiplier|[Cc]redit).*",
+    "family": "economics"
+   },
+   {
+    "match": "[^:]+:.*(DurationMs|codeChanges).*",
+    "family": "other"
+   },
+   {
+    "match": "[^:]+:(sessionStartTime|currentModel)",
+    "family": "provenance"
+   },
+   {
+    "match": "[^:]+:.*",
+    "family": "usage"
+   }
+  ],
+  "junie_session_events": [
+   {
+    "match": "\\(opaque:.*",
+    "family": "other"
+   },
+   {
+    "match": "[^:]+:(kind|timestampMs|event|event\\.state|event\\.agentEvent|event\\.agentEvent\\.kind|taskId)",
+    "family": "provenance"
+   },
+   {
+    "match": "[^:]+:completion\\.(taskCostUsd|quota.*)",
+    "family": "economics"
+   },
+   {
+    "match": "[^:]+:completion.*",
+    "family": "provenance"
+   },
+   {
+    "match": "[^:]+:.*(cost|Cost).*",
+    "family": "economics"
+   },
+   {
+    "match": "SessionA2uxEvent/(ContextWindowReportEvent|LlmResponseMetadataEvent):.*",
+    "family": "usage"
+   },
+   {
+    "match": "SessionA2uxEvent/(TerminalBlockUpdatedEvent|ToolBlockUpdatedEvent|ViewFilesBlockUpdatedEvent|AgentPatchCreatedEvent):.*",
+    "family": "tools"
+   },
+   {
+    "match": "SessionA2uxEvent/(ResultBlockUpdatedEvent|AgentTaskNameUpdatedEvent|TipSuggestionCreatedEvent):.*",
+    "family": "content"
+   },
+   {
+    "match": "SessionA2uxEvent/(CurrentDirectoryUpdatedEvent|EnvironmentVariablesUpdatedEvent):.*",
+    "family": "provenance"
+   },
+   {
+    "match": "SessionA2uxEvent/AgentCurrentStatusUpdatedEvent:.*",
+    "family": "other"
+   },
+   {
+    "match": "TaskStartedEvent:.*",
+    "family": "provenance"
+   }
+  ],
+  "junie_stdout": [
+   {
+    "match": "\\(opaque:.*",
+    "family": "other"
+   },
+   {
+    "match": "[^:]+:(type|timestamp|sessionId)",
+    "family": "provenance"
+   },
+   {
+    "match": "result:errorCode\\.cost",
+    "family": "economics"
+   },
+   {
+    "match": "result:errorCode.*",
+    "family": "usage"
+   },
+   {
+    "match": "result:(result|output)",
+    "family": "content"
+   },
+   {
+    "match": "result:.*",
+    "family": "other"
+   },
+   {
+    "match": "session:.*",
+    "family": "provenance"
+   },
+   {
+    "match": "step:.*",
+    "family": "tools"
+   }
+  ],
+  "junie_summary": [
+   {
+    "match": "\\(opaque:.*",
+    "family": "other"
+   },
+   {
+    "match": "[^:]+:mainAgent\\.modelUsage.*cost.*",
+    "family": "economics"
+   },
+   {
+    "match": "[^:]+:mainAgent\\.modelUsage.*",
+    "family": "usage"
+   },
+   {
+    "match": "[^:]+:.*",
+    "family": "provenance"
+   }
+  ],
+  "opaque_text": [
+   {
+    "match": ".*",
+    "family": "other"
+   }
+  ]
+ }
+}

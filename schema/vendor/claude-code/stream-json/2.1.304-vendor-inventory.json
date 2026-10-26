@@ -1441,7 +1441,7 @@
    "journal": {
     "behavior": "normalized",
     "rule": "claude.stream.user.tool_result->tool_call.result",
-    "note": "one tool_call Result observed per tool_result block, owned by the block's own tool_use_id; is_error gives status (absent -> Unknown); tool_use_result -> structured_result; the per-call permission decision comes from tool_result_meta[] (matched by id), a member observed on every recorded result line but NOT declared by the published SDK types (nor is tool_result_meta[].non_execution_kind). Non-tool_result blocks of the same record are kept only in the first result event's data. Since contract 0.5.0-prototype (D1) an Agent result's tool_use_result.usage is also a session_context Accounting reported event (scope 7 Child run, tool_call_uid = the spawning call)",
+    "note": "one tool_call Result observed per tool_result block, owned by the block's own tool_use_id; is_error gives status (absent -> Unknown); tool_use_result -> structured_result; the per-call permission decision comes from tool_result_meta[] (matched by id), a member observed on every recorded result line but NOT declared by the published SDK types (nor is tool_result_meta[].non_execution_kind). Non-tool_result blocks of the same record are kept only in the first result event's data. Since contract 0.5.0-prototype (D1) an Agent result's tool_use_result.usage is also a session_context Accounting reported event (scope 7 Child run, tool_call_uid = the spawning call). ACCT-1 (2026-10-26): on an Agent result the envelope's status and totalDurationMs are the child-run accounting event's reported_state and duration",
     "also_rules": [
      "claude.stream.user.tool_result.agent_usage->session_context.accounting"
     ]
@@ -2114,7 +2114,10 @@
    "journal": {
     "behavior": "normalized",
     "rule": "claude.stream.result->prompt_turn.completed",
-    "note": "prompt_turn Turn completed: status Success only for subtype success with is_error false, else Failure; stop_reason; usage -> Run-scope final usage and modelUsage.{model} -> Model-scope final usage with reported provider; total_cost_usd -> Run cost (costBasis only when one model reported); permission_denials -> Run-scope decisions attributed by tool_use_id. errors, startup_failure_reason, terminal_reason, structured_output, deferred_tool_use, latencies and counters are retained in data only. Only subtype success has been observed (the error subtypes are declared but unrecorded); observed results also carry undeclared members (subagent_stats, safety_stops)"
+    "note": "prompt_turn Turn completed: status Success only for subtype success with is_error false, else Failure; stop_reason; usage -> Run-scope final usage and modelUsage.{model} -> Model-scope final usage with reported provider; total_cost_usd -> Run cost (costBasis only when one model reported); permission_denials -> Run-scope decisions attributed by tool_use_id. errors, startup_failure_reason, terminal_reason, structured_output, deferred_tool_use, latencies and counters are retained in data only. Only subtype success has been observed (the error subtypes are declared but unrecorded); observed results also carry undeclared members (subagent_stats, safety_stops). ACCT-1 (2026-10-26): modelUsage.{model}.costUSD -> a second event, session_context Accounting reported (context_kind result/modelUsage) with one Model-scope cumulative cost observation per model; duration_ms -> the Turn completed event's duration",
+    "also_rules": [
+     "claude.stream.result.model_cost->session_context.accounting"
+    ]
    }
   },
   {

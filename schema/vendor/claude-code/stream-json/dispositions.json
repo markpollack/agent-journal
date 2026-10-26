@@ -1,7 +1,7 @@
 {
  "kind": "agent-journal/field-dispositions",
  "version": "0.1",
- "reviewed": "2026-10-21 (ACCEPT-1); 2026-10-24 (D1): task usage normalized, the Agent result carve-out, whole-variant task wildcards replaced by exact entries",
+ "reviewed": "2026-10-21 (ACCEPT-1); 2026-10-24 (D1): task usage normalized, the Agent result carve-out, whole-variant task wildcards replaced by exact entries; 2026-10-26 (ACCT-1): every exercised retained entry carries a reviewed classification (vendor_residual, structural, redundant, common_capacity_gap, candidate); exact entries for the usage and message residual members; run duration, per-model cost and the Agent result's status and duration normalized",
  "profile": "claude_stream",
  "compatibility_entries": [
   "claude-code/stream-json/2.1.299-sdk",
@@ -140,7 +140,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "vendor API request id; not a common concept"
+   "note": "vendor API request id; not a common concept",
+   "classification": "vendor_residual",
+   "classification_note": "the API request id of the response; not a common identity"
   },
   {
    "variant": "assistant",
@@ -152,7 +154,8 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "vendor display hint for reasoning"
+   "note": "vendor display hint for reasoning",
+   "classification": "vendor_residual"
   },
   {
    "variant": "assistant",
@@ -164,7 +167,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "vendor-reported reasoning duration; a reported duration, not normalized (mapping catalog reported-durations)"
+   "note": "vendor-reported reasoning duration; a reported duration, not normalized (mapping catalog reported-durations)",
+   "classification": "vendor_residual",
+   "classification_note": "the duration of the reasoning phase only; not the response's duration"
   },
   {
    "variant": "assistant",
@@ -177,7 +182,113 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "subtree default: members of the message not named below (role, type, container, context_management, diagnostics, input_transformations, stop_details, stop_sequence) stay in the whole record"
+   "note": "subtree default: members of the message not named below (role, type, container, context_management, diagnostics, input_transformations, stop_details, stop_sequence) stay in the whole record",
+   "classification": "structural",
+   "classification_note": "members named below have their own entries"
+  },
+  {
+   "variant": "assistant",
+   "path": "message.role",
+   "disposition": "retained",
+   "classification": "structural",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "the message role (assistant), the record's own discriminator family"
+  },
+  {
+   "variant": "assistant",
+   "path": "message.type",
+   "disposition": "retained",
+   "classification": "structural",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "the message type (message)"
+  },
+  {
+   "variant": "assistant",
+   "path": "message.container",
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "null on every observed record; a vendor container reference"
+  },
+  {
+   "variant": "assistant",
+   "path": "message.context_management",
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "null on every observed record; vendor context-management state"
+  },
+  {
+   "variant": "assistant",
+   "path": "message.diagnostics",
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "null on every observed record"
+  },
+  {
+   "variant": "assistant",
+   "path": "message.input_transformations",
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "null on every observed record"
+  },
+  {
+   "variant": "assistant",
+   "path": "message.stop_details",
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "null on every observed record; vendor detail beside stop_reason"
+  },
+  {
+   "variant": "assistant",
+   "path": "message.stop_sequence",
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "null on every observed record"
   },
   {
    "variant": "assistant",
@@ -314,7 +425,61 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "subtree default for usage members that are not reported token components (service_tier, speed, inference_geo): kept whole in the record and in usage_observation.data"
+   "note": "subtree default for usage members that are not reported token components (service_tier, speed, inference_geo): kept whole in the record and in usage_observation.data",
+   "classification": "structural",
+   "classification_note": "container; members named below have their own entries"
+  },
+  {
+   "variant": "assistant",
+   "path": "message.usage.service_tier",
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "the API service tier the response ran under; not usage"
+  },
+  {
+   "variant": "assistant",
+   "path": "message.usage.speed",
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "a vendor speed label; not usage"
+  },
+  {
+   "variant": "assistant",
+   "path": "message.usage.inference_geo",
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "a vendor inference-region label; not usage"
+  },
+  {
+   "variant": "assistant",
+   "path": "message.usage.cache_creation",
+   "disposition": "retained",
+   "classification": "structural",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "container of the cache-write tiers, which are normalized"
   },
   {
    "variant": "assistant",
@@ -423,7 +588,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "data-keyed: the wire form of tool inputs; a repeat representation of content[].input kept whole, never used as the argument value"
+   "note": "data-keyed: the wire form of tool inputs; a repeat representation of content[].input kept whole, never used as the argument value",
+   "classification": "vendor_residual",
+   "classification_note": "the wire form of each tool_use block's input, keyed by block id; checked against content[].input by CrossCliAccountingTest#redundantRepresentationsAreCheckedAgainstTheirOriginals: on the denial recording the wire form omits the Edit's replace_all member that the block reports, so it is not an exact repeat and is kept whole as a vendor representation, never used as the argument value"
   },
   {
    "variant": "assistant",
@@ -436,7 +603,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "display metadata the CLI attaches to an MCP tool_use block (live 2.1.304 MCP recording): per block id, the MCP tool's own name, a humanized display name and the server's self-reported name (serverInfo.name, here journal-mcp-test-server), which differs from the configured server key that prefixes the tool name (mcp__journal_echo__); kept whole, not used to set tool_namespace or to classify the tool"
+   "note": "display metadata the CLI attaches to an MCP tool_use block (live 2.1.304 MCP recording): per block id, the MCP tool's own name, a humanized display name and the server's self-reported name (serverInfo.name, here journal-mcp-test-server), which differs from the configured server key that prefixes the tool name (mcp__journal_echo__); kept whole, not used to set tool_namespace or to classify the tool",
+   "classification": "vendor_residual",
+   "classification_note": "display metadata of MCP tool_use blocks; the MCP target is derived from the tool name and init registration, never from this"
   },
   {
    "variant": "user",
@@ -470,7 +639,8 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "subtree default (message.role, block type) kept in the whole record of the first result event"
+   "note": "subtree default (message.role, block type) kept in the whole record of the first result event",
+   "classification": "structural"
   },
   {
    "variant": "user/tool_result",
@@ -540,9 +710,11 @@
    "tests": [
     "OcsfOracleValueCheckTest#resultStructuredDetailAndMissingResultAreEachChecked"
    ],
-   "note": "data-keyed: the tool-defined structured result preserved whole as a value; carve-out (D1): on an Agent result, tool_use_result.usage is also a scope 7 Child run usage observation (session_context Accounting reported, rule claude.stream.user.tool_result.agent_usage->session_context.accounting), judged by its obligation, not by this subtree's structured_result evidence",
+   "note": "data-keyed: the tool-defined structured result preserved whole as a value; carve-out (D1): on an Agent result, tool_use_result.usage is also a scope 7 Child run usage observation (session_context Accounting reported, rule claude.stream.user.tool_result.agent_usage->session_context.accounting), judged by its obligation, not by this subtree's structured_result evidence ACCT-1: on an Agent result the envelope's status and totalDurationMs are carved out to the accounting event's reported_state and duration; resolvedModel, totalToolUseCount, toolStats, agentId and agentType remain inside the envelope (no session_context model_ref or counter capacity: see the obligation catalog's residuals)",
    "carve_outs": [
-    "claude.stream.usage.child-run.agent-result"
+    "claude.stream.usage.child-run.agent-result",
+    "claude.stream.child-run.agent-result.status",
+    "claude.stream.child-run.agent-result.duration"
    ]
   },
   {
@@ -630,7 +802,127 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "subtree default for run-usage members that are not reported components (iterations[] apart from the tranches of a sole message entry, which have their own entries; server_tool_use, fallback_credit, service_tier, speed, inference_geo): whole record and usage_observation.data"
+   "note": "subtree default for run-usage members that are not reported components (iterations[] apart from the tranches of a sole message entry, which have their own entries; server_tool_use, fallback_credit, service_tier, speed, inference_geo): whole record and usage_observation.data",
+   "classification": "structural",
+   "classification_note": "container; members named below have their own entries"
+  },
+  {
+   "variant": "result",
+   "path": "usage.service_tier",
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "the API service tier; not usage"
+  },
+  {
+   "variant": "result",
+   "path": "usage.speed",
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "a vendor speed label; not usage"
+  },
+  {
+   "variant": "result",
+   "path": "usage.inference_geo",
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "a vendor inference-region label; not usage"
+  },
+  {
+   "variant": "result",
+   "path": "usage.fallback_credit",
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "null on every observed record; a vendor billing flag whose non-null meaning is unobserved"
+  },
+  {
+   "variant": "result",
+   "path": "usage.server_tool_use",
+   "disposition": "retained",
+   "classification": "common_capacity_gap",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "server-side tool-use counters (web_search_requests, web_fetch_requests): execution facts with no canonical counter attribute; 0 on every observed record, non-zero unexercised",
+   "subtree": true
+  },
+  {
+   "variant": "result",
+   "path": "usage.output_tokens_details",
+   "disposition": "retained",
+   "classification": "structural",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "container of thinking_tokens, which is normalized"
+  },
+  {
+   "variant": "result",
+   "path": "usage.cache_creation",
+   "disposition": "retained",
+   "classification": "structural",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "container of the cache-write tiers, which are normalized"
+  },
+  {
+   "variant": "result",
+   "path": "usage.iterations[].type",
+   "disposition": "retained",
+   "classification": "structural",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "the entry type of an iterations[] entry, which selects the last-response obligation"
+  },
+  {
+   "variant": "result",
+   "path": "usage.iterations[].cache_creation",
+   "disposition": "retained",
+   "classification": "structural",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "container of the entry's cache-write tiers, which are normalized"
   },
   {
    "variant": "result",
@@ -847,7 +1139,68 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "map-keyed by model name; subtree default for per-model members that are not reported components (costUSD per model, contextWindow, maxOutputTokens, webSearchRequests, canonicalModel): whole record and usage_observation.data"
+   "note": "map-keyed by model name; subtree default for per-model members that are not reported components (costUSD per model, contextWindow, maxOutputTokens, webSearchRequests, canonicalModel): whole record and usage_observation.data",
+   "classification": "structural",
+   "classification_note": "map-keyed container; members named below have their own entries"
+  },
+  {
+   "variant": "result",
+   "path": "modelUsage.{*}.contextWindow",
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "the model's context window size, a configuration figure, not consumption"
+  },
+  {
+   "variant": "result",
+   "path": "modelUsage.{*}.canonicalModel",
+   "disposition": "retained",
+   "classification": "vendor_residual",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "the vendor's canonical alias of the model key; the key is the model_ref name"
+  },
+  {
+   "variant": "result",
+   "path": "modelUsage.{*}.costUSD",
+   "disposition": "normalized",
+   "destination": [
+    "session_context.cost_observations[].total_cost",
+    "session_context.cost_observations[].currency",
+    "session_context.cost_observations[].scope_id",
+    "session_context.cost_observations[].model_ref.name",
+    "session_context.cost_observations[].aggregation_id"
+   ],
+   "rule": "claude.stream.result.model_cost->session_context.accounting",
+   "evidence": {
+    "property": "cost.values"
+   },
+   "tests": [
+    "CanonicalConformanceTest#perModelCostRunDurationAndTheAgentResultsStatusAreObligations"
+   ],
+   "note": "Claude Code's running USD cost per model (scope 6 Model, aggregation 2 Cumulative snapshot) on the result record's accounting event; with one model it equals total_cost_usd, which stays the run-scope cost observation (obligation claude.stream.cost.model)"
+  },
+  {
+   "variant": "result",
+   "path": "modelUsage.{*}.webSearchRequests",
+   "disposition": "retained",
+   "classification": "common_capacity_gap",
+   "evidence": {
+    "property": "whole_record.coverage"
+   },
+   "tests": [
+    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+   ],
+   "note": "per-model server-side web-search counter: no canonical counter attribute; 0 on every observed record"
   },
   {
    "variant": "result",
@@ -987,7 +1340,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "the final assistant text repeated on the result line; a repeat representation of the last response's text block, kept whole, not a second response"
+   "note": "the final assistant text repeated on the result line; a repeat representation of the last response's text block, kept whole, not a second response",
+   "classification": "redundant",
+   "classification_note": "the last response's text repeated; checked against the last assistant text block by CrossCliAccountingTest#redundantRepresentationsAreCheckedAgainstTheirOriginals"
   },
   {
    "variant": "result",
@@ -1000,19 +1355,25 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "vendor sub-agent counters (requested, spawned, completed, refused, killed, max_depth); known meaning, not a per-child fact"
+   "note": "vendor sub-agent counters (requested, spawned, completed, refused, killed, max_depth); known meaning, not a per-child fact",
+   "classification": "common_capacity_gap",
+   "classification_note": "sub-agent lifecycle counters (requested, spawned, completed, refused, killed, max_depth): child-run facts with no canonical counter attribute"
   },
   {
    "variant": "result",
    "path": "duration_ms",
-   "disposition": "retained",
+   "disposition": "normalized",
    "evidence": {
-    "property": "whole_record.coverage"
+    "property": "turn.values"
    },
    "tests": [
-    "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
+    "CanonicalConformanceTest#perModelCostRunDurationAndTheAgentResultsStatusAreObligations"
    ],
-   "note": "reported duration (mapping catalog reported-durations: retained-only, known meaning)"
+   "note": "the run's reported wall-clock duration in milliseconds, copied to the base duration attribute of the Turn completed event (obligation claude.stream.run.duration)",
+   "destination": [
+    "prompt_turn.duration"
+   ],
+   "rule": "claude.stream.result->prompt_turn.completed"
   },
   {
    "variant": "result",
@@ -1024,7 +1385,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "reported duration"
+   "note": "reported duration",
+   "classification": "common_capacity_gap",
+   "classification_note": "API time within the run: the one duration attribute carries duration_ms; no second duration attribute"
   },
   {
    "variant": "result",
@@ -1036,7 +1399,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "vendor turn counter; Journal does not compute or copy counts"
+   "note": "vendor turn counter; Journal does not compute or copy counts",
+   "classification": "common_capacity_gap",
+   "classification_note": "the run's turn count: no canonical counter attribute"
   },
   {
    "variant": "result",
@@ -1048,7 +1413,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "null on every observed record; its non-null meaning is unobserved"
+   "note": "null on every observed record; its non-null meaning is unobserved",
+   "classification": "vendor_residual",
+   "classification_note": "null on every observed record; its non-null meaning is unobserved and unexercised"
   },
   {
    "variant": "result",
@@ -1060,7 +1427,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "reported latency"
+   "note": "reported latency",
+   "classification": "common_capacity_gap",
+   "classification_note": "a reported latency facet (OTel GenAI time-to-first-token family): no canonical latency attribute"
   },
   {
    "variant": "result",
@@ -1072,7 +1441,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "reported latency"
+   "note": "reported latency",
+   "classification": "common_capacity_gap",
+   "classification_note": "a reported latency facet (OTel GenAI time-to-first-token family): no canonical latency attribute"
   },
   {
    "variant": "result",
@@ -1084,7 +1455,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "reported latency"
+   "note": "reported latency",
+   "classification": "common_capacity_gap",
+   "classification_note": "a reported latency facet (OTel GenAI time-to-first-token family): no canonical latency attribute"
   },
   {
    "variant": "result",
@@ -1096,7 +1469,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "reported latency"
+   "note": "reported latency",
+   "classification": "common_capacity_gap",
+   "classification_note": "a reported latency facet (OTel GenAI time-to-first-token family): no canonical latency attribute"
   },
   {
    "variant": "result",
@@ -1108,7 +1483,8 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "vendor queue counter"
+   "note": "vendor queue counter",
+   "classification": "vendor_residual"
   },
   {
    "variant": "result",
@@ -1120,7 +1496,8 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "vendor result ordinal"
+   "note": "vendor result ordinal",
+   "classification": "vendor_residual"
   },
   {
    "variant": "result",
@@ -1132,7 +1509,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "vendor counter"
+   "note": "vendor counter",
+   "classification": "vendor_residual",
+   "classification_note": "vendor counter of safety stops; no common meaning established"
   },
   {
    "variant": "result",
@@ -1144,7 +1523,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "vendor termination label beside stop_reason; kept whole, not a second stop reason"
+   "note": "vendor termination label beside stop_reason; kept whole, not a second stop reason",
+   "classification": "vendor_residual",
+   "classification_note": "vendor termination label beside the normalized stop_reason"
   },
   {
    "variant": "result",
@@ -1156,7 +1537,8 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "vendor mode flag"
+   "note": "vendor mode flag",
+   "classification": "vendor_residual"
   },
   {
    "variant": "result",
@@ -1168,7 +1550,8 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "vendor mode flag"
+   "note": "vendor mode flag",
+   "classification": "vendor_residual"
   },
   {
    "variant": "system/init",
@@ -1261,7 +1644,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "configured connections (name, source, status); ACP session settings concept, retained whole pending a reviewed settings object"
+   "note": "configured connections (name, source, status); ACP session settings concept, retained whole pending a reviewed settings object",
+   "classification": "candidate",
+   "classification_note": "configured MCP connections with status: session_context has mcp and tool_definitions capacity; an obligation is not stated yet (the init registration is read for MCP target derivation only)"
   },
   {
    "variant": "system/init",
@@ -1274,7 +1659,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "configured agent names (user environment detail)"
+   "note": "configured agent names (user environment detail)",
+   "classification": "vendor_residual",
+   "classification_note": "user environment or vendor mode detail; not an execution fact"
   },
   {
    "variant": "system/init",
@@ -1287,7 +1674,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "configured skill names (user environment detail)"
+   "note": "configured skill names (user environment detail)",
+   "classification": "vendor_residual",
+   "classification_note": "user environment or vendor mode detail; not an execution fact"
   },
   {
    "variant": "system/init",
@@ -1300,7 +1689,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "configured plugins (name, path, source)"
+   "note": "configured plugins (name, path, source)",
+   "classification": "vendor_residual",
+   "classification_note": "user environment or vendor mode detail; not an execution fact"
   },
   {
    "variant": "system/init",
@@ -1313,7 +1704,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "available commands"
+   "note": "available commands",
+   "classification": "vendor_residual",
+   "classification_note": "user environment or vendor mode detail; not an execution fact"
   },
   {
    "variant": "system/init",
@@ -1325,7 +1718,9 @@
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
-   ]
+   ],
+   "classification": "vendor_residual",
+   "classification_note": "user environment or vendor mode detail; not an execution fact"
   },
   {
    "variant": "system/init",
@@ -1338,7 +1733,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "protocol capability flags"
+   "note": "protocol capability flags",
+   "classification": "vendor_residual",
+   "classification_note": "user environment or vendor mode detail; not an execution fact"
   },
   {
    "variant": "system/init",
@@ -1350,7 +1747,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "authentication source label; no credential"
+   "note": "authentication source label; no credential",
+   "classification": "vendor_residual",
+   "classification_note": "user environment or vendor mode detail; not an execution fact"
   },
   {
    "variant": "system/init",
@@ -1361,7 +1760,9 @@
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
-   ]
+   ],
+   "classification": "vendor_residual",
+   "classification_note": "user environment or vendor mode detail; not an execution fact"
   },
   {
    "variant": "system/init",
@@ -1374,7 +1775,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "local paths of memory files (sanitized in public fixtures)"
+   "note": "local paths of memory files (sanitized in public fixtures)",
+   "classification": "vendor_residual",
+   "classification_note": "user environment or vendor mode detail; not an execution fact"
   },
   {
    "variant": "system/init",
@@ -1386,7 +1789,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "local socket path (sanitized in public fixtures)"
+   "note": "local socket path (sanitized in public fixtures)",
+   "classification": "vendor_residual",
+   "classification_note": "user environment or vendor mode detail; not an execution fact"
   },
   {
    "variant": "system/init",
@@ -1398,7 +1803,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "2.1.303+ : the launch directory before any -C; cwd is the normalized working directory"
+   "note": "2.1.303+ : the launch directory before any -C; cwd is the normalized working directory",
+   "classification": "vendor_residual",
+   "classification_note": "user environment or vendor mode detail; not an execution fact"
   },
   {
    "variant": "system/init",
@@ -1410,7 +1817,9 @@
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
-   ]
+   ],
+   "classification": "vendor_residual",
+   "classification_note": "user environment or vendor mode detail; not an execution fact"
   },
   {
    "variant": "system/init",
@@ -1421,7 +1830,9 @@
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
-   ]
+   ],
+   "classification": "vendor_residual",
+   "classification_note": "user environment or vendor mode detail; not an execution fact"
   },
   {
    "variant": "system/init",
@@ -1432,7 +1843,9 @@
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
-   ]
+   ],
+   "classification": "vendor_residual",
+   "classification_note": "user environment or vendor mode detail; not an execution fact"
   },
   {
    "variant": "system/init",
@@ -1443,7 +1856,9 @@
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
-   ]
+   ],
+   "classification": "vendor_residual",
+   "classification_note": "user environment or vendor mode detail; not an execution fact"
   },
   {
    "variant": "system/init",
@@ -1454,7 +1869,9 @@
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
-   ]
+   ],
+   "classification": "vendor_residual",
+   "classification_note": "user environment or vendor mode detail; not an execution fact"
   },
   {
    "variant": "system/init",
@@ -1465,7 +1882,9 @@
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
-   ]
+   ],
+   "classification": "vendor_residual",
+   "classification_note": "user environment or vendor mode detail; not an execution fact"
   },
   {
    "variant": "system/init",
@@ -1476,7 +1895,9 @@
    },
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
-   ]
+   ],
+   "classification": "vendor_residual",
+   "classification_note": "user environment or vendor mode detail; not an execution fact"
   },
   {
    "variant": "system/thinking_tokens",
@@ -1488,7 +1909,8 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "running vendor estimate of thinking tokens; not a reported usage component (the final reported count is normalized from the result record); retained-only by review"
+   "note": "running vendor estimate of thinking tokens; not a reported usage component (the final reported count is normalized from the result record); retained-only by review",
+   "classification": "vendor_residual"
   },
   {
    "variant": "system/thinking_tokens",
@@ -1500,7 +1922,8 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "increment of the running estimate"
+   "note": "increment of the running estimate",
+   "classification": "vendor_residual"
   },
   {
    "variant": "rate_limit_event",
@@ -1513,7 +1936,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "account rate-limit status snapshot (status, windows, utilization, resets); not an execution fact, usage or cost of the run; retained-only by review"
+   "note": "account rate-limit status snapshot (status, windows, utilization, resets); not an execution fact, usage or cost of the run; retained-only by review",
+   "classification": "vendor_residual",
+   "classification_note": "account rate-limit state; not an execution fact of the run"
   },
   {
    "variant": "system/task_progress",
@@ -1559,7 +1984,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "the sub-agent's handback text as the parent receives it (2.1.304); content, kept whole; retained whole in the record's data"
+   "note": "the sub-agent's handback text as the parent receives it (2.1.304); content, kept whole; retained whole in the record's data",
+   "classification": "candidate",
+   "classification_note": "the sub-agent's handback text: content with session_context content_blocks capacity; no obligation stated yet"
   },
   {
    "variant": "system/task_notification",
@@ -1571,7 +1998,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "the sub-agent's structured handback report (2.1.304); its members have their own entries; retained whole in the record's data"
+   "note": "the sub-agent's structured handback report (2.1.304); its members have their own entries; retained whole in the record's data",
+   "classification": "candidate",
+   "classification_note": "structured handback report; as handback"
   },
   {
    "variant": "system/task_notification",
@@ -1583,7 +2012,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "text of the handback report; content, kept whole; retained whole in the record's data"
+   "note": "text of the handback report; content, kept whole; retained whole in the record's data",
+   "classification": "candidate",
+   "classification_note": "as handback"
   },
   {
    "variant": "system/task_updated",
@@ -1595,7 +2026,9 @@
    "tests": [
     "OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction"
    ],
-   "note": "the task's state patch object (status, end_time, ...); its members have their own entries. Replaces the whole-variant wildcard (D1): a new member is a new disposition, never swallowed"
+   "note": "the task's state patch object (status, end_time, ...); its members have their own entries. Replaces the whole-variant wildcard (D1): a new member is a new disposition, never swallowed",
+   "classification": "candidate",
+   "classification_note": "the task's state patch (status, end_time): child lifecycle with reported_state capacity on the accounting event; no obligation stated yet"
   },
   {
    "variant": "system/init",
@@ -1761,7 +2194,9 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "sub-agent instance identity on records of a child scope (2.1.299 fixture); the child file's run identity is the spawning tool call, this id stays in data | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): subagent instance id (the task_id of its task_* events); normalized family claude.stream.assistant->model_response: this field is retained in the whole record, not normalized",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual",
+   "classification_note": "the child agent's own id beside parent_tool_use_id, which is the owner routing"
   },
   {
    "variant": "assistant",
@@ -1777,7 +2212,9 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "sub-agent kind label on child-scope records | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): subagent type that produced the message; normalized family claude.stream.assistant->model_response: this field is retained in the whole record, not normalized",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual",
+   "classification_note": "the child agent type label"
   },
   {
    "variant": "assistant",
@@ -1793,7 +2230,9 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "the Task tool's description repeated on child-scope records | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): description of the subagent task; normalized family claude.stream.assistant->model_response: this field is retained in the whole record, not normalized",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual",
+   "classification_note": "the child task description as the stream repeats it"
   },
   {
    "variant": "assistant",
@@ -1974,7 +2413,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "sub-agent instance identity on records of a child scope (2.1.299 fixture); the child file's run identity is the spawning tool call, this id stays in data | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): subagent instance id (the task_id of its task_* events); normalized family claude.stream.user.prompt->prompt_turn.submitted: this field is retained in the whole record, not normalized",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "user",
@@ -1990,7 +2430,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "sub-agent kind label on child-scope records | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): subagent type that produced the message; normalized family claude.stream.user.prompt->prompt_turn.submitted: this field is retained in the whole record, not normalized",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "user",
@@ -2006,7 +2447,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "the Task tool's description repeated on child-scope records | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): description of the subagent task; normalized family claude.stream.user.prompt->prompt_turn.submitted: this field is retained in the whole record, not normalized",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "user/tool_result",
@@ -2037,7 +2479,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "sub-agent instance identity on records of a child scope (2.1.299 fixture); the child file's run identity is the spawning tool call, this id stays in data | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): subagent instance id (the task_id of its task_* events); normalized family claude.stream.user.tool_result->tool_call.result: this field is retained in the whole record, not normalized",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "user/tool_result",
@@ -2053,7 +2496,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "sub-agent kind label on child-scope records | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): subagent type that produced the message; normalized family claude.stream.user.tool_result->tool_call.result: this field is retained in the whole record, not normalized",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "user/tool_result",
@@ -2069,7 +2513,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "the Task tool's description repeated on child-scope records | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): description of the subagent task; normalized family claude.stream.user.tool_result->tool_call.result: this field is retained in the whole record, not normalized",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "result",
@@ -3436,7 +3881,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "sub-agent task lifecycle notification (task_id, tool_use_id of the spawning call, subagent_type, description, prompt, spawn_depth, is_backgrounded, task_type): known meaning; the child run itself is represented by owner routing of the child's records, these notifications stay whole in the parent | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): task id (equals agent_id on the subagent's messages); retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "system/task_started",
@@ -3452,7 +3898,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "sub-agent task lifecycle notification (task_id, tool_use_id of the spawning call, subagent_type, description, prompt, spawn_depth, is_backgrounded, task_type): known meaning; the child run itself is represented by owner routing of the child's records, these notifications stay whole in the parent | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): id of one run of the task (a resumed task keeps task_id and gets a new run_id); retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "system/task_started",
@@ -3468,7 +3915,9 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "sub-agent task lifecycle notification (task_id, tool_use_id of the spawning call, subagent_type, description, prompt, spawn_depth, is_backgrounded, task_type): known meaning; the child run itself is represented by owner routing of the child's records, these notifications stay whole in the parent | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): spawning tool call; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual",
+   "classification_note": "names the spawning call; the task_started record is retained whole (no accounting event)"
   },
   {
    "variant": "system/task_started",
@@ -3484,7 +3933,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "sub-agent task lifecycle notification (task_id, tool_use_id of the spawning call, subagent_type, description, prompt, spawn_depth, is_backgrounded, task_type): known meaning; the child run itself is represented by owner routing of the child's records, these notifications stay whole in the parent | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): task description; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "system/task_started",
@@ -3500,7 +3950,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "sub-agent task lifecycle notification (task_id, tool_use_id of the spawning call, subagent_type, description, prompt, spawn_depth, is_backgrounded, task_type): known meaning; the child run itself is represented by owner routing of the child's records, these notifications stay whole in the parent | sub-agent kind label on child-scope records | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): subagent type; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "system/task_started",
@@ -3516,7 +3967,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "sub-agent task lifecycle notification (task_id, tool_use_id of the spawning call, subagent_type, description, prompt, spawn_depth, is_backgrounded, task_type): known meaning; the child run itself is represented by owner routing of the child's records, these notifications stay whole in the parent | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): registered in the background; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "system/task_started",
@@ -3532,7 +3984,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "sub-agent task lifecycle notification (task_id, tool_use_id of the spawning call, subagent_type, description, prompt, spawn_depth, is_backgrounded, task_type): known meaning; the child run itself is represented by owner routing of the child's records, these notifications stay whole in the parent | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): nesting depth of a spawned subagent; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "system/task_started",
@@ -3564,7 +4017,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "sub-agent task lifecycle notification (task_id, tool_use_id of the spawning call, subagent_type, description, prompt, spawn_depth, is_backgrounded, task_type): known meaning; the child run itself is represented by owner routing of the child's records, these notifications stay whole in the parent | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): task type (local_agent, local_bash, local_workflow, mcp_task, ...); retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "system/task_started",
@@ -3596,7 +4050,9 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "sub-agent task lifecycle notification (task_id, tool_use_id of the spawning call, subagent_type, description, prompt, spawn_depth, is_backgrounded, task_type): known meaning; the child run itself is represented by owner routing of the child's records, these notifications stay whole in the parent | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): task prompt; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "candidate",
+   "classification_note": "the child task's prompt: content with capacity (the child core's prompt_turn carries the echoed prompt when the child echoes it); no obligation stated yet"
   },
   {
    "variant": "system/task_started",
@@ -3643,7 +4099,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): task id; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "system/task_progress",
@@ -3658,7 +4115,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): id of one run of the task (a resumed task keeps task_id and gets a new run_id); retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "system/task_progress",
@@ -3673,7 +4131,9 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): spawning tool call; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "structural",
+   "classification_note": "selects the accounting event's tool_call_uid"
   },
   {
    "variant": "system/task_progress",
@@ -3688,7 +4148,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): task description; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "system/task_progress",
@@ -3704,7 +4165,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "sub-agent kind label on child-scope records | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): subagent type; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "system/task_progress",
@@ -3737,7 +4199,9 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): tool uses so far; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "common_capacity_gap",
+   "classification_note": "tool-use count so far: no canonical counter attribute"
   },
   {
    "variant": "system/task_progress",
@@ -3752,7 +4216,9 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): elapsed time; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "common_capacity_gap",
+   "classification_note": "the task's elapsed time so far"
   },
   {
    "variant": "system/task_progress",
@@ -3767,7 +4233,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): last tool the task used; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "system/task_progress",
@@ -3797,7 +4264,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): task id; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "system/task_updated",
@@ -3812,7 +4280,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): id of one run of the task (a resumed task keeps task_id and gets a new run_id); retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "system/task_updated",
@@ -3827,7 +4296,9 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): task status; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "candidate",
+   "classification_note": "as patch"
   },
   {
    "variant": "system/task_updated",
@@ -3857,7 +4328,9 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): end time; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "candidate",
+   "classification_note": "as patch"
   },
   {
    "variant": "system/task_updated",
@@ -3917,7 +4390,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): task id; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "system/task_notification",
@@ -3932,7 +4406,9 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): id of one run of the task (a resumed task keeps task_id and gets a new run_id); retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual",
+   "classification_note": "the task run id; the child run is identified by its spawning call"
   },
   {
    "variant": "system/task_notification",
@@ -3947,7 +4423,9 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): spawning tool call; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "structural",
+   "classification_note": "selects the accounting event's tool_call_uid (unit of the task obligations)"
   },
   {
    "variant": "system/task_notification",
@@ -3962,7 +4440,9 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): terminal status; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "candidate",
+   "classification_note": "the task's terminal status: child lifecycle with reported_state capacity on the accounting event; no obligation stated yet"
   },
   {
    "variant": "system/task_notification",
@@ -3992,7 +4472,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): task output file path; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "system/task_notification",
@@ -4007,7 +4488,8 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): task summary; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual"
   },
   {
    "variant": "system/task_notification",
@@ -4040,7 +4522,9 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): tool uses; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "common_capacity_gap",
+   "classification_note": "the task's tool-use count: no canonical counter attribute"
   },
   {
    "variant": "system/task_notification",
@@ -4055,7 +4539,9 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): task duration; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "common_capacity_gap",
+   "classification_note": "the task's duration: the accounting event's duration attribute could carry it; no obligation stated yet (candidate)"
   },
   {
    "variant": "system/task_notification",
@@ -4401,7 +4887,9 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "2.1.304 stdout: a system notification that a permission was denied for a tool call (message, tool_name, tool_use_id); retained whole with known meaning. The decision itself is normalized from the result record's tool_result_meta (tool-call scope) and the result line's permission_denials (run scope, attributed by the named tool_use_id); this notification is not a third decision | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): denied tool; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "redundant",
+   "classification_note": "names the denied call's tool; the call is normalized from its tool_use block; checked by CrossCliAccountingTest#redundantRepresentationsAreCheckedAgainstTheirOriginals"
   },
   {
    "variant": "system/permission_denied",
@@ -4417,7 +4905,9 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "2.1.304 stdout: a system notification that a permission was denied for a tool call (message, tool_name, tool_use_id); retained whole with known meaning. The decision itself is normalized from the result record's tool_result_meta (tool-call scope) and the result line's permission_denials (run scope, attributed by the named tool_use_id); this notification is not a third decision | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): denied tool call; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "redundant",
+   "classification_note": "names the denied call; the run-scope denial entry of the result record carries the normalized attribution; checked as tool_name"
   },
   {
    "variant": "system/permission_denied",
@@ -4481,7 +4971,9 @@
     "VendorStreamInventoryTest#everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared"
    ],
    "note": "2.1.304 stdout: a system notification that a permission was denied for a tool call (message, tool_name, tool_use_id); retained whole with known meaning. The decision itself is normalized from the result record's tool_result_meta (tool-call scope) and the result line's permission_denials (run scope, attributed by the named tool_use_id); this notification is not a third decision | vendor-declared (Agent SDK 0.3.304 sdk.d.ts, Claude Code 2.1.304): rejection message returned to the model; retained whole by claude.stream.fallback->source_record, no normalized destination",
-   "vendor_declared": true
+   "vendor_declared": true,
+   "classification": "vendor_residual",
+   "classification_note": "the denial message; the decision is normalized from the result record and tool_result_meta"
   },
   {
    "variant": "prompt_suggestion",
@@ -4889,5 +5381,6 @@
    "vendor_declared": true
   }
  ],
- "vendor_inventory": "2.1.304-vendor-inventory.json"
+ "vendor_inventory": "2.1.304-vendor-inventory.json",
+ "classification_rule": "classification (retained entries): structural = envelope, discriminator or container whose members have their own accounting; vendor_residual = a reviewed vendor-only meaning with no common execution fact; redundant = a repeat representation of a fact normalized from another member, checked by CrossCliAccountingTest; common_capacity_gap = an established execution fact the canonical schema has no honest attribute for (an explicit coverage gap, never discharged by retention); candidate = an established fact with common capacity that is not yet normalized (visible debt until an obligation covers it or the Owner rejects it). An exercised retained entry without a classification is reported by the ledger as retained_unclassified"
 }

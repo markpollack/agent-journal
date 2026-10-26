@@ -4,9 +4,9 @@
  "fixture": "syn-claude-pair-transcript",
  "core": "main",
  "events_jsonl": "fixtures/syn-claude-pair-transcript/package/events.jsonl",
- "events_jsonl_sha256": "c19884a4f97f8bb617e8fcc56501c58e1dde00a23bbce679c79b17931eaaa688",
- "execution_records": 45,
- "declarations_skipped": 57,
+ "events_jsonl_sha256": "c7c04c63823694424d478c801a1a81d25ec5391f18d62c5792d0cfb34832095c",
+ "execution_records": 46,
+ "declarations_skipped": 58,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
  "toolkit": {
   "name": "ocsf-toolkit",
@@ -16,7 +16,7 @@
  },
  "compiled_schema_sha256": "da6317bacfd3f579f09331c93109219bf8f4616a23e251eba22928b5bad6f52d",
  "result": {
-  "event_files_processed": 45,
+  "event_files_processed": 46,
   "error_events": 0,
   "warning_only_events": 3,
   "issues_reported": 0
@@ -36,7 +36,7 @@
     "message": "Attribute \"tool_kind\" enum sibling suspiciously matches the schema caption of enum \"tool_kind_id\" value 99 (\"other\")."
    }
   ],
-  "0041.report.json": [
+  "0042.report.json": [
    {
     "level": "warning",
     "code": "validation_attribute_enum_sibling_suspicious_other",

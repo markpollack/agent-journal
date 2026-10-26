@@ -266,10 +266,10 @@ class AnalysisViewsTest {
         Json sc = views.member("settings_context");
         assertThat(sc.member("settings_rows").scalarText()).isEqualTo("1");
         assertThat(sc.member("context_rows").scalarText()).isEqualTo("4");
-        assertThat(sc.member("accounting_rows").scalarText()).isEqualTo("4");
+        assertThat(sc.member("accounting_rows").scalarText()).as("task progress, notification, Agent result, cost-state and the result's per-model cost (ACCT-1)").isEqualTo("5");
         assertThat(sc.member("rule").text()).isEqualTo("settings.context.v1");
         List<Json> rows = sc.member("rows").elements();
-        assertThat(rows).hasSize(9);
+        assertThat(rows).hasSize(10);
         Json init = rows.get(0);
         assertThat(init.member("activity").text()).isEqualTo("Settings reported");
         assertThat(init.member("context_kind").text()).isEqualTo("system/init");
@@ -284,17 +284,24 @@ class AnalysisViewsTest {
             assertThat(rows.get(i).member("scope").text()).isEqualTo("child run of tool call " + OcsfFixtures.SPAWN);
             assertThat(rows.get(i).member("usage_observations").scalarText()).isEqualTo("1");
         }
-        Json environment = rows.get(4);
+        // ACCT-1: the result record's per-model running cost is a session-scope accounting row with plural cost observations
+        Json modelCosts = rows.get(4);
+        assertThat(modelCosts.member("activity").text()).isEqualTo("Accounting reported");
+        assertThat(modelCosts.member("context_kind").text()).isEqualTo("result/modelUsage");
+        assertThat(modelCosts.member("scope").text()).isEqualTo("session");
+        assertThat(modelCosts.member("cost_observations").scalarText()).isEqualTo("1");
+        assertThat(((Json.JBool) modelCosts.member("cost_reported")).value()).isFalse();
+        Json environment = rows.get(5);
         assertThat(environment.member("activity").text()).isEqualTo("Context injected");
         assertThat(environment.member("context_kind").text()).isEqualTo("attachment/environment");
         assertThat(environment.member("rendered_role").text()).isEqualTo("system");
         assertThat(environment.member("context_blocks").scalarText()).isEqualTo("1");
         assertThat(Integer.parseInt(environment.member("context_text_chars").scalarText())).isGreaterThan(20);
-        Json credential = rows.get(6);
+        Json credential = rows.get(7);
         assertThat(credential.member("context_kind").text()).isEqualTo("attachment/credential_org");
         assertThat(credential.member("rendered_role")).isNull();
         assertThat(credential.member("context_blocks")).isNull();
-        Json cost = rows.get(8);
+        Json cost = rows.get(9);
         assertThat(cost.member("activity").text()).isEqualTo("Accounting reported");
         assertThat(cost.member("usage_observations").scalarText()).isEqualTo("1");
         assertThat(((Json.JBool) cost.member("cost_reported")).value()).isTrue();

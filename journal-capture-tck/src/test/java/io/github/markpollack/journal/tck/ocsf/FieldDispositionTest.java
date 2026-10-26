@@ -58,7 +58,7 @@ class FieldDispositionTest {
 
     /** Profile to (catalog, native fixtures whose stream artifact is inventoried). */
     static final Map<String, List<String>> PROFILE_FIXTURES = Map.of(
-            "claude_stream", List.of(OcsfFixtures.CHILD, OcsfFixtures.INTERRUPTED, "syn-claude-untested-version", OcsfFixtures.LIVE_FEATURES, OcsfFixtures.LIVE_DENIAL, OcsfFixtures.LIVE_CANCELLED, OcsfFixtures.LIVE_MCP),
+            "claude_stream", List.of(OcsfFixtures.CHILD, OcsfFixtures.INTERRUPTED, "syn-claude-untested-version", OcsfFixtures.LIVE_FEATURES, OcsfFixtures.LIVE_DENIAL, OcsfFixtures.LIVE_CANCELLED, OcsfFixtures.LIVE_MCP, OcsfFixtures.SYN_AGENT_DEFAULTS),
             "codex_stream", List.of(OcsfFixtures.CODEX_STREAM, OcsfFixtures.LIVE_CODEX, OcsfFixtures.LIVE_CODEX_CANCELLED, OcsfFixtures.CODEX_FAMILIES, OcsfFixtures.CODEX_TURN_FAILED, OcsfFixtures.LIVE_CODEX_FILE_CHANGE, OcsfFixtures.LIVE_CODEX_MCP, OcsfFixtures.LIVE_CODEX_REASONING, OcsfFixtures.LIVE_CODEX_PLAN, OcsfFixtures.LIVE_CODEX_WEB_SEARCH, OcsfFixtures.LIVE_CODEX_COLLAB_WAIT, OcsfFixtures.LIVE_CODEX_INTERRUPT_OPEN, OcsfFixtures.LIVE_CODEX_SANDBOX_REFUSAL),
             "agy_stream", List.of(OcsfFixtures.LIVE_AGY_FEATURES, OcsfFixtures.LIVE_AGY_DENIAL, OcsfFixtures.LIVE_AGY_INTERRUPT_OPEN, OcsfFixtures.LIVE_AGY_SUBAGENT, OcsfFixtures.LIVE_AGY_MCP_DENIED, OcsfFixtures.LIVE_AGY_MCP));
     static final Map<String, String> CATALOGS = Map.of(

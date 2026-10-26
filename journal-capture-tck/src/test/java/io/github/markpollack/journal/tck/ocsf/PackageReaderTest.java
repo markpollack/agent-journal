@@ -320,7 +320,7 @@ class PackageReaderTest {
         assertThat(child.label()).isEqualTo("child:" + OcsfFixtures.SPAWN);
         assertThat(child.manifest.parent().member("run_uid").text()).isEqualTo("claude-child-2.1.299");
         assertThat(child.events).hasSize(4);
-        assertThat(p.events).hasSize(27);
+        assertThat(p.events).as("27 plus the result record's per-model cost accounting event (ACCT-1)").hasSize(28);
         assertThat(child.manifest.sourceScope().member("owner_value").text()).isEqualTo(OcsfFixtures.SPAWN);
         assertThat(p.manifest.sourceScope().member("owner_value").isNull()).isTrue();
         // applicability comes from the compatibility declaration: 2.1.299 on route sdk is a tested version of the selected entry, so no

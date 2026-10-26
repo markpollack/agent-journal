@@ -61,8 +61,18 @@ final class ClaudeChildUsage {
         UsageTranches.anthropic(observation, usage);
         defaults(observation, usage);
         Jv.Obj ev = msg.ctx().event("session_context", 3, msg.r(), msg.t(), ClaudeStreamMapper.CONTRACT, AGENT_RULE, msg.ts(), msg.uid(), false, null);
-        return ev.put("session_uid", msg.sess()).put("tool_call_uid", resultIds.get(0)).put("context_kind", "user/tool_result")
+        ev.put("session_uid", msg.sess()).put("tool_call_uid", resultIds.get(0)).put("context_kind", "user/tool_result")
                 .put("usage_observations", new Jv.Arr(List.of(observation))).put("basis", AGENT_BASIS).put("data", result);
+        // claude.stream.user.tool_result.agent_state->session_context.accounting: the envelope's own status and total
+        // duration (Agent SDK 0.3.304 AgentOutput) are the child run's reported state and duration in milliseconds, on
+        // the accounting event, never the outer tool call's status
+        if (result.member("status") instanceof Jv.Str status) {
+            ev.put("reported_state", status.value());
+        }
+        if (result.member("totalDurationMs") instanceof Jv.Num duration && duration.value().stripTrailingZeros().scale() <= 0) {
+            ev.put("duration", duration);
+        }
+        return ev;
     }
 
     /**

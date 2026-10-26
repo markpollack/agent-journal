@@ -126,6 +126,11 @@ final class ClaudeStreamProfile implements SourceProfile {
                     }
                     f.costs.add(new ExpectedFacts.Cost(r.index(), o.member("total_cost_usd"), "USD", 4, basis));
                 }
+                modelCosts(f, r.index(), modelUsage);
+                if (SourceProfile.isIntegral(o.member("duration_ms"))) {
+                    // the run's reported wall-clock duration, in milliseconds already: the event's base duration attribute
+                    f.attributes.add(new ExpectedFacts.Attribute(r.index(), "prompt_turn", 2, "duration", o.member("duration_ms")));
+                }
                 for (Json d : o.member("permission_denials") == null ? List.<Json>of() : o.member("permission_denials").elements()) {
                     String deniedCall = SourceProfile.text(d, "tool_use_id");
                     // the entry names the denied call (2.1.304): a reported identifier, unique; otherwise unattributed, never linked by position
@@ -149,6 +154,28 @@ final class ClaudeStreamProfile implements SourceProfile {
         Json iterations = usage == null ? null : usage.member("iterations");
         if (iterations instanceof Json.JArray entries && entries.elements().size() == 1 && "message".equals(SourceProfile.text(entries.elements().get(0), "type"))) {
             f.usages.add(new ExpectedFacts.Usage(index, index, 4, 2, TrancheReading.anthropic(entries.elements().get(0)), null, null, null, 3));
+        }
+    }
+
+    /**
+     * Claude Code's running USD cost per model (ModelUsage.costUSD, a number beside the per-model token totals): one
+     * monetary cost observation per model at scope 6 Model, aggregation 2 Cumulative snapshot (the same running total
+     * the usage figures are), on the result record's accounting event ({@code result/modelUsage}); none when no member
+     * reports a numeric costUSD. With one model it equals total_cost_usd, which remains the run-scope cost of the turn.
+     */
+    static void modelCosts(ExpectedFacts f, int index, Json modelUsage) {
+        if (!(modelUsage instanceof Json.JObject mu)) {
+            return;
+        }
+        boolean any = false;
+        for (Map.Entry<String, Json> m : mu.members().entrySet()) {
+            if (m.getValue().member("costUSD") instanceof Json.JNumber cost) {
+                f.costs.add(new ExpectedFacts.Cost(index, cost, "USD", 6, null, m.getKey(), 1, 2));
+                any = true;
+            }
+        }
+        if (any) {
+            f.contexts.add(new ExpectedFacts.Context(index, 3, "result/modelUsage", null, Map.of(), null, null));
         }
     }
 

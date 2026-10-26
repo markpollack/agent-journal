@@ -79,7 +79,7 @@ class FinalAssemblyClaudeTest {
         assertThat(echo.get("mcp")).as("the stream's MCP projection is carried (single source)").isNotNull();
         Json declared = pkg.declarations.assembly();
         assertThat(declared.path("result", "status").text()).isEqualTo("complete with conflicts");
-        assertThat(declared.path("result", "canonical_events").scalarText()).isEqualTo("61");
+        assertThat(declared.path("result", "canonical_events").scalarText()).isEqualTo("62");
     }
 
     @Test
@@ -92,7 +92,7 @@ class FinalAssemblyClaudeTest {
         assertThat(pkg.diagnostics(Diagnostic.Severity.DEFECT)).as(pkg.diagnostics.toString()).isEmpty();
         assertThat(pkg.declarations.assembly()).as("the assembly is declared in the file itself").isNotNull();
         assertThat(pkg.declarations.assembly().path("profile", "joins").elements()).isNotEmpty();
-        assertThat(pkg.canonical()).as("the canonical projection: single observations and consolidated events").hasSize(61);
+        assertThat(pkg.canonical()).as("the canonical projection: single observations and consolidated events").hasSize(62);
     }
 
     @Test
@@ -133,7 +133,7 @@ class FinalAssemblyClaudeTest {
         OcsfPackage pkg = PackageReader.open(out.resolve("events.jsonl"));
         assertThat(source(pkg, "transcript-again.jsonl").member("verdict").text()).contains("the same import as transcript.jsonl");
         assertThat(pkg.events.stream().filter(e -> "transcript-again.jsonl".equals(e.artifact()))).isEmpty();
-        assertThat(pkg.declarations.assembly().path("result", "canonical_events").scalarText()).isEqualTo("61");
+        assertThat(pkg.declarations.assembly().path("result", "canonical_events").scalarText()).isEqualTo("62");
         assertThat(oracle(out, replay).defects()).as(oracle(out, replay).toString()).isEmpty();
 
         // CDX-R1-05: the same bytes from another origin, with no declared copy lineage: equal content does not say they
@@ -145,7 +145,7 @@ class FinalAssemblyClaudeTest {
         assertThat(source(pkg1, "transcript-copy.jsonl").member("accepted").scalarText()).isEqualTo("false");
         assertThat(source(pkg1, "transcript-copy.jsonl").member("verdict").text()).contains("identical bytes to transcript.jsonl from another origin").contains("no declared copy lineage");
         assertThat(pkg1.events.stream().filter(e -> "transcript-copy.jsonl".equals(e.artifact()))).isEmpty();
-        assertThat(pkg1.declarations.assembly().path("result", "canonical_events").scalarText()).isEqualTo("61");
+        assertThat(pkg1.declarations.assembly().path("result", "canonical_events").scalarText()).isEqualTo("62");
         assertThat(oracle(out1, undeclared).defects()).as(oracle(out1, undeclared).toString()).isEmpty();
 
         // the same input declared a copy of transcript.jsonl: the declared lineage relates the records, the equal bytes verify it
@@ -157,7 +157,7 @@ class FinalAssemblyClaudeTest {
         assertThat(source(pkg2, "transcript-copy.jsonl").member("accepted").scalarText()).isEqualTo("true");
         assertThat(source(pkg2, "transcript-copy.jsonl").member("copy_of").text()).isEqualTo("transcript.jsonl");
         assertThat(pkg2.events.stream().filter(e -> "transcript-copy.jsonl".equals(e.artifact()))).as("its provenance is kept").isNotEmpty();
-        assertThat(pkg2.declarations.assembly().path("result", "canonical_events").scalarText()).as("a copy never becomes extra executions").isEqualTo("61");
+        assertThat(pkg2.declarations.assembly().path("result", "canonical_events").scalarText()).as("a copy never becomes extra executions").isEqualTo("62");
         assertThat(pkg2.events("tool_call", 1)).hasSize(4);
         OracleReport report = oracle(out2, copy);
         assertThat(report.defects()).as(report.toString()).isEmpty();

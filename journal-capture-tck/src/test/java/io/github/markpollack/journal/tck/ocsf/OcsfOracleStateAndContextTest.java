@@ -122,7 +122,7 @@ class OcsfOracleStateAndContextTest {
     void declaredEventCountsAreCheckedAgainstTheFileInEveryState(@TempDir Path work) {
         Path complete = copy(PAIR, work.resolve("complete"));
         editManifest(pkg(complete), run -> obj(run.member("package")).members().put("events_count", num("3")));
-        assertThat(open(complete).diagnosticsWithCode("EVENTS_COUNT_MISMATCH").get(0).detail()).contains("declares 3 event(s) but events.jsonl holds 45");
+        assertThat(open(complete).diagnosticsWithCode("EVENTS_COUNT_MISMATCH").get(0).detail()).contains("declares 3 event(s) but events.jsonl holds 46");
 
         Path recording = copy(PAIR, work.resolve("recording"));
         editManifest(pkg(recording), run -> {
@@ -130,7 +130,7 @@ class OcsfOracleStateAndContextTest {
             obj(run.member("package")).members().put("events_jsonl_sha256", Json.JNull.INSTANCE);
             obj(run.member("package")).members().put("events_count", num("50"));
         });
-        assertThat(open(recording).diagnosticsWithCode("EVENTS_COUNT_MISMATCH").get(0).detail()).contains("declares 50 persisted event(s) but events.jsonl holds only 45");
+        assertThat(open(recording).diagnosticsWithCode("EVENTS_COUNT_MISMATCH").get(0).detail()).contains("declares 50 persisted event(s) but events.jsonl holds only 46");
 
         Path recordingFewer = copy(PAIR, work.resolve("recording-fewer"));
         editManifest(pkg(recordingFewer), run -> {

@@ -297,6 +297,6 @@ class CompatibilityAndIdentityOracleTest {
         OracleReport claude = verify(copy(CHILD, work.resolve("claude")));
         assertThat(claude.outcome("identity.values", "child:" + SPAWN + "/stream.jsonl")).isEqualTo(Outcome.VERIFIED);
         assertThat(claude.check("identity.values", "child:" + SPAWN + "/stream.jsonl").detail()).startsWith("4 normalized event(s)");
-        assertThat(claude.check("identity.values", MAIN).detail()).startsWith("16 normalized event(s)");
+        assertThat(claude.check("identity.values", MAIN).detail()).startsWith("17 normalized event(s)");
     }
 }

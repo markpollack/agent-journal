@@ -4,9 +4,9 @@
  "fixture": "syn-claude-agent-defaults-2.1.304",
  "core": "main",
  "events_jsonl": "fixtures/syn-claude-agent-defaults-2.1.304/package/events.jsonl",
- "events_jsonl_sha256": "c9bafc7a04c5ee448cac095da0b9f77ca5eca3d319e0dce310472dafefb05a63",
- "execution_records": 15,
- "declarations_skipped": 52,
+ "events_jsonl_sha256": "a8272ea209296247654243b328d39cc2f48a02fddf9fd9bf93bf6e7510be1f77",
+ "execution_records": 16,
+ "declarations_skipped": 53,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
  "toolkit": {
   "name": "ocsf-toolkit",
@@ -16,7 +16,7 @@
  },
  "compiled_schema_sha256": "da6317bacfd3f579f09331c93109219bf8f4616a23e251eba22928b5bad6f52d",
  "result": {
-  "event_files_processed": 15,
+  "event_files_processed": 16,
   "error_events": 0,
   "warning_only_events": 3,
   "issues_reported": 0

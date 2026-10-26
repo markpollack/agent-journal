@@ -43,8 +43,8 @@ public final class OcsfOracle {
             "population.results", "result.owner", "result.values", "population.responses", "response.values", "population.prompts",
             "prompt.values", "population.usage", "usage.values", "population.cost", "cost.values", "population.decisions", "decision.values",
             "population.operations", "operation.values", "population.turn_completed", "turn.values", "population.turn_started",
-            "turn_started.values", "population.contexts", "context.values", "population.mcp", "mcp.values", "population.tool_errors", "tool_error.values", "time.basis", "identity.values",
-            "reconstruction.coverage", "reconstruction.structure_value");
+            "turn_started.values", "population.contexts", "context.values", "attribute.values", "population.mcp", "mcp.values", "population.tool_errors", "tool_error.values",
+            "time.basis", "identity.values", "reconstruction.coverage", "reconstruction.structure_value");
 
     private final OracleReport report = new OracleReport();
     private final Path nativeDir;
@@ -309,6 +309,7 @@ public final class OcsfOracle {
                 turns(owed, events, owner);
                 started(owed, events, owner);
                 contexts(owed, events, owner);
+                attributes(owed, events, owner);
                 mcp(owed, events, owner, core);
                 toolErrors(owed, events, owner);
                 time(owed, events, owner);
@@ -814,7 +815,7 @@ public final class OcsfOracle {
         for (String p : List.of("population.requests", "request.values", "population.results", "result.owner", "result.values", "population.responses", "response.values",
                 "population.prompts", "prompt.values", "population.usage", "usage.values", "population.cost", "cost.values", "population.decisions", "decision.values",
                 "population.operations", "operation.values", "population.turn_completed", "turn.values", "population.turn_started", "turn_started.values",
-                "population.contexts", "context.values", "population.mcp", "mcp.values", "population.tool_errors", "tool_error.values")) {
+                "population.contexts", "context.values", "attribute.values", "population.mcp", "mcp.values", "population.tool_errors", "tool_error.values")) {
             report.add(Category.NORMALIZATION, p, owner, Outcome.UNSUPPORTED, families);
         }
         String cause = why.endsWith(": normalization is not claimed for this source") ? why.substring(0, why.length() - ": normalization is not claimed for this source".length()) : why;
@@ -1548,18 +1549,34 @@ public final class OcsfOracle {
         return out;
     }
 
+    /**
+     * Cost observations: the event's one {@code cost_observation} (keyed by record) and, for a profile that expects
+     * per-model costs, the entries of {@code cost_observations[]} keyed by record and model. The
+     * population is the set of these keys on both sides; a plural entry the profile does not expect, or an expected one
+     * that is missing, is a population defect. Each expected cost's amount, currency, scope, basis and, when the profile
+     * states them, model, quantity kind and aggregation are compared.
+     */
     private void cost(ExpectedFacts facts, List<Event> events, String owner) {
         List<String> expected = new ArrayList<>();
         for (ExpectedFacts.Cost c : facts.costs) {
-            expected.add(Integer.toString(c.recordIndex()));
+            expected.add(c.key());
         }
+        boolean pluralExpected = facts.costs.stream().anyMatch(c -> c.model() != null);
         List<String> actual = new ArrayList<>();
-        Map<String, Json> byRecord = new LinkedHashMap<>();
+        Map<String, Json> byKey = new LinkedHashMap<>();
         for (Event e : events) {
             Json c = e.get("cost_observation");
             if (c != null) {
-                actual.add(String.valueOf(e.recordIndex()));
-                byRecord.put(String.valueOf(e.recordIndex()), c);
+                String key = e.recordIndex() + ":-";
+                actual.add(key);
+                byKey.put(key, c);
+            }
+            if (pluralExpected) {
+                for (Json p : e.elements("cost_observations")) {
+                    String key = e.recordIndex() + ":" + SchemaCatalog.text(p.member("model_ref"), "name");
+                    actual.add(key);
+                    byKey.put(key, p);
+                }
             }
         }
         populationCheck("population.cost", owner, expected, actual);
@@ -1567,23 +1584,66 @@ public final class OcsfOracle {
         List<String> representation = new ArrayList<>();
         int examined = 0;
         for (ExpectedFacts.Cost c : facts.costs) {
-            Json o = byRecord.get(Integer.toString(c.recordIndex()));
-            if (o == null) {
-                continue;
-            }
-            examined++;
-            compare("record " + c.recordIndex() + " total_cost", c.amount(), o.member("total_cost"), problems, representation);
-            if (!c.currency().equals(SchemaCatalog.text(o, "currency"))) {
-                problems.add("record " + c.recordIndex() + " currency " + SchemaCatalog.text(o, "currency") + " != " + c.currency());
-            }
-            if (!Objects.equals(Event.integer(o.member("scope_id")), c.scopeId())) {
-                problems.add("record " + c.recordIndex() + " scope_id " + (o.member("scope_id") == null ? null : o.member("scope_id").scalarText()) + " != " + c.scopeId());
-            }
-            if (!Objects.equals(c.basis(), SchemaCatalog.text(o, "cost_basis"))) {
-                problems.add("record " + c.recordIndex() + " cost_basis " + SchemaCatalog.text(o, "cost_basis") + " != reported " + c.basis());
+            Json o = byKey.get(c.key());
+            if (o != null) {
+                examined++;
+                costValues(c, o, problems, representation);
             }
         }
         valueCheck("cost.values", owner, examined, problems, representation);
+    }
+
+    /** One expected cost against its observation: amount, currency, scope, basis and, when the profile states them, quantity kind and aggregation. */
+    private static void costValues(ExpectedFacts.Cost c, Json o, List<String> problems, List<String> representation) {
+        String what = "record " + c.recordIndex() + (c.model() == null ? "" : " model " + c.model());
+        compare(what + " total_cost", c.amount(), o.member("total_cost"), problems, representation);
+        if (!c.currency().equals(SchemaCatalog.text(o, "currency"))) {
+            problems.add(what + " currency " + SchemaCatalog.text(o, "currency") + " != " + c.currency());
+        }
+        if (!Objects.equals(Event.integer(o.member("scope_id")), c.scopeId())) {
+            problems.add(what + " scope_id " + (o.member("scope_id") == null ? null : o.member("scope_id").scalarText()) + " != " + c.scopeId());
+        }
+        if (!Objects.equals(c.basis(), SchemaCatalog.text(o, "cost_basis"))) {
+            problems.add(what + " cost_basis " + SchemaCatalog.text(o, "cost_basis") + " != reported " + c.basis());
+        }
+        if (c.quantityKindId() != null) {
+            stated(what + " quantity_kind_id", c.quantityKindId(), Event.integer(o.member("quantity_kind_id")), problems);
+        }
+        if (c.aggregationId() != null) {
+            stated(what + " aggregation_id", c.aggregationId(), Event.integer(o.member("aggregation_id")), problems);
+        }
+        if (o.member("data") == null) {
+            problems.add(what + " data absent: the native member the cost comes from is not retained on the observation");
+        }
+    }
+
+    /**
+     * Established attribute facts outside the usage and cost families ({@link ExpectedFacts#attributes}): the event of
+     * the record, class and activity must carry the attribute with exactly the native value; a missing event or
+     * attribute, or two events for one expectation, is a defect. No population check: an attribute the profile does not
+     * expect is inventoried by the assertion census, not judged here.
+     */
+    private void attributes(ExpectedFacts facts, List<Event> events, String owner) {
+        List<String> problems = new ArrayList<>();
+        List<String> representation = new ArrayList<>();
+        int examined = 0;
+        for (ExpectedFacts.Attribute a : facts.attributes) {
+            List<Event> at = events.stream().filter(e -> e.is(a.className(), a.activityId()) && Objects.equals(e.recordIndex(), a.recordIndex())).toList();
+            examined++;
+            if (at.isEmpty()) {
+                problems.add(a.key() + ": no " + a.className() + "/" + a.activityId() + " event for record " + a.recordIndex());
+            }
+            else if (at.size() > 1) {
+                problems.add(a.key() + ": " + at.size() + " events of " + a.className() + "/" + a.activityId() + " for record " + a.recordIndex() + "; the attribute's event is not established");
+            }
+            else if (at.get(0).get(a.attribute()) == null) {
+                problems.add(a.key() + " absent on " + at.get(0) + " (native value " + a.value().scalarText() + ")");
+            }
+            else {
+                compare(a.key(), a.value(), at.get(0).get(a.attribute()), problems, representation);
+            }
+        }
+        valueCheck("attribute.values", owner, examined, problems, representation);
     }
 
     /**

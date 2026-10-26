@@ -143,6 +143,10 @@ final class ClaudeStreamMapper implements SourceMapper {
             Jv.Obj ev = ctx.event("prompt_turn", 2, r, t, CONTRACT, "claude.stream.result->prompt_turn.completed", ts, uid, true,
                     new MapperSupport.Status(success ? 1 : 2, 1, "reported: result.subtype and result.is_error"));
             ev.put("session_uid", sess).put("stop_reason", text(o, "stop_reason")).put("usage_observations", obs);
+            if (o.member("duration_ms") instanceof Jv.Num duration && duration.value().stripTrailingZeros().scale() <= 0) {
+                // claude.stream.result.duration->prompt_turn.duration: the run's reported wall-clock milliseconds, copied
+                ev.put("duration", duration);
+            }
             if (o.member("total_cost_usd") instanceof Jv.Num cost) {
                 Jv.Obj co = new Jv.Obj().put("total_cost", cost).put("currency", "USD").put("scope_id", 4).put("scope", "Run");
                 if (costBasis != null) {
@@ -165,6 +169,10 @@ final class ClaudeStreamMapper implements SourceMapper {
             }
             ev.put("data", o);
             ctx.emit(owner, ev);
+            Jv.Obj modelCosts = modelCosts(ctx, r, o, sess);
+            if (modelCosts != null) {
+                ctx.emit(owner, modelCosts);
+            }
             return;
         }
         if ("system".equals(type) && "init".equals(subtype)) {
@@ -198,5 +206,38 @@ final class ClaudeStreamMapper implements SourceMapper {
         ctx.family(family, r.raw().length, "system/thinking_tokens".equals(family) ? "retained-only: vendor estimate of thinking tokens so far (not reported usage)"
                 : "rate_limit_event".equals(family) ? "retained-only: vendor rate-limit status" : "retained-only: no normalization rule");
         ctx.emit(owner, ctx.fallback(r, CONTRACT, "claude.stream.fallback->source_record", family, ts, uid, sess, null));
+    }
+
+    static final String MODEL_COST_RULE = "claude.stream.result.model_cost->session_context.accounting";
+    static final String MODEL_COST_BASIS = "claude.stream.model_cost.v1: ModelUsage.costUSD is Claude Code's running USD cost per model (scope 6 Model, aggregation 2 "
+            + "Cumulative snapshot, the same running total the per-model usage figures are; a resumed session's earlier turns are included); with one model it equals "
+            + "total_cost_usd, which stays the turn's run-scope cost observation; per-model costs are never summed with it or with each other";
+
+    /**
+     * {@link #MODEL_COST_RULE}: the result record's per-model running cost as one accounting event ({@code result/modelUsage})
+     * carrying one monetary cost observation per model member that reports a numeric costUSD, or {@code null} when none
+     * does. The event's data is the modelUsage object; each observation's data is the member it copies.
+     */
+    static Jv.Obj modelCosts(SourceContext ctx, NativeRecord r, Jv record, String sess) {
+        if (!(record.member("modelUsage") instanceof Jv.Obj models)) {
+            return null;
+        }
+        String ts = text(record, "timestamp");
+        String uid = text(record, "uuid");
+        MapperSupport.Time t = ctx.timeFor(r, ts);
+        Jv.Arr costs = new Jv.Arr();
+        for (var m : models.members().entrySet()) {
+            if (m.getValue().member("costUSD") instanceof Jv.Num cost) {
+                costs.add(new Jv.Obj().put("total_cost", cost).put("currency", "USD").put("quantity_kind_id", 1).put("quantity_kind", CopilotAccounting.QUANTITY_KIND.get(1))
+                        .put("scope_id", 6).put("scope", MapperSupport.SCOPE.get(6)).put("aggregation_id", 2).put("aggregation", UsageTranches.AGGREGATION.get(2))
+                        .put("model_ref", MapperSupport.modelRef(m.getKey(), 1, text(m.getValue(), "provider")))
+                        .put("source_ref", ctx.sourceRef(r, uid, ts, false)).put("data", new Jv.Obj().put("costUSD", cost)));
+            }
+        }
+        if (costs.elements().isEmpty()) {
+            return null;
+        }
+        Jv.Obj ev = ctx.event("session_context", 3, r, t, CONTRACT, MODEL_COST_RULE, ts, uid, false, null);
+        return ev.put("session_uid", sess).put("context_kind", "result/modelUsage").put("cost_observations", costs).put("basis", MODEL_COST_BASIS).put("data", models);
     }
 }

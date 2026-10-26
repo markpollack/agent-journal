@@ -311,7 +311,8 @@ public final class RawInventory {
         }
     }
 
-    static String kind(Json v) {
+    /** The inventory's kind of a value: integer or decimal for a number, else the JSON kind. */
+    public static String kind(Json v) {
         if (v instanceof Json.JNumber n) {
             return n.value().stripTrailingZeros().scale() <= 0 ? "integer" : "decimal";
         }

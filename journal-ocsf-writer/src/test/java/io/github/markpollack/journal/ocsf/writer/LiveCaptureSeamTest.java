@@ -50,7 +50,7 @@ class LiveCaptureSeamTest {
         assertThat(p.declarations.lineOf("cli_version:reported")).isNotNull();
         assertThat(p.declarations.lineOf("cli_version:reported")).as("declared after the init record's event, before anything that follows")
                 .isGreaterThan(p.declarations.lineOf("source:stream.jsonl"));
-        assertThat(p.events).hasSize(54);
+        assertThat(p.events).as("53 plus the result record's per-model cost accounting event (ACCT-1)").hasSize(55);
         assertThat(p.children).hasSize(1);
 
         // the standalone file alone also knows the reported version
