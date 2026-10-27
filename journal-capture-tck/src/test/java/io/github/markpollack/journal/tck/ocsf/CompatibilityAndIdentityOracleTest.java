@@ -193,7 +193,7 @@ class CompatibilityAndIdentityOracleTest {
         OcsfFixtures.editEvents(pkg(fixture), events -> obj(OcsfFixtures.at(events, "model_response", 1, 4).member("journal")).members().put("contract_uid", str("common/opaque-text/0.2.0-prototype")));
         OracleReport r = verify(fixture);
         assertThat(r.outcome("source.compatibility", MAIN)).isEqualTo(Outcome.DEFECTIVE);
-        assertThat(r.check("source.compatibility", MAIN).detail()).contains("1 normalized event(s) carry a contract other than the source's declared claude-code/stream-json/2.1.303/0.7.0-prototype");
+        assertThat(r.check("source.compatibility", MAIN).detail()).contains("1 normalized event(s) carry a contract other than the source's declared claude-code/stream-json/2.1.303/0.8.0-prototype");
     }
 
     @Test

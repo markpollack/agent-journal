@@ -1,666 +1,734 @@
 {
- "kind": "agent-journal/canonical-obligations",
- "version": "0.4",
- "profile": "claude_stream",
- "scope": "the Claude Code stream-json profile's established execution facts with canonical capacity, in the registered recordings of the bindings below: every native member whose key names tokens (SourceAvailability.TOKEN_KEY) and every member inside a usage obligation's payload (the token-usage family), plus the non-token obligations stated here (per-model reported cost, the run's reported duration, the Agent result's reported status and duration). Members outside these obligations are accounted for by the field-disposition catalog's reviewed classifications (vendor_residual, structural, redundant, common_capacity_gap, candidate) and reported by the cross-CLI occurrence ledger; a candidate or capacity-gap classification is visible debt, not a discharged fact",
- "disposition_catalog": "schema/vendor/claude-code/stream-json/dispositions.json",
- "contract": "claude-code-2.1.303-stream",
- "owner_path": "parent_tool_use_id",
- "owner_rule": "a record whose parent_tool_use_id names a tool call belongs to the child core of that call (child:<id>); a record without one belongs to main (the contract's owner_routing)",
- "rule_of_obligation": "An obligation is a required canonical outcome: every native occurrence its trigger selects in a registered recording (counted from the native record alone, before any candidate output is read) must reach its destination in the owner's core with every stated value, and the oracle's own source profile must expect it. Retention of the containing record, a broad subtree disposition or another owner's passing check never discharges it. A residual is a reviewed token-named member that owes no canonical outcome (vendor_specific) or whose classification is an open question (unresolved); its path is an exact leaf, or an array or object whose listed members it covers (an array residual with entry_types covers only entries of those types); a residual owes nothing only once an Owner decision approves its classification at its digest. meaning_digest is sha256 over the canonical JSON of {owner_path, trigger, destination, observation, semantics}: a changed meaning needs a new revision. relevant_digest is sha256 over the canonical JSON of the extension definitions of the destination (its usage observation with every enum value, the unit member and the context kind), the destination class's description, every extension object the usage observation reaches (whole, descriptions included, with their attributes' dictionary entries) and the contract rules the obligation names: a change makes the binding stale until it is restated and reviewed. The review status written here is a label; only owner-decisions.json approves. kind states the required outcome: usage (a usage observation; the default), cost (an entry of the destination's cost_observations[] at the stated scope and model, with currency, quantity kind and aggregation) or attribute (one attribute of the destination event equal to the native value). writer.basis_prefixes binds the writer's basis labels that assert the meaning, and rules the contract rules the event may be written under: the gate checks both on every discharged occurrence (ACCT-1), so a writer label is never trusted by its wording or its revision suffix",
- "bindings": [
-  {
-   "compatibility_entry": "claude-code/stream-json/2.1.299-sdk",
-   "recordings": [
-    "claude-child-2.1.299",
-    "claude-child-2.1.299-interrupted"
-   ]
-  },
-  {
-   "compatibility_entry": "claude-code/stream-json/2.1.304-stdout",
-   "recordings": [
-    "claude-live-2.1.304-features",
-    "claude-live-2.1.304-denial",
-    "claude-live-2.1.304-cancelled",
-    "claude-live-2.1.304-mcp",
-    "claude-live-2.1.304-mcp-pair"
-   ]
-  }
- ],
- "obligations": [
-  {
-   "id": "claude.stream.usage.model-response",
-   "revision": 1,
-   "concepts": [
-    "usage-components-and-cache",
-    "usage-scope-finality-and-repeats"
-   ],
-   "claims": [
-    "claude.stream.usage-tranches"
-   ],
-   "trigger": {
-    "variant": "assistant",
-    "payload": "message.usage"
-   },
-   "destination": {
-    "class": "model_response"
-   },
-   "observation": {
-    "scope_id": 2,
-    "usage_status": {
-     "from": "message.stop_reason",
-     "null": 1,
-     "otherwise": 2
+  "kind": "agent-journal/canonical-obligations",
+  "version": "0.5",
+  "profile": "claude_stream",
+  "scope": "the Claude Code stream-json profile's established execution facts with canonical capacity, in the registered recordings of the bindings below: every native member whose key names tokens (SourceAvailability.TOKEN_KEY) and every member inside a usage obligation's payload (the token-usage family), plus the non-token obligations stated here (per-model reported cost, the run's reported duration, the Agent result's reported status and duration). Members outside these obligations are accounted for by the field-disposition catalog's reviewed classifications (vendor_residual, structural, redundant, common_capacity_gap, candidate) and reported by the cross-CLI occurrence ledger; a candidate or capacity-gap classification is visible debt, not a discharged fact",
+  "disposition_catalog": "schema/vendor/claude-code/stream-json/dispositions.json",
+  "contract": "claude-code-2.1.303-stream",
+  "owner_path": "parent_tool_use_id",
+  "owner_rule": "a record whose parent_tool_use_id names a tool call belongs to the child core of that call (child:<id>); a record without one belongs to main (the contract's owner_routing)",
+  "rule_of_obligation": "An obligation is a required canonical outcome: every native occurrence its trigger selects in a registered recording (counted from the native record alone, before any candidate output is read) must reach its destination in the owner's core with every stated value, and the oracle's own source profile must expect it. Retention of the containing record, a broad subtree disposition or another owner's passing check never discharges it. A residual is a reviewed token-named member that owes no canonical outcome (vendor_specific) or whose classification is an open question (unresolved); its path is an exact leaf, or an array or object whose listed members it covers (an array residual with entry_types covers only entries of those types); a residual owes nothing only once an Owner decision approves its classification at its digest. meaning_digest is sha256 over the canonical JSON of {owner_path, trigger, destination, observation, semantics}: a changed meaning needs a new revision. relevant_digest is sha256 over the canonical JSON of the extension definitions of the destination (its usage observation with every enum value, the unit member and the context kind), the destination class's description, every extension object the usage observation reaches (whole, descriptions included, with their attributes' dictionary entries) and the contract rules the obligation names: a change makes the binding stale until it is restated and reviewed. The review status written here is a label; only owner-decisions.json approves. kind states the required outcome: usage (a usage observation; the default), cost (an entry of the destination's cost_observations[] at the stated scope and model, with currency, quantity kind and aggregation) or attribute (one attribute of the destination event equal to the native value). writer.basis_prefixes binds the writer's basis labels that assert the meaning, and rules the contract rules the event may be written under: the gate checks both on every discharged occurrence (ACCT-1), so a writer label is never trusted by its wording or its revision suffix",
+  "bindings": [
+    {
+      "compatibility_entry": "claude-code/stream-json/2.1.299-sdk",
+      "recordings": [
+        "claude-child-2.1.299",
+        "claude-child-2.1.299-interrupted"
+      ]
     },
-    "aggregation_id": 1,
-    "model": "message.model",
-    "components": {
-     "uncached_input_tokens": "input_tokens",
-     "cache_read_tokens": "cache_read_input_tokens",
-     "cache_write_tokens": "cache_creation_input_tokens",
-     "output_tokens": "output_tokens",
-     "reasoning_tokens": "output_tokens_details.thinking_tokens"
-    },
-    "tiers": "cache_creation"
-   },
-   "semantics": "one assistant record's message.usage is the usage of that one API message (scope 2 Model response), provisional while stop_reason is null; tranches are disjoint (input_tokens is the uncached tranche)",
-   "checks": [
-    "CanonicalObligations#judge",
-    "OcsfOracle population.usage",
-    "OcsfOracle usage.values"
-   ],
-   "review": {
-    "status": "proposed",
-    "note": "the claim claude.stream.usage-tranches r2 is not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed)"
-   },
-   "rules": [
-    "claude.stream.assistant->model_response"
-   ],
-   "meaning_digest": "sha256:53e758952b66e16280d5804822e08b6e60d849a0a696f4e235a32b007a5067d0",
-   "relevant_digest": "sha256:b5ecc6dfd1e8395a07383d52414e2628a730032103b55178bc2d8d1b32109f0a",
-   "writer": {
-    "basis_prefixes": [
-     "claude.stream.usage_status.v1"
-    ]
-   }
-  },
-  {
-   "id": "claude.stream.usage.run",
-   "revision": 1,
-   "concepts": [
-    "usage-components-and-cache",
-    "usage-scope-finality-and-repeats"
-   ],
-   "claims": [
-    "claude.stream.usage-tranches"
-   ],
-   "trigger": {
-    "variant": "result",
-    "payload": "usage"
-   },
-   "destination": {
-    "class": "prompt_turn",
-    "activity_id": 2
-   },
-   "observation": {
-    "scope_id": 4,
-    "usage_status": {
-     "value": 2
-    },
-    "aggregation_id": null,
-    "components": {
-     "uncached_input_tokens": "input_tokens",
-     "cache_read_tokens": "cache_read_input_tokens",
-     "cache_write_tokens": "cache_creation_input_tokens",
-     "output_tokens": "output_tokens",
-     "reasoning_tokens": "output_tokens_details.thinking_tokens"
-    },
-    "tiers": "cache_creation"
-   },
-   "semantics": "the result record's usage is reported once for the run (scope 4, Final); whether it includes child runs is not established, so no aggregation is stated",
-   "checks": [
-    "CanonicalObligations#judge",
-    "OcsfOracle population.usage",
-    "OcsfOracle usage.values"
-   ],
-   "review": {
-    "status": "proposed",
-    "note": "the claim claude.stream.usage-tranches r2 is not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed)"
-   },
-   "rules": [
-    "claude.stream.result->prompt_turn.completed"
-   ],
-   "meaning_digest": "sha256:3577e092bf9291483ef0e91850882aa0a134bd13a3c5ec3f0c022525975d13fb",
-   "relevant_digest": "sha256:0ff61a4278e880158f0cf04f8f1dab10fefc6ab604ecd5525f948170dbcb4a54",
-   "writer": {
-    "basis_prefixes": [
-     "claude.stream.result_usage.v1"
-    ]
-   }
-  },
-  {
-   "id": "claude.stream.usage.run.last-response",
-   "revision": 1,
-   "concepts": [
-    "usage-components-and-cache",
-    "usage-scope-finality-and-repeats"
-   ],
-   "claims": [],
-   "trigger": {
-    "variant": "result",
-    "payload": "usage.iterations[]",
-    "sole_entry_type": "message"
-   },
-   "destination": {
-    "class": "prompt_turn",
-    "activity_id": 2
-   },
-   "observation": {
-    "scope_id": 4,
-    "usage_status": {
-     "value": 2
-    },
-    "aggregation_id": 3,
-    "components": {
-     "uncached_input_tokens": "input_tokens",
-     "cache_read_tokens": "cache_read_input_tokens",
-     "cache_write_tokens": "cache_creation_input_tokens",
-     "output_tokens": "output_tokens"
-    },
-    "tiers": "cache_creation"
-   },
-   "semantics": "the result record's usage.iterations[] is the per-sampling-iteration usage of the run's last main-thread API response, carried unsummed (retained Claude Code 2.1.304 emitter: the run accumulator sums every response's top-level tranches but takes iterations from the latest one; Anthropic SDK 0.135.0 BetaIterationsUsage: one entry per sampling iteration of one response, typed message, compaction, advisor_message or fallback_message, a compaction entry's tokens outside the top-level usage). When the array holds exactly one entry, of type message, that entry is the whole usage of that one response: scope 4 Run (whose activity: this run), Final (reported once at the run's end), aggregation 3 Single response (one response of the run, which the record does not identify); the stream records the same response provisionally under its own id and its final output there is not otherwise canonical on this route. It is never added to the run total or any other observation, never joined to a response by equal values, and no model is stated (the entry names none in the recordings). An array of several entries, or one of another type, does not report that response's own usage (no source rule combines iterations), so such an occurrence is not representable: an explicit gap, never a guessed sum or choice. Recordings: the 2.1.299 child run and the 2.1.304 stdout runs with a result record (features, denial, mcp and its byte-identical mcp-pair) each hold one message entry whose input tranches equal the last main-thread streamed record's (for example 2.1.304 features: 2/29493/592 input side, 521 output against the streamed record's provisional 7)",
-   "checks": [
-    "CanonicalObligations#judge",
-    "OcsfOracle population.usage",
-    "OcsfOracle usage.values"
-   ],
-   "review": {
-    "status": "proposed",
-    "note": "closeout candidate (2026-10-25): replaces the R1 vendor_specific residual of result:usage.iterations[], whose missing response identity did not justify owing nothing; returned for semantic review, not approved; ACCT-1 (2026-10-26): rules now also name the event rule the observation rides on (claude.stream.result->prompt_turn.completed), so the relevant digest is restated; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed)"
-   },
-   "rules": [
-    "claude.stream.result->prompt_turn.completed",
-    "claude.stream.result.last_response_usage->prompt_turn.usage"
-   ],
-   "meaning_digest": "sha256:f2d10fd3f4ffa2e13ea113fc20d333b88f3bc9ca70824d57313000222d75fd2f",
-   "relevant_digest": "sha256:0297dafd2b2e74fda69a326e38efeab05e1f6a89693c66231edbb65c08200adf",
-   "writer": {
-    "basis_prefixes": [
-     "claude.stream.last_response_usage.v1"
-    ]
-   }
-  },
-  {
-   "id": "claude.stream.usage.model",
-   "revision": 1,
-   "concepts": [
-    "usage-components-and-cache",
-    "usage-scope-finality-and-repeats",
-    "model-identity-and-provider"
-   ],
-   "claims": [],
-   "trigger": {
-    "variant": "result",
-    "payload": "modelUsage.{*}"
-   },
-   "destination": {
-    "class": "prompt_turn",
-    "activity_id": 2
-   },
-   "observation": {
-    "scope_id": 6,
-    "usage_status": {
-     "value": 2
-    },
-    "aggregation_id": 2,
-    "model": "{key}",
-    "components": {
-     "uncached_input_tokens": "inputTokens",
-     "cache_read_tokens": "cacheReadInputTokens",
-     "cache_write_tokens": "cacheCreationInputTokens",
-     "output_tokens": "outputTokens",
-     "reasoning_tokens": "thinkingTokens"
+    {
+      "compatibility_entry": "claude-code/stream-json/2.1.304-stdout",
+      "recordings": [
+        "claude-live-2.1.304-features",
+        "claude-live-2.1.304-denial",
+        "claude-live-2.1.304-cancelled",
+        "claude-live-2.1.304-mcp",
+        "claude-live-2.1.304-mcp-pair"
+      ]
     }
-   },
-   "semantics": "each modelUsage member is Claude Code's running total for that model (scope 6 Model, aggregation 2 Cumulative snapshot), keyed by the model name",
-   "checks": [
-    "CanonicalObligations#judge",
-    "OcsfOracle population.usage",
-    "OcsfOracle usage.values"
-   ],
-   "review": {
-    "status": "proposed",
-    "note": "no approved claim covers ModelUsage on this route; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed)"
-   },
-   "rules": [
-    "claude.stream.result->prompt_turn.completed"
-   ],
-   "meaning_digest": "sha256:fceec05bd0a9faeb86b9a48f23bdd730ab0f4d1cd16d14a27a0219524c1d6123",
-   "relevant_digest": "sha256:0ff61a4278e880158f0cf04f8f1dab10fefc6ab604ecd5525f948170dbcb4a54",
-   "writer": {
-    "basis_prefixes": [
-     "claude.stream.result_usage.v1"
-    ]
-   }
-  },
-  {
-   "id": "claude.stream.usage.child-run.agent-result",
-   "revision": 3,
-   "concepts": [
-    "usage-components-and-cache",
-    "usage-scope-finality-and-repeats",
-    "child-runs"
-   ],
-   "claims": [],
-   "trigger": {
-    "variant": "user/tool_result",
-    "payload": "tool_use_result.usage",
-    "requested_tool": [
-     "Agent"
-    ],
-    "unit": "message.content[].tool_use_id"
-   },
-   "destination": {
-    "class": "session_context",
-    "activity_id": 3,
-    "context_kind": "user/tool_result",
-    "unit_member": "tool_call_uid"
-   },
-   "observation": {
-    "scope_id": 7,
-    "usage_status": {
-     "value": 2
+  ],
+  "obligations": [
+    {
+      "id": "claude.stream.usage.model-response",
+      "revision": 1,
+      "concepts": [
+        "usage-components-and-cache",
+        "usage-scope-finality-and-repeats"
+      ],
+      "claims": [
+        "claude.stream.usage-tranches"
+      ],
+      "trigger": {
+        "variant": "assistant",
+        "payload": "message.usage"
+      },
+      "destination": {
+        "class": "model_response"
+      },
+      "observation": {
+        "scope_id": 2,
+        "usage_status": {
+          "from": "message.stop_reason",
+          "null": 1,
+          "otherwise": 2
+        },
+        "aggregation_id": 1,
+        "model": "message.model",
+        "components": {
+          "uncached_input_tokens": "input_tokens",
+          "cache_read_tokens": "cache_read_input_tokens",
+          "cache_write_tokens": "cache_creation_input_tokens",
+          "output_tokens": "output_tokens",
+          "reasoning_tokens": "output_tokens_details.thinking_tokens"
+        },
+        "tiers": "cache_creation"
+      },
+      "semantics": "one assistant record's message.usage is the usage of that one API message (scope 2 Model response), provisional while stop_reason is null; tranches are disjoint (input_tokens is the uncached tranche)",
+      "checks": [
+        "CanonicalObligations#judge",
+        "OcsfOracle population.usage",
+        "OcsfOracle usage.values"
+      ],
+      "review": {
+        "status": "proposed",
+        "note": "the claim claude.stream.usage-tranches r2 is not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed)"
+      },
+      "rules": [
+        "claude.stream.assistant->model_response"
+      ],
+      "meaning_digest": "sha256:53e758952b66e16280d5804822e08b6e60d849a0a696f4e235a32b007a5067d0",
+      "relevant_digest": "sha256:7e12115c9f71697598905531cf99b8464db3cd2450faae673f3a5b6d6c9e4995",
+      "writer": {
+        "basis_prefixes": [
+          "claude.stream.usage_status.v1"
+        ]
+      }
     },
-    "aggregation_id": 3,
-    "measurement_status": {
-     "possibly_default_when_zero": [
-      "input_tokens",
-      "cache_creation_input_tokens",
-      "cache_read_input_tokens",
-      "output_tokens"
-     ],
-     "and_no_entry_in": "iterations"
+    {
+      "id": "claude.stream.usage.run",
+      "revision": 1,
+      "concepts": [
+        "usage-components-and-cache",
+        "usage-scope-finality-and-repeats"
+      ],
+      "claims": [
+        "claude.stream.usage-tranches"
+      ],
+      "trigger": {
+        "variant": "result",
+        "payload": "usage"
+      },
+      "destination": {
+        "class": "prompt_turn",
+        "activity_id": 2
+      },
+      "observation": {
+        "scope_id": 4,
+        "usage_status": {
+          "value": 2
+        },
+        "aggregation_id": null,
+        "components": {
+          "uncached_input_tokens": "input_tokens",
+          "cache_read_tokens": "cache_read_input_tokens",
+          "cache_write_tokens": "cache_creation_input_tokens",
+          "output_tokens": "output_tokens",
+          "reasoning_tokens": "output_tokens_details.thinking_tokens"
+        },
+        "tiers": "cache_creation"
+      },
+      "semantics": "the result record's usage is reported once for the run (scope 4, Final); whether it includes child runs is not established, so no aggregation is stated",
+      "checks": [
+        "CanonicalObligations#judge",
+        "OcsfOracle population.usage",
+        "OcsfOracle usage.values"
+      ],
+      "review": {
+        "status": "proposed",
+        "note": "the claim claude.stream.usage-tranches r2 is not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed)"
+      },
+      "rules": [
+        "claude.stream.result->prompt_turn.completed"
+      ],
+      "meaning_digest": "sha256:3577e092bf9291483ef0e91850882aa0a134bd13a3c5ec3f0c022525975d13fb",
+      "relevant_digest": "sha256:30b4c5c8f61acc5fada6e88383d001e30be89290799c0a7a15a9c26b8887f009",
+      "writer": {
+        "basis_prefixes": [
+          "claude.stream.result_usage.v1"
+        ]
+      }
     },
-    "components": {
-     "uncached_input_tokens": "input_tokens",
-     "cache_read_tokens": "cache_read_input_tokens",
-     "cache_write_tokens": "cache_creation_input_tokens",
-     "output_tokens": "output_tokens",
-     "reasoning_tokens": "output_tokens_details.thinking_tokens"
+    {
+      "id": "claude.stream.usage.run.last-response",
+      "revision": 1,
+      "concepts": [
+        "usage-components-and-cache",
+        "usage-scope-finality-and-repeats"
+      ],
+      "claims": [],
+      "trigger": {
+        "variant": "result",
+        "payload": "usage.iterations[]",
+        "sole_entry_type": "message"
+      },
+      "destination": {
+        "class": "prompt_turn",
+        "activity_id": 2
+      },
+      "observation": {
+        "scope_id": 4,
+        "usage_status": {
+          "value": 2
+        },
+        "aggregation_id": 3,
+        "components": {
+          "uncached_input_tokens": "input_tokens",
+          "cache_read_tokens": "cache_read_input_tokens",
+          "cache_write_tokens": "cache_creation_input_tokens",
+          "output_tokens": "output_tokens"
+        },
+        "tiers": "cache_creation"
+      },
+      "semantics": "the result record's usage.iterations[] is the per-sampling-iteration usage of the run's last main-thread API response, carried unsummed (retained Claude Code 2.1.304 emitter: the run accumulator sums every response's top-level tranches but takes iterations from the latest one; Anthropic SDK 0.135.0 BetaIterationsUsage: one entry per sampling iteration of one response, typed message, compaction, advisor_message or fallback_message, a compaction entry's tokens outside the top-level usage). When the array holds exactly one entry, of type message, that entry is the whole usage of that one response: scope 4 Run (whose activity: this run), Final (reported once at the run's end), aggregation 3 Single response (one response of the run, which the record does not identify); the stream records the same response provisionally under its own id and its final output there is not otherwise canonical on this route. It is never added to the run total or any other observation, never joined to a response by equal values, and no model is stated (the entry names none in the recordings). An array of several entries, or one of another type, does not report that response's own usage (no source rule combines iterations), so such an occurrence is not representable: an explicit gap, never a guessed sum or choice. Recordings: the 2.1.299 child run and the 2.1.304 stdout runs with a result record (features, denial, mcp and its byte-identical mcp-pair) each hold one message entry whose input tranches equal the last main-thread streamed record's (for example 2.1.304 features: 2/29493/592 input side, 521 output against the streamed record's provisional 7)",
+      "checks": [
+        "CanonicalObligations#judge",
+        "OcsfOracle population.usage",
+        "OcsfOracle usage.values"
+      ],
+      "review": {
+        "status": "proposed",
+        "note": "closeout candidate (2026-10-25): replaces the R1 vendor_specific residual of result:usage.iterations[], whose missing response identity did not justify owing nothing; returned for semantic review, not approved; ACCT-1 (2026-10-26): rules now also name the event rule the observation rides on (claude.stream.result->prompt_turn.completed), so the relevant digest is restated; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed)"
+      },
+      "rules": [
+        "claude.stream.result->prompt_turn.completed",
+        "claude.stream.result.last_response_usage->prompt_turn.usage"
+      ],
+      "meaning_digest": "sha256:f2d10fd3f4ffa2e13ea113fc20d333b88f3bc9ca70824d57313000222d75fd2f",
+      "relevant_digest": "sha256:4bfcab20418ddfac207f0334c9a7f7fe0fe3f58117a6d6a2503e726df141679b",
+      "writer": {
+        "basis_prefixes": [
+          "claude.stream.last_response_usage.v1"
+        ]
+      }
     },
-    "tiers": "cache_creation"
-   },
-   "semantics": "the Agent tool's result (tool_use_result of the record whose single tool_result block answers an Agent request) reports, once at the call's end, the usage object of the child run's last metered model response: scope 7 Child run (whose activity: the child run the call spawned, unit = tool_call_uid), Final (the report is not revised), aggregation 3 Single response (what was measured: one response, not identified). Grounds: the retained Claude Code 2.1.304 emitter builds it from the last non-unmetered assistant message's usage laid over zero defaults (input, cache creation, cache read and output 0, iterations []); the Agent SDK 0.3.304 type gives it the shape of one response's usage with that response's iterations[]; in the 2.1.304 recording its input tranches equal the child's last streamed response (record 29), and in the 2.1.299 recording its cache read (13328) equals the earlier child call's cache creation. It is never the child run's consumption, never summed with the parent's, the run's or another observation, and never compared with the task figure as one measurement. The emitter keeps the defaults whole when the child has no metered response or that response's usage has no numeric input_tokens, so with every tranche 0 and no iterations entry the reported object establishes neither a metered response nor a measured zero: the observation is 2 Possibly default and its zeros stay as reported. A non-zero tranche or an iterations entry can come only from a response's usage, so its zero members stay ordinary reported values. No recording exercises the default case; a labelled synthetic example does",
-   "checks": [
-    "CanonicalObligations#judge",
-    "OcsfOracle population.usage",
-    "OcsfOracle usage.values",
-    "OcsfOracle population.contexts",
-    "OcsfOracle context.values"
-   ],
-   "review": {
-    "status": "proposed",
-    "note": "closeout candidate revision (2026-10-25): the zero-default object is Possibly default, not an evidenced response (r2: aggregation 3 Single response with emitter grounds, R1); returned for semantic review, not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed)"
-   },
-   "rules": [
-    "claude.stream.user.tool_result.agent_usage->session_context.accounting"
-   ],
-   "meaning_digest": "sha256:def36909c43c702241f70a2ce607aa08a72d4b4d5b4aba33274f1a9570cef290",
-   "relevant_digest": "sha256:9569bf947a6f4d20db7d626b4ecc7c80835df982c585378ea048d7371cdf1bee",
-   "writer": {
-    "basis_prefixes": [
-     "claude.stream.agent_result_usage.v2"
-    ]
-   }
-  },
-  {
-   "id": "claude.stream.usage.child-run.task-progress",
-   "revision": 2,
-   "concepts": [
-    "usage-scope-finality-and-repeats",
-    "child-runs"
-   ],
-   "claims": [],
-   "trigger": {
-    "variant": "system/task_progress",
-    "payload": "usage",
-    "unit": "tool_use_id"
-   },
-   "destination": {
-    "class": "session_context",
-    "activity_id": 3,
-    "context_kind": "system/task_progress",
-    "unit_member": "tool_call_uid"
-   },
-   "observation": {
-    "scope_id": 7,
-    "usage_status": {
-     "value": 1
+    {
+      "id": "claude.stream.usage.model",
+      "revision": 1,
+      "concepts": [
+        "usage-components-and-cache",
+        "usage-scope-finality-and-repeats",
+        "model-identity-and-provider"
+      ],
+      "claims": [],
+      "trigger": {
+        "variant": "result",
+        "payload": "modelUsage.{*}"
+      },
+      "destination": {
+        "class": "prompt_turn",
+        "activity_id": 2
+      },
+      "observation": {
+        "scope_id": 6,
+        "usage_status": {
+          "value": 2
+        },
+        "aggregation_id": 2,
+        "model": "{key}",
+        "components": {
+          "uncached_input_tokens": "inputTokens",
+          "cache_read_tokens": "cacheReadInputTokens",
+          "cache_write_tokens": "cacheCreationInputTokens",
+          "output_tokens": "outputTokens",
+          "reasoning_tokens": "thinkingTokens"
+        }
+      },
+      "semantics": "each modelUsage member is Claude Code's running total for that model (scope 6 Model, aggregation 2 Cumulative snapshot), keyed by the model name",
+      "checks": [
+        "CanonicalObligations#judge",
+        "OcsfOracle population.usage",
+        "OcsfOracle usage.values"
+      ],
+      "review": {
+        "status": "proposed",
+        "note": "no approved claim covers ModelUsage on this route; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed)"
+      },
+      "rules": [
+        "claude.stream.result->prompt_turn.completed"
+      ],
+      "meaning_digest": "sha256:fceec05bd0a9faeb86b9a48f23bdd730ab0f4d1cd16d14a27a0219524c1d6123",
+      "relevant_digest": "sha256:30b4c5c8f61acc5fada6e88383d001e30be89290799c0a7a15a9c26b8887f009",
+      "writer": {
+        "basis_prefixes": [
+          "claude.stream.result_usage.v1"
+        ]
+      }
     },
-    "aggregation_id": null,
-    "components": {
-     "reported_total_tokens": "total_tokens"
+    {
+      "id": "claude.stream.usage.child-run.agent-result",
+      "revision": 3,
+      "concepts": [
+        "usage-components-and-cache",
+        "usage-scope-finality-and-repeats",
+        "child-runs"
+      ],
+      "claims": [],
+      "trigger": {
+        "variant": "user/tool_result",
+        "payload": "tool_use_result.usage",
+        "requested_tool": [
+          "Agent"
+        ],
+        "unit": "message.content[].tool_use_id"
+      },
+      "destination": {
+        "class": "session_context",
+        "activity_id": 3,
+        "context_kind": "user/tool_result",
+        "unit_member": "tool_call_uid"
+      },
+      "observation": {
+        "scope_id": 7,
+        "usage_status": {
+          "value": 2
+        },
+        "aggregation_id": 3,
+        "measurement_status": {
+          "possibly_default_when_zero": [
+            "input_tokens",
+            "cache_creation_input_tokens",
+            "cache_read_input_tokens",
+            "output_tokens"
+          ],
+          "and_no_entry_in": "iterations"
+        },
+        "components": {
+          "uncached_input_tokens": "input_tokens",
+          "cache_read_tokens": "cache_read_input_tokens",
+          "cache_write_tokens": "cache_creation_input_tokens",
+          "output_tokens": "output_tokens",
+          "reasoning_tokens": "output_tokens_details.thinking_tokens"
+        },
+        "tiers": "cache_creation"
+      },
+      "semantics": "the Agent tool's result (tool_use_result of the record whose single tool_result block answers an Agent request) reports, once at the call's end, the usage object of the child run's last metered model response: scope 7 Child run (whose activity: the child run the call spawned, unit = tool_call_uid), Final (the report is not revised), aggregation 3 Single response (what was measured: one response, not identified). Grounds: the retained Claude Code 2.1.304 emitter builds it from the last non-unmetered assistant message's usage laid over zero defaults (input, cache creation, cache read and output 0, iterations []); the Agent SDK 0.3.304 type gives it the shape of one response's usage with that response's iterations[]; in the 2.1.304 recording its input tranches equal the child's last streamed response (record 29), and in the 2.1.299 recording its cache read (13328) equals the earlier child call's cache creation. It is never the child run's consumption, never summed with the parent's, the run's or another observation, and never compared with the task figure as one measurement. The emitter keeps the defaults whole when the child has no metered response or that response's usage has no numeric input_tokens, so with every tranche 0 and no iterations entry the reported object establishes neither a metered response nor a measured zero: the observation is 2 Possibly default and its zeros stay as reported. A non-zero tranche or an iterations entry can come only from a response's usage, so its zero members stay ordinary reported values. No recording exercises the default case; a labelled synthetic example does",
+      "checks": [
+        "CanonicalObligations#judge",
+        "OcsfOracle population.usage",
+        "OcsfOracle usage.values",
+        "OcsfOracle population.contexts",
+        "OcsfOracle context.values"
+      ],
+      "review": {
+        "status": "proposed",
+        "note": "closeout candidate revision (2026-10-25): the zero-default object is Possibly default, not an evidenced response (r2: aggregation 3 Single response with emitter grounds, R1); returned for semantic review, not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed)"
+      },
+      "rules": [
+        "claude.stream.user.tool_result.agent_usage->session_context.accounting"
+      ],
+      "meaning_digest": "sha256:def36909c43c702241f70a2ce607aa08a72d4b4d5b4aba33274f1a9570cef290",
+      "relevant_digest": "sha256:b6c0b302bd52eb8525d0d616aec28ecc1112de883a9c85fbbae198b7f93a0394",
+      "writer": {
+        "basis_prefixes": [
+          "claude.stream.agent_result_usage.v2"
+        ]
+      }
+    },
+    {
+      "id": "claude.stream.usage.child-run.task-progress",
+      "revision": 2,
+      "concepts": [
+        "usage-scope-finality-and-repeats",
+        "child-runs"
+      ],
+      "claims": [],
+      "trigger": {
+        "variant": "system/task_progress",
+        "payload": "usage",
+        "unit": "tool_use_id"
+      },
+      "destination": {
+        "class": "session_context",
+        "activity_id": 3,
+        "context_kind": "system/task_progress",
+        "unit_member": "tool_call_uid"
+      },
+      "observation": {
+        "scope_id": 7,
+        "usage_status": {
+          "value": 1
+        },
+        "aggregation_id": null,
+        "components": {
+          "reported_total_tokens": "total_tokens"
+        }
+      },
+      "semantics": "a task_progress record reports the task tracker's token figure for the child run of the call named by tool_use_id: scope 7 Child run, Provisional, no aggregation, reported_total_tokens copied, never computed. Grounds: in the retained 2.1.304 emitter the figure is the latest assistant message's input side (input, cache creation and cache read) plus the output of every assistant message so far plus a live streaming estimate; the recordings' successive values (18519, then 21161) track the latest call's size. It is neither the child run's consumption nor a running total of it: snapshots are never summed with each other, with the terminal report, with the Agent result or with any parent total",
+      "checks": [
+        "CanonicalObligations#judge",
+        "OcsfOracle population.usage",
+        "OcsfOracle usage.values",
+        "OcsfOracle population.contexts",
+        "OcsfOracle context.values"
+      ],
+      "review": {
+        "status": "proposed",
+        "note": "R1 candidate revision (2026-10-24): semantics restated with emitter grounds; trigger, destination and observation unchanged from r1; returned for semantic review, not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed)"
+      },
+      "rules": [
+        "claude.stream.system.task_usage->session_context.accounting"
+      ],
+      "meaning_digest": "sha256:adacb96c2034dfb0168f609d04323ef2670383096189fde960a81285330cb4f0",
+      "relevant_digest": "sha256:6b9b4f9d806479c17b8c1f128ecbb851ee2ac65a487615c037fdddeacd5b2779",
+      "writer": {
+        "basis_prefixes": [
+          "claude.stream.task_usage.v2"
+        ]
+      }
+    },
+    {
+      "id": "claude.stream.usage.child-run.task-notification",
+      "revision": 2,
+      "concepts": [
+        "usage-scope-finality-and-repeats",
+        "child-runs"
+      ],
+      "claims": [],
+      "trigger": {
+        "variant": "system/task_notification",
+        "payload": "usage",
+        "unit": "tool_use_id"
+      },
+      "destination": {
+        "class": "session_context",
+        "activity_id": 3,
+        "context_kind": "system/task_notification",
+        "unit_member": "tool_call_uid"
+      },
+      "observation": {
+        "scope_id": 7,
+        "usage_status": {
+          "value": 2
+        },
+        "aggregation_id": null,
+        "components": {
+          "reported_total_tokens": "total_tokens"
+        }
+      },
+      "semantics": "a task_notification record reports the task's token figure at its end for the child run of the call named by tool_use_id: scope 7 Child run, Final, no aggregation, reported_total_tokens copied. Grounds: in the retained 2.1.304 emitter a completed task reports the larger of the tracker figure and the Agent result's totalTokens (a stopped or failed task the tracker figure, or 0 without one; not exercised). It is the measure task_progress reports provisionally, which it finalizes, and a different quantity from the Agent result's usage (2.1.299: 15062 versus totalTokens 14974; 2.1.304: 21189 versus 21133): the two are never compared as one measurement or reconciled",
+      "checks": [
+        "CanonicalObligations#judge",
+        "OcsfOracle population.usage",
+        "OcsfOracle usage.values",
+        "OcsfOracle population.contexts",
+        "OcsfOracle context.values"
+      ],
+      "review": {
+        "status": "proposed",
+        "note": "R1 candidate revision (2026-10-24): semantics restated with emitter grounds; trigger, destination and observation unchanged from r1; returned for semantic review, not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed)"
+      },
+      "rules": [
+        "claude.stream.system.task_usage->session_context.accounting"
+      ],
+      "meaning_digest": "sha256:6d3d85e2f615aafd554d094ab3b27b362e03ae357ee6dff88fd0a09413ae15ac",
+      "relevant_digest": "sha256:6b9b4f9d806479c17b8c1f128ecbb851ee2ac65a487615c037fdddeacd5b2779",
+      "writer": {
+        "basis_prefixes": [
+          "claude.stream.task_usage.v2"
+        ]
+      }
+    },
+    {
+      "id": "claude.stream.cost.model",
+      "revision": 2,
+      "kind": "cost",
+      "concepts": [
+        "cost-and-billing",
+        "model-identity-and-provider"
+      ],
+      "claims": [],
+      "trigger": {
+        "variant": "result",
+        "payload": "modelUsage.{*}.costUSD"
+      },
+      "destination": {
+        "class": "session_context",
+        "activity_id": 3,
+        "context_kind": "result/modelUsage"
+      },
+      "observation": {
+        "scope_id": 6,
+        "currency": "USD",
+        "quantity_kind_id": 1,
+        "aggregation_id": 2,
+        "model": "{key}",
+        "data_member": "costUSD",
+        "cost_basis_member": "costBasis",
+        "cost_basis_window": "most_recent_request"
+      },
+      "semantics": "each modelUsage member's costUSD is Claude Code's running USD cost for that model (scope 6 Model, 1 Monetary amount, aggregation 2 Cumulative snapshot: the same running total the per-model usage figures are, keyed by the model name), reported once on the result record and carried by that record's accounting event (context_kind result/modelUsage) as one cost observation per model; with one model it equals total_cost_usd, which remains the turn's run-scope cost observation; per-model costs are never summed with it, with each other or with any token figure; a member without a numeric costUSD owes nothing A reported costBasis is required in cost_basis with cost_basis_window most_recent_request: the pricing table of only the latest request, not of the cumulative amount. Absence remains absent.",
+      "checks": [
+        "CanonicalObligations#judge",
+        "OcsfOracle population.cost",
+        "OcsfOracle cost.values",
+        "OcsfOracle population.contexts",
+        "OcsfOracle context.values"
+      ],
+      "review": {
+        "status": "proposed",
+        "note": "ACCT-1 candidate (2026-10-26): per-model reported cost is an established economic fact with cost_observation capacity (scope_id, model_ref); returned for semantic review, not approved"
+      },
+      "rules": [
+        "claude.stream.result.model_cost->session_context.accounting"
+      ],
+      "writer": {
+        "basis_prefixes": [
+          "claude.stream.model_cost.v1"
+        ]
+      },
+      "meaning_digest": "sha256:29d6cd8ece53ea5a197125fc9681446cb4c619a8347ce601fee30f65b73c7b42",
+      "relevant_digest": "sha256:63e35046fd35209fff4ec0525a9f4cbe4e7583a445703e089564eccea9b83670"
+    },
+    {
+      "id": "claude.stream.run.duration",
+      "revision": 1,
+      "kind": "attribute",
+      "concepts": [
+        "reported-durations"
+      ],
+      "claims": [],
+      "trigger": {
+        "variant": "result",
+        "payload": "duration_ms"
+      },
+      "destination": {
+        "class": "prompt_turn",
+        "activity_id": 2,
+        "attribute": "duration"
+      },
+      "observation": {},
+      "semantics": "the result record's duration_ms is the run's reported wall-clock duration in milliseconds, copied exactly to the Turn completed event's base duration attribute; it is never computed from timestamps, and duration_api_ms, ttft_ms, ttft_stream_ms, first_content_frame_ms and time_to_request_ms are distinct latency facets with no second attribute (explicit capacity gaps in the field-disposition catalog)",
+      "checks": [
+        "CanonicalObligations#judge",
+        "OcsfOracle attribute.values"
+      ],
+      "review": {
+        "status": "proposed",
+        "note": "ACCT-1 candidate (2026-10-26): a known duration with base-attribute capacity; returned for semantic review, not approved"
+      },
+      "rules": [
+        "claude.stream.result->prompt_turn.completed",
+        "claude.stream.result.duration->prompt_turn.duration"
+      ],
+      "writer": {
+        "basis_prefixes": []
+      },
+      "meaning_digest": "sha256:ce4f0d1ed63841c7bb431e48b8d72503960c1ff8aa4e24d65d1374095c8977b9",
+      "relevant_digest": "sha256:231d3c635c1675f5e6eb1b9154f66b2c6fc16b5aa54db42a0c8959730edccebb"
+    },
+    {
+      "id": "claude.stream.child-run.agent-result.status",
+      "revision": 2,
+      "kind": "attribute",
+      "concepts": [
+        "child-runs"
+      ],
+      "claims": [],
+      "trigger": {
+        "variant": "user/tool_result",
+        "payload": "tool_use_result.status",
+        "requested_tool": [
+          "Agent"
+        ],
+        "unit": "message.content[].tool_use_id"
+      },
+      "destination": {
+        "class": "session_context",
+        "activity_id": 3,
+        "context_kind": "user/tool_result",
+        "unit_member": "tool_call_uid",
+        "attribute": "reported_state"
+      },
+      "observation": {},
+      "semantics": "the Agent result's envelope status (Agent SDK 0.3.304 AgentOutput.status: completed, failed, ...) is the child run's reported terminal state, carried as reported_state of the child-run accounting event of the spawning call (unit = tool_call_uid); it is a child-run fact and never the outer tool call's status, which stays the result block's is_error; child identity, model and execution counters are checked separately by the independent source reader",
+      "checks": [
+        "CanonicalObligations#judge",
+        "OcsfOracle attribute.values",
+        "OcsfOracle population.contexts",
+        "OcsfOracle context.values"
+      ],
+      "review": {
+        "status": "proposed",
+        "note": "ACCT-1 candidate (2026-10-26): a CLI-defined child status with reported_state capacity; returned for semantic review, not approved"
+      },
+      "rules": [
+        "claude.stream.user.tool_result.agent_usage->session_context.accounting",
+        "claude.stream.user.tool_result.agent_state->session_context.accounting"
+      ],
+      "writer": {
+        "basis_prefixes": [
+          "claude.stream.agent_result_usage.v2"
+        ]
+      },
+      "meaning_digest": "sha256:f28919519d6d0c4f212758cf9199d49771d7957f95409d9f826a1a3d8255d152",
+      "relevant_digest": "sha256:b85a51334c4fe247b36658d3f5996e0aadb386ccf1b595321a3ef085d8fc8666"
+    },
+    {
+      "id": "claude.stream.child-run.agent-result.duration",
+      "revision": 1,
+      "kind": "attribute",
+      "concepts": [
+        "child-runs",
+        "reported-durations"
+      ],
+      "claims": [],
+      "trigger": {
+        "variant": "user/tool_result",
+        "payload": "tool_use_result.totalDurationMs",
+        "requested_tool": [
+          "Agent"
+        ],
+        "unit": "message.content[].tool_use_id"
+      },
+      "destination": {
+        "class": "session_context",
+        "activity_id": 3,
+        "context_kind": "user/tool_result",
+        "unit_member": "tool_call_uid",
+        "attribute": "duration"
+      },
+      "observation": {},
+      "semantics": "the Agent result's totalDurationMs is the child run's reported total duration in milliseconds (Agent SDK 0.3.304 AgentOutput), copied exactly to the child-run accounting event's base duration attribute; it is the child run's own figure, never added to the parent's or the run's duration",
+      "checks": [
+        "CanonicalObligations#judge",
+        "OcsfOracle attribute.values",
+        "OcsfOracle population.contexts",
+        "OcsfOracle context.values"
+      ],
+      "review": {
+        "status": "proposed",
+        "note": "ACCT-1 candidate (2026-10-26): a known child-run duration with base-attribute capacity; returned for semantic review, not approved"
+      },
+      "rules": [
+        "claude.stream.user.tool_result.agent_usage->session_context.accounting",
+        "claude.stream.user.tool_result.agent_state->session_context.accounting"
+      ],
+      "writer": {
+        "basis_prefixes": [
+          "claude.stream.agent_result_usage.v2"
+        ]
+      },
+      "meaning_digest": "sha256:58931b1bec14e147be814dd5709b23ecd394618b5fe7db6d0285d124f3a5c1ba",
+      "relevant_digest": "sha256:2de5fbc33a328bf26ff3c94c3d66795961e8bccd7a3010818634b4046f40004f"
+    },
+    {
+      "id": "claude.stream.capacity.contextWindow",
+      "revision": 1,
+      "kind": "execution_quantity",
+      "concepts": [
+        "model-identity-and-provider"
+      ],
+      "claims": [],
+      "trigger": {
+        "variant": "result",
+        "payload": "modelUsage.{*}.contextWindow"
+      },
+      "destination": {
+        "class": "prompt_turn",
+        "activity_id": 2
+      },
+      "observation": {
+        "scope_id": 6,
+        "model": "{key}",
+        "concept": "model.context_capacity",
+        "metric_unit": "token",
+        "measurement_window": "configuration_snapshot"
+      },
+      "semantics": "The reported per-model configuration limit is a common capacity with exact value, model identity and configuration_snapshot window, never consumed tokens. Native source-path retention alone does not discharge it.",
+      "checks": [
+        "CanonicalObligations#judge",
+        "OcsfOracle fact.value"
+      ],
+      "review": {
+        "status": "proposed",
+        "note": "Corrected capacity candidate; semantic approval remains pending."
+      },
+      "rules": [
+        "claude.stream.result->prompt_turn.completed"
+      ],
+      "meaning_digest": "sha256:fa4cde924ffc4f326cadb4c79b79ba76c8e147bd2437a04604474a3f06d3d300",
+      "relevant_digest": "sha256:47326b31e94174037a36cf5b431a76c7f2723284904d2b29f4d3578e3f459eb3"
+    },
+    {
+      "id": "claude.stream.capacity.maxOutputTokens",
+      "revision": 1,
+      "kind": "execution_quantity",
+      "concepts": [
+        "model-identity-and-provider"
+      ],
+      "claims": [],
+      "trigger": {
+        "variant": "result",
+        "payload": "modelUsage.{*}.maxOutputTokens"
+      },
+      "destination": {
+        "class": "prompt_turn",
+        "activity_id": 2
+      },
+      "observation": {
+        "scope_id": 6,
+        "model": "{key}",
+        "concept": "model.output_limit",
+        "metric_unit": "token",
+        "measurement_window": "configuration_snapshot"
+      },
+      "semantics": "The reported per-model configuration limit is a common capacity with exact value, model identity and configuration_snapshot window, never consumed tokens. Native source-path retention alone does not discharge it.",
+      "checks": [
+        "CanonicalObligations#judge",
+        "OcsfOracle fact.value"
+      ],
+      "review": {
+        "status": "proposed",
+        "note": "Corrected capacity candidate; semantic approval remains pending."
+      },
+      "rules": [
+        "claude.stream.result->prompt_turn.completed"
+      ],
+      "meaning_digest": "sha256:a3803f05c37df0e5056009224412f7ec2240ccce2ea379d0a66c0416f850b1e9",
+      "relevant_digest": "sha256:47326b31e94174037a36cf5b431a76c7f2723284904d2b29f4d3578e3f459eb3"
     }
-   },
-   "semantics": "a task_progress record reports the task tracker's token figure for the child run of the call named by tool_use_id: scope 7 Child run, Provisional, no aggregation, reported_total_tokens copied, never computed. Grounds: in the retained 2.1.304 emitter the figure is the latest assistant message's input side (input, cache creation and cache read) plus the output of every assistant message so far plus a live streaming estimate; the recordings' successive values (18519, then 21161) track the latest call's size. It is neither the child run's consumption nor a running total of it: snapshots are never summed with each other, with the terminal report, with the Agent result or with any parent total",
-   "checks": [
-    "CanonicalObligations#judge",
-    "OcsfOracle population.usage",
-    "OcsfOracle usage.values",
-    "OcsfOracle population.contexts",
-    "OcsfOracle context.values"
-   ],
-   "review": {
-    "status": "proposed",
-    "note": "R1 candidate revision (2026-10-24): semantics restated with emitter grounds; trigger, destination and observation unchanged from r1; returned for semantic review, not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed)"
-   },
-   "rules": [
-    "claude.stream.system.task_usage->session_context.accounting"
-   ],
-   "meaning_digest": "sha256:adacb96c2034dfb0168f609d04323ef2670383096189fde960a81285330cb4f0",
-   "relevant_digest": "sha256:168041e823a52d239ac75be722cc6a73b97438a35611f350844a157abfb70a2a",
-   "writer": {
-    "basis_prefixes": [
-     "claude.stream.task_usage.v2"
-    ]
-   }
-  },
-  {
-   "id": "claude.stream.usage.child-run.task-notification",
-   "revision": 2,
-   "concepts": [
-    "usage-scope-finality-and-repeats",
-    "child-runs"
-   ],
-   "claims": [],
-   "trigger": {
-    "variant": "system/task_notification",
-    "payload": "usage",
-    "unit": "tool_use_id"
-   },
-   "destination": {
-    "class": "session_context",
-    "activity_id": 3,
-    "context_kind": "system/task_notification",
-    "unit_member": "tool_call_uid"
-   },
-   "observation": {
-    "scope_id": 7,
-    "usage_status": {
-     "value": 2
+  ],
+  "residuals": [
+    {
+      "variant": "system/thinking_tokens",
+      "path": "estimated_tokens",
+      "classification": "vendor_specific",
+      "reason": "the CLI's running estimate of thinking tokens while a response streams; not reported usage of any unit (the mapper retains the record whole)",
+      "review": {
+        "status": "proposed",
+        "note": "R1 (2026-10-24): a residual classification is a reviewable meaning; no Owner decision approves this one"
+      }
     },
-    "aggregation_id": null,
-    "components": {
-     "reported_total_tokens": "total_tokens"
+    {
+      "variant": "system/thinking_tokens",
+      "path": "estimated_tokens_delta",
+      "classification": "vendor_specific",
+      "reason": "increment of the same estimate; not reported usage",
+      "review": {
+        "status": "proposed",
+        "note": "R1 (2026-10-24): a residual classification is a reviewable meaning; no Owner decision approves this one"
+      }
+    },
+    {
+      "variant": "user/tool_result",
+      "path": "tool_use_result.totalTokens",
+      "classification": "vendor_specific",
+      "reason": "on an Agent result: the CLI's derivation from the same result's usage (retained 2.1.304 emitter PI/rJ: the input side (input, cache creation, cache read) plus output of the last iterations[] entry that is neither advisor_message nor compaction, when it is a message or fallback_message entry with a positive input side, otherwise of the top-level tranches); a context-size figure of that iteration, not a further consumption. With the one message iteration of both recordings it equals the four tranches, 8 + 1582 + 13328 + 56 = 14974 and 2 + 2397 + 18492 + 242 = 21133. Every operand is preserved, canonically as the observation's tranches and exactly in its data with iterations[], so it measures no further quantity. It is not mapped as reported_total_tokens, which would state a total of the observation's tranches that differs from them when the response had several iterations. Kept in the tool result's structured_result",
+      "review": {
+        "status": "proposed",
+        "note": "closeout (2026-10-25): reason restated with the emitter's exact iteration selection; no Owner decision approves this classification"
+      }
+    },
+    {
+      "variant": "user/tool_result",
+      "path": "tool_use_result.usage.iterations[]",
+      "members": [
+        "input_tokens",
+        "output_tokens",
+        "cache_read_input_tokens",
+        "cache_creation_input_tokens",
+        "cache_creation.ephemeral_1h_input_tokens",
+        "cache_creation.ephemeral_5m_input_tokens"
+      ],
+      "entry_types": [
+        "message"
+      ],
+      "classification": "vendor_specific",
+      "reason": "a message entry of the per-sampling-iteration breakdown of the one response whose usage the Agent result reports (Anthropic SDK 0.135.0 BetaIterationsUsage: message entries are the sampling iterations, such as the turns of a server-side tool loop, whose tokens the response's top-level usage accumulates); its one message entry equals that usage in both recordings. Such an entry is part of the reported response, not a further model response, and the response's usage is already the observation, so it owes no observation of its own; retained exactly in the child-run observation's data. Only message entries are covered: a compaction entry's tokens are outside the top-level usage (the SDK), and advisor_message and fallback_message entries are not reviewed, so an entry of another type is reported as unaccounted until it is. A missing response identity is not the ground",
+      "review": {
+        "status": "proposed",
+        "note": "closeout (2026-10-25): limited to message entries; no Owner decision approves this classification"
+      }
     }
-   },
-   "semantics": "a task_notification record reports the task's token figure at its end for the child run of the call named by tool_use_id: scope 7 Child run, Final, no aggregation, reported_total_tokens copied. Grounds: in the retained 2.1.304 emitter a completed task reports the larger of the tracker figure and the Agent result's totalTokens (a stopped or failed task the tracker figure, or 0 without one; not exercised). It is the measure task_progress reports provisionally, which it finalizes, and a different quantity from the Agent result's usage (2.1.299: 15062 versus totalTokens 14974; 2.1.304: 21189 versus 21133): the two are never compared as one measurement or reconciled",
-   "checks": [
-    "CanonicalObligations#judge",
-    "OcsfOracle population.usage",
-    "OcsfOracle usage.values",
-    "OcsfOracle population.contexts",
-    "OcsfOracle context.values"
-   ],
-   "review": {
-    "status": "proposed",
-    "note": "R1 candidate revision (2026-10-24): semantics restated with emitter grounds; trigger, destination and observation unchanged from r1; returned for semantic review, not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed)"
-   },
-   "rules": [
-    "claude.stream.system.task_usage->session_context.accounting"
-   ],
-   "meaning_digest": "sha256:6d3d85e2f615aafd554d094ab3b27b362e03ae357ee6dff88fd0a09413ae15ac",
-   "relevant_digest": "sha256:168041e823a52d239ac75be722cc6a73b97438a35611f350844a157abfb70a2a",
-   "writer": {
-    "basis_prefixes": [
-     "claude.stream.task_usage.v2"
-    ]
-   }
-  },
-  {
-   "id": "claude.stream.cost.model",
-   "revision": 1,
-   "kind": "cost",
-   "concepts": [
-    "cost-and-billing",
-    "model-identity-and-provider"
-   ],
-   "claims": [],
-   "trigger": {
-    "variant": "result",
-    "payload": "modelUsage.{*}.costUSD"
-   },
-   "destination": {
-    "class": "session_context",
-    "activity_id": 3,
-    "context_kind": "result/modelUsage"
-   },
-   "observation": {
-    "scope_id": 6,
-    "currency": "USD",
-    "quantity_kind_id": 1,
-    "aggregation_id": 2,
-    "model": "{key}",
-    "data_member": "costUSD"
-   },
-   "semantics": "each modelUsage member's costUSD is Claude Code's running USD cost for that model (scope 6 Model, 1 Monetary amount, aggregation 2 Cumulative snapshot: the same running total the per-model usage figures are, keyed by the model name), reported once on the result record and carried by that record's accounting event (context_kind result/modelUsage) as one cost observation per model; with one model it equals total_cost_usd, which remains the turn's run-scope cost observation; per-model costs are never summed with it, with each other or with any token figure; a member without a numeric costUSD owes nothing",
-   "checks": [
-    "CanonicalObligations#judge",
-    "OcsfOracle population.cost",
-    "OcsfOracle cost.values",
-    "OcsfOracle population.contexts",
-    "OcsfOracle context.values"
-   ],
-   "review": {
-    "status": "proposed",
-    "note": "ACCT-1 candidate (2026-10-26): per-model reported cost is an established economic fact with cost_observation capacity (scope_id, model_ref); returned for semantic review, not approved"
-   },
-   "rules": [
-    "claude.stream.result.model_cost->session_context.accounting"
-   ],
-   "writer": {
-    "basis_prefixes": [
-     "claude.stream.model_cost.v1"
-    ]
-   },
-   "meaning_digest": "sha256:4123d49b9734ba6bcceb3bc7417575402ea09f3b1f618fe819e2e27a057e9045",
-   "relevant_digest": "sha256:34ed09172ede57939f30ddd9c611ef7ba8607b5400f9561551c419ef3b0e0f36"
-  },
-  {
-   "id": "claude.stream.run.duration",
-   "revision": 1,
-   "kind": "attribute",
-   "concepts": [
-    "reported-durations"
-   ],
-   "claims": [],
-   "trigger": {
-    "variant": "result",
-    "payload": "duration_ms"
-   },
-   "destination": {
-    "class": "prompt_turn",
-    "activity_id": 2,
-    "attribute": "duration"
-   },
-   "observation": {},
-   "semantics": "the result record's duration_ms is the run's reported wall-clock duration in milliseconds, copied exactly to the Turn completed event's base duration attribute; it is never computed from timestamps, and duration_api_ms, ttft_ms, ttft_stream_ms, first_content_frame_ms and time_to_request_ms are distinct latency facets with no second attribute (explicit capacity gaps in the field-disposition catalog)",
-   "checks": [
-    "CanonicalObligations#judge",
-    "OcsfOracle attribute.values"
-   ],
-   "review": {
-    "status": "proposed",
-    "note": "ACCT-1 candidate (2026-10-26): a known duration with base-attribute capacity; returned for semantic review, not approved"
-   },
-   "rules": [
-    "claude.stream.result->prompt_turn.completed",
-    "claude.stream.result.duration->prompt_turn.duration"
-   ],
-   "writer": {
-    "basis_prefixes": []
-   },
-   "meaning_digest": "sha256:ce4f0d1ed63841c7bb431e48b8d72503960c1ff8aa4e24d65d1374095c8977b9",
-   "relevant_digest": "sha256:231d3c635c1675f5e6eb1b9154f66b2c6fc16b5aa54db42a0c8959730edccebb"
-  },
-  {
-   "id": "claude.stream.child-run.agent-result.status",
-   "revision": 2,
-   "kind": "attribute",
-   "concepts": [
-    "child-runs"
-   ],
-   "claims": [],
-   "trigger": {
-    "variant": "user/tool_result",
-    "payload": "tool_use_result.status",
-    "requested_tool": [
-     "Agent"
-    ],
-    "unit": "message.content[].tool_use_id"
-   },
-   "destination": {
-    "class": "session_context",
-    "activity_id": 3,
-    "context_kind": "user/tool_result",
-    "unit_member": "tool_call_uid",
-    "attribute": "reported_state"
-   },
-   "observation": {},
-   "semantics": "the Agent result's envelope status (Agent SDK 0.3.304 AgentOutput.status: completed, failed, ...) is the child run's reported terminal state, carried as reported_state of the child-run accounting event of the spawning call (unit = tool_call_uid); it is a child-run fact and never the outer tool call's status, which stays the result block's is_error; child identity, model and execution counters are checked separately by the independent source reader",
-   "checks": [
-    "CanonicalObligations#judge",
-    "OcsfOracle attribute.values",
-    "OcsfOracle population.contexts",
-    "OcsfOracle context.values"
-   ],
-   "review": {
-    "status": "proposed",
-    "note": "ACCT-1 candidate (2026-10-26): a CLI-defined child status with reported_state capacity; returned for semantic review, not approved"
-   },
-   "rules": [
-    "claude.stream.user.tool_result.agent_usage->session_context.accounting",
-    "claude.stream.user.tool_result.agent_state->session_context.accounting"
-   ],
-   "writer": {
-    "basis_prefixes": [
-     "claude.stream.agent_result_usage.v2"
-    ]
-   },
-   "meaning_digest": "sha256:f28919519d6d0c4f212758cf9199d49771d7957f95409d9f826a1a3d8255d152",
-   "relevant_digest": "sha256:b85a51334c4fe247b36658d3f5996e0aadb386ccf1b595321a3ef085d8fc8666"
-  },
-  {
-   "id": "claude.stream.child-run.agent-result.duration",
-   "revision": 1,
-   "kind": "attribute",
-   "concepts": [
-    "child-runs",
-    "reported-durations"
-   ],
-   "claims": [],
-   "trigger": {
-    "variant": "user/tool_result",
-    "payload": "tool_use_result.totalDurationMs",
-    "requested_tool": [
-     "Agent"
-    ],
-    "unit": "message.content[].tool_use_id"
-   },
-   "destination": {
-    "class": "session_context",
-    "activity_id": 3,
-    "context_kind": "user/tool_result",
-    "unit_member": "tool_call_uid",
-    "attribute": "duration"
-   },
-   "observation": {},
-   "semantics": "the Agent result's totalDurationMs is the child run's reported total duration in milliseconds (Agent SDK 0.3.304 AgentOutput), copied exactly to the child-run accounting event's base duration attribute; it is the child run's own figure, never added to the parent's or the run's duration",
-   "checks": [
-    "CanonicalObligations#judge",
-    "OcsfOracle attribute.values",
-    "OcsfOracle population.contexts",
-    "OcsfOracle context.values"
-   ],
-   "review": {
-    "status": "proposed",
-    "note": "ACCT-1 candidate (2026-10-26): a known child-run duration with base-attribute capacity; returned for semantic review, not approved"
-   },
-   "rules": [
-    "claude.stream.user.tool_result.agent_usage->session_context.accounting",
-    "claude.stream.user.tool_result.agent_state->session_context.accounting"
-   ],
-   "writer": {
-    "basis_prefixes": [
-     "claude.stream.agent_result_usage.v2"
-    ]
-   },
-   "meaning_digest": "sha256:58931b1bec14e147be814dd5709b23ecd394618b5fe7db6d0285d124f3a5c1ba",
-   "relevant_digest": "sha256:2de5fbc33a328bf26ff3c94c3d66795961e8bccd7a3010818634b4046f40004f"
-  }
- ],
- "residuals": [
-  {
-   "variant": "system/thinking_tokens",
-   "path": "estimated_tokens",
-   "classification": "vendor_specific",
-   "reason": "the CLI's running estimate of thinking tokens while a response streams; not reported usage of any unit (the mapper retains the record whole)",
-   "review": {
-    "status": "proposed",
-    "note": "R1 (2026-10-24): a residual classification is a reviewable meaning; no Owner decision approves this one"
-   }
-  },
-  {
-   "variant": "system/thinking_tokens",
-   "path": "estimated_tokens_delta",
-   "classification": "vendor_specific",
-   "reason": "increment of the same estimate; not reported usage",
-   "review": {
-    "status": "proposed",
-    "note": "R1 (2026-10-24): a residual classification is a reviewable meaning; no Owner decision approves this one"
-   }
-  },
-  {
-   "variant": "result",
-   "path": "modelUsage.{*}.maxOutputTokens",
-   "classification": "vendor_specific",
-   "reason": "the model's output-token limit, a configuration figure, not consumption",
-   "review": {
-    "status": "proposed",
-    "note": "R1 (2026-10-24): a residual classification is a reviewable meaning; no Owner decision approves this one"
-   }
-  },
-  {
-   "variant": "user/tool_result",
-   "path": "tool_use_result.totalTokens",
-   "classification": "vendor_specific",
-   "reason": "on an Agent result: the CLI's derivation from the same result's usage (retained 2.1.304 emitter PI/rJ: the input side (input, cache creation, cache read) plus output of the last iterations[] entry that is neither advisor_message nor compaction, when it is a message or fallback_message entry with a positive input side, otherwise of the top-level tranches); a context-size figure of that iteration, not a further consumption. With the one message iteration of both recordings it equals the four tranches, 8 + 1582 + 13328 + 56 = 14974 and 2 + 2397 + 18492 + 242 = 21133. Every operand is preserved, canonically as the observation's tranches and exactly in its data with iterations[], so it measures no further quantity. It is not mapped as reported_total_tokens, which would state a total of the observation's tranches that differs from them when the response had several iterations. Kept in the tool result's structured_result",
-   "review": {
-    "status": "proposed",
-    "note": "closeout (2026-10-25): reason restated with the emitter's exact iteration selection; no Owner decision approves this classification"
-   }
-  },
-  {
-   "variant": "user/tool_result",
-   "path": "tool_use_result.usage.iterations[]",
-   "members": [
-    "input_tokens",
-    "output_tokens",
-    "cache_read_input_tokens",
-    "cache_creation_input_tokens",
-    "cache_creation.ephemeral_1h_input_tokens",
-    "cache_creation.ephemeral_5m_input_tokens"
-   ],
-   "entry_types": [
-    "message"
-   ],
-   "classification": "vendor_specific",
-   "reason": "a message entry of the per-sampling-iteration breakdown of the one response whose usage the Agent result reports (Anthropic SDK 0.135.0 BetaIterationsUsage: message entries are the sampling iterations, such as the turns of a server-side tool loop, whose tokens the response's top-level usage accumulates); its one message entry equals that usage in both recordings. Such an entry is part of the reported response, not a further model response, and the response's usage is already the observation, so it owes no observation of its own; retained exactly in the child-run observation's data. Only message entries are covered: a compaction entry's tokens are outside the top-level usage (the SDK), and advisor_message and fallback_message entries are not reviewed, so an entry of another type is reported as unaccounted until it is. A missing response identity is not the ground",
-   "review": {
-    "status": "proposed",
-    "note": "closeout (2026-10-25): limited to message entries; no Owner decision approves this classification"
-   }
-  }
- ]
+  ]
 }

@@ -171,6 +171,9 @@
     "agent_uid": {
       "requirement": "optional",
       "group": "primary"
+    },
+    "reported_agent": {
+      "requirement": "optional"
     }
   }
 }

@@ -1,5 +1,5 @@
 {
-  "contract_uid": "github-copilot-cli/usage-report/1.0.100/0.1.0-prototype",
+  "contract_uid": "github-copilot-cli/usage-report/1.0.100/0.2.0-prototype",
   "applies_to": {
     "product": "GitHub Copilot CLI",
     "version": "1.0.100",
@@ -44,5 +44,6 @@
   ],
   "candidate": {
     "status": "EXPERIMENTAL candidate (2026-10-24): tested on one sanitized live 1.0.100 run (copilot-otel-1) and its final assembly; not admitted: no field-disposition catalog or oracle profile yet; tested candidate behaviour is not approved support"
-  }
+  },
+  "quantity_semantics": "Selected execution quantities retain their exact reported value and source path, and add the extension-defined common concept and measurement_window. Model configuration limits are capacities, never consumption. Unknown-unit quantities remain unresolved."
 }

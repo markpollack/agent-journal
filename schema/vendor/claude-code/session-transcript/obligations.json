@@ -1,6 +1,6 @@
 {
   "kind": "agent-journal/canonical-obligations",
-  "version": "0.2",
+  "version": "0.3",
   "implementation": "java-expected-facts",
   "profile": "claude_transcript",
   "disposition_catalog": "schema/vendor/claude-code/session-transcript/dispositions.json",
@@ -150,9 +150,9 @@
       "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
     },
     {
-      "meaning": "source.cost/v1",
-      "revision": 1,
-      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+      "meaning": "source.cost/v2",
+      "revision": 2,
+      "requirement": "Reported model costs retain model identity and cumulative amount; a reported pricing basis is required in the shared cost observation with most_recent_request window. Absent source basis stays absent."
     },
     {
       "meaning": "source.cost_payload/v1",
@@ -160,9 +160,9 @@
       "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
     },
     {
-      "meaning": "source.execution_quantity/v1",
-      "revision": 1,
-      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+      "meaning": "source.execution_quantity/v2",
+      "revision": 2,
+      "requirement": "Selected established quantities require an exact reported value, common concept, subject, unit and measurement_window in addition to native path provenance. Configuration limits are capacity, never consumption; unlike windows remain distinct."
     },
     {
       "meaning": "source.fallback/v1",

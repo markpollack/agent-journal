@@ -121,7 +121,7 @@ final class JunieProfile implements SourceProfile {
                             "/task_uid",
                             n.member("taskId"),
                             "/agent_uid",
-                            a == null ? null : a.path("agent", "id"),
+                            null,
                             "/reported_state",
                             a == null ? null : a.member("status"),
                             "/data",
@@ -260,7 +260,7 @@ final class JunieProfile implements SourceProfile {
                             name);
             target.usage(
                     pointer + "/" + i,
-                    "junie.usage.3813.7/v1",
+                    "junie.usage.3813.7/v2",
                     new SourceFacts.Usage(
                             model,
                             SourceFacts.tranches(
@@ -294,6 +294,6 @@ final class JunieProfile implements SourceProfile {
 
     private static void event(
             SourceFacts.Target target, String pointer, String meaning, Map<String, Json> fields) {
-        target.event(pointer, "junie.3813.7." + meaning + "/v1", Map.of(), fields);
+        target.event(pointer, "junie.3813.7." + meaning + (meaning.equals("session.state") ? "/v2" : "/v1"), Map.of(), fields);
     }
 }

@@ -247,6 +247,12 @@ final class SourceFacts {
                         new LinkedHashMap<>());
         out.copies(value, names);
         out.input(value, names);
+        if (!names.inclusiveInput()) {
+            for (String component : List.of("cache_read_tokens", "cache_write_tokens")) {
+                Json amount = out.components().get(component);
+                if (amount != null && SourceProfile.decimal(amount).signum() == 0) out.statuses().put(component, 2);
+            }
+        }
         return new ExpectedFacts.Tranches(
                 out.components(),
                 out.bases(),
@@ -284,7 +290,7 @@ final class SourceFacts {
             Json read = value.member(names.cached());
             Json write = value.member(names.writes());
             if (available(in, read, names.inclusiveInput())) {
-                boolean known = known(in, read, write, names.inclusiveInput());
+                boolean known = names.inclusiveInput() && known(in, read, write, true);
                 bases.put("uncached_input_tokens", known ? 2 : 3);
                 pointers.put(
                         "uncached_input_tokens",
@@ -303,6 +309,9 @@ final class SourceFacts {
                                                             .subtract(SourceProfile.decimal(read))
                                                     : SourceProfile.decimal(in))
                                             .toPlainString()));
+                } else if (!names.inclusiveInput() && known(in, read, write, false)) {
+                    statuses.put("uncached_input_tokens", 3);
+                    conditional.put("uncached_input_tokens", in);
                 } else if (names.inclusiveInput() && SourceProfile.isIntegral(read)) {
                     statuses.put("uncached_input_tokens", 3);
                     conditional.put(

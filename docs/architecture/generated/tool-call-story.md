@@ -154,8 +154,8 @@ Edit: on the saved `tool_call` event for record 4 (activity 4), set `/identity_b
 
 | Check | Outcome | Detail |
 |---|---|---|
-| `fact.value` on `main/stream.jsonl` | DEFECTIVE | source.request/v1\|4:tool_call/4:{/tool_call_uid=JString[value=item_1]}:null:{}:native=[]/identity_basis_id at main/stream.jsonl:line=61#/identity_basis_id: [VALUE at $: number value differs] |
-| `fact.origin` on `main/stream.jsonl` | DEFECTIVE | 4:tool_call/4/identity_basis at main/stream.jsonl:line=61#/identity_basis: [VALUE at $: string differs] |
+| `fact.value` on `main/stream.jsonl` | DEFECTIVE | source.request/v1\|4:tool_call/4:{/tool_call_uid=JString[value=item_1]}:null:{}:native=[]/identity_basis_id at main/stream.jsonl:line=62#/identity_basis_id: [VALUE at $: number value differs] |
+| `fact.origin` on `main/stream.jsonl` | DEFECTIVE | 4:tool_call/4/identity_basis at main/stream.jsonl:line=62#/identity_basis: [VALUE at $: string differs] |
 | `request.values` on `main/stream.jsonl` | DEFECTIVE | 4:item_1 identity_basis_id 1 != 2 |
 
 ### `server-folded-into-name`
@@ -166,8 +166,8 @@ Edit: on the saved `tool_call` event for record 4 (activity 4), set `/tool_name`
 
 | Check | Outcome | Detail |
 |---|---|---|
-| `fact.value` on `main/stream.jsonl` | DEFECTIVE | source.request/v1\|4:tool_call/4:{/tool_call_uid=JString[value=item_1]}:null:{}:native=[]/tool_name at main/stream.jsonl:line=61#/tool_name: [VALUE at $: string differs] |
-| `fact.value` on `main/stream.jsonl` | DEFECTIVE | source.native_details/v1\|4:tool_call/4:{/tool_call_uid=JString[value=item_1]}:null:{}:native=[/item]/tool_name at main/stream.jsonl:line=61#/tool_name: [VALUE at $: string differs] |
+| `fact.value` on `main/stream.jsonl` | DEFECTIVE | source.request/v1\|4:tool_call/4:{/tool_call_uid=JString[value=item_1]}:null:{}:native=[]/tool_name at main/stream.jsonl:line=62#/tool_name: [VALUE at $: string differs] |
+| `fact.value` on `main/stream.jsonl` | DEFECTIVE | source.native_details/v1\|4:tool_call/4:{/tool_call_uid=JString[value=item_1]}:null:{}:native=[/item]/tool_name at main/stream.jsonl:line=62#/tool_name: [VALUE at $: string differs] |
 | `request.values` on `main/stream.jsonl` | DEFECTIVE | 4:item_1 tool_name fnd1/echo_record != echo_record |
 
 ### `failed-as-success`
@@ -178,8 +178,8 @@ Edit: on the saved `tool_call` event for record 7 (activity 2), set `/status_id`
 
 | Check | Outcome | Detail |
 |---|---|---|
-| `fact.value` on `main/stream.jsonl` | DEFECTIVE | source.result/v1\|7:tool_call/2:{/tool_call_uid=JString[value=item_2]}:null:{}:native=[]/status_id at main/stream.jsonl:line=64#/status_id: [VALUE at $: number value differs] |
-| `fact.origin` on `main/stream.jsonl` | DEFECTIVE | 7:tool_call/2/status at main/stream.jsonl:line=64#/status: [VALUE at $: string differs] |
+| `fact.value` on `main/stream.jsonl` | DEFECTIVE | source.result/v1\|7:tool_call/2:{/tool_call_uid=JString[value=item_2]}:null:{}:native=[]/status_id at main/stream.jsonl:line=65#/status_id: [VALUE at $: number value differs] |
+| `fact.origin` on `main/stream.jsonl` | DEFECTIVE | 7:tool_call/2/status at main/stream.jsonl:line=65#/status: [VALUE at $: string differs] |
 | `result.values` on `main/stream.jsonl` | DEFECTIVE | 7:item_2 status_id/status_basis_id 1/1 != 2/1 |
 
 ### `model-request-observed`
@@ -192,10 +192,10 @@ The added event is a copy of the record's existing `tool_call` event, so the che
 
 | Check | Outcome | Detail |
 |---|---|---|
-| `event.order` on `main` | DEFECTIVE | line 62 sequence 4 after 4 |
+| `event.order` on `main` | DEFECTIVE | line 63 sequence 4 after 4 |
 | `whole_record.coverage` on `main/stream.jsonl` | DEFECTIVE | record 4: 2 whole-record events |
-| `fact.origin` on `main/stream.jsonl` | DEFECTIVE | 4:tool_call/1/activity_name at main/stream.jsonl:line=61#/activity_name: [VALUE at $: string differs] |
-| `fact.origin` on `main/stream.jsonl` | DEFECTIVE | 4:tool_call/1/type_name at main/stream.jsonl:line=61#/type_name: [VALUE at $: string differs] |
+| `fact.origin` on `main/stream.jsonl` | DEFECTIVE | 4:tool_call/1/activity_name at main/stream.jsonl:line=62#/activity_name: [VALUE at $: string differs] |
+| `fact.origin` on `main/stream.jsonl` | DEFECTIVE | 4:tool_call/1/type_name at main/stream.jsonl:line=62#/type_name: [VALUE at $: string differs] |
 | `fact.origin` on `main/stream.jsonl` | DEFECTIVE | Journal sequence is positive and strictly increases; interrupted source prefixes may leave gaps |
 | `population.requests` on `main/stream.jsonl` | DEFECTIVE | duplicated [4:item_1 x2] (expected 2, observed 3) |
 | `population.mcp` on `main/stream.jsonl` | DEFECTIVE | extra [4:item_1:1] (expected 4, observed 5) |

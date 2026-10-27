@@ -14,9 +14,7 @@ import static io.github.markpollack.journal.ocsf.writer.MapperSupport.text;
  */
 final class JunieUsage {
 
-    static final String UNCACHED = "junie.usage.uncached_input.v1: with cacheInputTokens and cacheCreateTokens both reported as 0 the entry's inputTokens holds no cache "
-            + "reads or writes, so it is the uncached tranche whatever the inclusion rule; with either non-zero the source does not state whether inputTokens includes them, "
-            + "and the tranche is not derived";
+    static final String UNCACHED = "junie.usage.uncached_input.v2: inputTokens is uncached only if both reported cache zeros are actual measurements; the recorded empirical source does not establish that premise";
     static final String UNNAMED = "cost (unit not named by the source)";
 
     private JunieUsage() {
@@ -31,8 +29,8 @@ final class JunieUsage {
         Jv reads = entry.member("cacheInputTokens");
         Jv writes = entry.member("cacheCreateTokens");
         if (isIntegral(in) && isIntegral(reads) && isIntegral(writes) && ((Jv.Num) reads).value().signum() == 0 && ((Jv.Num) writes).value().signum() == 0) {
-            ob.put("uncached_input_tokens", in);
-            components.add(component("uncached_input_tokens", 2, Jv.arr("/inputTokens", "/cacheInputTokens", "/cacheCreateTokens"), UNCACHED));
+            components.add(component("uncached_input_tokens", 3, Jv.arr("/inputTokens", "/cacheInputTokens", "/cacheCreateTokens"), UNCACHED)
+                    .put("measurement_status_id", 3).put("conditional_value", in));
         }
         copy(ob, components, entry, "cacheInputTokens", "cache_read_tokens");
         copy(ob, components, entry, "cacheCreateTokens", "cache_write_tokens");
@@ -46,7 +44,9 @@ final class JunieUsage {
     private static void copy(Jv.Obj ob, Jv.Arr components, Jv entry, String member, String canonical) {
         if (isIntegral(entry.member(member))) {
             ob.put(canonical, entry.member(member));
-            components.add(component(canonical, 1, Jv.arr("/" + member), null));
+            Jv.Obj c = component(canonical, 1, Jv.arr("/" + member), null);
+            if (canonical.startsWith("cache_") && ((Jv.Num) entry.member(member)).value().signum() == 0) c.put("measurement_status_id", 2);
+            components.add(c);
         }
     }
 

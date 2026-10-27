@@ -18,7 +18,7 @@ final class MapperSupport {
             Map.entry(3, "delete"), Map.entry(4, "move"), Map.entry(5, "search"), Map.entry(6, "execute"), Map.entry(7, "think"),
             Map.entry(8, "fetch"), Map.entry(9, "switch_mode"), Map.entry(99, "other"));
     static final Map<Integer, String> BLOCK_KIND = Map.of(0, "Unknown", 1, "Text", 2, "Thought", 3, "Tool call", 4, "Tool result", 5, "Image", 99, "Other");
-    static final Map<Integer, String> SCOPE = Map.of(0, "Unknown", 1, "Tool call", 2, "Model response", 3, "Prompt turn", 4, "Run", 5, "Session", 6, "Model", 7, "Child run",
+    static final Map<Integer, String> SCOPE = Map.of(0, "Unknown", 1, "Tool call", 2, "Model response", 3, "Prompt turn", 4, "Run", 5, "Session", 6, "Model", 7, "Child run", 8, "Agent",
             99, "Other");
     static final Map<Integer, String> USAGE_STATUS = Map.of(0, "Unknown", 1, "Provisional", 2, "Final");
     static final Map<Integer, String> OUTCOME = Map.of(0, "Unknown", 1, "Unique", 2, "Ambiguous", 3, "Unattributed");

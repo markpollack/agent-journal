@@ -1,0 +1,15 @@
+{
+  "caption": "Reported Agent",
+  "name": "reported_agent",
+  "extends": "object",
+  "description": "A native agent identity within its source artifact/run. uid and kind are reported; neither implies a child, parent, spawn or session identity.",
+  "attributes": {
+    "uid": {
+      "requirement": "optional",
+      "description": "The source-reported agent identifier, scoped to the enclosing source artifact and run. It does not establish a child-run or spawn relationship."
+    },
+    "kind": {
+      "requirement": "optional"
+    }
+  }
+}

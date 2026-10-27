@@ -153,7 +153,7 @@ final class ClaudeStreamMapper implements SourceMapper {
             if (o.member("total_cost_usd") instanceof Jv.Num cost) {
                 Jv.Obj co = new Jv.Obj().put("total_cost", cost).put("currency", "USD").put("scope_id", 4).put("scope", "Run");
                 if (costBasis != null) {
-                    co.put("cost_basis", costBasis);
+                    co.put("cost_basis", costBasis).put("cost_basis_window", "most_recent_request");
                 }
                 co.put("source_ref", ctx.sourceRef(r, uid, ts, false)).put("data", new Jv.Obj().put("total_cost_usd", cost));
                 ev.put("cost_observation", co);
@@ -241,6 +241,8 @@ final class ClaudeStreamMapper implements SourceMapper {
                 costs.add(new Jv.Obj().put("total_cost", cost).put("currency", "USD").put("quantity_kind_id", 1).put("quantity_kind", CopilotAccounting.QUANTITY_KIND.get(1))
                         .put("scope_id", 6).put("scope", MapperSupport.SCOPE.get(6)).put("aggregation_id", 2).put("aggregation", UsageTranches.AGGREGATION.get(2))
                         .put("model_ref", MapperSupport.modelRef(m.getKey(), 1, text(m.getValue(), "provider")))
+                        .put("cost_basis", text(m.getValue(), "costBasis"))
+                        .put("cost_basis_window", text(m.getValue(), "costBasis") == null ? null : "most_recent_request")
                         .put("source_ref", ctx.sourceRef(r, uid, ts, false)).put("data", new Jv.Obj().put("costUSD", cost)));
             }
         }

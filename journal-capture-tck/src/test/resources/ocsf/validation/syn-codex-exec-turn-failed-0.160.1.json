@@ -4,9 +4,9 @@
  "fixture": "syn-codex-exec-turn-failed-0.160.1",
  "core": "main",
  "events_jsonl": "fixtures/syn-codex-exec-turn-failed-0.160.1/package/events.jsonl",
- "events_jsonl_sha256": "397c6893f574194fc751b39d913806ab3940b99b9e5ac5c1c9b2498417224cdc",
+ "events_jsonl_sha256": "89457bdafb90438d120c6019357b453b7e4a187e736134ea2aae8ef9653d272a",
  "execution_records": 4,
- "declarations_skipped": 45,
+ "declarations_skipped": 46,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
  "toolkit": {
   "name": "ocsf-toolkit",
@@ -14,7 +14,7 @@
   "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
   "exit_code": 0
  },
- "compiled_schema_sha256": "3d3d274392817bbfa63844212becc9d23916078c4bdfc7db40b260df66144b3a",
+ "compiled_schema_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc",
  "result": {
   "event_files_processed": 4,
   "error_events": 0,

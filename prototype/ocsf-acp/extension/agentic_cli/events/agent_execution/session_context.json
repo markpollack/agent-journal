@@ -170,6 +170,9 @@
     "derivation": {
       "group": "primary",
       "requirement": "optional"
+    },
+    "reported_agent": {
+      "requirement": "optional"
     }
   }
 }

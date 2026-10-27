@@ -524,17 +524,17 @@ class AccountingProcedureAcceptanceTest {
                 pkg(fixture),
                 events ->
                         events.stream()
-                                .filter(e -> e.member("agent_uid") != null)
+                                .filter(e -> e.member("reported_agent") != null)
                                 .forEach(
                                         e ->
-                                                obj(e).members()
-                                                        .put("agent_uid", str("another-agent"))));
+                                                obj(e.member("reported_agent")).members()
+                                                        .put("uid", str("another-agent"))));
         OracleReport changed = accounting(fixture);
         assertThat(changed.checks())
                 .anyMatch(
                         c ->
                                 c.property().equals("fact.value")
-                                        && c.evidence().meaning().equals("source.reported_agent/v1")
+                                        && c.evidence().meaning().equals("source.reported_agent/v2")
                                         && c.outcome() == Check.Outcome.DEFECTIVE);
         assertThat(
                         changed.checks().stream()

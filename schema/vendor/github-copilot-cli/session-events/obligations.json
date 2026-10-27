@@ -1,6 +1,6 @@
 {
   "kind": "agent-journal/canonical-obligations",
-  "version": "0.2",
+  "version": "0.3",
   "implementation": "java-expected-facts",
   "profile": "copilot_events",
   "disposition_catalog": "schema/vendor/github-copilot-cli/session-events/dispositions.json",
@@ -250,9 +250,9 @@
       "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
     },
     {
-      "meaning": "source.execution_quantity/v1",
-      "revision": 1,
-      "requirement": "Compare each reported quantity or provider at its native record, exact model identity, unit, scope and support pointer; missing or mismatched results cannot pass."
+      "meaning": "source.execution_quantity/v2",
+      "revision": 2,
+      "requirement": "Selected established quantities require an exact reported value, common concept, subject, unit and measurement_window in addition to native path provenance. Configuration limits are capacity, never consumption; unlike windows remain distinct."
     },
     {
       "meaning": "source.fallback/v1",

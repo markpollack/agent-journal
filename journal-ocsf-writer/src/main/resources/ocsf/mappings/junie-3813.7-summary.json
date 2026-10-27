@@ -1,5 +1,5 @@
 {
-  "contract_uid": "junie/session-summary/3813.7/0.1.0-prototype",
+  "contract_uid": "junie/session-summary/3813.7/0.2.0-prototype",
   "applies_to": {
     "product": "Junie",
     "version": "3813.7",
@@ -63,5 +63,7 @@
   ],
   "candidate": {
     "status": "EXPERIMENTAL candidate (2026-10-24): tested on two sanitized live 3813.7 runs (junie-1, junie-2) and their final assemblies; not admitted: no field-disposition catalog or oracle profile yet; tested candidate behaviour is not approved support"
-  }
+  },
+  "quantity_semantics": "Selected execution quantities retain their exact reported value and source path, and add the extension-defined common concept and measurement_window. Model configuration limits are capacities, never consumption. Unknown-unit quantities remain unresolved.",
+  "usage_uncertainty": "junie.usage.uncached_input.v2: zero cache counters have no established measured/default premise. Preserve reported cache counters with Possibly default status; uncached input is unavailable with a conditional_value, never a measured canonical value. Session agent kind/id is reported_agent within source artifact/run, scope 8 Agent; agent_uid remains child-run identity only."
 }

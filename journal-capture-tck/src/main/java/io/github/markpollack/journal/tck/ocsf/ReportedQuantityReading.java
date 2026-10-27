@@ -126,17 +126,17 @@ final class ReportedQuantityReading {
                         Map.of(),
                         null,
                         Map.of(),
-                        SourceFacts.fields("/agent_uid", a.path("agent", "id")),
+                        SourceFacts.fields("/reported_agent/uid", a.path("agent", "id"), "/reported_agent/kind", a.path("agent", "kind"), "/agent_uid", null),
                         List.of("/event/agentEvent/agent/id"),
-                        "source.reported_agent/v1"));
+                        "source.reported_agent/v2"));
         Reading r = new Reading(target, n);
         if (kind.equals("ContextWindowReportEvent")) {
-            r.fields("/event/agentEvent", "token", 7, List.of("size", "used"));
-            r.one("/event/agentEvent/percentage", "percent", 7);
+            r.fields("/event/agentEvent", "token", 8, List.of("size", "used"));
+            r.one("/event/agentEvent/percentage", "percent", 8);
         }
         if (kind.equals("AgentPatchCreatedEvent")) {
-            r.fields("/event/agentEvent/stats", "line", 7, List.of("linesRemoved", "linesAdded"));
-            r.one("/event/agentEvent/stats/filesChanged", "file", 7);
+            r.fields("/event/agentEvent/stats", "line", 8, List.of("linesRemoved", "linesAdded"));
+            r.one("/event/agentEvent/stats/filesChanged", "file", 8);
         }
     }
 

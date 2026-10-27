@@ -1,5 +1,5 @@
 {
-  "contract_uid": "claude-code/session-transcript/2.1.303/0.3.0-prototype",
+  "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
   "applies_to": {
     "product": "Claude Code",
     "version": "2.1.303",
@@ -152,5 +152,7 @@
     "api-request-blob": "API request message arrays: repeat representations of records already normalized (prompt, attachments, assistant blocks, tool results); not counted as submissions or responses",
     "api-request": "request bookkeeping: model, betas, cache control, digests, request chain (base/keep/tail)",
     "last-prompt": "pointer to the last prompt (leafUuid)"
-  }
+  },
+  "quantity_semantics": "Selected execution quantities retain their exact reported value and source path, and add the extension-defined common concept and measurement_window. Model configuration limits are capacities, never consumption. Unknown-unit quantities remain unresolved.",
+  "cost_basis_semantics": "A reported costBasis describes only the most recent request pricing table (cost_basis_window most_recent_request). The model amount remains aggregation 2 cumulative. An absent basis is not manufactured."
 }

@@ -44,6 +44,7 @@ final class ExecutionMetrics {
                             "first_content_frame_ms")) {
                 r.number(n.member(field), "/" + field, "ms", 4, null);
             }
+            modelLimits(r, n);
             r.number(n.member("num_turns"), "/num_turns", "count", 4, null);
             r.numbers(n.path("usage", "server_tool_use"), "/usage/server_tool_use", 4, null);
             r.numbers(n.member("subagent_stats"), "/subagent_stats", 4, null);
@@ -90,9 +91,14 @@ final class ExecutionMetrics {
 
     private static void limits(Reading reader, Jv record) {
         if (!"cost-state".equals(MapperSupport.text(record, "type"))
-                || !(record.member("modelUsage") instanceof Jv.Obj models)) {
+                || !(record.member("modelUsage") instanceof Jv.Obj)) {
             return;
         }
+        modelLimits(reader, record);
+    }
+
+    private static void modelLimits(Reading reader, Jv record) {
+        if (!(record.member("modelUsage") instanceof Jv.Obj models)) return;
         models.members()
                 .forEach(
                         (model, usage) -> {
@@ -144,6 +150,7 @@ final class ExecutionMetrics {
             if (model != null) {
                 metric.put("model_ref", MapperSupport.modelRef(model, 3, null));
             }
+            QuantityMeaning.bind(metric, pointer, scope);
             out.add(metric);
         }
 

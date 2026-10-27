@@ -310,6 +310,7 @@ final class FamilyFacts {
                         c.scopeId(),
                         "/cost_basis",
                         c.basis());
+        fields.put("/cost_basis_window", c.basis() == null ? null : FactComparison.value("most_recent_request"));
         if (c.quantityKindId() != null) {
             fields.put("/quantity_kind_id", FactComparison.value(c.quantityKindId()));
         }
@@ -320,7 +321,7 @@ final class FamilyFacts {
                 .observation(
                         c.model() == null ? "/cost_observation" : "/cost_observations",
                         "",
-                        "source.cost/v1",
+                        "source.cost/v2",
                         identity,
                         fields);
     }

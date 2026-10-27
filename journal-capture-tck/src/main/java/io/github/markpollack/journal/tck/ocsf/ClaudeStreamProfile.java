@@ -171,7 +171,7 @@ final class ClaudeStreamProfile implements SourceProfile {
         boolean any = false;
         for (Map.Entry<String, Json> m : mu.members().entrySet()) {
             if (m.getValue().member("costUSD") instanceof Json.JNumber cost) {
-                f.costs.add(new ExpectedFacts.Cost(index, cost, "USD", 6, null, m.getKey(), 1, 2));
+                f.costs.add(new ExpectedFacts.Cost(index, cost, "USD", 6, SourceProfile.text(m.getValue(), "costBasis"), m.getKey(), 1, 2));
                 any = true;
             }
         }

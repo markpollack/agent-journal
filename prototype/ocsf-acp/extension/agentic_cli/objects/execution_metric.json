@@ -1,6 +1,6 @@
 {
   "caption": "Execution Metric",
-  "description": "A source-reported execution quantity. Exact native value/unit, scope and source pointer are retained. Unknown measurement semantics stay Unknown; no sum or cross-source equivalence follows.",
+  "description": "A source-reported execution quantity. Exact native value/unit, scope and source pointer are retained. Unknown measurement semantics stay Unknown; no sum or cross-source equivalence follows. Common concepts: model.context_capacity and model.output_limit are reported model configuration limits in tokens, never consumption; context.token_capacity, context.tokens_used and context.percent_used concern the observed context. duration.api is reported API time, duration.elapsed wall time, duration.model_dispatch the dispatch duration. latency.first_token, first_output_token, first_stream_frame, first_content_frame, request_dispatch and inter_token retain their distinct endpoints. model.request_count, execution.turn_count, user.request_count, tool.invocation_count, tool.available_count and server.web_search_count/web_fetch_count count their named entities only. change.lines_added/lines_removed/files_changed count reported changes. request.body_size and request.wire_size are bytes before/on transport; cache.retention is seconds. usage.reported_input is an inclusive native input count (not an uncached tranche); usage.output is output tokens. Windows: configuration_snapshot and context_snapshot are states at the observation; patch is one reported patch; model_request one request; most_recent_request the latest request only; model_cumulative/session_cumulative/run_cumulative the reported cumulative extent of that subject; conversation_step one source-defined step; task_tracker_snapshot the tracker measure; child_result the child result reported extent; run_initial_response the initial-response timing within the run. Different windows and subjects must not be aggregated or compared as equal measurements. Source-specific counters without an established common concept retain their native name.",
   "extends": "object",
   "name": "execution_metric",
   "attributes": {
@@ -34,6 +34,12 @@
     "data": {
       "requirement": "optional",
       "description": "Exact source dimensions and window for a source-named metric. No join or cross-source aggregation is inferred."
+    },
+    "concept": {
+      "requirement": "optional"
+    },
+    "measurement_window": {
+      "requirement": "optional"
     }
   }
 }

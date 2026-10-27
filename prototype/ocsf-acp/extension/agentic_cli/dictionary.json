@@ -324,6 +324,10 @@
         "99": {
           "caption": "Other",
           "description": "A unit the source itself defines, which none of the other scopes describes; the sibling scope names it (for example Conversation step). It is not established to be the unit of any other scope (a conversation step is not stated to be one model response), and units of different source artifacts are never joined by equal identifiers. Where the unit is identified depends on the object (see usage_observation)."
+        },
+        "8": {
+          "caption": "Agent",
+          "description": "An explicitly reported agent subject identified by the enclosing event reported_agent, scoped to its source artifact and run. Main agent is not a spawned child; no parent/spawn relationship is implied."
         }
       }
     },
@@ -1576,6 +1580,31 @@
       "description": "Configured MCP server connections and their reported state; no inferred protocol capabilities.",
       "type": "server_connection",
       "is_array": true
+    },
+    "reported_agent": {
+      "caption": "Reported Agent",
+      "type": "reported_agent",
+      "description": "Source-reported agent identity and kind, without inferring a child relationship."
+    },
+    "kind": {
+      "caption": "Reported Kind",
+      "type": "string_t",
+      "description": "The exact source kind of this identity; it is not a Journal classification."
+    },
+    "concept": {
+      "caption": "Quantity Concept",
+      "type": "string_t",
+      "description": "Stable common concept of the quantity, as defined in execution_metric. Absence means a source-specific metric; metric_name is provenance, never the common concept."
+    },
+    "measurement_window": {
+      "caption": "Measurement Window",
+      "type": "string_t",
+      "description": "The interval or snapshot the quantity concerns, independently of its subject. Defined in execution_metric; no summability follows."
+    },
+    "cost_basis_window": {
+      "caption": "Pricing Basis Window",
+      "type": "string_t",
+      "description": "The interval to which cost_basis applies, independently of the amount aggregation: most_recent_request means the model pricing table for only its most recent request, never the cumulative history or an invoice."
     },
     "mcp_action": {
       "caption": "MCP Action",

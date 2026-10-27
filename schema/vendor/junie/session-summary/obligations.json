@@ -1,6 +1,6 @@
 {
   "kind": "agent-journal/canonical-obligations",
-  "version": "0.2",
+  "version": "0.3",
   "implementation": "java-expected-facts",
   "profile": "junie_summary",
   "disposition_catalog": "schema/vendor/junie/session-summary/dispositions.json",
@@ -142,9 +142,9 @@
       "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
     },
     {
-      "meaning": "junie.usage.3813.7/v1",
-      "revision": 1,
-      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+      "meaning": "junie.usage.3813.7/v2",
+      "revision": 2,
+      "requirement": "Reported input/cache values are retained; unestablished zero cache measurements permit only a conditional uncached value with an explicit premise, never measured canonical uncached input."
     },
     {
       "meaning": "junie.usage.unnamed_cost/v1",
@@ -202,9 +202,9 @@
       "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
     },
     {
-      "meaning": "source.execution_quantity/v1",
-      "revision": 1,
-      "requirement": "Reported call counts retain their native model, scope and support address; compare exact value and units without inferring measurement certainty."
+      "meaning": "source.execution_quantity/v2",
+      "revision": 2,
+      "requirement": "Selected established quantities require an exact reported value, common concept, subject, unit and measurement_window in addition to native path provenance. Configuration limits are capacity, never consumption; unlike windows remain distinct."
     }
   ]
 }

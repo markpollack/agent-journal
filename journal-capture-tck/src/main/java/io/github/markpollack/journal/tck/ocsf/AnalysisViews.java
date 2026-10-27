@@ -475,6 +475,7 @@ public final class AnalysisViews {
                     }
                 }
                 obs.put("components", new Json.JObject(comps));
+                if (u.member("components") != null) obs.put("component_evidence", u.member("components"));
                 observations.computeIfAbsent(key, k -> new ArrayList<>()).add(obs);
             }
         }

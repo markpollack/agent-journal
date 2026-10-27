@@ -4,9 +4,9 @@
  "fixture": "junie-live-3813.7-view",
  "core": "main",
  "events_jsonl": "fixtures/junie-live-3813.7-view/package/events.jsonl",
- "events_jsonl_sha256": "9a5ccc7bfdf5666583472640476e63cbe72e4d74cb99206936590eaf53552ebb",
+ "events_jsonl_sha256": "083e70ff357a446458f9b703ab7d2d8c4b9e49e51150218f18c25c8c1dbafab7",
  "execution_records": 80,
- "declarations_skipped": 70,
+ "declarations_skipped": 71,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
  "toolkit": {
   "name": "ocsf-toolkit",
@@ -14,7 +14,7 @@
   "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
   "exit_code": 0
  },
- "compiled_schema_sha256": "3d3d274392817bbfa63844212becc9d23916078c4bdfc7db40b260df66144b3a",
+ "compiled_schema_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc",
  "result": {
   "event_files_processed": 80,
   "error_events": 0,

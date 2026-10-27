@@ -83,9 +83,10 @@
         "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
       ],
       "destination": [
-        "*.agent_uid"
+        "*.reported_agent.uid"
       ],
-      "rule": "record_discriminator"
+      "rule": "record_discriminator",
+      "note": "Native agent id within the enclosing source artifact/run; MainAgent is not a spawned child."
     },
     {
       "variant": "SessionA2uxEvent/AgentCurrentStatusUpdatedEvent",
@@ -277,9 +278,10 @@
         "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
       ],
       "destination": [
-        "*.agent_uid"
+        "*.reported_agent.uid"
       ],
-      "rule": "record_discriminator"
+      "rule": "record_discriminator",
+      "note": "Native agent id within the enclosing source artifact/run; MainAgent is not a spawned child."
     },
     {
       "variant": "SessionA2uxEvent/AgentPatchCreatedEvent",
@@ -521,9 +523,10 @@
         "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
       ],
       "destination": [
-        "*.agent_uid"
+        "*.reported_agent.uid"
       ],
-      "rule": "record_discriminator"
+      "rule": "record_discriminator",
+      "note": "Native agent id within the enclosing source artifact/run; MainAgent is not a spawned child."
     },
     {
       "variant": "SessionA2uxEvent/AgentTaskNameUpdatedEvent",
@@ -697,9 +700,10 @@
         "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
       ],
       "destination": [
-        "*.agent_uid"
+        "*.reported_agent.uid"
       ],
-      "rule": "record_discriminator"
+      "rule": "record_discriminator",
+      "note": "Native agent id within the enclosing source artifact/run; MainAgent is not a spawned child."
     },
     {
       "variant": "SessionA2uxEvent/ContextWindowReportEvent",
@@ -913,9 +917,10 @@
         "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
       ],
       "destination": [
-        "*.agent_uid"
+        "*.reported_agent.uid"
       ],
-      "rule": "record_discriminator"
+      "rule": "record_discriminator",
+      "note": "Native agent id within the enclosing source artifact/run; MainAgent is not a spawned child."
     },
     {
       "variant": "SessionA2uxEvent/CurrentDirectoryUpdatedEvent",
@@ -1089,9 +1094,10 @@
         "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
       ],
       "destination": [
-        "*.agent_uid"
+        "*.reported_agent.uid"
       ],
-      "rule": "record_discriminator"
+      "rule": "record_discriminator",
+      "note": "Native agent id within the enclosing source artifact/run; MainAgent is not a spawned child."
     },
     {
       "variant": "SessionA2uxEvent/EnvironmentVariablesUpdatedEvent",
@@ -1280,9 +1286,10 @@
         "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
       ],
       "destination": [
-        "*.agent_uid"
+        "*.reported_agent.uid"
       ],
-      "rule": "record_discriminator"
+      "rule": "record_discriminator",
+      "note": "Native agent id within the enclosing source artifact/run; MainAgent is not a spawned child."
     },
     {
       "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
@@ -1695,9 +1702,10 @@
         "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
       ],
       "destination": [
-        "*.agent_uid"
+        "*.reported_agent.uid"
       ],
-      "rule": "record_discriminator"
+      "rule": "record_discriminator",
+      "note": "Native agent id within the enclosing source artifact/run; MainAgent is not a spawned child."
     },
     {
       "variant": "SessionA2uxEvent/ResultBlockUpdatedEvent",
@@ -1953,9 +1961,10 @@
         "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
       ],
       "destination": [
-        "*.agent_uid"
+        "*.reported_agent.uid"
       ],
-      "rule": "record_discriminator"
+      "rule": "record_discriminator",
+      "note": "Native agent id within the enclosing source artifact/run; MainAgent is not a spawned child."
     },
     {
       "variant": "SessionA2uxEvent/TerminalBlockUpdatedEvent",
@@ -2247,9 +2256,10 @@
         "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
       ],
       "destination": [
-        "*.agent_uid"
+        "*.reported_agent.uid"
       ],
-      "rule": "record_discriminator"
+      "rule": "record_discriminator",
+      "note": "Native agent id within the enclosing source artifact/run; MainAgent is not a spawned child."
     },
     {
       "variant": "SessionA2uxEvent/TipSuggestionCreatedEvent",
@@ -2437,9 +2447,10 @@
         "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
       ],
       "destination": [
-        "*.agent_uid"
+        "*.reported_agent.uid"
       ],
-      "rule": "record_discriminator"
+      "rule": "record_discriminator",
+      "note": "Native agent id within the enclosing source artifact/run; MainAgent is not a spawned child."
     },
     {
       "variant": "SessionA2uxEvent/ToolBlockUpdatedEvent",
@@ -2649,9 +2660,10 @@
         "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
       ],
       "destination": [
-        "*.agent_uid"
+        "*.reported_agent.uid"
       ],
-      "rule": "record_discriminator"
+      "rule": "record_discriminator",
+      "note": "Native agent id within the enclosing source artifact/run; MainAgent is not a spawned child."
     },
     {
       "variant": "SessionA2uxEvent/ViewFilesBlockUpdatedEvent",

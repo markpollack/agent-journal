@@ -91,15 +91,15 @@ final class ReportedQuantities {
     private static void junie(Reading r, Jv.Obj event) {
         Jv a = r.nativeRecord().path("event", "agentEvent");
         if (a == null) return;
-        event.put("agent_uid", a.path("agent", "id"));
+        event.put("reported_agent", new Jv.Obj().put("uid", a.path("agent", "id")).put("kind", a.path("agent", "kind")));
         switch (String.valueOf(MapperSupport.text(a, "kind"))) {
             case "ContextWindowReportEvent" -> {
-                r.fields("/event/agentEvent/", "token", 7, "used", "size");
-                r.fields("/event/agentEvent/", "percent", 7, "percentage");
+                r.fields("/event/agentEvent/", "token", 8, "used", "size");
+                r.fields("/event/agentEvent/", "percent", 8, "percentage");
             }
             case "AgentPatchCreatedEvent" -> {
-                r.fields("/event/agentEvent/stats/", "line", 7, "linesAdded", "linesRemoved");
-                r.fields("/event/agentEvent/stats/", "file", 7, "filesChanged");
+                r.fields("/event/agentEvent/stats/", "line", 8, "linesAdded", "linesRemoved");
+                r.fields("/event/agentEvent/stats/", "file", 8, "filesChanged");
             }
             default -> {}
         }

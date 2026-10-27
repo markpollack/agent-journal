@@ -44,6 +44,7 @@ final class ExecutionMetricReading {
                             "first_content_frame_ms")) {
                 reader.quantity(n.member(field), "/" + field, "ms", 4, null);
             }
+            modelLimits(reader, n);
             reader.quantity(n.member("num_turns"), "/num_turns", "count", 4, null);
             reader.counters(n.path("usage", "server_tool_use"), "/usage/server_tool_use");
             reader.counters(n.member("subagent_stats"), "/subagent_stats");
@@ -134,11 +135,16 @@ final class ExecutionMetricReading {
 
     private static void limits(ExpectedFacts facts, NativeArtifact.Record record) {
         if (!"cost-state".equals(SourceProfile.text(record.json(), "type"))
-                || !(record.json().member("modelUsage") instanceof Json.JObject models)) {
+                || !(record.json().member("modelUsage") instanceof Json.JObject)) {
             return;
         }
         Reading reader =
                 new Reading(new SourceFacts.Target(facts, record.index(), "session_context", 3));
+        modelLimits(reader, record.json());
+    }
+
+    private static void modelLimits(Reading reader, Json record) {
+        if (!(record.member("modelUsage") instanceof Json.JObject models)) return;
         models.members()
                 .forEach(
                         (model, usage) -> {
@@ -208,10 +214,11 @@ final class ExecutionMetricReading {
             if (scope == 99) {
                 values.put("/scope", FactComparison.value("Source observation"));
             }
+            QuantityExpectations.bind(values, pointer, scope);
             target.observation(
                     "/execution_metrics",
                     pointer,
-                    "source.execution_quantity/v1",
+                    "source.execution_quantity/v2",
                     SourceFacts.fields("/metric_name", pointer.substring(1)),
                     values);
         }

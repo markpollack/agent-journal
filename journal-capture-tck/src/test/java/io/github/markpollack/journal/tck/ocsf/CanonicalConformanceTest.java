@@ -108,7 +108,9 @@ class CanonicalConformanceTest {
         for (String owner : owners) {
             Json scope = NeutralJson.parse("{\"artifact\": \"" + CanonicalObligations.ARTIFACT + "\", \"owner_path\": \"" + c.ownerPath() + "\", \"owner_value\": "
                     + (owner == null ? "null" : "\"" + owner + "\"") + "}");
-            out.put(owner == null ? "main" : "child:" + owner, SourceProfile.forName(c.profile()).expected(art, source, scope));
+            ExpectedFacts nativeFacts = SourceProfile.forName(c.profile()).expected(art, source, scope);
+            ExecutionMetricReading.read(nativeFacts, art, c.profile());
+            out.put(owner == null ? "main" : "child:" + owner, nativeFacts);
         }
         return out;
     }
@@ -717,8 +719,8 @@ class CanonicalConformanceTest {
         Report r = generate(dropped, recordings(dropped), FieldDispositionTest.catalog("claude_stream"), obligationEntries());
         Set<String> lost = new TreeSet<>(reviewedPopulation());
         lost.removeAll(population(r));
-        assertThat(lost).as("the recording and its eleven occurrences (nine usage, its per-model cost and run duration) leave the pinned population").hasSize(12)
-                .anyMatch(l -> l.contains("recording claude-live-2.1.304-denial")).filteredOn(l -> l.contains(" occurrence ")).hasSize(11);
+        assertThat(lost).as("the recording and its thirteen occurrences (nine usage, per-model cost, run duration and two capacities) leave the pinned population").hasSize(14)
+                .anyMatch(l -> l.contains("recording claude-live-2.1.304-denial")).filteredOn(l -> l.contains(" occurrence ")).hasSize(13);
         assertThat(r.ids()).contains("5 recording:claude-code/stream-json/2.1.304-stdout:claude-live-2.1.304-denial");
         assertThat(r.findings().stream().filter(f -> f.id().startsWith("recording:"))).allMatch(r::inScope);
         // a byte-identical candidate is still a registered recording: dropping it is reported too, while the report

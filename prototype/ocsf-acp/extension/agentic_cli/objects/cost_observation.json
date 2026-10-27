@@ -45,6 +45,9 @@
     "data": {
       "description": "The native cost-bearing value or object exactly as reported.",
       "requirement": "required"
+    },
+    "cost_basis_window": {
+      "requirement": "optional"
     }
   }
 }

@@ -4,9 +4,9 @@
  "fixture": "codex-live-0.160.1-sandbox-refusal",
  "core": "main",
  "events_jsonl": "fixtures/codex-live-0.160.1-sandbox-refusal/package/events.jsonl",
- "events_jsonl_sha256": "f7e954573f26fbed5f8dd190c7b30fe517cc68ba3916f308202964c92233c15f",
+ "events_jsonl_sha256": "289c9faaeafeafbea247446cc78988190542c92a356cf3c55682e2453820bad8",
  "execution_records": 5,
- "declarations_skipped": 42,
+ "declarations_skipped": 43,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
  "toolkit": {
   "name": "ocsf-toolkit",
@@ -14,7 +14,7 @@
   "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
   "exit_code": 0
  },
- "compiled_schema_sha256": "3d3d274392817bbfa63844212becc9d23916078c4bdfc7db40b260df66144b3a",
+ "compiled_schema_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc",
  "result": {
   "event_files_processed": 5,
   "error_events": 0,

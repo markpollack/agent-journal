@@ -70,7 +70,7 @@ final class JunieSessionMapper implements SourceMapper {
         e.ctx().family(e.kind(), e.r().raw().length, "normalized: native task or agent progress state; no terminal success is inferred");
         Jv.Obj event = e.event("session_context", 5, "junie.session.state->session_context.state", true, null);
         event.put("session_uid", e.ctx().sessionFor(null)).put("context_kind", e.kind())
-                .put("task_uid", e.o().member("taskId")).put("agent_uid", e.ae().path("agent", "id"))
+                .put("task_uid", e.o().member("taskId"))
                 .put("reported_state", e.ae().member("status")).put("data", e.o());
         e.ctx().emit(ReportedQuantities.add(event, e.r(), "junie_session_events"));
     }

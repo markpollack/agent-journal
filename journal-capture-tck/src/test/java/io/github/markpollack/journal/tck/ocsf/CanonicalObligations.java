@@ -249,6 +249,7 @@ final class CanonicalObligations {
         Map<String, Json> definitions = new TreeMap<>();
         String member = switch (o.kind()) {
             case "cost" -> "cost_observations[]";
+            case "execution_quantity" -> "execution_metrics[]";
             case "attribute" -> o.attribute();
             default -> "usage_observations[]";
         };
@@ -265,7 +266,7 @@ final class CanonicalObligations {
         Json destinationClass = defs.classes().get(o.destinationClass());
         definitions.put("class " + o.destinationClass() + " description", destinationClass == null || destinationClass.member("description") == null
                 ? Json.JNull.INSTANCE : destinationClass.member("description"));
-        String observation = "attribute".equals(o.kind()) ? null : SourceProfile.text(defs.dictionary().get("cost".equals(o.kind()) ? "cost_observations" : "usage_observations"), "type");
+        String observation = "attribute".equals(o.kind()) ? null : SourceProfile.text(defs.dictionary().get("cost".equals(o.kind()) ? "cost_observations" : "execution_quantity".equals(o.kind()) ? "execution_metrics" : "usage_observations"), "type");
         definitions.put("objects", observation == null ? new Json.JObject(Map.of()) : objectClosure(observation, defs, problems));
         Map<String, Json> rules = new TreeMap<>();
         Json contract = NeutralJson.readDocument(CONTRACTS.resolve(c.contract() + ".json"));
@@ -552,6 +553,7 @@ final class CanonicalObligations {
         switch (o.kind()) {
             case "attribute" -> attributeJudgement(occ, cores, facts, findings);
             case "cost" -> costJudgement(occ, cores, facts, findings);
+            case "execution_quantity" -> quantityJudgement(occ, cores, facts, findings);
             default -> usageJudgement(occ, cores, facts, findings);
         }
         for (String property : oracleProperties(o)) {
@@ -617,6 +619,34 @@ final class CanonicalObligations {
         }
     }
 
+    /** Configuration quantities use the same occurrence, destination and executed-check procedure. */
+    private static void quantityJudgement(Occurrence occ, Map<String, List<Event>> cores, ExpectedFacts facts, List<Finding> findings) {
+        Obligation o = occ.obligation();
+        String concept = SourceProfile.text(o.raw().member("observation"), "concept");
+        List<Match> selected = new ArrayList<>();
+        for (Event e : destinationEvents(occ, cores.getOrDefault(occ.owner(), List.of()))) {
+            for (Json q : e.elements("execution_metrics")) {
+                if (concept.equals(SourceProfile.text(q, "concept")) && Objects.equals(occ.model(), SourceProfile.text(q.member("model_ref"), "name"))) selected.add(new Match(e, q));
+            }
+        }
+        if (selected.size() != 1) {
+            findings.add(new Finding(3, occ.id() + "#quantity", "expected exactly one common " + concept + " for model " + occ.model() + "; found " + selected.size()));
+            return;
+        }
+        Json q = selected.get(0).observation();
+        Map<String, Json> required = new LinkedHashMap<>();
+        required.put("reported_value", occ.payload());
+        for (String field : List.of("scope_id", "metric_unit", "measurement_window")) required.put(field, o.raw().path("observation", field));
+        required.forEach((field, value) -> {
+            if (!Json.sameValue(value, q.member(field))) findings.add(new Finding(4, occ.id() + "#value:" + field, "shared capacity " + field + " does not equal its native definition"));
+        });
+        writerBinding(occ, selected.get(0).event(), null, findings);
+        if (facts == null || facts.facts.stream().noneMatch(f -> f.recordIndex() == occ.record() && Json.sameValue(f.fields().get("/concept"), new Json.JString(concept))
+                && Json.sameValue(f.fields().get("/reported_value"), occ.payload()))) {
+            findings.add(new Finding(4, occ.id() + "#not-expected-by-profile", "the independent reader does not expect this shared capacity"));
+        }
+    }
+
     /** A cost obligation: exactly one entry of the destination event's cost_observations[] at the scope and model carries the native amount. */
     private static void costJudgement(Occurrence occ, Map<String, List<Event>> cores, ExpectedFacts facts, List<Finding> findings) {
         Obligation o = occ.obligation();
@@ -650,6 +680,14 @@ final class CanonicalObligations {
             }
             if (!Objects.equals(Event.integer(c.member("aggregation_id")), o.aggregationId())) {
                 findings.add(new Finding(4, occ.id() + "#value:aggregation_id", "aggregation_id " + Event.integer(c.member("aggregation_id")) + " != " + o.aggregationId()));
+            }
+            String basisMember = SourceProfile.text(o.raw().member("observation"), "cost_basis_member");
+            if (basisMember != null) {
+                String reportedBasis = facts == null ? null : facts.costs.stream().filter(x -> x.recordIndex() == occ.record() && x.scopeId() == o.scopeId() && Objects.equals(x.model(), occ.model())).map(ExpectedFacts.Cost::basis).filter(Objects::nonNull).findFirst().orElse(null);
+                Json basis = reportedBasis == null ? null : new Json.JString(reportedBasis);
+                if (!Json.sameValue(basis, c.member("cost_basis"))) findings.add(new Finding(4, occ.id() + "#value:cost_basis", "reported per-model pricing basis is missing or changed"));
+                Json window = basis == null ? null : o.raw().path("observation", "cost_basis_window");
+                if (!Json.sameValue(window, c.member("cost_basis_window"))) findings.add(new Finding(4, occ.id() + "#value:cost_basis_window", "pricing basis must describe only the most recent request"));
             }
             Json data = o.dataMember() == null ? null : c.member("data") == null ? null : c.member("data").member(o.dataMember());
             if (o.dataMember() != null && (data == null || !Json.sameValue(occ.payload(), data))) {
@@ -687,6 +725,7 @@ final class CanonicalObligations {
         List<String> out = new ArrayList<>(switch (o.kind()) {
             case "attribute" -> List.of("attribute.values");
             case "cost" -> List.of("population.cost", "cost.values");
+            case "execution_quantity" -> List.of("fact.value");
             default -> List.of("population.usage", "usage.values");
         });
         if ("session_context".equals(o.destinationClass())) {
@@ -864,6 +903,7 @@ final class CanonicalObligations {
         switch (o.kind()) {
             case "attribute" -> members.put(base, o.attribute());
             case "cost" -> members.put(base, "cost_observations[].total_cost");
+            case "execution_quantity" -> members.put(base, "execution_metrics[].reported_value");
             default -> {
                 o.components().forEach((canonical, nativePath) -> {
                     if (occ.payload().path(nativePath.split("\\.")) instanceof Json.JNumber) {
@@ -973,6 +1013,7 @@ final class CanonicalObligations {
     private static boolean mapped(List<Occurrence> here, String path) {
         for (Occurrence o : here) {
             String base = inventoryPath(o.obligation().payload());
+            if (!"usage".equals(o.obligation().kind()) && path.equals(base)) return true;
             for (String nativePath : o.obligation().components().values()) {
                 if (path.equals(base + "." + nativePath)) {
                     return true;

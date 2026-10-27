@@ -43,7 +43,7 @@ class PinsTest {
     @Test
     void semanticContractBytesAreIdenticalInWriterAndReader() throws Exception {
         byte[] writer = resource(Pins.SEMANTIC_CONTRACT_RESOURCE);
-        byte[] reader = Files.readAllBytes(PROJECT.resolve("journal-capture-tck/src/main/resources/ocsf/semantic-contract-0.8.0-prototype.json"));
+        byte[] reader = Files.readAllBytes(PROJECT.resolve("journal-capture-tck/src/main/resources/ocsf/semantic-contract-0.9.0-prototype.json"));
         assertThat(writer).isEqualTo(reader);
         assertThat(io.github.markpollack.journal.tck.ocsf.SemanticOperation.VERSION).isEqualTo(Pins.SEMANTIC_OPERATIONS_VERSION);
         assertThat(io.github.markpollack.journal.tck.ocsf.PackageReader.READER_CONTRACT_VERSION).isEqualTo(Pins.READER_CONTRACT_VERSION);
@@ -75,10 +75,10 @@ class PinsTest {
             assertThat(c.uid(name)).endsWith(switch (name) {
                 case CodexStreamMapper.CONTRACT -> "/0.8.0-prototype";
                 case CodexRolloutMapper.CONTRACT -> "/0.4.0-prototype";
-                case AntigravityStreamMapper.CONTRACT -> "/0.3.0-prototype";
+                case AntigravityStreamMapper.CONTRACT -> "/0.4.0-prototype";
                 case OpaqueTextMapper.CONTRACT -> "/0.2.0-prototype";
-                case ClaudeStreamMapper.CONTRACT -> "/0.7.0-prototype";
-                default -> "/0.3.0-prototype";
+                case ClaudeStreamMapper.CONTRACT -> "/0.8.0-prototype";
+                default -> "/0.4.0-prototype";
             });
             c.rule(name, "common.opaque->source_record");
             c.rule(name, "common.mapper_exception->source_record");

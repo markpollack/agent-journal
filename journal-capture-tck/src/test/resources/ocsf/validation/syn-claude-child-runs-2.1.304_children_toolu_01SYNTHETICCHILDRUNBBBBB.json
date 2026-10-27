@@ -4,9 +4,9 @@
  "fixture": "syn-claude-child-runs-2.1.304",
  "core": "children/toolu_01SYNTHETICCHILDRUNBBBBB",
  "events_jsonl": "fixtures/syn-claude-child-runs-2.1.304/package/children/toolu_01SYNTHETICCHILDRUNBBBBB/events.jsonl",
- "events_jsonl_sha256": "7e60166c9082425ea84eff7f290f42c0867205a786ae536f9b9ce227d073f9fd",
+ "events_jsonl_sha256": "95d4752b4af54eeee92825813721883fe989096a0a2d77af8bcbb695b20d3130",
  "execution_records": 1,
- "declarations_skipped": 37,
+ "declarations_skipped": 38,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
  "toolkit": {
   "name": "ocsf-toolkit",
@@ -14,7 +14,7 @@
   "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
   "exit_code": 0
  },
- "compiled_schema_sha256": "3d3d274392817bbfa63844212becc9d23916078c4bdfc7db40b260df66144b3a",
+ "compiled_schema_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc",
  "result": {
   "event_files_processed": 1,
   "error_events": 0,

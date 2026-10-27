@@ -1,6 +1,6 @@
 {
   "kind": "agent-journal/canonical-obligations",
-  "version": "0.2",
+  "version": "0.3",
   "implementation": "java-expected-facts",
   "profile": "junie_session_events",
   "disposition_catalog": "schema/vendor/junie/session-events/dispositions.json",
@@ -147,9 +147,9 @@
       "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
     },
     {
-      "meaning": "junie.3813.7.session.state/v1",
-      "revision": 1,
-      "requirement": "Compare native task identity and agent progress text at its record and agent; do not infer a terminal outcome."
+      "meaning": "junie.3813.7.session.state/v2",
+      "revision": 2,
+      "requirement": "Reported MainAgent identity is retained as reported_agent; agent_uid remains absent unless the source establishes a child identity."
     },
     {
       "meaning": "junie.completion.taskCostUsd/v1",
@@ -157,9 +157,9 @@
       "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
     },
     {
-      "meaning": "junie.usage.3813.7/v1",
-      "revision": 1,
-      "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+      "meaning": "junie.usage.3813.7/v2",
+      "revision": 2,
+      "requirement": "Reported input/cache values are retained; unestablished zero cache measurements permit only a conditional uncached value with an explicit premise, never measured canonical uncached input."
     },
     {
       "meaning": "junie.usage.unnamed_cost/v1",
@@ -172,9 +172,9 @@
       "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
     },
     {
-      "meaning": "source.execution_quantity/v1",
-      "revision": 1,
-      "requirement": "Reported call counts retain their native model, scope and support address; compare exact value and units without inferring measurement certainty."
+      "meaning": "source.execution_quantity/v2",
+      "revision": 2,
+      "requirement": "Selected established quantities require an exact reported value, common concept, subject, unit and measurement_window in addition to native path provenance. Configuration limits are capacity, never consumption; unlike windows remain distinct."
     },
     {
       "meaning": "source.fallback/v1",
@@ -197,9 +197,9 @@
       "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
     },
     {
-      "meaning": "source.reported_agent/v1",
-      "revision": 1,
-      "requirement": "Each precise expected fact requires its own passing native-to-canonical comparison; no result means UNCHECKED."
+      "meaning": "source.reported_agent/v2",
+      "revision": 2,
+      "requirement": "Source-reported agent uid and kind belong to reported_agent within the enclosing source artifact/run; MainAgent does not imply a child run and cannot populate child-only agent_uid."
     },
     {
       "meaning": "source.timestamp/v1",

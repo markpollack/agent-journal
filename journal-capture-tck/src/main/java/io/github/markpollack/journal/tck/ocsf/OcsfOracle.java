@@ -238,7 +238,7 @@ public final class OcsfOracle {
                 continue;
             }
             ExpectedFacts facts = profile.expected(art, source, scope);
-            if ("0.14.0-prototype".equals(core.manifest.extensionVersion())) {
+            if (List.of("0.14.0-prototype", "0.15.0-prototype").contains(core.manifest.extensionVersion())) {
                 ExecutionStateReading.read(facts, art, profileName);
                 ExecutionMetricReading.read(facts, art, profileName);
                 ReportedQuantityReading.read(facts, art, profileName);
@@ -304,7 +304,7 @@ public final class OcsfOracle {
             }
             else {
                 ExpectedFacts owed = unselected.isEmpty() ? facts : facts.without(unselected);
-                boolean attributed = List.of("0.13.0-prototype", "0.14.0-prototype").contains(core.manifest.extensionVersion());
+                boolean attributed = List.of("0.13.0-prototype", "0.14.0-prototype", "0.15.0-prototype").contains(core.manifest.extensionVersion());
                 if (attributed) {
                     owed.unresolvedMeanings.forEach((record, reason) -> report.add(Category.NORMALIZATION, "source.meaning", owner, Outcome.UNRESOLVED,
                             artifact + ":record=" + record + "# " + reason));
