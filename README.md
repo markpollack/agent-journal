@@ -7,8 +7,8 @@ the native input by an independent oracle.
 
 See the [documentation](https://lab.pollack.ai/projects/agent-journal) for concepts, capture guides,
 configuration and API reference. In this repository: generated architecture views under
-[`docs/architecture`](docs/architecture/README.md), per-CLI support statements under
-[`docs/cli-support`](docs/cli-support), and [how canonical conformance is checked](docs/canonical-conformance.md).
+[`docs/architecture`](docs/architecture/README.md) and per-CLI support statements under
+[`docs/cli-support`](docs/cli-support).
 
 ## Build
 
