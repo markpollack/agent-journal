@@ -260,7 +260,7 @@ public final class ExpectedFacts {
     public final List<Context> contexts = new ArrayList<>();
     public final List<Attribute> attributes = new ArrayList<>();
     public final List<Fact> facts = new ArrayList<>();
-    /** These profiles express their normalized families as attributed facts rather than the legacy family records. */
+    /** These profiles express their normalized families as attributed facts rather than the earlier typed family records above. */
     public boolean directFacts;
     /** The tool call a context names as the spawner of the child run it accounts for, by {@code recordIndex:contextKind}; absent means none. */
     public final Map<String, String> contextToolCalls = new LinkedHashMap<>();

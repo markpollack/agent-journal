@@ -10,8 +10,8 @@ import java.util.function.UnaryOperator;
 
 /**
  * The checks of one report in the order they were added, with the lookups, the per-category summary and the plain-map
- * rows every report writes: shared by {@code OracleReport} (the OCSF oracle) and {@link VerificationReport} (the Claude
- * stream verifier), which differ only in what they say about their verifier and their denominator. There is no single
+ * rows every report writes: the base of every {@link CheckReport}, such as {@code OracleReport} (the OCSF oracle), which
+ * adds what it says about its verifier and its denominator. There is no single
  * pass flag: a category is {@code noDefects} only when it has neither {@link Check.Outcome#DEFECTIVE} nor
  * {@link Check.Outcome#UNRESOLVED} checks; unsupported and representation-differing checks are counted beside it.
  */

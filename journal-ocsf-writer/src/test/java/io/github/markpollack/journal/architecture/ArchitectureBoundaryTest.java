@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * checked against extracted structure). Maven already keeps the writer off the TCK's classpath; these rules state the boundary
  * in the code itself, cover what Maven cannot see inside one module, and keep holding if a build file changes.
  * <ul>
- * <li>The TCK uses only the JDK, Jackson as a neutral parser, and itself: no writer, capture, SDK or legacy-core class
+ * <li>The TCK uses only the JDK, Jackson as a neutral parser, and itself: no writer, capture or SDK class
  * (the structural part of RULE-29; the semantic part, independently grounded expectations, is the reviewed examples' job).</li>
  * <li>The oracle core (the {@code tck.ocsf} package apart from its command-line tool) reads JSON with the neutral tokenizer
  * only and never uses the prototype candidate-production support, which lives in the same module.</li>

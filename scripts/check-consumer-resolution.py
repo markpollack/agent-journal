@@ -15,21 +15,15 @@ from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).resolve().parent.parent
 MAVEN = REPOSITORY_ROOT / "mvnw"
+# The published 2.0 artifacts: the OCSF writer (capture, replay, mapping, final assembly) and the
+# independent reader/oracle TCK that consumers such as ACT run. journal-mcp-test-server is deploy-skipped.
 MODULES = (
-    "journal-core",
-    "claude-code-capture",
-    "grok-cli-capture",
-    "codex-cli-capture",
-    "antigravity-cli-capture",
-    "junie-cli-capture",
+    "journal-ocsf-writer",
+    "journal-capture-tck",
 )
 EXPECTED_LINES = {
-    "journal-core": {"com.fasterxml.jackson"},
-    "claude-code-capture": {"com.fasterxml.jackson", "tools.jackson"},
-    "grok-cli-capture": {"com.fasterxml.jackson"},
-    "codex-cli-capture": {"com.fasterxml.jackson"},
-    "antigravity-cli-capture": {"com.fasterxml.jackson"},
-    "junie-cli-capture": {"com.fasterxml.jackson"},
+    "journal-ocsf-writer": {"com.fasterxml.jackson"},
+    "journal-capture-tck": {"com.fasterxml.jackson"},
 }
 DEPENDENCY_PATTERN = re.compile(
     r"^\s+([^:\s]+):([^:\s]+):([^:\s]+):([^:\s]+):([^\s]+)(?:\s|$)"

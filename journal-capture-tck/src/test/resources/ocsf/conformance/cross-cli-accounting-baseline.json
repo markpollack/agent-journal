@@ -1,6 +1,6 @@
 {
   "kind": "agent-journal/cross-cli-accounting-baseline",
-  "version": "0.3",
+  "version": "0.4",
   "meaning": "Exact executed accounting population and dependency snapshot. Declared checker assignments remain separate from attributed Check outcomes. Pins native occurrences and classifications, source/specification bindings, E requirements, actual assertion outcomes, comparison operand digests and non-passing findings. An edit is a reviewable implementation result, never semantic approval. Unresolved meanings and unsupported versions remain non-passing. Required unchecked comparisons cannot be frozen by this ratchet.",
   "changes": [
     {
@@ -14,6 +14,10 @@
     {
       "revision": "0.3 (2026-10-27)",
       "summary": "Four corrected semantic bindings: MainAgent identity/scope, model pricing basis with last-request window, common concepts/model capacities, conditional Junie uncached input. Regenerated required comparisons and dependency digests; unchanged native population, quality thresholds, admissions and pending approvals. Exact added/removed snapshot lines recorded in the correction return evidence."
+    },
+    {
+      "revision": "0.4 (2.0 cleanup, 2026-10-31)",
+      "summary": "Dependency digests of journal-capture-tck/src/main and src/test/java restated after the 1.x-format Claude stream verifier (tck.verify.ClaudeStreamVerifier family) and the Venn value-landing comparison (tck.venn) left the module and the Claude-specific canonical conformance report's wording changed in CanonicalConformanceTest. No assertion, comparison population, source, catalog, checker, non-passing check, extension or writer digest changed: the ledger is otherwise line-identical to 0.3. A restated dependency digest is not semantic approval."
     }
   ],
   "snapshot": [
@@ -700,8 +704,8 @@
     "comparison-population syn-codex-exec-families-0.160.1 main/stream.jsonl 1590 sha256:500e4a341c5389a8b0a7681e0c392df8f5328c82bc6303df911f0db77e78aed7",
     "comparison-population syn-codex-exec-stream main/stream.jsonl 751 sha256:8f9ca0a82194789ce6285d77587de37870676c3e29c64dfed86bd14514519137",
     "comparison-population syn-codex-exec-turn-failed-0.160.1 main/stream.jsonl 217 sha256:8374c6ca90431ec198c640cdda4addbb6e15d4a93a36eebef419e1dafb0e4c3c",
-    "dependency journal-capture-tck/src/main sha256:138687d7c17bdff4f87aed298597400bdbd14b10ca92da1661e2da7c6c2b65ca",
-    "dependency journal-capture-tck/src/test/java sha256:1a84e55536184bdd2e39c1b4f12d94e9ed1d28288520375e30cf85add9f49769",
+    "dependency journal-capture-tck/src/main sha256:bc8d76f6f8a864077f318044ce17a22b18d8a16d645c1bce177c75b124ee3dbc",
+    "dependency journal-capture-tck/src/test/java sha256:0a7ed120b0b03784149f4dbdf0760d29d26219025338fad1dbc772cd79720f6f",
     "dependency journal-capture-tck/src/test/resources/ocsf/conformance sha256:c856f9da4a6c5f61f93e7007100eab00e4dd692d176362b995e41f8894c90cee",
     "dependency journal-capture-tck/src/test/resources/ocsf/fixtures sha256:56fda6ffbd61d21110d08606c19983124598646019f3fda3090f7facaed79495",
     "dependency journal-capture-tck/src/test/resources/ocsf/mapping-catalog sha256:b519341b5f678164a58354d538e0b2edf510bfd0d7d85d3ae57baf4e2ac71f0d",

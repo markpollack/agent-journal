@@ -91,7 +91,7 @@ legend bottom left
   Solid arrow: extracted static dependency (a class of one component refers to a class of the other).
   Dashed arrow: declared data flow through a file; no code connects the two modules.
   Grey boxes: shared JSON, byte and check-ledger code used across their module (incoming arrows omitted).
-  Not drawn: Native inventory tools, Earlier-format Claude stream verifier, Prototype candidate support, Value-landing comparison.
+  Not drawn: Native inventory tools, Prototype candidate support.
   Every arrow and omission is listed in component-view.md with its class pairs.
 endlegend
 @enduml

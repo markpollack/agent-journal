@@ -42,7 +42,6 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
         <!-- Dependency versions -->
-        <claude-code-sdk.version>1.7.0</claude-code-sdk.version>
         <acp-core.version>0.16.1</acp-core.version>
         <!-- 2.21.4+ clears the 2026-06-23 jackson-databind cluster (CVE-2026-54512 /
              CVE-2026-54513, CVSS 8.1) that affects 2.19.0 -> 2.21.3. 2.21.6 is the head of
@@ -52,8 +51,8 @@
              jackson-databind (CVE-2026-89407, CVE-2026-89425, CVE-2026-91776,
              CVE-2026-91777), which affects 2.22.0 -> 2.22.2. -->
         <jackson.version>2.22.3</jackson.version>
-        <!-- Jackson 3 (tools.jackson) arrives transitively through
-             claude-code-sdk -> mcp -> mcp-json-jackson3 at 3.0.3, which is inside the
+        <!-- Jackson 3 (tools.jackson) arrives transitively through the MCP Java SDK
+             (journal-mcp-test-server: mcp-core -> mcp-json-jackson3 at 3.0.3), which is inside the
              affected range of the same CVE-2026-545xx cluster (fixed in 3.1.4) and of
              CVE-2026-29062. Converge it to the agentworks-bom floor.
              3.2.3 clears the same 2026-09-22/23 cluster on the Jackson 3 line. -->
@@ -95,8 +94,8 @@
         <errorprone.extraArgs>-XepDisableWarningsInGeneratedCode</errorprone.extraArgs>
         <nullaway.version>0.13.8</nullaway.version>
         <!-- PMD size, complexity and duplication (config/pmd/ruleset.xml); CPD at 100 tokens. Mechanism from config/guardrails/decisions.md:
-             claude-code-capture and codex-cli-capture fix every violation; the other modules ratchet with pmd.maxAllowedViolations at
-             their measured count, lowered as fixes land. -->
+             every module ratchets with pmd.maxAllowedViolations at its measured count, lowered as fixes land, never raised
+             (the fix-all modules of the 1.x line were retired with it). -->
         <maven-pmd-plugin.version>3.28.0</maven-pmd-plugin.version>
         <pmd.version>7.28.0</pmd.version>
         <cpd.minimumTokens>100</cpd.minimumTokens>
@@ -105,14 +104,8 @@
     </properties>
 
     <modules>
-        <module>journal-core</module>
         <module>journal-capture-tck</module>
         <module>journal-ocsf-writer</module>
-        <module>claude-code-capture</module>
-        <module>grok-cli-capture</module>
-        <module>codex-cli-capture</module>
-        <module>antigravity-cli-capture</module>
-        <module>junie-cli-capture</module>
         <module>journal-mcp-test-server</module>
     </modules>
 
@@ -129,7 +122,7 @@
             </dependency>
 
             <!-- Jackson 3 BOM (tools.jackson) — converges the Jackson 3 artifacts that
-                 claude-code-sdk drags in transitively to the patched floor. -->
+                 the MCP Java SDK drags in transitively to the patched floor. -->
             <dependency>
                 <groupId>tools.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>

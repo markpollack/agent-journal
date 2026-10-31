@@ -11,9 +11,9 @@ The product is the OCSF-based writer (`journal-ocsf-writer`) and its independent
 `events.jsonl`, checked by the independent Java oracle in `journal-capture-tck`. The normative
 requirements are the RFC 2119 rules and EARS criteria under
 `journal-capture-tck/src/test/resources/requirements/agent-journal/`; read them before changing
-capture, mapping or verification behaviour. The older `journal-core` contract and the per-CLI
-`<cli>-capture` modules remain until they are explicitly retired; they are not the model for new
-work.
+capture, mapping or verification behaviour. The 1.x record format (`journal-core`) and its per-CLI
+capture modules were retired from this line in 2.0; their history is on branch `1.x`, and nothing in
+2.0 depends on them.
 
 A capture is not done because a trace parses. A run that used tools but yields no tool events, or
 collapses to one state, is a failure that can look like a finding; the independent checks judge

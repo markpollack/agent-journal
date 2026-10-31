@@ -1,14 +1,14 @@
 # Agent Journal
 
-Agent Journal is a Java library for recording agent executions as durable local data.
-It records the messages, tool activity, reported usage and cost of a run as one independently
-portable `events.jsonl` on the [OCSF](https://ocsf.io) schema with Journal's `agentic_cli`
-extension, and checks that record against the native input with an independent oracle.
+Agent Journal records an agent CLI's execution as durable local data: the messages, tool
+activity, reported usage and cost of a run, written as one independently portable `events.jsonl`
+on the [OCSF](https://ocsf.io) schema with Journal's `agentic_cli` extension, and checked against
+the native input by an independent oracle.
 
 See the [documentation](https://lab.pollack.ai/projects/agent-journal) for concepts, capture guides,
-configuration and API reference. Generated architecture views are under
-[`docs/architecture`](docs/architecture/README.md) and per-CLI support statements under
-[`docs/cli-support`](docs/cli-support).
+configuration and API reference. In this repository: generated architecture views under
+[`docs/architecture`](docs/architecture/README.md), per-CLI support statements under
+[`docs/cli-support`](docs/cli-support), and [how canonical conformance is checked](docs/canonical-conformance.md).
 
 ## Build
 
@@ -18,17 +18,37 @@ Requires a Java 21 JDK.
 ./mvnw clean verify
 ```
 
-This branch builds `2.0.0-SNAPSHOT`, a development snapshot of the OCSF writer
-(`journal-ocsf-writer`), its reader and oracle (`journal-capture-tck`) and the launching capture.
-The latest release is `1.11.0`:
+## Use
+
+Two artifacts, group `io.github.markpollack`, version `2.0.0-SNAPSHOT`:
+
+- `journal-ocsf-writer`: captures a CLI (launching it, reading its standard output, or replaying a
+  recording) and writes the run package; `OcsfWriterTool launch|capture|replay` is its command line,
+  `CliCapture` and `OcsfRunWriter` its API. It depends on the JDK and `jackson-core` only.
+- `journal-capture-tck`: reads a package (`PackageReader`), computes the declared analysis views, and
+  judges a package against its native input with the independent oracle; `OcsfReaderTool
+  inspect|views|measure|reconstruct|self-contained|verify` is its command line. Consumers that only
+  read packages need this artifact alone.
 
 ```xml
 <dependency>
     <groupId>io.github.markpollack</groupId>
-    <artifactId>journal-core</artifactId>
-    <version>1.11.0</version>
+    <artifactId>journal-ocsf-writer</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
 </dependency>
 ```
+
+Replay an existing recording and verify the result:
+
+```bash
+java -cp journal-ocsf-writer.jar:jackson-core.jar io.github.markpollack.journal.ocsf.writer.OcsfWriterTool \
+  replay <spec.json> <out-dir>          # the spec names the run and its native source files
+java -cp journal-capture-tck.jar:<its dependencies> io.github.markpollack.journal.tck.ocsf.OcsfReaderTool \
+  verify <out-dir> <native-dir> report.json --expected <native-dir>/expected-sources.json
+```
+
+The 1.x line (`journal-core`, last release `1.11.0`) is a different record format with no upgrade
+path to 2.0; it lives on branch `1.x`.
 
 ## Support in 2.0.0-SNAPSHOT
 
@@ -53,11 +73,8 @@ independent oracle. It is not approval of every meaning: meanings the catalogs s
 stay proposed, and the output states what the source did not establish rather than guessing it.
 Known limits of this snapshot: Copilot's per-response duration and Junie's per-call time carry no
 vendor-stated unit; Junie's cache counters are reported as zero without establishing whether they
-are measured, so its uncached input is conditional; the legacy Claude capture does not yet detect an
-incomplete sub-agent interior stream (its check is disabled).
-
-The 1.x `journal-core` record format and the per-CLI `<cli>-capture` modules remain in this build
-until they are explicitly retired; they are not the model for new work.
+are measured, so its uncached input is conditional; a Claude foreground sub-agent stream that omits
+one of its messages is not yet detected as incomplete against the vendor's own counts.
 
 ## License
 

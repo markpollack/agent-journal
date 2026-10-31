@@ -6,9 +6,9 @@ import java.util.Map;
 
 /**
  * What every verifier's report has in common: the exact oracle and candidate it judged, the source denominator, and
- * its checks in a {@link CheckLedger} with the lookups and the per-category summary. {@code OracleReport} (the OCSF
- * oracle) and {@link VerificationReport} (the Claude stream verifier) add what they say about their verifier, their
- * coverage or their required properties, and write their own {@link #toMap()} order.
+ * its checks in a {@link CheckLedger} with the lookups and the per-category summary. A concrete report such as
+ * {@code OracleReport} (the OCSF oracle) adds what it says about its verifier, its coverage or its required
+ * properties, and writes its own {@link #toMap()} order.
  */
 public abstract class CheckReport {
 

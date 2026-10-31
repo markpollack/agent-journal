@@ -244,7 +244,7 @@ class CanonicalConformanceTest {
                 + " and the Owner approves the obligations; a finite corpus of pinned recordings, not every future vendor behavior.");
         doc.put("heuristic_notices", r.notices());
         doc.put("not_measured", List.of(
-                "this legacy obligation report covers its eleven declared Claude obligations; the executed F/E/A report in target/accounting covers the remaining selected meanings and routes",
+                "this Claude-specific canonical conformance report covers the obligations declared in schema/vendor/claude-code/stream-json/obligations.json; the executed F/E/A report in target/accounting covers the remaining selected meanings and routes",
                 "semantic approval of proposed meanings and source behaviors beyond the frozen population",
                 "the overall canonical-coverage gap count of the product"));
         return doc;

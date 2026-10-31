@@ -114,19 +114,13 @@ final class ArchitectureComponents {
             tck("neutral", "Neutral JSON, bytes and check ledger",
                     "Vendor-neutral reading: JSON through Jackson's tokenizer only with exact numbers, native artifacts read as bytes first with every line kept, hashing, and the check outcomes and ledger every verifier reports with.",
                     named("verify.Json", "verify.NeutralJson", "verify.Difference", "verify.Check", "verify.CheckLedger", "verify.CheckReport", "ocsf.NativeArtifact")),
-            tck("legacy-verifier", "Earlier-format Claude stream verifier",
-                    "Verifies packages of the earlier journal-core format produced by claude-code-capture against their Claude stream; not on the OCSF writer's path.",
-                    named("verify.CandidatePackage", "verify.ClaudeStreamContract", "verify.ClaudeStreamOracle", "verify.ClaudeStreamVerifier", "verify.VerificationReport")),
             tck("inventory", "Native inventory tools",
                     "Empirical variant/path inventories of native artifacts and their comparison with the accepted source specifications (findings are proposals, never applied); "
                             + "source joins and the independent assembly oracle, which judges a finally assembled file from native identities alone.",
                     inPackage(TCK + ".ocsf.inventory"), "package " + TCK + ".ocsf.inventory"),
             tck("prototype", "Prototype candidate support",
                     "NON-PRODUCTION support that produces candidate packages from the earlier Python prototype's layout; it is producer-side code and the oracle never uses it.",
-                    inPackage(TCK + ".ocsf.prototype"), "package " + TCK + ".ocsf.prototype"),
-            tck("venn", "Value-landing comparison",
-                    "Counts which native values reappear anywhere in a journal record, read from the data rather than parser code; an exploratory measure, not an oracle check.",
-                    inPackage(TCK + ".venn"), "package " + TCK + ".venn"));
+                    inPackage(TCK + ".ocsf.prototype"), "package " + TCK + ".ocsf.prototype"));
 
     static final List<Artifact> ARTIFACTS = List.of(
             new Artifact("native", "native artifact\\n(the CLI's bytes, and an\\nindependent byte copy)"),
@@ -145,7 +139,7 @@ final class ArchitectureComponents {
     static final Set<String> SHARED = Set.of("json-writer", "neutral");
 
     /** Components left out of the drawn view (not on the writer-to-oracle path); their classes and edges stay in the facts. */
-    static final Set<String> NOT_DRAWN = Set.of("legacy-verifier", "inventory", "prototype", "venn");
+    static final Set<String> NOT_DRAWN = Set.of("inventory", "prototype");
 
     private ArchitectureComponents() {
     }

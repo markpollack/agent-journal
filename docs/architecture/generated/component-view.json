@@ -3,7 +3,7 @@
  "format_version": "0.1",
  "status": "extracted structure (components and dependencies); declared flows and drawing choices are labelled",
  "produced_by": "ComponentViewTest (journal-ocsf-writer test scope) with ArchUnit 1.5.0 over compiled production classes",
- "scope": {"packages": ["io.github.markpollack.journal.ocsf.writer", "io.github.markpollack.journal.tck"], "classes": "production classes only (test classes excluded); nested and anonymous classes belong to their top-level class", "top_level_classes": 174},
+ "scope": {"packages": ["io.github.markpollack.journal.ocsf.writer", "io.github.markpollack.journal.tck"], "classes": "production classes only (test classes excluded); nested and anonymous classes belong to their top-level class", "top_level_classes": 162},
  "relationship": "A depends on B when a class of A refers directly to a class of B in bytecode: a call, field access, construction, inheritance, member or parameter type, or annotation. It is a static reference, not evidence that the path executed.",
  "components": [
   {"id": "capture", "name": "Capture and replay entry points", "module": "journal-ocsf-writer",
@@ -91,11 +91,6 @@
    "responsibility": "Vendor-neutral reading: JSON through Jackson's tokenizer only with exact numbers, native artifacts read as bytes first with every line kept, hashing, and the check outcomes and ledger every verifier reports with.",
    "classes": ["ocsf.NativeArtifact", "verify.Check", "verify.CheckLedger", "verify.CheckReport", "verify.Difference", "verify.Json", "verify.NeutralJson"],
    "external_packages": ["com.fasterxml.jackson.core"]},
-  {"id": "legacy-verifier", "name": "Earlier-format Claude stream verifier", "module": "journal-capture-tck",
-   "membership": "named classes in io.github.markpollack.journal.tck: verify.CandidatePackage, verify.ClaudeStreamContract, verify.ClaudeStreamOracle, verify.ClaudeStreamVerifier, verify.VerificationReport",
-   "responsibility": "Verifies packages of the earlier journal-core format produced by claude-code-capture against their Claude stream; not on the OCSF writer's path.",
-   "classes": ["verify.CandidatePackage", "verify.ClaudeStreamContract", "verify.ClaudeStreamOracle", "verify.ClaudeStreamVerifier", "verify.VerificationReport"],
-   "external_packages": []},
   {"id": "inventory", "name": "Native inventory tools", "module": "journal-capture-tck",
    "membership": "package io.github.markpollack.journal.tck.ocsf.inventory",
    "responsibility": "Empirical variant/path inventories of native artifacts and their comparison with the accepted source specifications (findings are proposals, never applied); source joins and the independent assembly oracle, which judges a finally assembled file from native identities alone.",
@@ -105,12 +100,7 @@
    "membership": "package io.github.markpollack.journal.tck.ocsf.prototype",
    "responsibility": "NON-PRODUCTION support that produces candidate packages from the earlier Python prototype's layout; it is producer-side code and the oracle never uses it.",
    "classes": ["ocsf.prototype.DefinitionClosure", "ocsf.prototype.PrototypeRepackager"],
-   "external_packages": []},
-  {"id": "venn", "name": "Value-landing comparison", "module": "journal-capture-tck",
-   "membership": "package io.github.markpollack.journal.tck.venn",
-   "responsibility": "Counts which native values reappear anywhere in a journal record, read from the data rather than parser code; an exploratory measure, not an oracle check.",
-   "classes": ["venn.Flattener", "venn.Jsonl", "venn.Landing", "venn.Leaf", "venn.PathResult", "venn.Venn", "venn.VennReport"],
-   "external_packages": ["com.fasterxml.jackson.core", "com.fasterxml.jackson.databind", "com.fasterxml.jackson.databind.node"]}
+   "external_packages": []}
  ],
  "dependencies": [
   {"from": "capture", "to": "run-writer", "drawn": true,
@@ -223,8 +213,6 @@
    "class_pairs": ["ocsf.OcsfReaderTool -> ocsf.AnalysisViews", "ocsf.OcsfReaderTool -> ocsf.PackageMeasure"]},
   {"from": "reader-tool", "to": "neutral", "drawn": false,
    "class_pairs": ["ocsf.OcsfReaderTool -> verify.Check", "ocsf.OcsfReaderTool -> verify.Json", "ocsf.OcsfReaderTool -> verify.NeutralJson"]},
-  {"from": "legacy-verifier", "to": "neutral", "drawn": false,
-   "class_pairs": ["verify.CandidatePackage -> verify.Json", "verify.CandidatePackage -> verify.NeutralJson", "verify.ClaudeStreamOracle -> verify.Json", "verify.ClaudeStreamOracle -> verify.NeutralJson", "verify.ClaudeStreamVerifier -> verify.Check", "verify.ClaudeStreamVerifier -> verify.Difference", "verify.ClaudeStreamVerifier -> verify.Json", "verify.ClaudeStreamVerifier -> verify.NeutralJson", "verify.VerificationReport -> verify.CheckLedger", "verify.VerificationReport -> verify.CheckReport"]},
   {"from": "inventory", "to": "reader", "drawn": false,
    "class_pairs": ["ocsf.inventory.AssemblyAccounting -> ocsf.Event", "ocsf.inventory.AssemblyAccounting -> ocsf.OcsfPackage", "ocsf.inventory.AssemblyConsolidation -> ocsf.Event", "ocsf.inventory.AssemblyConsolidation -> ocsf.OcsfPackage", "ocsf.inventory.AssemblyOracle -> ocsf.DeclaredFile", "ocsf.inventory.AssemblyOracle -> ocsf.Event", "ocsf.inventory.AssemblyOracle -> ocsf.OcsfPackage", "ocsf.inventory.AssemblyPartition -> ocsf.Event", "ocsf.inventory.AssemblyPartition -> ocsf.OcsfPackage"]},
   {"from": "inventory", "to": "oracle", "drawn": false,
@@ -246,5 +234,5 @@
   {"from": "capture", "to": "expected", "label": "freezes after a live launch", "status": "declared design (from the documentation of the basis class), not extracted", "basis": "io.github.markpollack.journal.ocsf.writer.CliCapture#freezeExpectedSources"},
   {"from": "expected", "to": "oracle", "label": "denominator for", "status": "declared design (from the documentation of the basis class), not extracted", "basis": "io.github.markpollack.journal.tck.ocsf.ExpectedSources"}
  ],
- "drawing": {"components_not_drawn": ["inventory", "legacy-verifier", "prototype", "venn"], "incoming_edges_not_drawn_to": ["json-writer", "neutral"], "reason": "presentation only: the omitted components are not on the writer-to-oracle path, and the shared JSON components are used across their module; every omitted edge is listed above"}
+ "drawing": {"components_not_drawn": ["inventory", "prototype"], "incoming_edges_not_drawn_to": ["json-writer", "neutral"], "reason": "presentation only: the omitted components are not on the writer-to-oracle path, and the shared JSON components are used across their module; every omitted edge is listed above"}
 }
