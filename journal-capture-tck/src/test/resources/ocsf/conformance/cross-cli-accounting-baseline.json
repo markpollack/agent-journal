@@ -1,6 +1,6 @@
 {
   "kind": "agent-journal/cross-cli-accounting-baseline",
-  "version": "0.4",
+  "version": "0.5",
   "meaning": "Exact executed accounting population and dependency snapshot. Declared checker assignments remain separate from attributed Check outcomes. Pins native occurrences and classifications, source/specification bindings, E requirements, actual assertion outcomes, comparison operand digests and non-passing findings. An edit is a reviewable implementation result, never semantic approval. Unresolved meanings and unsupported versions remain non-passing. Required unchecked comparisons cannot be frozen by this ratchet.",
   "changes": [
     {
@@ -18,6 +18,10 @@
     {
       "revision": "0.4 (2.0 cleanup, 2026-10-31)",
       "summary": "Dependency digests of journal-capture-tck/src/main and src/test/java restated after the 1.x-format Claude stream verifier (tck.verify.ClaudeStreamVerifier family) and the Venn value-landing comparison (tck.venn) left the module and the Claude-specific canonical conformance report's wording changed in CanonicalConformanceTest. No assertion, comparison population, source, catalog, checker, non-passing check, extension or writer digest changed: the ledger is otherwise line-identical to 0.3. A restated dependency digest is not semantic approval."
+    },
+    {
+      "revision": "0.5 (semantic acceptance, 2026-10-31)",
+      "summary": "Three dependency digests restated after Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT was recorded: journal-capture-tck/src/test/resources/ocsf/mapping-catalog (owner-decisions.json gains the decision), schema/vendor (the Claude stream-json obligations catalog 0.6 carries the decision in its 17 review labels) and journal-capture-tck/src/test/java (the review-label control in CanonicalConformanceTest now shows a label is neither an approval nor a revocation). No assertion, comparison population, source, catalog classification, checker, non-passing check, extension or writer digest changed: the ledger is otherwise line-identical to 0.4. The 28 unresolved Copilot duration and Junie time checks, the unsupported-version and interrupted controls and the conditional Junie uncached input stay non-passing; no route admission, mapping-catalog claim or Java expected-fact meaning is approved."
     }
   ],
   "snapshot": [
@@ -705,14 +709,14 @@
     "comparison-population syn-codex-exec-stream main/stream.jsonl 751 sha256:8f9ca0a82194789ce6285d77587de37870676c3e29c64dfed86bd14514519137",
     "comparison-population syn-codex-exec-turn-failed-0.160.1 main/stream.jsonl 217 sha256:8374c6ca90431ec198c640cdda4addbb6e15d4a93a36eebef419e1dafb0e4c3c",
     "dependency journal-capture-tck/src/main sha256:bc8d76f6f8a864077f318044ce17a22b18d8a16d645c1bce177c75b124ee3dbc",
-    "dependency journal-capture-tck/src/test/java sha256:0a7ed120b0b03784149f4dbdf0760d29d26219025338fad1dbc772cd79720f6f",
+    "dependency journal-capture-tck/src/test/java sha256:29e4a5db86128c1ccd1b4f917b4fb095ad5c9f0d0a2dca12b4f59c13f8f62baf",
     "dependency journal-capture-tck/src/test/resources/ocsf/conformance sha256:c856f9da4a6c5f61f93e7007100eab00e4dd692d176362b995e41f8894c90cee",
     "dependency journal-capture-tck/src/test/resources/ocsf/fixtures sha256:56fda6ffbd61d21110d08606c19983124598646019f3fda3090f7facaed79495",
-    "dependency journal-capture-tck/src/test/resources/ocsf/mapping-catalog sha256:b519341b5f678164a58354d538e0b2edf510bfd0d7d85d3ae57baf4e2ac71f0d",
+    "dependency journal-capture-tck/src/test/resources/ocsf/mapping-catalog sha256:40d196fcf51426f7bbf1f72da8f6745f01e0a146bfa326d123196f90e0976f3f",
     "dependency journal-ocsf-writer/src/main sha256:44cf96df08249259b481209e872916025d929c0c664b1d86a3bec13501613d1f",
     "dependency prototype/ocsf-acp/extension sha256:c61a108fc9f0a970bdbd8e73be10a081c138b28519abe791a600f54662d6d37c",
     "dependency prototype/ocsf-acp/toolchain.lock.json sha256:1c519a29097a4496f79aebbc6d8e334cb02cfe083831c726860c0dec7cbcc0af",
-    "dependency schema/vendor sha256:1cb2517336663c58677388bf7c19dcd2ca93e8f7affbdfd2a4744f813b094989",
+    "dependency schema/vendor sha256:d506ad466dfd840a888c43592470edbb92502f2dd56e8d0fc518b57a7f9c7f45",
     "families sha256 2f99c0380315b425c5141dede6e9b053d159050f943d98daf51bc146dacd7cf4",
     "source antigravity-live-1.4.6-denial/stream.jsonl content canonical paths 1 occurrences 1",
     "source antigravity-live-1.4.6-denial/stream.jsonl failures canonical paths 1 occurrences 1",

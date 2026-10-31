@@ -744,13 +744,21 @@ class CanonicalConformanceTest {
         // owner routing is part of every meaning
         Catalog rerouted = edited(m -> put(m, "owner_path", new Json.JString("session_id")));
         assertThat(CanonicalObligations.semantics(rerouted)).extracting(Finding::id).filteredOn(id -> id.startsWith("digest:")).hasSize(c().obligations().size());
-        // a review label written into the catalog is not an approval
+        // a review label written into the catalog is neither an approval nor a revocation: OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT
+        // approves agent-result r3 at its digests, so a revision the decision does not name is approval debt whatever its label
+        // says, and the approved revision stays approved when its label is reset to proposed
         Catalog labelled = edited(m -> {
-            m.put("obligations", obligationEdited(new Json.JObject(m), "agent-result", o -> put(o, "review", NeutralJson.parse("{\"status\": \"approved\"}"))));
+            m.put("obligations", obligationEdited(new Json.JObject(m), "agent-result",
+                    o -> put(put(o, "revision", new Json.JNumber("4")), "review", NeutralJson.parse("{\"status\": \"approved\"}"))));
             return m;
         });
-        assertThat(CanonicalObligations.semantics(labelled)).extracting(Finding::id).contains("approval:claude.stream.usage.child-run.agent-result@r3")
-                .doesNotContain("digest:claude.stream.usage.child-run.agent-result@r3");
+        assertThat(CanonicalObligations.semantics(labelled)).extracting(Finding::id).contains("approval:claude.stream.usage.child-run.agent-result@r4")
+                .doesNotContain("digest:claude.stream.usage.child-run.agent-result@r4");
+        Catalog relabelled = edited(m -> {
+            m.put("obligations", obligationEdited(new Json.JObject(m), "agent-result", o -> put(o, "review", NeutralJson.parse("{\"status\": \"proposed\"}"))));
+            return m;
+        });
+        assertThat(CanonicalObligations.semantics(relabelled)).extracting(Finding::id).doesNotContain("approval:claude.stream.usage.child-run.agent-result@r3");
     }
 
     @Test

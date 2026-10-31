@@ -1,6 +1,6 @@
 {
   "kind": "agent-journal/canonical-obligations",
-  "version": "0.5",
+  "version": "0.6",
   "profile": "claude_stream",
   "scope": "the Claude Code stream-json profile's established execution facts with canonical capacity, in the registered recordings of the bindings below: every native member whose key names tokens (SourceAvailability.TOKEN_KEY) and every member inside a usage obligation's payload (the token-usage family), plus the non-token obligations stated here (per-model reported cost, the run's reported duration, the Agent result's reported status and duration). Members outside these obligations are accounted for by the field-disposition catalog's reviewed classifications (vendor_residual, structural, redundant, common_capacity_gap, candidate) and reported by the cross-CLI occurrence ledger; a candidate or capacity-gap classification is visible debt, not a discharged fact",
   "disposition_catalog": "schema/vendor/claude-code/stream-json/dispositions.json",
@@ -70,8 +70,9 @@
         "OcsfOracle usage.values"
       ],
       "review": {
-        "status": "proposed",
-        "note": "the claim claude.stream.usage-tranches r2 is not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed)"
+        "status": "approved",
+        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
+        "note": "the claim claude.stream.usage-tranches r2 is not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed); Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
       },
       "rules": [
         "claude.stream.assistant->model_response"
@@ -124,8 +125,9 @@
         "OcsfOracle usage.values"
       ],
       "review": {
-        "status": "proposed",
-        "note": "the claim claude.stream.usage-tranches r2 is not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed)"
+        "status": "approved",
+        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
+        "note": "the claim claude.stream.usage-tranches r2 is not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed); Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
       },
       "rules": [
         "claude.stream.result->prompt_turn.completed"
@@ -176,8 +178,9 @@
         "OcsfOracle usage.values"
       ],
       "review": {
-        "status": "proposed",
-        "note": "closeout candidate (2026-10-25): replaces the R1 vendor_specific residual of result:usage.iterations[], whose missing response identity did not justify owing nothing; returned for semantic review, not approved; ACCT-1 (2026-10-26): rules now also name the event rule the observation rides on (claude.stream.result->prompt_turn.completed), so the relevant digest is restated; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed)"
+        "status": "approved",
+        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
+        "note": "closeout candidate (2026-10-25): replaces the R1 vendor_specific residual of result:usage.iterations[], whose missing response identity did not justify owing nothing; returned for semantic review, not approved; ACCT-1 (2026-10-26): rules now also name the event rule the observation rides on (claude.stream.result->prompt_turn.completed), so the relevant digest is restated; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed); Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
       },
       "rules": [
         "claude.stream.result->prompt_turn.completed",
@@ -230,8 +233,9 @@
         "OcsfOracle usage.values"
       ],
       "review": {
-        "status": "proposed",
-        "note": "no approved claim covers ModelUsage on this route; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed)"
+        "status": "approved",
+        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
+        "note": "no approved claim covers ModelUsage on this route; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed); Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
       },
       "rules": [
         "claude.stream.result->prompt_turn.completed"
@@ -300,8 +304,9 @@
         "OcsfOracle context.values"
       ],
       "review": {
-        "status": "proposed",
-        "note": "closeout candidate revision (2026-10-25): the zero-default object is Possibly default, not an evidenced response (r2: aggregation 3 Single response with emitter grounds, R1); returned for semantic review, not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed)"
+        "status": "approved",
+        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
+        "note": "closeout candidate revision (2026-10-25): the zero-default object is Possibly default, not an evidenced response (r2: aggregation 3 Single response with emitter grounds, R1); returned for semantic review, not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed); Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
       },
       "rules": [
         "claude.stream.user.tool_result.agent_usage->session_context.accounting"
@@ -352,8 +357,9 @@
         "OcsfOracle context.values"
       ],
       "review": {
-        "status": "proposed",
-        "note": "R1 candidate revision (2026-10-24): semantics restated with emitter grounds; trigger, destination and observation unchanged from r1; returned for semantic review, not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed)"
+        "status": "approved",
+        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
+        "note": "R1 candidate revision (2026-10-24): semantics restated with emitter grounds; trigger, destination and observation unchanged from r1; returned for semantic review, not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed); Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
       },
       "rules": [
         "claude.stream.system.task_usage->session_context.accounting"
@@ -404,8 +410,9 @@
         "OcsfOracle context.values"
       ],
       "review": {
-        "status": "proposed",
-        "note": "R1 candidate revision (2026-10-24): semantics restated with emitter grounds; trigger, destination and observation unchanged from r1; returned for semantic review, not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed)"
+        "status": "approved",
+        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
+        "note": "R1 candidate revision (2026-10-24): semantics restated with emitter grounds; trigger, destination and observation unchanged from r1; returned for semantic review, not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed); Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
       },
       "rules": [
         "claude.stream.system.task_usage->session_context.accounting"
@@ -455,8 +462,9 @@
         "OcsfOracle context.values"
       ],
       "review": {
-        "status": "proposed",
-        "note": "ACCT-1 candidate (2026-10-26): per-model reported cost is an established economic fact with cost_observation capacity (scope_id, model_ref); returned for semantic review, not approved"
+        "status": "approved",
+        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
+        "note": "ACCT-1 candidate (2026-10-26): per-model reported cost is an established economic fact with cost_observation capacity (scope_id, model_ref); returned for semantic review, not approved; Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
       },
       "rules": [
         "claude.stream.result.model_cost->session_context.accounting"
@@ -493,8 +501,9 @@
         "OcsfOracle attribute.values"
       ],
       "review": {
-        "status": "proposed",
-        "note": "ACCT-1 candidate (2026-10-26): a known duration with base-attribute capacity; returned for semantic review, not approved"
+        "status": "approved",
+        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
+        "note": "ACCT-1 candidate (2026-10-26): a known duration with base-attribute capacity; returned for semantic review, not approved; Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
       },
       "rules": [
         "claude.stream.result->prompt_turn.completed",
@@ -538,8 +547,9 @@
         "OcsfOracle context.values"
       ],
       "review": {
-        "status": "proposed",
-        "note": "ACCT-1 candidate (2026-10-26): a CLI-defined child status with reported_state capacity; returned for semantic review, not approved"
+        "status": "approved",
+        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
+        "note": "ACCT-1 candidate (2026-10-26): a CLI-defined child status with reported_state capacity; returned for semantic review, not approved; Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
       },
       "rules": [
         "claude.stream.user.tool_result.agent_usage->session_context.accounting",
@@ -586,8 +596,9 @@
         "OcsfOracle context.values"
       ],
       "review": {
-        "status": "proposed",
-        "note": "ACCT-1 candidate (2026-10-26): a known child-run duration with base-attribute capacity; returned for semantic review, not approved"
+        "status": "approved",
+        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
+        "note": "ACCT-1 candidate (2026-10-26): a known child-run duration with base-attribute capacity; returned for semantic review, not approved; Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
       },
       "rules": [
         "claude.stream.user.tool_result.agent_usage->session_context.accounting",
@@ -630,8 +641,9 @@
         "OcsfOracle fact.value"
       ],
       "review": {
-        "status": "proposed",
-        "note": "Corrected capacity candidate; semantic approval remains pending."
+        "status": "approved",
+        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
+        "note": "Corrected capacity candidate; semantic approval remains pending.; Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
       },
       "rules": [
         "claude.stream.result->prompt_turn.completed"
@@ -668,8 +680,9 @@
         "OcsfOracle fact.value"
       ],
       "review": {
-        "status": "proposed",
-        "note": "Corrected capacity candidate; semantic approval remains pending."
+        "status": "approved",
+        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
+        "note": "Corrected capacity candidate; semantic approval remains pending.; Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
       },
       "rules": [
         "claude.stream.result->prompt_turn.completed"
@@ -685,8 +698,9 @@
       "classification": "vendor_specific",
       "reason": "the CLI's running estimate of thinking tokens while a response streams; not reported usage of any unit (the mapper retains the record whole)",
       "review": {
-        "status": "proposed",
-        "note": "R1 (2026-10-24): a residual classification is a reviewable meaning; no Owner decision approves this one"
+        "status": "approved",
+        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
+        "note": "R1 (2026-10-24): a residual classification is a reviewable meaning; no Owner decision approves this one; Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this classification at its digest"
       }
     },
     {
@@ -695,8 +709,9 @@
       "classification": "vendor_specific",
       "reason": "increment of the same estimate; not reported usage",
       "review": {
-        "status": "proposed",
-        "note": "R1 (2026-10-24): a residual classification is a reviewable meaning; no Owner decision approves this one"
+        "status": "approved",
+        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
+        "note": "R1 (2026-10-24): a residual classification is a reviewable meaning; no Owner decision approves this one; Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this classification at its digest"
       }
     },
     {
@@ -705,8 +720,9 @@
       "classification": "vendor_specific",
       "reason": "on an Agent result: the CLI's derivation from the same result's usage (retained 2.1.304 emitter PI/rJ: the input side (input, cache creation, cache read) plus output of the last iterations[] entry that is neither advisor_message nor compaction, when it is a message or fallback_message entry with a positive input side, otherwise of the top-level tranches); a context-size figure of that iteration, not a further consumption. With the one message iteration of both recordings it equals the four tranches, 8 + 1582 + 13328 + 56 = 14974 and 2 + 2397 + 18492 + 242 = 21133. Every operand is preserved, canonically as the observation's tranches and exactly in its data with iterations[], so it measures no further quantity. It is not mapped as reported_total_tokens, which would state a total of the observation's tranches that differs from them when the response had several iterations. Kept in the tool result's structured_result",
       "review": {
-        "status": "proposed",
-        "note": "closeout (2026-10-25): reason restated with the emitter's exact iteration selection; no Owner decision approves this classification"
+        "status": "approved",
+        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
+        "note": "closeout (2026-10-25): reason restated with the emitter's exact iteration selection; no Owner decision approves this classification; Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this classification at its digest"
       }
     },
     {
@@ -726,8 +742,9 @@
       "classification": "vendor_specific",
       "reason": "a message entry of the per-sampling-iteration breakdown of the one response whose usage the Agent result reports (Anthropic SDK 0.135.0 BetaIterationsUsage: message entries are the sampling iterations, such as the turns of a server-side tool loop, whose tokens the response's top-level usage accumulates); its one message entry equals that usage in both recordings. Such an entry is part of the reported response, not a further model response, and the response's usage is already the observation, so it owes no observation of its own; retained exactly in the child-run observation's data. Only message entries are covered: a compaction entry's tokens are outside the top-level usage (the SDK), and advisor_message and fallback_message entries are not reviewed, so an entry of another type is reported as unaccounted until it is. A missing response identity is not the ground",
       "review": {
-        "status": "proposed",
-        "note": "closeout (2026-10-25): limited to message entries; no Owner decision approves this classification"
+        "status": "approved",
+        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
+        "note": "closeout (2026-10-25): limited to message entries; no Owner decision approves this classification; Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this classification at its digest"
       }
     }
   ]

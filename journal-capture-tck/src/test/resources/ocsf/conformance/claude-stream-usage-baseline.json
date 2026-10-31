@@ -1,6 +1,6 @@
 {
   "kind": "agent-journal/conformance-baseline",
-  "version": "0.6",
+  "version": "0.7",
   "catalog": "schema/vendor/claude-code/stream-json/obligations.json",
   "meaning": "the reviewed obligation set (id, revision, meaning digest, relevant digest), the reviewed residual set (variant, path, classification, digest), the judged population (per binding: its entry's admission, every recording with its native stream hash, every occurrence id) and the frozen debt by exact finding identity (category and id) with its reason. CanonicalConformanceTest fails on a new finding, on frozen debt that no longer occurs, and on any changed obligation, residual or population: an edit here is the reviewable change, never its approval. Holding the baseline is not acceptance: category 6 keeps the semantic review state",
   "changes": [
@@ -23,6 +23,10 @@
     {
       "revision": "0.6 (2026-10-27)",
       "summary": "Model cost r2 requires latest-request pricing basis; two explicit capacity obligations replace the maxOutputTokens residual; dependency digests restated for scope 8 and new shared fields. Native bytes, admission and semantic approval remain unchanged."
+    },
+    {
+      "revision": "0.7 (semantic acceptance, 2026-10-31)",
+      "summary": "Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT approves the 13 obligations at their 0.6 meaning and relevant digests and the 4 vendor_specific residual classifications at their 0.6 digests, so the 17 category-6 approval findings no longer occur: 17 -> 0 frozen ids. Obligation set, residual set, population, native hashes and semantic definitions are unchanged; the catalog (0.6) carries the decision in its review labels. No route admission, mapping-catalog claim, Java expected-fact meaning or unresolved measurement is approved by this revision."
     }
   ],
   "obligations": [
@@ -275,91 +279,5 @@
       "admission": "admitted"
     }
   ],
-  "frozen": [
-    {
-      "reason": "no Owner decision approves claude.stream.usage.model-response@r1 at its meaning and relevant digests (review status: proposed)",
-      "id": "approval:claude.stream.usage.model-response@r1",
-      "category": 6
-    },
-    {
-      "reason": "no Owner decision approves claude.stream.usage.run@r1 at its meaning and relevant digests (review status: proposed)",
-      "id": "approval:claude.stream.usage.run@r1",
-      "category": 6
-    },
-    {
-      "reason": "no Owner decision approves claude.stream.usage.run.last-response@r1 at its meaning and relevant digests (review status: proposed)",
-      "id": "approval:claude.stream.usage.run.last-response@r1",
-      "category": 6
-    },
-    {
-      "reason": "no Owner decision approves claude.stream.usage.model@r1 at its meaning and relevant digests (review status: proposed)",
-      "id": "approval:claude.stream.usage.model@r1",
-      "category": 6
-    },
-    {
-      "reason": "no Owner decision approves claude.stream.usage.child-run.agent-result@r3 at its meaning and relevant digests (review status: proposed)",
-      "id": "approval:claude.stream.usage.child-run.agent-result@r3",
-      "category": 6
-    },
-    {
-      "reason": "no Owner decision approves claude.stream.usage.child-run.task-progress@r2 at its meaning and relevant digests (review status: proposed)",
-      "id": "approval:claude.stream.usage.child-run.task-progress@r2",
-      "category": 6
-    },
-    {
-      "reason": "no Owner decision approves claude.stream.usage.child-run.task-notification@r2 at its meaning and relevant digests (review status: proposed)",
-      "id": "approval:claude.stream.usage.child-run.task-notification@r2",
-      "category": 6
-    },
-    {
-      "reason": "no Owner decision approves claude.stream.cost.model@r2 at its meaning and relevant digests (review status: proposed)",
-      "id": "approval:claude.stream.cost.model@r2",
-      "category": 6
-    },
-    {
-      "reason": "no Owner decision approves claude.stream.run.duration@r1 at its meaning and relevant digests (review status: proposed)",
-      "id": "approval:claude.stream.run.duration@r1",
-      "category": 6
-    },
-    {
-      "reason": "no Owner decision approves claude.stream.child-run.agent-result.status@r2 at its meaning and relevant digests (review status: proposed)",
-      "id": "approval:claude.stream.child-run.agent-result.status@r2",
-      "category": 6
-    },
-    {
-      "reason": "no Owner decision approves claude.stream.child-run.agent-result.duration@r1 at its meaning and relevant digests (review status: proposed)",
-      "id": "approval:claude.stream.child-run.agent-result.duration@r1",
-      "category": 6
-    },
-    {
-      "reason": "no Owner decision approves claude.stream.capacity.contextWindow@r1 at its meaning and relevant digests (review status: proposed)",
-      "id": "approval:claude.stream.capacity.contextWindow@r1",
-      "category": 6
-    },
-    {
-      "reason": "no Owner decision approves claude.stream.capacity.maxOutputTokens@r1 at its meaning and relevant digests (review status: proposed)",
-      "id": "approval:claude.stream.capacity.maxOutputTokens@r1",
-      "category": 6
-    },
-    {
-      "reason": "no Owner decision approves the vendor_specific classification of system/thinking_tokens:estimated_tokens at its digest (review status: proposed): a residual owes no canonical outcome only once its classification is approved",
-      "id": "approval:residual:system/thinking_tokens:estimated_tokens",
-      "category": 6
-    },
-    {
-      "reason": "no Owner decision approves the vendor_specific classification of system/thinking_tokens:estimated_tokens_delta at its digest (review status: proposed): a residual owes no canonical outcome only once its classification is approved",
-      "id": "approval:residual:system/thinking_tokens:estimated_tokens_delta",
-      "category": 6
-    },
-    {
-      "reason": "no Owner decision approves the vendor_specific classification of user/tool_result:tool_use_result.totalTokens at its digest (review status: proposed): a residual owes no canonical outcome only once its classification is approved",
-      "id": "approval:residual:user/tool_result:tool_use_result.totalTokens",
-      "category": 6
-    },
-    {
-      "reason": "no Owner decision approves the vendor_specific classification of user/tool_result:tool_use_result.usage.iterations[] at its digest (review status: proposed): a residual owes no canonical outcome only once its classification is approved",
-      "id": "approval:residual:user/tool_result:tool_use_result.usage.iterations[]",
-      "category": 6
-    }
-  ]
+  "frozen": []
 }

@@ -56,45 +56,97 @@
      "approves": {
       "type": "array",
       "items": {
-       "type": "object",
-       "required": [
-        "claim",
-        "revision",
-        "digest"
-       ],
-       "additionalProperties": false,
-       "properties": {
-        "claim": {
-         "type": "string"
-        },
-        "revision": {
-         "type": "integer",
-         "minimum": 1
-        },
-        "digest": {
-         "type": "string",
-         "pattern": "^sha256:[0-9a-f]{64}$"
-        },
-        "binding": {
-         "description": "For a boundary-2 claim: the relevant content and routes the decision bound, and the exact binding digest at the time.",
+       "description": "One exact approved identity: a claim, an obligation or a residual classification.",
+       "oneOf": [
+        {
          "type": "object",
          "required": [
-          "relevant_digest",
-          "routes",
+          "claim",
+          "revision",
           "digest"
          ],
          "additionalProperties": false,
          "properties": {
-          "relevant_digest": {
+          "claim": {
+           "type": "string"
+          },
+          "revision": {
+           "type": "integer",
+           "minimum": 1
+          },
+          "digest": {
            "type": "string",
            "pattern": "^sha256:[0-9a-f]{64}$"
           },
-          "routes": {
-           "type": "array",
-           "minItems": 1,
-           "items": {
-            "type": "string"
+          "binding": {
+           "description": "For a boundary-2 claim: the relevant content and routes the decision bound, and the exact binding digest at the time.",
+           "type": "object",
+           "required": [
+            "relevant_digest",
+            "routes",
+            "digest"
+           ],
+           "additionalProperties": false,
+           "properties": {
+            "relevant_digest": {
+             "type": "string",
+             "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "routes": {
+             "type": "array",
+             "minItems": 1,
+             "items": {
+              "type": "string"
+             }
+            },
+            "digest": {
+             "type": "string",
+             "pattern": "^sha256:[0-9a-f]{64}$"
+            }
            }
+          }
+         },
+         "description": "A mapping-catalog claim at its exact revision and meaning digest (SemanticClaims)."
+        },
+        {
+         "description": "A canonical conformance obligation at its exact revision, meaning digest and relevant digest (CanonicalObligations.semantics).",
+         "type": "object",
+         "required": [
+          "obligation",
+          "revision",
+          "digest",
+          "relevant_digest"
+         ],
+         "additionalProperties": false,
+         "properties": {
+          "obligation": {
+           "type": "string"
+          },
+          "revision": {
+           "type": "integer",
+           "minimum": 1
+          },
+          "digest": {
+           "type": "string",
+           "pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "relevant_digest": {
+           "type": "string",
+           "pattern": "^sha256:[0-9a-f]{64}$"
+          }
+         }
+        },
+        {
+         "description": "A reviewed residual classification (variant:path) at its digest (CanonicalObligations.semantics).",
+         "type": "object",
+         "required": [
+          "residual",
+          "digest"
+         ],
+         "additionalProperties": false,
+         "properties": {
+          "residual": {
+           "type": "string"
           },
           "digest": {
            "type": "string",
@@ -102,7 +154,7 @@
           }
          }
         }
-       }
+       ]
       }
      }
     }
