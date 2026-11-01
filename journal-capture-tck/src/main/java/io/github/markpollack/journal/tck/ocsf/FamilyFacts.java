@@ -125,19 +125,13 @@ final class FamilyFacts {
                     || unselected.contains(r.index())) {
                 continue;
             }
-            fallback(f, r, profile);
+            fallback(f, r, profile, artifact.opaqueDocument(profile));
         }
     }
 
-    private static void fallback(ExpectedFacts f, NativeArtifact.Record r, String profile) {
-        int status =
-                switch (r.status()) {
-                    case PARSED -> 1;
-                    case MALFORMED -> 2;
-                    case UNDECODABLE -> 3;
-                    case BLANK -> 4;
-                };
-        if (!r.parsed()
+    private static void fallback(ExpectedFacts f, NativeArtifact.Record r, String profile, boolean wholeOpaqueDocument) {
+        int status = parseStatus(r);
+        if (!wholeOpaqueDocument && !r.parsed()
                 && r.status() != NativeArtifact.Status.BLANK
                 && "none".equals(r.lineEnding())) {
             status = 5;
@@ -152,6 +146,15 @@ final class FamilyFacts {
                                 status,
                                 "/record_type",
                                 recordType(r, profile)));
+    }
+
+    private static int parseStatus(NativeArtifact.Record record) {
+        return switch (record.status()) {
+            case PARSED -> 1;
+            case MALFORMED -> 2;
+            case UNDECODABLE -> 3;
+            case BLANK -> 4;
+        };
     }
 
     private static String recordType(NativeArtifact.Record r, String profile) {

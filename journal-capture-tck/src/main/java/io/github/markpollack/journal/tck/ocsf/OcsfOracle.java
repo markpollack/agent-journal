@@ -650,7 +650,7 @@ public final class OcsfOracle {
             problems.add("open yet carries " + (source.member("ended") != null ? "an ended marker" : "a sha256"));
         }
         NativeArtifact.Record last = art.records().isEmpty() ? null : art.records().get(art.records().size() - 1);
-        boolean nativeCut = last != null && "none".equals(last.lineEnding()) && !last.parsed() && last.status() != NativeArtifact.Status.BLANK;
+        boolean nativeCut = !art.opaqueDocument(SchemaCatalog.text(source, "profile")) && last != null && "none".equals(last.lineEnding()) && !last.parsed() && last.status() != NativeArtifact.Status.BLANK;
         if (tail != null) {
             if (last == null || tail != last.index()) {
                 problems.add("incomplete_tail_record " + tail + " is not the artifact's last record (" + (last == null ? 0 : last.index()) + ")");

@@ -53,18 +53,23 @@ public final class NativeArtifact {
     private final String sha256;
     private final List<Record> records;
     private final boolean trailingNewline;
+    private final boolean documentFramed;
 
     private NativeArtifact(Path path, byte[] bytes) {
         this(path, bytes, false);
     }
 
     private NativeArtifact(Path path, byte[] bytes, boolean document) {
+        this.documentFramed = document;
         this.path = path;
         this.bytes = bytes;
         this.sha256 = sha256(bytes);
         this.records = document ? (bytes.length == 0 ? List.of() : List.of(classify(1, bytes, "none"))) : split(bytes);
         this.trailingNewline = bytes.length > 0 && bytes[bytes.length - 1] == '\n';
     }
+
+    /** Opaque documents terminate at their frozen extent; JSON line syntax is not their completion criterion. */
+    boolean opaqueDocument(String profile) { return documentFramed && "opaque_text".equals(profile); }
 
     /**
      * A document-framed artifact: the whole file is one record (a JSON document such as a session summary or a usage

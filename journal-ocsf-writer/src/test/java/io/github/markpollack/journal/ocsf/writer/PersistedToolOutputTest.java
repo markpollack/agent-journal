@@ -29,7 +29,8 @@ class PersistedToolOutputTest {
             """;
     private static final String REQUEST = """
             {"type":"assistant","uuid":"request","sessionId":"session","session_id":"session","version":"2.1.316",
-            "message":{"id":"message","role":"assistant","content":[{"type":"tool_use","id":"call","name":"Bash","input":{"command":"printf output"}}]}}
+            "message":{"id":"message","role":"assistant","model":"claude-sonnet-4-6","stop_reason":"tool_use",
+            "usage":{"input_tokens":7,"cache_creation_input_tokens":2,"cache_read_input_tokens":3,"output_tokens":5},"content":[{"type":"tool_use","id":"call","name":"Bash","input":{"command":"printf output"}}]}}
             """;
 
     private ClaudeAcquisition.Qualified assemble() throws Exception {
@@ -78,6 +79,8 @@ class PersistedToolOutputTest {
         var q = assemble();
         Path events = work.resolve("package/events.jsonl");
         OracleReport report = verify(events, q);
+        assertThat(report.defects()).isEmpty();
+        assertThat(io.github.markpollack.journal.tck.ocsf.OcsfReaderTool.acceptance(report).exit()).isZero();
         assertThat(report.outcome("acquisition.additional_native", "output")).isEqualTo(Check.Outcome.VERIFIED);
         assertThat(report.outcome("acquisition.complete", "main")).isEqualTo(Check.Outcome.VERIFIED);
         var pkg = PackageReader.open(events);
