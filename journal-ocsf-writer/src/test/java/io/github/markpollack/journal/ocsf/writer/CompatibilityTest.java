@@ -20,7 +20,7 @@ class CompatibilityTest {
     @Test
     void theBundledRegistryLoadsAndNamesContractsMappersAndSpecificationsThatExist() {
         Compatibility c = Compatibility.bundled();
-        assertThat(c.entries()).hasSize(16);
+        assertThat(c.entries()).hasSize(18);
         MappingContracts contracts = new MappingContracts();
         for (Compatibility.Entry e : c.entries()) {
             assertThat(contracts.uid(e.contract())).as(e.id() + " contract resource").isNotBlank();
@@ -38,6 +38,20 @@ class CompatibilityTest {
 
     private static org.assertj.core.api.ThrowableAssert.ThrowingCallable asCallable(Runnable r) {
         return r::run;
+    }
+
+    @Test
+    void originalSdkBytesAreBoundOnlyAtTheQualifiedVersionAndRoute() {
+        Compatibility c = Compatibility.bundled();
+        var selected = c.select(CLAUDE, "claude_stream", "sdk_stdio", "2.1.316");
+        assertThat(selected.status()).isEqualTo(Compatibility.Status.TESTED);
+        assertThat(selected.entry().id()).isEqualTo("claude-code/stream-json/2.1.316-sdk-stdio");
+        for (String route : java.util.List.of("sdk", "stdout")) {
+            assertThat(c.select(CLAUDE, "claude_stream", route, "2.1.316").normalizes()).isFalse();
+        }
+        for (String version : java.util.List.of("2.1.304", "2.1.315", "2.1.317")) {
+            assertThat(c.select(CLAUDE, "claude_stream", "sdk_stdio", version).normalizes()).isFalse();
+        }
     }
 
     private static org.assertj.core.api.AbstractThrowableAssert<?, ? extends Throwable> assertThatCode(org.assertj.core.api.ThrowableAssert.ThrowingCallable c) {
