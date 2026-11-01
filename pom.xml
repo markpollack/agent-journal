@@ -6,7 +6,7 @@
 
     <groupId>io.github.markpollack</groupId>
     <artifactId>agent-journal-parent</artifactId>
-    <version>2.0.0-fresh-v3-sidecar2-SNAPSHOT</version>
+    <version>2.0.0-fresh-v3-sidecar3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Agent Journal Parent</name>

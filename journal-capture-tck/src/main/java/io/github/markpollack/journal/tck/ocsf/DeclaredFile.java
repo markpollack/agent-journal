@@ -460,7 +460,7 @@ public final class DeclaredFile {
 
     private static Json sourceEntry(Json source, Json end, List<Json> compatibility) {
         Map<String, Json> s = new LinkedHashMap<>();
-        for (String k : List.of("artifact", "kind", "profile", "route", "surface", "path_at_capture", "contract_uid")) {
+        for (String k : List.of("artifact", "kind", "profile", "route", "surface", "path_at_capture", "framing", "contract_uid")) {
             if (source.member(k) != null) {
                 s.put(k, source.member(k));
             }

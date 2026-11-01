@@ -90,6 +90,20 @@ class PersistedToolOutputTest {
         assertThat(pkg.canonical().stream().filter(e -> "tool_call".equals(e.className))).hasSize(2);
     }
 
+    @Test void detachedFileRetainsDocumentFramingAndPassesEveryPredicate() throws Exception {
+        var q = assemble();
+        Path alone = work.resolve("alone"); Files.createDirectory(alone);
+        Path file = alone.resolve("events.jsonl");
+        Files.copy(work.resolve("package/events.jsonl"), file);
+        var pkg = PackageReader.open(file);
+        assertThat(pkg.manifest.source("output").member("framing").text()).isEqualTo("document");
+        OracleReport report = verify(file, q);
+        assertThat(report.defects()).isEmpty();
+        assertThat(io.github.markpollack.journal.tck.ocsf.OcsfReaderTool.acceptance(report).exit()).isZero();
+        var result = pkg.canonical().stream().filter(e -> "call".equals(e.text("tool_call_uid")) && Integer.valueOf(2).equals(e.activityId)).findFirst().orElseThrow();
+        assertThat(OwnedContents.of(pkg, result).get(0).path("source", "raw_data").text()).isEqualTo(FULL);
+    }
+
     @Test void corruptedOmittedAndWronglyOwnedContentFailsSemanticPredicates() throws Exception {
         var q = assemble();
         List<Json> original = Files.readAllLines(work.resolve("package/events.jsonl")).stream().map(NeutralJson::parse).toList();
