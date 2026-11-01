@@ -6,7 +6,8 @@
   "compatibility_entries": [
     "claude-code/session-transcript/2.1.299-session-file",
     "claude-code/session-transcript/2.1.303-session-file",
-    "claude-code/session-transcript/2.1.304-session-file"
+    "claude-code/session-transcript/2.1.304-session-file",
+    "claude-code/session-transcript/2.1.316-session-file"
   ],
   "source_bindings": [
     {
@@ -35,6 +36,15 @@
       ],
       "specification": "schema/vendor/claude-code/session-transcript/2.1.304.json",
       "specification_sha256": "b84358fc7f407f2ba8cf4166ddcc397cc543a0d84f071f96423448f21be7ec6d"
+    },
+    {
+      "entry": "claude-code/session-transcript/2.1.316-session-file",
+      "version": "2.1.316",
+      "routes": [
+        "native_session_file"
+      ],
+      "specification": "schema/vendor/claude-code/session-transcript/2.1.316.json",
+      "specification_sha256": "85ed151681fb42a40b8a9df657b1afb54717e70cc704cdb04215348abf093f80"
     }
   ],
   "specifications": [
@@ -8521,5 +8531,8 @@
       ],
       "rule": "claude.transcript.cost_state->session_context.accounting"
     }
-  ]
+  ],
+  "qualification_limits": {
+    "2.1.316": "Existing common meanings reused on original SDK bytes and same-run native session file. Fresh Read values independently checked. The legacy field-coverage fixture population below is unchanged; new native shapes are frozen in 2.1.316.json, retained conservatively and not credited as whole-route zero-gap semantic coverage. Child/sidecar canonical qualification remains unresolved when present."
+  }
 }

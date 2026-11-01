@@ -48,13 +48,30 @@ public final class AcquisitionVerification implements AcquisitionVerifier {
 
         static OracleReport verify(OcsfPackage pkg, Path directory, Path acquisition, Path assembly) throws IOException {
             Inputs inputs = new Inputs(acquisition, directory);
+            if (ClaudeAcquisition.PROFILE_ID.equals(text(inputs.manifest, "profile_id"))) {
+                ClaudeAcquisition.validate(inputs.manifest, inputs.base);
+            }
             inputs.readSources();
             Json spec = NeutralJson.readDocument(assembly);
+            if (ClaudeAcquisition.PROFILE_ID.equals(text(inputs.manifest, "profile_id"))) {
+                require(Json.sameValue(spec, ClaudeAcquisition.expectation()), "qualified assembly expectation changed");
+            }
             require(text(inputs.manifest, "profile_id").equals(text(spec, "profile_id")), "acquisition/expectation profile mismatch");
             OracleReport report = AssemblyOracle.verifyAll(pkg, inputs.base, inputs.expected(), spec, inputs.supplied);
             inputs.metadata(pkg, report);
             inputs.sourceBindings(report);
+            inputs.additionalNative(report);
             return report;
+        }
+
+        private void additionalNative(OracleReport report) {
+            if (!ClaudeAcquisition.PROFILE_ID.equals(text(manifest, "profile_id"))) { return; }
+            for (Json source : manifest.member("sources").elements()) {
+                if (Set.of("child_transcript", "sidecar").contains(text(source, "role")) && "acquired".equals(text(source, "state"))) {
+                    report.add(Check.Category.COMPLETENESS, "acquisition.additional_native", text(source, "artifact"), Check.Outcome.UNRESOLVED,
+                            "native child/sidecar bytes are preserved and hash checked; this qualified profile has not established their canonical obligations");
+                }
+            }
         }
 
         private void readSources() throws IOException {

@@ -5,6 +5,7 @@
   "selection_rule": "exactly one entry whose cli, profile and route match and whose inclusive [min_version, max_version] contains the CLI version selects the source description, contract and mapper; overlapping entries are a configuration error rejected at load; no match retains the acquired input under the untested-compatibility contract and flags it, never the numerically nearest entry; a version inside the range that is not listed under tested is reported in_range (reviewed range, not individually tested; no bundled entry currently has such a range: every entry is one exactly tested version on its tested route, and 2.1.300 to 2.1.302, 2.1.299 or 2.1.303 on stdout and 2.1.304 on sdk match no entry); a version not yet known is reported version_unknown, and every record that arrives meanwhile is retained whole and unnormalized; vendor normalization of a record requires a selected entry (tested or in_range): the version bootstrap below reads only the version and its location, selects, and then the record that carried the version is normalized under that selection; contradictory version assertions within one capture (the launch declaration and the stream, or two records) are status conflict: every assertion is kept with its origin, and normalization stops for the rest of the capture",
   "routes": {
     "stdout": "the CLI's raw standard output read by the capture process (no SDK stage)",
+    "sdk_stdio": "Original transport stdout bytes observed before SDK decoding; distinct from filtered sdk rawJson.",
     "sdk": "stream lines delivered by a vendor SDK (claude-code-sdk rawJson); a filtered surface",
     "native_session_file": "the file the CLI wrote on its own account, read after the run",
     "otel_file": "the file the CLI's own OpenTelemetry file exporter wrote during the run",
@@ -184,6 +185,68 @@
         {"version": "0.160.1", "route": "native_session_file", "evidence": "fixture syn-codex-counterexamples (labelled synthetic rollout), OcsfOracleMutationTest; private pair B rollout (FULL-1R)"}
       ],
       "note": "experimental: a recorded rollout route, not admitted (no disposition catalog of its own); no final-assembly profile names it yet"
+    },
+    {
+      "id": "claude-code/stream-json/2.1.316-sdk-stdio",
+      "admission": "experimental",
+      "cli": "Claude Code",
+      "profile": "claude_stream",
+      "routes": [
+        "sdk_stdio"
+      ],
+      "min_version": "2.1.316",
+      "max_version": "2.1.316",
+      "source_specification": {
+        "path": "schema/vendor/claude-code/stream-json/2.1.316.json",
+        "specification_version": "0.1.0",
+        "profile": "claude_stream"
+      },
+      "schema": {
+        "extension": "agentic_cli",
+        "version": "0.15.0-prototype",
+        "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"
+      },
+      "contract": "claude-code-2.1.303-stream",
+      "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper",
+      "tested": [
+        {
+          "version": "2.1.316",
+          "route": "sdk_stdio",
+          "evidence": "Exact original-byte single Read capture; ClaudeAcquisitionTest identity/rejection controls. Broader scenarios unexercised."
+        }
+      ],
+      "note": "Exact original-byte route only; unknown native families retained conservatively. No proximity or filtered-SDK admission."
+    },
+    {
+      "id": "claude-code/session-transcript/2.1.316-session-file",
+      "admission": "experimental",
+      "cli": "Claude Code",
+      "profile": "claude_transcript",
+      "routes": [
+        "native_session_file"
+      ],
+      "min_version": "2.1.316",
+      "max_version": "2.1.316",
+      "source_specification": {
+        "path": "schema/vendor/claude-code/session-transcript/2.1.316.json",
+        "specification_version": "0.1.0",
+        "profile": "claude_transcript"
+      },
+      "schema": {
+        "extension": "agentic_cli",
+        "version": "0.15.0-prototype",
+        "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"
+      },
+      "contract": "claude-code-2.1.303-transcript",
+      "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeTranscriptMapper",
+      "tested": [
+        {
+          "version": "2.1.316",
+          "route": "native_session_file",
+          "evidence": "Exact original-byte single Read capture; ClaudeAcquisitionTest identity/rejection controls. Broader scenarios unexercised."
+        }
+      ],
+      "note": "Exact original-byte route only; unknown native families retained conservatively. No proximity or filtered-SDK admission."
     }
   ],
   "not_version_scoped": {

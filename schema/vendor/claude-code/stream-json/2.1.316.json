@@ -1,0 +1,3339 @@
+{
+  "kind": "agent-journal/native-source-specification",
+  "version": "0.1",
+  "status": "Experimental exact-route qualification: observed native shapes; unexercised families remain unqualified and unknown values are retained.",
+  "specification_version": "0.1.0",
+  "profile": "claude_stream",
+  "applies_to": {
+    "cli": "Claude Code",
+    "version": "2.1.316",
+    "route": "sdk_stdio",
+    "capture_route": "original SDK transport bytes and identity-bound same-run native session file"
+  },
+  "provenance": {
+    "basis": "Native original-byte capture of a single Read request and result; metadata-only inventory. No claim of broader feature exercise."
+  },
+  "limits": [],
+  "external_cross_checks": [],
+  "open_variants": [],
+  "inventory": {
+    "observed_on": [
+      {
+        "artifact": "stdout.bin",
+        "sha256": "a2ee149fc3655c84dfc84c1737d45a22022c8c85525671953464c62a4d218ae3",
+        "bytes": 12958,
+        "records": 7
+      }
+    ],
+    "data_keyed": [
+      "message.content[].input",
+      "tool_use_result",
+      "wire_tool_inputs"
+    ],
+    "map_keyed": [
+      "modelUsage"
+    ],
+    "variants": {
+      "assistant": {
+        "discriminators": {
+          "type": "assistant"
+        },
+        "records": 3,
+        "evidence": [
+          "stdout.bin:3",
+          "stdout.bin:4",
+          "stdout.bin:6"
+        ],
+        "paths": {
+          "message": {
+            "kinds": {
+              "object": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.container": {
+            "kinds": {
+              "null": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 3,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.content": {
+            "kinds": {
+              "array": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.content[]": {
+            "kinds": {
+              "object": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.content[].caller": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 2,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:4"
+            ]
+          },
+          "message.content[].caller.type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 2,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:4"
+            ]
+          },
+          "message.content[].id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 2,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:4"
+            ]
+          },
+          "message.content[].input": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 2,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "distinct_data_keys": 1,
+            "evidence": [
+              "stdout.bin:4"
+            ]
+          },
+          "message.content[].input.{*}": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 2,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:4"
+            ]
+          },
+          "message.content[].name": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 2,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:4"
+            ]
+          },
+          "message.content[].signature": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 2,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3"
+            ]
+          },
+          "message.content[].text": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 2,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:6"
+            ]
+          },
+          "message.content[].thinking": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 2,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3"
+            ]
+          },
+          "message.content[].type": {
+            "kinds": {
+              "string": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.context_management": {
+            "kinds": {
+              "null": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 3,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.diagnostics": {
+            "kinds": {
+              "null": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 3,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.id": {
+            "kinds": {
+              "string": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.input_transformations": {
+            "kinds": {
+              "array": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 3,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.model": {
+            "kinds": {
+              "string": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.role": {
+            "kinds": {
+              "string": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.stop_details": {
+            "kinds": {
+              "null": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 3,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.stop_reason": {
+            "kinds": {
+              "null": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 3,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.stop_sequence": {
+            "kinds": {
+              "null": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 3,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.type": {
+            "kinds": {
+              "string": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.usage": {
+            "kinds": {
+              "object": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.usage.cache_creation": {
+            "kinds": {
+              "object": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.usage.cache_creation.ephemeral_1h_input_tokens": {
+            "kinds": {
+              "integer": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.usage.cache_creation.ephemeral_5m_input_tokens": {
+            "kinds": {
+              "integer": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.usage.cache_creation_input_tokens": {
+            "kinds": {
+              "integer": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.usage.cache_read_input_tokens": {
+            "kinds": {
+              "integer": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.usage.inference_geo": {
+            "kinds": {
+              "string": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.usage.input_tokens": {
+            "kinds": {
+              "integer": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.usage.output_tokens": {
+            "kinds": {
+              "integer": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.usage.service_tier": {
+            "kinds": {
+              "string": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "message.usage.speed": {
+            "kinds": {
+              "string": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "parent_tool_use_id": {
+            "kinds": {
+              "null": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 3,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "request_id": {
+            "kinds": {
+              "string": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "session_id": {
+            "kinds": {
+              "string": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "thinking_display": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 2,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3"
+            ]
+          },
+          "thinking_duration_ms": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 2,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3"
+            ]
+          },
+          "timestamp": {
+            "kinds": {
+              "string": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "type": {
+            "kinds": {
+              "string": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "uuid": {
+            "kinds": {
+              "string": 3
+            },
+            "present_in_records": 3,
+            "absent_in_records": 0,
+            "occurrences": 3,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:3",
+              "stdout.bin:4",
+              "stdout.bin:6"
+            ]
+          },
+          "wire_tool_inputs": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 2,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "distinct_data_keys": 1,
+            "evidence": [
+              "stdout.bin:4"
+            ]
+          },
+          "wire_tool_inputs.{*}": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 2,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:4"
+            ]
+          }
+        }
+      },
+      "rate_limit_event": {
+        "discriminators": {
+          "type": "rate_limit_event"
+        },
+        "records": 1,
+        "evidence": [
+          "stdout.bin:2"
+        ],
+        "paths": {
+          "rate_limit_info": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:2"
+            ]
+          },
+          "rate_limit_info.isUsingOverage": {
+            "kinds": {
+              "boolean": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:2"
+            ]
+          },
+          "rate_limit_info.overageDisabledReason": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:2"
+            ]
+          },
+          "rate_limit_info.overageStatus": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:2"
+            ]
+          },
+          "rate_limit_info.rateLimitType": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:2"
+            ]
+          },
+          "rate_limit_info.resetsAt": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:2"
+            ]
+          },
+          "rate_limit_info.status": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:2"
+            ]
+          },
+          "rate_limit_info.unifiedWindows": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:2"
+            ]
+          },
+          "rate_limit_info.unifiedWindows.seven_day": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:2"
+            ]
+          },
+          "rate_limit_info.unifiedWindows.seven_day.resetsAt": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:2"
+            ]
+          },
+          "rate_limit_info.unifiedWindows.seven_day.status": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:2"
+            ]
+          },
+          "rate_limit_info.unifiedWindows.seven_day.utilization": {
+            "kinds": {
+              "decimal": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:2"
+            ]
+          },
+          "session_id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:2"
+            ]
+          },
+          "type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:2"
+            ]
+          },
+          "uuid": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:2"
+            ]
+          }
+        }
+      },
+      "result": {
+        "discriminators": {
+          "type": "result"
+        },
+        "records": 1,
+        "evidence": [
+          "stdout.bin:7"
+        ],
+        "paths": {
+          "api_error_status": {
+            "kinds": {
+              "null": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 1,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "duration_api_ms": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "duration_ms": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "fast_mode_disabled_reason": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "fast_mode_state": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "first_content_frame_ms": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "is_error": {
+            "kinds": {
+              "boolean": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "modelUsage": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "distinct_data_keys": 2,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "modelUsage.{*}": {
+            "kinds": {
+              "object": 2
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 2,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "modelUsage.{*}.cacheCreationEphemeral1hInputTokens": {
+            "kinds": {
+              "integer": 2
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 2,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "modelUsage.{*}.cacheCreationEphemeral5mInputTokens": {
+            "kinds": {
+              "integer": 2
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 2,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "modelUsage.{*}.cacheCreationInputTokens": {
+            "kinds": {
+              "integer": 2
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 2,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "modelUsage.{*}.cacheReadInputTokens": {
+            "kinds": {
+              "integer": 2
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 2,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "modelUsage.{*}.canonicalModel": {
+            "kinds": {
+              "string": 2
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 2,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "modelUsage.{*}.contextWindow": {
+            "kinds": {
+              "integer": 2
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 2,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "modelUsage.{*}.costBasis": {
+            "kinds": {
+              "string": 2
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 2,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "modelUsage.{*}.costUSD": {
+            "kinds": {
+              "decimal": 2
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 2,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "modelUsage.{*}.inputTokens": {
+            "kinds": {
+              "integer": 2
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 2,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "modelUsage.{*}.maxOutputTokens": {
+            "kinds": {
+              "integer": 2
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 2,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "modelUsage.{*}.outputTokens": {
+            "kinds": {
+              "integer": 2
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 2,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "modelUsage.{*}.provider": {
+            "kinds": {
+              "string": 2
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 2,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "modelUsage.{*}.thinkingTokens": {
+            "kinds": {
+              "integer": 2
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 2,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "modelUsage.{*}.webSearchRequests": {
+            "kinds": {
+              "integer": 2
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 2,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-haiku-5-5": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-haiku-5-5.cacheCreationEphemeral1hInputTokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-haiku-5-5.cacheCreationEphemeral5mInputTokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-haiku-5-5.cacheCreationInputTokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-haiku-5-5.cacheReadInputTokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-haiku-5-5.canonicalModel": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-haiku-5-5.contextWindow": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-haiku-5-5.costBasis": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-haiku-5-5.costUSD": {
+            "kinds": {
+              "decimal": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-haiku-5-5.inputTokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-haiku-5-5.maxOutputTokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-haiku-5-5.outputTokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-haiku-5-5.provider": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-haiku-5-5.thinkingTokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-haiku-5-5.webSearchRequests": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-sonnet-4-6": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-sonnet-4-6.cacheCreationEphemeral1hInputTokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-sonnet-4-6.cacheCreationEphemeral5mInputTokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-sonnet-4-6.cacheCreationInputTokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-sonnet-4-6.cacheReadInputTokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-sonnet-4-6.canonicalModel": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-sonnet-4-6.contextWindow": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-sonnet-4-6.costBasis": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-sonnet-4-6.costUSD": {
+            "kinds": {
+              "decimal": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-sonnet-4-6.inputTokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-sonnet-4-6.maxOutputTokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-sonnet-4-6.outputTokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-sonnet-4-6.provider": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-sonnet-4-6.thinkingTokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "model_usage_since_last_result.claude-sonnet-4-6.webSearchRequests": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "num_turns": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "permission_denials": {
+            "kinds": {
+              "array": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 1,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "queued_turn_count": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "result": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "result_index": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "safety_stops": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "session_id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "stop_reason": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "subagent_stats": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "subagent_stats.by_type": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 1,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "subagent_stats.completed": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "subagent_stats.failed": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "subagent_stats.killed": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "subagent_stats.killed.parent": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "subagent_stats.killed.system": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "subagent_stats.killed.user": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "subagent_stats.max_depth": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "subagent_stats.refused": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "subagent_stats.refused.budget": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "subagent_stats.refused.concurrency_limit": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "subagent_stats.refused.depth_limit": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "subagent_stats.requested": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "subagent_stats.requested.background": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "subagent_stats.requested.foreground": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "subagent_stats.requested.unset": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "subagent_stats.spawned": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "subagent_stats.spawned_by_subagents": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "subagent_stats.started_in_background": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "subtype": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "terminal_reason": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "time_to_request_ms": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "total_cost_usd": {
+            "kinds": {
+              "decimal": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "ttft_ms": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "ttft_stream_ms": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.cache_creation": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.cache_creation.ephemeral_1h_input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.cache_creation.ephemeral_5m_input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.cache_creation_input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.cache_read_input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.fallback_credit": {
+            "kinds": {
+              "null": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 1,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.inference_geo": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.iterations": {
+            "kinds": {
+              "array": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.iterations[]": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.iterations[].cache_creation": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.iterations[].cache_creation.ephemeral_1h_input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.iterations[].cache_creation.ephemeral_5m_input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.iterations[].cache_creation_input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.iterations[].cache_read_input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.iterations[].input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.iterations[].output_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.iterations[].type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.output_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.output_tokens_details": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.output_tokens_details.thinking_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.server_tool_use": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.server_tool_use.web_fetch_requests": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.server_tool_use.web_search_requests": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.service_tier": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "usage.speed": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          },
+          "uuid": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:7"
+            ]
+          }
+        }
+      },
+      "system/init": {
+        "discriminators": {
+          "type": "system",
+          "subtype": "init"
+        },
+        "records": 1,
+        "evidence": [
+          "stdout.bin:1"
+        ],
+        "paths": {
+          "additional_directories": {
+            "kinds": {
+              "array": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 1,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "agents": {
+            "kinds": {
+              "array": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "agents[]": {
+            "kinds": {
+              "string": 8
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 8,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "analytics_disabled": {
+            "kinds": {
+              "boolean": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "apiKeySource": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "capabilities": {
+            "kinds": {
+              "array": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "capabilities[]": {
+            "kinds": {
+              "string": 14
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 14,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "claude_code_version": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "cwd": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "fast_mode_disabled_reason": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "fast_mode_state": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "mcp_servers": {
+            "kinds": {
+              "array": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "mcp_servers[]": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "mcp_servers[].name": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "mcp_servers[].source": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "mcp_servers[].status": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "memory_paths": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "memory_paths.auto": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "messaging_socket_path": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "model": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "original_cwd": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "output_style": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "per_turn_effort_active": {
+            "kinds": {
+              "boolean": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "permissionMode": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "plugins": {
+            "kinds": {
+              "array": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "plugins[]": {
+            "kinds": {
+              "object": 4
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 4,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "plugins[].name": {
+            "kinds": {
+              "string": 4
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 4,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "plugins[].path": {
+            "kinds": {
+              "string": 4
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 4,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "plugins[].source": {
+            "kinds": {
+              "string": 4
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 4,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "plugins[].version": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "product_feedback_disabled": {
+            "kinds": {
+              "boolean": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "scratchpad_path": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "session_id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "skills": {
+            "kinds": {
+              "array": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "skills[]": {
+            "kinds": {
+              "string": 45
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 45,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "slash_commands": {
+            "kinds": {
+              "array": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "slash_commands[]": {
+            "kinds": {
+              "string": 97
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 97,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "subtype": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "terminal_slash_commands": {
+            "kinds": {
+              "array": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "terminal_slash_commands[]": {
+            "kinds": {
+              "string": 5
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 5,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "tools": {
+            "kinds": {
+              "array": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "tools[]": {
+            "kinds": {
+              "string": 33
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 33,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "ultrathink_available": {
+            "kinds": {
+              "boolean": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "uuid": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          },
+          "view_mode": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:1"
+            ]
+          }
+        }
+      },
+      "user/tool_result": {
+        "discriminators": {
+          "type": "user",
+          "message.content[].type": "tool_result"
+        },
+        "records": 1,
+        "evidence": [
+          "stdout.bin:5"
+        ],
+        "paths": {
+          "message": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:5"
+            ]
+          },
+          "message.content": {
+            "kinds": {
+              "array": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:5"
+            ]
+          },
+          "message.content[]": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:5"
+            ]
+          },
+          "message.content[].content": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:5"
+            ]
+          },
+          "message.content[].tool_use_id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:5"
+            ]
+          },
+          "message.content[].type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:5"
+            ]
+          },
+          "message.role": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:5"
+            ]
+          },
+          "parent_tool_use_id": {
+            "kinds": {
+              "null": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 1,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:5"
+            ]
+          },
+          "session_id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:5"
+            ]
+          },
+          "timestamp": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:5"
+            ]
+          },
+          "tool_result_meta": {
+            "kinds": {
+              "array": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:5"
+            ]
+          },
+          "tool_result_meta[]": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:5"
+            ]
+          },
+          "tool_result_meta[].id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:5"
+            ]
+          },
+          "tool_result_meta[].permission_decision": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:5"
+            ]
+          },
+          "tool_result_meta[].permission_decision.decision": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:5"
+            ]
+          },
+          "tool_result_meta[].permission_decision.reason_type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:5"
+            ]
+          },
+          "tool_result_meta[].permission_decision.source": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:5"
+            ]
+          },
+          "tool_use_result": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "distinct_data_keys": 2,
+            "evidence": [
+              "stdout.bin:5"
+            ]
+          },
+          "tool_use_result.{*}": {
+            "kinds": {
+              "object": 1,
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 2,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:5"
+            ]
+          },
+          "type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:5"
+            ]
+          },
+          "uuid": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.bin:5"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

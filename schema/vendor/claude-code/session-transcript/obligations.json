@@ -21,6 +21,14 @@
       "route": "native_session_file",
       "source_specification": "schema/vendor/claude-code/session-transcript/2.1.304.json",
       "specification_sha256": "b84358fc7f407f2ba8cf4166ddcc397cc543a0d84f071f96423448f21be7ec6d"
+    },
+    {
+      "profile": "claude_transcript",
+      "entry_id": "claude-code/session-transcript/2.1.316-session-file",
+      "version": "2.1.316",
+      "route": "native_session_file",
+      "source_specification": "schema/vendor/claude-code/session-transcript/2.1.316.json",
+      "specification_sha256": "85ed151681fb42a40b8a9df657b1afb54717e70cc704cdb04215348abf093f80"
     }
   ],
   "review": {

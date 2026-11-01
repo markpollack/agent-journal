@@ -1,8 +1,12 @@
 {
   "kind": "agent-journal/cross-cli-accounting-baseline",
-  "version": "0.6",
+  "version": "0.7",
   "meaning": "Exact executed accounting population and dependency snapshot. Declared checker assignments remain separate from attributed Check outcomes. Pins native occurrences and classifications, source/specification bindings, E requirements, actual assertion outcomes, comparison operand digests and non-passing findings. An edit is a reviewable implementation result, never semantic approval. Unresolved meanings and unsupported versions remain non-passing. Required unchecked comparisons cannot be frozen by this ratchet.",
   "changes": [
+    {
+      "revision": "0.7 (original SDK bytes qualification, 2026-11-01)",
+      "summary": "Refresh exact source dependency and two catalog hashes for the 2.1.316 sdk_stdio/session-file binding and qualifier. No native fixture population, comparison outcomes, approved meanings or approval identities changed. Fresh private native Read proof is separate from this legacy finite-population ratchet; new native families are retained without a whole-route zero-gap claim."
+    },
     {
       "revision": "0.6 (acquisition and canonical entry points, 2026-10-31)",
       "summary": "Restate only the writer main and TCK main/test dependency digests for manifest assembly, independent combined acquisition checks, lossless canonical export and the calculated finite-population acceptance predicate. Native populations, comparison outcomes, catalog meanings and all exact Owner approvals are unchanged. Acceptance predicate controls cover missing/duplicate populations, failures and stale approvals. This dependency update is not source admission or semantic approval."
@@ -515,7 +519,7 @@
     "catalog claude_stream entries retained:structural 15",
     "catalog claude_stream entries retained:vendor_residual 84",
     "catalog claude_stream entries vendor_declared 217",
-    "catalog claude_stream sha256 879f00a6034d5eb0c1c3b9be7d9dd9e91cb2ddd4009e530e92d52063cf0fd375",
+    "catalog claude_stream sha256 1667dc2328c5c52eab7fa1784ebc8a49c665e1f189ef3190a210d47f3ac087dc",
     "catalog claude_transcript entries normalized 112",
     "catalog claude_transcript entries retained 460",
     "catalog claude_transcript entries retained:opaque_payload 1",
@@ -523,7 +527,7 @@
     "catalog claude_transcript entries retained:structural 161",
     "catalog claude_transcript entries retained:vendor_residual 297",
     "catalog claude_transcript entries vendor_declared 570",
-    "catalog claude_transcript sha256 1df4052b82c073eccc4c33424efb94302461beee62babfc692b33ff9baf804bf",
+    "catalog claude_transcript sha256 e2b9ad023e3e2e7ae8a2f42ae60d276d84492cf074ebb1f7a4b05caf95ef40e7",
     "catalog codex_rollout entries normalized 63",
     "catalog codex_rollout entries retained 327",
     "catalog codex_rollout entries retained:opaque_payload 1",
@@ -712,15 +716,15 @@
     "comparison-population syn-codex-exec-families-0.160.1 main/stream.jsonl 1590 sha256:500e4a341c5389a8b0a7681e0c392df8f5328c82bc6303df911f0db77e78aed7",
     "comparison-population syn-codex-exec-stream main/stream.jsonl 751 sha256:8f9ca0a82194789ce6285d77587de37870676c3e29c64dfed86bd14514519137",
     "comparison-population syn-codex-exec-turn-failed-0.160.1 main/stream.jsonl 217 sha256:8374c6ca90431ec198c640cdda4addbb6e15d4a93a36eebef419e1dafb0e4c3c",
-    "dependency journal-capture-tck/src/main sha256:f614fc52a058abb09ee9dace50e59ce3456d8c5ab954dbbd073521603402a212",
-    "dependency journal-capture-tck/src/test/java sha256:fa4f00eb2b2f19cd6a78dfdbdf15cbfde50fdbe82cd9e6af7a714a78d1ecd46c",
+    "dependency journal-capture-tck/src/main sha256:90f507ef2a1dc40705ea71b4380b03fb8a675024980a821c963da4f638e6016b",
+    "dependency journal-capture-tck/src/test/java sha256:a4901e4c01b848df8e68c5f87a8e937e92c5520bcb16ed69baee6641bed876e7",
     "dependency journal-capture-tck/src/test/resources/ocsf/conformance sha256:c856f9da4a6c5f61f93e7007100eab00e4dd692d176362b995e41f8894c90cee",
     "dependency journal-capture-tck/src/test/resources/ocsf/fixtures sha256:56fda6ffbd61d21110d08606c19983124598646019f3fda3090f7facaed79495",
     "dependency journal-capture-tck/src/test/resources/ocsf/mapping-catalog sha256:40d196fcf51426f7bbf1f72da8f6745f01e0a146bfa326d123196f90e0976f3f",
-    "dependency journal-ocsf-writer/src/main sha256:bea1836adc52b778f9ab5dc16b79b11b19e756cbdb21832f0666623f69106e3c",
+    "dependency journal-ocsf-writer/src/main sha256:5490217b0bfbebe62d1d9ebf081f6693a3bb5a873d3b3dade2d294be5b1dc661",
     "dependency prototype/ocsf-acp/extension sha256:c61a108fc9f0a970bdbd8e73be10a081c138b28519abe791a600f54662d6d37c",
     "dependency prototype/ocsf-acp/toolchain.lock.json sha256:1c519a29097a4496f79aebbc6d8e334cb02cfe083831c726860c0dec7cbcc0af",
-    "dependency schema/vendor sha256:d506ad466dfd840a888c43592470edbb92502f2dd56e8d0fc518b57a7f9c7f45",
+    "dependency schema/vendor sha256:3ae57c4ddebc864f857c1e2250114500de7db7f49043aef2854b53c41e624ee6",
     "families sha256 2f99c0380315b425c5141dede6e9b053d159050f943d98daf51bc146dacd7cf4",
     "source antigravity-live-1.4.6-denial/stream.jsonl content canonical paths 1 occurrences 1",
     "source antigravity-live-1.4.6-denial/stream.jsonl failures canonical paths 1 occurrences 1",

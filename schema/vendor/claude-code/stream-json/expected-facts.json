@@ -21,6 +21,14 @@
       "route": "stdout",
       "source_specification": "schema/vendor/claude-code/stream-json/2.1.304.json",
       "specification_sha256": "3bd9dfbb25ad57617aa272d521ba7d0b6d0f29173e1c46a36d8b7bafce42cd66"
+    },
+    {
+      "profile": "claude_stream",
+      "entry_id": "claude-code/stream-json/2.1.316-sdk-stdio",
+      "version": "2.1.316",
+      "route": "sdk_stdio",
+      "source_specification": "schema/vendor/claude-code/stream-json/2.1.316.json",
+      "specification_sha256": "a9a6ada2c894c2524c9956502656b3991af1f98dc82414deb3a1c3fba6d49f7c"
     }
   ],
   "review": {

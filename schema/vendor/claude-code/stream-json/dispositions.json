@@ -6,7 +6,8 @@
   "compatibility_entries": [
     "claude-code/stream-json/2.1.299-sdk",
     "claude-code/stream-json/2.1.303-sdk",
-    "claude-code/stream-json/2.1.304-stdout"
+    "claude-code/stream-json/2.1.304-stdout",
+    "claude-code/stream-json/2.1.316-sdk-stdio"
   ],
   "specifications": [
     "schema/vendor/claude-code/stream-json/2.1.303.json",
@@ -5908,5 +5909,19 @@
     }
   ],
   "vendor_inventory": "2.1.304-vendor-inventory.json",
-  "classification_rule": "classification (retained entries): structural = envelope, discriminator or container whose members have their own accounting; vendor_residual = a reviewed vendor-only meaning with no common execution fact; redundant = a repeat representation of a fact normalized from another member, checked by CrossCliAccountingTest; common_capacity_gap = an established execution fact the canonical schema has no honest attribute for (an explicit coverage gap, never discharged by retention); candidate = an established fact with common capacity that is not yet normalized (visible debt until an obligation covers it or the Owner rejects it). An exercised retained entry without a classification is reported by the ledger as retained_unclassified"
+  "classification_rule": "classification (retained entries): structural = envelope, discriminator or container whose members have their own accounting; vendor_residual = a reviewed vendor-only meaning with no common execution fact; redundant = a repeat representation of a fact normalized from another member, checked by CrossCliAccountingTest; common_capacity_gap = an established execution fact the canonical schema has no honest attribute for (an explicit coverage gap, never discharged by retention); candidate = an established fact with common capacity that is not yet normalized (visible debt until an obligation covers it or the Owner rejects it). An exercised retained entry without a classification is reported by the ledger as retained_unclassified",
+  "source_bindings": [
+    {
+      "entry": "claude-code/stream-json/2.1.316-sdk-stdio",
+      "version": "2.1.316",
+      "routes": [
+        "sdk_stdio"
+      ],
+      "specification": "schema/vendor/claude-code/stream-json/2.1.316.json",
+      "specification_sha256": "a9a6ada2c894c2524c9956502656b3991af1f98dc82414deb3a1c3fba6d49f7c"
+    }
+  ],
+  "qualification_limits": {
+    "2.1.316": "Existing common meanings reused on original SDK bytes and same-run native session file. Fresh Read values independently checked. The legacy field-coverage fixture population below is unchanged; new native shapes are frozen in 2.1.316.json, retained conservatively and not credited as whole-route zero-gap semantic coverage. Child/sidecar canonical qualification remains unresolved when present."
+  }
 }
