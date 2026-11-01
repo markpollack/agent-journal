@@ -36,6 +36,7 @@ public final class ClaudeAcquisition {
         List<Frozen> sources = validated(manifest, sealedManifest.toAbsolutePath().getParent());
         Json bindings = resource("/ocsf/source-meaning-bindings.json");
         for (Frozen source : sources) { bind(source.source(), bindings); }
+        qualifyOutputs(manifest, sealedManifest.toAbsolutePath().getParent());
         Json.JObject qualification = new Json.JObject(java.util.Map.of(
                 "original_manifest_sha256", new Json.JString(NativeArtifact.sha256(original)),
                 "basis", new Json.JString("exact native version/session and original-byte extent checks; canonical verification is separate")));
@@ -121,6 +122,7 @@ public final class ClaudeAcquisition {
             require(!Set.of("stream", "transcript").contains(role), "selected source cannot be archived");
             return;
         }
+        if ("sidecar".equals(role) && "opaque_text".equals(RawInventory.text(source, "profile"))) { return; }
         require(Set.of("stream", "transcript").contains(role) && roles.add(role), "unsupported or duplicate selected role");
         boolean stream = "stream".equals(role);
         require((stream ? "claude_stream" : "claude_transcript").equals(text(source, "profile")), "wrong source profile");
@@ -158,9 +160,24 @@ public final class ClaudeAcquisition {
         return row.member("version");
     }
 
+    private static void qualifyOutputs(Json manifest, Path base) {
+        java.util.Map<String, Json> bindings = ClaudeToolOutput.bindings(manifest, base);
+        for (Json source : manifest.member("sources").elements()) {
+            Json binding = bindings.get(RawInventory.text(source, "artifact"));
+            if (binding == null) { continue; }
+            java.util.Map<String, Json> fields = ((Json.JObject) source).members();
+            fields.put("archive_only", new Json.JBool(false));
+            fields.put("profile", new Json.JString("opaque_text"));
+            fields.put("route", new Json.JString("native_tool_result"));
+            fields.put("framing", new Json.JString("document"));
+            fields.put("records", new Json.JNumber("1"));
+            fields.put("tool_result_binding", binding);
+        }
+    }
+
     private static void bind(Json source, Json bindings) {
         String profile = RawInventory.text(source, "profile");
-        if (profile == null) { return; }
+        if (profile == null || "opaque_text".equals(profile)) { return; }
         for (Json binding : bindings.member("bindings").elements()) {
             if (profile.equals(RawInventory.text(binding, "profile")) && VERSION.equals(RawInventory.text(binding, "version"))) {
                 ((Json.JObject) source).members().put("binding", binding);

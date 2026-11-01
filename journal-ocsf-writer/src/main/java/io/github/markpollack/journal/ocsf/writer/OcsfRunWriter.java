@@ -467,6 +467,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         }
 
         private void accept(NativeRecord r) {
+            r = r.forSource(descriptor);
             if (!r.parsed()) {
                 opaque++;
                 if (r.status() == NativeRecord.Status.INCOMPLETE) {

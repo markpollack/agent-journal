@@ -97,7 +97,7 @@ final class ArchitectureComponents {
             tck("reader", "Package reader",
                     "Opens a run package from events.jsonl alone (or its directory), verifies pins and hashes, and exposes declarations, events, children and explicit diagnostics; it never fetches a registry or loads production classes.",
                     named("ocsf.PackageReader", "ocsf.DeclaredFile", "ocsf.OcsfPackage", "ocsf.RunManifest", "ocsf.Event", "ocsf.Diagnostic", "ocsf.SchemaCatalog", "ocsf.CompatibilityHistory",
-                            "ocsf.CanonicalExport", "ocsf.SemanticContract", "ocsf.SemanticOperation", "ocsf.McpProtocol", "schema.McpValidation")),
+                            "ocsf.CanonicalExport", "ocsf.OwnedContents", "ocsf.SemanticContract", "ocsf.SemanticOperation", "ocsf.McpProtocol", "schema.McpValidation")),
             tck("oracle", "Independent oracle",
                     "Registers independent expected facts and extracts actual assertions; executes attributed value, identity, preservation, origin and final-selection comparisons, retaining missing, ambiguous and unsupported outcomes.",
                     named("ocsf.OcsfOracle", "ocsf.AcquisitionVerifier", "ocsf.OracleReport", "ocsf.ExpectedSources", "ocsf.Reconstruction", "ocsf.McpChecks", "ocsf.AssemblyEvidence", "ocsf.AssertionAccounting", "ocsf.AttributedFacts", "ocsf.EventOrigin", "ocsf.FactComparison", "ocsf.FinalComparisons", "ocsf.FinalIdentity", "ocsf.FinalRelation", "ocsf.FinalSelection", "ocsf.OriginComparisons", "ocsf.ProtocolComparisons", "ocsf.SourceReferences", "ocsf.UsageComparison", "ocsf.UsageComparisons")),

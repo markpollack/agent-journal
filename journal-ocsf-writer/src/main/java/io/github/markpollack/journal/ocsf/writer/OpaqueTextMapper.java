@@ -21,7 +21,9 @@ final class OpaqueTextMapper implements SourceMapper {
         }
         else {
             ctx.family("text", r.raw().length, "retained-only: text line (bytes kept verbatim)");
-            ctx.emit(ctx.opaque(r, CONTRACT));
+            Jv.Obj event = ctx.opaque(r, CONTRACT);
+            if ("native_tool_result".equals(ctx.source.route())) { event.put("session_uid", ctx.run.sessionUid()); }
+            ctx.emit(event);
         }
     }
 }

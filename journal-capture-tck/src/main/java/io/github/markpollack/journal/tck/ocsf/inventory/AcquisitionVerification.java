@@ -60,17 +60,13 @@ public final class AcquisitionVerification implements AcquisitionVerifier {
             OracleReport report = AssemblyOracle.verifyAll(pkg, inputs.base, inputs.expected(), spec, inputs.supplied);
             inputs.metadata(pkg, report);
             inputs.sourceBindings(report);
-            inputs.additionalNative(report);
+            inputs.additionalNative(pkg, report);
             return report;
         }
 
-        private void additionalNative(OracleReport report) {
-            if (!ClaudeAcquisition.PROFILE_ID.equals(text(manifest, "profile_id"))) { return; }
-            for (Json source : manifest.member("sources").elements()) {
-                if (Set.of("child_transcript", "sidecar").contains(text(source, "role")) && "acquired".equals(text(source, "state"))) {
-                    report.add(Check.Category.COMPLETENESS, "acquisition.additional_native", text(source, "artifact"), Check.Outcome.UNRESOLVED,
-                            "native child/sidecar bytes are preserved and hash checked; this qualified profile has not established their canonical obligations");
-                }
+        private void additionalNative(OcsfPackage pkg, OracleReport report) throws IOException {
+            if (ClaudeAcquisition.PROFILE_ID.equals(text(manifest, "profile_id"))) {
+                ToolOutputVerification.check(pkg, manifest, base, report);
             }
         }
 
@@ -129,6 +125,11 @@ public final class AcquisitionVerification implements AcquisitionVerifier {
 
         private void sourceBindings(OracleReport report) {
             for (Json source : expected) {
+                if ("sidecar".equals(text(source, "role")) && "opaque_text".equals(text(source, "profile"))) {
+                    report.add(Check.Category.COMPLETENESS, "acquisition.source_binding", text(source, "artifact"), Check.Outcome.NOT_APPLICABLE,
+                            "opaque_text retains a whole document without version normalization; separate native tool-output binding, bytes and association checks are mandatory");
+                    continue;
+                }
                 Json binding = source.member("binding");
                 Check.Outcome outcome = Check.Outcome.UNRESOLVED;
                 if (binding instanceof Json.JObject) {

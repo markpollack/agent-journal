@@ -59,6 +59,8 @@ public final class CanonicalExport {
             supporting.add(PackageReader.selfContained(core, matches.get(0)));
         }
         row.members().put("source_observations", new Json.JArray(supporting));
+        List<Json> contents = OwnedContents.of(core, event);
+        if (!contents.isEmpty()) { row.members().put("owned_contents", new Json.JArray(contents)); }
         return row;
     }
 

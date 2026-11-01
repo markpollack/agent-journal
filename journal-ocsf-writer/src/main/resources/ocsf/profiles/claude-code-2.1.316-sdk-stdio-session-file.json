@@ -2,7 +2,7 @@
   "profile_id": "claude-code/2.1.316/sdk-stdio+session-file",
   "version": "0.1.0-prototype",
   "status": "experimental",
-  "status_meaning": "Exact SDK original-byte route with same-run session file; single Read capture qualified, broader features unexercised.",
+  "status_meaning": "Exact SDK original-byte route with same-run session file; uniquely native-linked plain-text persisted tool results have explicit preservation and ownership checks. Other child/sidecar formats remain unqualified.",
   "cli": {
     "name": "Claude Code",
     "version": "2.1.316",
@@ -30,15 +30,27 @@
       "identity": "events",
       "artifact": "transcript.jsonl",
       "establishes": "the native session file the same launch saved: the main prompt, injected context, per-request metadata and the session cost state beside the same assistant and user records"
+    },
+    {
+      "role": "sidecar",
+      "profile": "opaque_text",
+      "route": "native_tool_result",
+      "kind": 2,
+      "requirement": "optional",
+      "framing": "document",
+      "identity": "companion:transcript",
+      "establishes": "Full opaque bytes of a uniquely linked native persisted tool result; ownership is independently checked against native records and the qualified acquisition. No new invocation."
     }
   ],
   "feed_order": [
     "stream",
-    "transcript"
+    "transcript",
+    "sidecar"
   ],
   "precedence": [
     "stream",
-    "transcript"
+    "transcript",
+    "sidecar"
   ],
   "joins": [
     {

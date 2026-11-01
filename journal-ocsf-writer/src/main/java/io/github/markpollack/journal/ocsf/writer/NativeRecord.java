@@ -37,6 +37,17 @@ public record NativeRecord(int index, byte[] raw, String ending, Status status, 
         }
     }
 
+    NativeRecord forSource(SourceDescriptor source) {
+        return source.document() && "opaque_text".equals(source.profile()) ? completeOpaqueDocument() : this;
+    }
+
+    /** A whole opaque document ends at its declared extent, not at a JSON grammar or line terminator. */
+    NativeRecord completeOpaqueDocument() {
+        if (status != Status.INCOMPLETE) { return this; }
+        return new NativeRecord(index, raw, ending, text == null ? Status.UNDECODABLE : Status.MALFORMED,
+                text, json, "whole opaque document: " + reason, arrival);
+    }
+
     public boolean parsed() {
         return status == Status.PARSED;
     }
