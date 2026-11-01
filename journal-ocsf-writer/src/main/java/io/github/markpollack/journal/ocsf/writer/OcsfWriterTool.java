@@ -29,6 +29,9 @@ public final class OcsfWriterTool {
 
     @SuppressWarnings("SystemOut") // a command-line tool: its standard output and error are its output
     public static void main(String[] args) throws IOException {
+        if (args.length >= 1 && "assemble".equals(args[0])) {
+            System.exit(assemble(args, System.out, System.err));
+        }
         if (args.length >= 1 && "capture".equals(args[0])) {
             System.exit(LiveCapture.run(args, System.in, System.out, System.err));
         }
@@ -108,4 +111,21 @@ public final class OcsfWriterTool {
         List<String> lines = Files.readAllLines(out.resolve("events.jsonl"), StandardCharsets.UTF_8);
         System.out.println(lines.size() + " event line(s) in events.jsonl");
     }
+    /** Manifest command without System.exit; reports refusal without a partial success claim. */
+    public static int assemble(String[] args, java.io.PrintStream out, java.io.PrintStream err) {
+        if (args.length != 3) {
+            err.println("usage: assemble <acquisition.json> <new-out-dir>");
+            return 64;
+        }
+        try {
+            OcsfRunWriter.State state = FinalAssembly.assemble(Path.of(args[1]), Path.of(args[2]));
+            out.println("wrote " + args[2] + " state " + state + "; independent verification required");
+            return state == OcsfRunWriter.State.COMPLETED ? 0 : 4;
+        }
+        catch (IllegalArgumentException | java.io.UncheckedIOException ex) {
+            err.println("refused: " + ex.getMessage());
+            return 2;
+        }
+    }
+
 }

@@ -37,6 +37,15 @@ public final class FinalAssembly {
     }
 
     /**
+     * Validates a version 0.1 acquired-execution manifest and writes a new final package.
+     * File hashes, extents and route bindings are checked before opening the output. Caller process and
+     * acquisition outcomes remain distinct from storage finalization. Original inputs are never modified.
+     */
+    public static OcsfRunWriter.State assemble(Path acquisitionManifest, Path outDirectory) {
+        return AcquiredExecution.assemble(acquisitionManifest, outDirectory);
+    }
+
+    /**
      * Assembles the inputs into {@code out} and finalizes it; a required role without an input is declared missing and
      * makes the assembly incomplete, never silently complete.
      *

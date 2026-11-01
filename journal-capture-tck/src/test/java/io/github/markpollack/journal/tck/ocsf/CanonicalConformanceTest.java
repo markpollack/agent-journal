@@ -238,8 +238,8 @@ class CanonicalConformanceTest {
                 "behavior_verified", discharged + " of " + r.judged().size() + " occurrences discharged on the judged population (bindings above; repeated byte-identical candidates are not independent recordings)",
                 "semantics_approved", (c.obligations().size() - obligationsPending) + " of " + c.obligations().size() + " obligations and " + (c.residuals().size() - residualsPending)
                         + " of " + c.residuals().size() + " residual classifications approved by an Owner decision at their current digests",
-                "accepted_zero_gap", "false: no acceptance is inferred from any count; it needs every category zero for the scope and an Owner decision"));
-        doc.put("accepted_zero_gap", false);
+                "accepted_zero_gap", "computed from every in-scope category, complete independent population, discharged outcomes and current exact Owner approvals"));
+        doc.put("accepted_zero_gap", accepted(r, recordings));
         doc.put("acceptance_note", "categories 1 to 5 are deterministic; category 6 carries the semantic review and drift state. The scope is accepted only when every category is zero for it"
                 + " and the Owner approves the obligations; a finite corpus of pinned recordings, not every future vendor behavior.");
         doc.put("heuristic_notices", r.notices());
@@ -248,6 +248,52 @@ class CanonicalConformanceTest {
                 "semantic approval of proposed meanings and source behaviors beyond the frozen population",
                 "the overall canonical-coverage gap count of the product"));
         return doc;
+    }
+
+    /** Acceptance of this finite catalog/binding population, independent of the ratchet's frozen debt. */
+    static boolean accepted(Report report, Map<String, Recording> recordings) {
+        Catalog catalog = report.catalog();
+        if (catalog.bindings().isEmpty() || catalog.obligations().isEmpty()
+                || report.findings().stream().anyMatch(report::inScope)
+                || !CanonicalObligations.semantics(catalog).isEmpty()) { return false; }
+        Set<String> expected = new TreeSet<>();
+        for (Binding binding : catalog.bindings()) {
+            if (binding.recordings().isEmpty()) { return false; }
+            for (String fixture : binding.recordings()) {
+                Recording recording = recordings.get(fixture);
+                if (recording == null) { return false; }
+                for (Occurrence occurrence : CanonicalObligations.occurrences(catalog, binding, fixture, recording.art())) {
+                    expected.add(occurrence.id());
+                }
+            }
+        }
+        List<String> actual = report.judged().stream().map(j -> j.occurrence().id()).toList();
+        return !expected.isEmpty() && actual.size() == expected.size() && expected.equals(new TreeSet<>(actual))
+                && report.judged().stream().allMatch(Judged::discharged);
+    }
+
+    @Test
+    void acceptanceRequiresCurrentApprovalAndTheWholeIndependentPopulation() {
+        Report accepted = real();
+        Map<String, Recording> nativeInputs = recordings(accepted.catalog());
+        assertThat(accepted(accepted, nativeInputs)).isTrue();
+        List<Judged> missing = new ArrayList<>(accepted.judged());
+        missing.remove(0);
+        assertThat(accepted(new Report(accepted.catalog(), missing, accepted.findings(), accepted.notices(), Map.of()), nativeInputs)).isFalse();
+        List<Judged> duplicate = new ArrayList<>(accepted.judged());
+        duplicate.set(0, duplicate.get(1));
+        assertThat(accepted(new Report(accepted.catalog(), duplicate, accepted.findings(), accepted.notices(), Map.of()), nativeInputs)).isFalse();
+        Catalog stale = edited(m -> {
+            m.put("obligations", obligationEdited(new Json.JObject(m), "agent-result", o -> put(o, "revision", new Json.JNumber("4"))));
+            return m;
+        });
+        Report changed = generate(stale, recordings(stale), FieldDispositionTest.catalog(stale.profile()), obligationEntries());
+        assertThat(changed.document().get("accepted_zero_gap")).isEqualTo(false);
+        Catalog wrongScope = edited(m -> put(m, "owner_path", new Json.JString("session_id")));
+        assertThat(accepted(new Report(wrongScope, accepted.judged(), List.of(), List.of(), Map.of()), nativeInputs)).isFalse();
+        List<Finding> defective = new ArrayList<>(accepted.findings());
+        defective.add(new Finding(4, "control:wrong-owner", "independently observed wrong owner"));
+        assertThat(accepted(new Report(accepted.catalog(), accepted.judged(), defective, List.of(), Map.of()), nativeInputs)).isFalse();
     }
 
     static Map<String, Object> pin(Path file) {
@@ -387,7 +433,7 @@ class CanonicalConformanceTest {
                 assertThat(mine).as(b.entry() + " " + id).allMatch(Judged::discharged);
             }
         }
-        assertThat(r.document().get("accepted_zero_gap")).isEqualTo(false);
+        assertThat(r.document().get("accepted_zero_gap")).isEqualTo(true);
     }
 
     /**

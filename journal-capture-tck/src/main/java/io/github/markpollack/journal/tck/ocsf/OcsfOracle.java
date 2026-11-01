@@ -158,7 +158,7 @@ public final class OcsfOracle {
             ExpectedSources.Source exp = expected == null ? null : expected.source(artifact);
             String owner = label + "/" + artifact;
             report.require(owner, "source.available");
-            Path file = nativeDir.resolve(artifact);
+            Path file = expected == null ? nativeDir.resolve(artifact) : expected.file(nativeDir, artifact);
             if (!Files.isRegularFile(file)) {
                 report.add(Category.COMPLETENESS, "source.available", owner, Outcome.UNRESOLVED, "native artifact not supplied at " + file);
                 continue;
@@ -591,6 +591,11 @@ public final class OcsfOracle {
             if (isFinal && st != null && !("ENDED".equals(st) && "EOF".equals(how)) && !("INTERRUPTED".equals(st) && "INTERRUPTED".equals(how))) {
                 problems.add(a + ": state " + st + " with ended.how " + how + " is inconsistent");
             }
+        }
+        // File EOF cannot establish the caller's whole acquisition scope (for example an absent required sidecar).
+        // Only the independently supplied frozen denominator can substantiate that extra incomplete state.
+        if (incomplete.isEmpty() && expected != null && !expected.complete() && "incomplete".equals(status)) {
+            incomplete.add("independently frozen acquisition scope is incomplete");
         }
         String derived = sources.isEmpty() ? "no sources declared" : pending ? "pending" : incomplete.isEmpty() ? "complete" : "incomplete";
         if (status != null && !status.equals(derived)) {

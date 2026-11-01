@@ -118,6 +118,20 @@ public final class ExpectedSources {
         return null;
     }
 
+    /** Input location from an independently frozen manifest; defaults to the artifact name. */
+    public Path file(Path base, String artifact) {
+        String relative = artifact;
+        for (Json source : json.member("sources").elements()) {
+            if (artifact.equals(SchemaCatalog.text(source, "artifact")) && source.member("path") != null) {
+                relative = source.member("path").text();
+            }
+        }
+        Path root = base.toAbsolutePath().normalize();
+        Path file = root.resolve(relative).normalize();
+        if (!file.startsWith(root)) { throw new IllegalArgumentException("source path escapes native directory"); }
+        return file;
+    }
+
     public String runUid() {
         return SchemaCatalog.text(json, "run_uid");
     }

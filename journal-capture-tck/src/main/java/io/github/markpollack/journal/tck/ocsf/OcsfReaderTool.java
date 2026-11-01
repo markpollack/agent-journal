@@ -21,12 +21,15 @@ import java.util.Set;
  *
  * <pre>
  *   inspect        &lt;events.jsonl|dir&gt;                 discover the manifest, verify pins/hashes, enumerate the saved model
+ *   canonical      &lt;events.jsonl|dir&gt; &lt;new-out.jsonl&gt; canonical events across available cores, full owned content
  *   views          &lt;events.jsonl|dir&gt; [out.json]      the analysis views from the core alone
  *   measure        &lt;events.jsonl|dir&gt; [out.json]      byte measurements per component
  *   reconstruct    &lt;events.jsonl|dir&gt; &lt;artifact&gt; &lt;out&gt;  scoped reconstruction of one source artifact
  *   self-contained &lt;events.jsonl|dir&gt; &lt;out.jsonl&gt;     export events with the shared facts joined back on
  *   verify         &lt;events.jsonl|dir&gt; &lt;native-dir&gt; [report.json] [--expected &lt;expected-sources.json&gt;]
  *                                                     the independent oracle against the frozen expected sources
+ *                  --acquisition &lt;acquisition.json&gt; --assembly &lt;assembly-expectation.json&gt;
+ *                                                     combined independent source and assembly verification
  * </pre>
  *
  * Exit status, every command: {@link #EXIT_OK} 0; {@link #EXIT_REFUSED} 2 when the reader refused the package
@@ -65,8 +68,16 @@ public final class OcsfReaderTool {
 
     /** The whole tool without {@code System.exit}, for tests. */
     public static int run(String[] args, PrintStream out, PrintStream err) throws IOException {
+        try { return execute(args, out, err); }
+        catch (IllegalArgumentException | java.io.UncheckedIOException ex) {
+            err.println("refused: " + ex.getMessage());
+            return EXIT_REFUSED;
+        }
+    }
+
+    private static int execute(String[] args, PrintStream out, PrintStream err) throws IOException {
         if (args.length < 2) {
-            err.println("usage: inspect|views|measure|reconstruct|self-contained|verify <events.jsonl|dir> ...");
+            err.println("usage: inspect|canonical|views|measure|reconstruct|self-contained|verify <events.jsonl|dir> ...");
             return EXIT_USAGE;
         }
         OcsfPackage pkg = PackageReader.open(Path.of(args[1]));
@@ -90,7 +101,7 @@ public final class OcsfReaderTool {
                 }
                 return pkg.refused() ? EXIT_REFUSED : EXIT_OK;
             }
-            case "views", "measure", "reconstruct", "self-contained", "verify" -> {
+            case "canonical", "views", "measure", "reconstruct", "self-contained", "verify" -> {
                 if (pkg.refused()) {
                     err.println("refused: " + pkg.diagnostics(Diagnostic.Severity.REFUSED));
                     return EXIT_REFUSED;
@@ -102,6 +113,12 @@ public final class OcsfReaderTool {
             }
         }
         switch (args[0]) {
+            case "canonical" -> {
+                if (args.length != 3) { err.println("usage: canonical <events.jsonl|dir> <new-out.jsonl>"); return EXIT_USAGE; }
+                try (var writer = Files.newBufferedWriter(Path.of(args[2]), StandardCharsets.UTF_8, java.nio.file.StandardOpenOption.CREATE_NEW)) {
+                    CanonicalExport.write(pkg, writer);
+                }
+            }
             case "views" -> {
                 if (pkg.manifest.semanticContract() == null) {
                     err.println("views unavailable: the package carries no semantic contract (it lives in the ancillary run.json, which is absent); the event file is interpretable without it");
@@ -141,6 +158,8 @@ public final class OcsfReaderTool {
             case "verify" -> {
                 List<String> positional = new ArrayList<>();
                 Path expectedFile = null;
+                Path acquisitionFile = null;
+                Path assemblyFile = null;
                 for (int i = 2; i < args.length; i++) {
                     if ("--expected".equals(args[i])) {
                         if (i + 1 >= args.length) {
@@ -148,6 +167,12 @@ public final class OcsfReaderTool {
                             return EXIT_USAGE;
                         }
                         expectedFile = Path.of(args[++i]);
+                    }
+                    else if ("--acquisition".equals(args[i]) || "--assembly".equals(args[i])) {
+                        String option = args[i];
+                        if (++i >= args.length) { return EXIT_USAGE; }
+                        if ("--acquisition".equals(option)) { acquisitionFile = Path.of(args[i]); }
+                        else { assemblyFile = Path.of(args[i]); }
                     }
                     else {
                         positional.add(args[i]);
@@ -159,7 +184,12 @@ public final class OcsfReaderTool {
                 }
                 Path nativeDir = Path.of(positional.get(0));
                 ExpectedSources expected = expectedFile != null ? ExpectedSources.read(expectedFile) : ExpectedSources.beside(nativeDir);
-                OracleReport report = OcsfOracle.verify(pkg, nativeDir, expected);
+                if ((acquisitionFile == null) != (assemblyFile == null) || (acquisitionFile != null && expectedFile != null)) {
+                    err.println("combined verification needs --acquisition and --assembly together; --expected is for the existing source-only path");
+                    return EXIT_USAGE;
+                }
+                OracleReport report = acquisitionFile == null ? OcsfOracle.verify(pkg, nativeDir, expected)
+                        : acquisitionVerifier().verify(pkg, nativeDir, acquisitionFile, assemblyFile);
                 String json = PRETTY.writeValueAsString(report.toMap());
                 if (positional.size() > 1) {
                     Files.writeString(Path.of(positional.get(1)), json, StandardCharsets.UTF_8);
@@ -179,6 +209,13 @@ public final class OcsfReaderTool {
             }
         }
         return EXIT_OK;
+    }
+
+    private static AcquisitionVerifier acquisitionVerifier() {
+        List<AcquisitionVerifier> providers = java.util.ServiceLoader.load(AcquisitionVerifier.class).stream()
+                .map(java.util.ServiceLoader.Provider::get).toList();
+        if (providers.size() != 1) { throw new IllegalArgumentException("exactly one packaged acquisition verifier required"); }
+        return providers.get(0);
     }
 
     /** The acceptance decision of a verify run: defects first, then incompleteness; never a count of zeros. */

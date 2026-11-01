@@ -74,6 +74,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
     private final List<Compatibility.Assertion> versionAssertions = new ArrayList<>();
     private boolean versionConflict;
     private Jv.Obj process;
+    private String acquisitionProblem;
     private Jv.Obj archive;
     /** Set for a final assembly: mapper events are held as observations and written, consolidated, at finalization. */
     private Assembler assembler;
@@ -990,8 +991,14 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         return m;
     }
 
+    /** A frozen acquisition can be incomplete even when every supplied file has reached file EOF. */
+    void acquisitionIncomplete(String reason) {
+        if (state == State.RECORDING) { acquisitionProblem = reason; }
+    }
+
     private Jv acquisition() {
         List<String> problems = new ArrayList<>();
+        if (acquisitionProblem != null) { problems.add(acquisitionProblem); }
         boolean pending = false;
         for (Source s : sources.values()) {
             if (s.endedHow == null) {
