@@ -93,15 +93,13 @@ final class NativeRule {
                 };
     }
 
-    private static String claudeTaskRule(Json n) {
-        return java.util.List.of("task_progress", "task_notification").contains(String.valueOf(SourceProfile.text(n, "subtype")))
-                ? "system.task_metadata->session_context.state"
-                : "system.task_state->session_context.state";
-    }
-
     private static String claudeContext(Json n, Event event) {
         if (event.activityId == 5) {
-            return claudeTaskRule(n);
+            return java.util.Map.of(
+                            "task_progress", "system.task_metadata->session_context.state",
+                            "task_notification", "system.task_metadata->session_context.state")
+                    .getOrDefault(String.valueOf(SourceProfile.text(n, "subtype")),
+                            "system.task_state->session_context.state");
         }
         return switch (String.valueOf(SourceProfile.text(n, "type"))) {
             case "api-request-shape" -> "api_shape->session_context.settings";
