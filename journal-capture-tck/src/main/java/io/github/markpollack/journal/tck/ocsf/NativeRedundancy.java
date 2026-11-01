@@ -80,6 +80,7 @@ final class NativeRedundancy {
         for (NativeArtifact.Record record : artifact.records()) {
             if (!record.parsed()
                     || !facts.owned.contains(record.index())
+                    || !"assistant".equals(SourceProfile.text(record.json(), "type"))
                     || !(record.json().member("wireToolInputs") instanceof Json.JObject inputs)) {
                 continue;
             }
@@ -103,9 +104,21 @@ final class NativeRedundancy {
                                     .toList();
             if (matches.size() == 1) {
                 int index = blocks.elements().indexOf(matches.get(0));
-                reading.compare(
-                        "/message/content/" + index + "/input",
-                        "/wireToolInputs/" + FactComparison.escape(id));
+                String original = "/message/content/" + index + "/input";
+                String wire = "/wireToolInputs/" + FactComparison.escape(id);
+                // The stored input can omit a working-directory prefix present in the wire view.
+                // Both are retained and reconstruction checks their exact values; equality is not
+                // an execution invariant. A repeated value is checked only when it is repeated.
+                if (Json.sameValue(FactComparison.at(reading.record().json(), original), inputs.member(id))) {
+                    reading.compare(original, wire);
+                } else {
+                    reading.report().add(
+                            io.github.markpollack.journal.tck.verify.Check.Category.NORMALIZATION,
+                            "native.argument_projection", reading.owner(),
+                            io.github.markpollack.journal.tck.verify.Check.Outcome.VERIFIED,
+                            "record " + reading.record().index() + ": " + wire
+                                    + " is a distinct retained argument view of the uniquely identified tool " + id);
+                }
             } else {
                 reading.report()
                         .add(

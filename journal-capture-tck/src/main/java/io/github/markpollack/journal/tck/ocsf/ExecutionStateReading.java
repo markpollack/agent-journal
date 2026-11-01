@@ -136,7 +136,9 @@ final class ExecutionStateReading {
                             SourceFacts.fields(
                                     "/settings/server_connections", expectedConnections));
         }
-        if (List.of("task_progress", "task_notification").contains(String.valueOf(subtype))) {
+        boolean task = List.of("task_progress", "task_notification").contains(String.valueOf(subtype));
+        boolean metadata = task && !(n.member("usage") instanceof Json.JObject);
+        if (task && !metadata) {
             target(facts, record, "session_context", 3)
                     .event(
                             "",
@@ -150,7 +152,7 @@ final class ExecutionStateReading {
                                     "/task_uid",
                                     n.member("task_id")));
         }
-        if (!List.of("task_started", "task_updated").contains(String.valueOf(subtype))) {
+        if (!metadata && !List.of("task_started", "task_updated").contains(String.valueOf(subtype))) {
             return;
         }
         Map<String, Json> fields =
@@ -162,7 +164,7 @@ final class ExecutionStateReading {
                         "/tool_call_uid",
                         n.member("tool_use_id"),
                         "/reported_state",
-                        n.path("patch", "status"),
+                        metadata ? n.member("status") : n.path("patch", "status"),
                         "/end_time",
                         n.path("patch", "end_time"),
                         "/data",

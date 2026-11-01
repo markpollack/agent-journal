@@ -71,10 +71,16 @@ final class ExecutionState {
         return event;
     }
 
+    private static boolean taskWithoutUsage(Jv record, String subtype) {
+        return List.of("task_progress", "task_notification").contains(String.valueOf(subtype))
+                && !(record.member("usage") instanceof Jv.Obj);
+    }
+
     static Jv.Obj claudeTask(NativeRecord record, SourceContext ctx) {
         Jv n = record.json();
         String subtype = text(n, "subtype");
-        if (!List.of("task_started", "task_updated").contains(String.valueOf(subtype))) {
+        boolean metadata = taskWithoutUsage(n, subtype);
+        if (!metadata && !List.of("task_started", "task_updated").contains(String.valueOf(subtype))) {
             return null;
         }
         String timestamp = text(n, "timestamp");
@@ -85,7 +91,8 @@ final class ExecutionState {
                         record,
                         ctx.timeFor(record, timestamp),
                         ClaudeStreamMapper.CONTRACT,
-                        "claude.stream.system.task_state->session_context.state",
+                        metadata ? "claude.stream.system.task_metadata->session_context.state"
+                                : "claude.stream.system.task_state->session_context.state",
                         timestamp,
                         text(n, "uuid"),
                         true,
@@ -96,7 +103,7 @@ final class ExecutionState {
                 .put("task_description", n.member("description"))
                 .put("agent_type", n.member("subagent_type"))
                 .put("context_kind", subtype)
-                .put("reported_state", text(n, "patch", "status"))
+                .put("reported_state", metadata ? text(n, "status") : text(n, "patch", "status"))
                 .put("end_time", n.path("patch", "end_time"))
                 .put("content_blocks", prompt(n.member("prompt")))
                 .put("data", n);

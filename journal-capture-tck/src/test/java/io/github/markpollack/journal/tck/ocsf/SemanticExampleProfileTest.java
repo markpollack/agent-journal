@@ -29,6 +29,32 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class SemanticExampleProfileTest {
 
+    @Test
+    void apiMetadataCopiesDoNotCreateToolInvocationsAndWireArgumentsMayDiffer() {
+        // Synthetic: two distinct argument projections, plus a copied API request payload.
+        String assistant = """
+                {"type":"assistant","message":{"content":[{"type":"tool_use","id":"call-1","name":"Bash","input":{"command":"pwd"}}]},
+                 "wireToolInputs":{"call-1":{"command":"cd /work && pwd"}}}
+                """.replace("\n", "");
+        String copied = assistant.replace("\"type\":\"assistant\"", "\"type\":\"api-request-blob\"");
+        NativeArtifact nativeFile = NativeArtifact.ofBytes(Path.of("transcript.jsonl"), (assistant + "\n" + copied + "\n").getBytes(StandardCharsets.UTF_8));
+        ExpectedFacts facts = new ExpectedFacts("transcript.jsonl");
+        facts.owned.addAll(List.of(1, 2));
+        ClaudeNativeDetails.read(facts, 1, nativeFile.records().get(0).json(), "claude_transcript");
+        int actualFacts = facts.facts.size();
+        assertThat(actualFacts).isPositive();
+        ClaudeNativeDetails.read(facts, 2, nativeFile.records().get(1).json(), "claude_transcript");
+        assertThat(facts.facts).hasSize(actualFacts).allSatisfy(f -> assertThat(f.recordIndex()).isEqualTo(1));
+        OracleReport report = new OracleReport();
+        NativeRedundancy.check(report, nativeFile, facts, "main/transcript.jsonl", "claude_transcript");
+        assertThat(report.defects()).isEmpty();
+        assertThat(report.checks()).anySatisfy(c -> assertThat(c.property()).isEqualTo("native.argument_projection"));
+        String foreign = assistant.replace("\"wireToolInputs\":{\"call-1\"", "\"wireToolInputs\":{\"foreign-call\"");
+        OracleReport wrongOwner = new OracleReport();
+        NativeRedundancy.check(wrongOwner, NativeArtifact.ofBytes(Path.of("transcript.jsonl"), (foreign + "\n").getBytes(StandardCharsets.UTF_8)), facts, "main/transcript.jsonl", "claude_transcript");
+        assertThat(wrongOwner.outcome("native.redundancy.identity", "main/transcript.jsonl")).isEqualTo(Outcome.UNRESOLVED);
+    }
+
     static final Path EXAMPLES = Path.of(SemanticExampleProfileTest.class.getResource("/ocsf/mapping-catalog/examples").getPath().replace("%20", " "));
 
     static List<Path> examples() throws IOException {

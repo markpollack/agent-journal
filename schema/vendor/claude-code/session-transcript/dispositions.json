@@ -2380,12 +2380,12 @@
       "variant": "assistant",
       "path": "wireToolInputs.{*}",
       "disposition": "retained",
-      "classification": "redundant",
+      "classification": "vendor_residual",
       "vendor_declared": true,
       "evidence": {
-        "property": "fact.redundancy"
+        "property": "whole_record.coverage"
       },
-      "classification_note": "Checked against exactly one tool_use input in this message selected by native tool call id; all four frozen occurrences agree. No association is chosen by equal arguments.",
+      "classification_note": "A distinct native argument projection keyed by the unique tool_use id in this message. It may differ from message.content[].input (for example a working-directory prefix). Both values are retained and reconstruction-checked; equal cases also receive the redundancy comparison. Equality is not required and does not choose association.",
       "tests": [
         "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
       ],

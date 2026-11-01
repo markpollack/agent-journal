@@ -246,6 +246,22 @@
       "owner": "Reported task_id and tool_use_id only; no join inferred from prompt text",
       "fields": "task_id -> task_uid; prompt -> content_blocks; patch.status -> reported_state; patch.end_time -> end_time (reported epoch milliseconds)",
       "residual": "whole record in data"
+    },
+    {
+      "id": "claude.stream.system.task_metadata->session_context.state",
+      "selector": {
+        "type": "system",
+        "subtype": [
+          "task_progress",
+          "task_notification"
+        ],
+        "member": "usage is not an object"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "5 State reported",
+      "cardinality": "one event per record without a usage object",
+      "fields": "session_id -> session_uid; task_id -> task_uid; tool_use_id -> tool_call_uid; status -> reported_state; description -> task_description; subagent_type -> agent_type; subtype -> context_kind; no usage observation or child-run claim without usage",
+      "residual": "whole record in data"
     }
   ],
   "unavailable_at_source": [

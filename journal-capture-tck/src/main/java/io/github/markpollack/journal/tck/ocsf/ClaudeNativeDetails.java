@@ -24,7 +24,8 @@ final class ClaudeNativeDetails {
         List<Json> blocks = content instanceof Json.JArray a ? a.elements() : List.of();
         for (int i = 0; i < blocks.size(); i++) {
             Json block = blocks.get(i);
-            if ("tool_use".equals(SourceProfile.text(block, "type"))) {
+            if ("assistant".equals(SourceProfile.text(n, "type"))
+                    && "tool_use".equals(SourceProfile.text(block, "type"))) {
                 int kind = claudeKind(SourceProfile.text(block, "name"));
                 Map<String, Json> fields =
                         SourceFacts.fields("/tool_kind_id", kind, "/data", block);

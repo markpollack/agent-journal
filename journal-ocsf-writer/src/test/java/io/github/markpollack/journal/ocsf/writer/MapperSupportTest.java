@@ -24,6 +24,35 @@ import static org.assertj.core.api.Assertions.assertThat;
 class MapperSupportTest {
 
     @Test
+    void aTaskNotificationWithoutUsageKeepsStateWithoutInventingChildAccounting(@TempDir Path work) throws java.io.IOException {
+        // Synthetic: a completed background shell task reports identity/state but no measurement.
+        Path nativeDir = java.nio.file.Files.createDirectories(work.resolve("native"));
+        Path input = nativeDir.resolve("stream.jsonl");
+        java.nio.file.Files.writeString(input, """
+                {"type":"system","subtype":"task_notification","task_id":"task-1","tool_use_id":"call-1","status":"completed","session_id":"00000000-0000-4000-8000-000000000000","summary":"Run tests","uuid":"notification-1"}
+                """);
+        Path core = work.resolve("core");
+        try (OcsfRunWriter writer = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), options())) {
+            Replay.feedBytes(writer.source(claudeStream()), input, 4096, options().clock());
+            writer.complete();
+        }
+        var pkg = io.github.markpollack.journal.tck.ocsf.PackageReader.open(core.resolve("events.jsonl"));
+        assertThat(pkg.events("session_context", 5)).singleElement().satisfies(e -> {
+            assertThat(e.text("reported_state")).isEqualTo("completed");
+            assertThat(e.text("tool_call_uid")).isEqualTo("call-1");
+            assertThat(e.text("task_uid")).isEqualTo("task-1");
+            assertThat(e.get("usage_observations")).isNull();
+            assertThat(e.get("agent_type")).isNull();
+        });
+        var report = io.github.markpollack.journal.tck.ocsf.OcsfOracle.verify(pkg, nativeDir);
+        assertThat(report.defects()).as(report.toString()).isEmpty();
+        assertThat(report.checks()).anySatisfy(c -> {
+            assertThat(c.property()).isEqualTo("fact.value");
+            assertThat(c.evidence().meaning()).isEqualTo("source.task_state/v1");
+        });
+    }
+
+    @Test
     void blocksCarryTheirIdsTextsAndKindsAndBareStringsAreOneTextBlock(@TempDir Path work) {
         Path core = work.resolve("core");
         try (OcsfRunWriter w = OcsfRunWriter.openEvidenceLog(core, run(PAIR), SchemaPin.bundled(), options(), WriterTestSupport.PAIR_LOG)) {
