@@ -1,8 +1,12 @@
 {
   "kind": "agent-journal/cross-cli-accounting-baseline",
-  "version": "0.9",
+  "version": "0.10",
   "meaning": "Exact executed accounting population and dependency snapshot. Declared checker assignments remain separate from attributed Check outcomes. Pins native occurrences and classifications, source/specification bindings, E requirements, actual assertion outcomes, comparison operand digests and non-passing findings. An edit is a reviewable implementation result, never semantic approval. Unresolved meanings and unsupported versions remain non-passing. Required unchecked comparisons cannot be frozen by this ratchet.",
   "changes": [
+    {
+      "revision": "0.10 (Claude retained-record session comparison, 2026-11-02)",
+      "summary": "Correct the independent assembly comparison to preserve Claude fallback record-local session presence/absence rather than impose source membership on every retained record. Restate only the TCK main-source fingerprint; all other accounting population rows and source/mapping approval states are unchanged. New synthetic identity controls and preserved actual Client capture reassembly are separate evidence."
+    },
     {
       "revision": "0.9 (native terminal association, 2026-11-02)",
       "summary": "Restate only writer and TCK main-source dependency hashes for explicit current Claude2.1.316 one-turn terminal native assembly and independent association checks. All1553 non-changing accounting rows, native fixtures, meanings, approvals, source admission states and comparison outcomes are unchanged. Synthetic terminal decisions and retained actual-source replay remain separate from new async Client runtime qualification."
@@ -723,7 +727,7 @@
     "comparison-population syn-codex-exec-families-0.160.1 main/stream.jsonl 1590 sha256:500e4a341c5389a8b0a7681e0c392df8f5328c82bc6303df911f0db77e78aed7",
     "comparison-population syn-codex-exec-stream main/stream.jsonl 751 sha256:8f9ca0a82194789ce6285d77587de37870676c3e29c64dfed86bd14514519137",
     "comparison-population syn-codex-exec-turn-failed-0.160.1 main/stream.jsonl 217 sha256:8374c6ca90431ec198c640cdda4addbb6e15d4a93a36eebef419e1dafb0e4c3c",
-    "dependency journal-capture-tck/src/main sha256:32f45ca46d4b76ee3ae62f3ec9672c3db3d88c9f078571d5021b3483017f3f2b",
+    "dependency journal-capture-tck/src/main sha256:7f56e1f7a640cab26482ccd5cdd7a982d42d41e1f7ef1c90d46998a73adcef24",
     "dependency journal-capture-tck/src/test/java sha256:5ed59942fe9a44ce48e922a34cc4ac2881a43331b2adb0363449509c472c7ef0",
     "dependency journal-capture-tck/src/test/resources/ocsf/conformance sha256:c856f9da4a6c5f61f93e7007100eab00e4dd692d176362b995e41f8894c90cee",
     "dependency journal-capture-tck/src/test/resources/ocsf/fixtures sha256:56fda6ffbd61d21110d08606c19983124598646019f3fda3090f7facaed79495",

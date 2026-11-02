@@ -82,6 +82,10 @@ agree. This first terminal binding supports a string-valued native user message;
 user-message membership, retained multi-turn and reconnect acquisitions are outside its scope. Source completeness
 does not establish physical process cessation, permission behavior or Client live qualification.
 
+A retained Claude control record can have no `session_uid` even though its source belongs to an identified
+session. The assembly reader checks the record's own reported identity, including its absence, against the
+independent native locators. Source membership does not fill a missing record-local identity.
+
 The receiver feeds those sources through the existing final-assembly writer and places the frozen
 terminal binding in the same portable events.jsonl. `PackageReader` independently checks terminal
 and native association; `TerminalBindingReader` exposes the original decision. Complete semantic

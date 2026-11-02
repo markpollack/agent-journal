@@ -84,7 +84,7 @@ public final class AssemblyOracle {
         declaration(report, declared, spec, supplied);
         Map<String, Expected> expected = expect(spec, supplied);
         gate(report, declared, expected, pkg);
-        sessions(report, pkg, expected);
+        sessions(report, pkg, expected, spec);
         required(report, declared, spec, expected);
         List<Supplied> accepted = new ArrayList<>();
         expected.values().stream().filter(Expected::accepted).forEach(e -> accepted.add(e.source()));
@@ -94,11 +94,13 @@ public final class AssemblyOracle {
         return report;
     }
 
-    private static void sessions(OracleReport report, OcsfPackage pkg, Map<String, Expected> expected) {
+    private static void sessions(OracleReport report, OcsfPackage pkg, Map<String, Expected> expected, Json spec) {
         Set<String> sessions = new LinkedHashSet<>();
         expected.values().stream().filter(Expected::accepted).forEach(e -> sessions.addAll(e.sessions()));
         if (sessions.size() != 1) { return; }
         String session = sessions.iterator().next();
+        Map<String, Json> roles = roles(spec);
+        boolean recordLocal = RawInventory.text(spec, "profile_id").startsWith("claude-code/");
         List<String> support = new ArrayList<>();
         expected.values().stream().filter(e -> e.accepted() && !e.sessions().isEmpty()).forEach(e ->
                 e.source().bytes().records().forEach(r -> support.add(e.source().name() + ":record=" + r.index() + "#")));
@@ -107,8 +109,20 @@ public final class AssemblyOracle {
             if (event.className == null || source == null || !source.accepted()) { continue; }
             String owner = "main/" + event.artifact();
             FactComparison.compare(report, "assembly.session.value", owner,
-                new io.github.markpollack.journal.tck.verify.Check.Evidence("assembly.membership_session/v1", event.line + "/session_uid", support, owner + ":line=" + event.line + "#/session_uid", FactComparison.value("stderr".equals(source.source().role()) ? null : session), event.get("session_uid")));
+                new io.github.markpollack.journal.tck.verify.Check.Evidence("assembly.membership_session/v1", event.line + "/session_uid", support, owner + ":line=" + event.line + "#/session_uid", FactComparison.value(eventSession(event, source, roles, session, recordLocal)), event.get("session_uid")));
         }
+    }
+
+    /** Claude's fallback preserves record-local identity; other profiles can inherit an established source context. */
+    private static String eventSession(Event event, Expected source, Map<String, Json> roles, String session, boolean recordLocal) {
+        String role = source.source().role();
+        if ("stderr".equals(role)) return null;
+        Json locators = roles.get(role).member("session");
+        if (!recordLocal || !"source_record".equals(event.className) || locators == null) return session;
+        List<Located> record = located(source.source()).stream()
+                .filter(r -> java.util.Objects.equals(r.index(), event.recordIndex())).toList();
+        Set<String> reported = SourceLocator.values(record, locators);
+        return reported.size() == 1 ? reported.iterator().next() : null;
     }
 
     // ------------------------------------------------------------------------------------------ declaration
