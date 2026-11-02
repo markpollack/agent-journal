@@ -12,16 +12,16 @@ final class TerminalInventory {
             String path = prefix + TerminalValues.text(source, "relativePath"); required.add(path);
             Jv item = actual.get(path);
             if (item == null || !TerminalValues.text(source, "sha256").equals(TerminalValues.text(item, "sha256"))
-                    || TerminalValues.number(source, "size") != TerminalValues.number(item, "size")) throw new IOException("association artifact inventory mismatch");
+                    || TerminalValues.number(source, "size") != TerminalValues.number(item, "size")) throw new TerminalIntegrityException("association artifact inventory mismatch");
         }
-        if (!actual.keySet().equals(required)) throw new IOException("unexpected artifact inventory entry");
+        if (!actual.keySet().equals(required)) throw new TerminalIntegrityException("unexpected artifact inventory entry");
     }
 
     private static java.util.Map<String, Jv> inventory(Jv ack) throws IOException {
         java.util.Map<String, Jv> actual = new java.util.LinkedHashMap<>();
         for (Jv item : TerminalValues.array(ack, "artifacts")) {
             TerminalValues.fields(item, "relativePath sha256 size");
-            if (actual.putIfAbsent(TerminalValues.text(item, "relativePath"), item) != null) throw new IOException("duplicate artifact inventory path");
+            if (actual.putIfAbsent(TerminalValues.text(item, "relativePath"), item) != null) throw new TerminalIntegrityException("duplicate artifact inventory path");
         }
         return actual;
     }
@@ -29,11 +29,11 @@ final class TerminalInventory {
         String events = null;
         for (String path : paths) {
             if (path.matches("prepared/candidate-[^/]+/events[.]jsonl")) {
-                if (events != null) throw new IOException("multiple canonical artifacts");
+                if (events != null) throw new TerminalIntegrityException("multiple canonical artifacts");
                 events = path;
             }
         }
-        if (events == null) throw new IOException("missing canonical artifact");
+        if (events == null) throw new TerminalIntegrityException("missing canonical artifact");
         return events;
     }
 

@@ -143,7 +143,15 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
      * its {@code assembly} declaration (see {@link FinalAssembly}).
      */
     public static OcsfRunWriter openAssembly(Path dir, RunDescriptor run, SchemaPin pin, WriterOptions options, AssemblyPlan plan) {
-        OcsfRunWriter w = open(dir, run, pin, options);
+        return assembly(open(dir, run, pin, options), pin, plan);
+    }
+
+    static OcsfRunWriter openTerminalAssembly(Path dir, RunDescriptor run, WriterOptions options, AssemblyPlan plan, Jv.Obj binding) throws IOException {
+        SchemaPin pin = SchemaPin.bundled();
+        return assembly(openTerminal(dir, run, pin, options, binding), pin, plan);
+    }
+
+    private static OcsfRunWriter assembly(OcsfRunWriter w, SchemaPin pin, AssemblyPlan plan) {
         Map<Integer, String> names = new TreeMap<>();
         pin.classUids().forEach((name, uid) -> names.put(uid, name));
         w.assembler = new Assembler(plan, names, w.contracts);

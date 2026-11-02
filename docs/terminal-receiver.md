@@ -56,3 +56,41 @@ The local filesystem must support same-filesystem no-replace hard links, and sto
 must be protected from external mutation while used. Content force and atomic publication do not
 establish directory persistence after power loss, a durable Client outcome ledger or eventual success
 after process death. There is no fallback to replacement rename, database, broker or repair operation.
+
+## Claude 2.1.316 native archive profile
+
+`TerminalReceiver.CLAUDE_PROFILE` selects `client-terminal-claude-2.1.316/1` under the same
+receiver contract and route. The existing evidence-only profile is unchanged. Pending or incomplete
+associations remain evidence; they make no complete-native claim. A later `receiveRevision` may
+supply the completed archive while retaining the initial envelope and accepted decision.
+
+For a COMPLETED association, sourceRoot contains `acquisition.json`, the immutable output of the
+exact Claude source qualifier, and every source it names. Include the manifest and every acquired
+source in A.sources with original origin, full `[0,size)` span and exact whole-file hash. The manifest
+has profile `claude-code-2.1.316-sdk-stdio-session-file`, profile_id
+`claude-code/2.1.316/sdk-stdio+session-file`, and one closed SDK stdio turn. Its acquisition_uid and
+run.run_uid equal D.executionId; process.connection_uid equals the single Client connection ID in
+D/A. Native session identity comes from the native sources, separately from Client session identity.
+All A sources carry that nativeSessionId and clientConnectionId; nativeTurnId/nativeConnectionId are
+null because this profile establishes no corresponding native identifiers. Map stdin/stream/stderr
+roles to STDIN/STDOUT/STDERR; the manifest and other native files have stream=null.
+
+The complete profile requires original stdin/stdout/stderr and the native transcript, no missing,
+interrupted or partial source, matching turn byte extents, exactly one submitted prompt, one native
+prompt with the same message and one terminal result. Exact native session/version witnesses must
+agree. This first terminal binding supports a string-valued native user message; multimodal/structured
+user-message membership, retained multi-turn and reconnect acquisitions are outside its scope. Source completeness
+does not establish physical process cessation, permission behavior or Client live qualification.
+
+The receiver feeds those sources through the existing final-assembly writer and places the frozen
+terminal binding in the same portable events.jsonl. `PackageReader` independently checks terminal
+and native association; `TerminalBindingReader` exposes the original decision. Complete semantic
+archive acceptance additionally requires the packaged reader's existing `verify` command with
+`--acquisition <acquisition.json>` and `--assembly <assembly-expectation.json>` against the protected
+original source directory. A valid ACK or detached readable file alone is insufficient. A detached
+file retains its declarations and reports unavailable external sources honestly.
+
+`TerminalIntegrityException` is an IOException subtype for positively detected source, artifact,
+inventory or closed-canonical integrity defects. It is not retryable repair and does not assert that
+publication never happened. Other IOException remains ambiguous. Invalid payload/profile/association
+and immutable-key conflicts remain IllegalArgumentException. Existing IOException handlers stay valid.

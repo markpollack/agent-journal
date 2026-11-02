@@ -110,7 +110,10 @@ public final class PackageReader {
                 eventCount++; // reported by the event pass
             }
         }
-        try { TerminalSourceReading.check(dir, TerminalBindingReader.read(declared), diags); }
+        try {
+            TerminalSourceReading.check(dir, TerminalBindingReader.read(declared), diags);
+            TerminalNativeReading.sources(dir, declared, diags);
+        }
         catch (IllegalArgumentException | ArithmeticException | java.time.DateTimeException e) {
             diags.add(new Diagnostic(Diagnostic.Severity.DEFECT, "TERMINAL_BINDING_INVALID", e.getMessage()));
         }

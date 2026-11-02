@@ -14,6 +14,7 @@ final class TerminalContract {
     static final String CONTRACT = "journal-terminal-receiver/1";
     static final String ROUTE = "client-terminal-evidence/1";
     static final String PROFILE = "client-terminal-evidence-only/1";
+    static final String CLAUDE_PROFILE = "client-terminal-claude-2.1.316/1";
     private TerminalContract() { }
 
     record Input(String envelope, Jv decision, Jv association) { }
@@ -23,7 +24,8 @@ final class TerminalContract {
         fields(p, "codec producerNamespace executionId decisionId decisionCodec decisionBytes associationCodec associationBytes initialRevisionId receiverContract route profile");
         equal(p, "codec", "journal-terminal-envelope/1");
         equal(p, "producerNamespace", namespace);
-        equal(p, "receiverContract", CONTRACT); equal(p, "route", ROUTE); equal(p, "profile", PROFILE);
+        equal(p, "receiverContract", CONTRACT); equal(p, "route", ROUTE);
+        if (!Set.of(PROFILE, CLAUDE_PROFILE).contains(text(p, "profile"))) throw new IllegalArgumentException("unsupported terminal profile");
         equal(p, "decisionCodec", "client-decision/1"); equal(p, "associationCodec", "journal-association/1");
         Jv d = decoded(p, "decisionBytes"); TerminalDecision.check(d);
         Jv a = decoded(p, "associationBytes"); TerminalAssociation.check(a, d);

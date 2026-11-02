@@ -85,7 +85,7 @@ final class AcquiredExecution {
     static OcsfRunWriter.State assemble(Path manifest, Path out) {
         try {
             require(!Files.exists(out), "output directory exists");
-            return new AcquiredExecution(manifest).write(out);
+            return new AcquiredExecution(manifest).write(out, null, WriterOptions.defaults());
         }
         catch (IOException ex) { throw new UncheckedIOException(ex); }
     }
@@ -106,12 +106,16 @@ final class AcquiredExecution {
         return new AssemblyPlan(profile, bindings, new Jv.Arr());
     }
 
-    private OcsfRunWriter.State write(Path out) {
+    static OcsfRunWriter.State assembleTerminal(Path manifest, Path out, Jv.Obj binding, WriterOptions options) throws IOException {
+        return new AcquiredExecution(manifest).write(out, binding, options);
+    }
+
+    private OcsfRunWriter.State write(Path out, Jv.Obj binding, WriterOptions options) throws IOException {
         AssemblyPlan plan = plan();
-        WriterOptions options = WriterOptions.defaults();
         List<String> order = AssemblyProfile.strings(profile.document().member("feed_order"));
         sources.sort(java.util.Comparator.comparingInt(i -> order.indexOf(optional(i.source(), "role"))));
-        try (OcsfRunWriter writer = OcsfRunWriter.openAssembly(out, run(), SchemaPin.bundled(), options, plan)) {
+        try (OcsfRunWriter writer = binding == null ? OcsfRunWriter.openAssembly(out, run(), SchemaPin.bundled(), options, plan)
+                : OcsfRunWriter.openTerminalAssembly(out, run(), options, plan, binding)) {
             writer.processOutcome((Jv.Obj) document.member("process"));
             if (!complete) { writer.acquisitionIncomplete("caller acquisition incomplete; see launch_settings.acquired_execution"); }
             for (Acquired input : sources) {

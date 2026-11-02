@@ -34,6 +34,7 @@ public final class TerminalBindingReader {
         String associationText = string(binding, "association"); Json a = exact(associationText); TerminalAssociationReading.check(a, d);
         String parent = binding.member("originalBindingId").isNull() ? null : string(binding, "originalBindingId");
         revision(initial, a, associationText, parent);
+        TerminalNativeReading.check(file, p, d, a);
         return new Binding(string(p, "producerNamespace"), canonical(d), associationText, parent);
     }
 
@@ -50,7 +51,8 @@ public final class TerminalBindingReader {
         Json p = exact(envelope);
         fields(p, "codec producerNamespace executionId decisionId decisionCodec decisionBytes associationCodec associationBytes initialRevisionId receiverContract route profile");
         expect(p, "codec", "journal-terminal-envelope/1"); expect(p, "receiverContract", "journal-terminal-receiver/1");
-        expect(p, "route", "client-terminal-evidence/1"); expect(p, "profile", "client-terminal-evidence-only/1");
+        expect(p, "route", "client-terminal-evidence/1");
+        oneOf(p, "profile", "client-terminal-evidence-only/1 client-terminal-claude-2.1.316/1");
         expect(p, "decisionCodec", "client-decision/1"); expect(p, "associationCodec", "journal-association/1");
         Json d = decode(string(p, "decisionBytes")); Json initial = decode(string(p, "associationBytes"));
         TerminalDecisionReading.check(d); TerminalAssociationReading.check(initial, d); expect(initial, "revisionId", string(p, "initialRevisionId"));

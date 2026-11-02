@@ -47,6 +47,7 @@ capture --> final_assembly
 capture --> schema
 terminal_receiver --> run_writer
 terminal_receiver --> run_input
+terminal_receiver --> final_assembly
 terminal_receiver --> schema
 run_writer --> run_input
 run_writer --> framing

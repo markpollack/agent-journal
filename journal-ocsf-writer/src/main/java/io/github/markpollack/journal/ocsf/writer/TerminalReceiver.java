@@ -19,14 +19,16 @@ import java.util.UUID;
  * configuration. The store must be private, protected against concurrent external mutation and support
  * same-filesystem atomic no-replace hard links. There is no power-loss or eventual-retry guarantee.
  *
- * <p>The supported profile preserves declared evidence and checks bytes/associations. It does not
- * qualify a native provider route, prove Client arbitration or establish complete-archive acceptance.
+ * <p>The evidence-only profile preserves declared evidence and checks bytes/associations. The opt-in
+ * Claude profile assembles a qualified one-shot native acquisition alongside the immutable decision.
+ * Neither profile proves Client arbitration or replaces independent complete-archive acceptance.
  * Existing markers and prepared evidence are never repaired, replaced or deleted by this receiver.
  */
 public final class TerminalReceiver {
     public static final String CONTRACT = TerminalContract.CONTRACT;
     public static final String ROUTE = TerminalContract.ROUTE;
     public static final String PROFILE = TerminalContract.PROFILE;
+    public static final String CLAUDE_PROFILE = TerminalContract.CLAUDE_PROFILE;
     private final Path root;
     private final String namespace;
     private final WriterOptions options;
@@ -84,7 +86,7 @@ public final class TerminalReceiver {
         if (!Files.exists(marker, LinkOption.NOFOLLOW_LINKS)) {
             Path candidate = Files.createTempDirectory(root.resolve("prepared"), "candidate-");
             Jv.Arr artifacts = copySources(candidate, association, sourceRoot);
-            Path events = writePackage(candidate, payload);
+            Path events = writePackage(candidate, payload, input, association);
             artifacts.add(artifact(events));
             String binding = UUID.randomUUID().toString();
             Jv.Obj ack = new Jv.Obj().put("receiverContract", CONTRACT).put("bindingId", binding).put("producerNamespace", namespace)
@@ -105,7 +107,13 @@ public final class TerminalReceiver {
         return TerminalJson.write(winner.member("ack"));
     }
 
-    private Path writePackage(Path candidate, Jv.Obj payload) throws IOException {
+    private Path writePackage(Path candidate, Jv.Obj payload, TerminalContract.Input input, Jv association) throws IOException {
+        if (TerminalNativeProfile.complete(input, association)) {
+            Path manifest = candidate.resolve("sources/acquisition.json");
+            TerminalNativeProfile.validate(manifest, input.decision(), association);
+            AcquiredExecution.assembleTerminal(manifest, candidate, payload, options);
+            return candidate.resolve("events.jsonl");
+        }
         RunDescriptor run = new RunDescriptor(UUID.randomUUID().toString(), 0, null, options.clock().instant(),
                 new RunDescriptor.Cli("client-terminal-evidence", "1", "Agent Journal"), null, null);
         try (OcsfRunWriter writer = OcsfRunWriter.openTerminal(candidate, run, SchemaPin.bundled(), options, payload)) {
@@ -127,7 +135,7 @@ public final class TerminalReceiver {
                 Files.copy(input, output);
                 force(output);
             }
-            if (Files.size(output) != TerminalValues.number(source, "size") || !fileHash(output).equals(TerminalValues.text(source, "sha256"))) throw new IOException("source hash/extent mismatch");
+            if (Files.size(output) != TerminalValues.number(source, "size") || !fileHash(output).equals(TerminalValues.text(source, "sha256"))) throw new TerminalIntegrityException("source hash/extent mismatch");
             if (copied.add(output)) artifacts.add(artifact(output));
         }
         return artifacts;
@@ -151,10 +159,10 @@ public final class TerminalReceiver {
         for (Jv artifact : TerminalValues.array(ack, "artifacts")) {
             TerminalValues.fields(artifact, "relativePath sha256 size");
             Path file = safe(root, TerminalValues.relative(TerminalValues.text(artifact, "relativePath")));
-            if (Files.size(file) != TerminalValues.number(artifact, "size") || !fileHash(file).equals(TerminalValues.text(artifact, "sha256"))) throw new IOException("published artifact integrity failure");
+            if (Files.size(file) != TerminalValues.number(artifact, "size") || !fileHash(file).equals(TerminalValues.text(artifact, "sha256"))) throw new TerminalIntegrityException("published artifact integrity failure");
             if (TerminalValues.text(artifact, "relativePath").matches("prepared/candidate-[^/]+/events[.]jsonl")) { validateEvents(file, payload); foundEvents = true; }
         }
-        if (!foundEvents) throw new IOException("marker has no canonical event file");
+        if (!foundEvents) throw new TerminalIntegrityException("marker has no canonical event file");
         return value;
     }
 
@@ -180,7 +188,7 @@ public final class TerminalReceiver {
             current = current.resolve(component);
             if (Files.isSymbolicLink(current)) throw new IOException("symlink in protected path");
         }
-        if (!Files.isRegularFile(current, LinkOption.NOFOLLOW_LINKS)) throw new IOException("missing regular artifact");
+        if (!Files.isRegularFile(current, LinkOption.NOFOLLOW_LINKS)) throw new TerminalIntegrityException("missing regular artifact");
         return current;
     }
 
@@ -202,7 +210,7 @@ public final class TerminalReceiver {
             if (record.path("run", "terminal_binding") != null) found = TerminalJson.write(record.path("run", "terminal_binding")).equals(TerminalJson.write(payload));
             if (record.path("recording", "state") != null) complete = "COMPLETED".equals(record.path("recording", "state").text());
         }
-        if (!found || !complete) throw new IOException("incomplete/mismatched terminal canonical file");
+        if (!found || !complete) throw new TerminalIntegrityException("incomplete/mismatched terminal canonical file");
     }
 
     private static String fileHash(Path file) throws IOException {
