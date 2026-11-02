@@ -98,3 +98,9 @@ file retains its declarations and reports unavailable external sources honestly.
 inventory or closed-canonical integrity defects. It is not retryable repair and does not assert that
 publication never happened. Other IOException remains ambiguous. Invalid payload/profile/association
 and immutable-key conflicts remain IllegalArgumentException. Existing IOException handlers stay valid.
+
+The independent reader checks each Claude result's permission denial at its exact array occurrence,
+including its reported tool identifier, source reference, decision values and retained native object.
+Distinct, repeated or absent tool identifiers do not collapse separate array entries. Array position
+only identifies the entry within the native record; tool attribution still requires the identifier
+that entry reports. Dropped, duplicated or misattributed denials fail validation.

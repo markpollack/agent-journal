@@ -1,8 +1,12 @@
 {
   "kind": "agent-journal/cross-cli-accounting-baseline",
-  "version": "0.10",
+  "version": "0.11",
   "meaning": "Exact executed accounting population and dependency snapshot. Declared checker assignments remain separate from attributed Check outcomes. Pins native occurrences and classifications, source/specification bindings, E requirements, actual assertion outcomes, comparison operand digests and non-passing findings. An edit is a reviewable implementation result, never semantic approval. Unresolved meanings and unsupported versions remain non-passing. Required unchecked comparisons cannot be frozen by this ratchet.",
   "changes": [
+    {
+      "revision": "0.11 (Claude permission denial occurrences, 2026-11-02)",
+      "summary": "Scope each Claude result permission denial comparison to its exact native array occurrence, preserving reported tool identifiers and existing values/count checks. Restate only the TCK main-source fingerprint and the comparison operand/subject digest for the existing single-denial fixture (2513 comparisons unchanged); all other population, source/mapping and approval rows are unchanged. Multiple-denial synthetic controls and retained actual-source reassembly remain separate evidence."
+    },
     {
       "revision": "0.10 (Claude retained-record session comparison, 2026-11-02)",
       "summary": "Correct the independent assembly comparison to preserve Claude fallback record-local session presence/absence rather than impose source membership on every retained record. Restate only the TCK main-source fingerprint; all other accounting population rows and source/mapping approval states are unchanged. New synthetic identity controls and preserved actual Client capture reassembly are separate evidence."
@@ -684,7 +688,7 @@
     "comparison-population claude-child-2.1.299 main/stream.jsonl 3314 sha256:18058416953a263074778811f67d59f2e094d271e44eb615128ee9bc13de0491",
     "comparison-population claude-child-2.1.299-interrupted main/stream.jsonl 737 sha256:67257b13f37953d1172103007d334f93e4d29eb8e0506696082fdc90b24fa6f8",
     "comparison-population claude-live-2.1.304-cancelled main/stream.jsonl 1267 sha256:8347206bd37499b328604a50d8fbf41d4c961e38a67e7a92833718ed01ab9964",
-    "comparison-population claude-live-2.1.304-denial main/stream.jsonl 2513 sha256:5ba5c0f267347d617cddb009bf5a339af78885526ca1a5ffcf08ffa0d1119284",
+    "comparison-population claude-live-2.1.304-denial main/stream.jsonl 2513 sha256:5bdcc3028a531288863cd0c088f4b6f1634aa37e2fde0f100b8ca4c8a7c5b8d2",
     "comparison-population claude-live-2.1.304-features child:toolu_01WBvs5eGudfYPm8YvrTYTQK/stream.jsonl 602 sha256:9e1124a5c5b35a51d4da3d1ee18428c0f185eef1fa01e07ad331e96691d90c3d",
     "comparison-population claude-live-2.1.304-features main/stream.jsonl 5747 sha256:e186317b71826d89ef65417f5e2ef927a9557444292ca422f7f913675ab90e3b",
     "comparison-population claude-live-2.1.304-mcp main/stream.jsonl 2531 sha256:65734dd16b42d0398dade92b04338c94580d1017debf096b70791b95af5c1cb9",
@@ -727,7 +731,7 @@
     "comparison-population syn-codex-exec-families-0.160.1 main/stream.jsonl 1590 sha256:500e4a341c5389a8b0a7681e0c392df8f5328c82bc6303df911f0db77e78aed7",
     "comparison-population syn-codex-exec-stream main/stream.jsonl 751 sha256:8f9ca0a82194789ce6285d77587de37870676c3e29c64dfed86bd14514519137",
     "comparison-population syn-codex-exec-turn-failed-0.160.1 main/stream.jsonl 217 sha256:8374c6ca90431ec198c640cdda4addbb6e15d4a93a36eebef419e1dafb0e4c3c",
-    "dependency journal-capture-tck/src/main sha256:7f56e1f7a640cab26482ccd5cdd7a982d42d41e1f7ef1c90d46998a73adcef24",
+    "dependency journal-capture-tck/src/main sha256:582857fd26c02e396f00ec8e7849dfec357f93a0f334fd79417012af537139c3",
     "dependency journal-capture-tck/src/test/java sha256:5ed59942fe9a44ce48e922a34cc4ac2881a43331b2adb0363449509c472c7ef0",
     "dependency journal-capture-tck/src/test/resources/ocsf/conformance sha256:c856f9da4a6c5f61f93e7007100eab00e4dd692d176362b995e41f8894c90cee",
     "dependency journal-capture-tck/src/test/resources/ocsf/fixtures sha256:56fda6ffbd61d21110d08606c19983124598646019f3fda3090f7facaed79495",

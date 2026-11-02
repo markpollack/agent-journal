@@ -132,12 +132,14 @@ final class ClaudeStreamProfile implements SourceProfile {
                     // the run's reported wall-clock duration, in milliseconds already: the event's base duration attribute
                     f.attributes.add(new ExpectedFacts.Attribute(r.index(), "prompt_turn", 2, "duration", o.member("duration_ms")));
                 }
-                for (Json d : o.member("permission_denials") == null ? List.<Json>of() : o.member("permission_denials").elements()) {
+                List<Json> denials = o.member("permission_denials") == null ? List.of() : o.member("permission_denials").elements();
+                for (int index = 0; index < denials.size(); index++) {
+                    Json d = denials.get(index);
                     String deniedCall = SourceProfile.text(d, "tool_use_id");
                     // the entry names the denied call (2.1.304): a reported identifier, unique; otherwise unattributed, never linked by position
                     f.decisions.add(deniedCall != null
-                            ? new ExpectedFacts.Decision(r.index(), "denied", 2, null, null, 4, 1, 1, new ArrayList<>(List.of(deniedCall)), null)
-                            : new ExpectedFacts.Decision(r.index(), "denied", 2, null, null, 4, 3, 2, new ArrayList<>(), null));
+                            ? new ExpectedFacts.Decision(r.index(), "denied", 2, null, null, 4, 1, 1, new ArrayList<>(List.of(deniedCall)), null, index)
+                            : new ExpectedFacts.Decision(r.index(), "denied", 2, null, null, 4, 3, 2, new ArrayList<>(), null, index));
                 }
             }
         }

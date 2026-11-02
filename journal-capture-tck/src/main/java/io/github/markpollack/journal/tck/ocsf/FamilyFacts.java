@@ -351,8 +351,8 @@ final class FamilyFacts {
         boolean result = f.results.stream().anyMatch(r -> r.recordIndex() == d.recordIndex());
         new SourceFacts.Target(f, d.recordIndex(), result ? "tool_call" : "prompt_turn", 2)
                 .observation(
-                        result ? "/permission_decision" : "/permission_decisions",
-                        "",
+                        result ? "/permission_decision" : d.collectionIndex() < 0 ? "/permission_decisions" : "/permission_decisions/" + d.collectionIndex(),
+                        d.collectionIndex() < 0 ? "" : "/permission_denials/" + d.collectionIndex(),
                         "source.permission/v1",
                         Map.of(),
                         fields);

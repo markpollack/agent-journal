@@ -1739,7 +1739,7 @@ public final class OcsfOracle {
     }
 
     private void decisions(ExpectedFacts facts, List<Event> events, String owner) {
-        record Found(Event event, Json decision) {
+        record Found(Event event, Json decision, int collectionIndex) {
         }
         List<Found> found = new ArrayList<>();
         List<String> actual = new ArrayList<>();
@@ -1749,8 +1749,9 @@ public final class OcsfOracle {
                 ds.add(e.get("permission_decision"));
             }
             ds.addAll(e.elements("permission_decisions"));
-            for (Json d : ds) {
-                found.add(new Found(e, d));
+            for (int index = 0; index < ds.size(); index++) {
+                Json d = ds.get(index);
+                found.add(new Found(e, d, e.get("permission_decision") == null ? index : index - 1));
                 actual.add(e.recordIndex() + ":" + (d.member("scope_id") == null ? null : d.member("scope_id").scalarText())
                         + ":" + ("tool_call".equals(e.className) ? e.text("tool_call_uid") : "-"));
             }
@@ -1765,7 +1766,8 @@ public final class OcsfOracle {
         for (ExpectedFacts.Decision d : facts.decisions) {
             String key = d.recordIndex() + ":" + d.scopeId() + ":" + (d.scopeId() == 1 ? d.ownerId() : "-");
             for (int i = 0; i < found.size(); i++) {
-                if (!actual.get(i).equals(key)) {
+                if (!actual.get(i).equals(key)
+                        || (d.collectionIndex() >= 0 && d.collectionIndex() != found.get(i).collectionIndex())) {
                     continue;
                 }
                 examined++;

@@ -156,9 +156,17 @@ public final class ExpectedFacts {
         }
     }
 
-    /** {@code ownerId} is the tool-call id the record itself names, when the decision is at tool-call scope. */
+    /**
+     * {@code ownerId} is the tool-call id the record itself names, when the decision is at tool-call scope.
+     * {@code collectionIndex} addresses a reported ordered denial array within this record, or -1 for
+     * an unindexed decision. It does not associate a denial with a tool; only reported identifiers do.
+     */
     public record Decision(int recordIndex, String reportedDecision, int decisionId, String source, String reasonType,
-            int scopeId, int outcomeId, int methodId, List<String> candidates, String ownerId) {
+            int scopeId, int outcomeId, int methodId, List<String> candidates, String ownerId, int collectionIndex) {
+        public Decision(int recordIndex, String reportedDecision, int decisionId, String source, String reasonType,
+                int scopeId, int outcomeId, int methodId, List<String> candidates, String ownerId) {
+            this(recordIndex, reportedDecision, decisionId, source, reasonType, scopeId, outcomeId, methodId, candidates, ownerId, -1);
+        }
     }
 
     /**
