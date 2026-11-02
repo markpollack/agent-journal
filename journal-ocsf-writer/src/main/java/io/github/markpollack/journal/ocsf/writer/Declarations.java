@@ -164,6 +164,14 @@ final class Declarations {
         return f;
     }
 
+    static Jv.Obj terminalFormat() {
+        Jv.Obj format = format().put("version", "0.4.0-prototype").put("package_version", "0.4.0-prototype")
+                .put("reader_contract_version", "0.4");
+        ((Jv.Obj) format.path("declaration_definitions", "objects", "declaration/run_body", "attributes"))
+                .put("terminal_binding", scalar("json_t", "required"));
+        return format;
+    }
+
     static Jv.Obj schema(SchemaPin pin, String extensionSourceSha256) {
         Jv.Obj ocsf = new Jv.Obj().put("version", pin.ocsfVersion()).put("core_commit", Pins.OCSF_SCHEMA_COMMIT).put("compiler_commit", Pins.OCSF_COMPILER_COMMIT)
                 .put("toolkit", Pins.ocsfPins()).put("compiled_schema_sha256", pin.compiledSha256());

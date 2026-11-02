@@ -80,13 +80,15 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
     private Assembler assembler;
     /** Why several sources are recorded without assembly ({@link #openEvidenceLog}), or {@code null}. */
     private final String evidenceLog;
+    private final Jv.Obj terminalBinding;
 
-    private OcsfRunWriter(Path dir, RunDescriptor run, SchemaPin pin, WriterOptions options, String evidenceLog) throws IOException {
+    private OcsfRunWriter(Path dir, RunDescriptor run, SchemaPin pin, WriterOptions options, String evidenceLog, Jv.Obj terminalBinding) throws IOException {
         this.dir = dir;
         this.run = run;
         this.pin = pin;
         this.options = options;
         this.evidenceLog = evidenceLog;
+        this.terminalBinding = terminalBinding;
         this.sessionUid = run.sessionUid();
         this.started = options.clock().instant();
         this.extensionSourceSha256 = SchemaPin.extensionSource(extensionSource);
@@ -121,12 +123,19 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
 
     private static OcsfRunWriter open(Path dir, RunDescriptor run, SchemaPin pin, WriterOptions options, String evidenceLog) {
         try {
-            return new OcsfRunWriter(dir, run, pin, options, evidenceLog);
+            return new OcsfRunWriter(dir, run, pin, options, evidenceLog, null);
         }
         catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
+
+    static OcsfRunWriter openTerminal(Path dir, RunDescriptor run, SchemaPin pin, WriterOptions options, Jv.Obj binding) throws IOException {
+        return new OcsfRunWriter(dir, run, pin, options, null, binding);
+    }
+
+    private String packageVersion() { return terminalBinding == null ? Pins.PACKAGE_VERSION : "0.4.0-prototype"; }
+    private String readerVersion() { return terminalBinding == null ? Pins.READER_CONTRACT_VERSION : "0.4"; }
 
     /**
      * A writer for a final assembly under {@code plan}: the declared sources are fed as usual, each mapper's events are
@@ -304,6 +313,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
                     .put("meaning", "several sources recorded without final assembly: no identity relation between them was checked, an entity two sources report appears once per source,"
                             + " and the file is not a final combined execution; a final combined file is written only by the final assembly"));
         }
+        if (terminalBinding != null) r.put("terminal_binding", terminalBinding);
         r.put("producer", new Jv.Obj().put("name", "agent-journal").put("version", options.producerVersion()).put("vendor_name", "Agent Journal"));
         r.put("written_by", new Jv.Obj().put("name", Pins.WRITER_NAME).put("version", Pins.PACKAGE_VERSION)
                 .put("mode", "incremental: declarations and events appended as native records arrived; no batch conversion or re-layout"));
@@ -872,12 +882,12 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         boolean isFinal = core.finalized();
         Jv.Obj m = new Jv.Obj();
         Jv.Obj pkg = new Jv.Obj();
-        pkg.put("kind", Pins.PACKAGE_KIND).put("version", Pins.PACKAGE_VERSION).put("non_production", true);
+        pkg.put("kind", Pins.PACKAGE_KIND).put("version", packageVersion()).put("non_production", true);
         pkg.put("layout", new Jv.Obj().put("events", "events.jsonl").put("manifest", "run.json (ancillary)")
                 .put("children", "children/<name>/ (each an independently portable events.jsonl with its own ancillary run.json)")
                 .put("discovery", "events.jsonl is self-describing: its declaration records carry the format, schema, run context, contracts, sources, definitions, children, source ends and finalization; "
                         + "a reader given events.jsonl needs nothing else; this run.json is an ancillary index and summary and may be absent"));
-        pkg.put("reader_compat", new Jv.Obj().put("reader_contract", Pins.READER_CONTRACT).put("reader_contract_version", Pins.READER_CONTRACT_VERSION)
+        pkg.put("reader_compat", new Jv.Obj().put("reader_contract", Pins.READER_CONTRACT).put("reader_contract_version", readerVersion())
                 .put("semantic_operations_version", Pins.SEMANTIC_OPERATIONS_VERSION)
                 .put("note", "reader/software compatibility is pinned separately from the OCSF version, the extension version, the mapping contract versions and this package layout version"));
         String pkgState = core.failure() != null ? "FAILED" : isFinal ? state.name() : "RECORDING";

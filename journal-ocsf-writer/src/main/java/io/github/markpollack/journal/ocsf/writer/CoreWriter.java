@@ -110,7 +110,7 @@ final class CoreWriter {
         Files.createDirectories(dir);
         this.eventsFile = dir.resolve("events.jsonl");
         this.channel = FileChannel.open(eventsFile, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
-        declare("format", "format", Declarations.format());
+        declare("format", "format", runDeclaration.has("terminal_binding") ? Declarations.terminalFormat() : Declarations.format());
         declare("schema", "schema", Declarations.schema(context.pin(), context.extensionSourceSha256()));
         declare("run", "run:" + runUid, runDeclaration);
     }

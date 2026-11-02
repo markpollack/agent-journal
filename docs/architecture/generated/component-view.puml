@@ -15,6 +15,7 @@ title Writer and independent checker: extracted component dependencies
 artifact "native artifact\n(the CLI's bytes, and an\nindependent byte copy)" as native
 package "journal-ocsf-writer\n(production writer)" {
   [Capture and replay entry points] as capture
+  [Terminal evidence receiver] as terminal_receiver
   [Run writer] as run_writer
   [Source input and run facts] as run_input
   [Framing and native records] as framing
@@ -44,6 +45,9 @@ capture --> framing
 capture --> mapping
 capture --> final_assembly
 capture --> schema
+terminal_receiver --> run_writer
+terminal_receiver --> run_input
+terminal_receiver --> schema
 run_writer --> run_input
 run_writer --> framing
 run_writer --> compatibility

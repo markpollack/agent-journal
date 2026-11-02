@@ -39,7 +39,7 @@ public final class PackageReader {
 
     public static final String READER_CONTRACT = "agent-journal/ocsf-reader";
     public static final String READER_CONTRACT_VERSION = "0.3";
-    public static final List<String> SUPPORTED_PACKAGE_VERSIONS = List.of("0.1.0-prototype", "0.2.0-prototype", "0.3.0-prototype");
+    public static final List<String> SUPPORTED_PACKAGE_VERSIONS = List.of("0.1.0-prototype", "0.2.0-prototype", "0.3.0-prototype", "0.4.0-prototype");
 
     private PackageReader() {
     }
@@ -109,6 +109,10 @@ public final class PackageReader {
             catch (IllegalArgumentException e) {
                 eventCount++; // reported by the event pass
             }
+        }
+        try { TerminalSourceReading.check(dir, TerminalBindingReader.read(declared), diags); }
+        catch (IllegalArgumentException | ArithmeticException | java.time.DateTimeException e) {
+            diags.add(new Diagnostic(Diagnostic.Severity.DEFECT, "TERMINAL_BINDING_INVALID", e.getMessage()));
         }
         RunManifest derived = new RunManifest(declared.deriveManifest(eventCount));
         compatibility(derived, diags);
@@ -300,7 +304,7 @@ public final class PackageReader {
                     "package requires reader contract version " + version + "; this reader implements " + READER_CONTRACT_VERSION
                             + " (different major)"));
         }
-        else if (!version.equals(READER_CONTRACT_VERSION)) {
+        else if (!List.of(READER_CONTRACT_VERSION, "0.4").contains(version)) {
             diags.add(new Diagnostic(Diagnostic.Severity.WARNING, "READER_CONTRACT_MINOR_DIFFERS",
                     "package requires reader contract version " + version + "; this reader implements " + READER_CONTRACT_VERSION));
         }
