@@ -247,6 +247,68 @@
         }
       ],
       "note": "Exact original-byte route only; unknown native families retained conservatively. No proximity or filtered-SDK admission."
+    },
+    {
+      "id": "codex-cli/exec-json-stream/0.166.0",
+      "admission": "experimental",
+      "cli": "Codex CLI",
+      "profile": "codex_stream",
+      "routes": [
+        "stdout"
+      ],
+      "min_version": "0.166.0",
+      "max_version": "0.166.0",
+      "source_specification": {
+        "path": "schema/vendor/codex-cli/exec-json-stream/0.166.0.json",
+        "specification_version": "0.1.0",
+        "profile": "codex_stream"
+      },
+      "schema": {
+        "extension": "agentic_cli",
+        "version": "0.15.0-prototype",
+        "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"
+      },
+      "contract": "codex-cli-0.160.1-exec-stream",
+      "mapper": "io.github.markpollack.journal.ocsf.writer.CodexStreamMapper",
+      "tested": [
+        {
+          "version": "0.166.0",
+          "route": "stdout",
+          "evidence": "Labelled synthetic syn-codex-acquisition-0.166.0; exact current vendor source inspection; no live qualification"
+        }
+      ],
+      "note": "Exact current-version experimental fresh text route; explicitly shared existing mapping rules, not version substitution for untested input. Native source families not implemented remain unresolved."
+    },
+    {
+      "id": "codex-cli/rollout/0.166.0",
+      "admission": "experimental",
+      "cli": "Codex CLI",
+      "profile": "codex_rollout",
+      "routes": [
+        "native_session_file"
+      ],
+      "min_version": "0.166.0",
+      "max_version": "0.166.0",
+      "source_specification": {
+        "path": "schema/vendor/codex-cli/rollout/0.166.0.json",
+        "specification_version": "0.1.0",
+        "profile": "codex_rollout"
+      },
+      "schema": {
+        "extension": "agentic_cli",
+        "version": "0.15.0-prototype",
+        "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"
+      },
+      "contract": "codex-cli-0.160.1-rollout",
+      "mapper": "io.github.markpollack.journal.ocsf.writer.CodexRolloutMapper",
+      "tested": [
+        {
+          "version": "0.166.0",
+          "route": "native_session_file",
+          "evidence": "Labelled synthetic syn-codex-acquisition-0.166.0; exact current vendor source inspection; no live qualification"
+        }
+      ],
+      "note": "Exact current-version experimental fresh text route; explicitly shared existing mapping rules, not version substitution for untested input. Native source families not implemented remain unresolved."
     }
   ],
   "not_version_scoped": {

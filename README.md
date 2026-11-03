@@ -76,6 +76,20 @@ vendor-stated unit; Junie's cache counters are reported as zero without establis
 are measured, so its uncached input is conditional; a Claude foreground sub-agent stream that omits
 one of its messages is not yet detected as incomplete against the vendor's own counts.
 
+The experimental fresh Codex 0.166.0 one-shot text profile uses original UTF-8 stdin, separate raw
+stdout/stderr, and the exact native rollout. `CodexAcquisition.qualify(sealedManifest, newDirectory)`
+in the TCK produces immutable assembly inputs after checking native N/T, original hashes/extents,
+observed closure and matching cumulative terminal usage. Select
+`TerminalReceiver.CODEX_PROFILE` (`client-terminal-codex-0.166.0/1`) in the initial envelope.
+An already qualified acquisition supports an initially complete one-shot association; pending initial
+acquisition can instead receive an explicit final revision. Both preserve the original accepted
+Client decision and exact retry ACK. Qualification/recording belongs on an independent optional lane.
+
+See [the acquisition contract](docs/codex-acquisition.md). Deterministic synthetic tests establish
+this boundary; they do not establish native, provider, tool-family or product qualification. Unsupported
+native meanings remain unresolved, and missing observations never become zero or complete.
+
+
 ## License
 
 [Business Source License 1.1](LICENSE)

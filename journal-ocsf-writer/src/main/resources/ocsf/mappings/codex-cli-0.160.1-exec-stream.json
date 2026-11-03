@@ -3,10 +3,12 @@
   "applies_to": {
     "product": "Codex CLI",
     "version": "0.160.1",
+    "versions": "Selected only through the listed exact compatibility entries. The experimental 0.166.0 fresh text route reuses these explicit meanings; unsupported source families remain unresolved and no old recording is relabelled.",
     "launch": "codex exec --json",
     "source_kind": "Live output",
     "compatibility_entries": [
-      "codex-cli/exec-json-stream/0.160.1"
+      "codex-cli/exec-json-stream/0.160.1",
+      "codex-cli/exec-json-stream/0.166.0"
     ],
     "selection": "route stdout; the stream reports no version: the capture discovers it once per run with codex --version (RULE-8) and declares the basis"
   },

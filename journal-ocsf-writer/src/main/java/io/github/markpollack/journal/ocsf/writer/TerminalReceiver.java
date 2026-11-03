@@ -30,6 +30,7 @@ public final class TerminalReceiver {
     public static final String PROFILE = TerminalContract.PROFILE;
     public static final String CLAUDE_PROFILE = TerminalContract.CLAUDE_PROFILE;
     public static final String RETAINED_PROFILE = TerminalContract.RETAINED_PROFILE;
+    public static final String CODEX_PROFILE = TerminalCodexProfile.PROFILE;
     private final Path root;
     private final String namespace;
     private final WriterOptions options;
@@ -109,6 +110,12 @@ public final class TerminalReceiver {
     }
 
     private Path writePackage(Path candidate, Jv.Obj payload, TerminalContract.Input input, Jv association) throws IOException {
+        if (TerminalCodexProfile.complete(input, association)) {
+            Path manifest = candidate.resolve("sources/acquisition.json");
+            TerminalCodexProfile.validate(manifest, input.decision(), association);
+            AcquiredExecution.assembleTerminal(manifest, candidate, payload, options);
+            return candidate.resolve("events.jsonl");
+        }
         if (TerminalNativeProfile.complete(input, association)) {
             Path manifest = candidate.resolve("sources/acquisition.json");
             TerminalRetainedProfile.validate(input, manifest);

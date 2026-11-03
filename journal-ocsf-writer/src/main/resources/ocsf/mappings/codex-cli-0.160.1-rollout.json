@@ -3,10 +3,12 @@
   "applies_to": {
     "product": "Codex CLI",
     "version": "0.160.1",
+    "versions": "Selected only through the listed exact compatibility entries. The experimental 0.166.0 fresh text route reuses these explicit meanings; unsupported source families remain unresolved and no old recording is relabelled.",
     "launch": "codex exec --json (rollout file is the saved session; the exec stream is a separate live-output contract)",
     "source_kind": "Saved session file",
     "compatibility_entries": [
-      "codex-cli/rollout/0.160.1"
+      "codex-cli/rollout/0.160.1",
+      "codex-cli/rollout/0.166.0"
     ],
     "selection": "route native_session_file; experimental combined-source evidence only"
   },

@@ -1,0 +1,299 @@
+{
+  "kind": "agent-journal/native-source-specification",
+  "version": "0.1",
+  "status": "Reviewed bounded synthetic text-route inventory; experimental, not native/provider qualification",
+  "specification_version": "0.1.0",
+  "profile": "codex_stream",
+  "applies_to": {
+    "cli": "Codex CLI",
+    "version": "0.166.0",
+    "launch_mode": "--no-daemon exec --ignore-user-config --json - with original UTF-8 stdin",
+    "source_kind": "stdout",
+    "capture_route": "stdout"
+  },
+  "provenance": {
+    "evidence_class": "synthetic",
+    "fixture": "ocsf/syn-codex-acquisition-0.166.0",
+    "vendor_commit": "593389380740f7b4762771573c447ccfdc59742f"
+  },
+  "limits": [
+    "Only the exact experimental successful fresh one-shot text route is qualified; unsupported native families remain unresolved.",
+    "The inventory describes synthetic fixture shapes, not a live recording.",
+    "Shared mapper and independent source reader apply the existing explicitly named mapping rules only; unknown values are never inferred.",
+    "Exec item IDs are source-local and cannot join rollout response IDs; five-field usage is a cumulative observation, never summed across sources."
+  ],
+  "external_cross_checks": [
+    {
+      "name": "openai/codex rust-v0.166.0",
+      "commit": "593389380740f7b4762771573c447ccfdc59742f",
+      "paths": [
+        "codex-rs/exec/src/exec_events.rs",
+        "codex-rs/exec/src/event_processor_with_jsonl_output.rs",
+        "codex-rs/protocol/src/protocol.rs"
+      ]
+    }
+  ],
+  "open_variants": [],
+  "inventory": {
+    "observed_on": [
+      {
+        "artifact": "stdout.jsonl",
+        "sha256": "c66669619ff5a94d35376f4d8c3d46e32e01feb938a38b59283d36f3580fc86c",
+        "bytes": 357,
+        "records": 4
+      }
+    ],
+    "data_keyed": [
+      "item.arguments",
+      "item.result._meta",
+      "item.result.content",
+      "item.result.structured_content",
+      "item.results"
+    ],
+    "map_keyed": [
+      "item.agents_states"
+    ],
+    "variants": {
+      "item.completed/agent_message": {
+        "discriminators": {
+          "type": "item.completed",
+          "item.type": "agent_message"
+        },
+        "records": 1,
+        "evidence": [
+          "stdout.jsonl:3"
+        ],
+        "paths": {
+          "item": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.jsonl:3"
+            ]
+          },
+          "item.id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.jsonl:3"
+            ]
+          },
+          "item.text": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.jsonl:3"
+            ]
+          },
+          "item.type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.jsonl:3"
+            ]
+          },
+          "type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.jsonl:3"
+            ]
+          }
+        }
+      },
+      "thread.started": {
+        "discriminators": {
+          "type": "thread.started"
+        },
+        "records": 1,
+        "evidence": [
+          "stdout.jsonl:1"
+        ],
+        "paths": {
+          "thread_id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.jsonl:1"
+            ]
+          },
+          "type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.jsonl:1"
+            ]
+          }
+        }
+      },
+      "turn.completed": {
+        "discriminators": {
+          "type": "turn.completed"
+        },
+        "records": 1,
+        "evidence": [
+          "stdout.jsonl:4"
+        ],
+        "paths": {
+          "type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.jsonl:4"
+            ]
+          },
+          "usage": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.jsonl:4"
+            ]
+          },
+          "usage.cache_write_input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.jsonl:4"
+            ]
+          },
+          "usage.cached_input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.jsonl:4"
+            ]
+          },
+          "usage.input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.jsonl:4"
+            ]
+          },
+          "usage.output_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.jsonl:4"
+            ]
+          },
+          "usage.reasoning_output_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.jsonl:4"
+            ]
+          }
+        }
+      },
+      "turn.started": {
+        "discriminators": {
+          "type": "turn.started"
+        },
+        "records": 1,
+        "evidence": [
+          "stdout.jsonl:2"
+        ],
+        "paths": {
+          "type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "stdout.jsonl:2"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

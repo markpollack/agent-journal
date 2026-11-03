@@ -4,7 +4,8 @@
   "reviewed": "proposed 2026-10-26; execution does not grant semantic approval",
   "profile": "codex_rollout",
   "compatibility_entries": [
-    "codex-cli/rollout/0.160.1"
+    "codex-cli/rollout/0.160.1",
+  "codex-cli/rollout/0.166.0"
   ],
   "source_bindings": [
     {

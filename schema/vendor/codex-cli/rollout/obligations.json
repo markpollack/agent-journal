@@ -13,11 +13,20 @@
       "route": "native_session_file",
       "source_specification": "schema/vendor/codex-cli/rollout/0.160.1.json",
       "specification_sha256": "62cec5538fa1917c91f726b9f078ad92b72ca460dea976df08feb50adc624363"
+    },
+    {
+      "profile": "codex_rollout",
+      "entry_id": "codex-cli/rollout/0.166.0",
+      "version": "0.166.0",
+      "route": "native_session_file",
+      "source_specification": "schema/vendor/codex-cli/rollout/0.166.0.json",
+      "specification_sha256": "7c86749abcc1a9f7e8afc60c6a5d18759c0d11987b781f013df90f55c9d3e64e"
     }
   ],
   "review": {
     "status": "proposed",
-    "approval": "No semantic approval is granted by these assignments or passing comparisons."
+    "approval": "No semantic approval is granted by these assignments or passing comparisons.",
+    "current_version_boundary": "0.166.0 is an explicit experimental synthetic text-route binding checked against current vendor source; existing rule assignments apply only to covered facts. No native coverage or new semantic approval is granted."
   },
   "procedure": "The disposition catalog enumerates native obligations. This catalog names Java meanings that construct ExpectedFacts from native bytes. The oracle registers each precise expectation before executing a Check. NativeAccounting requires attributed occurrence and destination evidence; missing results remain UNCHECKED. No expressions or transformations execute from this catalog.",
   "obligations": [
@@ -220,6 +229,11 @@
       "meaning": "usage-occurrence/v1",
       "revision": 1,
       "requirement": "Every generated expectation of this meaning must receive its own executed comparison with native support and the matching canonical identity, or remain non-passing."
+    },
+    {
+      "meaning": "codex.rollout.current_turn/v1",
+      "revision": 1,
+      "requirement": "An assistant message inherits only the preceding native turn_context.turn_id in this same original source; compare it with an explicit record=N#/payload/turn_id supporting locator. Missing native turn context establishes no turn. No writer candidate supplies the expected identity."
     }
   ]
 }

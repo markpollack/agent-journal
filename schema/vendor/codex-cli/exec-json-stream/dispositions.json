@@ -4,7 +4,8 @@
  "reviewed": "2026-10-21 (ACCEPT-1); 2026-10-26 (ACCT-1): every exercised retained entry carries a reviewed classification",
  "profile": "codex_stream",
  "compatibility_entries": [
-  "codex-cli/exec-json-stream/0.160.1"
+  "codex-cli/exec-json-stream/0.160.1",
+  "codex-cli/exec-json-stream/0.166.0"
  ],
  "specification": "schema/vendor/codex-cli/exec-json-stream/0.160.1.json",
  "contract": "codex-cli/exec-json-stream/0.160.1/0.7.0-prototype",

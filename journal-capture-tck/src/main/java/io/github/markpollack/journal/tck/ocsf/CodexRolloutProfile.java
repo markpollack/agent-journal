@@ -26,6 +26,7 @@ final class CodexRolloutProfile implements SourceProfile {
         List<Call> calls = new ArrayList<>();
         List<NativeArtifact.Record> tokenCounts = new ArrayList<>();
         String currentTurn = null;
+        int contextRecord = 0;
         String session = null;
         for (NativeArtifact.Record r : artifact.records()) {
             f.owned.add(r.index());
@@ -47,6 +48,7 @@ final class CodexRolloutProfile implements SourceProfile {
             if (uid != null) { f.nativeUid.put(r.index(), uid); }
             if ("turn_context".equals(type)) {
                 currentTurn = SourceProfile.text(p, "turn_id");
+                contextRecord = r.index();
                 f.normalized.add(r.index());
                 Map<String, Json> settings = ClaudeTranscriptProfile.settings(p, "cwd", "working_directory", "model", "model",
                         "approval_policy", "approval_policy", "sandbox_policy", "sandbox_policy");
@@ -94,6 +96,11 @@ final class CodexRolloutProfile implements SourceProfile {
                 else if ("assistant".equals(role)) {
                     f.normalized.add(r.index());
                     f.responses.add(new ExpectedFacts.Response(r.index(), SourceProfile.text(p, "id"), blocks, null, true, null));
+                    if (currentTurn != null) {
+                        new SourceFacts.Target(f, r.index(), "model_response", 2).event(
+                                "record=" + contextRecord + "#/payload/turn_id", "codex.rollout.current_turn/v1", Map.of(),
+                                SourceFacts.fields("/turn_uid", currentTurn));
+                    }
                 }
                 else if ("developer".equals(role)) {
                     f.normalized.add(r.index());

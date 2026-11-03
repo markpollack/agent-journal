@@ -20,7 +20,7 @@ class CompatibilityTest {
     @Test
     void theBundledRegistryLoadsAndNamesContractsMappersAndSpecificationsThatExist() {
         Compatibility c = Compatibility.bundled();
-        assertThat(c.entries()).hasSize(18);
+        assertThat(c.entries()).hasSize(20);
         MappingContracts contracts = new MappingContracts();
         for (Compatibility.Entry e : c.entries()) {
             assertThat(contracts.uid(e.contract())).as(e.id() + " contract resource").isNotBlank();

@@ -13,11 +13,20 @@
       "route": "stdout",
       "source_specification": "schema/vendor/codex-cli/exec-json-stream/0.160.1.json",
       "specification_sha256": "5d3f69f7d28f3ebcb9f3011d0b5c48e89c87ecd6f5d26928015e2c5e56b7f513"
+    },
+    {
+      "profile": "codex_stream",
+      "entry_id": "codex-cli/exec-json-stream/0.166.0",
+      "version": "0.166.0",
+      "route": "stdout",
+      "source_specification": "schema/vendor/codex-cli/exec-json-stream/0.166.0.json",
+      "specification_sha256": "7f864a9e8f5747b5239de7601c2d692ea9001fe3e1a2ef2509fedfb74edb825a"
     }
   ],
   "review": {
     "status": "proposed",
-    "approval": "No semantic approval is granted by these assignments or passing comparisons."
+    "approval": "No semantic approval is granted by these assignments or passing comparisons.",
+    "current_version_boundary": "0.166.0 is an explicit experimental synthetic text-route binding checked against current vendor source; existing rule assignments apply only to covered facts. No native coverage or new semantic approval is granted."
   },
   "procedure": "The disposition catalog enumerates native obligations. This catalog names Java meanings that construct ExpectedFacts from native bytes. The oracle registers each precise expectation before executing a Check. NativeAccounting requires attributed occurrence and destination evidence; missing results remain UNCHECKED. No expressions or transformations execute from this catalog.",
   "obligations": [

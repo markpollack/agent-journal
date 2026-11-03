@@ -1,0 +1,49 @@
+{
+  "profile_id": "codex-cli/0.166.0/exec-stdio+rollout",
+  "version": "0.1.0-prototype",
+  "status": "experimental",
+  "status_meaning": "Deterministic successful fresh text acquisition only; no native/provider qualification.",
+  "cli": {
+    "name": "Codex CLI",
+    "version": "0.166.0",
+    "vendor_name": "OpenAI"
+  },
+  "sources": [
+    {
+      "role": "stream",
+      "profile": "codex_stream",
+      "route": "stdout",
+      "kind": 1,
+      "requirement": "required",
+      "framing": "lines",
+      "identity": "events",
+      "artifact": "stdout.jsonl",
+      "establishes": "Original exec source-local items and cumulative terminal usage"
+    },
+    {
+      "role": "transcript",
+      "profile": "codex_rollout",
+      "route": "native_session_file",
+      "kind": 2,
+      "requirement": "required",
+      "framing": "lines",
+      "identity": "events",
+      "artifact": "native.jsonl",
+      "establishes": "Native session/turn context, original prompt and response observations and scoped reported usage"
+    }
+  ],
+  "feed_order": [
+    "transcript",
+    "stream"
+  ],
+  "precedence": [
+    "transcript",
+    "stream"
+  ],
+  "joins": [],
+  "authorities": [],
+  "limits": [
+    "No shared native item/response identity between stdout and rollout is established. Observations remain source-local; do not sum their cumulative quantities.",
+    "Original stdin/stderr and immutable decision associations remain separately preserved; unsupported native families block complete acceptance."
+  ]
+}

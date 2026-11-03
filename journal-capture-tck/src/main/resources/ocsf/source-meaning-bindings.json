@@ -130,6 +130,22 @@
       "route": "native_session_file",
       "source_specification": "schema/vendor/claude-code/session-transcript/2.1.316.json",
       "specification_sha256": "85ed151681fb42a40b8a9df657b1afb54717e70cc704cdb04215348abf093f80"
+    },
+    {
+      "profile": "codex_stream",
+      "entry_id": "codex-cli/exec-json-stream/0.166.0",
+      "version": "0.166.0",
+      "route": "stdout",
+      "source_specification": "schema/vendor/codex-cli/exec-json-stream/0.166.0.json",
+      "specification_sha256": "7f864a9e8f5747b5239de7601c2d692ea9001fe3e1a2ef2509fedfb74edb825a"
+    },
+    {
+      "profile": "codex_rollout",
+      "entry_id": "codex-cli/rollout/0.166.0",
+      "version": "0.166.0",
+      "route": "native_session_file",
+      "source_specification": "schema/vendor/codex-cli/rollout/0.166.0.json",
+      "specification_sha256": "7c86749abcc1a9f7e8afc60c6a5d18759c0d11987b781f013df90f55c9d3e64e"
     }
   ]
 }

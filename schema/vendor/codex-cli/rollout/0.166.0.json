@@ -1,0 +1,1799 @@
+{
+  "kind": "agent-journal/native-source-specification",
+  "version": "0.1",
+  "status": "Reviewed bounded synthetic text-route inventory; experimental, not native/provider qualification",
+  "specification_version": "0.1.0",
+  "profile": "codex_rollout",
+  "applies_to": {
+    "cli": "Codex CLI",
+    "version": "0.166.0",
+    "launch_mode": "--no-daemon exec --ignore-user-config --json - with original UTF-8 stdin",
+    "source_kind": "native rollout",
+    "capture_route": "native_session_file"
+  },
+  "provenance": {
+    "evidence_class": "synthetic",
+    "fixture": "ocsf/syn-codex-acquisition-0.166.0",
+    "vendor_commit": "593389380740f7b4762771573c447ccfdc59742f"
+  },
+  "limits": [
+    "Only the exact experimental successful fresh one-shot text route is qualified; unsupported native families remain unresolved.",
+    "The inventory describes synthetic fixture shapes, not a live recording.",
+    "Shared mapper and independent source reader apply the existing explicitly named mapping rules only; unknown values are never inferred.",
+    "Exec item IDs are source-local and cannot join rollout response IDs; five-field usage is a cumulative observation, never summed across sources."
+  ],
+  "external_cross_checks": [
+    {
+      "name": "openai/codex rust-v0.166.0",
+      "commit": "593389380740f7b4762771573c447ccfdc59742f",
+      "paths": [
+        "codex-rs/exec/src/exec_events.rs",
+        "codex-rs/exec/src/event_processor_with_jsonl_output.rs",
+        "codex-rs/protocol/src/protocol.rs"
+      ]
+    }
+  ],
+  "open_variants": [],
+  "inventory": {
+    "observed_on": [
+      {
+        "artifact": "native.jsonl",
+        "sha256": "8ca82812dac0f273596085e8d5c63be7f93eea7faaa6c12c28ccec424340d34e",
+        "bytes": 3222,
+        "records": 8
+      }
+    ],
+    "data_keyed": [
+      "payload.output"
+    ],
+    "map_keyed": [],
+    "variants": {
+      "event_msg/task_complete": {
+        "discriminators": {
+          "type": "event_msg",
+          "payload.type": "task_complete"
+        },
+        "records": 1,
+        "evidence": [
+          "native.jsonl:8"
+        ],
+        "paths": {
+          "ordinal": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:8"
+            ]
+          },
+          "payload": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:8"
+            ]
+          },
+          "payload.completed_at": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:8"
+            ]
+          },
+          "payload.last_agent_message": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:8"
+            ]
+          },
+          "payload.root_turn_id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:8"
+            ]
+          },
+          "payload.started_at": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:8"
+            ]
+          },
+          "payload.turn_id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:8"
+            ]
+          },
+          "payload.type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:8"
+            ]
+          },
+          "timestamp": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:8"
+            ]
+          },
+          "type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:8"
+            ]
+          }
+        }
+      },
+      "event_msg/task_started": {
+        "discriminators": {
+          "type": "event_msg",
+          "payload.type": "task_started"
+        },
+        "records": 1,
+        "evidence": [
+          "native.jsonl:2"
+        ],
+        "paths": {
+          "ordinal": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:2"
+            ]
+          },
+          "payload": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:2"
+            ]
+          },
+          "payload.collaboration_mode_kind": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:2"
+            ]
+          },
+          "payload.model_context_window": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:2"
+            ]
+          },
+          "payload.root_turn_id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:2"
+            ]
+          },
+          "payload.started_at": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:2"
+            ]
+          },
+          "payload.turn_attribution": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:2"
+            ]
+          },
+          "payload.turn_attribution.initiating_agent_path": {
+            "kinds": {
+              "null": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 1,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:2"
+            ]
+          },
+          "payload.turn_attribution.parent_turn_id": {
+            "kinds": {
+              "null": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 1,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:2"
+            ]
+          },
+          "payload.turn_attribution.root_turn_id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:2"
+            ]
+          },
+          "payload.turn_attribution.turn_id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:2"
+            ]
+          },
+          "payload.turn_attribution.turn_trigger": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:2"
+            ]
+          },
+          "payload.turn_id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:2"
+            ]
+          },
+          "payload.type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:2"
+            ]
+          },
+          "timestamp": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:2"
+            ]
+          },
+          "type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:2"
+            ]
+          }
+        }
+      },
+      "event_msg/token_count": {
+        "discriminators": {
+          "type": "event_msg",
+          "payload.type": "token_count"
+        },
+        "records": 1,
+        "evidence": [
+          "native.jsonl:7"
+        ],
+        "paths": {
+          "ordinal": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "payload": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "payload.info": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "payload.info.last_token_usage": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "payload.info.last_token_usage.cache_write_input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "payload.info.last_token_usage.cached_input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "payload.info.last_token_usage.input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "payload.info.last_token_usage.output_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "payload.info.last_token_usage.reasoning_output_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "payload.info.last_token_usage.total_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "payload.info.last_usage_includes_reasoning": {
+            "kinds": {
+              "boolean": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "payload.info.model_context_window": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "payload.info.total_token_usage": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "payload.info.total_token_usage.cache_write_input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "payload.info.total_token_usage.cached_input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "payload.info.total_token_usage.input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "payload.info.total_token_usage.output_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "payload.info.total_token_usage.reasoning_output_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "payload.info.total_token_usage.total_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "payload.rate_limits": {
+            "kinds": {
+              "null": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 1,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "payload.type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "timestamp": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          },
+          "type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:7"
+            ]
+          }
+        }
+      },
+      "response_item/message/assistant": {
+        "discriminators": {
+          "type": "response_item",
+          "payload.type": "message",
+          "payload.role": "assistant"
+        },
+        "records": 1,
+        "evidence": [
+          "native.jsonl:5"
+        ],
+        "paths": {
+          "ordinal": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:5"
+            ]
+          },
+          "payload": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:5"
+            ]
+          },
+          "payload.content": {
+            "kinds": {
+              "array": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:5"
+            ]
+          },
+          "payload.content[]": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:5"
+            ]
+          },
+          "payload.content[].text": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:5"
+            ]
+          },
+          "payload.content[].type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:5"
+            ]
+          },
+          "payload.id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:5"
+            ]
+          },
+          "payload.phase": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:5"
+            ]
+          },
+          "payload.role": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:5"
+            ]
+          },
+          "payload.type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:5"
+            ]
+          },
+          "timestamp": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:5"
+            ]
+          },
+          "type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:5"
+            ]
+          }
+        }
+      },
+      "response_item/message/user": {
+        "discriminators": {
+          "type": "response_item",
+          "payload.type": "message",
+          "payload.role": "user"
+        },
+        "records": 1,
+        "evidence": [
+          "native.jsonl:3"
+        ],
+        "paths": {
+          "ordinal": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:3"
+            ]
+          },
+          "payload": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:3"
+            ]
+          },
+          "payload.content": {
+            "kinds": {
+              "array": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:3"
+            ]
+          },
+          "payload.content[]": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:3"
+            ]
+          },
+          "payload.content[].text": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:3"
+            ]
+          },
+          "payload.content[].type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:3"
+            ]
+          },
+          "payload.id": {
+            "kinds": {
+              "null": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 1,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:3"
+            ]
+          },
+          "payload.role": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:3"
+            ]
+          },
+          "payload.type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:3"
+            ]
+          },
+          "timestamp": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:3"
+            ]
+          },
+          "type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:3"
+            ]
+          }
+        }
+      },
+      "session_meta": {
+        "discriminators": {
+          "type": "session_meta"
+        },
+        "records": 1,
+        "evidence": [
+          "native.jsonl:1"
+        ],
+        "paths": {
+          "ordinal": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:1"
+            ]
+          },
+          "payload": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:1"
+            ]
+          },
+          "payload.cli_version": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:1"
+            ]
+          },
+          "payload.cwd": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:1"
+            ]
+          },
+          "payload.id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:1"
+            ]
+          },
+          "payload.model_provider": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:1"
+            ]
+          },
+          "payload.originator": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:1"
+            ]
+          },
+          "payload.session_id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:1"
+            ]
+          },
+          "payload.source": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:1"
+            ]
+          },
+          "payload.thread_source": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:1"
+            ]
+          },
+          "payload.timestamp": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:1"
+            ]
+          },
+          "timestamp": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:1"
+            ]
+          },
+          "type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:1"
+            ]
+          }
+        }
+      },
+      "token_usage_record": {
+        "discriminators": {
+          "type": "token_usage_record"
+        },
+        "records": 1,
+        "evidence": [
+          "native.jsonl:6"
+        ],
+        "paths": {
+          "ordinal": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.response_id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.root_turn_id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.session_id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.thread_id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.thread_token_usage": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.thread_token_usage.cache_write_input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.thread_token_usage.cached_input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.thread_token_usage.input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.thread_token_usage.output_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.thread_token_usage.reasoning_output_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.thread_token_usage.total_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.turn_id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.turn_token_usage": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.turn_token_usage.cache_write_input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.turn_token_usage.cached_input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.turn_token_usage.input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.turn_token_usage.output_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.turn_token_usage.reasoning_output_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.turn_token_usage.total_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.usage": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.usage.cache_write_input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.usage.cached_input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.usage.input_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.usage.output_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.usage.reasoning_output_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "payload.usage.total_tokens": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "timestamp": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          },
+          "type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:6"
+            ]
+          }
+        }
+      },
+      "turn_context": {
+        "discriminators": {
+          "type": "turn_context"
+        },
+        "records": 1,
+        "evidence": [
+          "native.jsonl:4"
+        ],
+        "paths": {
+          "ordinal": {
+            "kinds": {
+              "integer": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:4"
+            ]
+          },
+          "payload": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:4"
+            ]
+          },
+          "payload.approval_policy": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:4"
+            ]
+          },
+          "payload.cwd": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:4"
+            ]
+          },
+          "payload.effort": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:4"
+            ]
+          },
+          "payload.model": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:4"
+            ]
+          },
+          "payload.root_turn_id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:4"
+            ]
+          },
+          "payload.sandbox_policy": {
+            "kinds": {
+              "object": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:4"
+            ]
+          },
+          "payload.sandbox_policy.type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:4"
+            ]
+          },
+          "payload.turn_id": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:4"
+            ]
+          },
+          "timestamp": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:4"
+            ]
+          },
+          "type": {
+            "kinds": {
+              "string": 1
+            },
+            "present_in_records": 1,
+            "absent_in_records": 0,
+            "occurrences": 1,
+            "null": 0,
+            "empty": 0,
+            "evidence": [
+              "native.jsonl:4"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

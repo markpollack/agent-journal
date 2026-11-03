@@ -229,7 +229,8 @@ public final class ExpectedFacts {
     /**
      * An independently read fact whose subject is an event or an identified member of one of its collections.
      * Identity and member keys are native identities or declared scope/window keys, never measured values.
-     * Fields and support are concrete RFC 6901 pointers; a null field value means required absence.
+     * Fields are concrete RFC 6901 pointers; support is a pointer in this record or an explicit
+     * record=N#pointer locator for a source context record. A null field value means required absence.
      * This complements the original family records for source shapes they cannot express.
      */
     public record Fact(int recordIndex, String className, int activityId, Map<String, Json> identity,

@@ -62,7 +62,7 @@ final class AttributedFacts {
 
     private static List<String> supports(ExpectedFacts facts, ExpectedFacts.Fact fact) {
         return fact.support().stream()
-                .map(p -> facts.artifact + ":record=" + fact.recordIndex() + "#" + p)
+                .map(p -> p.startsWith("record=") ? facts.artifact + ":" + p : facts.artifact + ":record=" + fact.recordIndex() + "#" + p)
                 .toList();
     }
 
