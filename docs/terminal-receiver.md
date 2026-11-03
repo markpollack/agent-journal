@@ -104,3 +104,53 @@ including its reported tool identifier, source reference, decision values and re
 Distinct, repeated or absent tool identifiers do not collapse separate array entries. Array position
 only identifies the entry within the native record; tool attribution still requires the identifier
 that entry reports. Dropped, duplicated or misattributed denials fail validation.
+
+## Retained two-text-turn profile
+
+`TerminalReceiver.RETAINED_PROFILE` selects `client-terminal-claude-retained-2.1.316/1` in the
+initial envelope. Its initial association is PENDING with no sources and its decision is SUCCESS.
+Two distinct successful text turns may share one Client logical session and one connection generation.
+Each decision retains those Client identities; native session identity belongs to the evidence.
+Results and the next sequential admission do not await secondary Journal delivery. This states no
+latency or delivery-order guarantee.
+
+After the generation is sealed with observed resource cessation and natural stdout/stderr EOF, call
+`RetainedClaudeAcquisition.qualify(generationManifest, executionId, newDirectory)` in the TCK's
+`io.github.markpollack.journal.tck.ocsf.inventory` package for each execution. It returns
+`ClaudeAcquisition.Qualified`, whose `manifest()` and `assemblyExpectation()` paths supply the
+existing writer and packaged independent reader. The destination must not exist. It preserves the
+whole originals under `generation/` and writes explicit per-turn selected-record projections under
+`turn/`. No provider or transport is started, retried or awaited.
+
+The exact input format is `journal-retained-generation/1`. The labelled synthetic fixture in
+`journal-capture-tck/src/test/resources/retained-text-generation/` gives complete field spellings and
+real locator/prefix hashes. Four original sources (STDIN, STDOUT, STDERR, TRANSCRIPT) have whole-file
+hashes and captured/observed/dropped counts. Each turn declares prompt/result and native/stdout record
+locators, observed stream windows and actual before/after native prefix lengths and hashes. Locators
+address zero-based half-open original bytes including newline. Prefixes must have actually been observed;
+never manufacture an empty starting prefix or derive a historical observation from the final snapshot.
+The qualifier checks consistency of supplied observations; it cannot prove how a caller obtained them.
+
+Every original record is explicitly owned, shared or unassigned. Controls and init are generation shared;
+stderr is unassigned. A selected prior shared init travels with each projection under its generation
+lineage. A native user/assistant UUID-parent chain, exact unique prompt message, success result text and
+native session/version witnesses establish this finite membership. Unknown or ambiguous execution records,
+extra/missing results, duplicate prompts, changed prefixes, overlap, gaps, overflow or premature EOF refuse
+complete qualification. Tools, children, compaction, reconnect, multimodal turns and general native path
+discovery are outside this profile. No native/provider qualification is implied by the synthetic fixture.
+
+For each final revision, include `acquisition.json` and every source it names in A.sources, with exact
+origin/hash/full extent; all occurrences carry the native session and Client connection. Only the
+`stdin`, `stream`, `stderr` projection roles get STDIN, STDOUT, STDERR stream labels; all other roles
+have stream=null. nativeTurnId/nativeConnectionId remain null. A is COMPLETED with empty missing and
+names the original initial revision. Call `receiveRevision` with that execution's original binding ID.
+Initial D/P/ACK stay unchanged; an old evidence-only profile does not become this profile.
+
+Each final portable file contains the shared generation declaration, explicit selected execution and
+immutable terminal binding, then the current canonical Claude assembly for its selected records.
+Projection EOF means the end of finite selected bytes, never per-turn transport EOF. Process metadata
+copies generation observations without inventing a process exit code or argv. Complete acceptance uses
+`OcsfReaderTool verify <events.jsonl> <source-root> --acquisition <acquisition.json> --assembly
+<assembly-expectation.json>` with the independent TCK-only classpath. The reader rechecks original
+membership/prefixes and every projection before judging canonical values. A detached file still reads
+its exact decision and declarations, with unavailable external bytes reported separately.

@@ -49,7 +49,8 @@ public final class AcquisitionVerification implements AcquisitionVerifier {
         static OracleReport verify(OcsfPackage pkg, Path directory, Path acquisition, Path assembly) throws IOException {
             Inputs inputs = new Inputs(acquisition, directory);
             if (ClaudeAcquisition.PROFILE_ID.equals(text(inputs.manifest, "profile_id"))) {
-                ClaudeAcquisition.validate(inputs.manifest, inputs.base);
+                if (inputs.manifest.member("retained_generation") == null) ClaudeAcquisition.validate(inputs.manifest, inputs.base);
+                else io.github.markpollack.journal.tck.ocsf.RetainedAcquisition.validate(inputs.manifest, inputs.base);
             }
             inputs.readSources();
             Json spec = NeutralJson.readDocument(assembly);

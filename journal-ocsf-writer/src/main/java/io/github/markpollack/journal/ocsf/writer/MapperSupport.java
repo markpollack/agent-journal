@@ -172,7 +172,7 @@ final class MapperSupport {
 
     /** A Claude assistant message's usage as a response-scope observation of that message's own total, in canonical tranches (thinking is part of output). */
     static Jv.Obj claudeMessageUsage(ClaudeRoute route, ClaudeMessage c, Jv.Obj m, boolean terminal) {
-        Jv.Obj usage = usage(2, terminal ? 2 : 1, route.usageBasis(), c.ctx().sourceRef(c.r(), c.uid(), c.ts(), false), modelRef(text(m, "model"), 3, null), m.member("usage"));
+        Jv.Obj usage = usage(2, terminal ? 2 : 1, route.usageBasis(), c.ctx().sourceRef(c.r(), c.uid(), c.ts(), false), claudeModelRef(m), m.member("usage"));
         UsageTranches.aggregation(usage, 1, "anthropic.usage.per_message.v1: message.usage is the usage of this one API message, the response's own total");
         UsageTranches.anthropic(usage, m.member("usage"));
         return usage;
@@ -181,17 +181,23 @@ final class MapperSupport {
     /** A Claude assistant message as a model_response event (Partial until stop_reason is reported, then Completed), its usage observation attached. */
     static Jv.Obj claudeModelResponse(ClaudeRoute route, ClaudeMessage c, Jv.Obj m, Jv o) {
         boolean terminal = m.member("stop_reason") != null && !m.member("stop_reason").isNull();
-        Jv.Obj usage = claudeMessageUsage(route, c, m, terminal);
         Jv.Obj ev = c.ctx().event("model_response", terminal ? 2 : 1, c.r(), c.t(), route.contract(), route.rulePrefix() + ".assistant->model_response", c.ts(), c.uid(), true, null);
-        ev.put("session_uid", c.sess()).put("response_uid", text(m, "id")).put("model_ref", modelRef(text(m, "model"), 3, null))
+        ev.put("session_uid", c.sess()).put("response_uid", text(m, "id")).put("model_ref", claudeModelRef(m))
                 .put("content_blocks", blocks(c.ctx().contracts, route.contract(), m.member("content")))
-                .put("usage_observations", new Jv.Arr(List.of(usage)))
                 .put("basis", route.activityBasis());
+        if (m.member("usage") instanceof Jv.Obj) {
+            ev.put("usage_observations", new Jv.Arr(List.of(claudeMessageUsage(route, c, m, terminal))));
+        }
         if (terminal) {
             ev.put("stop_reason", text(m, "stop_reason"));
         }
         ev.put("data", o);
         return ev;
+    }
+
+    private static Jv.Obj claudeModelRef(Jv message) {
+        String model = text(message, "model");
+        return model == null ? null : modelRef(model, 3, null);
     }
 
     /** A tool_use block of a Claude assistant message as a tool_call Requested event, with the exact arguments. */

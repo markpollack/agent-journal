@@ -1,8 +1,12 @@
 {
   "kind": "agent-journal/cross-cli-accounting-baseline",
-  "version": "0.11",
+  "version": "0.12",
   "meaning": "Exact executed accounting population and dependency snapshot. Declared checker assignments remain separate from attributed Check outcomes. Pins native occurrences and classifications, source/specification bindings, E requirements, actual assertion outcomes, comparison operand digests and non-passing findings. An edit is a reviewable implementation result, never semantic approval. Unresolved meanings and unsupported versions remain non-passing. Required unchecked comparisons cannot be frozen by this ratchet.",
   "changes": [
+    {
+      "revision": "0.12 (retained text-turn qualification, 2026-11-03)",
+      "summary": "Add the opt-in two-successful-text-turn retained qualifier, original-byte membership/prefix checks, immutable terminal evidence revisions and independent reader. Correct absent Claude model/usage fields to remain absent. Restate only the three changed code/test dependency fingerprints; original recorded-source populations, existing meanings, approvals and gate thresholds are unchanged."
+    },
     {
       "revision": "0.11 (Claude permission denial occurrences, 2026-11-02)",
       "summary": "Scope each Claude result permission denial comparison to its exact native array occurrence, preserving reported tool identifiers and existing values/count checks. Restate only the TCK main-source fingerprint and the comparison operand/subject digest for the existing single-denial fixture (2513 comparisons unchanged); all other population, source/mapping and approval rows are unchanged. Multiple-denial synthetic controls and retained actual-source reassembly remain separate evidence."
@@ -731,12 +735,12 @@
     "comparison-population syn-codex-exec-families-0.160.1 main/stream.jsonl 1590 sha256:500e4a341c5389a8b0a7681e0c392df8f5328c82bc6303df911f0db77e78aed7",
     "comparison-population syn-codex-exec-stream main/stream.jsonl 751 sha256:8f9ca0a82194789ce6285d77587de37870676c3e29c64dfed86bd14514519137",
     "comparison-population syn-codex-exec-turn-failed-0.160.1 main/stream.jsonl 217 sha256:8374c6ca90431ec198c640cdda4addbb6e15d4a93a36eebef419e1dafb0e4c3c",
-    "dependency journal-capture-tck/src/main sha256:582857fd26c02e396f00ec8e7849dfec357f93a0f334fd79417012af537139c3",
-    "dependency journal-capture-tck/src/test/java sha256:5ed59942fe9a44ce48e922a34cc4ac2881a43331b2adb0363449509c472c7ef0",
+    "dependency journal-capture-tck/src/main sha256:f6b19d20e740cd5db47eceee7fbddacae7b6891bef19cb45f05f31657e9db9a4",
+    "dependency journal-capture-tck/src/test/java sha256:b548115d33fec27e0242c811a15fc9ff5877d9dc6ca5ce7163fa650f62d31226",
     "dependency journal-capture-tck/src/test/resources/ocsf/conformance sha256:c856f9da4a6c5f61f93e7007100eab00e4dd692d176362b995e41f8894c90cee",
     "dependency journal-capture-tck/src/test/resources/ocsf/fixtures sha256:56fda6ffbd61d21110d08606c19983124598646019f3fda3090f7facaed79495",
     "dependency journal-capture-tck/src/test/resources/ocsf/mapping-catalog sha256:40d196fcf51426f7bbf1f72da8f6745f01e0a146bfa326d123196f90e0976f3f",
-    "dependency journal-ocsf-writer/src/main sha256:c11441a1e7382f7b164ca708791a1daaaaee368c6b425c6ba8371d608fbcf9eb",
+    "dependency journal-ocsf-writer/src/main sha256:ab1267c613a58f1820d77f94609830f64e31b4093d8a9b0f716d3e122b65ffc4",
     "dependency prototype/ocsf-acp/extension sha256:c61a108fc9f0a970bdbd8e73be10a081c138b28519abe791a600f54662d6d37c",
     "dependency prototype/ocsf-acp/toolchain.lock.json sha256:1c519a29097a4496f79aebbc6d8e334cb02cfe083831c726860c0dec7cbcc0af",
     "dependency schema/vendor sha256:d8eb8fa0b3e9d93dfd393a148c9b687a1e7ef4739f360e7d2c7221d308bd5119",

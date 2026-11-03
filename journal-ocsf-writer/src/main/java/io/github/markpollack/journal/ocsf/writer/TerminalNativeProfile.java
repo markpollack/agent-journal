@@ -17,7 +17,7 @@ final class TerminalNativeProfile {
 
     static boolean complete(TerminalContract.Input input, Jv association) {
         Jv envelope = Jv.parse(input.envelope());
-        return TerminalContract.CLAUDE_PROFILE.equals(text(envelope, "profile")) && "COMPLETED".equals(text(association, "acquisition"));
+        return Set.of(TerminalContract.CLAUDE_PROFILE, TerminalContract.RETAINED_PROFILE).contains(text(envelope, "profile")) && "COMPLETED".equals(text(association, "acquisition"));
     }
 
     static void validate(Path manifest, Jv decision, Jv association) throws IOException {

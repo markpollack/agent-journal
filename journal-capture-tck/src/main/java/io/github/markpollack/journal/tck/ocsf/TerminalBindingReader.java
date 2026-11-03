@@ -34,6 +34,7 @@ public final class TerminalBindingReader {
         String associationText = string(binding, "association"); Json a = exact(associationText); TerminalAssociationReading.check(a, d);
         String parent = binding.member("originalBindingId").isNull() ? null : string(binding, "originalBindingId");
         revision(initial, a, associationText, parent);
+        TerminalRetainedReading.check(file, p, d, a);
         TerminalNativeReading.check(file, p, d, a);
         return new Binding(string(p, "producerNamespace"), canonical(d), associationText, parent);
     }
@@ -52,12 +53,13 @@ public final class TerminalBindingReader {
         fields(p, "codec producerNamespace executionId decisionId decisionCodec decisionBytes associationCodec associationBytes initialRevisionId receiverContract route profile");
         expect(p, "codec", "journal-terminal-envelope/1"); expect(p, "receiverContract", "journal-terminal-receiver/1");
         expect(p, "route", "client-terminal-evidence/1");
-        oneOf(p, "profile", "client-terminal-evidence-only/1 client-terminal-claude-2.1.316/1");
+        oneOf(p, "profile", "client-terminal-evidence-only/1 client-terminal-claude-2.1.316/1 client-terminal-claude-retained-2.1.316/1");
         expect(p, "decisionCodec", "client-decision/1"); expect(p, "associationCodec", "journal-association/1");
         Json d = decode(string(p, "decisionBytes")); Json initial = decode(string(p, "associationBytes"));
         TerminalDecisionReading.check(d); TerminalAssociationReading.check(initial, d); expect(initial, "revisionId", string(p, "initialRevisionId"));
         if (!initial.member("priorRevisionId").isNull()) throw new IllegalArgumentException("initial parent is not null");
         expect(p, "executionId", string(d, "executionId")); expect(p, "decisionId", string(d, "decisionId"));
+        TerminalRetainedReading.initial(p, d, initial);
         return new Decoded(p, d, initial);
     }
 

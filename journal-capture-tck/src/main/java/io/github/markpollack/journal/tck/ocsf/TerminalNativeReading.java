@@ -17,7 +17,7 @@ import static io.github.markpollack.journal.tck.ocsf.TerminalReading.*;
 final class TerminalNativeReading {
     private TerminalNativeReading() { }
     private static boolean selected(Json p, Json a) {
-        return "client-terminal-claude-2.1.316/1".equals(string(p, "profile")) && "COMPLETED".equals(string(a, "acquisition"));
+        return Set.of("client-terminal-claude-2.1.316/1", RetainedAcquisition.PROFILE).contains(string(p, "profile")) && "COMPLETED".equals(string(a, "acquisition"));
     }
 
     static void check(DeclaredFile file, Json envelope, Json decision, Json association) {
@@ -99,6 +99,7 @@ final class TerminalNativeReading {
             Json declared = file.run().path("launch_settings", "acquired_execution");
             Json original = NeutralJson.readDocument(manifest);
             require(Json.sameValue(original, declared), "native manifest bytes disagree with canonical declaration");
+            if (original.member("retained_generation") != null) RetainedAcquisition.validate(original, base);
             nativePrompts(base, original);
         }
         catch (IOException | UncheckedIOException | IllegalArgumentException e) {

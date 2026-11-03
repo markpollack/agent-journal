@@ -1,0 +1,4 @@
+{"message":{"content":"first","role":"user"},"parentUuid":null,"sessionId":"N","type":"user","uuid":"u1","version":"2.1.316"}
+{"message":{"content":[{"text":"first","type":"text"}],"id":"m1","role":"assistant"},"parentUuid":"u1","sessionId":"N","type":"assistant","uuid":"a1","version":"2.1.316"}
+{"message":{"content":"second","role":"user"},"parentUuid":"a1","sessionId":"N","type":"user","uuid":"u2","version":"2.1.316"}
+{"message":{"content":[{"text":"second","type":"text"}],"id":"m2","role":"assistant"},"parentUuid":"u2","sessionId":"N","type":"assistant","uuid":"a2","version":"2.1.316"}
