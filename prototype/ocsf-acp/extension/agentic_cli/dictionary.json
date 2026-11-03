@@ -1606,6 +1606,11 @@
       "type": "string_t",
       "description": "The interval to which cost_basis applies, independently of the amount aggregation: most_recent_request means the model pricing table for only its most recent request, never the cumulative history or an invoice."
     },
+    "combined_output": {
+      "caption": "Combined Output",
+      "description": "Combined command output exactly as the source reports it; the source does not establish separate standard output and standard error streams.",
+      "type": "string_t"
+    },
     "mcp_action": {
       "caption": "MCP Action",
       "description": "An MCP protocol member value (generated from the pinned MCP schema; the containing object states the member and its meaning).",

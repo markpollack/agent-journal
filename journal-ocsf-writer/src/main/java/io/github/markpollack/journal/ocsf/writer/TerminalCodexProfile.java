@@ -62,7 +62,7 @@ final class TerminalCodexProfile {
         Jv turn = array(m, "turns").get(0); equal(turn, "invocation_uid", text(d, "executionId")); equal(turn, "decision_uid", text(d, "decisionId")); text(turn, "native_turn_uid");
         launch(p);
     }
-    private static void launch(Jv p) {
+    static void launch(Jv p) {
         List<String> argv = array(p, "argv").stream().map(Jv::text).toList();
         require(argv.containsAll(List.of("--no-daemon", "exec", "--ignore-user-config", "--json")) && "-".equals(argv.get(argv.size() - 1)), "wrong Codex original stdio route");
         require(argv.stream().noneMatch(Set.of("resume", "fork", "--ephemeral", "--last")::contains), "Codex history reuse forbidden");

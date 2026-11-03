@@ -13,6 +13,26 @@ import java.util.Set;
 final class FinalSelection {
     private FinalSelection() {}
 
+    /** Whole-field selection copies the chosen sequence: its own occurrence positions remain distinct. */
+    static boolean wholeField(Event event, String pointer, Json specification) {
+        for (Json rule : specification.member("authorities") == null ? List.<Json>of() : specification.member("authorities").elements()) {
+            String field = SourceProfile.text(rule, "pointer");
+            if (event.className.equals(SourceProfile.text(rule, "class")) && "whole-field".equals(SourceProfile.text(rule, "mode"))
+                    && (pointer.equals(field) || pointer.startsWith(field + "/"))) return true;
+        }
+        return false;
+    }
+
+    static boolean wholeFieldDifference(List<Event> group, Json specification) {
+        for (Json rule : specification.member("authorities") == null ? List.<Json>of() : specification.member("authorities").elements()) {
+            if (!"whole-field".equals(SourceProfile.text(rule, "mode"))) continue;
+            List<Json> values = group.stream().filter(e -> e.className.equals(SourceProfile.text(rule, "class")))
+                    .map(e -> FactComparison.at(e.json, SourceProfile.text(rule, "pointer"))).filter(java.util.Objects::nonNull).toList();
+            if (values.size() > 1 && values.stream().anyMatch(v -> !Json.sameValue(v, values.get(0)))) return true;
+        }
+        return false;
+    }
+
     static List<Supported> selected(List<Supported> values, Map<String, List<Supported>> all) {
         if (values.isEmpty()) {
             return values;
@@ -80,23 +100,20 @@ final class FinalSelection {
                 specification.member("authorities") == null
                         ? List.<Json>of()
                         : specification.member("authorities").elements()) {
-            if (event.className.equals(SourceProfile.text(rule, "class"))
-                    && values.get(0).pointer().equals(SourceProfile.text(rule, "pointer"))) {
-                Set<String> artifacts = new java.util.HashSet<>();
-                inputs.forEach(
-                        (name, role) -> {
-                            if (role.equals(SourceProfile.text(rule, "role"))) artifacts.add(name);
-                        });
-                List<Supported> chosen =
-                        values.stream()
-                                .filter(v -> artifacts.contains(v.event().artifact()))
-                                .toList();
-                if (!chosen.isEmpty()) {
-                    return chosen;
-                }
-            }
+            boolean whole = "whole-field".equals(SourceProfile.text(rule, "mode"));
+            if (!matchesAuthority(values.get(0).pointer(), event, rule, whole)) continue;
+            List<Supported> chosen = values.stream()
+                    .filter(v -> SourceProfile.text(rule, "role").equals(inputs.get(v.event().artifact())))
+                    .toList();
+            if (whole || !chosen.isEmpty()) return chosen;
         }
         return values;
+    }
+
+    private static boolean matchesAuthority(String pointer, Event event, Json rule, boolean whole) {
+        String field = SourceProfile.text(rule, "pointer");
+        return event.className.equals(SourceProfile.text(rule, "class"))
+                && (pointer.equals(field) || (whole && pointer.startsWith(field + "/")));
     }
 
     static boolean suppliedProtocolMember(

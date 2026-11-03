@@ -1,0 +1,41 @@
+{
+  "kind": "agent-journal/assembly-expectation",
+  "version": "0.1",
+  "written": {
+    "basis": "Independent original session identity and qualified fresh-turn witnesses; no invented cross-source entity joins or summed usage."
+  },
+  "profile_id": "codex-cli/0.166.0/exec-stdio+rollout",
+  "precedence": [
+    "transcript",
+    "stream"
+  ],
+  "sources": [
+    {
+      "role": "stream",
+      "requirement": "required",
+      "session": [
+        {
+          "select": {
+            "/type": "thread.started"
+          },
+          "pointer": "/thread_id"
+        }
+      ]
+    },
+    {
+      "role": "transcript",
+      "requirement": "required",
+      "session": [
+        {
+          "select": {
+            "/type": "session_meta"
+          },
+          "pointer": "/payload/id"
+        }
+      ]
+    }
+  ],
+  "entities": [],
+  "totals": [],
+  "authorities": []
+}

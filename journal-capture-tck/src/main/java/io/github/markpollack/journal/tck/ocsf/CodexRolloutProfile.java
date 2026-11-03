@@ -46,6 +46,7 @@ final class CodexRolloutProfile implements SourceProfile {
             String uid = "session_meta".equals(type) ? SourceProfile.text(p, "id") : "response_item".equals(type) ? SourceProfile.text(p, "id")
                     : "item_completed".equals(pt) ? SourceProfile.text(p, "item", "id") : null;
             if (uid != null) { f.nativeUid.put(r.index(), uid); }
+            if (CodexRolloutContextReading.read(f, r, currentTurn)) { continue; }
             if ("turn_context".equals(type)) {
                 currentTurn = SourceProfile.text(p, "turn_id");
                 contextRecord = r.index();

@@ -238,7 +238,7 @@ public final class OcsfOracle {
                 continue;
             }
             ExpectedFacts facts = profile.expected(art, source, scope);
-            if (List.of("0.14.0-prototype", "0.15.0-prototype").contains(core.manifest.extensionVersion())) {
+            if (List.of("0.14.0-prototype", "0.15.0-prototype", "0.16.0-prototype").contains(core.manifest.extensionVersion())) {
                 ExecutionStateReading.read(facts, art, profileName);
                 ExecutionMetricReading.read(facts, art, profileName);
                 ReportedQuantityReading.read(facts, art, profileName);
@@ -304,7 +304,7 @@ public final class OcsfOracle {
             }
             else {
                 ExpectedFacts owed = unselected.isEmpty() ? facts : facts.without(unselected);
-                boolean attributed = List.of("0.13.0-prototype", "0.14.0-prototype", "0.15.0-prototype").contains(core.manifest.extensionVersion());
+                boolean attributed = List.of("0.13.0-prototype", "0.14.0-prototype", "0.15.0-prototype", "0.16.0-prototype").contains(core.manifest.extensionVersion());
                 if (attributed) {
                     owed.unresolvedMeanings.forEach((record, reason) -> report.add(Category.NORMALIZATION, "source.meaning", owner, Outcome.UNRESOLVED,
                             artifact + ":record=" + record + "# " + reason));
@@ -1393,11 +1393,11 @@ public final class OcsfOracle {
                 if (!Objects.equals(b.member("block_index") == null ? null : b.member("block_index").scalarText(), Integer.toString(i))) {
                     problems.add(what + " block " + i + " block_index " + (b.member("block_index") == null ? null : b.member("block_index").scalarText()));
                 }
-                if (native_ instanceof Json.JObject && !Objects.equals(SchemaCatalog.text(native_, "type"), SchemaCatalog.text(b, "block_type"))) {
+                if (r.reasoningContent() == null && native_ instanceof Json.JObject && !Objects.equals(SchemaCatalog.text(native_, "type"), SchemaCatalog.text(b, "block_type"))) {
                     problems.add(what + " block " + i + " block_type " + SchemaCatalog.text(b, "block_type") + " != " + SchemaCatalog.text(native_, "type"));
                 }
                 compare(what + " block " + i + " data", native_, b.member("data"), problems, representation);
-                stated(what + " block " + i + " reasoning_form_id", r.reasoningForm(), Event.integer(b.member("reasoning_form_id")), problems);
+                stated(what + " block " + i + " reasoning_form_id", r.blockForm(i), Event.integer(b.member("reasoning_form_id")), problems);
                 stated(what + " block " + i + " text_update_id", r.textUpdate(), Event.integer(b.member("text_update_id")), problems);
             }
         }

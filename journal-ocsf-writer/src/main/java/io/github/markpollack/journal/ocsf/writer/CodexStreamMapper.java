@@ -131,7 +131,7 @@ final class CodexStreamMapper implements SourceMapper {
         if (MapperSupport.isIntegral(it.member("exit_code"))) {
             op.put("exit_code", it.member("exit_code"));
         }
-        op.put("stdout", text(it, "aggregated_output"))
+        op.put("combined_output", text(it, "aggregated_output"))
                 .put("attribution", MapperSupport.attribution(3, 2, List.of(), "codex.stream_operation_attribution.v2: a standalone operation; the exec stream reports no wrapping call id and its item ids are stream-local", null))
                 .put("data", it);
         String state = text(it, "status");

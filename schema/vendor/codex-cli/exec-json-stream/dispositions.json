@@ -225,7 +225,7 @@
    "path": "item.aggregated_output",
    "disposition": "normalized",
    "destination": [
-    "tool_call.tool_operation.stdout"
+    "tool_call.tool_operation.combined_output"
    ],
    "rule": "codex.stream.command_execution->tool_call.operation",
    "evidence": {
@@ -241,7 +241,7 @@
    "path": "item.aggregated_output",
    "disposition": "normalized",
    "destination": [
-    "tool_call.tool_operation.stdout"
+    "tool_call.tool_operation.combined_output"
    ],
    "rule": "codex.stream.command_execution->tool_call.operation",
    "evidence": {

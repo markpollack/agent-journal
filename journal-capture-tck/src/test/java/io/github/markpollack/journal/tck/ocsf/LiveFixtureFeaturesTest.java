@@ -207,12 +207,12 @@ class LiveFixtureFeaturesTest {
         assertThat(ops).hasSize(8);
         Event failed = ops.stream().filter(e -> "item_3".equals(e.text("tool_operation", "uid")) && "failed".equals(e.text("tool_operation", "reported_state"))).findFirst().orElseThrow();
         assertThat(failed.integer("tool_operation", "exit_code")).isEqualTo(1);
-        assertThat(failed.text("tool_operation", "stdout")).isEqualTo("cat: missing-file.txt: No such file or directory\n");
+        assertThat(failed.text("tool_operation", "combined_output")).isEqualTo("cat: missing-file.txt: No such file or directory\n");
         assertThat(failed.integer("status_id")).isEqualTo(2);
         Event second = ops.stream().filter(e -> "item_2".equals(e.text("tool_operation", "uid")) && "completed".equals(e.text("tool_operation", "reported_state"))).findFirst().orElseThrow();
         Event fourth = ops.stream().filter(e -> "item_4".equals(e.text("tool_operation", "uid")) && "completed".equals(e.text("tool_operation", "reported_state"))).findFirst().orElseThrow();
         assertThat(second.text("tool_operation", "data", "command")).isEqualTo(fourth.text("tool_operation", "data", "command"));
-        assertThat(second.text("tool_operation", "stdout")).isEqualTo(fourth.text("tool_operation", "stdout")).isEqualTo("alpha");
+        assertThat(second.text("tool_operation", "combined_output")).isEqualTo(fourth.text("tool_operation", "combined_output")).isEqualTo("alpha");
         assertThat(second.text("tool_operation", "uid")).isNotEqualTo(fourth.text("tool_operation", "uid"));
         assertThat(report.outcome("operation.values", MAIN)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.check("population.operations", MAIN).detail()).isEqualTo("8 expected, 8 observed");

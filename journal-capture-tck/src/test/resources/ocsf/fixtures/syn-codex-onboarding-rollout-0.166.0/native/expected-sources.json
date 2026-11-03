@@ -1,0 +1,29 @@
+{
+  "kind": "agent-journal/expected-sources",
+  "version": "0.1",
+  "run_uid": "syn-codex-onboarding-rollout-0.166.0",
+  "complete": true,
+  "frozen": {
+    "at": "2026-11-03",
+    "by": "sha256 and record count of hand-authored source before independent judging",
+    "basis": "labelled synthetic native structures; no model execution"
+  },
+  "sources": [
+    {
+      "artifact": "stream.jsonl",
+      "profile": "codex_rollout",
+      "sha256": "36985b56fb256c5538a6a11fda70324609485062bec9540e777033f7b19961ec",
+      "bytes": 7249,
+      "records": 19,
+      "required": true,
+      "binding": {
+        "entry_id": "codex-cli/rollout/0.166.0",
+        "version": "0.166.0",
+        "route": "native_session_file",
+        "source_specification": "schema/vendor/codex-cli/rollout/0.166.0.json",
+        "specification_sha256": "7c86749abcc1a9f7e8afc60c6a5d18759c0d11987b781f013df90f55c9d3e64e"
+      }
+    }
+  ],
+  "children": []
+}

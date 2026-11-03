@@ -58,7 +58,9 @@ public final class AcquisitionVerification implements AcquisitionVerifier {
             }
             Json spec = NeutralJson.readDocument(assembly);
             if (CodexAcquisition.PROFILE_ID.equals(text(inputs.manifest, "profile_id"))) {
-                require(Json.sameValue(spec, CodexAcquisition.expectation()), "qualified Codex expectation changed");
+                Json profile = pkg.declarations == null ? null : pkg.declarations.assembly();
+                String revision = RawInventory.text(profile, "profile", "version");
+                require(Json.sameValue(spec, CodexAcquisition.expectation(revision, pkg.manifest.extensionVersion())), "qualified Codex expectation changed");
             }
             if (ClaudeAcquisition.PROFILE_ID.equals(text(inputs.manifest, "profile_id"))) {
                 require(Json.sameValue(spec, ClaudeAcquisition.expectation()), "qualified assembly expectation changed");

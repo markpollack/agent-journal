@@ -76,7 +76,7 @@ vendor-stated unit; Junie's cache counters are reported as zero without establis
 are measured, so its uncached input is conditional; a Claude foreground sub-agent stream that omits
 one of its messages is not yet detected as incomplete against the vendor's own counts.
 
-The experimental fresh Codex 0.166.0 one-shot text profile uses original UTF-8 stdin, separate raw
+The experimental fresh Codex 0.166.0 one-shot profile uses original UTF-8 stdin, separate raw
 stdout/stderr, and the exact native rollout. `CodexAcquisition.qualify(sealedManifest, newDirectory)`
 in the TCK produces immutable assembly inputs after checking native N/T, original hashes/extents,
 observed closure and matching cumulative terminal usage. Select
@@ -86,7 +86,9 @@ acquisition can instead receive an explicit final revision. Both preserve the or
 Client decision and exact retry ACK. Qualification/recording belongs on an independent optional lane.
 
 See [the acquisition contract](docs/codex-acquisition.md). Deterministic synthetic tests establish
-this boundary; they do not establish native, provider, tool-family or product qualification. Unsupported
+the acquisition boundary and the observed command/declaration/settings/reasoning mappings. The current
+source-derived onboarding report keeps all ten functional areas visible and labels partial, unexercised,
+unsupported and source-absent slices. It does not establish whole-route, provider or product qualification. Unsupported
 native meanings remain unresolved, and missing observations never become zero or complete.
 
 

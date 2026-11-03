@@ -5,7 +5,7 @@
   "profile": "codex_rollout",
   "compatibility_entries": [
     "codex-cli/rollout/0.160.1",
-  "codex-cli/rollout/0.166.0"
+    "codex-cli/rollout/0.166.0"
   ],
   "source_bindings": [
     {
@@ -23,7 +23,8 @@
   ],
   "contract_file": "codex-cli-0.160.1-rollout",
   "evidence_fixtures": [
-    "syn-codex-counterexamples"
+    "syn-codex-counterexamples",
+    "syn-codex-onboarding-rollout-0.166.0"
   ],
   "rule_of_coverage": "Concrete native occurrences use the exact source binding; declarations are assignments only. ExecutedAccounting reports missing comparisons as UNCHECKED. All new classifications remain proposed.",
   "entries": [
@@ -6058,6 +6059,1106 @@
       "note": "A record that is not one parsed JSON object is preserved byte-for-byte under the standard opaque-record rule; it has no inferred JSON fields.",
       "tests": [
         "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
+      ]
+    },
+    {
+      "variant": "event_msg/task_started",
+      "path": "payload.turn_attribution",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "event_msg/task_started",
+      "path": "payload.turn_attribution.initiating_agent_path",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "event_msg/task_started",
+      "path": "payload.turn_attribution.parent_turn_id",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "event_msg/task_started",
+      "path": "payload.turn_attribution.root_turn_id",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "event_msg/task_started",
+      "path": "payload.turn_attribution.turn_id",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "event_msg/task_started",
+      "path": "payload.turn_attribution.turn_trigger",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "ordinal",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.id",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.origin"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "*.source_ref.native_uid"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.role",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "session_context.rendered_role"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools[]",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools[].description",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "classification": "vendor_residual",
+      "classification_note": "Namespace-container description is not a leaf tool description; retained exactly in source data."
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools[].name",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "session_context.tool_definitions[].name",
+        "session_context.tool_definitions[].tool_namespace"
+      ],
+      "rule": "record_discriminator",
+      "note": "An actual leaf name or the actual enclosing namespace according to the source declaration type, checked at its original pointer."
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools[].tools",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools[].tools[]",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools[].tools[].description",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "session_context.tool_definitions[].tool_description"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools[].tools[].format",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools[].tools[].format.definition",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools[].tools[].format.syntax",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools[].tools[].format.type",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools[].tools[].name",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "session_context.tool_definitions[].name"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools[].tools[].parameters",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "session_context.tool_definitions[].input_schema.schema_document"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools[].tools[].parameters.properties",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "session_context.tool_definitions[].input_schema.schema_document"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools[].tools[].parameters.properties.path",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "session_context.tool_definitions[].input_schema.schema_document"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools[].tools[].parameters.properties.path.type",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "session_context.tool_definitions[].input_schema.schema_document"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools[].tools[].parameters.required",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "session_context.tool_definitions[].input_schema.schema_document"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools[].tools[].parameters.required[]",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "session_context.tool_definitions[].input_schema.schema_document"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools[].tools[].parameters.type",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "session_context.tool_definitions[].input_schema.schema_document"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools[].tools[].strict",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools[].tools[].type",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.tools[].type",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "payload.type",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "timestamp",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.origin"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "*.metadata.original_time"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "path": "type",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "event_msg/thread_settings_applied",
+      "path": "ordinal",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "event_msg/thread_settings_applied",
+      "path": "payload",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "event_msg/thread_settings_applied",
+      "path": "payload.thread_id",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.origin"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "*.session_uid"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "event_msg/thread_settings_applied",
+      "path": "payload.thread_settings",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "event_msg/thread_settings_applied",
+      "path": "payload.thread_settings.approval_policy",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "session_context.settings.approval_policy"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "event_msg/thread_settings_applied",
+      "path": "payload.thread_settings.cwd",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "session_context.settings.working_directory"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "event_msg/thread_settings_applied",
+      "path": "payload.thread_settings.model",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "session_context.settings.model"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "event_msg/thread_settings_applied",
+      "path": "payload.thread_settings.model_provider_id",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "session_context.settings.provider"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "event_msg/thread_settings_applied",
+      "path": "payload.thread_settings.reasoning_effort",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "session_context.settings.reasoning_effort"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "event_msg/thread_settings_applied",
+      "path": "payload.type",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "event_msg/thread_settings_applied",
+      "path": "timestamp",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.origin"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "*.metadata.original_time"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "event_msg/thread_settings_applied",
+      "path": "type",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "event_msg/item_completed/Reasoning",
+      "path": "ordinal",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "event_msg/item_completed/Reasoning",
+      "path": "payload",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "event_msg/item_completed/Reasoning",
+      "path": "payload.item",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "event_msg/item_completed/Reasoning",
+      "path": "payload.item.id",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.origin"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "*.source_ref.native_uid"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "event_msg/item_completed/Reasoning",
+      "path": "payload.item.raw_content",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "model_response.content_blocks"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "event_msg/item_completed/Reasoning",
+      "path": "payload.item.raw_content[]",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "model_response.content_blocks"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "event_msg/item_completed/Reasoning",
+      "path": "payload.item.summary_text",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "model_response.content_blocks"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "event_msg/item_completed/Reasoning",
+      "path": "payload.item.summary_text[]",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "model_response.content_blocks"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "event_msg/item_completed/Reasoning",
+      "path": "payload.item.type",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "event_msg/item_completed/Reasoning",
+      "path": "payload.thread_id",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "event_msg/item_completed/Reasoning",
+      "path": "payload.turn_id",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "event_msg/item_completed/Reasoning",
+      "path": "payload.type",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "event_msg/item_completed/Reasoning",
+      "path": "timestamp",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.origin"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "*.metadata.original_time"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "event_msg/item_completed/Reasoning",
+      "path": "type",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "response_item/reasoning",
+      "path": "ordinal",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "response_item/reasoning",
+      "path": "payload",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "response_item/reasoning",
+      "path": "payload.encrypted_content",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "model_response.content_blocks"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "response_item/reasoning",
+      "path": "payload.id",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.origin"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "*.source_ref.native_uid"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "response_item/reasoning",
+      "path": "payload.internal_chat_message_metadata_passthrough",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "response_item/reasoning",
+      "path": "payload.internal_chat_message_metadata_passthrough.turn_id",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "response_item/reasoning",
+      "path": "payload.summary",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "model_response.content_blocks"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "response_item/reasoning",
+      "path": "payload.summary[]",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.value"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "model_response.content_blocks"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "response_item/reasoning",
+      "path": "payload.type",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "response_item/reasoning",
+      "path": "timestamp",
+      "vendor_declared": true,
+      "disposition": "normalized",
+      "evidence": {
+        "property": "fact.origin"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ],
+      "destination": [
+        "*.metadata.original_time"
+      ],
+      "rule": "record_discriminator"
+    },
+    {
+      "variant": "response_item/reasoning",
+      "path": "type",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "event_msg/token_count",
+      "path": "payload.info.last_usage_includes_reasoning",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
+      ]
+    },
+    {
+      "variant": "event_msg/task_complete",
+      "path": "payload.root_turn_id",
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "vendor_residual",
+      "classification_note": "Source-specific structure retained and compared at this exact occurrence; no unreported identity or quantity is inferred. Common obligations have canonical destinations below.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexOnboardingTest#knownNativeMeaningsAndRepeatedSnapshotsPassIndependentReader"
       ]
     }
   ]

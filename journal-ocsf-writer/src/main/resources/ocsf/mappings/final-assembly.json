@@ -1,5 +1,5 @@
 {
-  "contract_uid": "agent-journal/final-assembly/0.1.0-prototype",
+  "contract_uid": "agent-journal/final-assembly/0.2.0-prototype",
   "applies_to": {
     "profiles": "every reviewed assembly profile under ocsf/profiles/",
     "scope": "the consolidated canonical events of a final assembly; every observation keeps the mapping contract of the source that produced it"
@@ -61,7 +61,7 @@
         "scope_id"
       ]
     },
-    "authority": "a profile may declare, per class and field pointer, the source role whose value the canonical event carries when observations conflict, with its reason; the conflict stays listed with every value. Without a declaration no source wins and the field stays absent.",
+    "authority": "a profile may declare, per class and field pointer, the source role whose value the canonical event carries when observations conflict, with its reason; the conflict stays listed with every value. Without a declaration no source wins and the field stays absent. Explicit mode whole-field selects the complete named field before structural union; every supporting field stays unchanged and the selection is independently checked. Omitted mode retains conflict-only semantics.",
     "finality": "of usage observations of one quantity (same scope, aggregation and model), only those at the highest usage status reach the canonical event (Final over Provisional); the others are field evidence with relation 8 Superseded and stay on their supporting observations",
     "envelope": "the consolidated event's class, activity, time, metadata, journal and source_ref are the primary observation's, or under a join that declares a stage order the most advanced stage's (a record the stream shows Partial and the session file Completed consolidates at Completed)",
     "copies": "identical bytes accepted from distinct origins: the copies' observations of the same record and emit ordinal are one entity, so a copy never becomes extra executions",

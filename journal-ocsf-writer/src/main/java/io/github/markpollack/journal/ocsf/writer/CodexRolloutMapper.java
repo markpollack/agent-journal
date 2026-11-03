@@ -45,6 +45,7 @@ final class CodexRolloutMapper implements SourceMapper {
         String pt = text(p, "type");
         String session = ctx.run.sessionUid();
         String family = pt == null ? String.valueOf(type) : type + "/" + pt;
+        if (CodexRolloutContext.map(r, ctx, currentTurn)) { return; }
         if ("session_meta".equals(type)) {
             ctx.family(family, r.raw().length, "normalized: session_context Settings reported (cwd, cli version, provider, git branch)");
             MapperSupport.Time t = ctx.timeFor(r, ts);
@@ -194,6 +195,9 @@ final class CodexRolloutMapper implements SourceMapper {
                 if (text(it, "status") != null) {
                     op.put("reported_state", text(it, "status"));
                 }
+                if (text(it, "aggregated_output") != null) {
+                    op.put("combined_output", text(it, "aggregated_output"));
+                }
                 if (text(it, "stdout") != null) {
                     op.put("stdout", text(it, "stdout"));
                 }
@@ -273,6 +277,6 @@ final class CodexRolloutMapper implements SourceMapper {
             return;
         }
         ctx.family(family, r.raw().length, "retained-only: no normalization rule");
-        ctx.emit(ctx.fallback(r, CONTRACT, "codex.rollout.fallback->source_record", family, ts, null, session, null));
+        ctx.emit(ctx.fallback(r, CONTRACT, "codex.rollout.fallback->source_record", family, ts, "response_item".equals(type) ? text(p, "id") : null, session, null));
     }
 }

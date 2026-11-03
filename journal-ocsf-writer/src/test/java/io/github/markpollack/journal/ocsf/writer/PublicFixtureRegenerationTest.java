@@ -67,6 +67,8 @@ class PublicFixtureRegenerationTest {
         Assumptions.assumeTrue("true".equals(System.getProperty("ocsf.regenerate")), "no -Docsf.regenerate=true");
         write(CHILD, List.of(claudeStream()), List.of("stream.jsonl"));
         write(CODEX, List.of(codexRollout()), List.of("rollout.jsonl"));
+        write("syn-codex-onboarding-exec-0.166.0", List.of(codexStream()), List.of("stream.jsonl"));
+        write("syn-codex-onboarding-rollout-0.166.0", List.of(new SourceDescriptor("stream.jsonl", 2, "codex_rollout", "native_session_file", "synthetic current native structures", null, "lines")), List.of("stream.jsonl"));
         writeEvidenceLog(PAIR, List.of(claudeStream(), claudeTranscript()), List.of("stream.jsonl", "transcript.jsonl"),
                 "the synthetic stream and session file of one sdk-route run, recorded together without assembly to exercise both mappers and the readers of a multi-source file");
         write(CODEX_STREAM, List.of(codexStream()), List.of("stream.jsonl"));

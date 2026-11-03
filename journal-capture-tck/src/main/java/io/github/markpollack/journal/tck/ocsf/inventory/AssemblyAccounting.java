@@ -46,16 +46,28 @@ final class AssemblyAccounting {
         List<String> out = new ArrayList<>();
         Set<String> seen = new LinkedHashSet<>();
         for (Json el : e.elements(array)) {
-            StringBuilder k = new StringBuilder();
-            for (String m : identity) {
-                Json v = "model_ref".equals(m) ? el.path("model_ref", "name") : el.member(m);
-                k.append(v == null ? "-" : v.scalarText()).append('|');
-            }
-            if (!seen.add(k.toString())) {
+            String k = observationIdentity(el, array, identity);
+            if (!seen.add(k)) {
                 out.add(e + " carries two " + array + " for " + k);
             }
         }
         return out;
+    }
+
+    private static String observationIdentity(Json el, String array, List<String> identity) {
+        StringBuilder k = new StringBuilder();
+        for (String m : identity) {
+            Json v = "model_ref".equals(m) ? el.path("model_ref", "name") : el.member(m);
+            k.append(v == null ? "-" : v.scalarText()).append('|');
+        }
+        if ("usage_observations".equals(array)) {
+            Json status = el.member("usage_status_id");
+            k.append(status == null ? "-" : status.scalarText()).append('|');
+            if (status == null || !"2".equals(status.scalarText())) {
+                k.append(el.path("source_ref", "artifact")).append('|').append(el.path("source_ref", "record_index"));
+            }
+        }
+        return k.toString();
     }
 
     private static void total(OracleReport report, OcsfPackage pkg, Json total, List<Supplied> accepted) {
@@ -115,14 +127,16 @@ final class AssemblyAccounting {
                 continue;
             }
             Map<String, BigDecimal> values = elementKey == null ? sum(e, spec, key.scalarText()) : perElement(e, spec, elementKey);
-            values.forEach((k, value) -> {
-                BigDecimal before = out.putIfAbsent(k, value);
-                if (before != null && before.compareTo(value) != 0) {
-                    problems.add("canonical events disagree on " + k + ": " + before + " and " + value);
-                }
-            });
+            values.forEach((k, value) -> canonicalValue(out, k, value, spec, problems));
         }
         return out;
+    }
+
+    private static void canonicalValue(Map<String, BigDecimal> out, String key, BigDecimal value, Json spec, List<String> problems) {
+        BigDecimal before = out.putIfAbsent(key, value);
+        if (before != null && (new Json.JBool(true).equals(spec.member("reject_duplicate_identity")) || before.compareTo(value) != 0)) {
+            problems.add("canonical identity contributes more than once " + key + ": " + before + " and " + value);
+        }
     }
 
     /** The member of the event's matching array elements, summed under the event's key; empty when no element reports it. */

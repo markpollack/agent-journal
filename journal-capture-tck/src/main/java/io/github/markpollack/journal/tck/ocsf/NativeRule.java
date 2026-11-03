@@ -124,6 +124,7 @@ final class NativeRule {
                     case "tool_call" -> "." + toolStage(event.activityId);
                     case "prompt_turn" -> "." + turnStage(event.activityId);
                     case "session_context" -> "." + contextStage(event.activityId);
+                    case "model_response" -> Map.of(3, ".item").getOrDefault(event.activityId, "");
                     default -> "";
                 };
         return "codex.rollout." + rolloutFamily(n) + "->" + event.className + suffix;

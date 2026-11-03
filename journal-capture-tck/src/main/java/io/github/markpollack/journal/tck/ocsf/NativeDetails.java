@@ -69,9 +69,8 @@ final class NativeDetails {
                         "/status_basis_id",
                         1,
                         "/tool_operation/stdout",
-                        item.member("stdout") == null
-                                ? item.member("aggregated_output")
-                                : item.member("stdout"));
+                        item.member("stdout"),
+                        "/tool_operation/combined_output", item.member("aggregated_output"));
         if ("codex_rollout".equals(profile)) {
             fields.putAll(
                     SourceFacts.fields(

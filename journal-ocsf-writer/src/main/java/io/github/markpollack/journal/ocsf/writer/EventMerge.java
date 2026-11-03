@@ -133,6 +133,10 @@ final class EventMerge {
             }
             return Jv.copy(entries.get(0).value());
         }
+        String[] selection = policy.authorities().get(pointer);
+        if (wholeFieldSelection(selection, entries)) {
+            return conflict(pointer, entries);
+        }
         if (PROVENANCE.contains(name) || exactlyEqual(entries)) {
             return Jv.copy(entries.get(0).value());
         }
@@ -142,6 +146,10 @@ final class EventMerge {
             return Jv.copy(entries.get(0).value());
         }
         return structured(pointer, name, entries);
+    }
+
+    private static boolean wholeFieldSelection(String[] selection, List<Contribution> entries) {
+        return selection != null && selection.length > 2 && "whole-field".equals(selection[2]) && !exactlyEqual(entries);
     }
 
     /** Objects merge member by member and identified arrays element by element; anything else that differs conflicts. */

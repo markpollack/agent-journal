@@ -39,7 +39,11 @@ public record AssemblyProfile(Jv document) {
      * A declared authority for one field of one class: when observations conflict there, the value of {@code role} is
      * the canonical one, for the stated reason; the conflict stays listed.
      */
-    public record Authority(String className, String pointer, String role, String basis) {
+    public record Authority(String className, String pointer, String role, String basis, String mode) {
+        public Authority {
+            if (!java.util.Set.of("conflict", "whole-field").contains(mode)) throw new IllegalArgumentException("unknown authority mode " + mode);
+        }
+        public Authority(String className, String pointer, String role, String basis) { this(className, pointer, role, basis, "conflict"); }
     }
 
     public static AssemblyProfile bundled(String id) {
@@ -90,7 +94,7 @@ public record AssemblyProfile(Jv document) {
     public List<Authority> authorities() {
         List<Authority> out = new ArrayList<>();
         for (Jv a : document.member("authorities") == null ? List.<Jv>of() : document.member("authorities").elements()) {
-            out.add(new Authority(a.member("class").text(), a.member("pointer").text(), a.member("role").text(), a.member("basis").text()));
+            out.add(new Authority(a.member("class").text(), a.member("pointer").text(), a.member("role").text(), a.member("basis").text(), a.member("mode") == null ? "conflict" : a.member("mode").text()));
         }
         return out;
     }

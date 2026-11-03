@@ -64,4 +64,15 @@ class AssemblyLifecycleIdentityTest {
         List<AssemblyGrouping.Group> groups = AssemblyGrouping.group(plan(), List.of(observation(5, 1, 0), observation(7, 1, 1)));
         assertThat(groups).singleElement().satisfies(g -> assertThat(g.ambiguous()).as("which record is the occurrence is not established").isTrue());
     }
+    @Test
+    void identicalWholeFieldValuesAreNotConflictsAndUnknownModesRefuse() {
+        Jv.Obj usage = new Jv.Obj().put("scope_id", 3).put("usage_status_id", 2).put("output_tokens", 11);
+        var policy = new EventMerge.Policy(java.util.Map.of("/usage_observations", new String[] {"transcript", "same-turn source", "whole-field"}), java.util.Map.of());
+        var result = EventMerge.merge(List.of(withUsage("stream.jsonl", 0, usage), withUsage("transcript.jsonl", 1, usage)), 0, policy);
+        assertThat(result.conflicts().elements()).isEmpty();
+        assertThat(result.relation()).isEqualTo(1);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> new AssemblyProfile.Authority("prompt_turn", "/usage_observations", "transcript", "test", "whole-feld"))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("unknown authority mode");
+    }
+
 }

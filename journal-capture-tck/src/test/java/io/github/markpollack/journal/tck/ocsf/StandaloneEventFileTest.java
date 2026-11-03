@@ -182,7 +182,7 @@ class StandaloneEventFileTest {
         Path c = copy(CODEX, work.resolve("c"));
         editDeclarations(pkg(c), decls -> decls.removeIf(d -> SchemaCatalog.text(d.member("declaration"), "kind").equals("contract")));
         OcsfPackage pc = open(alone(pkg(c), work.resolve("c-alone")));
-        assertThat(pc.diagnosticsWithCode("CONTRACT_REF_UNRESOLVED").get(0).detail()).contains("codex-cli/rollout/0.160.1/0.4.0-prototype");
+        assertThat(pc.diagnosticsWithCode("CONTRACT_REF_UNRESOLVED").get(0).detail()).contains("codex-cli/rollout/0.160.1/0.5.0-prototype");
         assertThat(pc.diagnosticsWithCode("REFERENCE_BEFORE_DECLARATION")).isNotEmpty();
 
         // (d) the source declaration removed: every event's artifact reference is unresolved

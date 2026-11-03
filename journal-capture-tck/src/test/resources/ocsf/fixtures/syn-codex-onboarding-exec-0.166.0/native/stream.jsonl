@@ -1,0 +1,6 @@
+{"thread_id":"11111111-1111-4111-8111-111111111111","type":"thread.started"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"type":"command_execution","id":"item_tool_0","command":"cat fixture.txt","aggregated_output":"same output\n","exit_code":0,"status":"completed"}}
+{"type":"item.completed","item":{"type":"command_execution","id":"item_tool_1","command":"cat fixture.txt","aggregated_output":"same output\n","exit_code":0,"status":"completed"}}
+{"item":{"id":"item_0","text":"journal codex example","type":"agent_message"},"type":"item.completed"}
+{"type":"turn.completed","usage":{"cache_write_input_tokens":0,"cached_input_tokens":2,"input_tokens":10,"output_tokens":3,"reasoning_output_tokens":0}}

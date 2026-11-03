@@ -1,5 +1,5 @@
 {
-  "contract_uid": "codex-cli/rollout/0.160.1/0.4.0-prototype",
+  "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
   "applies_to": {
     "product": "Codex CLI",
     "version": "0.160.1",
@@ -169,7 +169,8 @@
         "outcome": "1 Unique when exactly one candidate (tool_call_uid set, method 2 Derived by rule); 2 Ambiguous when more than one (tool_call_uid ABSENT, candidates listed); 3 Unattributed when none"
       },
       "status": "status_id 1 when item.status == completed, 2 when failed (Reported)",
-      "residual": "item in tool_operation.data; whole record in data"
+      "residual": "item in tool_operation.data; whole record in data",
+      "output": "aggregated_output -> combined_output; separately reported stdout/stderr remain separate; absent streams are not inferred"
     },
     {
       "id": "codex.rollout.task_started->prompt_turn.started",
@@ -223,6 +224,47 @@
       "target": "agentic_cli/source_record",
       "activity": "1 Parsed",
       "residual": "whole record in data; basis names the exception. A defect of the writer is visible, never a lost record"
+    },
+    {
+      "id": "codex.rollout.additional_tools->session_context.context",
+      "selector": {
+        "type": "response_item",
+        "payload.type": "additional_tools"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "2 Context injected",
+      "meaning": "Actual leaf tool names, namespaces, descriptions and function parameters; custom grammar, strictness and containers retained exactly; no invocation inferred."
+    },
+    {
+      "id": "codex.rollout.thread_settings_applied->session_context.settings",
+      "selector": {
+        "type": "event_msg",
+        "payload.type": "thread_settings_applied"
+      },
+      "target": "agentic_cli/session_context",
+      "activity": "1 Settings reported",
+      "meaning": "Actual thread_id and reported cwd/model/model_provider_id/approval_policy/reasoning_effort only; other settings remain exact residual."
+    },
+    {
+      "id": "codex.rollout.reasoning->model_response.item",
+      "selector": {
+        "type": "response_item",
+        "payload.type": "reasoning"
+      },
+      "target": "agentic_cli/model_response",
+      "activity": "3 Item completed",
+      "meaning": "Native item id (Other basis), no model invocation identity; per-block summary/full/encrypted forms; opaque ciphertext never decoded."
+    },
+    {
+      "id": "codex.rollout.item_completed.Reasoning->model_response.item",
+      "selector": {
+        "type": "event_msg",
+        "payload.type": "item_completed",
+        "payload.item.type": "Reasoning"
+      },
+      "target": "agentic_cli/model_response",
+      "activity": "3 Item completed",
+      "meaning": "Reported native reasoning item id and summary_text/raw_content parts, empty arrays remain empty; no inferred relationship to another observation."
     }
   ],
   "unavailable_at_source": [

@@ -1,0 +1,41 @@
+{
+  "run_uid": "syn-codex-onboarding-rollout-0.166.0",
+  "invocation_index": 0,
+  "session_uid": "11111111-1111-4111-8111-111111111111",
+  "capture_start": "2026-11-03T00:00:00Z",
+  "cli": {
+    "name": "Codex CLI",
+    "vendor_name": "OpenAI",
+    "version": "0.166.0"
+  },
+  "launch_settings": {
+    "route": "exec_stdio",
+    "working_directory": "/synthetic/codex-workspace"
+  },
+  "pins": {
+    "ocsf_schema_commit": "856d462bd20dc46cc1ffed2dfffe3b91ef0fbeba",
+    "compiler_commit": "865887a9ee88580c471062f93da115e7599fa31d",
+    "toolkit": {
+      "release": "v0.9.0",
+      "commit": "a99619fcd148791a6a9fe5f82c1e0d839f658591",
+      "linux_amd64_sha256": "641fec9f8c457896c06ead9136fe8f4e50753cd95f8a68c24b25c2bcc9cfd5a5"
+    }
+  },
+  "sources": [
+    {
+      "artifact": "stream.jsonl",
+      "kind": 2,
+      "profile": "codex_rollout",
+      "path": "native/stream.jsonl",
+      "route": "native_session_file"
+    }
+  ],
+  "synthetic": {
+    "label": "LABELLED SYNTHETIC current vendor structures; no CLI/model task",
+    "purpose": [
+      "known command output and native context/reasoning obligations",
+      "distinct equal-output operations",
+      "repeated usage snapshots"
+    ]
+  }
+}

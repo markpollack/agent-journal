@@ -61,9 +61,16 @@ final class ResponseFacts {
                         pointer + "/block_kind_id",
                         kind(r, block),
                         pointer + "/reasoning_form_id",
-                        r.reasoningForm(),
+                        r.blockForm(i),
                         pointer + "/text_update_id",
                         r.textUpdate()));
+        if (r.reasoningContent() != null) {
+            var content = r.reasoningContent().get(i);
+            fields.put(pointer + "/block_type", FactComparison.value(content.type()));
+            fields.put(pointer + "/block_kind_id", FactComparison.value(2));
+            fields.put(pointer + "/text", FactComparison.value(content.text()));
+            return fields;
+        }
         if ("tool_use".equals(SourceProfile.text(block, "type"))) {
             fields.put(pointer + "/tool_call_uid", block.member("id"));
         }

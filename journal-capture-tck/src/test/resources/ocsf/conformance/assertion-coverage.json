@@ -1,7 +1,7 @@
 {
  "kind": "agent-journal/assertion-coverage",
- "version": "0.1",
- "reviewed": "2026-10-26 (ACCT-1)",
+ "version": "0.2",
+ "reviewed": "2026-11-03 (Codex current declaration/reasoning comparisons; historical assignments unchanged)",
  "meaning": "which typed canonical assertions (class/activity:attribute path, Java regex, whole match) an independent oracle property judges against native evidence, which are Journal's own provenance or caption siblings of a judged id, and which the caller declares; every other path is unjudged and inventoried by CrossCliAccountingTest. A basis string is text the writer wrote and is never judged: it stays unjudged on purpose. The property names are the oracle's (OcsfOracle.MANDATORY_SOURCE or the assembly oracle); this table is the reviewer's reading of OcsfOracle's value checks, pinned by hash so a change is a reviewable event. basis_text names the writer's free-text basis and derivation members: inventoried in their own bucket, never judged and never counted as judged. Keys are <profile>|<class>/<activity>:<path>, the profile being the source profile of the event's native artifact (assembly for an event consolidated from several), so a judgement can be stated for one source profile and left unjudged for another",
  "journal_origin": [
   "[a-z_]+\\|[a-z_]+/[0-9]+:(class_name|category_uid|category_name|type_uid|type_name|activity_name|severity|severity_id|time_dt)",
@@ -150,6 +150,18 @@
   {
    "match": "claude_stream\\|session_context/3:cost_observations(\\[\\](\\.(total_cost|currency|scope_id|model_ref|model_ref\\.name|quantity_kind_id|aggregation_id|data))?)?",
    "property": "cost.values"
+  },
+  {
+   "match": "codex_rollout\\|model_response/3:turn_uid",
+   "property": "fact.value"
+  },
+  {
+   "match": "codex_rollout\\|session_context/2:tool_definitions(\\[\\])?",
+   "property": "fact.population"
+  },
+  {
+   "match": "codex_rollout\\|session_context/2:tool_definitions\\[\\]\\.(data|definition_format_id|input_schema|name|tool_description|tool_namespace)",
+   "property": "fact.value"
   }
  ],
  "basis_text": [

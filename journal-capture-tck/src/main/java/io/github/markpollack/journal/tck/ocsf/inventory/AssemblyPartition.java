@@ -303,7 +303,7 @@ final class AssemblyPartition {
                     boolean equal = actualRefs.size() == coordinates.size() && coordinates.stream().allMatch(c -> actualRefs.stream().filter(a -> Json.sameValue(a, c)).count() == 1);
                     predicate(report, event, "/assembly/observation_refs", equal, support);
                     field(report, event, "/journal/sequence", FactComparison.value(pkg.events.indexOf(event) + 1), support);
-                    field(report, event, "/journal/contract_uid", FactComparison.value("agent-journal/final-assembly/0.1.0-prototype"), support);
+                    field(report, event, "/journal/contract_uid", FactComparison.value("0.16.0-prototype".equals(pkg.manifest.extensionVersion()) ? "agent-journal/final-assembly/0.2.0-prototype" : "agent-journal/final-assembly/0.1.0-prototype"), support);
                     field(report, event, "/journal/rule_uid", FactComparison.value("assembly.consolidate->canonical"), support);
                 }
             }

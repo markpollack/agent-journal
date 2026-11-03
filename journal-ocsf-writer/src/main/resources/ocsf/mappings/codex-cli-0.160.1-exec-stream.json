@@ -1,5 +1,5 @@
 {
-  "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.8.0-prototype",
+  "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
   "applies_to": {
     "product": "Codex CLI",
     "version": "0.160.1",
@@ -83,7 +83,8 @@
         "outcome": "3 Unattributed: a standalone operation; the stream reports no wrapping call id"
       },
       "status": "item.completed: status_id 1/2 from item.status completed/failed (Reported); declined: status_id 99 with status \"Declined\" (Reported; not a permission decision: none is reported); item.started: 0 Unknown, basis 1 (reported in_progress)",
-      "operation": "uid = item.id (identity_basis 2 stream-local); command_line = item.command exactly (never parsed into argv); reported_state, exit_code, stdout = aggregated_output"
+      "operation": "uid = item.id (identity_basis 2 stream-local); command_line = item.command exactly (never parsed into argv); reported_state, exit_code, stdout = aggregated_output",
+      "output": "aggregated_output -> tool_operation.combined_output; it is not a separately reported stdout stream"
     },
     {
       "id": "codex.stream.mcp_tool_call->tool_call.requested",

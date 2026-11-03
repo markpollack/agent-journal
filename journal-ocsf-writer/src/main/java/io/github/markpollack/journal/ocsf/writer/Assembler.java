@@ -112,7 +112,7 @@ final class Assembler {
         String className = g.members().get(0).className();
         for (AssemblyProfile.Authority a : plan.profile().authorities()) {
             if (a.className().equals(className)) {
-                authorities.put(a.pointer(), new String[] {a.role(), a.basis()});
+                authorities.put(a.pointer(), new String[] {a.role(), a.basis(), a.mode()});
             }
         }
         Map<String, String> roleOf = new HashMap<>();

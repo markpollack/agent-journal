@@ -143,6 +143,13 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
      * its {@code assembly} declaration (see {@link FinalAssembly}).
      */
     public static OcsfRunWriter openAssembly(Path dir, RunDescriptor run, SchemaPin pin, WriterOptions options, AssemblyPlan plan) {
+        if (CodexOriginalQualification.PROFILE.equals(plan.profile().id())) {
+            throw new IllegalArgumentException("Codex fresh singleton requires original validated acquisition; use FinalAssembly.assemble(manifest, output)");
+        }
+        return openAcquiredAssembly(dir, run, pin, options, plan);
+    }
+
+    static OcsfRunWriter openAcquiredAssembly(Path dir, RunDescriptor run, SchemaPin pin, WriterOptions options, AssemblyPlan plan) {
         return assembly(open(dir, run, pin, options), pin, plan);
     }
 

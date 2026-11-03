@@ -411,7 +411,11 @@ class FieldDispositionTest {
     // ---- inputs ------------------------------------------------------------------------------------------------------
 
     static Catalog catalog(String profile) {
-        Json raw = NeutralJson.readDocument(PROJECT.resolve(CATALOGS.get(profile)));
+        return catalog(profile, CATALOGS.get(profile));
+    }
+
+    static Catalog catalog(String profile, String path) {
+        Json raw = NeutralJson.readDocument(PROJECT.resolve(path));
         assertThat(SchemaCatalog.text(raw, "kind")).isEqualTo("agent-journal/field-dispositions");
         assertThat(SchemaCatalog.text(raw, "profile")).isEqualTo(profile);
         List<Entry> entries = new ArrayList<>();

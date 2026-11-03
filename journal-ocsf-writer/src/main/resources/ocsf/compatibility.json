@@ -14,14 +14,43 @@
   },
   "admission": {
     "meaning": "the evidence state of each entry, apart from whether it selects a contract: admitted (a production stream route whose live captures, sanitized replay fixtures, inventories, dispositions, independent profile, mapping catalog route and column and live-scenario roster are all registered; MappingCatalogTest rejects an admitted entry that lacks one), experimental (a source route tested on recorded evidence, used as a declared source of a reviewed final-assembly profile or kept for its recordings; not admitted: it lacks a field-disposition catalog, an independent oracle profile or live-scenario registration), historical (a retired route kept so its labelled recordings replay as tested; never extended)",
-    "values": ["admitted", "experimental", "historical"]
+    "values": [
+      "admitted",
+      "experimental",
+      "historical"
+    ]
   },
   "version_bootstrap": {
     "meaning": "the only vendor facts read before a compatibility entry is selected: which record reports the CLI version (record members that must equal the given strings) and the RFC 6901 location of the version in it; nothing else in that record or any other is interpreted until a selection allows it. A profile without a rule never learns its version from its records: the capture declares it at launch, or it stays unknown",
-    "claude_stream": {"record": {"type": "system", "subtype": "init"}, "pointer": "/claude_code_version", "basis": "the stream-json init record reports the running CLI's version"},
-    "codex_rollout": {"record": {"type": "session_meta"}, "pointer": "/payload/cli_version", "basis": "the rollout's session_meta record reports the version of the CLI that wrote the file"},
-    "copilot_events": {"record": {"type": "session.start"}, "pointer": "/data/copilotVersion", "basis": "the session file's session.start reports the version of the CLI that started the session; standard output reports none (the capture declares the version it discovered)"},
-    "copilot_otel": {"record": {"type": "span"}, "pointer": "/resource/attributes/service.version", "basis": "every span's resource states the exporting CLI's version as service.version"}
+    "claude_stream": {
+      "record": {
+        "type": "system",
+        "subtype": "init"
+      },
+      "pointer": "/claude_code_version",
+      "basis": "the stream-json init record reports the running CLI's version"
+    },
+    "codex_rollout": {
+      "record": {
+        "type": "session_meta"
+      },
+      "pointer": "/payload/cli_version",
+      "basis": "the rollout's session_meta record reports the version of the CLI that wrote the file"
+    },
+    "copilot_events": {
+      "record": {
+        "type": "session.start"
+      },
+      "pointer": "/data/copilotVersion",
+      "basis": "the session file's session.start reports the version of the CLI that started the session; standard output reports none (the capture declares the version it discovered)"
+    },
+    "copilot_otel": {
+      "record": {
+        "type": "span"
+      },
+      "pointer": "/resource/attributes/service.version",
+      "basis": "every span's resource states the exporting CLI's version as service.version"
+    }
   },
   "entries": [
     {
@@ -30,15 +59,29 @@
       "retired": "2026-10-22 (Owner): the sdk route is historical evidence only, a filtered surface delivered by the Java claude-code-sdk in earlier milestones; raw stdout is the only production route; this entry stays so the labelled 2.1.299 recordings replay as tested on their route and is never extended",
       "cli": "Claude Code",
       "profile": "claude_stream",
-      "routes": ["sdk"],
+      "routes": [
+        "sdk"
+      ],
       "min_version": "2.1.299",
       "max_version": "2.1.299",
-      "source_specification": {"path": "schema/vendor/claude-code/stream-json/2.1.303.json", "specification_version": "0.2.0", "profile": "claude_stream"},
-      "schema": {"extension": "agentic_cli", "version": "0.15.0-prototype", "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"},
+      "source_specification": {
+        "path": "schema/vendor/claude-code/stream-json/2.1.303.json",
+        "specification_version": "0.2.0",
+        "profile": "claude_stream"
+      },
+      "schema": {
+        "extension": "agentic_cli",
+        "version": "0.16.0-prototype",
+        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+      },
       "contract": "claude-code-2.1.303-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper",
       "tested": [
-        {"version": "2.1.299", "route": "sdk", "evidence": "fixture claude-child-2.1.299 (sanitized real stream), OcsfOracleFixtureTest, RequirementsEvidenceTest, StandaloneEventFileTest"}
+        {
+          "version": "2.1.299",
+          "route": "sdk",
+          "evidence": "fixture claude-child-2.1.299 (sanitized real stream), OcsfOracleFixtureTest, RequirementsEvidenceTest, StandaloneEventFileTest"
+        }
       ],
       "note": "exact tested combination (Owner disposition 4, 2026-10-21): 2.1.299 on the sdk route only; 2.1.299 on raw stdout matches no entry"
     },
@@ -48,15 +91,29 @@
       "retired": "2026-10-22 (Owner): the sdk route is historical evidence only, a filtered surface delivered by the Java claude-code-sdk in earlier milestones; raw stdout is the only production route; this entry stays so the labelled 2.1.303 recordings replay as tested on their route and is never extended",
       "cli": "Claude Code",
       "profile": "claude_stream",
-      "routes": ["sdk"],
+      "routes": [
+        "sdk"
+      ],
       "min_version": "2.1.303",
       "max_version": "2.1.303",
-      "source_specification": {"path": "schema/vendor/claude-code/stream-json/2.1.303.json", "specification_version": "0.2.0", "profile": "claude_stream"},
-      "schema": {"extension": "agentic_cli", "version": "0.15.0-prototype", "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"},
+      "source_specification": {
+        "path": "schema/vendor/claude-code/stream-json/2.1.303.json",
+        "specification_version": "0.2.0",
+        "profile": "claude_stream"
+      },
+      "schema": {
+        "extension": "agentic_cli",
+        "version": "0.16.0-prototype",
+        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+      },
       "contract": "claude-code-2.1.303-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper",
       "tested": [
-        {"version": "2.1.303", "route": "sdk", "evidence": "private pair A stream (FULL-1/FULL-1R steward evidence 2026-10-21-complete-source-canonical, 2026-10-21-full1r)"}
+        {
+          "version": "2.1.303",
+          "route": "sdk",
+          "evidence": "private pair A stream (FULL-1/FULL-1R steward evidence 2026-10-21-complete-source-canonical, 2026-10-21-full1r)"
+        }
       ],
       "note": "exact tested combination: 2.1.303 on the sdk route only (the contract's observed baseline); 2.1.303 on raw stdout matches no entry"
     },
@@ -65,15 +122,29 @@
       "admission": "admitted",
       "cli": "Claude Code",
       "profile": "claude_stream",
-      "routes": ["stdout"],
+      "routes": [
+        "stdout"
+      ],
       "min_version": "2.1.304",
       "max_version": "2.1.304",
-      "source_specification": {"path": "schema/vendor/claude-code/stream-json/2.1.304.json", "specification_version": "0.1.0", "profile": "claude_stream"},
-      "schema": {"extension": "agentic_cli", "version": "0.15.0-prototype", "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"},
+      "source_specification": {
+        "path": "schema/vendor/claude-code/stream-json/2.1.304.json",
+        "specification_version": "0.1.0",
+        "profile": "claude_stream"
+      },
+      "schema": {
+        "extension": "agentic_cli",
+        "version": "0.16.0-prototype",
+        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+      },
       "contract": "claude-code-2.1.303-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper",
       "tested": [
-        {"version": "2.1.304", "route": "stdout", "evidence": "C3 live runs (steward evidence 2026-10-21-c3-live-claude); ACCEPT-1 live runs through the integrated launch path (CliCapture) and their sanitized fixtures claude-live-2.1.304-features, -denial, -cancelled; the live MCP run of 2026-10-23 (retained 2.1.304 binary, Java SDK MCP test server) and its fixture claude-live-2.1.304-mcp"}
+        {
+          "version": "2.1.304",
+          "route": "stdout",
+          "evidence": "C3 live runs (steward evidence 2026-10-21-c3-live-claude); ACCEPT-1 live runs through the integrated launch path (CliCapture) and their sanitized fixtures claude-live-2.1.304-features, -denial, -cancelled; the live MCP run of 2026-10-23 (retained 2.1.304 binary, Java SDK MCP test server) and its fixture claude-live-2.1.304-mcp"
+        }
       ],
       "note": "exact tested combination: 2.1.304 on raw stdout launched by CliCapture; 2.1.304 on the sdk route matches no entry"
     },
@@ -82,15 +153,29 @@
       "admission": "experimental",
       "cli": "Claude Code",
       "profile": "claude_transcript",
-      "routes": ["native_session_file"],
+      "routes": [
+        "native_session_file"
+      ],
       "min_version": "2.1.299",
       "max_version": "2.1.299",
-      "source_specification": {"path": "schema/vendor/claude-code/session-transcript/2.1.303.json", "specification_version": "0.1.0", "profile": "claude_transcript"},
-      "schema": {"extension": "agentic_cli", "version": "0.15.0-prototype", "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"},
+      "source_specification": {
+        "path": "schema/vendor/claude-code/session-transcript/2.1.303.json",
+        "specification_version": "0.1.0",
+        "profile": "claude_transcript"
+      },
+      "schema": {
+        "extension": "agentic_cli",
+        "version": "0.16.0-prototype",
+        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+      },
       "contract": "claude-code-2.1.303-transcript",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeTranscriptMapper",
       "tested": [
-        {"version": "2.1.299", "route": "native_session_file", "evidence": "fixture syn-claude-pair-transcript (labelled synthetic transcript in the shape of the 2.1.303 pair A families)"}
+        {
+          "version": "2.1.299",
+          "route": "native_session_file",
+          "evidence": "fixture syn-claude-pair-transcript (labelled synthetic transcript in the shape of the 2.1.303 pair A families)"
+        }
       ],
       "note": "experimental: a recorded session-file route, not admitted (no disposition catalog of its own); no final-assembly profile names this version; exact tested version (2.1.300 to 2.1.302 match no entry)"
     },
@@ -99,15 +184,29 @@
       "admission": "experimental",
       "cli": "Claude Code",
       "profile": "claude_transcript",
-      "routes": ["native_session_file"],
+      "routes": [
+        "native_session_file"
+      ],
       "min_version": "2.1.303",
       "max_version": "2.1.303",
-      "source_specification": {"path": "schema/vendor/claude-code/session-transcript/2.1.303.json", "specification_version": "0.1.0", "profile": "claude_transcript"},
-      "schema": {"extension": "agentic_cli", "version": "0.15.0-prototype", "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"},
+      "source_specification": {
+        "path": "schema/vendor/claude-code/session-transcript/2.1.303.json",
+        "specification_version": "0.1.0",
+        "profile": "claude_transcript"
+      },
+      "schema": {
+        "extension": "agentic_cli",
+        "version": "0.16.0-prototype",
+        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+      },
       "contract": "claude-code-2.1.303-transcript",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeTranscriptMapper",
       "tested": [
-        {"version": "2.1.303", "route": "native_session_file", "evidence": "private pair A transcript (FULL-1/FULL-1R steward evidence)"}
+        {
+          "version": "2.1.303",
+          "route": "native_session_file",
+          "evidence": "private pair A transcript (FULL-1/FULL-1R steward evidence)"
+        }
       ],
       "note": "experimental: a recorded session-file route, not admitted (no disposition catalog of its own); no final-assembly profile names this version; exact tested version (2.1.300 to 2.1.302 match no entry)"
     },
@@ -116,39 +215,277 @@
       "admission": "experimental",
       "cli": "Claude Code",
       "profile": "claude_transcript",
-      "routes": ["native_session_file"],
+      "routes": [
+        "native_session_file"
+      ],
       "min_version": "2.1.304",
       "max_version": "2.1.304",
-      "source_specification": {"path": "schema/vendor/claude-code/session-transcript/2.1.304.json", "specification_version": "0.1.0", "profile": "claude_transcript"},
-      "schema": {"extension": "agentic_cli", "version": "0.15.0-prototype", "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"},
+      "source_specification": {
+        "path": "schema/vendor/claude-code/session-transcript/2.1.304.json",
+        "specification_version": "0.1.0",
+        "profile": "claude_transcript"
+      },
+      "schema": {
+        "extension": "agentic_cli",
+        "version": "0.16.0-prototype",
+        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+      },
       "contract": "claude-code-2.1.303-transcript",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeTranscriptMapper",
       "tested": [
-        {"version": "2.1.304", "route": "native_session_file", "evidence": "fixture claude-live-2.1.304-mcp-pair (sanitized live pair: the stream and the session file the same launch archived), FinalAssemblyClaudeTest"}
+        {
+          "version": "2.1.304",
+          "route": "native_session_file",
+          "evidence": "fixture claude-live-2.1.304-mcp-pair (sanitized live pair: the stream and the session file the same launch archived), FinalAssemblyClaudeTest"
+        }
       ],
       "note": "a source role of the final-assembly profile claude-code-2.1.304-stdout-session-file: the session file the launch saved, assembled with the stream; experimental, exact tested version"
     },
-    {"id": "github-copilot-cli/events/1.0.100-stdout", "admission": "experimental", "cli": "GitHub Copilot CLI", "profile": "copilot_events", "routes": ["stdout"], "min_version": "1.0.100", "max_version": "1.0.100", "source_specification": {"path": "schema/vendor/github-copilot-cli/stdout-json/1.0.100.json", "specification_version": "0.1.0", "profile": "copilot_events"}, "schema": {"extension": "agentic_cli", "version": "0.15.0-prototype", "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"}, "contract": "github-copilot-cli-1.0.100-events", "mapper": "io.github.markpollack.journal.ocsf.writer.CopilotEventsMapper", "tested": [{"version": "1.0.100", "route": "stdout", "evidence": "fixture copilot-live-1.0.100-otel (sanitized live run copilot-otel-1, 2026-10-24), FinalAssemblyCopilotTest"}], "note": "a source role of the final-assembly profile github-copilot-cli-1.0.100-three-source; experimental, exact tested version"},
-    {"id": "github-copilot-cli/events/1.0.100-session-file", "admission": "experimental", "cli": "GitHub Copilot CLI", "profile": "copilot_events", "routes": ["native_session_file"], "min_version": "1.0.100", "max_version": "1.0.100", "source_specification": {"path": "schema/vendor/github-copilot-cli/session-events/1.0.100.json", "specification_version": "0.1.0", "profile": "copilot_events"}, "schema": {"extension": "agentic_cli", "version": "0.15.0-prototype", "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"}, "contract": "github-copilot-cli-1.0.100-events", "mapper": "io.github.markpollack.journal.ocsf.writer.CopilotEventsMapper", "tested": [{"version": "1.0.100", "route": "native_session_file", "evidence": "fixture copilot-live-1.0.100-otel (sanitized live run copilot-otel-1, 2026-10-24), FinalAssemblyCopilotTest"}], "note": "the primary source role of the final-assembly profile github-copilot-cli-1.0.100-three-source; experimental, exact tested version"},
-    {"id": "github-copilot-cli/otel/1.0.100", "admission": "experimental", "cli": "GitHub Copilot CLI", "profile": "copilot_otel", "routes": ["otel_file"], "min_version": "1.0.100", "max_version": "1.0.100", "source_specification": {"path": "schema/vendor/github-copilot-cli/otel-file/1.0.100.json", "specification_version": "0.1.0", "profile": "copilot_otel"}, "schema": {"extension": "agentic_cli", "version": "0.15.0-prototype", "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"}, "contract": "github-copilot-cli-1.0.100-otel", "mapper": "io.github.markpollack.journal.ocsf.writer.CopilotOtelMapper", "tested": [{"version": "1.0.100", "route": "otel_file", "evidence": "fixture copilot-live-1.0.100-otel (sanitized live run copilot-otel-1, 2026-10-24), FinalAssemblyCopilotTest"}], "note": "a source role of the final-assembly profile; file exporter with content capture on; experimental, exact tested version"},
-    {"id": "github-copilot-cli/usage-report/1.0.100", "admission": "experimental", "cli": "GitHub Copilot CLI", "profile": "copilot_usage_report", "routes": ["usage_report_file"], "min_version": "1.0.100", "max_version": "1.0.100", "source_specification": {"path": "schema/vendor/github-copilot-cli/usage-report/1.0.100.json", "specification_version": "0.1.0", "profile": "copilot_usage_report"}, "schema": {"extension": "agentic_cli", "version": "0.15.0-prototype", "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"}, "contract": "github-copilot-cli-1.0.100-usage-report", "mapper": "io.github.markpollack.journal.ocsf.writer.CopilotUsageReportMapper", "tested": [{"version": "1.0.100", "route": "usage_report_file", "evidence": "fixture copilot-live-1.0.100-otel (sanitized live run copilot-otel-1, 2026-10-24), FinalAssemblyCopilotTest"}], "note": "a source role of the final-assembly profile; one document framed whole; experimental, exact tested version"},
-    {"id": "junie/session-summary/3813.7", "admission": "experimental", "cli": "Junie", "profile": "junie_summary", "routes": ["native_session_file"], "min_version": "3813.7", "max_version": "3813.7", "source_specification": {"path": "schema/vendor/junie/session-summary/3813.7.json", "specification_version": "0.1.0", "profile": "junie_summary"}, "schema": {"extension": "agentic_cli", "version": "0.15.0-prototype", "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"}, "contract": "junie-3813.7-summary", "mapper": "io.github.markpollack.journal.ocsf.writer.JunieSummaryMapper", "tested": [{"version": "3813.7", "route": "native_session_file", "evidence": "fixtures junie-live-3813.7-view and junie-live-3813.7-terminal (sanitized live runs junie-1, junie-2, 2026-10-24), FinalAssemblyJunieTest"}], "note": "a source role of the final-assembly profile junie-3813.7-session-primary (it identifies the session directory); experimental, exact tested version"},
-    {"id": "junie/session-events/3813.7", "admission": "experimental", "cli": "Junie", "profile": "junie_session_events", "routes": ["native_session_file"], "min_version": "3813.7", "max_version": "3813.7", "source_specification": {"path": "schema/vendor/junie/session-events/3813.7.json", "specification_version": "0.1.0", "profile": "junie_session_events"}, "schema": {"extension": "agentic_cli", "version": "0.15.0-prototype", "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"}, "contract": "junie-3813.7-session-events", "mapper": "io.github.markpollack.journal.ocsf.writer.JunieSessionMapper", "tested": [{"version": "3813.7", "route": "native_session_file", "evidence": "fixtures junie-live-3813.7-view and junie-live-3813.7-terminal (sanitized live runs junie-1, junie-2, 2026-10-24), FinalAssemblyJunieTest"}], "note": "the primary source role of the final-assembly profile junie-3813.7-session-primary; experimental, exact tested version"},
-    {"id": "junie/json-stream/3813.7-stdout", "admission": "experimental", "cli": "Junie", "profile": "junie_stdout", "routes": ["stdout"], "min_version": "3813.7", "max_version": "3813.7", "source_specification": {"path": "schema/vendor/junie/json-stream/3813.7.json", "specification_version": "0.1.0", "profile": "junie_stdout"}, "schema": {"extension": "agentic_cli", "version": "0.15.0-prototype", "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"}, "contract": "junie-3813.7-stdout", "mapper": "io.github.markpollack.journal.ocsf.writer.JunieStdoutMapper", "tested": [{"version": "3813.7", "route": "stdout", "evidence": "fixtures junie-live-3813.7-view and junie-live-3813.7-terminal (sanitized live runs junie-1, junie-2, 2026-10-24), FinalAssemblyJunieTest"}], "note": "a source role of the final-assembly profile junie-3813.7-session-primary; experimental, exact tested version"},
+    {
+      "id": "github-copilot-cli/events/1.0.100-stdout",
+      "admission": "experimental",
+      "cli": "GitHub Copilot CLI",
+      "profile": "copilot_events",
+      "routes": [
+        "stdout"
+      ],
+      "min_version": "1.0.100",
+      "max_version": "1.0.100",
+      "source_specification": {
+        "path": "schema/vendor/github-copilot-cli/stdout-json/1.0.100.json",
+        "specification_version": "0.1.0",
+        "profile": "copilot_events"
+      },
+      "schema": {
+        "extension": "agentic_cli",
+        "version": "0.16.0-prototype",
+        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+      },
+      "contract": "github-copilot-cli-1.0.100-events",
+      "mapper": "io.github.markpollack.journal.ocsf.writer.CopilotEventsMapper",
+      "tested": [
+        {
+          "version": "1.0.100",
+          "route": "stdout",
+          "evidence": "fixture copilot-live-1.0.100-otel (sanitized live run copilot-otel-1, 2026-10-24), FinalAssemblyCopilotTest"
+        }
+      ],
+      "note": "a source role of the final-assembly profile github-copilot-cli-1.0.100-three-source; experimental, exact tested version"
+    },
+    {
+      "id": "github-copilot-cli/events/1.0.100-session-file",
+      "admission": "experimental",
+      "cli": "GitHub Copilot CLI",
+      "profile": "copilot_events",
+      "routes": [
+        "native_session_file"
+      ],
+      "min_version": "1.0.100",
+      "max_version": "1.0.100",
+      "source_specification": {
+        "path": "schema/vendor/github-copilot-cli/session-events/1.0.100.json",
+        "specification_version": "0.1.0",
+        "profile": "copilot_events"
+      },
+      "schema": {
+        "extension": "agentic_cli",
+        "version": "0.16.0-prototype",
+        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+      },
+      "contract": "github-copilot-cli-1.0.100-events",
+      "mapper": "io.github.markpollack.journal.ocsf.writer.CopilotEventsMapper",
+      "tested": [
+        {
+          "version": "1.0.100",
+          "route": "native_session_file",
+          "evidence": "fixture copilot-live-1.0.100-otel (sanitized live run copilot-otel-1, 2026-10-24), FinalAssemblyCopilotTest"
+        }
+      ],
+      "note": "the primary source role of the final-assembly profile github-copilot-cli-1.0.100-three-source; experimental, exact tested version"
+    },
+    {
+      "id": "github-copilot-cli/otel/1.0.100",
+      "admission": "experimental",
+      "cli": "GitHub Copilot CLI",
+      "profile": "copilot_otel",
+      "routes": [
+        "otel_file"
+      ],
+      "min_version": "1.0.100",
+      "max_version": "1.0.100",
+      "source_specification": {
+        "path": "schema/vendor/github-copilot-cli/otel-file/1.0.100.json",
+        "specification_version": "0.1.0",
+        "profile": "copilot_otel"
+      },
+      "schema": {
+        "extension": "agentic_cli",
+        "version": "0.16.0-prototype",
+        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+      },
+      "contract": "github-copilot-cli-1.0.100-otel",
+      "mapper": "io.github.markpollack.journal.ocsf.writer.CopilotOtelMapper",
+      "tested": [
+        {
+          "version": "1.0.100",
+          "route": "otel_file",
+          "evidence": "fixture copilot-live-1.0.100-otel (sanitized live run copilot-otel-1, 2026-10-24), FinalAssemblyCopilotTest"
+        }
+      ],
+      "note": "a source role of the final-assembly profile; file exporter with content capture on; experimental, exact tested version"
+    },
+    {
+      "id": "github-copilot-cli/usage-report/1.0.100",
+      "admission": "experimental",
+      "cli": "GitHub Copilot CLI",
+      "profile": "copilot_usage_report",
+      "routes": [
+        "usage_report_file"
+      ],
+      "min_version": "1.0.100",
+      "max_version": "1.0.100",
+      "source_specification": {
+        "path": "schema/vendor/github-copilot-cli/usage-report/1.0.100.json",
+        "specification_version": "0.1.0",
+        "profile": "copilot_usage_report"
+      },
+      "schema": {
+        "extension": "agentic_cli",
+        "version": "0.16.0-prototype",
+        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+      },
+      "contract": "github-copilot-cli-1.0.100-usage-report",
+      "mapper": "io.github.markpollack.journal.ocsf.writer.CopilotUsageReportMapper",
+      "tested": [
+        {
+          "version": "1.0.100",
+          "route": "usage_report_file",
+          "evidence": "fixture copilot-live-1.0.100-otel (sanitized live run copilot-otel-1, 2026-10-24), FinalAssemblyCopilotTest"
+        }
+      ],
+      "note": "a source role of the final-assembly profile; one document framed whole; experimental, exact tested version"
+    },
+    {
+      "id": "junie/session-summary/3813.7",
+      "admission": "experimental",
+      "cli": "Junie",
+      "profile": "junie_summary",
+      "routes": [
+        "native_session_file"
+      ],
+      "min_version": "3813.7",
+      "max_version": "3813.7",
+      "source_specification": {
+        "path": "schema/vendor/junie/session-summary/3813.7.json",
+        "specification_version": "0.1.0",
+        "profile": "junie_summary"
+      },
+      "schema": {
+        "extension": "agentic_cli",
+        "version": "0.16.0-prototype",
+        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+      },
+      "contract": "junie-3813.7-summary",
+      "mapper": "io.github.markpollack.journal.ocsf.writer.JunieSummaryMapper",
+      "tested": [
+        {
+          "version": "3813.7",
+          "route": "native_session_file",
+          "evidence": "fixtures junie-live-3813.7-view and junie-live-3813.7-terminal (sanitized live runs junie-1, junie-2, 2026-10-24), FinalAssemblyJunieTest"
+        }
+      ],
+      "note": "a source role of the final-assembly profile junie-3813.7-session-primary (it identifies the session directory); experimental, exact tested version"
+    },
+    {
+      "id": "junie/session-events/3813.7",
+      "admission": "experimental",
+      "cli": "Junie",
+      "profile": "junie_session_events",
+      "routes": [
+        "native_session_file"
+      ],
+      "min_version": "3813.7",
+      "max_version": "3813.7",
+      "source_specification": {
+        "path": "schema/vendor/junie/session-events/3813.7.json",
+        "specification_version": "0.1.0",
+        "profile": "junie_session_events"
+      },
+      "schema": {
+        "extension": "agentic_cli",
+        "version": "0.16.0-prototype",
+        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+      },
+      "contract": "junie-3813.7-session-events",
+      "mapper": "io.github.markpollack.journal.ocsf.writer.JunieSessionMapper",
+      "tested": [
+        {
+          "version": "3813.7",
+          "route": "native_session_file",
+          "evidence": "fixtures junie-live-3813.7-view and junie-live-3813.7-terminal (sanitized live runs junie-1, junie-2, 2026-10-24), FinalAssemblyJunieTest"
+        }
+      ],
+      "note": "the primary source role of the final-assembly profile junie-3813.7-session-primary; experimental, exact tested version"
+    },
+    {
+      "id": "junie/json-stream/3813.7-stdout",
+      "admission": "experimental",
+      "cli": "Junie",
+      "profile": "junie_stdout",
+      "routes": [
+        "stdout"
+      ],
+      "min_version": "3813.7",
+      "max_version": "3813.7",
+      "source_specification": {
+        "path": "schema/vendor/junie/json-stream/3813.7.json",
+        "specification_version": "0.1.0",
+        "profile": "junie_stdout"
+      },
+      "schema": {
+        "extension": "agentic_cli",
+        "version": "0.16.0-prototype",
+        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+      },
+      "contract": "junie-3813.7-stdout",
+      "mapper": "io.github.markpollack.journal.ocsf.writer.JunieStdoutMapper",
+      "tested": [
+        {
+          "version": "3813.7",
+          "route": "stdout",
+          "evidence": "fixtures junie-live-3813.7-view and junie-live-3813.7-terminal (sanitized live runs junie-1, junie-2, 2026-10-24), FinalAssemblyJunieTest"
+        }
+      ],
+      "note": "a source role of the final-assembly profile junie-3813.7-session-primary; experimental, exact tested version"
+    },
     {
       "id": "antigravity-cli/stream-json/1.4.6-stdout",
       "admission": "admitted",
       "cli": "Antigravity CLI",
       "profile": "agy_stream",
-      "routes": ["stdout"],
+      "routes": [
+        "stdout"
+      ],
       "min_version": "1.4.6",
       "max_version": "1.4.6",
-      "source_specification": {"path": "schema/vendor/antigravity-cli/stream-json/1.4.6.json", "specification_version": "0.1.0", "profile": "agy_stream"},
-      "schema": {"extension": "agentic_cli", "version": "0.15.0-prototype", "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"},
+      "source_specification": {
+        "path": "schema/vendor/antigravity-cli/stream-json/1.4.6.json",
+        "specification_version": "0.1.0",
+        "profile": "agy_stream"
+      },
+      "schema": {
+        "extension": "agentic_cli",
+        "version": "0.16.0-prototype",
+        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+      },
       "contract": "antigravity-cli-1.4.6-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.AntigravityStreamMapper",
       "tested": [
-        {"version": "1.4.6", "route": "stdout", "evidence": "Antigravity onboarding live runs (2026-10-23) through the integrated launch path (CliCapture --cli antigravity) and their sanitized fixtures antigravity-live-1.4.6-features, -denial, -interrupt-open, -subagent; the live MCP attempt of 2026-10-23 in request-review mode and its fixture antigravity-live-1.4.6-mcp-denied (the call was soft-denied in that run, which had no mcp allow rule); the live MCP attempt of 2026-10-24 under --dangerously-skip-permissions and its fixture antigravity-live-1.4.6-mcp (call_mcp_tool ran echo_record twice and always_fails once: two text outputs and a TOOL_ERROR)"}
+        {
+          "version": "1.4.6",
+          "route": "stdout",
+          "evidence": "Antigravity onboarding live runs (2026-10-23) through the integrated launch path (CliCapture --cli antigravity) and their sanitized fixtures antigravity-live-1.4.6-features, -denial, -interrupt-open, -subagent; the live MCP attempt of 2026-10-23 in request-review mode and its fixture antigravity-live-1.4.6-mcp-denied (the call was soft-denied in that run, which had no mcp allow rule); the live MCP attempt of 2026-10-24 under --dangerously-skip-permissions and its fixture antigravity-live-1.4.6-mcp (call_mcp_tool ran echo_record twice and always_fails once: two text outputs and a TOOL_ERROR)"
+        }
       ],
       "note": "the stream-json output reports no version; the documented discovery path is one `agy --version` per run; headless print mode (agy --print <prompt> --output-format stream-json), permission mode request-review by default and always-proceed under --dangerously-skip-permissions, both reported by the init event"
     },
@@ -157,15 +494,29 @@
       "admission": "admitted",
       "cli": "Codex CLI",
       "profile": "codex_stream",
-      "routes": ["stdout"],
+      "routes": [
+        "stdout"
+      ],
       "min_version": "0.160.1",
       "max_version": "0.160.1",
-      "source_specification": {"path": "schema/vendor/codex-cli/exec-json-stream/0.160.1.json", "specification_version": "0.1.0", "profile": "codex_stream"},
-      "schema": {"extension": "agentic_cli", "version": "0.15.0-prototype", "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"},
+      "source_specification": {
+        "path": "schema/vendor/codex-cli/exec-json-stream/0.160.1.json",
+        "specification_version": "0.1.0",
+        "profile": "codex_stream"
+      },
+      "schema": {
+        "extension": "agentic_cli",
+        "version": "0.16.0-prototype",
+        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+      },
       "contract": "codex-cli-0.160.1-exec-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.CodexStreamMapper",
       "tested": [
-        {"version": "0.160.1", "route": "stdout", "evidence": "fixture syn-codex-exec-stream (labelled synthetic in the observed 0.160.1 key sets), CodexExecStreamTest; private pair B stream (FULL-1R); ACCEPT-1 live runs through the integrated launch path and their sanitized fixtures"}
+        {
+          "version": "0.160.1",
+          "route": "stdout",
+          "evidence": "fixture syn-codex-exec-stream (labelled synthetic in the observed 0.160.1 key sets), CodexExecStreamTest; private pair B stream (FULL-1R); ACCEPT-1 live runs through the integrated launch path and their sanitized fixtures"
+        }
       ],
       "note": "the exec --json stream reports no version; the documented discovery path is one `codex --version` per run"
     },
@@ -174,15 +525,29 @@
       "admission": "experimental",
       "cli": "Codex CLI",
       "profile": "codex_rollout",
-      "routes": ["native_session_file"],
+      "routes": [
+        "native_session_file"
+      ],
       "min_version": "0.160.1",
       "max_version": "0.160.1",
-      "source_specification": {"path": "schema/vendor/codex-cli/rollout/0.160.1.json", "specification_version": "0.1.0", "profile": "codex_rollout"},
-      "schema": {"extension": "agentic_cli", "version": "0.15.0-prototype", "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"},
+      "source_specification": {
+        "path": "schema/vendor/codex-cli/rollout/0.160.1.json",
+        "specification_version": "0.1.0",
+        "profile": "codex_rollout"
+      },
+      "schema": {
+        "extension": "agentic_cli",
+        "version": "0.16.0-prototype",
+        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+      },
       "contract": "codex-cli-0.160.1-rollout",
       "mapper": "io.github.markpollack.journal.ocsf.writer.CodexRolloutMapper",
       "tested": [
-        {"version": "0.160.1", "route": "native_session_file", "evidence": "fixture syn-codex-counterexamples (labelled synthetic rollout), OcsfOracleMutationTest; private pair B rollout (FULL-1R)"}
+        {
+          "version": "0.160.1",
+          "route": "native_session_file",
+          "evidence": "fixture syn-codex-counterexamples (labelled synthetic rollout), OcsfOracleMutationTest; private pair B rollout (FULL-1R)"
+        }
       ],
       "note": "experimental: a recorded rollout route, not admitted (no disposition catalog of its own); no final-assembly profile names it yet"
     },
@@ -203,8 +568,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.15.0-prototype",
-        "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"
+        "version": "0.16.0-prototype",
+        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
       },
       "contract": "claude-code-2.1.303-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper",
@@ -234,8 +599,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.15.0-prototype",
-        "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"
+        "version": "0.16.0-prototype",
+        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
       },
       "contract": "claude-code-2.1.303-transcript",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeTranscriptMapper",
@@ -265,8 +630,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.15.0-prototype",
-        "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"
+        "version": "0.16.0-prototype",
+        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
       },
       "contract": "codex-cli-0.160.1-exec-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.CodexStreamMapper",
@@ -277,7 +642,8 @@
           "evidence": "Labelled synthetic syn-codex-acquisition-0.166.0; exact current vendor source inspection; no live qualification"
         }
       ],
-      "note": "Exact current-version experimental fresh text route; explicitly shared existing mapping rules, not version substitution for untested input. Native source families not implemented remain unresolved."
+      "note": "Exact current-version experimental fresh text route; explicitly shared existing mapping rules, not version substitution for untested input. Native source families not implemented remain unresolved.",
+      "onboarding_inventory": "schema/vendor/codex-cli/exec-json-stream/0.166.0-vendor-inventory.json"
     },
     {
       "id": "codex-cli/rollout/0.166.0",
@@ -296,8 +662,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.15.0-prototype",
-        "compiled_sha256": "9b61312034f30ee687cd22ff5c94ec4a0e8688ed335ec3f0405f90a0e58711dc"
+        "version": "0.16.0-prototype",
+        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
       },
       "contract": "codex-cli-0.160.1-rollout",
       "mapper": "io.github.markpollack.journal.ocsf.writer.CodexRolloutMapper",
@@ -308,10 +674,73 @@
           "evidence": "Labelled synthetic syn-codex-acquisition-0.166.0; exact current vendor source inspection; no live qualification"
         }
       ],
-      "note": "Exact current-version experimental fresh text route; explicitly shared existing mapping rules, not version substitution for untested input. Native source families not implemented remain unresolved."
+      "note": "Exact current-version experimental fresh text route; explicitly shared existing mapping rules, not version substitution for untested input. Native source families not implemented remain unresolved.",
+      "onboarding_inventory": "schema/vendor/codex-cli/rollout/0.166.0-vendor-inventory.json"
     }
   ],
   "not_version_scoped": {
     "opaque_text": "retains bytes only and normalizes nothing; it has no compatibility entry and is reported not_version_scoped"
-  }
+  },
+  "onboarding_debt": [
+    {
+      "route": "claude-code/stream-json/2.1.299-sdk",
+      "reason": "Historical retired route; frozen evidence only."
+    },
+    {
+      "route": "claude-code/stream-json/2.1.303-sdk",
+      "reason": "Historical retired route; frozen evidence only."
+    },
+    {
+      "route": "claude-code/session-transcript/2.1.299-session-file",
+      "reason": "Pre-existing experimental route; source specification exists, full ten-area vendor registration remains unexercised. This gap grants no admission."
+    },
+    {
+      "route": "claude-code/session-transcript/2.1.303-session-file",
+      "reason": "Pre-existing experimental route; source specification exists, full ten-area vendor registration remains unexercised. This gap grants no admission."
+    },
+    {
+      "route": "claude-code/session-transcript/2.1.304-session-file",
+      "reason": "Pre-existing experimental route; source specification exists, full ten-area vendor registration remains unexercised. This gap grants no admission."
+    },
+    {
+      "route": "github-copilot-cli/events/1.0.100-stdout",
+      "reason": "Pre-existing experimental route; source specification exists, full ten-area vendor registration remains unexercised. This gap grants no admission."
+    },
+    {
+      "route": "github-copilot-cli/events/1.0.100-session-file",
+      "reason": "Pre-existing experimental route; source specification exists, full ten-area vendor registration remains unexercised. This gap grants no admission."
+    },
+    {
+      "route": "github-copilot-cli/otel/1.0.100",
+      "reason": "Pre-existing experimental route; source specification exists, full ten-area vendor registration remains unexercised. This gap grants no admission."
+    },
+    {
+      "route": "github-copilot-cli/usage-report/1.0.100",
+      "reason": "Pre-existing experimental route; source specification exists, full ten-area vendor registration remains unexercised. This gap grants no admission."
+    },
+    {
+      "route": "junie/session-summary/3813.7",
+      "reason": "Pre-existing experimental route; source specification exists, full ten-area vendor registration remains unexercised. This gap grants no admission."
+    },
+    {
+      "route": "junie/session-events/3813.7",
+      "reason": "Pre-existing experimental route; source specification exists, full ten-area vendor registration remains unexercised. This gap grants no admission."
+    },
+    {
+      "route": "junie/json-stream/3813.7-stdout",
+      "reason": "Pre-existing experimental route; source specification exists, full ten-area vendor registration remains unexercised. This gap grants no admission."
+    },
+    {
+      "route": "codex-cli/rollout/0.160.1",
+      "reason": "Pre-existing experimental route; source specification exists, full ten-area vendor registration remains unexercised. This gap grants no admission."
+    },
+    {
+      "route": "claude-code/stream-json/2.1.316-sdk-stdio",
+      "reason": "Pre-existing experimental route; source specification exists, full ten-area vendor registration remains unexercised. This gap grants no admission."
+    },
+    {
+      "route": "claude-code/session-transcript/2.1.316-session-file",
+      "reason": "Pre-existing experimental route; source specification exists, full ten-area vendor registration remains unexercised. This gap grants no admission."
+    }
+  ]
 }

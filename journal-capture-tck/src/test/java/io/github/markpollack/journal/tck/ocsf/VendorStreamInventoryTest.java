@@ -82,6 +82,15 @@ class VendorStreamInventoryTest {
             new Profile("agy_stream", "schema/vendor/antigravity-cli/stream-json/1.4.6-vendor-inventory.json", "agy.checkout",
                     List.of(OcsfFixtures.LIVE_AGY_FEATURES, OcsfFixtures.LIVE_AGY_DENIAL, OcsfFixtures.LIVE_AGY_INTERRUPT_OPEN, OcsfFixtures.LIVE_AGY_SUBAGENT, OcsfFixtures.LIVE_AGY_MCP_DENIED, OcsfFixtures.LIVE_AGY_MCP), List.of(), Set.of()));
 
+    /** Current partial routes use the same inventory machinery, with exact-version catalogs. */
+    static final List<Profile> CURRENT = List.of(
+            new Profile("codex_stream", "schema/vendor/codex-cli/exec-json-stream/0.166.0-vendor-inventory.json", "codex.current.checkout",
+                    List.of(), List.of("syn-codex-onboarding-exec-0.166.0"), Set.of()),
+            new Profile("codex_rollout", "schema/vendor/codex-cli/rollout/0.166.0-vendor-inventory.json", "codex.current.checkout",
+                    List.of(), List.of("syn-codex-onboarding-rollout-0.166.0"), Set.of()));
+
+    static List<Profile> registeredProfiles() { return java.util.stream.Stream.concat(PROFILES.stream(), CURRENT.stream()).toList(); }
+
     static JsonNode inventory(Profile p) {
         try {
             return MAPPER.readTree(FieldDispositionTest.PROJECT.resolve(p.inventory()).toFile());
@@ -286,7 +295,9 @@ class VendorStreamInventoryTest {
     }
 
     static Run run(Profile p, Path work) throws IOException {
-        Map<String, Set<String>> observed = FieldDispositionTest.observed(p.profile(), work.resolve("observed"));
+        JsonNode inventory = inventory(p);
+        boolean exact = inventory.has("dispositions");
+        Map<String, Set<String>> observed = exact ? new TreeMap<>() : FieldDispositionTest.observed(p.profile(), work.resolve("observed"));
         Set<String> liveVariants = new TreeSet<>();
         Map<String, Map<String, Set<String>>> rules = new LinkedHashMap<>();
         Map<String, Path> fixtures = new LinkedHashMap<>();
@@ -294,17 +305,21 @@ class VendorStreamInventoryTest {
             Path fixture = OcsfFixtures.copy(f, work.resolve("fx"));
             fixtures.put(f, fixture);
             rules.put(f, rulesByFamily(p.profile(), fixture));
+            if (exact) {
+                Json raw = RawInventory.inventory(NativeArtifact.read(OcsfFixtures.natives(fixture).resolve("stream.jsonl")), "stream.jsonl", p.profile());
+                ((Json.JObject) raw.member("variants")).members().forEach((variant, body) -> observed.computeIfAbsent(variant, k -> new TreeSet<>()).addAll(((Json.JObject) body.member("paths")).members().keySet()));
+            }
             if (p.live().contains(f)) {
                 liveVariants.addAll(rules.get(f).keySet());
             }
         }
-        return new Run(inventory(p), FieldDispositionTest.catalog(p.profile()), observed, liveVariants, rules, fixtures);
+        return new Run(inventory, exact ? FieldDispositionTest.catalog(p.profile(), inventory.path("dispositions").asText()) : FieldDispositionTest.catalog(p.profile()), observed, liveVariants, rules, fixtures);
     }
 
     @Test
     void everyDeclaredFieldHasAFamilySpecificDispositionAndEveryObservedFieldIsDeclared(@TempDir Path work) throws IOException {
-        for (Profile p : PROFILES) {
-            Run r = run(p, work.resolve(p.profile()));
+        for (Profile p : registeredProfiles()) {
+            Run r = run(p, work.resolve(p.profile() + "-" + inventory(p).path("cli_version").asText()));
             assertThat(shapeProblems(r.inventory())).as(p.profile()).isEmpty();
             assertThat(dispositionProblems(r.inventory(), r.catalog())).as(p.profile()).isEmpty();
             Set<String> unknown = new TreeSet<>();
@@ -315,8 +330,8 @@ class VendorStreamInventoryTest {
 
     @Test
     void everyDeclaredFamilyBehavesAsItsInventoryStates(@TempDir Path work) throws IOException {
-        for (Profile p : PROFILES) {
-            Run r = run(p, work.resolve(p.profile()));
+        for (Profile p : registeredProfiles()) {
+            Run r = run(p, work.resolve(p.profile() + "-" + inventory(p).path("cli_version").asText()));
             assertThat(behaviorProblems(r.inventory(), r.rules())).as(p.profile()).isEmpty();
             for (Map.Entry<String, Path> f : r.fixtures().entrySet()) {
                 OracleReport report = OcsfFixtures.verify(f.getValue());
@@ -365,7 +380,7 @@ class VendorStreamInventoryTest {
     /** Gated: {@code -Dcodex.checkout=<clone of the vendor repository>} (and optionally {@code -Dcodex.refresh=<rev>}). */
     @Test
     void thePinnedVendorSourceIsUnchanged() throws IOException, InterruptedException {
-        for (Profile p : PROFILES) {
+        for (Profile p : registeredProfiles()) {
             String checkout = System.getProperty(p.checkoutProperty());
             Assumptions.assumeTrue(checkout != null, "no -D" + p.checkoutProperty());
             JsonNode inv = inventory(p);
@@ -403,8 +418,8 @@ class VendorStreamInventoryTest {
 
     @Test
     void theVendorCoverageRecordsAreGenerated(@TempDir Path work) throws IOException {
-        for (Profile p : PROFILES) {
-            Run r = run(p, work.resolve(p.profile()));
+        for (Profile p : registeredProfiles()) {
+            Run r = run(p, work.resolve(p.profile() + "-" + inventory(p).path("cli_version").asText()));
             Map<String, Map<String, Set<String>>> observedBy = observedByFixture(p, r);
             List<Map<String, Object>> records = new ArrayList<>();
             for (JsonNode f : r.inventory().path("families")) {
@@ -450,9 +465,10 @@ class VendorStreamInventoryTest {
             doc.put("records", records);
             doc.put("omitted_by_projection", r.inventory().path("omitted_by_projection"));
             Path out = MappingCatalogTest.outputDirectory();
-            String name = p.profile().toUpperCase(java.util.Locale.ROOT).replace('_', '-');
+            String suffix = CURRENT.contains(p) ? "-" + r.inventory().path("cli_version").asText() : "";
+            String name = p.profile().toUpperCase(java.util.Locale.ROOT).replace('_', '-') + suffix;
             Files.writeString(out.resolve(name + "-VENDOR-COVERAGE.md"), markdown(p, r.inventory(), records), StandardCharsets.UTF_8);
-            Files.writeString(out.resolve(p.profile().replace('_', '-') + "-vendor-coverage.json"), MappingCatalogTest.PRETTY.writeValueAsString(doc) + "\n", StandardCharsets.UTF_8);
+            Files.writeString(out.resolve(p.profile().replace('_', '-') + suffix + "-vendor-coverage.json"), MappingCatalogTest.PRETTY.writeValueAsString(doc) + "\n", StandardCharsets.UTF_8);
             assertThat(records).isNotEmpty();
         }
     }

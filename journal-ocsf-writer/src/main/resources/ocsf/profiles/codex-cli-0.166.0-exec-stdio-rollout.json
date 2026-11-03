@@ -1,8 +1,8 @@
 {
   "profile_id": "codex-cli/0.166.0/exec-stdio+rollout",
-  "version": "0.1.0-prototype",
+  "version": "0.2.0-prototype",
   "status": "experimental",
-  "status_meaning": "Deterministic successful fresh text acquisition only; no native/provider qualification.",
+  "status_meaning": "Experimental qualified fresh single-turn acquisition with source-checked observations; only observed and independently verified meanings qualify.",
   "cli": {
     "name": "Codex CLI",
     "version": "0.166.0",
@@ -40,10 +40,39 @@
     "transcript",
     "stream"
   ],
-  "joins": [],
-  "authorities": [],
+  "joins": [
+    {
+      "id": "qualified-fresh-completion",
+      "class": "prompt_turn",
+      "activities": [
+        2
+      ],
+      "key": [
+        "/session_uid"
+      ],
+      "namespace": "codex.qualified-fresh-turn",
+      "roles": [
+        "transcript",
+        "stream"
+      ],
+      "rules": [
+        "codex.rollout.task_complete->prompt_turn.completed",
+        "codex.stream.turn_completed->prompt_turn.completed"
+      ],
+      "basis": "Original acquisition qualification establishes one fresh N/T and one completion in each source; stream has no native T. No other entities join."
+    }
+  ],
+  "authorities": [
+    {
+      "class": "prompt_turn",
+      "pointer": "/usage_observations",
+      "role": "transcript",
+      "mode": "whole-field",
+      "basis": "Qualified fresh thread has one native turn; native final turn cumulative and wire terminal thread cumulative agree in all five reported fields. Preserve every native snapshot and the original supporting wire observation; never sum overlapping scopes."
+    }
+  ],
   "limits": [
-    "No shared native item/response identity between stdout and rollout is established. Observations remain source-local; do not sum their cumulative quantities.",
+    "Only the qualified fresh singleton completion joins by proven N/owner and unique native T; source-local item/response/tool identities remain unjoined.",
     "Original stdin/stderr and immutable decision associations remain separately preserved; unsupported native families block complete acceptance."
   ]
 }

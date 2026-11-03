@@ -60,7 +60,14 @@ public final class AssemblyOracle {
     public static OracleReport verifyAll(OcsfPackage pkg, java.nio.file.Path nativeDir, io.github.markpollack.journal.tck.ocsf.ExpectedSources expected, Json assemblySpecification,
             List<io.github.markpollack.journal.tck.ocsf.inventory.AssemblyOracle.Supplied> inputs) {
         OracleReport source = io.github.markpollack.journal.tck.ocsf.OcsfOracle.verify(pkg, nativeDir, expected);
-        OracleReport assembly = io.github.markpollack.journal.tck.ocsf.inventory.AssemblyOracle.verify(pkg, assemblySpecification, inputs);
+        boolean qualified = CodexAcquisition.PROFILE_ID.equals(RawInventory.text(assemblySpecification, "profile_id"));
+        if (qualified) {
+            Json manifest = pkg.declarations == null ? null : pkg.declarations.run().path("launch_settings", "acquired_execution");
+            if (manifest == null) throw new IllegalArgumentException("Codex singleton requires original acquisition manifest");
+            try { CodexAcquisition.validate(manifest, nativeDir); }
+            catch (java.io.IOException ex) { throw new java.io.UncheckedIOException(ex); }
+        }
+        OracleReport assembly = verifyQualified(pkg, assemblySpecification, inputs, qualified);
         source = source.replaced(c -> "combination.policy".equals(c.property()), c -> new io.github.markpollack.journal.tck.verify.Check(c.category(), c.property(), c.owner(),
                 assembly.checks().stream().allMatch(a -> a.outcome() == Outcome.VERIFIED || a.outcome() == Outcome.NOT_APPLICABLE) ? Outcome.VERIFIED : Outcome.UNRESOLVED,
                 "independent assembly comparison executed; its individual results are included"));
@@ -72,6 +79,13 @@ public final class AssemblyOracle {
     }
 
     public static OracleReport verify(OcsfPackage pkg, Json spec, List<Supplied> supplied) {
+        return verifyQualified(pkg, spec, supplied, false);
+    }
+
+    private static OracleReport verifyQualified(OcsfPackage pkg, Json spec, List<Supplied> supplied, boolean qualified) {
+        if (CodexAcquisition.PROFILE_ID.equals(RawInventory.text(spec, "profile_id")) && !qualified) {
+            throw new IllegalArgumentException("Codex singleton requires original acquisition verification");
+        }
         if (!SPECIFICATION_KIND.equals(RawInventory.text(spec, "kind"))) {
             throw new IllegalArgumentException("not an assembly expectation: kind " + RawInventory.text(spec, "kind"));
         }

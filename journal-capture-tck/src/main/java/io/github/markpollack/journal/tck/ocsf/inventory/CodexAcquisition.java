@@ -51,6 +51,15 @@ public final class CodexAcquisition {
     static void validate(Json manifest, Path base) throws IOException { CodexAcquisitionReading.read(manifest, base); }
     static Json expectation() throws IOException { return resource("/ocsf/qualification/codex-cli-0.166.0.json"); }
 
+    /** Exact historical text and current singleton profiles remain separate verification contracts. */
+    static Json expectation(String profileVersion, String extensionVersion) throws IOException {
+        if ("0.2.0-prototype".equals(profileVersion) && "0.16.0-prototype".equals(extensionVersion)) return expectation();
+        if ("0.1.0-prototype".equals(profileVersion) && "0.15.0-prototype".equals(extensionVersion)) {
+            return resource("/ocsf/qualification/codex-cli-0.166.0-profile-0.1.json");
+        }
+        throw new IllegalArgumentException("unsupported Codex profile/schema combination");
+    }
+
     private static void bind(Json source) throws IOException {
         if (source.member("archive_only") instanceof Json.JBool b && b.value()) return;
         for (Json binding : resource("/ocsf/source-meaning-bindings.json").member("bindings").elements()) {

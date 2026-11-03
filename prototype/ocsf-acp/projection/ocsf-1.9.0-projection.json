@@ -6,7 +6,7 @@
   },
   "extension": {
     "name": "agentic_cli",
-    "version": "0.15.0-prototype"
+    "version": "0.16.0-prototype"
   },
   "purpose": "Comparison inventory only: for each attribute our extension defines, the upstream attribute it means, if any, and the verdict. It does not reshape the extension; our attributes and names are kept.",
   "evidence_class": "source-verified",
@@ -2991,6 +2991,22 @@
       "upstream": null,
       "verdict": "no_counterpart",
       "caveat": "The pinned upstream model has no equivalent for this source-scoped agent identity, quantity concept/window or independent pricing-basis interval."
+    },
+    {
+      "ours": "operation.combined_output",
+      "ours_kind": "object",
+      "upstream": null,
+      "upstream_file": null,
+      "verdict": "no_counterpart",
+      "caveat": "Combined captured output as reported; source does not distinguish stdout and stderr. No such upstream attribute."
+    },
+    {
+      "ours": "tool_definition.tool_namespace",
+      "ours_kind": "object",
+      "upstream": null,
+      "upstream_file": null,
+      "verdict": "no_counterpart",
+      "caveat": "Reported namespace of the declared tool, no invocation inferred; no tool-declaration namespace upstream."
     }
   ],
   "generated_mcp_objects": "The mcp_* objects under objects/mcp/ (0.11.0-prototype) are generated from the pinned MCP JSON Schemas by McpBindingGenerator and are not rowed one by one: OCSF 1.9.0 has no MCP vocabulary, so every one would be no_counterpart; their coverage of the pinned MCP definitions is checked by McpProtocolContainmentTest."

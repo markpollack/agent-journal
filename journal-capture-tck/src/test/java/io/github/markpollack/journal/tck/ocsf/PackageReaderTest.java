@@ -46,8 +46,8 @@ class PackageReaderTest {
         assertThat(fromEvents.standalone()).as("read from the file's declarations; run.json is ancillary").isTrue();
         assertThat(fromEvents.manifest.packageState()).isEqualTo("COMPLETED");
         assertThat(fromEvents.manifest.extensionUid()).isEqualTo(901);
-        assertThat(fromEvents.manifest.extensionVersion()).isEqualTo("0.15.0-prototype");
-        assertThat(fromEvents.manifest.contracts()).containsKey("codex-cli/rollout/0.160.1/0.4.0-prototype");
+        assertThat(fromEvents.manifest.extensionVersion()).isEqualTo("0.16.0-prototype");
+        assertThat(fromEvents.manifest.contracts()).containsKey("codex-cli/rollout/0.160.1/0.5.0-prototype");
     }
 
     @Test
@@ -93,7 +93,7 @@ class PackageReaderTest {
         assertThat(report.defects()).extracting(Check::property).containsOnly("population.usage", "operation.values", "population.responses");
         assertThat(report.missingRequired()).isEmpty();
         Path current = copy(OcsfFixtures.LIVE_CODEX, work.resolve("current"));
-        assertThat(open(current).manifest.extensionVersion()).isEqualTo("0.15.0-prototype");
+        assertThat(open(current).manifest.extensionVersion()).isEqualTo("0.16.0-prototype");
     }
 
     /**
@@ -224,7 +224,7 @@ class PackageReaderTest {
         Path fixture = copy(CODEX, work);
         editDeclarations(pkg(fixture), decls -> {
             obj(declaration(decls, "definition:type/long_t").path("definition", "body")).members().put("caption", str("Synthetic"));
-            obj(declaration(decls, "contract:codex-cli/rollout/0.160.1/0.4.0-prototype").path("contract", "embedded")).members().put("tampered", str("yes"));
+            obj(declaration(decls, "contract:codex-cli/rollout/0.160.1/0.5.0-prototype").path("contract", "embedded")).members().put("tampered", str("yes"));
         });
         editManifest(pkg(fixture), run -> obj(run.path("semantic_contract", "declarations").elements().get(0)).members().put("tampered", str("yes")));
         OcsfPackage p = open(fixture);
@@ -360,4 +360,16 @@ class PackageReaderTest {
         assertThat(full.path("source_ref", "artifact_sha256").text()).hasSize(64);
         assertThat(e.get("cli_agent")).as("the saved event is not modified").isNull();
     }
+    @Test
+    void historical015CombinedOutputAliasIsReadableButNotSemanticallyQualified(@TempDir Path work) {
+        Path historical = copyHistorical("extension-0.15.0-prototype", OcsfFixtures.CODEX_STREAM, work);
+        OcsfPackage old = open(historical);
+        assertThat(old.refused()).isFalse();
+        assertThat(old.manifest.extensionVersion()).isEqualTo("0.15.0-prototype");
+        assertThat(old.events.stream().filter(e -> e.get("tool_operation") != null)).isNotEmpty();
+        OracleReport report = OcsfFixtures.verify(historical);
+        assertThat(report.defects()).anyMatch(c -> c.evidence() != null && c.evidence().fact().contains("combined_output"));
+        assertThat(report.checks()).anyMatch(c -> c.property().equals("whole_record.coverage") && c.outcome() == Check.Outcome.VERIFIED);
+    }
+
 }

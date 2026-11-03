@@ -64,6 +64,7 @@ mapping --> framing
 mapping --> mcp_binding
 mapping --> schema
 final_assembly --> capture
+final_assembly --> terminal_receiver
 final_assembly --> run_writer
 final_assembly --> run_input
 final_assembly --> mapping

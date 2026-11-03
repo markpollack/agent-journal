@@ -1,0 +1,4209 @@
+{
+  "kind": "agent-journal/vendor-stream-inventory",
+  "version": "0.1",
+  "reviewed": "2026-11-03",
+  "cli": "Codex CLI",
+  "cli_version": "0.166.0",
+  "profile": "codex_rollout",
+  "compatibility_entry": "codex-cli/rollout/0.166.0",
+  "surface": "Native persisted rollout. Type/persistence denominator; supported common fields and explicit residual containers. This is partial coverage, not full admission. Legacy and paginated history predicates differ.",
+  "source": {
+    "repository": "openai/codex",
+    "tag": "rust-v0.166.0",
+    "commit": "593389380740f7b4762771573c447ccfdc59742f",
+    "files": {
+      "codex-rs/exec/src/exec_events.rs": "06565c097b28d3bf2ad592943cc30c776b45e236",
+      "codex-rs/exec/src/event_processor_with_jsonl_output.rs": "a92f762096ad08543eaef6d9d8cd101f23a9f182",
+      "codex-rs/protocol/src/items.rs": "220e98a1a3c45681e8a7fe814f8f9148d7e0e9e9",
+      "codex-rs/protocol/src/models.rs": "351f45c03c943fac9bc9d2f195a5b927fa844ba2",
+      "codex-rs/protocol/src/protocol.rs": "8c419c536c5a55f1354b7929eae67dc79c674350",
+      "codex-rs/core/src/tools/events.rs": "2d5262ee9b6a2955dad25bd090d27430962a8c4c",
+      "codex-rs/core/src/exec.rs": "f72396e38320e838e21b6a9ceaaa433ada62f0c0",
+      "codex-rs/rollout/src/policy.rs": "b49049f6e9b829d4b5b34daff69255c84cdaf8e9",
+      "codex-rs/rollout/src/policy_tests.rs": "87a7cf8e608d0281716072837d6729c415855063",
+      "codex-rs/exec/tests/event_processor_with_json_output.rs": "4771e96c3e23a0672233893917372916686d13fb"
+    },
+    "method": "Reviewed exact serialized types, persistence policy, emitter and tests. exec_events.rs is byte-identical to 0.160.1; processor and native persistence were reviewed at this commit. No older recording is relabelled. Native payload containers are an explicit partial field inventory; required common fields are listed separately below."
+  },
+  "dispositions": "schema/vendor/codex-cli/rollout/0.166.0-dispositions.json",
+  "families": [
+    {
+      "variant": "compacted",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "dynamic_tools_updated",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/agent_message",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/agent_reasoning",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/agent_reasoning_raw_content",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/context_compacted",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/entered_review_mode",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/exited_review_mode",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/image_generation_end",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/item_completed/AgentMessage",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "normalized",
+        "rule": "codex.rollout.item_completed.AgentMessage->model_response"
+      }
+    },
+    {
+      "variant": "event_msg/item_completed/CommandExecution",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload.item.aggregated_output",
+          "type": "native JSON",
+          "meaning": "known common obligation LIVE-02",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.completed_at_ms",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.command",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.command[]",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.cwd",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.duration",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.duration.nanos",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.duration.secs",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.exit_code",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.id",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.parsed_cmd",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.parsed_cmd[]",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.parsed_cmd[].cmd",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.parsed_cmd[].name",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.parsed_cmd[].path",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.parsed_cmd[].type",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.process_id",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.source",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.status",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.type",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.started_at_ms",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_id",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.turn_id",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.type",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "normalized",
+        "rule": "codex.rollout.CommandExecution->tool_call.operation"
+      }
+    },
+    {
+      "variant": "event_msg/item_completed/ImageGeneration",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/item_completed/McpToolCall",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/item_completed/Plan",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/item_completed/Reasoning",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload.completed_at_ms",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.id",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.raw_content",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.summary_text",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.item.type",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.started_at_ms",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_id",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.turn_id",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.type",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "normalized",
+        "rule": "codex.rollout.item_completed.Reasoning->model_response.item"
+      }
+    },
+    {
+      "variant": "event_msg/item_completed/UserMessage",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "normalized",
+        "rule": "codex.rollout.item_completed.UserMessage->prompt_turn.submitted"
+      }
+    },
+    {
+      "variant": "event_msg/item_completed/WebSearch",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/mcp_tool_call_end",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/patch_apply_end",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/sub_agent_activity",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/task_complete",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload.turn_id",
+          "type": "native JSON",
+          "meaning": "known common obligation LIVE-09",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.completed_at",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.duration_ms",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.last_agent_message",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.root_turn_id",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.started_at",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.time_to_first_token_ms",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.type",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "normalized",
+        "rule": "codex.rollout.task_complete->prompt_turn.completed"
+      }
+    },
+    {
+      "variant": "event_msg/task_started",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "normalized",
+        "rule": "codex.rollout.task_started->prompt_turn.started"
+      }
+    },
+    {
+      "variant": "event_msg/thread_goal_updated",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/thread_rolled_back",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/thread_settings_applied",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload.thread_id",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.approval_policy",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.approvals_reviewer",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.collaboration_mode",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.collaboration_mode.mode",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.collaboration_mode.settings",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.collaboration_mode.settings.developer_instructions",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.collaboration_mode.settings.model",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.collaboration_mode.settings.reasoning_effort",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.cwd",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.disabled_plugin_ids",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.model",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.model_provider_id",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.permission_profile",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.permission_profile.file_system",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.permission_profile.file_system.entries",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.permission_profile.file_system.entries[]",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.permission_profile.file_system.entries[].access",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.permission_profile.file_system.entries[].path",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.permission_profile.file_system.entries[].path.type",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.permission_profile.file_system.entries[].path.value",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.permission_profile.file_system.entries[].path.value.kind",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.permission_profile.file_system.type",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.permission_profile.network",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.permission_profile.type",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.reasoning_effort",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.runtime_workspace_roots",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.thread_settings.runtime_workspace_roots[]",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.type",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "normalized",
+        "rule": "codex.rollout.thread_settings_applied->session_context.settings"
+      }
+    },
+    {
+      "variant": "event_msg/token_count",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload.info",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.info.last_token_usage",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.info.last_token_usage.cache_write_input_tokens",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.info.last_token_usage.cached_input_tokens",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.info.last_token_usage.input_tokens",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.info.last_token_usage.output_tokens",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.info.last_token_usage.reasoning_output_tokens",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.info.last_token_usage.total_tokens",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.info.last_usage_includes_reasoning",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.info.model_context_window",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.info.total_token_usage",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.info.total_token_usage.cache_write_input_tokens",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.info.total_token_usage.cached_input_tokens",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.info.total_token_usage.input_tokens",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.info.total_token_usage.output_tokens",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.info.total_token_usage.reasoning_output_tokens",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.info.total_token_usage.total_tokens",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.rate_limits",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.rate_limits.credits",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.rate_limits.credits.balance",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.rate_limits.credits.has_credits",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.rate_limits.credits.unlimited",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.rate_limits.individual_limit",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.rate_limits.limit_id",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.rate_limits.limit_name",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.rate_limits.plan_type",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.rate_limits.primary",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.rate_limits.primary.resets_at",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.rate_limits.primary.used_percent",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.rate_limits.primary.window_minutes",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.rate_limits.rate_limit_reached_type",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.rate_limits.secondary",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.rate_limits.spend_control_reached",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.type",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/turn_aborted",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/user_message",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/web_search_end",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "inter_agent_communication",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "inter_agent_communication_metadata",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "realtime_item",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "response_item/additional_tools",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "metadata",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "metadata.client_authored",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "metadata.mcp_attribution",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "metadata.mcp_attribution.status",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.id",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.role",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.tools",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.tools[]",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.tools[].description",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.tools[].name",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.tools[].tools",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.tools[].tools[]",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.tools[].tools[].description",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.tools[].tools[].format",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.tools[].tools[].name",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.tools[].tools[].parameters",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.tools[].tools[].strict",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.tools[].tools[].type",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.tools[].type",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.type",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "normalized",
+        "rule": "codex.rollout.additional_tools->session_context.context"
+      }
+    },
+    {
+      "variant": "response_item/agent_message",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "response_item/compaction",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "response_item/configuration_update",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "response_item/context_compaction",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "response_item/custom_tool_call",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "normalized",
+        "rule": "codex.rollout.custom_tool_call->tool_call.requested"
+      }
+    },
+    {
+      "variant": "response_item/custom_tool_call_output",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "normalized",
+        "rule": "codex.rollout.custom_tool_call_output->tool_call.result"
+      }
+    },
+    {
+      "variant": "response_item/function_call",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "response_item/function_call_output",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "response_item/image_generation_call",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "response_item/local_shell_call",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "response_item/message/assistant",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "normalized",
+        "rule": "codex.rollout.assistant_message->model_response"
+      }
+    },
+    {
+      "variant": "response_item/message/developer",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "normalized",
+        "rule": "codex.rollout.developer_message->session_context.context"
+      }
+    },
+    {
+      "variant": "response_item/message/user",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "normalized",
+        "rule": "codex.rollout.user_message->prompt_turn.submitted"
+      }
+    },
+    {
+      "variant": "response_item/reasoning",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload.encrypted_content",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.id",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.internal_chat_message_metadata_passthrough",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.internal_chat_message_metadata_passthrough.turn_id",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.summary",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        },
+        {
+          "path": "payload.type",
+          "type": "native JSON",
+          "meaning": "source structural field; exact common obligations separately named",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs; codex-rs/protocol/src/models.rs; codex-rs/protocol/src/protocol.rs"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "normalized",
+        "rule": "codex.rollout.reasoning->model_response.item"
+      }
+    },
+    {
+      "variant": "response_item/tool_search_call",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "response_item/tool_search_output",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "response_item/web_search_call",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "retained_context",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "security_risk_score",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "session_meta",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "normalized",
+        "rule": "codex.rollout.session_meta->session_context.settings"
+      }
+    },
+    {
+      "variant": "token_usage_record",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "normalized",
+        "rule": "codex.rollout.token_usage_record->session_context.accounting"
+      }
+    },
+    {
+      "variant": "turn_context",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "normalized",
+        "rule": "codex.rollout.turn_context->session_context.settings"
+      }
+    },
+    {
+      "variant": "world_state",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "normalized",
+        "rule": "codex.rollout.world_state->session_context.settings"
+      }
+    },
+    {
+      "variant": "event_msg/item_completed/FunctionCallOutput",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/item_completed/HookPrompt",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/item_completed/DynamicToolCall",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/item_completed/CollabAgentToolCall",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/item_completed/SubAgentActivity",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/item_completed/ImageView",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/item_completed/Extension",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/item_completed/EnteredReviewMode",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/item_completed/ExitedReviewMode",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/item_completed/FileChange",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    },
+    {
+      "variant": "event_msg/item_completed/ContextCompaction",
+      "emitted": "conditional",
+      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
+      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "fields": [
+        {
+          "path": "timestamp",
+          "type": "string",
+          "meaning": "reported timestamp",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "type",
+          "type": "string",
+          "meaning": "rollout family",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "ordinal",
+          "type": "integer",
+          "meaning": "reported optional native ordinal",
+          "availability": "conditional",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload",
+          "type": "object",
+          "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
+          "availability": "always",
+          "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        }
+      ],
+      "vendor_tests": [
+        "codex-rs/rollout/src/policy_tests.rs"
+      ],
+      "journal": {
+        "behavior": "retained-only",
+        "rule": "codex.rollout.fallback->source_record"
+      }
+    }
+  ],
+  "omitted_by_projection": [
+    {
+      "what": "transient events and deltas",
+      "basis": "codex-rs/rollout/src/policy.rs persisted_event_msg; not all EventMsg variants are persisted"
+    },
+    {
+      "what": "monetary cost",
+      "basis": "no cost field in token usage serialized types"
+    },
+    {
+      "what": "complete large command or MCP output",
+      "basis": "persistence policy truncates above 64 KiB with explicit marker; cannot claim original untruncated payload"
+    }
+  ],
+  "coverage_obligations": [
+    {
+      "id": "LIVE-01",
+      "concepts": [
+        "user-submission",
+        "ordered-content-blocks"
+      ],
+      "variant": "response_item/message/user",
+      "field": "payload",
+      "applicability": "applicable",
+      "basis": "Pinned serialized family and emitter/persistence policy above; absence of a witness is not non-applicability. No dollar cost is reported.",
+      "selector": {
+        "variant": "response_item/message/user"
+      },
+      "minimum": 1,
+      "property": "fact.value",
+      "canonical_pointer": "/content_blocks/",
+      "claim_scope": "partial selector evidence only",
+      "not_established": "One text submission/answer shape; media and broader prompt controls remain separate."
+    },
+    {
+      "id": "LIVE-02",
+      "concepts": [
+        "observed-operations",
+        "tool-result-ownership-and-content"
+      ],
+      "variant": "event_msg/item_completed/CommandExecution",
+      "field": "payload.item.aggregated_output",
+      "applicability": "applicable",
+      "basis": "Pinned serialized family and emitter/persistence policy above; absence of a witness is not non-applicability. No dollar cost is reported.",
+      "selector": {
+        "variant": "event_msg/item_completed/CommandExecution"
+      },
+      "minimum": 1,
+      "property": "fact.value",
+      "canonical_pointer": "/tool_operation/combined_output",
+      "claim_scope": "partial selector evidence only",
+      "not_established": "Command output only; file write/edit is unexercised."
+    },
+    {
+      "id": "LIVE-03",
+      "concepts": [
+        "operation-attribution",
+        "source-occurrence-provenance"
+      ],
+      "variant": "event_msg/item_completed/CommandExecution",
+      "field": "payload.item.aggregated_output",
+      "applicability": "applicable",
+      "basis": "Pinned serialized family and emitter/persistence policy above; absence of a witness is not non-applicability. No dollar cost is reported.",
+      "selector": {
+        "variant": "event_msg/item_completed/CommandExecution"
+      },
+      "minimum": 2,
+      "property": "fact.value",
+      "canonical_pointer": "/tool_operation/uid",
+      "claim_scope": "partial selector evidence only",
+      "not_established": "Two distinct equal-output operations in synthetic input; no parallel-overlap evidence."
+    },
+    {
+      "id": "LIVE-04",
+      "concepts": [
+        "tool-result-error-and-status"
+      ],
+      "variant": "event_msg/item_completed/CommandExecution",
+      "field": "payload",
+      "applicability": "applicable",
+      "basis": "Pinned serialized family and emitter/persistence policy above; absence of a witness is not non-applicability. No dollar cost is reported.",
+      "selector": {
+        "variant": "event_msg/item_completed/CommandExecution",
+        "equals": {
+          "payload.item.status": "failed"
+        }
+      },
+      "minimum": 1,
+      "property": "operation.values",
+      "canonical_pointer": "/tool_operation/",
+      "claim_scope": "partial selector evidence only",
+      "not_established": "Failed operation selector only; recovery additionally requires later activity and is unexercised."
+    },
+    {
+      "id": "LIVE-05",
+      "concepts": [
+        "permission-decisions",
+        "operation-and-request-reported-state"
+      ],
+      "variant": "event_msg/item_completed/CommandExecution",
+      "field": "payload",
+      "applicability": "conditional",
+      "basis": "Pinned serialized family and emitter/persistence policy above; absence of a witness is not non-applicability. No dollar cost is reported.",
+      "selector": {
+        "variant": "event_msg/item_completed/CommandExecution",
+        "equals": {
+          "payload.item.status": "declined"
+        }
+      },
+      "minimum": 1,
+      "property": "operation.values",
+      "canonical_pointer": "/tool_operation/",
+      "claim_scope": "partial selector evidence only",
+      "not_established": "Conditional reported decline, not a fabricated permission decision."
+    },
+    {
+      "id": "LIVE-06",
+      "concepts": [
+        "structured-tool-result-detail"
+      ],
+      "variant": "event_msg/item_completed/McpToolCall",
+      "field": "payload",
+      "applicability": "conditional",
+      "basis": "Pinned serialized family and emitter/persistence policy above; absence of a witness is not non-applicability. No dollar cost is reported.",
+      "selector": {
+        "variant": "event_msg/item_completed/McpToolCall"
+      },
+      "minimum": 1,
+      "property": "whole_record.coverage",
+      "canonical_pointer": "/data",
+      "claim_scope": "partial selector evidence only",
+      "not_established": "MCP structured calls/results known from vendor types, current route witness unexercised."
+    },
+    {
+      "id": "LIVE-07",
+      "concepts": [
+        "child-runs"
+      ],
+      "variant": "event_msg/item_completed/CollabAgentToolCall",
+      "field": "payload",
+      "applicability": "conditional",
+      "basis": "Pinned serialized family and emitter/persistence policy above; absence of a witness is not non-applicability. No dollar cost is reported.",
+      "selector": {
+        "variant": "event_msg/item_completed/CollabAgentToolCall"
+      },
+      "minimum": 1,
+      "property": "whole_record.coverage",
+      "canonical_pointer": "/data",
+      "claim_scope": "partial selector evidence only",
+      "not_established": "Child/coordination family known; no current-route child interior or lifecycle witness."
+    },
+    {
+      "id": "LIVE-08",
+      "concepts": [
+        "interrupted-run-and-never-observed-result"
+      ],
+      "variant": "event_msg/turn_aborted",
+      "field": "payload",
+      "applicability": "applicable",
+      "basis": "Pinned serialized family and emitter/persistence policy above; absence of a witness is not non-applicability. No dollar cost is reported.",
+      "selector": {
+        "variant": "event_msg/turn_aborted"
+      },
+      "minimum": 1,
+      "property": "whole_record.coverage",
+      "canonical_pointer": "/data",
+      "claim_scope": "partial selector evidence only",
+      "not_established": "Open operation/abort trigger alone does not prove controlled interruption; current area unexercised."
+    },
+    {
+      "id": "LIVE-09",
+      "concepts": [
+        "usage-scope-finality-and-repeats",
+        "reasoning-token-counts",
+        "reported-cost"
+      ],
+      "variant": "event_msg/token_count",
+      "field": "payload.info",
+      "applicability": "applicable",
+      "basis": "Pinned serialized family and emitter/persistence policy above; absence of a witness is not non-applicability. No dollar cost is reported.",
+      "selector": {
+        "variant": "event_msg/token_count"
+      },
+      "minimum": 1,
+      "property": "fact.usage.value",
+      "canonical_pointer": "/output_tokens",
+      "claim_scope": "partial selector evidence only",
+      "not_established": "Reported token and reasoning observations only; no monetary cost emitted, absence is not zero."
+    },
+    {
+      "id": "LIVE-10",
+      "concepts": [
+        "whole-record-residual-and-reconstruction",
+        "injected-context",
+        "reasoning-blocks-and-signature"
+      ],
+      "variant": "response_item/additional_tools",
+      "field": "payload",
+      "applicability": "applicable",
+      "basis": "Pinned serialized family and emitter/persistence policy above; absence of a witness is not non-applicability. No dollar cost is reported.",
+      "selector": {
+        "variant": "response_item/additional_tools"
+      },
+      "minimum": 1,
+      "property": "fact.value",
+      "canonical_pointer": "/tool_definitions/",
+      "claim_scope": "partial selector evidence only",
+      "not_established": "Additional declarations and empty/opaque reasoning only; other rich and unknown families remain partial."
+    },
+    {
+      "id": "command-combined-output",
+      "area": "LIVE-02",
+      "concepts": [
+        "observed-operations"
+      ],
+      "variant": "event_msg/item_completed/CommandExecution",
+      "field": "payload.item.aggregated_output",
+      "applicability": "applicable",
+      "basis": "Required common meaning from pinned native type/emitter; whole record retention alone does not discharge it.",
+      "selector": {
+        "variant": "event_msg/item_completed/CommandExecution"
+      },
+      "minimum": 1,
+      "property": "fact.value",
+      "canonical_pointer": "/tool_operation/combined_output"
+    },
+    {
+      "id": "command-native-owner",
+      "area": "LIVE-03",
+      "concepts": [
+        "source-occurrence-provenance"
+      ],
+      "variant": "event_msg/item_completed/CommandExecution",
+      "field": "payload.item.id",
+      "applicability": "applicable",
+      "basis": "Required common meaning from pinned native type/emitter; whole record retention alone does not discharge it.",
+      "selector": {
+        "variant": "event_msg/item_completed/CommandExecution"
+      },
+      "minimum": 1,
+      "property": "fact.origin",
+      "canonical_pointer": "/source_ref/native_uid"
+    },
+    {
+      "id": "additional-tools-origin",
+      "area": "LIVE-10",
+      "concepts": [
+        "source-occurrence-provenance"
+      ],
+      "variant": "response_item/additional_tools",
+      "field": "payload.id",
+      "applicability": "applicable",
+      "basis": "Required common meaning from pinned native type/emitter; whole record retention alone does not discharge it.",
+      "selector": {
+        "variant": "response_item/additional_tools"
+      },
+      "minimum": 1,
+      "property": "fact.origin",
+      "canonical_pointer": "/source_ref/native_uid"
+    },
+    {
+      "id": "additional-tools-definitions",
+      "area": "LIVE-10",
+      "concepts": [
+        "injected-context"
+      ],
+      "variant": "response_item/additional_tools",
+      "field": "payload.tools",
+      "applicability": "applicable",
+      "basis": "Required common meaning from pinned native type/emitter; whole record retention alone does not discharge it.",
+      "selector": {
+        "variant": "response_item/additional_tools"
+      },
+      "minimum": 1,
+      "property": "fact.value",
+      "canonical_pointer": "/tool_definitions/"
+    },
+    {
+      "id": "settings-identity",
+      "area": "LIVE-10",
+      "concepts": [
+        "launch-and-session-settings"
+      ],
+      "variant": "event_msg/thread_settings_applied",
+      "field": "payload.thread_id",
+      "applicability": "applicable",
+      "basis": "Required common meaning from pinned native type/emitter; whole record retention alone does not discharge it.",
+      "selector": {
+        "variant": "event_msg/thread_settings_applied"
+      },
+      "minimum": 1,
+      "property": "fact.origin",
+      "canonical_pointer": "/session_uid"
+    },
+    {
+      "id": "reasoning-item-identity",
+      "area": "LIVE-09",
+      "concepts": [
+        "reasoning-blocks-and-signature"
+      ],
+      "variant": "event_msg/item_completed/Reasoning",
+      "field": "payload.item.id",
+      "applicability": "applicable",
+      "basis": "Required common meaning from pinned native type/emitter; whole record retention alone does not discharge it.",
+      "selector": {
+        "variant": "event_msg/item_completed/Reasoning"
+      },
+      "minimum": 1,
+      "property": "fact.origin",
+      "canonical_pointer": "/source_ref/native_uid"
+    },
+    {
+      "id": "reasoning-native-origin",
+      "area": "LIVE-09",
+      "concepts": [
+        "source-occurrence-provenance"
+      ],
+      "variant": "response_item/reasoning",
+      "field": "payload.id",
+      "applicability": "applicable",
+      "basis": "Required common meaning from pinned native type/emitter; whole record retention alone does not discharge it.",
+      "selector": {
+        "variant": "response_item/reasoning"
+      },
+      "minimum": 1,
+      "property": "fact.origin",
+      "canonical_pointer": "/source_ref/native_uid"
+    },
+    {
+      "id": "reasoning-opaque-content",
+      "area": "LIVE-09",
+      "concepts": [
+        "redacted-or-encrypted-reasoning"
+      ],
+      "variant": "response_item/reasoning",
+      "field": "payload.encrypted_content",
+      "applicability": "applicable",
+      "basis": "Required common meaning from pinned native type/emitter; whole record retention alone does not discharge it.",
+      "selector": {
+        "variant": "response_item/reasoning"
+      },
+      "minimum": 1,
+      "property": "fact.value",
+      "canonical_pointer": "/content_blocks/"
+    },
+    {
+      "id": "intermediate-final-usage",
+      "area": "LIVE-09",
+      "concepts": [
+        "usage-scope-finality-and-repeats"
+      ],
+      "variant": "event_msg/token_count",
+      "field": "payload.info",
+      "applicability": "applicable",
+      "basis": "Required common meaning from pinned native type/emitter; whole record retention alone does not discharge it.",
+      "selector": {
+        "variant": "event_msg/token_count"
+      },
+      "minimum": 2,
+      "property": "fact.usage.value",
+      "canonical_pointer": "/output_tokens"
+    }
+  ],
+  "evidence_fixtures": [
+    "syn-codex-onboarding-rollout-0.166.0"
+  ]
+}

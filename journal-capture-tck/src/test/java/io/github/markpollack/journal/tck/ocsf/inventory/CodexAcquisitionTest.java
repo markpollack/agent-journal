@@ -58,6 +58,18 @@ class CodexAcquisitionTest {
             assertThat(work.resolve("rejected")).doesNotExist();
         }
     }
+    @Test void historicalAndCurrentExpectationsRequireExactProfileSchemaPairings() throws Exception {
+        Json historical = CodexAcquisition.expectation("0.1.0-prototype", "0.15.0-prototype");
+        assertThat(historical.member("entities").elements()).isEmpty();
+        assertThat(CodexAcquisition.expectation("0.2.0-prototype", "0.16.0-prototype").member("entities").elements()).hasSize(1);
+        Path exact = Path.of(getClass().getResource("/ocsf/qualification/codex-cli-0.166.0-profile-0.1.json").toURI());
+        assertThat(NativeArtifact.sha256(Files.readAllBytes(exact))).isEqualTo("c96631cd56fc5bc31b66af9d0d1a4b5a6bc7036a860f8cc8004d0fe73f5311dc");
+        for (String[] pair : List.of(new String[]{"0.1.0-prototype", "0.16.0-prototype"},
+                new String[]{"0.2.0-prototype", "0.15.0-prototype"}, new String[]{"unknown", "0.16.0-prototype"})) {
+            assertThatThrownBy(() -> CodexAcquisition.expectation(pair[0], pair[1])).isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("profile/schema combination");
+        }
+    }
     private static void rehash(Path input, Path file) throws IOException {
         Json m = NeutralJson.readDocument(input); byte[] bytes = Files.readAllBytes(file);
         Json.JObject source = (Json.JObject) m.member("sources").elements().stream().filter(s -> s.member("role").text().equals("transcript")).findFirst().orElseThrow();

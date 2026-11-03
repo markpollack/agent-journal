@@ -54,7 +54,12 @@ public final class ExpectedFacts {
      * may carry one.
      */
     public record Response(int recordIndex, String id, List<Json> blocks, String stopReason, boolean terminal, String model, Integer reasoningForm, Integer itemIdentityBasisId,
-            Integer statedActivity, Integer textUpdate) {
+            Integer statedActivity, Integer textUpdate, List<ReasoningContent> reasoningContent) {
+        public Response(int recordIndex, String id, List<Json> blocks, String stopReason, boolean terminal, String model, Integer reasoningForm, Integer itemIdentityBasisId, Integer statedActivity, Integer textUpdate) {
+            this(recordIndex, id, blocks, stopReason, terminal, model, reasoningForm, itemIdentityBasisId, statedActivity, textUpdate, null);
+        }
+
+        Integer blockForm(int index) { return reasoningContent == null ? reasoningForm : Integer.valueOf(reasoningContent.get(index).form()); }
         public Response(int recordIndex, String id, List<Json> blocks, String stopReason, boolean terminal, String model) {
             this(recordIndex, id, blocks, stopReason, terminal, model, null, null, null, null);
         }
@@ -68,6 +73,9 @@ public final class ExpectedFacts {
             return statedActivity != null ? statedActivity : itemIdentityBasisId != null ? 3 : terminal ? 2 : 1;
         }
     }
+
+    /** Native per-block reasoning meaning when one item carries several forms. */
+    public record ReasoningContent(String type, String text, int form) { }
 
     public record Prompt(int recordIndex, String turnUid, List<String> texts) {
     }

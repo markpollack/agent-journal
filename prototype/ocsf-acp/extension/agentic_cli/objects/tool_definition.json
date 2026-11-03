@@ -39,6 +39,9 @@
     "data": {
       "description": "The native declaration exactly as reported.",
       "requirement": "optional"
+    },
+    "tool_namespace": {
+      "requirement": "optional"
     }
   }
 }

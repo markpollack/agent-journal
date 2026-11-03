@@ -64,9 +64,9 @@ class CodexStreamMapperTest {
         operation(events.get(5), "item_2", "in_progress", null, 0);
         operation(events.get(6), "item_2", "failed", "1", 2);
         operation(events.get(7), "item_3", "in_progress", null, 0);
-        assertThat(events.get(4).path("tool_operation", "stdout").text()).isEqualTo("alpha");
-        assertThat(events.get(6).path("tool_operation", "stdout").text()).isEqualTo("cat: missing.txt: No such file or directory\n");
-        assertThat(events.get(3).path("tool_operation", "stdout").text()).as("an empty aggregated_output is still a reported value").isEqualTo("");
+        assertThat(events.get(4).path("tool_operation", "combined_output").text()).isEqualTo("alpha");
+        assertThat(events.get(6).path("tool_operation", "combined_output").text()).isEqualTo("cat: missing.txt: No such file or directory\n");
+        assertThat(events.get(3).path("tool_operation", "combined_output").text()).as("an empty aggregated_output is still a reported value").isEqualTo("");
         // 9 unknown item type, 10 unknown event type: fallback, whole record retained
         assertThat(events.get(8).member("class_name").text()).isEqualTo("Source Record");
         assertThat(events.get(8).member("record_type").text()).isEqualTo("item.completed/synthetic_unknown_item");

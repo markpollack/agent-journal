@@ -4,16 +4,43 @@
   "extends": "object",
   "name": "operation",
   "attributes": {
-    "uid": {"description": "The operation's native identifier.", "requirement": "required"},
-    "identity_basis_id": {"requirement": "optional"},
-    "identity_basis": {"requirement": "optional"},
-    "argv": {"requirement": "optional"},
-    "command_line": {"requirement": "optional"},
-    "exit_code": {"requirement": "optional"},
-    "reported_state": {"requirement": "optional"},
-    "stdout": {"requirement": "optional"},
-    "stderr": {"requirement": "optional"},
-    "attribution": {"requirement": "required"},
-    "data": {"description": "The native operation record exactly as reported.", "requirement": "required"}
+    "uid": {
+      "description": "The operation's native identifier.",
+      "requirement": "required"
+    },
+    "identity_basis_id": {
+      "requirement": "optional"
+    },
+    "identity_basis": {
+      "requirement": "optional"
+    },
+    "argv": {
+      "requirement": "optional"
+    },
+    "command_line": {
+      "requirement": "optional"
+    },
+    "exit_code": {
+      "requirement": "optional"
+    },
+    "reported_state": {
+      "requirement": "optional"
+    },
+    "stdout": {
+      "requirement": "optional"
+    },
+    "stderr": {
+      "requirement": "optional"
+    },
+    "attribution": {
+      "requirement": "required"
+    },
+    "data": {
+      "description": "The native operation record exactly as reported.",
+      "requirement": "required"
+    },
+    "combined_output": {
+      "requirement": "optional"
+    }
   }
 }

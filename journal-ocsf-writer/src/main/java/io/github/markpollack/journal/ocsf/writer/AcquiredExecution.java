@@ -30,7 +30,9 @@ final class AcquiredExecution {
         profile = AssemblyProfile.bundled(text(document, "profile"));
         require(profile.id().equals(text(document, "profile_id")), "profile identity mismatch");
         complete = bool(document, "complete");
-        readSources(manifest.toAbsolutePath().getParent().toRealPath());
+        Path base = manifest.toAbsolutePath().getParent().toRealPath();
+        readSources(base);
+        if (CodexOriginalQualification.PROFILE.equals(profile.id())) CodexOriginalQualification.validate(document, base);
     }
 
     private static void validateRun(Jv run) {
@@ -114,7 +116,7 @@ final class AcquiredExecution {
         AssemblyPlan plan = plan();
         List<String> order = AssemblyProfile.strings(profile.document().member("feed_order"));
         sources.sort(java.util.Comparator.comparingInt(i -> order.indexOf(optional(i.source(), "role"))));
-        try (OcsfRunWriter writer = binding == null ? OcsfRunWriter.openAssembly(out, run(), SchemaPin.bundled(), options, plan)
+        try (OcsfRunWriter writer = binding == null ? OcsfRunWriter.openAcquiredAssembly(out, run(), SchemaPin.bundled(), options, plan)
                 : OcsfRunWriter.openTerminalAssembly(out, run(), options, plan, binding)) {
             writer.processOutcome((Jv.Obj) document.member("process"));
             if (!complete) { writer.acquisitionIncomplete("caller acquisition incomplete; see launch_settings.acquired_execution"); }

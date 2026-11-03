@@ -114,13 +114,7 @@ public final class FinalComparisons {
                                             .thenComparingInt(event -> event.recordIndex()))
                             .toList();
             for (Event observation : group) {
-                collect(
-                        pkg,
-                        observation,
-                        group.get(0) == observation,
-                        assertions,
-                        nativeChecks,
-                        expected);
+                collect(observation, group.get(0) == observation, expected);
             }
             List<AssertionAccounting.Assertion> actual =
                     assertions.stream()
@@ -134,7 +128,7 @@ public final class FinalComparisons {
             actual.forEach(
                     a ->
                             byKey.computeIfAbsent(
-                                            FinalIdentity.key(finalEvent.json, a.path()),
+                                            FinalSelection.wholeField(finalEvent, a.path(), specification) ? a.path() : FinalIdentity.key(finalEvent.json, a.path()),
                                             k -> new ArrayList<>())
                                     .add(a));
             AssemblyEvidence.check(
@@ -143,10 +137,33 @@ public final class FinalComparisons {
                     finalEvent,
                     group,
                     assertions,
-                    FinalRelation.relation(expected, group.size()));
+                    FinalSelection.wholeFieldDifference(group, specification) ? 5 : FinalRelation.relation(expected, group.size()));
             Set<String> keys = new java.util.LinkedHashSet<>(expected.keySet());
             keys.addAll(byKey.keySet());
             keys.forEach(key -> compare(finalEvent, key, expected, byKey));
+        }
+
+        private void collect(Event source, boolean primary, Map<String, List<Supported>> expected) {
+            String prefix = prefix(pkg, source);
+            for (AssertionAccounting.Assertion assertion : assertions) {
+                if (!contributing(assertion, prefix, primary)) {
+                    continue;
+                }
+                Supported support = support(source, assertion, nativeChecks);
+                if (support != null) {
+                    if (FinalSelection.wholeField(source, support.pointer(), specification)) support = new Supported(support.pointer(), support.pointer(), support.value(), support.check(), support.finality(), support.event());
+                    expected.computeIfAbsent(support.key(), k -> new ArrayList<>()).add(support);
+                }
+            }
+        }
+
+        private void unsupported(boolean whole, List<AssertionAccounting.Assertion> values, String key) {
+            if (whole && !values.isEmpty()) sourceReport.add(Check.Category.NORMALIZATION, "assembly.selection.extra", "assembly", Check.Outcome.DEFECTIVE, "non-authoritative contribution at " + key);
+        }
+
+        private Json wanted(String key, List<Supported> supported, Map<String, List<Supported>> expected) {
+            if (key.contains("/missing_required/") && FinalSelection.suppliedProtocolMember(supported, expected)) return null;
+            return FinalSelection.merge(supported.stream().map(Supported::value).toList());
         }
 
         private void compare(
@@ -155,26 +172,23 @@ public final class FinalComparisons {
                 Map<String, List<Supported>> expected,
                 Map<String, List<AssertionAccounting.Assertion>> byKey) {
             List<AssertionAccounting.Assertion> values = byKey.getOrDefault(key, List.of());
-            List<Supported> supported =
-                    FinalSelection.selected(expected.getOrDefault(key, List.of()), expected);
-            supported = FinalSelection.authority(supported, finalEvent, specification, inputs);
+            List<Supported> candidates = expected.getOrDefault(key, List.of());
+            boolean whole = FinalSelection.wholeField(finalEvent, key, specification);
+            List<Supported> supported = whole ? FinalSelection.authority(candidates, finalEvent, specification, inputs)
+                    : FinalSelection.authority(FinalSelection.selected(candidates, expected), finalEvent, specification, inputs);
             if (supported.isEmpty()) {
+                unsupported(whole, values, key);
                 return; // remains UNCHECKED in the output census; no source comparison exists to
                 // compose
             }
-            Json wanted = FinalSelection.merge(supported.stream().map(Supported::value).toList());
-            if (key.contains("/missing_required/")
-                    && FinalSelection.suppliedProtocolMember(supported, expected)) {
-                wanted = null;
-            }
-            boolean conflict = wanted == null;
+            Json wanted = wanted(key, supported, expected);
             List<String> nativeAddresses =
                     supported.stream()
                             .flatMap(s -> s.check().evidence().nativeAddresses().stream())
                             .distinct()
                             .toList();
             String fact = "final:" + finalEvent.text("assembly", "entity_uid") + ":" + key;
-            Json expectedValue = conflict ? null : wanted;
+            Json expectedValue = wanted;
             sourceReport.expect(
                     new OracleReport.JsonExpectation(
                             "assembly",
@@ -205,25 +219,6 @@ public final class FinalComparisons {
                                     address,
                                     expectedValue,
                                     actualValue)));
-        }
-    }
-
-    private static void collect(
-            OcsfPackage pkg,
-            Event source,
-            boolean primary,
-            List<AssertionAccounting.Assertion> assertions,
-            List<Check> checks,
-            Map<String, List<Supported>> expected) {
-        String prefix = prefix(pkg, source);
-        for (AssertionAccounting.Assertion assertion : assertions) {
-            if (!contributing(assertion, prefix, primary)) {
-                continue;
-            }
-            Supported support = support(source, assertion, checks);
-            if (support != null) {
-                expected.computeIfAbsent(support.key(), k -> new ArrayList<>()).add(support);
-            }
         }
     }
 
