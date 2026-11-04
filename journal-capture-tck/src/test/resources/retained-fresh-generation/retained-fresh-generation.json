@@ -1,0 +1,216 @@
+{
+  "kind": "journal-retained-fresh-generation/1",
+  "logicalSessionId": "L",
+  "connectionId": "G",
+  "nativeSessionId": "7b1e0c2a-5d7f-4a3e-9c1b-2f6d8e4a1c3d",
+  "cliVersion": "2.1.316",
+  "captureStart": "2026-11-04T00:00:00Z",
+  "sealed": true,
+  "observedResourcesTerminated": true,
+  "stdoutNaturalEof": true,
+  "stderrNaturalEof": true,
+  "overflow": false,
+  "sources": [
+    {
+      "source": "STDIN",
+      "path": "stdin.bin",
+      "origin": "synthetic-fresh-generation/stdin.bin",
+      "sha256": "d70709f06cf886cc337085ad6ca217418b226d4b116a389bded7cd5d70bc7225",
+      "size": 208,
+      "observed": 208,
+      "dropped": 0
+    },
+    {
+      "source": "STDOUT",
+      "path": "stdout.bin",
+      "origin": "synthetic-fresh-generation/stdout.bin",
+      "sha256": "7ef5928b09917e3172d1e5f9db38b54ce0386ba5747701b70d7a1be038b0d03b",
+      "size": 544,
+      "observed": 544,
+      "dropped": 0
+    },
+    {
+      "source": "TRANSCRIPT",
+      "path": "native.jsonl",
+      "origin": "synthetic-fresh-generation/native.jsonl",
+      "sha256": "8b6034d61e8778542944bbe3b1fe4da306b9a3912ff17a8a6d436c5585092b55",
+      "size": 792,
+      "observed": 792,
+      "dropped": 0
+    },
+    {
+      "source": "STDERR",
+      "path": "stderr.bin",
+      "origin": "synthetic-fresh-generation/stderr.bin",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "observed": 0,
+      "dropped": 0
+    }
+  ],
+  "turns": [
+    {
+      "executionId": "E1",
+      "decisionId": "D1",
+      "prompt": {
+        "source": "STDIN",
+        "start": 87,
+        "end": 147,
+        "sha256": "a7d2a77ccd3d4f0190e3825a9babf379fffe71add2236e61d553c438f53c3f2c"
+      },
+      "result": {
+        "source": "STDOUT",
+        "start": 205,
+        "end": 374,
+        "sha256": "75be1446e28b1f89a5f253e3a9733751265b260bb6775e10b3595060a1d540d4"
+      },
+      "stdoutRecords": [
+        {
+          "source": "STDOUT",
+          "start": 205,
+          "end": 374,
+          "sha256": "75be1446e28b1f89a5f253e3a9733751265b260bb6775e10b3595060a1d540d4"
+        }
+      ],
+      "nativeRecords": [
+        {
+          "source": "TRANSCRIPT",
+          "start": 0,
+          "end": 175,
+          "sha256": "e8df56981e072c9d8320f2c9762e6b3e1021a3fc1500aaf064371e8361415d0d"
+        },
+        {
+          "source": "TRANSCRIPT",
+          "start": 175,
+          "end": 395,
+          "sha256": "57e3dd86f4ff6fd0764b16f7574321376b66c241bb805dec091bf7f28724eaaa"
+        }
+      ],
+      "nativePrefixBefore": {
+        "state": "ABSENT",
+        "observation": "before-first-dispatch"
+      },
+      "nativePrefixAfter": {
+        "bytes": 395,
+        "sha256": "49df6d80105d1b54a3af3d48cb8552e9a4542d0e622b1b30f77122c6afd4c382"
+      },
+      "startOffsets": {
+        "STDIN": 87,
+        "STDOUT": 205,
+        "STDERR": 0
+      },
+      "endOffsets": {
+        "STDIN": 147,
+        "STDOUT": 374,
+        "STDERR": 0
+      }
+    },
+    {
+      "executionId": "E2",
+      "decisionId": "D2",
+      "prompt": {
+        "source": "STDIN",
+        "start": 147,
+        "end": 208,
+        "sha256": "4cdc17410ee85e22777b86dbb130ce4d4e6775231e9d69d4e0c70b9a91f94591"
+      },
+      "result": {
+        "source": "STDOUT",
+        "start": 374,
+        "end": 544,
+        "sha256": "d18bc2e7aa1e2992efe02992285bc4364bae6847c0099117563908a3ca7d160b"
+      },
+      "stdoutRecords": [
+        {
+          "source": "STDOUT",
+          "start": 374,
+          "end": 544,
+          "sha256": "d18bc2e7aa1e2992efe02992285bc4364bae6847c0099117563908a3ca7d160b"
+        }
+      ],
+      "nativeRecords": [
+        {
+          "source": "TRANSCRIPT",
+          "start": 395,
+          "end": 571,
+          "sha256": "0ae35d93e2705f3980f94c88fdc02ddc6ede06b0b89d20350fb8659e9812e79a"
+        },
+        {
+          "source": "TRANSCRIPT",
+          "start": 571,
+          "end": 792,
+          "sha256": "82bb3dc030b96c4262e17ed1f4895c0b76a81754be30a3d6437ee9621c16319b"
+        }
+      ],
+      "nativePrefixBefore": {
+        "bytes": 395,
+        "sha256": "49df6d80105d1b54a3af3d48cb8552e9a4542d0e622b1b30f77122c6afd4c382"
+      },
+      "nativePrefixAfter": {
+        "bytes": 792,
+        "sha256": "8b6034d61e8778542944bbe3b1fe4da306b9a3912ff17a8a6d436c5585092b55"
+      },
+      "startOffsets": {
+        "STDIN": 147,
+        "STDOUT": 374,
+        "STDERR": 0
+      },
+      "endOffsets": {
+        "STDIN": 208,
+        "STDOUT": 544,
+        "STDERR": 0
+      }
+    }
+  ],
+  "shared": [
+    {
+      "source": "STDIN",
+      "start": 0,
+      "end": 87,
+      "sha256": "7a9e420cafd281c2c0add5938e5764ada67dd9fa2860c64479e42c41889408e8"
+    },
+    {
+      "source": "STDOUT",
+      "start": 0,
+      "end": 86,
+      "sha256": "e6f39e0d9dcf779af4c5478ab97c393034d8b1b318e05dc884444059664529ce"
+    },
+    {
+      "source": "STDOUT",
+      "start": 86,
+      "end": 205,
+      "sha256": "1cd4f77c49f5b1c41979af7f58dc158be579f563c4015c0b67ad6a8c61f14d08"
+    }
+  ],
+  "unassigned": [],
+  "freshStart": {
+    "requestedSessionId": "7b1e0c2a-5d7f-4a3e-9c1b-2f6d8e4a1c3d",
+    "expectedNativePath": "/home/u/.claude/projects/-work/7b1e0c2a-5d7f-4a3e-9c1b-2f6d8e4a1c3d.jsonl",
+    "launchArgv": [
+      "claude",
+      "-p",
+      "--output-format",
+      "stream-json",
+      "--input-format",
+      "stream-json",
+      "--verbose",
+      "--session-id",
+      "7b1e0c2a-5d7f-4a3e-9c1b-2f6d8e4a1c3d"
+    ],
+    "processIdentity": "G",
+    "cwd": "/work"
+  },
+  "observedNativeIdentity": {
+    "source": "STDOUT",
+    "start": 86,
+    "end": 205,
+    "sha256": "1cd4f77c49f5b1c41979af7f58dc158be579f563c4015c0b67ad6a8c61f14d08",
+    "reportedSessionId": "7b1e0c2a-5d7f-4a3e-9c1b-2f6d8e4a1c3d",
+    "recordType": "system"
+  },
+  "observations": {
+    "path": "observations.jsonl",
+    "sha256": "b0a1df05afd6b63d31891ff3a4ed919c0047fe177edea7cc1020e89cc9f4dce4",
+    "size": 1705
+  }
+}

@@ -11,7 +11,10 @@ import static io.github.markpollack.journal.tck.ocsf.RetainedSource.require;
 final class RetainedTurn {
     private RetainedTurn() { }
 
-    static String validate(Json generation, Json turn, Map<String, RetainedSource> sources, String previous) {
+    static String validate(Json generation, Json turn, Map<String, RetainedSource> sources, String previous) { return validate(generation, turn, sources, previous, false); }
+
+    /** {@code absentBefore} admits only the tagged fresh-start form; it is a membership bound, never a byte witness. */
+    static String validate(Json generation, Json turn, Map<String, RetainedSource> sources, String previous, boolean absentBefore) {
         Json prompt = sources.get("STDIN").record(turn.member("prompt"));
         Json result = sources.get("STDOUT").record(turn.member("result"));
         expect(turn.member("prompt"), "source", "STDIN"); expect(turn.member("result"), "source", "STDOUT");
@@ -32,7 +35,7 @@ final class RetainedTurn {
         expect(assistant, "parentUuid", string(user, "uuid"));
         require(!string(user, "uuid").equals(string(assistant, "uuid")), "native UUID reused");
         expect(result, "result", response(assistant));
-        prefixes(turn, sources.get("TRANSCRIPT"), nativeLocators);
+        prefixes(turn, sources.get("TRANSCRIPT"), nativeLocators, absentBefore);
         stream(turn, sources.get("STDOUT"), assistant);
         windows(turn, sources);
         return string(assistant, "uuid");
@@ -51,13 +54,18 @@ final class RetainedTurn {
         expect(blocks.get(0), "type", "text"); return rawString(blocks.get(0), "text");
     }
 
-    private static void prefixes(Json turn, RetainedSource source, List<Json> locators) {
-        long before = source.prefix(turn.member("nativePrefixBefore")), after = source.prefix(turn.member("nativePrefixAfter"));
+    private static void prefixes(Json turn, RetainedSource source, List<Json> locators, boolean absentBefore) {
+        long before = absentBefore ? absent(turn.member("nativePrefixBefore")) : source.prefix(turn.member("nativePrefixBefore"));
+        long after = source.prefix(turn.member("nativePrefixAfter"));
         require(before <= after, "native prefix regressed");
         for (Json locator : locators) {
             expect(locator, "source", "TRANSCRIPT");
             require(number(locator, "start") >= before && number(locator, "end") <= after, "native member outside observed prefixes");
         }
+    }
+
+    private static long absent(Json observation) {
+        fields(observation, "state observation"); expect(observation, "state", "ABSENT"); expect(observation, "observation", "before-first-dispatch"); return 0;
     }
 
     private static void stream(Json turn, RetainedSource source, Json assistant) {

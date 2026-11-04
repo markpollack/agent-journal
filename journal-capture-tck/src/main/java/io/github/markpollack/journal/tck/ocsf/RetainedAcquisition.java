@@ -18,11 +18,16 @@ public final class RetainedAcquisition {
     public static final String PROFILE = "client-terminal-claude-retained-2.1.316/1";
 
     /** Checks a selected acquisition without a writer, Client, receiver or original ACK implementation. */
-    public static void validate(Json acquisition, Path base) throws IOException {
+    public static void validate(Json acquisition, Path base) throws IOException { validate(acquisition, base, false); }
+
+    /** Selects the frozen /1 or the fresh-start kind. The fresh-start profile adds its observation journal and separate profile name; every other check is shared. */
+    public static void validate(Json acquisition, Path base, boolean fresh) throws IOException {
         Json declared = acquisition.member("retained_generation");
-        Json original = NeutralJson.readDocument(base.resolve("generation/retained-generation.json"));
+        require(Files.isRegularFile(base.resolve(manifestPath(fresh))), "retained generation manifest absent for this profile");
+        Json original = NeutralJson.readDocument(base.resolve(manifestPath(fresh)));
         require(Json.sameValue(declared, original), "retained generation declaration changed");
-        RetainedGeneration.validate(original, base.resolve("generation"));
+        if (fresh) { expect(acquisition, "retained_profile", FreshRetainedGeneration.PROFILE); FreshRetainedGeneration.validate(original, base.resolve("generation")); }
+        else { require(acquisition.member("retained_profile") == null, "frozen /1 profile carries no fresh profile"); RetainedGeneration.validate(original, base.resolve("generation")); }
         String execution = string(acquisition, "acquisition_uid");
         Json turn = RetainedGeneration.turn(original, execution);
         expect(acquisition, "retained_execution_id", execution);
@@ -32,10 +37,10 @@ public final class RetainedAcquisition {
         require(acquisition.member("complete") instanceof Json.JBool b && b.value(), "retained acquisition is incomplete");
         require(array(acquisition, "turns").size() == 1, "projection turn population differs");
         expect(array(acquisition, "turns").get(0), "invocation_uid", string(turn, "executionId"));
-        compareSources(acquisition, original, base, execution);
+        compareSources(acquisition, original, base, execution, fresh);
     }
 
-    private static void compareSources(Json acquisition, Json generation, Path base, String execution) throws IOException {
+    private static void compareSources(Json acquisition, Json generation, Path base, String execution, boolean fresh) throws IOException {
         Map<String, Json> inventory = new HashMap<>();
         for (Json source : array(acquisition, "sources")) require(inventory.put(string(source, "path"), source) == null, "projection path repeated");
         Set<String> expected = new HashSet<>();
@@ -43,10 +48,14 @@ public final class RetainedAcquisition {
             String original = "generation/" + string(source, "path"); expected.add(original);
             match(inventory.get(original), base.resolve(original), null, "generation-" + string(source, "source"), execution);
             String projected = projectionPath(string(source, "source")); expected.add(projected);
-            byte[] bytes = RetainedGeneration.projection(generation, execution, string(source, "source"), base.resolve("generation"));
+            byte[] bytes = RetainedGeneration.projection(generation, execution, string(source, "source"), base.resolve("generation"), fresh);
             match(inventory.get(projected), base.resolve(projected), bytes, role(string(source, "source")), execution);
         }
-        String manifest = "generation/retained-generation.json"; expected.add(manifest);
+        if (fresh) {
+            String observations = "generation/" + string(generation.member("observations"), "path"); expected.add(observations);
+            match(inventory.get(observations), base.resolve(observations), null, "generation-observations", execution);
+        }
+        String manifest = manifestPath(fresh); expected.add(manifest);
         match(inventory.get(manifest), base.resolve(manifest), null, "generation-manifest", execution);
         require(expected.equals(inventory.keySet()), "retained acquisition source population differs");
     }
@@ -63,6 +72,8 @@ public final class RetainedAcquisition {
         require(source.member("archive_only") instanceof Json.JBool b && b.value() == archive, "retained source role changed");
     }
 
+    /** The frozen and fresh kinds keep distinct manifest names so neither can be read as the other. */
+    public static String manifestPath(boolean fresh) { return fresh ? "generation/retained-fresh-generation.json" : "generation/retained-generation.json"; }
     /** Fixed derived paths make a caller unable to substitute a different projection filename. */
     public static String projectionPath(String source) { return "turn/" + source.toLowerCase(java.util.Locale.ROOT) + ".jsonl"; }
     /** Existing assembly role of one finite projection; whole-generation sources remain archive-only. */

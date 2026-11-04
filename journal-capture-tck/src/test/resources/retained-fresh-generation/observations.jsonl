@@ -1,0 +1,8 @@
+{"kind":"probe","monotonicNanos":1000,"parentFileKey":"dev=2049,ino=4100","parentPath":"/home/u/.claude/projects/-work","path":"/home/u/.claude/projects/-work/7b1e0c2a-5d7f-4a3e-9c1b-2f6d8e4a1c3d.jsonl","result":"ENOENT","seq":1}
+{"kind":"scan","matches":[],"monotonicNanos":2000,"root":"/home/u/.claude/projects","seq":2,"sessionId":"7b1e0c2a-5d7f-4a3e-9c1b-2f6d8e4a1c3d","skipped":0,"unreadable":0}
+{"kind":"probe","monotonicNanos":3000,"parentFileKey":"dev=2049,ino=4100","parentPath":"/home/u/.claude/projects/-work","path":"/home/u/.claude/projects/-work/7b1e0c2a-5d7f-4a3e-9c1b-2f6d8e4a1c3d.jsonl","result":"ENOENT","seq":3}
+{"executionId":"E1","kind":"dispatch","monotonicNanos":4000,"seq":4,"stdinOffset":87,"stdoutOffset":86}
+{"bytes":395,"fileKey":"dev=2049,ino=4242","kind":"prefix","monotonicNanos":5000,"path":"/home/u/.claude/projects/-work/7b1e0c2a-5d7f-4a3e-9c1b-2f6d8e4a1c3d.jsonl","seq":5,"sha256":"49df6d80105d1b54a3af3d48cb8552e9a4542d0e622b1b30f77122c6afd4c382"}
+{"executionId":"E2","kind":"dispatch","monotonicNanos":6000,"seq":6,"stdinOffset":147,"stdoutOffset":374}
+{"bytes":792,"fileKey":"dev=2049,ino=4242","kind":"prefix","monotonicNanos":7000,"path":"/home/u/.claude/projects/-work/7b1e0c2a-5d7f-4a3e-9c1b-2f6d8e4a1c3d.jsonl","seq":7,"sha256":"8b6034d61e8778542944bbe3b1fe4da306b9a3912ff17a8a6d436c5585092b55"}
+{"bytes":792,"candidates":["/home/u/.claude/projects/-work/7b1e0c2a-5d7f-4a3e-9c1b-2f6d8e4a1c3d.jsonl"],"fileKey":"dev=2049,ino=4242","kind":"final","monotonicNanos":8000,"path":"/home/u/.claude/projects/-work/7b1e0c2a-5d7f-4a3e-9c1b-2f6d8e4a1c3d.jsonl","seq":8,"sha256":"8b6034d61e8778542944bbe3b1fe4da306b9a3912ff17a8a6d436c5585092b55","skipped":0,"unreadable":0}

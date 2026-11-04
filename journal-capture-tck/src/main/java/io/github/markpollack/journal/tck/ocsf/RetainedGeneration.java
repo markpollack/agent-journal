@@ -22,8 +22,11 @@ public final class RetainedGeneration {
     private RetainedGeneration() { }
 
     /** Validates every generation member, source byte, prefix and explicit ownership partition. */
-    public static void validate(Json manifest, Path directory) throws IOException {
-        header(manifest);
+    public static void validate(Json manifest, Path directory) throws IOException { validate(manifest, directory, false); }
+
+    /** The fresh-start kind shares every byte/membership check; only the first before-prefix may be tagged ABSENT. */
+    static void validate(Json manifest, Path directory, boolean fresh) throws IOException {
+        header(manifest, fresh);
         Map<String, RetainedSource> sources = sources(manifest, directory);
         List<Json> turns = array(manifest, "turns"); require(turns.size() == 2, "retained profile requires two turns");
         Set<String> executions = new HashSet<>(), decisions = new HashSet<>(), prompts = new HashSet<>(), uuids = new HashSet<>();
@@ -31,7 +34,7 @@ public final class RetainedGeneration {
         for (Json turn : turns) {
             fields(turn, "executionId decisionId prompt result stdoutRecords nativeRecords nativePrefixBefore nativePrefixAfter startOffsets endOffsets");
             require(executions.add(string(turn, "executionId")) && decisions.add(string(turn, "decisionId")), "duplicate retained execution/decision");
-            previous = RetainedTurn.validate(manifest, turn, sources, previous);
+            previous = RetainedTurn.validate(manifest, turn, sources, previous, fresh && previous == null);
             String prompt = rawString(sources.get("STDIN").record(turn.member("prompt")).member("message"), "content");
             require(prompts.add(prompt), "duplicate retained prompt is ambiguous");
             uniqueNative(turn, sources, uuids);
@@ -43,9 +46,11 @@ public final class RetainedGeneration {
         sequential(turns);
     }
 
-    private static void header(Json m) {
-        fields(m, "kind logicalSessionId connectionId nativeSessionId cliVersion captureStart sealed observedResourcesTerminated stdoutNaturalEof stderrNaturalEof overflow sources turns shared unassigned");
-        expect(m, "kind", "journal-retained-generation/1"); expect(m, "cliVersion", "2.1.316");
+    private static final String MEMBERS = "kind logicalSessionId connectionId nativeSessionId cliVersion captureStart sealed observedResourcesTerminated stdoutNaturalEof stderrNaturalEof overflow sources turns shared unassigned";
+
+    private static void header(Json m, boolean fresh) {
+        fields(m, fresh ? MEMBERS + " freshStart observedNativeIdentity observations" : MEMBERS);
+        expect(m, "kind", fresh ? FreshRetainedGeneration.KIND : "journal-retained-generation/1"); expect(m, "cliVersion", "2.1.316");
         for (String key : List.of("logicalSessionId", "connectionId", "nativeSessionId", "captureStart")) string(m, key);
         java.time.Instant.parse(string(m, "captureStart"));
         for (String key : List.of("sealed", "observedResourcesTerminated", "stdoutNaturalEof", "stderrNaturalEof"))
@@ -53,7 +58,7 @@ public final class RetainedGeneration {
         require(m.member("overflow") instanceof Json.JBool b && !b.value(), "retained generation overflow");
     }
 
-    private static Map<String, RetainedSource> sources(Json m, Path base) throws IOException {
+    static Map<String, RetainedSource> sources(Json m, Path base) throws IOException {
         Map<String, RetainedSource> sources = new HashMap<>(); Set<String> paths = new HashSet<>();
         for (Json source : array(m, "sources")) {
             fields(source, "source path origin sha256 size observed dropped");
@@ -117,8 +122,10 @@ public final class RetainedGeneration {
     }
 
     /** Produces an exact concatenation of declared record extents, after complete generation validation. */
-    public static byte[] projection(Json manifest, String executionId, String source, Path base) throws IOException {
-        validate(manifest, base);
+    public static byte[] projection(Json manifest, String executionId, String source, Path base) throws IOException { return projection(manifest, executionId, source, base, false); }
+
+    public static byte[] projection(Json manifest, String executionId, String source, Path base, boolean fresh) throws IOException {
+        if (fresh) FreshRetainedGeneration.validate(manifest, base); else validate(manifest, base);
         Map<String, RetainedSource> originals = sources(manifest, base);
         Json selected = turn(manifest, executionId); List<Json> locators = projectionLocators(manifest, selected, source, originals.get("STDOUT"));
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();

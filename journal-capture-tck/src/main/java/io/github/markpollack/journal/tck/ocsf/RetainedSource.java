@@ -53,6 +53,7 @@ final class RetainedSource {
 
     Json record(Json locator) { return NeutralJson.parse(new String(extent(locator), StandardCharsets.UTF_8)); }
     long size() { return bytes.length; }
+    String sha256() { return NativeArtifact.sha256(bytes); }
 
     long prefix(Json observation) {
         fields(observation, "bytes sha256");
