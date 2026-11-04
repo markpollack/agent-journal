@@ -239,7 +239,7 @@ public final class CodexRetainedGeneration {
         }
         require(started == 1 && completed == 1 && contexts == 1, Verdict.REFUSED, "turn lifecycle population differs");
         require(prompts == 1, Verdict.REFUSED, "exact original prompt membership missing or ambiguous");
-        require(usageRecord != null && lastTotal != null, Verdict.INCOMPLETE, "native usage witnesses missing");
+        if (usageRecord == null || lastTotal == null) throw new Rejection(Verdict.INCOMPLETE, "native usage witnesses missing", null);
         same(t.member("turn_token_usage"), usageRecord.member("turn_token_usage"), "turn usage differs from native record");
         same(t.member("thread_token_usage"), usageRecord.member("thread_token_usage"), "thread usage differs from native record");
         same(t.member("total_token_usage"), lastTotal, "total usage differs from native token_count");
