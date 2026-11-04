@@ -208,7 +208,8 @@ final class CodexRolloutProfile implements SourceProfile {
         return out;
     }
 
-    /** True when the last token_count total exceeds this turn's own last turn_token_usage: the thread holds earlier turns. */
+    /** True when the last token_count total differs from this turn's own last turn_token_usage: the thread holds earlier turns.
+     * PROVISIONAL mirror of the mapper rule, observed only on a synthetic resume; the native probe decides it. */
     static boolean threadCumulative(List<NativeArtifact.Record> tokenCounts, Json lastTurnUsage) {
         if (lastTurnUsage == null || tokenCounts.isEmpty()) return false;
         Json total = tokenCounts.get(tokenCounts.size() - 1).json().path("payload", "info", "total_token_usage");

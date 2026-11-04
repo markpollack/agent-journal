@@ -59,10 +59,11 @@ final class CodexRolloutContext {
                 : new Jv.Obj().put("working_directory", text(s, "cwd")).put("model", text(s, "model"))
                 .put("provider", text(s, "model_provider_id")).put("approval_policy", text(s, "approval_policy")).put("reasoning_effort", text(s, "reasoning_effort"));
         ctx.family("event_msg/thread_settings_applied", r.raw().length, "normalized: reported thread settings; other native settings retained exactly");
-        String thread = text(p, "thread_id"); // the rollout holds one thread: a payload without thread_id still belongs to the file's session
-        ctx.emit(event(r, ctx, "session_context", 1, "codex.rollout.thread_settings_applied->session_context.settings", null)
-                .put("session_uid", thread != null ? thread : ctx.run.sessionUid()).put("context_kind", "thread_settings_applied").put("settings", settings)
-                .put("basis", thread != null ? "codex.rollout.thread_settings_applied.v1: payload thread_id" : "codex.rollout.thread_settings_applied.v1: payload carries no thread_id; the rollout file's session identity applies"));
+        String thread = text(p, "thread_id"); // PROVISIONAL (fixture-observed only, pending the native resume probe): a payload without thread_id belongs to the file's one thread
+        Jv.Obj ev = event(r, ctx, "session_context", 1, "codex.rollout.thread_settings_applied->session_context.settings", null)
+                .put("session_uid", thread != null ? thread : ctx.run.sessionUid()).put("context_kind", "thread_settings_applied").put("settings", settings);
+        if (thread == null) ev.put("basis", "codex.rollout.thread_settings_applied.v1 PROVISIONAL: payload carries no thread_id; the rollout file's session identity applies; shape observed only in a synthetic resume, pending the native probe");
+        ctx.emit(ev);
     }
 
     private static void reasoning(NativeRecord r, SourceContext ctx, Jv p, boolean response) {
