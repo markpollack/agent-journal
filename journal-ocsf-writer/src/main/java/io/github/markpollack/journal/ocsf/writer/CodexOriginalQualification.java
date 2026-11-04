@@ -22,6 +22,16 @@ final class CodexOriginalQualification {
         equal(run.member("cli"), "name", "Codex CLI"); equal(run.member("cli"), "version", "0.166.0");
         process(m, process, run, retained);
         Jv turn = array(m, "turns").get(0); equal(turn, "invocation_uid", text(m, "acquisition_uid")); text(turn, "decision_uid"); text(turn, "native_turn_uid");
+        Map<String, Jv> roles = sources(m, retained);
+        equal(roles.get("transcript"), "owner_session_uid", text(run, "session_uid"));
+        for (var span : Map.of("stdin", "STDIN", "stream", "STDOUT", "stderr", "STDERR").entrySet()) {
+            require(number(turn.member("start_offsets"), span.getValue()) == 0
+                    && number(turn.member("end_offsets"), span.getValue()) == number(roles.get(span.getKey()), "bytes"), "Codex whole stream scope required");
+        }
+        TerminalCodexNative.validate(base, m, roles, retained);
+        if (retained) TerminalCodexRetained.validate(base, m);
+    }
+    private static Map<String, Jv> sources(Jv m, boolean retained) {
         Map<String, Jv> roles = new HashMap<>();
         for (Jv source : array(m, "sources")) {
             String role = text(source, "role"); require(roles.put(role, source) == null, "duplicate Codex source role");
@@ -31,13 +41,7 @@ final class CodexOriginalQualification {
             flag(source, "archive_only", generation || Set.of("stdin", "stderr").contains(role));
         }
         require(roles.keySet().containsAll(Set.of("stdin", "stream", "stderr", "transcript")) && (retained || roles.size() == 4), "four Codex original sources required");
-        equal(roles.get("transcript"), "owner_session_uid", text(run, "session_uid"));
-        for (var span : Map.of("stdin", "STDIN", "stream", "STDOUT", "stderr", "STDERR").entrySet()) {
-            require(number(turn.member("start_offsets"), span.getValue()) == 0
-                    && number(turn.member("end_offsets"), span.getValue()) == number(roles.get(span.getKey()), "bytes"), "Codex whole stream scope required");
-        }
-        TerminalCodexNative.validate(base, m, roles, retained);
-        if (retained) TerminalCodexRetained.validate(base, m);
+        return roles;
     }
     private static void process(Jv m, Jv process, Jv run, boolean retained) {
         equal(run.member("launch_settings"), "route", "exec_stdio");

@@ -758,7 +758,7 @@
     "dependency journal-capture-tck/src/test/resources/ocsf/conformance sha256:197e677ebb73d7d22fc6a9e32f4e43ff4c82a4f8e5f5dbf9d62f2196a94c34f1",
     "dependency journal-capture-tck/src/test/resources/ocsf/fixtures sha256:64020b8236b60d5ab477b40cf44430af408658f960478939fb7c1e444c048d0b",
     "dependency journal-capture-tck/src/test/resources/ocsf/mapping-catalog sha256:3666ba8cb3cff5a7e9d6b2e1bd88fe525fd4efbf89f337f45f70389647d8546b",
-    "dependency journal-ocsf-writer/src/main sha256:186d7a12897ff9756ddf28014f3a6c3117a64b591d7525e1d2069183b400014f",
+    "dependency journal-ocsf-writer/src/main sha256:20eea0a8d5adaab6023bf1120da68a22d69fec9e6d9d298e3d8eb2e47062e966",
     "dependency prototype/ocsf-acp/extension sha256:2239224ca7ac92f281c59b3a4b1bfa45be9721e076d2674b643e1cdbb49c6d7d",
     "dependency prototype/ocsf-acp/toolchain.lock.json sha256:d91ea93f63b0d52b3200ccfbe81dde06e991922e4ff20734fd0e83e407755fab",
     "dependency schema/vendor sha256:b49621bb95b76fe39cb4dacc29fd4316d1348f4eeb226d7dba143e840e61d304",

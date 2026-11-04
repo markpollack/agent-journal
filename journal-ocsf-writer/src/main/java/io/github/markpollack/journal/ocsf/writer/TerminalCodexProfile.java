@@ -31,6 +31,12 @@ final class TerminalCodexProfile {
         }
         require(occurrences.containsKey("acquisition.json"), "Codex acquisition not associated");
         require(occurrences.get("acquisition.json").member("stream").isNull(), "manifest is not a stream");
+        Map<String, Jv> roles = sources(m, d, occurrences, retained);
+        TerminalCodexNative.validate(manifest.getParent(), m, roles, retained);
+        if (retained) TerminalCodexRetained.validate(manifest.getParent(), m); else require(m.member("retained_generation") == null, "one-shot Codex profile carries no thread");
+    }
+
+    private static Map<String, Jv> sources(Jv m, Jv d, Map<String, Jv> occurrences, boolean retained) {
         Set<String> paths = new HashSet<>(); paths.add("acquisition.json");
         Map<String, Jv> roles = new HashMap<>();
         for (Jv s : array(m, "sources")) {
@@ -42,8 +48,7 @@ final class TerminalCodexProfile {
             source(s, occurrence, m, d, generation);
         }
         require(roles.keySet().containsAll(Set.of("stdin", "stream", "stderr", "transcript")) && paths.equals(occurrences.keySet()), "Codex original inventory differs");
-        TerminalCodexNative.validate(manifest.getParent(), m, roles, retained);
-        if (retained) TerminalCodexRetained.validate(manifest.getParent(), m); else require(m.member("retained_generation") == null, "one-shot Codex profile carries no thread");
+        return roles;
     }
 
     private static void header(Jv m, Jv d, Jv a, boolean retained) {
