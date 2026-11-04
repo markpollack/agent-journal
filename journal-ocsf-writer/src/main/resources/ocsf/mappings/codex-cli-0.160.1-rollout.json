@@ -265,6 +265,19 @@
       "target": "agentic_cli/model_response",
       "activity": "3 Item completed",
       "meaning": "Reported native reasoning item id and summary_text/raw_content parts, empty arrays remain empty; no inferred relationship to another observation."
+    },
+    {
+      "id": "codex.rollout.item_completed.FileChange->tool_call.operation",
+      "selector": {
+        "type": "event_msg",
+        "payload.type": "item_completed",
+        "payload.item.type": "FileChange"
+      },
+      "target": "agentic_cli/tool_call",
+      "activity": "3 Operation observed",
+      "identity": "0.166.0 emit_patch_end assigns FileChangeItem.id from ToolEventCtx.call_id; reported same-turn tool owner, never text matching",
+      "fields": "changes map key -> file_changes.file_path; type -> change_kind; status -> reported_state/status; stdout and stderr -> separate operation output; full item including add/delete content, update unified_diff/move_path retained in tool_operation.data",
+      "residual": "whole record in data; operation data preserves every field and explicit null; no independent proof of effects"
     }
   ],
   "unavailable_at_source": [

@@ -3983,21 +3983,6 @@
       ]
     },
     {
-      "variant": "event_msg/item_completed/FileChange",
-      "path": "payload",
-      "subtree": true,
-      "vendor_declared": true,
-      "disposition": "retained",
-      "classification": "structural",
-      "classification_note": "Explicit residual container; current exact-route canonical obligations below are checked independently, never satisfied by raw retention alone.",
-      "evidence": {
-        "property": "whole_record.coverage"
-      },
-      "tests": [
-        "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
-      ]
-    },
-    {
       "variant": "event_msg/item_completed/ContextCompaction",
       "path": "timestamp",
       "subtree": false,
@@ -6020,6 +6005,156 @@
       },
       "tests": [
         "VendorStreamInventoryTest#everyDeclaredFamilyBehavesAsItsInventoryStates"
+      ]
+    },
+    {
+      "variant": "event_msg/item_completed/FileChange",
+      "path": "payload.type",
+      "subtree": false,
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Original source value retained in data; FileChange canonical operation fields and exact operation.data independently judged in CodexFileChangesTest and frozen installed proof.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexFileChangesTest#sourceDerivedEditsRetainKindsPathsMetadataOwnershipAndFailure"
+      ]
+    },
+    {
+      "variant": "event_msg/item_completed/FileChange",
+      "path": "payload.thread_id",
+      "subtree": false,
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Original source value retained in data; FileChange canonical operation fields and exact operation.data independently judged in CodexFileChangesTest and frozen installed proof.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexFileChangesTest#sourceDerivedEditsRetainKindsPathsMetadataOwnershipAndFailure"
+      ]
+    },
+    {
+      "variant": "event_msg/item_completed/FileChange",
+      "path": "payload.turn_id",
+      "subtree": false,
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Original source value retained in data; FileChange canonical operation fields and exact operation.data independently judged in CodexFileChangesTest and frozen installed proof.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexFileChangesTest#sourceDerivedEditsRetainKindsPathsMetadataOwnershipAndFailure"
+      ]
+    },
+    {
+      "variant": "event_msg/item_completed/FileChange",
+      "path": "payload.item.type",
+      "subtree": false,
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Original source value retained in data; FileChange canonical operation fields and exact operation.data independently judged in CodexFileChangesTest and frozen installed proof.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexFileChangesTest#sourceDerivedEditsRetainKindsPathsMetadataOwnershipAndFailure"
+      ]
+    },
+    {
+      "variant": "event_msg/item_completed/FileChange",
+      "path": "payload.item.id",
+      "subtree": false,
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Original source value retained in data; FileChange canonical operation fields and exact operation.data independently judged in CodexFileChangesTest and frozen installed proof.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexFileChangesTest#sourceDerivedEditsRetainKindsPathsMetadataOwnershipAndFailure"
+      ]
+    },
+    {
+      "variant": "event_msg/item_completed/FileChange",
+      "path": "payload.item.changes",
+      "subtree": true,
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Original source value retained in data; FileChange canonical operation fields and exact operation.data independently judged in CodexFileChangesTest and frozen installed proof.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexFileChangesTest#sourceDerivedEditsRetainKindsPathsMetadataOwnershipAndFailure"
+      ]
+    },
+    {
+      "variant": "event_msg/item_completed/FileChange",
+      "path": "payload.item.status",
+      "subtree": false,
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Original source value retained in data; FileChange canonical operation fields and exact operation.data independently judged in CodexFileChangesTest and frozen installed proof.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexFileChangesTest#sourceDerivedEditsRetainKindsPathsMetadataOwnershipAndFailure"
+      ]
+    },
+    {
+      "variant": "event_msg/item_completed/FileChange",
+      "path": "payload.item.stdout",
+      "subtree": false,
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Original source value retained in data; FileChange canonical operation fields and exact operation.data independently judged in CodexFileChangesTest and frozen installed proof.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexFileChangesTest#sourceDerivedEditsRetainKindsPathsMetadataOwnershipAndFailure"
+      ]
+    },
+    {
+      "variant": "event_msg/item_completed/FileChange",
+      "path": "payload.item.stderr",
+      "subtree": false,
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Original source value retained in data; FileChange canonical operation fields and exact operation.data independently judged in CodexFileChangesTest and frozen installed proof.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexFileChangesTest#sourceDerivedEditsRetainKindsPathsMetadataOwnershipAndFailure"
+      ]
+    },
+    {
+      "variant": "event_msg/item_completed/FileChange",
+      "path": "payload.item.auto_approved",
+      "subtree": false,
+      "vendor_declared": true,
+      "disposition": "retained",
+      "classification": "structural",
+      "classification_note": "Original source value retained in data; FileChange canonical operation fields and exact operation.data independently judged in CodexFileChangesTest and frozen installed proof.",
+      "evidence": {
+        "property": "whole_record.coverage"
+      },
+      "tests": [
+        "CodexFileChangesTest#sourceDerivedEditsRetainKindsPathsMetadataOwnershipAndFailure"
       ]
     }
   ],

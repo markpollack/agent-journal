@@ -264,6 +264,10 @@
       "meaning": "codex.native.tool_namespace/v1",
       "revision": 1,
       "requirement": "Actual enclosing namespace at its original source pointer, independently compared for each declared leaf tool; a tool name or unrelated source record cannot substitute."
+    },
+    {
+      "meaning": "codex.native.file_change/v1",
+      "basis": "Pinned0.166.0 FileChangeItem/FileChange and emit_patch_end: reported edit owner, path/kind, state/output and exact retained content/diff/move metadata."
     }
   ]
 }

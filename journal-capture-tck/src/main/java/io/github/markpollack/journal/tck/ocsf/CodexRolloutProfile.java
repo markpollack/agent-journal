@@ -144,6 +144,10 @@ final class CodexRolloutProfile implements SourceProfile {
                             item.member("content") == null ? List.of() : item.member("content").elements(), null, true, null));
                     continue;
                 }
+                if ("FileChange".equals(itemType)) {
+                    CodexFileChangeReading.read(f, r);
+                    continue;
+                }
                 if ("CommandExecution".equals(itemType)) {
                     f.normalized.add(r.index());
                     List<Json> argv = item.member("command") == null ? List.of() : item.member("command").elements();

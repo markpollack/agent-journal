@@ -3756,8 +3756,8 @@
     {
       "variant": "event_msg/item_completed/FileChange",
       "emitted": "conditional",
-      "condition": "exact persistence/history mode and feature; unobserved families require their own witness",
-      "lifecycle": "durable source occurrence; never derive cross-record identity by equal values",
+      "condition": "FileChange completion persisted by the exact 0.166.0 route; frozen live evidence observes add/update completed only",
+      "lifecycle": "item.id is ToolEventCtx.call_id from emit_patch_end; each record is an independent edit observation, not a new command; cross-channel ids differ",
       "fields": [
         {
           "path": "timestamp",
@@ -3786,14 +3786,85 @@
           "meaning": "family-specific native payload; residual container, not a claim that all common meanings are normalized",
           "availability": "always",
           "symbol": "codex-rs/rollout/src/policy.rs#persisted_rollout_item; codex-rs/protocol/src/protocol.rs#RolloutItem"
+        },
+        {
+          "path": "payload.type",
+          "type": "string",
+          "meaning": "item_completed discriminator",
+          "availability": "always",
+          "symbol": "codex-rs/protocol/src/items.rs#FileChangeItem; codex-rs/protocol/src/protocol.rs#FileChange; codex-rs/core/src/tools/events.rs#emit_patch_end"
+        },
+        {
+          "path": "payload.thread_id",
+          "type": "string",
+          "meaning": "reported native thread owner",
+          "availability": "always",
+          "symbol": "codex-rs/protocol/src/items.rs#FileChangeItem; codex-rs/protocol/src/protocol.rs#FileChange; codex-rs/core/src/tools/events.rs#emit_patch_end"
+        },
+        {
+          "path": "payload.turn_id",
+          "type": "string",
+          "meaning": "reported native turn owner",
+          "availability": "always",
+          "symbol": "codex-rs/protocol/src/items.rs#FileChangeItem; codex-rs/protocol/src/protocol.rs#FileChange; codex-rs/core/src/tools/events.rs#emit_patch_end"
+        },
+        {
+          "path": "payload.item.type",
+          "type": "string",
+          "meaning": "FileChange edit family",
+          "availability": "always",
+          "symbol": "codex-rs/protocol/src/items.rs#FileChangeItem; codex-rs/protocol/src/protocol.rs#FileChange; codex-rs/core/src/tools/events.rs#emit_patch_end"
+        },
+        {
+          "path": "payload.item.id",
+          "type": "string",
+          "meaning": "reported ToolEventCtx.call_id, not exec stdout stream item id",
+          "availability": "always",
+          "symbol": "codex-rs/protocol/src/items.rs#FileChangeItem; codex-rs/protocol/src/protocol.rs#FileChange; codex-rs/core/src/tools/events.rs#emit_patch_end"
+        },
+        {
+          "path": "payload.item.changes",
+          "type": "object",
+          "meaning": "path-keyed Add/Delete content or Update unified_diff/move_path; preserved whole and independently checked",
+          "availability": "always",
+          "symbol": "codex-rs/protocol/src/items.rs#FileChangeItem; codex-rs/protocol/src/protocol.rs#FileChange; codex-rs/core/src/tools/events.rs#emit_patch_end"
+        },
+        {
+          "path": "payload.item.status",
+          "type": "string",
+          "meaning": "optional reported patch status; no independent verification of effects",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs#FileChangeItem; codex-rs/protocol/src/protocol.rs#FileChange; codex-rs/core/src/tools/events.rs#emit_patch_end"
+        },
+        {
+          "path": "payload.item.stdout",
+          "type": "string",
+          "meaning": "optional patch stdout including empty string",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs#FileChangeItem; codex-rs/protocol/src/protocol.rs#FileChange; codex-rs/core/src/tools/events.rs#emit_patch_end"
+        },
+        {
+          "path": "payload.item.stderr",
+          "type": "string",
+          "meaning": "optional patch stderr including empty string",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs#FileChangeItem; codex-rs/protocol/src/protocol.rs#FileChange; codex-rs/core/src/tools/events.rs#emit_patch_end"
+        },
+        {
+          "path": "payload.item.auto_approved",
+          "type": "boolean",
+          "meaning": "optional source approval metadata; absence remains absent",
+          "availability": "conditional",
+          "symbol": "codex-rs/protocol/src/items.rs#FileChangeItem; codex-rs/protocol/src/protocol.rs#FileChange; codex-rs/core/src/tools/events.rs#emit_patch_end"
         }
       ],
       "vendor_tests": [
-        "codex-rs/rollout/src/policy_tests.rs"
+        "codex-rs/protocol/src/protocol.rs#serialize_item_completed_event",
+        "codex-rs/exec/tests/event_processor_with_json_output.rs"
       ],
       "journal": {
-        "behavior": "retained-only",
-        "rule": "codex.rollout.fallback->source_record"
+        "behavior": "normalized",
+        "rule": "codex.rollout.item_completed.FileChange->tool_call.operation"
       }
     },
     {

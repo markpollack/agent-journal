@@ -174,6 +174,10 @@ final class CodexRolloutMapper implements SourceMapper {
                 ctx.emit(ev);
                 return;
             }
+            if ("FileChange".equals(itype)) {
+                CodexFileChanges.map(r, ctx);
+                return;
+            }
             if ("CommandExecution".equals(itype)) {
                 ctx.family(family + "/CommandExecution", r.raw().length, "normalized: tool_call Operation observed (derived attribution to the wrapping exec call)");
                 List<Jv> argv = it.member("command") == null ? List.of() : it.member("command").elements();
