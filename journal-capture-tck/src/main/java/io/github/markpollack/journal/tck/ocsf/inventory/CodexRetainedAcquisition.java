@@ -1,7 +1,7 @@
 package io.github.markpollack.journal.tck.ocsf.inventory;
 
-import io.github.markpollack.journal.tck.ocsf.CodexAcquisitionReading;
 import io.github.markpollack.journal.tck.ocsf.CodexRetainedGeneration;
+import io.github.markpollack.journal.tck.ocsf.CodexRetainedReading;
 import io.github.markpollack.journal.tck.ocsf.NativeArtifact;
 import io.github.markpollack.journal.tck.verify.Json;
 import io.github.markpollack.journal.tck.verify.NeutralJson;
@@ -21,8 +21,6 @@ import java.util.Map;
  * a labelled synthetic thread is fixture evidence only; native/provider admission is separate.
  */
 public final class CodexRetainedAcquisition {
-    private static final List<String> COPIED = List.of("wire_usage", "native_prefix_after", "native_records", "cumulative_usage",
-            "turn_token_usage", "thread_token_usage", "total_token_usage", "identity_source", "resume_thread_id");
     private CodexRetainedAcquisition() { }
 
     /** Copies originals and the exact projection to a new directory, leaving every input unchanged. */
@@ -72,23 +70,8 @@ public final class CodexRetainedAcquisition {
         return sources;
     }
 
-    /** Read-only check of a qualified turn: declaration equals the copied thread manifest, the thread qualifies,
-     * the projection equals shared plus region, and the per-turn originals read as one Codex execution. */
-    public static void validate(Json acquisition, Path base) throws IOException {
-        Json declared = acquisition.member("retained_generation");
-        Json original = NeutralJson.readDocument(base.resolve("generation/codex-thread.json"));
-        require(Json.sameValue(declared, original), "retained thread declaration changed");
-        expect(acquisition, "retained_profile", CodexRetainedGeneration.PROFILE);
-        CodexRetainedGeneration.RetainedThread thread = CodexRetainedGeneration.validate(original, base.resolve("generation"));
-        String execution = text(acquisition, "acquisition_uid"); expect(acquisition, "retained_execution_id", execution);
-        CodexRetainedGeneration.Turn turn = thread.turn(execution);
-        require(java.util.Arrays.equals(thread.projection(turn), Files.readAllBytes(base.resolve("turn/transcript.jsonl"))), "projection differs from shared plus region");
-        for (var e : Map.of("STDIN", "turn/stdin.bin", "STDOUT", "turn/stdout.jsonl", "STDERR", "turn/stderr.bin").entrySet())
-            require(java.util.Arrays.equals(turn.originals().get(e.getKey()), Files.readAllBytes(base.resolve(e.getValue()))), "per-turn original copy differs");
-        Json t = array(acquisition, "turns").get(0);
-        for (String key : COPIED) require(Json.sameValue(t.member(key), turn.declaration().member(key)), "turn declaration differs from thread: " + key);
-        CodexAcquisitionReading.read(acquisition, base);
-    }
+    /** Read-only check of a qualified turn, shared with the independent terminal reader. */
+    public static void validate(Json acquisition, Path base) throws IOException { CodexRetainedReading.validate(acquisition, base); }
 
     /** Per-turn references become {@code turn-<i>/<file>} under the copied generation; every other value is unchanged. */
     private static Json relativize(Json manifest) {
@@ -105,7 +88,7 @@ public final class CodexRetainedAcquisition {
     private static Json.JObject acquisition(CodexRetainedGeneration.Turn turn, Json thread, List<Json> sources, byte[] threadBytes, byte[] perTurnBytes) {
         Json.JObject m = (Json.JObject) NeutralJson.parse(NeutralJson.write(turn.perTurnManifest()));
         Json.JObject t = (Json.JObject) array(m, "turns").get(0);
-        for (String key : COPIED) t.members().put(key, turn.declaration().member(key));
+        for (String key : CodexRetainedReading.COPIED) t.members().put(key, turn.declaration().member(key));
         m.members().put("sources", new Json.JArray(sources));
         m.members().put("retained_generation", thread); m.members().put("retained_profile", new Json.JString(CodexRetainedGeneration.PROFILE));
         m.members().put("retained_execution_id", new Json.JString(turn.executionId()));

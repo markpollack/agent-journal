@@ -76,7 +76,7 @@ final class TerminalCodexReading {
             Json original = NeutralJson.readDocument(manifest);
             require(Json.sameValue(original, file.run().path("launch_settings", "acquired_execution")), "Codex declaration differs from manifest original");
             CodexAcquisitionReading.validate(manifest);
-            if (retained(p)) io.github.markpollack.journal.tck.ocsf.inventory.CodexRetainedAcquisition.validate(original, manifest.getParent());
+            if (retained(p)) CodexRetainedReading.validate(original, manifest.getParent());
         }
         catch (IOException | IllegalArgumentException e) { diagnostics.add(new Diagnostic(Diagnostic.Severity.DEFECT, "TERMINAL_CODEX_INVALID", e.getMessage())); }
     }
