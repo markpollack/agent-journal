@@ -37,17 +37,22 @@ final class TerminalRetainedProfile {
         require(Jv.write(generation).equals(Jv.write(Jv.parse(Files.readString(base.resolve(name))))), "retained original manifest differs");
         if (fresh) freshness(acquisition, generation, base); else require(acquisition.member("retained_profile") == null, "frozen retained profile carries no fresh profile");
         Map<String, byte[]> sources = originals(generation, base);
+        Jv selected = turns(generation, sources, input.decision(), fresh);
+        equal(acquisition, "retained_execution_id", text(input.decision(), "executionId"));
+        projections(generation, selected, sources, base);
+    }
+
+    private static Jv turns(Jv generation, Map<String, byte[]> sources, Jv decision, boolean fresh) {
         Set<String> executions = new HashSet<>(), decisions = new HashSet<>(), prompts = new HashSet<>();
         Jv selected = null; boolean first = true;
         for (Jv turn : array(generation, "turns")) {
             require(executions.add(text(turn, "executionId")) && decisions.add(text(turn, "decisionId")), "retained turn identity reused");
             require(prompts.add(Jv.write(record(sources, turn.member("prompt")).member("message"))), "retained prompt duplicated");
             prefixes(turn, sources.get("TRANSCRIPT"), fresh && first); first = false;
-            if (text(turn, "executionId").equals(text(input.decision(), "executionId"))) selected = turn;
+            if (text(turn, "executionId").equals(text(decision, "executionId"))) selected = turn;
         }
-        require(selected != null, "retained execution absent"); equal(selected, "decisionId", text(input.decision(), "decisionId"));
-        equal(acquisition, "retained_execution_id", text(input.decision(), "executionId"));
-        projections(generation, selected, sources, base);
+        require(selected != null, "retained execution absent"); equal(selected, "decisionId", text(decision, "decisionId"));
+        return selected;
     }
 
     private static void header(Jv generation, Jv decision, boolean fresh) {
