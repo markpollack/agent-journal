@@ -127,8 +127,6 @@ public final class CodexRetainedAcquisition {
     private static void write(Path path, byte[] bytes) throws IOException { RetainedClaudeAcquisition.write(path, bytes); }
     private static String text(Json v, String key) { return v.member(key).text(); }
     private static List<Json> array(Json v, String key) { return ((Json.JArray) v.member(key)).elements(); }
-    private static void expect(Json v, String key, String value) { require(value.equals(text(v, key)), "mismatched " + key); }
-    private static void require(boolean pass, String reason) { if (!pass) throw new IllegalArgumentException(reason); }
 
     /** Packaged command; refuses invalid input before creating output and never invokes a provider. */
     public static void main(String[] args) throws IOException {
