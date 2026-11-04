@@ -9,9 +9,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -140,19 +138,10 @@ public final class CodexRetainedAcquisition {
         }
     }
 
-    private static Json.JObject object(Object... pairs) {
-        Map<String, Json> values = new LinkedHashMap<>();
-        for (int i = 0; i < pairs.length; i += 2) {
-            Object value = pairs[i + 1]; Json json;
-            if (value instanceof Json j) json = j; else if (value instanceof Boolean b) json = new Json.JBool(b);
-            else if (value instanceof Number n) json = new Json.JNumber(n.toString()); else json = new Json.JString(value.toString());
-            values.put((String) pairs[i], json);
-        }
-        return new Json.JObject(values);
-    }
+    private static Json.JObject object(Object... pairs) { return RetainedClaudeAcquisition.object(pairs); }
 
     private static void write(Path dir, String path, byte[] bytes) throws IOException { write(dir.resolve(path), bytes); }
-    private static void write(Path path, byte[] bytes) throws IOException { Files.createDirectories(path.getParent()); Files.write(path, bytes, StandardOpenOption.CREATE_NEW); }
+    private static void write(Path path, byte[] bytes) throws IOException { RetainedClaudeAcquisition.write(path, bytes); }
     private static String text(Json v, String key) { return v.member(key).text(); }
     private static List<Json> array(Json v, String key) { return ((Json.JArray) v.member(key)).elements(); }
     private static void expect(Json v, String key, String value) { require(value.equals(text(v, key)), "mismatched " + key); }

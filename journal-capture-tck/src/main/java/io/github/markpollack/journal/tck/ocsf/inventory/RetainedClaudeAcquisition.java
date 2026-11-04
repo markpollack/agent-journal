@@ -103,7 +103,8 @@ public final class RetainedClaudeAcquisition {
         }
     }
 
-    private static Json.JObject object(Object... pairs) {
+    /** Shared by the retained qualifiers: pairs of member name and Json/Boolean/Number/text value. */
+    static Json.JObject object(Object... pairs) {
         Map<String, Json> values = new LinkedHashMap<>();
         for (int i = 0; i < pairs.length; i += 2) {
             Object value = pairs[i + 1]; Json json;
@@ -116,7 +117,7 @@ public final class RetainedClaudeAcquisition {
         return new Json.JObject(values);
     }
 
-    private static void write(Path path, byte[] bytes) throws IOException { Files.createDirectories(path.getParent()); Files.write(path, bytes, StandardOpenOption.CREATE_NEW); }
+    static void write(Path path, byte[] bytes) throws IOException { Files.createDirectories(path.getParent()); Files.write(path, bytes, StandardOpenOption.CREATE_NEW); }
     private static String text(Json value, String key) { return value.member(key).text(); }
 
     /** Packaged command; refuses invalid input and never invokes a provider. */
