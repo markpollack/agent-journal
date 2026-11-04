@@ -17,22 +17,26 @@ final class TerminalCodexReading {
     static final String PROFILE = "client-terminal-codex-0.166.0/1";
     private TerminalCodexReading() { }
     private static void require(boolean pass, String reason) { if (!pass) throw new IllegalArgumentException(reason); }
-    private static boolean selected(Json p, Json a) { return PROFILE.equals(string(p, "profile")) && "COMPLETED".equals(string(a, "acquisition")); }
+    private static boolean selected(Json p, Json a) { return Set.of(PROFILE, CodexRetainedGeneration.PROFILE).contains(string(p, "profile")) && "COMPLETED".equals(string(a, "acquisition")); }
+    private static boolean retained(Json p) { return CodexRetainedGeneration.PROFILE.equals(string(p, "profile")); }
     static void check(DeclaredFile file, Json p, Json d, Json a) {
         if (!selected(p, a)) return;
         Json m = file.run().path("launch_settings", "acquired_execution"); require(m != null, "Codex acquisition declaration absent");
         header(file, m, d, a);
         Map<String, Json> occurrences = occurrences(m, d, a);
         Set<String> paths = new HashSet<>(); paths.add("acquisition.json"); Set<String> roles = new HashSet<>();
+        boolean retained = retained(p);
+        if (retained) expect(m, "retained_profile", CodexRetainedGeneration.PROFILE); else require(m.member("retained_generation") == null, "one-shot Codex profile carries a thread");
         for (Json s : array(m, "sources")) {
             String path = string(s, "path"), role = string(s, "role"); require(paths.add(path) && roles.add(role), "Codex duplicate source");
+            require(Set.of("stdin", "stream", "stderr", "transcript").contains(role) || (retained && role.startsWith("generation-")), "unsupported Codex source role");
             Json occurrence = occurrences.get(path); require(occurrence != null, "Codex original not associated");
             expect(s, "state", "acquired"); expect(s, "end", "EOF"); expect(s, "acquisition", string(d, "executionId"));
             for (String key : List.of("sha256", "origin")) expect(occurrence, key, string(s, key));
             require(number(occurrence, "size") == number(s, "bytes"), "Codex source extent differs");
             stream(s, occurrence, array(m, "turns").get(0));
         }
-        require(paths.equals(occurrences.keySet()) && roles.equals(Set.of("stdin", "stream", "stderr", "transcript")), "Codex original inventory differs");
+        require(paths.equals(occurrences.keySet()) && roles.containsAll(Set.of("stdin", "stream", "stderr", "transcript")), "Codex original inventory differs");
     }
     private static Map<String, Json> occurrences(Json m, Json d, Json a) {
         Map<String, Json> occurrences = new HashMap<>();
@@ -72,6 +76,7 @@ final class TerminalCodexReading {
             Json original = NeutralJson.readDocument(manifest);
             require(Json.sameValue(original, file.run().path("launch_settings", "acquired_execution")), "Codex declaration differs from manifest original");
             CodexAcquisitionReading.validate(manifest);
+            if (retained(p)) io.github.markpollack.journal.tck.ocsf.inventory.CodexRetainedAcquisition.validate(original, manifest.getParent());
         }
         catch (IOException | IllegalArgumentException e) { diagnostics.add(new Diagnostic(Diagnostic.Severity.DEFECT, "TERMINAL_CODEX_INVALID", e.getMessage())); }
     }

@@ -167,6 +167,7 @@ final class ClaudeTranscriptProfile implements SourceProfile {
 
     static Map<String, Json> settings(Json o, String... pairs) {
         Map<String, Json> out = new LinkedHashMap<>();
+        if (o == null || o.isNull()) return out; // a settings record without its settings object reports nothing, it does not crash the oracle
         for (int i = 0; i + 1 < pairs.length; i += 2) {
             Json v = o.path(pairs[i].split("\\."));
             if (v != null && !v.isNull()) {

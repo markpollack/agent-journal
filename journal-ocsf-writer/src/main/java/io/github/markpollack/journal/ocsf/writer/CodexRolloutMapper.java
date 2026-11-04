@@ -24,6 +24,8 @@ final class CodexRolloutMapper implements SourceMapper {
 
     private final List<Call> calls = new ArrayList<>();
     private final List<NativeRecord> tokenCounts = new ArrayList<>();
+    private Jv lastTurnUsage; // this turn's own usage so far, from its last token_usage_record
+    private NativeRecord lastTurnRecord;
     private String currentTurn;
 
     @Override
@@ -237,6 +239,7 @@ final class CodexRolloutMapper implements SourceMapper {
             Jv.Obj turn = MapperSupport.usage(3, 1, "codex.rollout.token_usage_record.v1: turn_token_usage is cumulative so far in the turn; the turn's final is the last token_count before task_complete", ctx.sourceRef(r, null, ts, false), null, p.member("turn_token_usage"));
             UsageTranches.codex(turn, p.member("turn_token_usage"), "");
             obs.add(turn);
+            lastTurnUsage = p.member("turn_token_usage"); lastTurnRecord = r;
             Jv.Obj thread = MapperSupport.usage(5, 1, "codex.rollout.token_usage_record.v1: thread_token_usage is cumulative so far in the thread (session)", ctx.sourceRef(r, null, ts, false), null, p.member("thread_token_usage"));
             UsageTranches.codex(thread, p.member("thread_token_usage"), "");
             obs.add(thread);
@@ -256,12 +259,16 @@ final class CodexRolloutMapper implements SourceMapper {
             ctx.family(family, r.raw().length, "normalized: prompt_turn Turn completed with the turn's token_count usage (last final)");
             MapperSupport.Time t = ctx.timeFor(r, ts);
             Jv.Arr obs = new Jv.Arr();
+            boolean threadCumulative = threadCumulative();
             for (int i = 0; i < tokenCounts.size(); i++) {
                 NativeRecord tc = tokenCounts.get(i);
                 Jv info = tc.json().path("payload", "info");
                 Jv total = info == null ? null : info.member("total_token_usage");
                 boolean last = i == tokenCounts.size() - 1;
-                Jv.Obj ob = MapperSupport.usage(3, last ? 2 : 1, "codex.rollout.token_count.v1: " + (last ? "last cumulative token_count before task_complete" : "superseded by a later token_count in the same turn"),
+                Jv.Obj ob = threadCumulative
+                        ? MapperSupport.usage(5, 1, "codex.rollout.token_count.v2: total_token_usage is the thread's cumulative total " + (last ? "at this turn's completion" : "superseded by a later token_count in the same turn")
+                                + "; it exceeds this turn's own usage (resumed thread) and is never summed with the turn's final", ctx.sourceRef(tc, null, text(tc.json(), "timestamp"), false), null, info)
+                        : MapperSupport.usage(3, last ? 2 : 1, "codex.rollout.token_count.v1: " + (last ? "last cumulative token_count before task_complete" : "superseded by a later token_count in the same turn"),
                         ctx.sourceRef(tc, null, text(tc.json(), "timestamp"), false), null, info);
                 UsageTranches.codex(ob, total, "/total_token_usage");
                 obs.add(ob);
@@ -273,7 +280,13 @@ final class CodexRolloutMapper implements SourceMapper {
                     obs.add(recent);
                 }
             }
-            tokenCounts.clear();
+            if (threadCumulative) {
+                Jv.Obj own = MapperSupport.usage(3, 2, "codex.rollout.turn_token_usage.v1: the turn's final is its last token_usage_record turn_token_usage; the thread total exceeds it because earlier turns are included there",
+                        ctx.sourceRef(lastTurnRecord, null, text(lastTurnRecord.json(), "timestamp"), false), null, lastTurnUsage);
+                UsageTranches.codex(own, lastTurnUsage, "");
+                obs.add(own);
+            }
+            tokenCounts.clear(); lastTurnUsage = null; lastTurnRecord = null;
             Jv.Obj ev = ctx.event("prompt_turn", 2, r, t, CONTRACT, "codex.rollout.task_complete->prompt_turn.completed", ts, null, true,
                     new MapperSupport.Status(0, 3, "task_complete carries no status or error field"));
             ev.put("session_uid", session).put("turn_uid", text(p, "turn_id")).put("usage_observations", obs).put("data", o);
@@ -282,5 +295,17 @@ final class CodexRolloutMapper implements SourceMapper {
         }
         ctx.family(family, r.raw().length, "retained-only: no normalization rule");
         ctx.emit(ctx.fallback(r, CONTRACT, "codex.rollout.fallback->source_record", family, ts, "response_item".equals(type) ? text(p, "id") : null, session, null));
+    }
+
+    /** True when the last token_count total exceeds this turn's own last turn_token_usage: the thread holds earlier turns. */
+    private boolean threadCumulative() {
+        if (lastTurnUsage == null || tokenCounts.isEmpty()) return false;
+        Jv total = tokenCounts.get(tokenCounts.size() - 1).json().path("payload", "info", "total_token_usage");
+        if (total == null) return false;
+        for (String key : List.of("input_tokens", "cached_input_tokens", "cache_write_input_tokens", "output_tokens", "reasoning_output_tokens")) {
+            Jv a = total.member(key), b = lastTurnUsage.member(key);
+            if (a instanceof Jv.Num x && b instanceof Jv.Num y && x.value().compareTo(y.value()) != 0) return true;
+        }
+        return false;
     }
 }

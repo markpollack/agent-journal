@@ -25,6 +25,7 @@ final class CodexRolloutProfile implements SourceProfile {
         ExpectedFacts f = new ExpectedFacts(SourceProfile.text(source, "artifact"));
         List<Call> calls = new ArrayList<>();
         List<NativeArtifact.Record> tokenCounts = new ArrayList<>();
+        Json lastTurnUsage = null; int lastTurnIndex = -1; // this turn's own usage so far, from its last token_usage_record
         String currentTurn = null;
         int contextRecord = 0;
         String session = null;
@@ -79,6 +80,7 @@ final class CodexRolloutProfile implements SourceProfile {
                 // experimental route: the tranches as on the exec stream, no aggregation stated
                 f.addUsage(new ExpectedFacts.Usage(r.index(), r.index(), 2, 2, TrancheReading.codex(p.member("usage"), ""), null, null, null, null), "/payload/usage", p.member("usage"));
                 f.addUsage(new ExpectedFacts.Usage(r.index(), r.index(), 3, 1, TrancheReading.codex(p.member("turn_token_usage"), ""), null, null, null, null), "/payload/turn_token_usage", p.member("turn_token_usage"));
+                lastTurnUsage = p.member("turn_token_usage"); lastTurnIndex = r.index();
                 f.addUsage(new ExpectedFacts.Usage(r.index(), r.index(), 5, 1, TrancheReading.codex(p.member("thread_token_usage"), ""), null, null, null, null), "/payload/thread_token_usage", p.member("thread_token_usage"));
                 continue;
             }
@@ -174,17 +176,20 @@ final class CodexRolloutProfile implements SourceProfile {
             }
             if ("event_msg".equals(type) && "task_complete".equals(pt)) {
                 f.normalized.add(r.index());
+                boolean threadCumulative = threadCumulative(tokenCounts, lastTurnUsage); // the thread total exceeds this turn's own usage: a resumed thread
                 for (int i = 0; i < tokenCounts.size(); i++) {
                     NativeArtifact.Record tc = tokenCounts.get(i);
                     Json total = tc.json().path("payload", "info", "total_token_usage");
-                    f.addUsage(new ExpectedFacts.Usage(r.index(), tc.index(), 3, i == tokenCounts.size() - 1 ? 2 : 1, TrancheReading.codex(total, "/total_token_usage"), null, null, null, null), "/payload/info", tc.json().path("payload", "info"));
+                    boolean finalCount = i == tokenCounts.size() - 1;
+                    f.addUsage(new ExpectedFacts.Usage(r.index(), tc.index(), threadCumulative ? 5 : 3, threadCumulative ? 1 : finalCount ? 2 : 1, TrancheReading.codex(total, "/total_token_usage"), null, null, null, null), "/payload/info", tc.json().path("payload", "info"));
                     Json last = tc.json().path("payload", "info", "last_token_usage");
                     if (last != null) {
                         f.addUsage(new ExpectedFacts.Usage(r.index(), tc.index(), "Last reported usage", 0,
                                 TrancheReading.codex(last, "/last_token_usage"), null), "/payload/info", tc.json().path("payload", "info"));
                     }
                 }
-                tokenCounts.clear();
+                if (threadCumulative) f.addUsage(new ExpectedFacts.Usage(r.index(), lastTurnIndex, 3, 2, TrancheReading.codex(lastTurnUsage, ""), null, null, null, null), "/payload/turn_token_usage", lastTurnUsage);
+                tokenCounts.clear(); lastTurnUsage = null;
                 f.completed.add(new ExpectedFacts.TurnCompleted(r.index(), 0, null));
             }
             else { f.unresolvedMeanings.put(r.index(), "No declared meaning for rollout record " + type + "/" + pt); }
@@ -201,5 +206,16 @@ final class CodexRolloutProfile implements SourceProfile {
             }
         }
         return out;
+    }
+
+    /** True when the last token_count total exceeds this turn's own last turn_token_usage: the thread holds earlier turns. */
+    static boolean threadCumulative(List<NativeArtifact.Record> tokenCounts, Json lastTurnUsage) {
+        if (lastTurnUsage == null || tokenCounts.isEmpty()) return false;
+        Json total = tokenCounts.get(tokenCounts.size() - 1).json().path("payload", "info", "total_token_usage");
+        if (total == null) return false;
+        for (String key : List.of("input_tokens", "cached_input_tokens", "cache_write_input_tokens", "output_tokens", "reasoning_output_tokens")) {
+            if (total.member(key) instanceof Json.JNumber a && lastTurnUsage.member(key) instanceof Json.JNumber b && a.value().compareTo(b.value()) != 0) return true;
+        }
+        return false;
     }
 }

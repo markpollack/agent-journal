@@ -17,14 +17,28 @@ import static io.github.markpollack.journal.ocsf.writer.TerminalCodexProfile.req
 final class TerminalCodexNative {
     private static final List<String> COMPONENTS = List.of("input_tokens", "cached_input_tokens", "cache_write_input_tokens", "output_tokens", "reasoning_output_tokens");
     private TerminalCodexNative() { }
-    static void validate(Path base, Jv m, Map<String, Jv> roles) throws IOException {
-        String session = text(m.member("run"), "session_uid"), turn = text(array(m, "turns").get(0), "native_turn_uid");
+    static void validate(Path base, Jv m, Map<String, Jv> roles) throws IOException { validate(base, m, roles, false); }
+
+    /** A retained turn's projection is one turn's rollout view; its stdout usage is compared with the declared
+     * per-turn and cumulative native usage, never assumed equal to the thread total. */
+    static void validate(Path base, Jv m, Map<String, Jv> roles, boolean retained) throws IOException {
+        Jv declared = array(m, "turns").get(0);
+        String session = text(m.member("run"), "session_uid"), turn = text(declared, "native_turn_uid");
         List<Jv> stream = rows(base, roles.get("stream")), nativeRows = rows(base, roles.get("transcript"));
         String prompt = utf8(bytes(base, roles.get("stdin")));
         require(!prompt.isBlank() && !prompt.startsWith("\uFEFF"), "Codex prompt must be nonblank UTF-8 without BOM");
-        Jv usage = wire(stream, session);
-        nativeSource(nativeRows, session, turn, text(m.member("process"), "cwd"), prompt, usage);
+        Jv usage = wire(stream, session, retained && !"stdout".equals(text(declared, "identity_source")));
+        if (!retained) { nativeSource(nativeRows, session, turn, text(m.member("process"), "cwd"), prompt, usage); return; }
+        usage(declared.member("wire_usage"), usage);
+        require(scope(declared) != null && scope(declared).equals(text(m, "wire_usage_scope")), "Codex wire usage scope differs from declaration");
+        nativeSource(nativeRows, session, turn, text(m.member("process"), "cwd"), prompt, declared.member("thread_token_usage"));
     }
+    static String scope(Jv turn) {
+        Jv wire = turn.member("wire_usage");
+        if (same(wire, turn.member("turn_token_usage"))) return "per-turn";
+        return same(wire, turn.member("thread_token_usage")) ? "cumulative" : null;
+    }
+    private static boolean same(Jv a, Jv b) { return a instanceof Jv.Obj && b instanceof Jv.Obj && COMPONENTS.stream().allMatch(k -> number(a, k) == number(b, k)); }
     private static byte[] bytes(Path base, Jv source) throws IOException {
         byte[] bytes = Files.readAllBytes(base.resolve(relative(text(source, "path"))));
         require(bytes.length == number(source, "bytes") && SchemaPin.sha256(bytes).equals(text(source, "sha256")), "Codex original changed"); return bytes;
@@ -37,10 +51,14 @@ final class TerminalCodexNative {
         List<Jv> rows = new ArrayList<>(); for (String line : utf8(bytes).split("\n")) rows.add(Jv.parse(line));
         require(rows.size() == number(source, "records"), "Codex record extent differs"); return rows;
     }
-    private static Jv wire(List<Jv> rows, String session) {
-        require(rows.size() >= 4, "Codex stdout lifecycle incomplete"); equal(rows.get(0), "type", "thread.started"); equal(rows.get(0), "thread_id", session);
-        equal(rows.get(1), "type", "turn.started"); equal(rows.get(rows.size() - 1), "type", "turn.completed");
-        for (String type : List.of("thread.started", "turn.started", "turn.completed")) require(count(rows, type, false) == 1, "Codex stdout lifecycle repeated");
+    private static Jv wire(List<Jv> rows, String session, boolean resumedWithoutEmittedIdentity) {
+        require(rows.size() >= (resumedWithoutEmittedIdentity ? 3 : 4), "Codex stdout lifecycle incomplete");
+        int first = 0;
+        if (resumedWithoutEmittedIdentity) require(!"thread.started".equals(optional(rows.get(0), "type")), "Codex identity source contradicts emitted thread.started");
+        else { equal(rows.get(0), "type", "thread.started"); equal(rows.get(0), "thread_id", session); first = 1; }
+        equal(rows.get(first), "type", "turn.started"); equal(rows.get(rows.size() - 1), "type", "turn.completed");
+        for (String type : List.of("turn.started", "turn.completed")) require(count(rows, type, false) == 1, "Codex stdout lifecycle repeated");
+        require(count(rows, "thread.started", false) == (resumedWithoutEmittedIdentity ? 0 : 1), "Codex stdout lifecycle repeated");
         for (Jv row : rows) {
             require(!Set.of("error", "turn.failed").contains(text(row, "type")), "Codex failed stdout");
             if (row.member("thread_id") != null) equal(row, "thread_id", session);

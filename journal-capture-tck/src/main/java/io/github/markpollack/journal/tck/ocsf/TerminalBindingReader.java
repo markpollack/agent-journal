@@ -54,7 +54,7 @@ public final class TerminalBindingReader {
         fields(p, "codec producerNamespace executionId decisionId decisionCodec decisionBytes associationCodec associationBytes initialRevisionId receiverContract route profile");
         expect(p, "codec", "journal-terminal-envelope/1"); expect(p, "receiverContract", "journal-terminal-receiver/1");
         expect(p, "route", "client-terminal-evidence/1");
-        oneOf(p, "profile", "client-terminal-evidence-only/1 client-terminal-claude-2.1.316/1 client-terminal-claude-retained-2.1.316/1 client-terminal-claude-retained-fresh-2.1.316/1 client-terminal-codex-0.166.0/1");
+        oneOf(p, "profile", "client-terminal-evidence-only/1 client-terminal-claude-2.1.316/1 client-terminal-claude-retained-2.1.316/1 client-terminal-claude-retained-fresh-2.1.316/1 client-terminal-codex-0.166.0/1 client-terminal-codex-retained-0.166.0/1");
         expect(p, "decisionCodec", "client-decision/1"); expect(p, "associationCodec", "journal-association/1");
         Json d = decode(string(p, "decisionBytes")); Json initial = decode(string(p, "associationBytes"));
         TerminalDecisionReading.check(d); TerminalAssociationReading.check(initial, d); expect(initial, "revisionId", string(p, "initialRevisionId"));

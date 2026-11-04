@@ -17,6 +17,7 @@ final class TerminalContract {
     static final String CLAUDE_PROFILE = "client-terminal-claude-2.1.316/1";
     static final String RETAINED_PROFILE = "client-terminal-claude-retained-2.1.316/1";
     static final String FRESH_RETAINED_PROFILE = "client-terminal-claude-retained-fresh-2.1.316/1";
+    static final String CODEX_RETAINED_PROFILE = "client-terminal-codex-retained-0.166.0/1";
     private TerminalContract() { }
 
     record Input(String envelope, Jv decision, Jv association) { }
@@ -27,7 +28,7 @@ final class TerminalContract {
         equal(p, "codec", "journal-terminal-envelope/1");
         equal(p, "producerNamespace", namespace);
         equal(p, "receiverContract", CONTRACT); equal(p, "route", ROUTE);
-        if (!Set.of(PROFILE, CLAUDE_PROFILE, RETAINED_PROFILE, FRESH_RETAINED_PROFILE, TerminalCodexProfile.PROFILE).contains(text(p, "profile"))) throw new IllegalArgumentException("unsupported terminal profile");
+        if (!Set.of(PROFILE, CLAUDE_PROFILE, RETAINED_PROFILE, FRESH_RETAINED_PROFILE, TerminalCodexProfile.PROFILE, CODEX_RETAINED_PROFILE).contains(text(p, "profile"))) throw new IllegalArgumentException("unsupported terminal profile");
         equal(p, "decisionCodec", "client-decision/1"); equal(p, "associationCodec", "journal-association/1");
         Jv d = decoded(p, "decisionBytes"); TerminalDecision.check(d);
         Jv a = decoded(p, "associationBytes"); TerminalAssociation.check(a, d);
@@ -39,7 +40,7 @@ final class TerminalContract {
     }
 
     private static void retainedInitial(Jv p, Jv d, Jv a) {
-        if (!Set.of(RETAINED_PROFILE, FRESH_RETAINED_PROFILE).contains(text(p, "profile"))) return;
+        if (!Set.of(RETAINED_PROFILE, FRESH_RETAINED_PROFILE, CODEX_RETAINED_PROFILE).contains(text(p, "profile"))) return;
         equal(a, "acquisition", "PENDING"); equal(d.member("outcome"), "kind", "SUCCESS");
         if (!array(a, "sources").isEmpty()) throw new IllegalArgumentException("retained initial evidence must be pending");
     }

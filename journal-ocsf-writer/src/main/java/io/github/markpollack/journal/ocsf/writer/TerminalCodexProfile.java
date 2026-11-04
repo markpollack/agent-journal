@@ -15,10 +15,13 @@ final class TerminalCodexProfile {
     static final String PROFILE = "client-terminal-codex-0.166.0/1";
     private TerminalCodexProfile() { }
     static boolean complete(TerminalContract.Input input, Jv a) {
-        return PROFILE.equals(text(Jv.parse(input.envelope()), "profile")) && "COMPLETED".equals(text(a, "acquisition"));
+        return Set.of(PROFILE, TerminalContract.CODEX_RETAINED_PROFILE).contains(text(Jv.parse(input.envelope()), "profile")) && "COMPLETED".equals(text(a, "acquisition"));
     }
-    static void validate(Path manifest, Jv d, Jv a) throws IOException {
-        Jv m = Jv.parse(Files.readString(manifest)); header(m, d, a);
+    /** The retained profile admits one turn of a sealed thread; the one-shot profile refuses any thread declaration. */
+    static void validate(Path manifest, TerminalContract.Input input, Jv a) throws IOException {
+        boolean retained = TerminalContract.CODEX_RETAINED_PROFILE.equals(text(Jv.parse(input.envelope()), "profile"));
+        Jv d = input.decision();
+        Jv m = Jv.parse(Files.readString(manifest)); header(m, d, a, retained);
         Map<String, Jv> occurrences = new HashMap<>();
         for (Jv s : array(a, "sources")) {
             require(occurrences.put(text(s, "relativePath"), s) == null, "duplicate Codex occurrence");
@@ -33,15 +36,17 @@ final class TerminalCodexProfile {
         for (Jv s : array(m, "sources")) {
             String path = text(s, "path"), role = text(s, "role");
             require(paths.add(path) && roles.put(role, s) == null, "duplicate Codex source");
-            require(Set.of("stdin", "stream", "stderr", "transcript").contains(role), "unsupported Codex source role");
+            boolean generation = retained && role.startsWith("generation-");
+            require(generation || Set.of("stdin", "stream", "stderr", "transcript").contains(role), "unsupported Codex source role");
             Jv occurrence = occurrences.get(path); require(occurrence != null, "Codex source not associated");
-            source(s, occurrence, m, d);
+            source(s, occurrence, m, d, generation);
         }
-        require(roles.keySet().equals(Set.of("stdin", "stream", "stderr", "transcript")) && paths.equals(occurrences.keySet()), "Codex original inventory differs");
-        TerminalCodexNative.validate(manifest.getParent(), m, roles);
+        require(roles.keySet().containsAll(Set.of("stdin", "stream", "stderr", "transcript")) && paths.equals(occurrences.keySet()), "Codex original inventory differs");
+        TerminalCodexNative.validate(manifest.getParent(), m, roles, retained);
+        if (retained) TerminalCodexRetained.validate(manifest.getParent(), m); else require(m.member("retained_generation") == null, "one-shot Codex profile carries no thread");
     }
 
-    private static void header(Jv m, Jv d, Jv a) {
+    private static void header(Jv m, Jv d, Jv a, boolean retained) {
         equal(m, "kind", "agent-journal/acquired-execution"); equal(m, "version", "0.1");
         equal(m, "profile", "codex-cli-0.166.0-exec-stdio-rollout"); equal(m, "profile_id", "codex-cli/0.166.0/exec-stdio+rollout");
         flag(m, "complete", true); require(array(m, "capture_errors").isEmpty() && array(a, "missing").isEmpty(), "Codex capture incomplete");
@@ -49,35 +54,47 @@ final class TerminalCodexProfile {
         equal(m, "acquisition_uid", text(d, "executionId")); equal(m.member("run"), "run_uid", text(d, "executionId"));
         equal(m.path("run", "cli"), "name", "Codex CLI"); equal(m.path("run", "cli"), "version", "0.166.0");
         equal(m.path("run", "launch_settings"), "route", "exec_stdio");
-        process(m, d, a);
+        process(m, d, a, retained);
     }
-    private static void process(Jv m, Jv d, Jv a) {
+    private static void process(Jv m, Jv d, Jv a, boolean retained) {
         Jv p = m.member("process"); equal(p, "connection_uid", text(d, "connectionId")); equal(p, "client_session_uid", text(d, "sessionId"));
         require(array(a, "connectionIds").size() == 1 && array(a, "connectionIds").get(0).text().equals(text(p, "connection_uid")), "Codex generation differs");
         equal(m.path("run", "launch_settings"), "working_directory", text(p, "cwd"));
-        for (String key : List.of("fresh_session", "sealed", "observed_resources_terminated", "stdin_closed", "stdout_natural_eof", "stderr_natural_eof")) flag(p, key, true);
-        for (String key : List.of("native_path_preexisting", "overflow")) flag(p, key, false);
-        require(number(p, "exit_code") == 0, "Codex process did not exit successfully");
-        require(array(m, "turns").size() == 1, "Codex fresh profile requires one turn");
         Jv turn = array(m, "turns").get(0); equal(turn, "invocation_uid", text(d, "executionId")); equal(turn, "decision_uid", text(d, "decisionId")); text(turn, "native_turn_uid");
-        launch(p);
+        closure(m, p, retained);
     }
-    static void launch(Jv p) {
+    /** A follow-up turn of a retained thread is the only admitted non-fresh process; it must resume the emitted thread. */
+    static void closure(Jv m, Jv p, boolean retained) {
+        boolean followUp = retained && number(m.member("run"), "invocation_index") > 0;
+        for (String key : List.of("sealed", "observed_resources_terminated", "stdin_closed", "stdout_natural_eof", "stderr_natural_eof")) flag(p, key, true);
+        flag(p, "fresh_session", !followUp); flag(p, "native_path_preexisting", followUp); flag(p, "overflow", false);
+        require(number(p, "exit_code") == 0, "Codex process did not exit successfully");
+        require(array(m, "turns").size() == 1, "Codex profile requires one turn");
+        String session = text(m.member("run"), "session_uid"); Jv turn = array(m, "turns").get(0);
+        launch(p, followUp ? session : null);
+        if (followUp) equal(turn, "resume_thread_id", session);
+        else require(turn.member("resume_thread_id") == null || turn.member("resume_thread_id").isNull(), "fresh Codex turn declares a resumed thread");
+    }
+    static void launch(Jv p, String resumed) {
         List<String> argv = array(p, "argv").stream().map(Jv::text).toList();
         require(argv.containsAll(List.of("--no-daemon", "exec", "--ignore-user-config", "--json")) && "-".equals(argv.get(argv.size() - 1)), "wrong Codex original stdio route");
-        require(argv.stream().noneMatch(Set.of("resume", "fork", "--ephemeral", "--last")::contains), "Codex history reuse forbidden");
+        require(argv.stream().noneMatch(Set.of("fork", "--ephemeral", "--last")::contains), "Codex history reuse forbidden");
+        int exec = argv.indexOf("exec"); boolean resume = exec + 1 < argv.size() && "resume".equals(argv.get(exec + 1));
+        if (resumed == null) require(!argv.contains("resume"), "Codex history reuse forbidden for a fresh turn");
+        else require(resume && argv.subList(exec + 2, argv.size()).contains(resumed), "Codex follow-up must resume the emitted thread");
         require(option(argv, "-C", text(p, "cwd")) || option(argv, "--cd", text(p, "cwd")), "Codex argv cwd differs");
         for (List<String> flags : List.of(List.of("--sandbox", "-s"), List.of("--ask-for-approval", "-a"), List.of("--model", "-m"))) require(flags.stream().anyMatch(argv::contains), "Codex explicit launch option missing");
         require(argv.stream().anyMatch(s -> s != null && s.startsWith("model_reasoning_effort=")), "Codex effort missing");
     }
     private static boolean option(List<String> argv, String flag, String value) { int i = argv.indexOf(flag); return i >= 0 && i + 1 < argv.size() && value.equals(argv.get(i + 1)); }
 
-    private static void source(Jv s, Jv occurrence, Jv m, Jv d) {
+    private static void source(Jv s, Jv occurrence, Jv m, Jv d, boolean generation) {
         equal(s, "state", "acquired"); equal(s, "end", "EOF"); equal(s, "acquisition", text(d, "executionId")); flag(s, "required", true);
         equal(occurrence, "sha256", text(s, "sha256")); equal(occurrence, "origin", text(s, "origin"));
         long bytes = number(s, "bytes"); require(bytes == number(occurrence, "size") && bytes == number(s, "observed") && number(s, "dropped") == 0, "Codex extent/drop differs");
         String role = text(s, "role"), stream = Map.of("stdin", "STDIN", "stream", "STDOUT", "stderr", "STDERR").get(role);
-        flag(s, "archive_only", Set.of("stdin", "stderr").contains(role));
+        flag(s, "archive_only", generation || Set.of("stdin", "stderr").contains(role));
+        if (generation) { require(occurrence.member("stream").isNull(), "generation original is not a stream"); return; }
         if (stream == null) { require(occurrence.member("stream").isNull(), "native file is not a stream"); equal(s, "owner_session_uid", text(m.member("run"), "session_uid")); }
         else {
             equal(occurrence, "stream", stream); Jv turn = array(m, "turns").get(0);

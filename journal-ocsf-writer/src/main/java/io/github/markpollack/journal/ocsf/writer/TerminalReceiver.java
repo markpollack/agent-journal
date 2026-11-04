@@ -33,6 +33,8 @@ public final class TerminalReceiver {
     /** Opt-in fresh-transcript-start retained profile; the frozen retained profile above is unchanged. */
     public static final String FRESH_RETAINED_PROFILE = TerminalContract.FRESH_RETAINED_PROFILE;
     public static final String CODEX_PROFILE = TerminalCodexProfile.PROFILE;
+    /** Opt-in retained Codex profile: one turn of a sealed two-turn thread with its original per-process evidence. */
+    public static final String CODEX_RETAINED_PROFILE = TerminalContract.CODEX_RETAINED_PROFILE;
     private final Path root;
     private final String namespace;
     private final WriterOptions options;
@@ -114,7 +116,7 @@ public final class TerminalReceiver {
     private Path writePackage(Path candidate, Jv.Obj payload, TerminalContract.Input input, Jv association) throws IOException {
         if (TerminalCodexProfile.complete(input, association)) {
             Path manifest = candidate.resolve("sources/acquisition.json");
-            TerminalCodexProfile.validate(manifest, input.decision(), association);
+            TerminalCodexProfile.validate(manifest, input, association);
             AcquiredExecution.assembleTerminal(manifest, candidate, payload, options);
             return candidate.resolve("events.jsonl");
         }

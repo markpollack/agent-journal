@@ -55,6 +55,7 @@ public final class AcquisitionVerification implements AcquisitionVerifier {
             inputs.readSources();
             if (CodexAcquisition.PROFILE_ID.equals(text(inputs.manifest, "profile_id"))) {
                 CodexAcquisition.validate(inputs.manifest, inputs.base);
+                if (inputs.manifest.member("retained_generation") != null) CodexRetainedAcquisition.validate(inputs.manifest, inputs.base);
             }
             Json spec = NeutralJson.readDocument(assembly);
             if (CodexAcquisition.PROFILE_ID.equals(text(inputs.manifest, "profile_id"))) {
