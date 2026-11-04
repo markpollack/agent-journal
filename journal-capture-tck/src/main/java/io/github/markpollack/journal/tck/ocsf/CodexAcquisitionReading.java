@@ -69,7 +69,10 @@ public final class CodexAcquisitionReading {
         equal(run.member("launch_settings"), "route", "exec_stdio");
         equal(run.member("launch_settings"), "working_directory", text(process, "cwd"));
         text(process, "connection_uid"); text(process, "client_session_uid");
-        boolean followUp = retained && number(run, "invocation_index") > 0;
+        process(m, run, process, retained && number(run, "invocation_index") > 0);
+    }
+
+    private static void process(Json m, Json run, Json process, boolean followUp) {
         for (String field : List.of("sealed", "observed_resources_terminated", "stdin_closed", "stdout_natural_eof", "stderr_natural_eof")) truth(process, field, true);
         truth(process, "fresh_session", !followUp); truth(process, "native_path_preexisting", followUp); truth(process, "overflow", false);
         require(number(process, "exit_code") == 0, "successful exited process required");

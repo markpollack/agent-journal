@@ -17,18 +17,7 @@ final class CodexRolloutContextReading {
             declarations(f, index, p, turn); return true;
         }
         if ("event_msg".equals(type) && "thread_settings_applied".equals(kind)) {
-            f.normalized.add(index);
-            f.contexts.add(new ExpectedFacts.Context(index, 1, "thread_settings_applied", null,
-                    ClaudeTranscriptProfile.settings(p.member("thread_settings"), "cwd", "working_directory", "model", "model",
-                            "model_provider_id", "provider", "approval_policy", "approval_policy", "reasoning_effort", "reasoning_effort"), null, null));
-            // The rollout holds one thread: a payload without thread_id is owned by the file's session (session_meta), exactly as the mapper derives it.
-            Json owner = p.member("thread_id") != null ? p.member("thread_id") : f.sessionOf.containsKey(index) ? new Json.JString(f.sessionOf.get(index)) : null;
-            Map<String, Json> fields = p.member("thread_settings") == null
-                    ? SourceFacts.fields("/session_uid", owner, "/settings", new Json.JObject(Map.of())) // no settings reported: the empty object is the whole assertion
-                    : SourceFacts.fields("/session_uid", owner);
-            new SourceFacts.Target(f, index, "session_context", 1).event("/payload/thread_id", "codex.native.settings_owner/v1", Map.of(), fields);
-            if (owner == null) f.sessionOf.remove(index); else f.sessionOf.put(index, owner.text());
-            return true;
+            settings(f, index, p); return true;
         }
         boolean response = "response_item".equals(type) && "reasoning".equals(kind);
         if (response || completedReasoning(type, kind, p)) {
@@ -36,6 +25,20 @@ final class CodexRolloutContextReading {
         }
         return false;
     }
+    private static void settings(ExpectedFacts f, int index, Json p) {
+        f.normalized.add(index);
+        f.contexts.add(new ExpectedFacts.Context(index, 1, "thread_settings_applied", null,
+                ClaudeTranscriptProfile.settings(p.member("thread_settings"), "cwd", "working_directory", "model", "model",
+                        "model_provider_id", "provider", "approval_policy", "approval_policy", "reasoning_effort", "reasoning_effort"), null, null));
+        // The rollout holds one thread: a payload without thread_id is owned by the file's session (session_meta), exactly as the mapper derives it.
+        Json owner = p.member("thread_id") != null ? p.member("thread_id") : f.sessionOf.containsKey(index) ? new Json.JString(f.sessionOf.get(index)) : null;
+        Map<String, Json> fields = p.member("thread_settings") == null
+                ? SourceFacts.fields("/session_uid", owner, "/settings", new Json.JObject(Map.of())) // no settings reported: the empty object is the whole assertion
+                : SourceFacts.fields("/session_uid", owner);
+        new SourceFacts.Target(f, index, "session_context", 1).event("/payload/thread_id", "codex.native.settings_owner/v1", Map.of(), fields);
+        if (owner == null) f.sessionOf.remove(index); else f.sessionOf.put(index, owner.text());
+    }
+
     private static boolean completedReasoning(String type, String kind, Json payload) {
         return "event_msg".equals(type) && "item_completed".equals(kind) && "Reasoning".equals(text(payload, "item", "type"));
     }

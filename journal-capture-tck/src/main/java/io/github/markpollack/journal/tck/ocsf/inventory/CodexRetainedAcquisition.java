@@ -34,33 +34,44 @@ public final class CodexRetainedAcquisition {
         CodexRetainedGeneration.RetainedThread thread = CodexRetainedGeneration.validate(manifest, threadManifest.toAbsolutePath().getParent());
         CodexRetainedGeneration.Turn turn = thread.turn(executionId);
         Files.createDirectory(newDirectory);
-        List<Json> sources = new ArrayList<>();
-        String origin = text(manifest, "native_path");
-        write(newDirectory, "generation/codex-thread.original.json", bytes); sources.add(archive("generation/codex-thread.original.json", "generation-codex-thread.original.json", bytes, executionId, "codex-thread"));
         Json relativized = relativize(manifest); byte[] declaration = NeutralJson.write(relativized).getBytes(StandardCharsets.UTF_8);
-        write(newDirectory, "generation/codex-thread.json", declaration); sources.add(archive("generation/codex-thread.json", "generation-codex-thread.json", declaration, executionId, "codex-thread#relativized"));
-        write(newDirectory, "generation/transcript.bin", thread.transcript()); sources.add(archive("generation/transcript.bin", "generation-transcript.bin", thread.transcript(), executionId, origin));
-        for (CodexRetainedGeneration.Turn each : thread.turns()) {
-            Path dir = each.perTurnManifestPath().getParent(); String prefix = "generation/turn-" + each.index() + "/";
-            for (String name : List.of("codex-acquisition.json", "stdin.bin", "stdout.bin", "stderr.bin", "native.bin")) {
-                byte[] copy = Files.readAllBytes(dir.resolve(name)); write(newDirectory, prefix + name, copy);
-                sources.add(archive(prefix + name, "generation-turn-" + each.index() + "-" + name, copy, executionId, name.equals("native.bin") ? origin + "#prefix" : "codex-per-turn"));
-            }
-        }
-        byte[] perTurn = Files.readAllBytes(turn.perTurnManifestPath());
-        for (var e : Map.of("STDIN", "turn/stdin.bin", "STDERR", "turn/stderr.bin").entrySet()) {
-            write(newDirectory, e.getValue(), turn.originals().get(e.getKey()));
-            sources.add(archive(e.getValue(), e.getKey().toLowerCase(java.util.Locale.ROOT), turn.originals().get(e.getKey()), executionId, "codex-" + e.getKey().toLowerCase(java.util.Locale.ROOT)));
-        }
-        byte[] stdout = turn.originals().get("STDOUT"); write(newDirectory, "turn/stdout.jsonl", stdout);
-        sources.add(selected("turn/stdout.jsonl", "stream", stdout, executionId, "codex-stdout", "codex_stream", "stdout", null));
-        byte[] projection = thread.projection(turn); write(newDirectory, "turn/transcript.jsonl", projection);
-        sources.add(selected("turn/transcript.jsonl", "transcript", projection, executionId, origin + "#turn=" + turn.index(), "codex_rollout", "native_session_file", thread.session()));
-        Json.JObject acquisition = acquisition(turn, relativized, sources, bytes, perTurn);
+        List<Json> sources = copyGeneration(newDirectory, thread, executionId, bytes, declaration);
+        sources.addAll(copyTurn(newDirectory, thread, turn, executionId));
+        Json.JObject acquisition = acquisition(turn, relativized, sources, bytes, Files.readAllBytes(turn.perTurnManifestPath()));
         Path output = newDirectory.resolve("acquisition.json"); write(output, NeutralJson.write(acquisition).getBytes(StandardCharsets.UTF_8));
         Path expectation = newDirectory.resolve("assembly-expectation.json"); write(expectation, NeutralJson.write(CodexAcquisition.expectation()).getBytes(StandardCharsets.UTF_8));
         validate(acquisition, newDirectory);
         return new CodexAcquisition.Qualified(output, expectation);
+    }
+
+    /** Byte-exact thread manifest, its relativized declaration, the final transcript and every turn's originals, all archive-only. */
+    private static List<Json> copyGeneration(Path dir, CodexRetainedGeneration.RetainedThread thread, String execution, byte[] original, byte[] declaration) throws IOException {
+        List<Json> sources = new ArrayList<>(); String origin = text(thread.manifest(), "native_path");
+        write(dir, "generation/codex-thread.original.json", original); sources.add(archive("generation/codex-thread.original.json", "generation-codex-thread.original.json", original, execution, "codex-thread"));
+        write(dir, "generation/codex-thread.json", declaration); sources.add(archive("generation/codex-thread.json", "generation-codex-thread.json", declaration, execution, "codex-thread#relativized"));
+        write(dir, "generation/transcript.bin", thread.transcript()); sources.add(archive("generation/transcript.bin", "generation-transcript.bin", thread.transcript(), execution, origin));
+        for (CodexRetainedGeneration.Turn each : thread.turns()) {
+            Path from = each.perTurnManifestPath().getParent(); String prefix = "generation/turn-" + each.index() + "/";
+            for (String name : List.of("codex-acquisition.json", "stdin.bin", "stdout.bin", "stderr.bin", "native.bin")) {
+                byte[] copy = Files.readAllBytes(from.resolve(name)); write(dir, prefix + name, copy);
+                sources.add(archive(prefix + name, "generation-turn-" + each.index() + "-" + name, copy, execution, name.equals("native.bin") ? origin + "#prefix" : "codex-per-turn"));
+            }
+        }
+        return sources;
+    }
+
+    /** This turn's own process originals plus the single-turn rollout projection, in the roles the Codex assembly reads. */
+    private static List<Json> copyTurn(Path dir, CodexRetainedGeneration.RetainedThread thread, CodexRetainedGeneration.Turn turn, String execution) throws IOException {
+        List<Json> sources = new ArrayList<>(); String origin = text(thread.manifest(), "native_path");
+        for (var e : Map.of("STDIN", "turn/stdin.bin", "STDERR", "turn/stderr.bin").entrySet()) {
+            byte[] bytes = turn.originals().get(e.getKey()); write(dir, e.getValue(), bytes);
+            sources.add(archive(e.getValue(), e.getKey().toLowerCase(java.util.Locale.ROOT), bytes, execution, "codex-" + e.getKey().toLowerCase(java.util.Locale.ROOT)));
+        }
+        byte[] stdout = turn.originals().get("STDOUT"); write(dir, "turn/stdout.jsonl", stdout);
+        sources.add(selected(archive("turn/stdout.jsonl", "stream", stdout, execution, "codex-stdout"), stdout, "codex_stream", "stdout", null));
+        byte[] projection = thread.projection(turn); write(dir, "turn/transcript.jsonl", projection);
+        sources.add(selected(archive("turn/transcript.jsonl", "transcript", projection, execution, origin + "#turn=" + turn.index()), projection, "codex_rollout", "native_session_file", thread.session()));
+        return sources;
     }
 
     /** Read-only check of a qualified turn: declaration equals the copied thread manifest, the thread qualifies,
@@ -112,9 +123,9 @@ public final class CodexRetainedAcquisition {
                 "bytes", bytes.length, "sha256", NativeArtifact.sha256(bytes), "observed", bytes.length, "dropped", 0, "end", "EOF", "acquisition", execution);
     }
 
-    private static Json selected(String path, String role, byte[] bytes, String execution, String origin, String profile, String route, String owner) throws IOException {
+    private static Json selected(Json archive, byte[] bytes, String profile, String route, String owner) throws IOException {
         long lines = 0; for (byte b : bytes) if (b == '\n') lines++;
-        Json.JObject source = (Json.JObject) archive(path, role, bytes, execution, origin);
+        Json.JObject source = (Json.JObject) archive;
         source.members().put("archive_only", new Json.JBool(false));
         source.members().putAll(object("profile", profile, "route", route, "framing", "lines", "records", lines).members());
         if (owner != null) source.members().put("owner_session_uid", new Json.JString(owner));
