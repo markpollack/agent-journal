@@ -14,27 +14,35 @@ import java.util.Map;
 import java.util.Set;
 import static io.github.markpollack.journal.ocsf.writer.TerminalValues.*;
 
-/** Producer-side validation of retained projection provenance. The TCK checks it independently. */
+/** Producer-side validation of retained projection provenance. The TCK checks it independently.
+ * The fresh-start profile is selected only by its own envelope profile: it admits the tagged ABSENT first
+ * before-prefix and requires the copied observation journal and fresh-start/identity members; the frozen
+ * retained profile refuses that form, so neither kind can be read as the other.
+ */
 final class TerminalRetainedProfile {
+    private static final String FRESH_KIND = "journal-retained-fresh-generation/1";
     private TerminalRetainedProfile() { }
 
     static void validate(TerminalContract.Input input, Path manifest) throws IOException {
         Jv acquisition = Jv.parse(Files.readString(manifest));
-        boolean retained = TerminalContract.RETAINED_PROFILE.equals(text(Jv.parse(input.envelope()), "profile"));
+        String profile = text(Jv.parse(input.envelope()), "profile");
+        boolean fresh = TerminalContract.FRESH_RETAINED_PROFILE.equals(profile), retained = fresh || TerminalContract.RETAINED_PROFILE.equals(profile);
         Jv generation = acquisition.member("retained_generation");
         if (!retained) { require(generation == null, "retained generation requires its frozen initial profile"); return; }
         require(generation instanceof Jv.Obj, "retained generation declaration absent");
-        header(generation, input.decision());
+        header(generation, input.decision(), fresh);
         equal(generation, "nativeSessionId", text(acquisition.member("run"), "session_uid"));
         Path base = manifest.getParent();
-        require(Jv.write(generation).equals(Jv.write(Jv.parse(Files.readString(base.resolve("generation/retained-generation.json"))))), "retained original manifest differs");
+        String name = fresh ? "generation/retained-fresh-generation.json" : "generation/retained-generation.json";
+        require(Jv.write(generation).equals(Jv.write(Jv.parse(Files.readString(base.resolve(name))))), "retained original manifest differs");
+        if (fresh) freshness(acquisition, generation, base); else require(acquisition.member("retained_profile") == null, "frozen retained profile carries no fresh profile");
         Map<String, byte[]> sources = originals(generation, base);
         Set<String> executions = new HashSet<>(), decisions = new HashSet<>(), prompts = new HashSet<>();
-        Jv selected = null;
+        Jv selected = null; boolean first = true;
         for (Jv turn : array(generation, "turns")) {
             require(executions.add(text(turn, "executionId")) && decisions.add(text(turn, "decisionId")), "retained turn identity reused");
             require(prompts.add(Jv.write(record(sources, turn.member("prompt")).member("message"))), "retained prompt duplicated");
-            prefixes(turn, sources.get("TRANSCRIPT"));
+            prefixes(turn, sources.get("TRANSCRIPT"), fresh && first); first = false;
             if (text(turn, "executionId").equals(text(input.decision(), "executionId"))) selected = turn;
         }
         require(selected != null, "retained execution absent"); equal(selected, "decisionId", text(input.decision(), "decisionId"));
@@ -42,14 +50,24 @@ final class TerminalRetainedProfile {
         projections(generation, selected, sources, base);
     }
 
-    private static void header(Jv generation, Jv decision) {
-        equal(generation, "kind", "journal-retained-generation/1"); equal(generation, "cliVersion", "2.1.316");
+    private static void header(Jv generation, Jv decision, boolean fresh) {
+        equal(generation, "kind", fresh ? FRESH_KIND : "journal-retained-generation/1"); equal(generation, "cliVersion", "2.1.316");
         equal(generation, "logicalSessionId", text(decision, "sessionId")); equal(generation, "connectionId", text(decision, "connectionId"));
         equal(decision.member("outcome"), "kind", "SUCCESS");
         for (String key : List.of("sealed", "observedResourcesTerminated", "stdoutNaturalEof", "stderrNaturalEof"))
             require(generation.member(key) instanceof Jv.Bool b && b.value(), "retained generation not sealed/EOF");
         require(generation.member("overflow") instanceof Jv.Bool b && !b.value(), "retained overflow");
         require(array(generation, "turns").size() == 2, "retained profile requires exactly two turns");
+    }
+
+    private static void freshness(Jv acquisition, Jv generation, Path base) throws IOException {
+        equal(acquisition, "retained_profile", TerminalContract.FRESH_RETAINED_PROFILE);
+        require(generation.member("freshStart") instanceof Jv.Obj && generation.member("observedNativeIdentity") instanceof Jv.Obj, "fresh-start evidence absent");
+        equal(generation.member("freshStart"), "requestedSessionId", text(generation, "nativeSessionId"));
+        equal(generation.member("observedNativeIdentity"), "reportedSessionId", text(generation, "nativeSessionId"));
+        Jv journal = generation.member("observations"); require(journal instanceof Jv.Obj, "observation journal absent");
+        byte[] bytes = Files.readAllBytes(base.resolve("generation").resolve(relative(text(journal, "path"))));
+        equal(journal, "sha256", SchemaPin.sha256(bytes)); require(number(journal, "size") == bytes.length, "observation journal extent differs");
     }
 
     private static Map<String, byte[]> originals(Jv generation, Path base) throws IOException {
@@ -64,11 +82,17 @@ final class TerminalRetainedProfile {
         return sources;
     }
 
-    private static void prefixes(Jv turn, byte[] nativeBytes) {
-        long before = prefix(turn.member("nativePrefixBefore"), nativeBytes), after = prefix(turn.member("nativePrefixAfter"), nativeBytes);
+    private static void prefixes(Jv turn, byte[] nativeBytes, boolean absentBefore) {
+        long before = absentBefore ? absent(turn.member("nativePrefixBefore")) : prefix(turn.member("nativePrefixBefore"), nativeBytes);
+        long after = prefix(turn.member("nativePrefixAfter"), nativeBytes);
         require(before <= after, "retained prefix regressed");
         for (Jv locator : array(turn, "nativeRecords"))
             require(number(locator, "start") >= before && number(locator, "end") <= after, "native member outside observed prefixes");
+    }
+
+    private static long absent(Jv observation) {
+        require(observation instanceof Jv.Obj o && o.members().size() == 2, "fresh first prefix must be the tagged absence");
+        equal(observation, "state", "ABSENT"); equal(observation, "observation", "before-first-dispatch"); return 0;
     }
 
     private static long prefix(Jv prefix, byte[] bytes) {

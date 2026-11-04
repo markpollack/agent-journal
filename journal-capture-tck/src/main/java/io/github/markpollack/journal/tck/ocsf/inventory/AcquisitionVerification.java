@@ -50,7 +50,7 @@ public final class AcquisitionVerification implements AcquisitionVerifier {
             Inputs inputs = new Inputs(acquisition, directory);
             if (ClaudeAcquisition.PROFILE_ID.equals(text(inputs.manifest, "profile_id"))) {
                 if (inputs.manifest.member("retained_generation") == null) ClaudeAcquisition.validate(inputs.manifest, inputs.base);
-                else io.github.markpollack.journal.tck.ocsf.RetainedAcquisition.validate(inputs.manifest, inputs.base);
+                else io.github.markpollack.journal.tck.ocsf.RetainedAcquisition.validate(inputs.manifest, inputs.base, inputs.manifest.member("retained_profile") != null);
             }
             inputs.readSources();
             if (CodexAcquisition.PROFILE_ID.equals(text(inputs.manifest, "profile_id"))) {

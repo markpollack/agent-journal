@@ -1,8 +1,12 @@
 {
   "kind": "agent-journal/cross-cli-accounting-baseline",
-  "version": "0.14",
+  "version": "0.15",
   "meaning": "Exact executed accounting population and dependency snapshot. Declared checker assignments remain separate from attributed Check outcomes. Pins native occurrences and classifications, source/specification bindings, E requirements, actual assertion outcomes, comparison operand digests and non-passing findings. An edit is a reviewable implementation result, never semantic approval. Unresolved meanings and unsupported versions remain non-passing. Required unchecked comparisons cannot be frozen by this ratchet.",
   "changes": [
+    {
+      "revision": "0.15 (fresh-transcript-start retained qualification, 2026-11-04)",
+      "summary": "Restate the journal-capture-tck/src/main, src/test/java and journal-ocsf-writer/src/main dependency digests after the separately versioned fresh-start retained Claude kind/profile (FreshRetainedGeneration, FreshRetainedClaudeAcquisition, writer-side fresh profile admission) and its labelled synthetic fixture retained-fresh-generation with thirteen rejection classes were added. The frozen retained /1 kind, profile and fixture are unchanged. No assertion, comparison population, native occurrence, source, catalog, checker, non-passing check, extension or schema digest changed: the ledger is otherwise line-identical to 0.14. A restated dependency digest is not semantic approval and no native/provider qualification is implied."
+    },
     {
       "revision": "0.14 (current Codex source obligations and combined output, 2026-11-03)",
       "summary": "Add labelled synthetic current exec/native fixtures with31/294 field occurrences. Register exact source declaration/settings/reasoning fields, independent namespace provenance and existing comparison assignments; no new unjudged assertion paths or unchecked native fields. Add explicit combined_output semantics with extension0.16 and semantic binding0.10; current claims remain proposed and historical approvals/resources unchanged. Retain all old native source populations; restate53 changed existing comparison operand digests, two new populations, field catalog/coverage/family and code/fixture dependency hashes. New final accounting no-repeat selectors are explicit only for current Codex; historical Claude/Copilot accounting declarations remain unchanged. Whole-field authority preserves supporting observations and original-acquisition singleton validation."
@@ -745,8 +749,8 @@
     "comparison-population syn-codex-exec-turn-failed-0.160.1 main/stream.jsonl 217 sha256:72433f46fc0f12c0637ad0e29bb9e92c293806199df0a991a9cc029d2b624394",
     "comparison-population syn-codex-onboarding-exec-0.166.0 main/stream.jsonl 408 sha256:fa6b0f5cb023c466ceba9344981359156c012d2c4287693aefc6a3a6481dfebf",
     "comparison-population syn-codex-onboarding-rollout-0.166.0 main/stream.jsonl 1672 sha256:2a996718d030f3b1882b5915df2f88267d0d8501a27700dfbae6c842129d74cb",
-    "dependency journal-capture-tck/src/main sha256:7399ceb6f3fd4d8d0a23ab9b3dd4f809d75d1bbe4b4eb75f6392602477c21621",
-    "dependency journal-capture-tck/src/test/java sha256:63d0e7a77d948463788fcc70c57e89fe863c4ebff43e1cdf6f3c26df0c8cac92",
+    "dependency journal-capture-tck/src/main sha256:3c4a2bd5aea06f1905a928ad1b16f554d2f78cb941b5c4c9d9398fc9d3c20618",
+    "dependency journal-capture-tck/src/test/java sha256:3e9fbdc31570326d1040b8173caa4c8c486d19812c127ea0d183d9773096d628",
     "dependency journal-capture-tck/src/test/resources/ocsf/conformance sha256:197e677ebb73d7d22fc6a9e32f4e43ff4c82a4f8e5f5dbf9d62f2196a94c34f1",
     "dependency journal-capture-tck/src/test/resources/ocsf/fixtures sha256:64020b8236b60d5ab477b40cf44430af408658f960478939fb7c1e444c048d0b",
     "dependency journal-capture-tck/src/test/resources/ocsf/mapping-catalog sha256:3666ba8cb3cff5a7e9d6b2e1bd88fe525fd4efbf89f337f45f70389647d8546b",

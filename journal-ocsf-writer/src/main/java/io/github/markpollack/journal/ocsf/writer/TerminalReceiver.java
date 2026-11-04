@@ -30,6 +30,8 @@ public final class TerminalReceiver {
     public static final String PROFILE = TerminalContract.PROFILE;
     public static final String CLAUDE_PROFILE = TerminalContract.CLAUDE_PROFILE;
     public static final String RETAINED_PROFILE = TerminalContract.RETAINED_PROFILE;
+    /** Opt-in fresh-transcript-start retained profile; the frozen retained profile above is unchanged. */
+    public static final String FRESH_RETAINED_PROFILE = TerminalContract.FRESH_RETAINED_PROFILE;
     public static final String CODEX_PROFILE = TerminalCodexProfile.PROFILE;
     private final Path root;
     private final String namespace;
