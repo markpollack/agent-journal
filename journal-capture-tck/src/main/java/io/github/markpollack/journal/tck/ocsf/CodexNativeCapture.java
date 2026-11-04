@@ -16,12 +16,19 @@ final class CodexNativeCapture {
     private static final List<String> USAGE = List.of("input_tokens", "cached_input_tokens", "cache_write_input_tokens", "output_tokens", "reasoning_output_tokens");
     private CodexNativeCapture() { }
 
-    static void validate(Json m, Map<String, CodexAcquisitionReading.Source> sources) throws CharacterCodingException {
+    static void validate(Json m, Map<String, CodexAcquisitionReading.Source> sources) throws CharacterCodingException { validate(m, sources, false); }
+
+    /** A retained turn's projection is a single-turn rollout view; its wire usage is compared with the declared
+     * per-turn and cumulative native usage instead of being assumed equal to the thread total. */
+    static void validate(Json m, Map<String, CodexAcquisitionReading.Source> sources, boolean retained) throws CharacterCodingException {
         String session = text(m.member("run"), "session_uid");
-        String turn = text(array(m, "turns").get(0), "native_turn_uid");
+        Json declared = array(m, "turns").get(0); String turn = text(declared, "native_turn_uid");
         List<Json> stream = records(sources.get("stream")); List<Json> nativeRows = records(sources.get("transcript"));
-        Json usage = stream(stream, session);
-        nativeRows(m, nativeRows, session, turn, prompt(sources.get("stdin").bytes()), usage);
+        Json usage = stream(stream, session, retained && !"stdout".equals(text(declared, "identity_source")));
+        if (!retained) { nativeRows(m, nativeRows, session, turn, prompt(sources.get("stdin").bytes()), usage); return; }
+        sameUsage(declared.member("wire_usage"), usage);
+        require(CodexRetainedGeneration.scope(declared) != null && CodexRetainedGeneration.scope(declared).equals(text(m, "wire_usage_scope")), "wire usage scope differs from declaration");
+        nativeRows(m, nativeRows, session, turn, prompt(sources.get("stdin").bytes()), declared.member("thread_token_usage"));
     }
 
     private static List<Json> records(CodexAcquisitionReading.Source source) {
@@ -36,12 +43,15 @@ final class CodexNativeCapture {
         require(!prompt.isBlank() && !prompt.startsWith("\uFEFF"), "nonblank UTF-8 prompt without BOM required"); return prompt;
     }
 
-    private static Json stream(List<Json> rows, String session) {
-        require(rows.size() >= 4, "incomplete stdout lifecycle");
-        equal(rows.get(0), "type", "thread.started"); equal(rows.get(0), "thread_id", session);
-        equal(rows.get(1), "type", "turn.started");
+    private static Json stream(List<Json> rows, String session, boolean resumedWithoutEmittedIdentity) {
+        require(rows.size() >= (resumedWithoutEmittedIdentity ? 3 : 4), "incomplete stdout lifecycle");
+        int first = 0;
+        if (resumedWithoutEmittedIdentity) require(!"thread.started".equals(optional(rows.get(0), "type")), "identity source contradicts emitted thread.started");
+        else { equal(rows.get(0), "type", "thread.started"); equal(rows.get(0), "thread_id", session); first = 1; }
+        equal(rows.get(first), "type", "turn.started");
         equal(rows.get(rows.size() - 1), "type", "turn.completed");
-        for (String kind : List.of("thread.started", "turn.started", "turn.completed")) require(count(rows, kind, false) == 1, "duplicate stdout lifecycle");
+        for (String kind : List.of("turn.started", "turn.completed")) require(count(rows, kind, false) == 1, "duplicate stdout lifecycle");
+        require(count(rows, "thread.started", false) == (resumedWithoutEmittedIdentity ? 0 : 1), "duplicate stdout lifecycle");
         require(rows.stream().noneMatch(r -> Set.of("turn.failed", "error").contains(text(r, "type"))), "failed stdout lifecycle");
         for (Json row : rows) if (row.member("thread_id") != null) equal(row, "thread_id", session);
         Json usage = rows.get(rows.size() - 1).member("usage"); validUsage(usage);

@@ -1,0 +1,363 @@
+{
+ "kind": "journal-codex-retained-generation/1",
+ "native_session_id": "a94e0250-c7a5-4bc3-adef-fcbef96582ac",
+ "cli_version": "0.166.0",
+ "cwd": "/home/mark/.local/state/client-retained-20261104/caller/proof-b74a262",
+ "native_path": "/home/mark/.local/state/client-retained-20261104/caller/proof-b74a262/sessions/rollout-fixture-a94e0250-c7a5-4bc3-adef-fcbef96582ac.jsonl",
+ "sealed": true,
+ "overflow": false,
+ "transcript": {
+  "role": "transcript",
+  "path": "transcript.bin",
+  "origin": "/home/mark/.local/state/client-retained-20261104/caller/proof-b74a262/sessions/rollout-fixture-a94e0250-c7a5-4bc3-adef-fcbef96582ac.jsonl",
+  "bytes": 6657,
+  "sha256": "99fb7c29134db7a9ba8f8d410d04d00ced28b708389893cf4abca7b31f659c75",
+  "last_sealed_prefix": {
+   "bytes": 6657,
+   "sha256": "99fb7c29134db7a9ba8f8d410d04d00ced28b708389893cf4abca7b31f659c75"
+  },
+  "final_equals_last_sealed_prefix": true
+ },
+ "turns": [
+  {
+   "invocation_index": 0,
+   "execution_id": "685f677c-85da-4bfb-8f6f-e002573774fe",
+   "connection_id": "439b7fe3-3101-4a27-816e-1af66b9d7e8c",
+   "argv": [
+    "/home/mark/.local/state/client-retained-20261104/caller/fixture/codex-child.py",
+    "--no-daemon",
+    "--ask-for-approval",
+    "never",
+    "--sandbox",
+    "read-only",
+    "-C",
+    "/home/mark/.local/state/client-retained-20261104/caller/proof-b74a262",
+    "exec",
+    "--ignore-user-config",
+    "--model",
+    "synthetic-model",
+    "-c",
+    "model_reasoning_effort=\"low\"",
+    "--skip-git-repo-check",
+    "--json",
+    "--",
+    "-"
+   ],
+   "pids": [
+    2670905
+   ],
+   "exit_code": 0,
+   "resume_thread_id": null,
+   "identity_source": "stdout",
+   "native_turn_uid": "b8d56e6a-5cfa-499c-a6e2-a33f7ebd378d",
+   "complete": true,
+   "detail": "COMPLETE",
+   "observed_resources_terminated": true,
+   "stdin_closed": true,
+   "stdout_natural_eof": true,
+   "stderr_natural_eof": true,
+   "sources": [
+    {
+     "path": "turn-0/stdin.bin",
+     "bytes": 5,
+     "observed": 5,
+     "role": "STDIN",
+     "natural_eof": true,
+     "sha256": "a7937b64b8caa58f03721bb6bacf5c78cb235febe0e70b1b84cd99541461a08e"
+    },
+    {
+     "path": "turn-0/stdout.bin",
+     "bytes": 372,
+     "observed": 372,
+     "role": "STDOUT",
+     "natural_eof": true,
+     "sha256": "2d3b8e0c8b80d0e60579d60349e950b74c2a4f081458d24a76eae6346f64623f"
+    },
+    {
+     "path": "turn-0/stderr.bin",
+     "bytes": 39,
+     "observed": 39,
+     "role": "STDERR",
+     "natural_eof": true,
+     "sha256": "27e6bf595fa30989713894cefeb0d7c7afa04e40347798966f3a5733b63d3755"
+    }
+   ],
+   "per_turn_directory": "turn-0",
+   "per_turn_manifest": "turn-0/codex-acquisition.json",
+   "wire_usage": {
+    "input_tokens": 11,
+    "cached_input_tokens": 3,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 4,
+    "reasoning_output_tokens": 0
+   },
+   "native_prefix_after": {
+    "bytes": 3482,
+    "sha256": "0612cf190d7742b569c6156711d74b548f056ebec621608e91101c0327988fe7"
+   },
+   "native_records": {
+    "first_line": 0,
+    "last_line": 7,
+    "region_start_byte": 0,
+    "records": [
+     {
+      "source": "TRANSCRIPT",
+      "start": 431,
+      "end": 952,
+      "sha256": "1d5fbbb7f50aa255d48f8302e1eecd28a3e1975f4da7072ace7ad89286d3265b"
+     },
+     {
+      "source": "TRANSCRIPT",
+      "start": 952,
+      "end": 1143,
+      "sha256": "4621683c3110673b83348ffeeb75e805475edf6dfce42432b039401ee15d42ab"
+     },
+     {
+      "source": "TRANSCRIPT",
+      "start": 1143,
+      "end": 1533,
+      "sha256": "1956725d5b19e86d853680b57607a87a0dec02c55741de1c6a0790679194f099"
+     },
+     {
+      "source": "TRANSCRIPT",
+      "start": 1533,
+      "end": 1776,
+      "sha256": "3179424f6dd6a3657ae187f755f4d3aad82a84fa1e27c0c91353bbec5af18e69"
+     },
+     {
+      "source": "TRANSCRIPT",
+      "start": 1776,
+      "end": 2622,
+      "sha256": "f507e009ceee028d2fe51e402947a7885303c084459c11f8f5241a2b9c1f468e"
+     },
+     {
+      "source": "TRANSCRIPT",
+      "start": 2622,
+      "end": 3172,
+      "sha256": "a703e53ede44a3ab82c1fffe1d3e7e79a9fecd87821f82c0aa7a59e8aebade7b"
+     },
+     {
+      "source": "TRANSCRIPT",
+      "start": 3172,
+      "end": 3482,
+      "sha256": "3bb3118ffc168ea54f6319f251c52b85b060cbcf4c021ad41fde600624311c88"
+     }
+    ],
+    "shared": [
+     {
+      "source": "TRANSCRIPT",
+      "start": 0,
+      "end": 431,
+      "sha256": "40c289b8c0d5f6386dfcc25e186aa8040e8a1c6b940592b0f0be93ae88d5d1bf"
+     }
+    ]
+   },
+   "cumulative_usage": {
+    "input_tokens": 11,
+    "cached_input_tokens": 3,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 4,
+    "reasoning_output_tokens": 0,
+    "total_tokens": 15
+   },
+   "turn_token_usage": {
+    "input_tokens": 11,
+    "cached_input_tokens": 3,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 4,
+    "reasoning_output_tokens": 0,
+    "total_tokens": 15
+   },
+   "thread_token_usage": {
+    "input_tokens": 11,
+    "cached_input_tokens": 3,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 4,
+    "reasoning_output_tokens": 0,
+    "total_tokens": 15
+   },
+   "total_token_usage": {
+    "input_tokens": 11,
+    "cached_input_tokens": 3,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 4,
+    "reasoning_output_tokens": 0,
+    "total_tokens": 15
+   }
+  },
+  {
+   "invocation_index": 1,
+   "execution_id": "cc60a932-429f-48c9-bcbc-a67652179afa",
+   "connection_id": "7ab1934b-b9a5-4294-8817-8e113df62a97",
+   "argv": [
+    "/home/mark/.local/state/client-retained-20261104/caller/fixture/codex-child.py",
+    "--no-daemon",
+    "--ask-for-approval",
+    "never",
+    "--sandbox",
+    "read-only",
+    "-C",
+    "/home/mark/.local/state/client-retained-20261104/caller/proof-b74a262",
+    "exec",
+    "resume",
+    "--ignore-user-config",
+    "--model",
+    "synthetic-model",
+    "-c",
+    "model_reasoning_effort=\"low\"",
+    "--skip-git-repo-check",
+    "--json",
+    "a94e0250-c7a5-4bc3-adef-fcbef96582ac",
+    "--",
+    "-"
+   ],
+   "pids": [
+    2670912
+   ],
+   "exit_code": 0,
+   "resume_thread_id": "a94e0250-c7a5-4bc3-adef-fcbef96582ac",
+   "identity_source": "stdout",
+   "native_turn_uid": "393b1549-a4cc-4cd7-aee8-1fc6d96cedcc",
+   "complete": true,
+   "detail": "COMPLETE",
+   "observed_resources_terminated": true,
+   "stdin_closed": true,
+   "stdout_natural_eof": true,
+   "stderr_natural_eof": true,
+   "sources": [
+    {
+     "path": "turn-1/stdin.bin",
+     "bytes": 6,
+     "observed": 6,
+     "role": "STDIN",
+     "natural_eof": true,
+     "sha256": "16367aacb67a4a017c8da8ab95682ccb390863780f7114dda0a0e0c55644c7c4"
+    },
+    {
+     "path": "turn-1/stdout.bin",
+     "bytes": 373,
+     "observed": 373,
+     "role": "STDOUT",
+     "natural_eof": true,
+     "sha256": "c59d1891a17f327f602f6ec70a8657073e54ddca84ab0488fb89038d6fa76062"
+    },
+    {
+     "path": "turn-1/stderr.bin",
+     "bytes": 39,
+     "observed": 39,
+     "role": "STDERR",
+     "natural_eof": true,
+     "sha256": "27e6bf595fa30989713894cefeb0d7c7afa04e40347798966f3a5733b63d3755"
+    }
+   ],
+   "per_turn_directory": "turn-1",
+   "per_turn_manifest": "turn-1/codex-acquisition.json",
+   "wire_usage": {
+    "input_tokens": 11,
+    "cached_input_tokens": 3,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 4,
+    "reasoning_output_tokens": 0
+   },
+   "native_prefix_after": {
+    "bytes": 6657,
+    "sha256": "99fb7c29134db7a9ba8f8d410d04d00ced28b708389893cf4abca7b31f659c75"
+   },
+   "native_records": {
+    "first_line": 8,
+    "last_line": 15,
+    "region_start_byte": 3482,
+    "records": [
+     {
+      "source": "TRANSCRIPT",
+      "start": 3482,
+      "end": 3603,
+      "sha256": "c5ddb49c302f64b132ce6b2473f4527999789081c9384e21ae4a86d39bbdb645"
+     },
+     {
+      "source": "TRANSCRIPT",
+      "start": 3603,
+      "end": 4124,
+      "sha256": "b378568023f1712d2fea8c6cc02b761608bd0ec122dddd1ec4fcd009f8bba8b2"
+     },
+     {
+      "source": "TRANSCRIPT",
+      "start": 4124,
+      "end": 4316,
+      "sha256": "4842b0f0d39d330ba10f612b7cb52bb0cec81004ff6c1f8f46dd7d25b4c14f04"
+     },
+     {
+      "source": "TRANSCRIPT",
+      "start": 4316,
+      "end": 4706,
+      "sha256": "7370eaffca03ab47c0a200d3762a61da1b814da8d151fac679b398e55c5d3154"
+     },
+     {
+      "source": "TRANSCRIPT",
+      "start": 4706,
+      "end": 4950,
+      "sha256": "c5e5a286459ff11491048d4cb2cefb81aefd71ca2d306a80ebe8802e1d3c31cd"
+     },
+     {
+      "source": "TRANSCRIPT",
+      "start": 4950,
+      "end": 5796,
+      "sha256": "a7224a2318b6ed2a011308d00a4f3795712d668fb6ab0f2b1b51c4c4b0c1ccfd"
+     },
+     {
+      "source": "TRANSCRIPT",
+      "start": 5796,
+      "end": 6346,
+      "sha256": "f13dc0ece63c9af362ea30093f83c7a4f704d0ade760c019d51c16cc1226cd7f"
+     },
+     {
+      "source": "TRANSCRIPT",
+      "start": 6346,
+      "end": 6657,
+      "sha256": "ab835e33f8c0d73bcce0115953fe08336d25162ef04e51125764e4ddc7d254c0"
+     }
+    ],
+    "shared": [
+     {
+      "source": "TRANSCRIPT",
+      "start": 0,
+      "end": 431,
+      "sha256": "40c289b8c0d5f6386dfcc25e186aa8040e8a1c6b940592b0f0be93ae88d5d1bf"
+     }
+    ]
+   },
+   "cumulative_usage": {
+    "input_tokens": 22,
+    "cached_input_tokens": 6,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 8,
+    "reasoning_output_tokens": 0,
+    "total_tokens": 30
+   },
+   "turn_token_usage": {
+    "input_tokens": 11,
+    "cached_input_tokens": 3,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 4,
+    "reasoning_output_tokens": 0,
+    "total_tokens": 15
+   },
+   "thread_token_usage": {
+    "input_tokens": 22,
+    "cached_input_tokens": 6,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 8,
+    "reasoning_output_tokens": 0,
+    "total_tokens": 30
+   },
+   "total_token_usage": {
+    "input_tokens": 22,
+    "cached_input_tokens": 6,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 8,
+    "reasoning_output_tokens": 0,
+    "total_tokens": 30
+   }
+  }
+ ]
+}

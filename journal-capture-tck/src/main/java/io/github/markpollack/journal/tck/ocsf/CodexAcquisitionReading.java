@@ -25,13 +25,15 @@ public final class CodexAcquisitionReading {
     }
 
     public static Map<String, Source> read(Json m, Path directory) throws IOException {
-        header(m);
+        boolean retained = m.member("retained_generation") != null;
+        header(m, retained);
         Path base = directory.toRealPath();
         Map<String, Source> sources = new HashMap<>();
         Set<Path> paths = new HashSet<>(); Set<String> artifacts = new HashSet<>();
         for (Json s : array(m, "sources")) {
             String role = text(s, "role");
-            require(Set.of("stdin", "stream", "stderr", "transcript").contains(role), "unsupported source role");
+            boolean generation = retained && role.startsWith("generation-");
+            require(generation || Set.of("stdin", "stream", "stderr", "transcript").contains(role), "unsupported source role");
             require(artifacts.add(text(s, "artifact")), "duplicate artifact");
             equal(s, "acquisition", text(m, "acquisition_uid")); equal(s, "state", "acquired"); equal(s, "end", "EOF");
             truth(s, "required", true); text(s, "origin");
@@ -39,9 +41,9 @@ public final class CodexAcquisitionReading {
             require(paths.add(frozen.path()), "duplicate physical source path");
             require(sources.put(role, frozen) == null, "duplicate source role");
         }
-        require(sources.size() == 4, "four original sources required");
+        require(sources.keySet().containsAll(Set.of("stdin", "stream", "stderr", "transcript")) && (retained || sources.size() == 4), "four original sources required");
         spans(m, sources);
-        CodexNativeCapture.validate(m, sources);
+        CodexNativeCapture.validate(m, sources, retained);
         return sources;
     }
 
@@ -57,7 +59,7 @@ public final class CodexAcquisitionReading {
         return new Source(s, relative, bytes, path);
     }
 
-    private static void header(Json m) {
+    private static void header(Json m, boolean retained) {
         equal(m, "kind", "agent-journal/acquired-execution"); equal(m, "version", "0.1");
         equal(m, "profile", "codex-cli-0.166.0-exec-stdio-rollout"); equal(m, "profile_id", "codex-cli/0.166.0/exec-stdio+rollout");
         truth(m, "complete", true); require(array(m, "capture_errors").isEmpty(), "capture errors present");
@@ -67,20 +69,27 @@ public final class CodexAcquisitionReading {
         equal(run.member("launch_settings"), "route", "exec_stdio");
         equal(run.member("launch_settings"), "working_directory", text(process, "cwd"));
         text(process, "connection_uid"); text(process, "client_session_uid");
-        for (String field : List.of("fresh_session", "sealed", "observed_resources_terminated", "stdin_closed", "stdout_natural_eof", "stderr_natural_eof")) truth(process, field, true);
-        for (String field : List.of("native_path_preexisting", "overflow")) truth(process, field, false);
+        boolean followUp = retained && number(run, "invocation_index") > 0;
+        for (String field : List.of("sealed", "observed_resources_terminated", "stdin_closed", "stdout_natural_eof", "stderr_natural_eof")) truth(process, field, true);
+        truth(process, "fresh_session", !followUp); truth(process, "native_path_preexisting", followUp); truth(process, "overflow", false);
         require(number(process, "exit_code") == 0, "successful exited process required");
-        launch(process);
         List<Json> turns = array(m, "turns"); require(turns.size() == 1, "exactly one fresh turn required");
         Json turn = turns.get(0); equal(turn, "invocation_uid", text(m, "acquisition_uid")); text(turn, "decision_uid"); text(turn, "native_turn_uid");
+        launch(process, followUp ? text(run, "session_uid") : null);
+        if (followUp) equal(turn, "resume_thread_id", text(run, "session_uid"));
+        else require(turn.member("resume_thread_id") == null || turn.member("resume_thread_id").isNull(), "fresh turn declares a resumed thread");
     }
 
-    private static void launch(Json process) {
+    /** {@code resumed} names the thread a follow-up turn must resume; null means a fresh exec that may not resume anything. */
+    private static void launch(Json process, String resumed) {
         List<String> argv = array(process, "argv").stream().map(Json::text).toList();
         require(argv.size() > 4 && argv.stream().allMatch(s -> s != null && !s.isEmpty()), "observed argv required");
         require(argv.contains("--no-daemon") && argv.contains("exec") && argv.contains("--ignore-user-config") && argv.contains("--json"), "unsupported exec route");
         require("-".equals(argv.get(argv.size() - 1)), "raw stdin prompt '-' required");
-        require(argv.stream().noneMatch(Set.of("resume", "fork", "--ephemeral", "--last")::contains), "existing/ephemeral history forbidden");
+        require(argv.stream().noneMatch(Set.of("fork", "--ephemeral", "--last")::contains), "ephemeral/forked history forbidden");
+        int exec = argv.indexOf("exec"); boolean resume = exec + 1 < argv.size() && "resume".equals(argv.get(exec + 1));
+        if (resumed == null) require(!argv.contains("resume"), "existing history forbidden for a fresh turn");
+        else require(resume && argv.subList(exec + 2, argv.size()).contains(resumed), "follow-up turn must resume the emitted thread");
         require(option(argv, "--cd", text(process, "cwd")) || option(argv, "-C", text(process, "cwd")), "argv cwd mismatch");
         for (List<String> flags : List.of(List.of("--sandbox", "-s"), List.of("--ask-for-approval", "-a"), List.of("--model", "-m"))) {
             require(flags.stream().anyMatch(f -> value(argv, f) != null), "explicit launch option missing");
@@ -96,6 +105,7 @@ public final class CodexAcquisitionReading {
     private static void selected(Json s, String role, byte[] bytes) {
         boolean stream = "stream".equals(role), nativeFile = "transcript".equals(role);
         truth(s, "archive_only", !stream && !nativeFile);
+        if (role.startsWith("generation-")) return;
         if (!stream && !nativeFile) return;
         equal(s, "profile", stream ? "codex_stream" : "codex_rollout");
         equal(s, "route", stream ? "stdout" : "native_session_file"); equal(s, "framing", "lines");
