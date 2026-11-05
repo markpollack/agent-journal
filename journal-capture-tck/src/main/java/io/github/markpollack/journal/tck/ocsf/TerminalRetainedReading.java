@@ -11,7 +11,7 @@ final class TerminalRetainedReading {
 
     private static boolean retained(Json envelope) {
         String profile = string(envelope, "profile");
-        return RetainedAcquisition.PROFILE.equals(profile) || FreshRetainedGeneration.PROFILE.equals(profile);
+        return RetainedAcquisition.PROFILE.equals(profile) || FreshRetainedGeneration.PROFILES.contains(profile);
     }
 
     static void initial(Json envelope, Json decision, Json association) {
@@ -27,10 +27,10 @@ final class TerminalRetainedReading {
         if (!retained(envelope)) {
             require(generation == null || CodexRetainedGeneration.PROFILES.contains(string(envelope, "profile")), "retained generation under wrong frozen profile"); return;
         }
-        boolean fresh = FreshRetainedGeneration.PROFILE.equals(string(envelope, "profile"));
+        boolean fresh = FreshRetainedGeneration.PROFILES.contains(string(envelope, "profile"));
         require(generation instanceof Json.JObject, "retained generation missing");
         expect(generation, "kind", fresh ? FreshRetainedGeneration.KIND : "journal-retained-generation/1");
-        if (fresh) expect(acquisition, "retained_profile", FreshRetainedGeneration.PROFILE);
+        if (fresh) expect(acquisition, "retained_profile", string(envelope, "profile"));
         else require(acquisition.member("retained_profile") == null, "frozen retained profile carries no fresh profile");
         expect(generation, "logicalSessionId", string(decision, "sessionId"));
         expect(generation, "connectionId", string(decision, "connectionId"));

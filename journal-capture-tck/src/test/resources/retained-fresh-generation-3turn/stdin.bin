@@ -1,0 +1,4 @@
+{"request":{"subtype":"initialize"},"request_id":"control-1","type":"control_request"}
+{"message":{"content":"first","role":"user"},"type":"user"}
+{"message":{"content":"second","role":"user"},"type":"user"}
+{"message":{"content":"third","role":"user"},"type":"user"}

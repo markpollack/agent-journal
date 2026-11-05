@@ -17,7 +17,7 @@ final class TerminalNativeProfile {
 
     static boolean complete(TerminalContract.Input input, Jv association) {
         Jv envelope = Jv.parse(input.envelope());
-        return Set.of(TerminalContract.CLAUDE_PROFILE, TerminalContract.RETAINED_PROFILE, TerminalContract.FRESH_RETAINED_PROFILE).contains(text(envelope, "profile"))
+        return Set.of(TerminalContract.CLAUDE_PROFILE, TerminalContract.RETAINED_PROFILE, TerminalContract.FRESH_RETAINED_PROFILE, TerminalContract.FRESH_RETAINED_ORDINARY_PROFILE).contains(text(envelope, "profile"))
                 && "COMPLETED".equals(text(association, "acquisition"));
     }
 

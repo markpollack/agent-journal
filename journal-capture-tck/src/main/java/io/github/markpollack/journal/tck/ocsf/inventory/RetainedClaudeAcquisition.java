@@ -25,17 +25,19 @@ public final class RetainedClaudeAcquisition {
 
     /** Copies originals and exact per-turn projections to a new directory, leaving every input unchanged. */
     public static ClaudeAcquisition.Qualified qualify(Path generationManifest, String executionId, Path newDirectory) throws IOException {
-        return qualify(generationManifest, executionId, newDirectory, false);
+        return qualify(generationManifest, executionId, newDirectory, null);
     }
 
-    static ClaudeAcquisition.Qualified qualify(Path generationManifest, String executionId, Path newDirectory, boolean fresh) throws IOException {
+    /** {@code freshProfile} names the fresh-start profile the generation is qualified under; null is the frozen retained kind. */
+    static ClaudeAcquisition.Qualified qualify(Path generationManifest, String executionId, Path newDirectory, String freshProfile) throws IOException {
+        boolean fresh = freshProfile != null;
         byte[] bytes = Files.readAllBytes(generationManifest);
         Json generation = NeutralJson.parse(new String(bytes, StandardCharsets.UTF_8));
         Path base = generationManifest.toAbsolutePath().getParent();
-        if (fresh) FreshRetainedGeneration.validate(generation, base); else RetainedGeneration.validate(generation, base);
+        if (fresh) FreshRetainedGeneration.validate(generation, base, freshProfile); else RetainedGeneration.validate(generation, base);
         RetainedGeneration.turn(generation, executionId);
         Files.createDirectory(newDirectory);
-        List<Json> sources = copySources(generation, base, executionId, newDirectory, fresh);
+        List<Json> sources = copySources(generation, base, executionId, newDirectory, freshProfile);
         if (fresh) {
             String observations = text(generation.member("observations"), "path"); byte[] journal = Files.readAllBytes(base.resolve(observations));
             write(newDirectory.resolve("generation/" + observations), journal);
@@ -44,7 +46,7 @@ public final class RetainedClaudeAcquisition {
         String path = RetainedAcquisition.manifestPath(fresh); write(newDirectory.resolve(path), bytes);
         sources.add(source(path, "generation-manifest", bytes, executionId, fresh ? "retained-fresh-generation" : "retained-generation", true));
         Json.JObject manifest = manifest(generation, executionId, sources);
-        if (fresh) manifest.members().put("retained_profile", new Json.JString(FreshRetainedGeneration.PROFILE));
+        if (fresh) manifest.members().put("retained_profile", new Json.JString(freshProfile));
         Path output = newDirectory.resolve("acquisition.json"); write(output, NeutralJson.write(manifest).getBytes(StandardCharsets.UTF_8));
         Path expectation = newDirectory.resolve("assembly-expectation.json");
         write(expectation, NeutralJson.write(ClaudeAcquisition.expectation()).getBytes(StandardCharsets.UTF_8));
@@ -52,14 +54,14 @@ public final class RetainedClaudeAcquisition {
         return new ClaudeAcquisition.Qualified(output, expectation);
     }
 
-    private static List<Json> copySources(Json generation, Path base, String execution, Path directory, boolean fresh) throws IOException {
+    private static List<Json> copySources(Json generation, Path base, String execution, Path directory, String freshProfile) throws IOException {
         List<Json> sources = new ArrayList<>();
         for (Json original : generation.member("sources").elements()) {
             String name = text(original, "source"), path = "generation/" + text(original, "path");
             byte[] bytes = Files.readAllBytes(base.resolve(text(original, "path")));
             write(directory.resolve(path), bytes);
             sources.add(source(path, "generation-" + name, bytes, execution, text(original, "origin"), true));
-            byte[] projected = RetainedGeneration.projection(generation, execution, name, base, fresh);
+            byte[] projected = RetainedGeneration.projection(generation, execution, name, base, freshProfile);
             String selectedPath = RetainedAcquisition.projectionPath(name), role = RetainedAcquisition.role(name);
             write(directory.resolve(selectedPath), projected);
             sources.add(source(selectedPath, role, projected, execution, text(original, "origin") + "#execution=" + execution,

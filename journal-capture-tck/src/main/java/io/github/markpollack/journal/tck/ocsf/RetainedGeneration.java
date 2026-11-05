@@ -14,7 +14,8 @@ import java.util.Set;
 import static io.github.markpollack.journal.tck.ocsf.TerminalReading.*;
 import static io.github.markpollack.journal.tck.ocsf.RetainedSource.require;
 
-/** Independent original-byte validation for two successful retained Claude text turns.
+/** Independent original-byte validation for successful retained Claude text turns (the frozen kinds and profiles
+ * bound a generation to exactly two turns; the ordinary fresh profile admits any sealed turn count).
  * A caller's observed boundary is checked for consistency, never recreated as an observation.
  * This finite experimental profile does not admit tools, children, compaction or reconnect.
  */
@@ -22,13 +23,15 @@ public final class RetainedGeneration {
     private RetainedGeneration() { }
 
     /** Validates every generation member, source byte, prefix and explicit ownership partition. */
-    public static void validate(Json manifest, Path directory) throws IOException { validate(manifest, directory, false); }
+    public static void validate(Json manifest, Path directory) throws IOException { validate(manifest, directory, false, true); }
 
-    /** The fresh-start kind shares every byte/membership check; only the first before-prefix may be tagged ABSENT. */
-    static void validate(Json manifest, Path directory, boolean fresh) throws IOException {
+    /** The fresh-start kind shares every byte/membership check; only the first before-prefix may be tagged ABSENT.
+     * {@code bounded} is the frozen two-turn rule; the ordinary fresh profile reads any sealed turn count sequentially. */
+    static void validate(Json manifest, Path directory, boolean fresh, boolean bounded) throws IOException {
         header(manifest, fresh);
         Map<String, RetainedSource> sources = sources(manifest, directory);
-        List<Json> turns = array(manifest, "turns"); require(turns.size() == 2, "retained profile requires two turns");
+        List<Json> turns = array(manifest, "turns"); require(!turns.isEmpty(), "retained generation without turns");
+        require(!bounded || turns.size() == 2, "bounded retained profile requires exactly two turns");
         Set<String> executions = new HashSet<>(), decisions = new HashSet<>(), prompts = new HashSet<>(), uuids = new HashSet<>();
         List<Json> membership = new ArrayList<>(); String previous = null;
         for (Json turn : turns) {
@@ -109,10 +112,12 @@ public final class RetainedGeneration {
     }
 
     private static void sequential(List<Json> turns) {
-        Json first = turns.get(0), second = turns.get(1);
-        for (String stream : List.of("STDIN", "STDOUT", "STDERR"))
-            require(number(first.member("endOffsets"), stream) <= number(second.member("startOffsets"), stream), "retained observation windows overlap");
-        require(number(first.member("nativePrefixAfter"), "bytes") <= number(second.member("nativePrefixBefore"), "bytes"), "retained native boundaries overlap");
+        for (int i = 1; i < turns.size(); i++) {
+            Json first = turns.get(i - 1), second = turns.get(i);
+            for (String stream : List.of("STDIN", "STDOUT", "STDERR"))
+                require(number(first.member("endOffsets"), stream) <= number(second.member("startOffsets"), stream), "retained observation windows overlap");
+            require(number(first.member("nativePrefixAfter"), "bytes") <= number(second.member("nativePrefixBefore"), "bytes"), "retained native boundaries overlap");
+        }
     }
 
     /** Returns the selected turn by explicit execution identity; array order never substitutes for it. */
@@ -122,10 +127,11 @@ public final class RetainedGeneration {
     }
 
     /** Produces an exact concatenation of declared record extents, after complete generation validation. */
-    public static byte[] projection(Json manifest, String executionId, String source, Path base) throws IOException { return projection(manifest, executionId, source, base, false); }
+    public static byte[] projection(Json manifest, String executionId, String source, Path base) throws IOException { return projection(manifest, executionId, source, base, null); }
 
-    public static byte[] projection(Json manifest, String executionId, String source, Path base, boolean fresh) throws IOException {
-        if (fresh) FreshRetainedGeneration.validate(manifest, base); else validate(manifest, base);
+    /** {@code freshProfile} selects the fresh-start kind under that profile; null reads the frozen retained kind. */
+    public static byte[] projection(Json manifest, String executionId, String source, Path base, String freshProfile) throws IOException {
+        if (freshProfile != null) FreshRetainedGeneration.validate(manifest, base, freshProfile); else validate(manifest, base);
         Map<String, RetainedSource> originals = sources(manifest, base);
         Json selected = turn(manifest, executionId); List<Json> locators = projectionLocators(manifest, selected, source, originals.get("STDOUT"));
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();

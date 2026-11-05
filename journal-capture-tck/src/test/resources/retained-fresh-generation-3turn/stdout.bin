@@ -1,0 +1,5 @@
+{"response":{"request_id":"control-1","subtype":"success"},"type":"control_response"}
+{"claude_code_version":"2.1.316","session_id":"7b1e0c2a-5d7f-4a3e-9c1b-2f6d8e4a1c3d","subtype":"init","type":"system"}
+{"is_error":false,"result":"first","session_id":"7b1e0c2a-5d7f-4a3e-9c1b-2f6d8e4a1c3d","subtype":"success","type":"result","usage":{"input_tokens":1,"output_tokens":1}}
+{"is_error":false,"result":"second","session_id":"7b1e0c2a-5d7f-4a3e-9c1b-2f6d8e4a1c3d","subtype":"success","type":"result","usage":{"input_tokens":1,"output_tokens":1}}
+{"is_error":false,"result":"third","session_id":"7b1e0c2a-5d7f-4a3e-9c1b-2f6d8e4a1c3d","subtype":"success","type":"result","usage":{"input_tokens":1,"output_tokens":1}}

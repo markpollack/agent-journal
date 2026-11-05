@@ -26,16 +26,16 @@ final class TerminalRetainedProfile {
     static void validate(TerminalContract.Input input, Path manifest) throws IOException {
         Jv acquisition = Jv.parse(Files.readString(manifest));
         String profile = text(Jv.parse(input.envelope()), "profile");
-        boolean fresh = TerminalContract.FRESH_RETAINED_PROFILE.equals(profile), retained = fresh || TerminalContract.RETAINED_PROFILE.equals(profile);
+        boolean fresh = TerminalContract.FRESH_RETAINED_PROFILES.contains(profile), retained = fresh || TerminalContract.RETAINED_PROFILE.equals(profile);
         Jv generation = acquisition.member("retained_generation");
         if (!retained) { require(generation == null, "retained generation requires its frozen initial profile"); return; }
         require(generation instanceof Jv.Obj, "retained generation declaration absent");
-        header(generation, input.decision(), fresh);
+        header(generation, input.decision(), fresh, !TerminalContract.FRESH_RETAINED_ORDINARY_PROFILE.equals(profile));
         equal(generation, "nativeSessionId", text(acquisition.member("run"), "session_uid"));
         Path base = manifest.getParent();
         String name = fresh ? "generation/retained-fresh-generation.json" : "generation/retained-generation.json";
         require(Jv.write(generation).equals(Jv.write(Jv.parse(Files.readString(base.resolve(name))))), "retained original manifest differs");
-        if (fresh) freshness(acquisition, generation, base); else require(acquisition.member("retained_profile") == null, "frozen retained profile carries no fresh profile");
+        if (fresh) freshness(acquisition, generation, base, profile); else require(acquisition.member("retained_profile") == null, "frozen retained profile carries no fresh profile");
         Map<String, byte[]> sources = originals(generation, base);
         Jv selected = turns(generation, sources, input.decision(), fresh);
         equal(acquisition, "retained_execution_id", text(input.decision(), "executionId"));
@@ -55,18 +55,19 @@ final class TerminalRetainedProfile {
         return selected;
     }
 
-    private static void header(Jv generation, Jv decision, boolean fresh) {
+    private static void header(Jv generation, Jv decision, boolean fresh, boolean bounded) {
         equal(generation, "kind", fresh ? FRESH_KIND : "journal-retained-generation/1"); equal(generation, "cliVersion", "2.1.316");
         equal(generation, "logicalSessionId", text(decision, "sessionId")); equal(generation, "connectionId", text(decision, "connectionId"));
         equal(decision.member("outcome"), "kind", "SUCCESS");
         for (String key : List.of("sealed", "observedResourcesTerminated", "stdoutNaturalEof", "stderrNaturalEof"))
             require(generation.member(key) instanceof Jv.Bool b && b.value(), "retained generation not sealed/EOF");
         require(generation.member("overflow") instanceof Jv.Bool b && !b.value(), "retained overflow");
-        require(array(generation, "turns").size() == 2, "retained profile requires exactly two turns");
+        require(!array(generation, "turns").isEmpty(), "retained generation without turns");
+        require(!bounded || array(generation, "turns").size() == 2, "frozen retained profile requires exactly two turns");
     }
 
-    private static void freshness(Jv acquisition, Jv generation, Path base) throws IOException {
-        equal(acquisition, "retained_profile", TerminalContract.FRESH_RETAINED_PROFILE);
+    private static void freshness(Jv acquisition, Jv generation, Path base, String profile) throws IOException {
+        equal(acquisition, "retained_profile", profile);
         require(generation.member("freshStart") instanceof Jv.Obj && generation.member("observedNativeIdentity") instanceof Jv.Obj, "fresh-start evidence absent");
         equal(generation.member("freshStart"), "requestedSessionId", text(generation, "nativeSessionId"));
         equal(generation.member("observedNativeIdentity"), "reportedSessionId", text(generation, "nativeSessionId"));

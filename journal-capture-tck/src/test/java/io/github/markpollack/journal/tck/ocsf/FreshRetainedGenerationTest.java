@@ -16,21 +16,25 @@ import java.util.Map;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import static io.github.markpollack.journal.tck.ocsf.FreshRetainedGeneration.ORDINARY_PROFILE;
+import static io.github.markpollack.journal.tck.ocsf.FreshRetainedGeneration.PROFILE;
 import static org.assertj.core.api.Assertions.*;
 
-/** Labelled synthetic fresh-start generation: one positive input and the thirteen agreed rejection classes,
- * each a separately rehashed mutation so the verdict comes from semantics, not a stale digest. */
+/** Labelled synthetic fresh-start generations: the two-turn positive under both profiles with the thirteen agreed rejection classes,
+ * and the three-turn generation that only the ordinary profile admits, each mutation separately rehashed so the verdict comes from semantics. */
 class FreshRetainedGenerationTest {
     static final Path FIXTURE = Path.of("src/test/resources/retained-fresh-generation");
+    static final Path THREE = Path.of("src/test/resources/retained-fresh-generation-3turn");
     static final String N = "7b1e0c2a-5d7f-4a3e-9c1b-2f6d8e4a1c3d";
 
     /** A rehashable working copy: edit originals, observation lines or manifest members, then validate. */
     static final class Copy {
         final Path dir; final Json.JObject m; final List<Json> observations = new ArrayList<>(); final Map<String, byte[]> sources = new java.util.HashMap<>();
-        Copy(Path dir) throws Exception {
-            this.dir = dir; m = (Json.JObject) NeutralJson.readDocument(FIXTURE.resolve("retained-fresh-generation.json"));
-            for (Json s : m.member("sources").elements()) sources.put(s.member("source").text(), Files.readAllBytes(FIXTURE.resolve(s.member("path").text())));
-            for (String line : Files.readString(FIXTURE.resolve("observations.jsonl")).lines().toList()) observations.add(NeutralJson.parse(line));
+        Copy(Path dir) throws Exception { this(dir, FIXTURE); }
+        Copy(Path dir, Path fixture) throws Exception {
+            this.dir = dir; m = (Json.JObject) NeutralJson.readDocument(fixture.resolve("retained-fresh-generation.json"));
+            for (Json s : m.member("sources").elements()) sources.put(s.member("source").text(), Files.readAllBytes(fixture.resolve(s.member("path").text())));
+            for (String line : Files.readString(fixture.resolve("observations.jsonl")).lines().toList()) observations.add(NeutralJson.parse(line));
         }
         Json.JObject turn(int i) { return (Json.JObject) m.member("turns").elements().get(i); }
         Json.JObject obs(int i) { return (Json.JObject) observations.get(i); }
@@ -58,24 +62,69 @@ class FreshRetainedGenerationTest {
             }
             else if (node instanceof Json.JArray a) for (Json v : a.elements()) locators(v);
         }
-        void validate() throws Exception { FreshRetainedGeneration.validate(NeutralJson.readDocument(dir.resolve("retained-fresh-generation.json")), dir); }
+        void validate() throws Exception { validate(PROFILE); }
+        void validate(String profile) throws Exception { FreshRetainedGeneration.validate(NeutralJson.readDocument(dir.resolve("retained-fresh-generation.json")), dir, profile); }
     }
 
-    @Test void positiveFreshStartQualifiesWithTaggedAbsenceAndEmittedIdentity(@TempDir Path dir) throws Exception {
-        Copy copy = new Copy(dir); copy.rehash(); copy.validate();
+    /** Qualifies one execution under {@code profile} and reads it back independently; the frozen /1 reader never admits it. */
+    static void qualified(Copy copy, String execution, String profile, int nativeLines) throws Exception {
+        Path out = copy.dir.resolve("q-" + profile.replace('/', '-') + "-" + execution);
+        FreshRetainedClaudeAcquisition.qualify(copy.dir.resolve("retained-fresh-generation.json"), execution, out, profile);
+        Json acquisition = NeutralJson.readDocument(out.resolve("acquisition.json"));
+        assertThat(acquisition.member("retained_profile").text()).isEqualTo(profile);
+        assertThat(Files.readString(out.resolve("turn/transcript.jsonl")).lines().count()).isEqualTo(nativeLines);
+        assertThat(Files.readString(out.resolve("turn/stdin.jsonl")).lines().count()).isEqualTo(1);
+        assertThat(out.resolve("generation/observations.jsonl")).hasSameBinaryContentAs(copy.dir.resolve("observations.jsonl"));
+        assertThat(out.resolve("generation/retained-fresh-generation.json")).exists();
+        RetainedAcquisition.validate(acquisition, out, true);
+        assertThatThrownBy(() -> RetainedAcquisition.validate(acquisition, out)).isInstanceOf(IllegalArgumentException.class); // not readable as the frozen /1 profile
+    }
+
+    @Test void positiveFreshStartQualifiesWithTaggedAbsenceAndEmittedIdentityUnderEitherProfile(@TempDir Path dir) throws Exception {
+        Copy copy = new Copy(dir); copy.rehash(); copy.validate(PROFILE); copy.validate(ORDINARY_PROFILE);
         assertThat(NeutralJson.write(copy.m)).isEqualTo(NeutralJson.write(NeutralJson.readDocument(FIXTURE.resolve("retained-fresh-generation.json")))); // rehash is a no-op on the committed fixture
         assertThat(copy.turn(0).member("nativePrefixBefore").member("state").text()).isEqualTo("ABSENT");
-        for (String execution : List.of("E1", "E2")) {
-            Path out = dir.resolve("q-" + execution);
-            FreshRetainedClaudeAcquisition.qualify(dir.resolve("retained-fresh-generation.json"), execution, out);
-            Json acquisition = NeutralJson.readDocument(out.resolve("acquisition.json"));
-            assertThat(acquisition.member("retained_profile").text()).isEqualTo(FreshRetainedGeneration.PROFILE);
-            assertThat(Files.readString(out.resolve("turn/transcript.jsonl")).lines().count()).isEqualTo(2);
-            assertThat(out.resolve("generation/observations.jsonl")).hasSameBinaryContentAs(dir.resolve("observations.jsonl"));
-            assertThat(out.resolve("generation/retained-fresh-generation.json")).exists();
-            RetainedAcquisition.validate(acquisition, out, true);
-            assertThatThrownBy(() -> RetainedAcquisition.validate(acquisition, out)).isInstanceOf(IllegalArgumentException.class); // not readable as the frozen /1 profile
+        for (String profile : List.of(PROFILE, ORDINARY_PROFILE)) for (String execution : List.of("E1", "E2")) qualified(copy, execution, profile, 2);
+        assertThatThrownBy(() -> copy.validate("client-terminal-claude-retained-fresh-2.1.316/9")).isInstanceOf(Rejection.class).hasMessageContaining("unsupported fresh retained profile");
+        Path unknown = dir.resolve("unknown");
+        assertThatThrownBy(() -> FreshRetainedClaudeAcquisition.qualify(dir.resolve("retained-fresh-generation.json"), "E1", unknown, "client-terminal-claude-retained-fresh-2.1.316/9")).isInstanceOf(Rejection.class);
+        assertThat(unknown).doesNotExist();
+    }
+
+    @Test void threeTurnGenerationQualifiesOnlyUnderTheOrdinaryProfileWithContinuityAtEveryTurn(@TempDir Path dir) throws Exception {
+        Copy copy = new Copy(dir, THREE); copy.rehash();
+        assertThat(NeutralJson.write(copy.m)).isEqualTo(NeutralJson.write(NeutralJson.readDocument(THREE.resolve("retained-fresh-generation.json"))));
+        assertThatThrownBy(() -> copy.validate(PROFILE)).isInstanceOf(Rejection.class).hasMessageContaining("exactly two turns").extracting(e -> ((Rejection) e).verdict()).isEqualTo(Verdict.REFUSED);
+        Path frozen = dir.resolve("frozen");
+        assertThatThrownBy(() -> FreshRetainedClaudeAcquisition.qualify(dir.resolve("retained-fresh-generation.json"), "E3", frozen, PROFILE)).isInstanceOf(Rejection.class);
+        assertThat(frozen).doesNotExist();
+        copy.validate(ORDINARY_PROFILE);
+        assertThat(copy.m.member("turns").elements()).hasSize(3);
+        for (int i = 1; i < 3; i++) assertThat(Json.sameValue(copy.turn(i).member("nativePrefixBefore"), copy.turn(i - 1).member("nativePrefixAfter"))).as("prefix continuity before turn %d", i + 1).isTrue();
+        for (String execution : List.of("E1", "E2", "E3")) qualified(copy, execution, ORDINARY_PROFILE, 2);
+    }
+
+    /** Third-turn controls under the ordinary profile: the same classes must bite at a turn the frozen profile never reads. */
+    static List<Control> thirdTurnControls() {
+        return List.of(
+            control("third decision reuses the second", Verdict.REFUSED, c -> Copy.put(c.turn(2), "decisionId", Copy.str("D2"))),
+            control("third before-prefix relabelled to the first after-prefix", Verdict.REFUSED, c -> Copy.put(c.turn(2), "nativePrefixBefore", c.turn(0).member("nativePrefixAfter"))),
+            control("third native prompt parented to the first response", Verdict.REFUSED, c -> c.sources.put("TRANSCRIPT", replace(c, "\"parentUuid\":\"a2\",\"sessionId\"", "\"parentUuid\":\"a1\",\"sessionId\""))),
+            control("third after-prefix never observed", Verdict.INCOMPLETE, c -> c.observations.remove(8)),
+            control("third prompt altered after capture", Verdict.REFUSED, c -> c.sources.put("TRANSCRIPT", replace(c, "\"third\",\"role\":\"user\"", "\"THIRD\",\"role\":\"user\""))));
+    }
+
+    @Test void thirdTurnMutationsAreRefusedOrIncompleteBySemanticsAfterRehash(@TempDir Path root) throws Exception {
+        int index = 0;
+        for (Control control : thirdTurnControls()) {
+            Path dir = Files.createDirectory(root.resolve("t" + index++)); Copy copy = new Copy(dir, THREE);
+            control.mutation().accept(copy); copy.rehash();
+            assertThatThrownBy(() -> copy.validate(ORDINARY_PROFILE)).as(control.name()).isInstanceOf(Rejection.class).extracting(e -> ((Rejection) e).verdict()).isEqualTo(control.verdict());
+            Path out = dir.resolve("refused");
+            assertThatThrownBy(() -> FreshRetainedClaudeAcquisition.qualify(dir.resolve("retained-fresh-generation.json"), "E3", out, ORDINARY_PROFILE)).as(control.name()).isInstanceOf(Rejection.class);
+            assertThat(out).as(control.name()).doesNotExist();
         }
+        assertThat(index).isEqualTo(5);
     }
 
     @Test void frozenProfileStillRefusesTheTaggedAbsentPrefixAndFreshKind(@TempDir Path dir) throws Exception {
@@ -129,7 +178,7 @@ class FreshRetainedGenerationTest {
             control.mutation().accept(copy); copy.rehash();
             assertThatThrownBy(copy::validate).as(control.name()).isInstanceOf(Rejection.class).extracting(e -> ((Rejection) e).verdict()).isEqualTo(control.verdict());
             Path out = dir.resolve("refused");
-            assertThatThrownBy(() -> FreshRetainedClaudeAcquisition.qualify(dir.resolve("retained-fresh-generation.json"), "E1", out)).as(control.name()).isInstanceOf(Rejection.class);
+            assertThatThrownBy(() -> FreshRetainedClaudeAcquisition.qualify(dir.resolve("retained-fresh-generation.json"), "E1", out, PROFILE)).as(control.name()).isInstanceOf(Rejection.class);
             assertThat(out).as(control.name()).doesNotExist();
         }
         assertThat(index).isEqualTo(25);
@@ -137,8 +186,10 @@ class FreshRetainedGenerationTest {
 
     @Test void contentAlteredAfterQualificationIsDefectiveOnIndependentRead(@TempDir Path dir) throws Exception {
         Copy copy = new Copy(dir); copy.rehash(); Path out = dir.resolve("q");
-        FreshRetainedClaudeAcquisition.qualify(dir.resolve("retained-fresh-generation.json"), "E1", out);
+        FreshRetainedClaudeAcquisition.qualify(dir.resolve("retained-fresh-generation.json"), "E1", out, ORDINARY_PROFILE);
         Json acquisition = NeutralJson.readDocument(out.resolve("acquisition.json"));
+        Json.JObject relabelled = (Json.JObject) NeutralJson.parse(NeutralJson.write(acquisition)); Copy.put(relabelled, "retained_profile", Copy.str("client-terminal-claude-retained-fresh-2.1.316/9"));
+        assertThatThrownBy(() -> RetainedAcquisition.validate(relabelled, out, true)).as("unknown profile stamped after qualification").isInstanceOf(IllegalArgumentException.class).hasMessageContaining("unsupported fresh retained profile");
         Path projected = out.resolve("turn/transcript.jsonl");
         Files.writeString(projected, Files.readString(projected).replace("first", "FIRST"));
         assertThatThrownBy(() -> RetainedAcquisition.validate(acquisition, out, true)).isInstanceOf(IllegalArgumentException.class);

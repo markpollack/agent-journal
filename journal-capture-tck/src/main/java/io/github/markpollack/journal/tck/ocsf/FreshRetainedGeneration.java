@@ -13,7 +13,8 @@ import java.util.Map;
 import java.util.Set;
 import static io.github.markpollack.journal.tck.ocsf.TerminalReading.*;
 
-/** Independent check of a fresh-transcript-start retained generation (two text turns, Claude Code 2.1.316).
+/** Independent check of a fresh-transcript-start retained generation (text turns, Claude Code 2.1.316): the frozen profile
+ * {@value #PROFILE} bounds it to exactly two turns, the ordinary profile {@value #ORDINARY_PROFILE} admits any sealed turn count.
  * The first turn's before-prefix is the tagged ABSENT observation, never an invented empty-file witness.
  * Ordered caller observations (absence probes, candidate scan, dispatch, readable prefixes, final singleton)
  * are trusted evidence checked for consistency; nothing here claims OS containment between probes.
@@ -21,7 +22,11 @@ import static io.github.markpollack.journal.tck.ocsf.TerminalReading.*;
  */
 public final class FreshRetainedGeneration {
     public static final String KIND = "journal-retained-fresh-generation/1";
+    /** Frozen bounded profile: exactly two sealed turns; its rules do not change. */
     public static final String PROFILE = "client-terminal-claude-retained-fresh-2.1.316/1";
+    /** Ordinary fresh-start profile: any sealed turn count under the same per-turn rules. */
+    public static final String ORDINARY_PROFILE = "client-terminal-claude-retained-fresh-2.1.316/2";
+    public static final Set<String> PROFILES = Set.of(PROFILE, ORDINARY_PROFILE);
     private static final Set<String> HISTORY_FLAGS = Set.of("--resume", "-r", "--continue", "-c", "--fork-session");
     private static final Set<String> IDENTITY_RECORDS = Set.of("system", "assistant", "result");
     private FreshRetainedGeneration() { }
@@ -38,9 +43,10 @@ public final class FreshRetainedGeneration {
     }
 
     /** Validates header, originals, turn membership, fresh launch, emitted identity and the observation journal. */
-    public static void validate(Json manifest, Path base) throws IOException {
+    public static void validate(Json manifest, Path base, String profile) throws IOException {
+        require(PROFILES.contains(profile), Verdict.REFUSED, "unsupported fresh retained profile");
         preliminary(manifest);
-        try { RetainedGeneration.validate(manifest, base, true); }
+        try { RetainedGeneration.validate(manifest, base, true, PROFILE.equals(profile)); }
         catch (Rejection rejection) { throw rejection; }
         catch (IllegalArgumentException contradiction) { throw new Rejection(Verdict.REFUSED, contradiction.getMessage(), contradiction); }
         Map<String, RetainedSource> sources = RetainedGeneration.sources(manifest, base);

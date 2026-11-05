@@ -26,7 +26,8 @@ public final class RetainedAcquisition {
         require(Files.isRegularFile(base.resolve(manifestPath(fresh))), "retained generation manifest absent for this profile");
         Json original = NeutralJson.readDocument(base.resolve(manifestPath(fresh)));
         require(Json.sameValue(declared, original), "retained generation declaration changed");
-        if (fresh) { expect(acquisition, "retained_profile", FreshRetainedGeneration.PROFILE); FreshRetainedGeneration.validate(original, base.resolve("generation")); }
+        String profile = fresh ? string(acquisition, "retained_profile") : null;
+        if (fresh) { require(FreshRetainedGeneration.PROFILES.contains(profile), "unsupported fresh retained profile"); FreshRetainedGeneration.validate(original, base.resolve("generation"), profile); }
         else { require(acquisition.member("retained_profile") == null, "frozen /1 profile carries no fresh profile"); RetainedGeneration.validate(original, base.resolve("generation")); }
         String execution = string(acquisition, "acquisition_uid");
         Json turn = RetainedGeneration.turn(original, execution);
@@ -37,10 +38,11 @@ public final class RetainedAcquisition {
         require(acquisition.member("complete") instanceof Json.JBool b && b.value(), "retained acquisition is incomplete");
         require(array(acquisition, "turns").size() == 1, "projection turn population differs");
         expect(array(acquisition, "turns").get(0), "invocation_uid", string(turn, "executionId"));
-        compareSources(acquisition, original, base, execution, fresh);
+        compareSources(acquisition, original, base, execution, profile);
     }
 
-    private static void compareSources(Json acquisition, Json generation, Path base, String execution, boolean fresh) throws IOException {
+    private static void compareSources(Json acquisition, Json generation, Path base, String execution, String freshProfile) throws IOException {
+        boolean fresh = freshProfile != null;
         Map<String, Json> inventory = new HashMap<>();
         for (Json source : array(acquisition, "sources")) require(inventory.put(string(source, "path"), source) == null, "projection path repeated");
         Set<String> expected = new HashSet<>();
@@ -48,7 +50,7 @@ public final class RetainedAcquisition {
             String original = "generation/" + string(source, "path"); expected.add(original);
             match(inventory.get(original), base.resolve(original), null, "generation-" + string(source, "source"), execution);
             String projected = projectionPath(string(source, "source")); expected.add(projected);
-            byte[] bytes = RetainedGeneration.projection(generation, execution, string(source, "source"), base.resolve("generation"), fresh);
+            byte[] bytes = RetainedGeneration.projection(generation, execution, string(source, "source"), base.resolve("generation"), freshProfile);
             match(inventory.get(projected), base.resolve(projected), bytes, role(string(source, "source")), execution);
         }
         if (fresh) {

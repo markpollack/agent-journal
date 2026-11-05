@@ -20,11 +20,13 @@ import static org.assertj.core.api.Assertions.*;
 class TerminalFreshRetainedTest {
     @TempDir Path temp;
     private static final Path FRESH = Path.of("../journal-capture-tck/src/test/resources/retained-fresh-generation/retained-fresh-generation.json");
+    private static final Path THREE = Path.of("../journal-capture-tck/src/test/resources/retained-fresh-generation-3turn/retained-fresh-generation.json");
     private static final Path FROZEN = Path.of("../journal-capture-tck/src/test/resources/retained-text-generation/retained-generation.json");
 
-    static byte[] freshEnvelope(int turn) {
+    static byte[] freshEnvelope(int turn) { return freshEnvelope(turn, TerminalReceiver.FRESH_RETAINED_PROFILE); }
+    static byte[] freshEnvelope(int turn, String profile) {
         Jv.Obj p = (Jv.Obj) Jv.parse(new String(envelope(successful(turn), pending(turn)), StandardCharsets.UTF_8));
-        return bytes(p.put("profile", TerminalReceiver.FRESH_RETAINED_PROFILE));
+        return bytes(p.put("profile", profile));
     }
     static Jv.Obj completeFresh(int turn, Path root) throws Exception {
         Jv manifest = Jv.parse(Files.readString(root.resolve("acquisition.json"))); String session = manifest.member("run").member("session_uid").text();
@@ -33,11 +35,13 @@ class TerminalFreshRetainedTest {
         return a;
     }
 
-    @Test void freshProfileAttachesBothTurnsAndIndependentReadersAcceptExactOriginals() throws Exception {
-        Path store = temp.resolve("store"); TerminalReceiver receiver = new TerminalReceiver(store, "producer", WriterOptions.defaults());
-        String[] initial = { receiver.receive(freshEnvelope(1), temp), receiver.receive(freshEnvelope(2), temp) };
-        for (int turn : List.of(2, 1)) {
-            var qualified = FreshRetainedClaudeAcquisition.qualify(FRESH, "E" + turn, temp.resolve("q" + turn));
+    /** Binds every turn's frozen decision under {@code profile}, attaches the qualified evidence in the given order and reads each archive independently. */
+    private void eachTurnAttachesAndReadsBack(Path generation, String profile, List<Integer> order) throws Exception {
+        Path store = temp.resolve("store-" + profile.replace('/', '-')); TerminalReceiver receiver = new TerminalReceiver(store, "producer", WriterOptions.defaults());
+        String[] initial = new String[order.size()];
+        for (int turn = 1; turn <= order.size(); turn++) initial[turn - 1] = receiver.receive(freshEnvelope(turn, profile), temp);
+        for (int turn : order) {
+            var qualified = FreshRetainedClaudeAcquisition.qualify(generation, "E" + turn, temp.resolve("q-" + profile.replace('/', '-') + turn), profile);
             Path root = qualified.manifest().getParent(); Jv.Obj a = completeFresh(turn, root);
             String id = Jv.parse(initial[turn - 1]).member("bindingId").text();
             String ack = receiver.receiveRevision(id, bytes(a), root);
@@ -49,13 +53,34 @@ class TerminalFreshRetainedTest {
             var report = new AcquisitionVerification().verify(pkg, root, qualified.manifest(), qualified.assemblyExpectation());
             assertThat(report.defects()).isEmpty();
             assertThat(OcsfReaderTool.acceptance(report).exit()).as(OcsfReaderTool.acceptance(report).toString()).isZero();
-            assertThat(Files.readAllBytes(root.resolve("generation/observations.jsonl"))).isEqualTo(Files.readAllBytes(FRESH.resolveSibling("observations.jsonl")));
+            assertThat(Files.readAllBytes(root.resolve("generation/observations.jsonl"))).isEqualTo(Files.readAllBytes(generation.resolveSibling("observations.jsonl")));
+            assertThat(Files.readString(root.resolve("turn/stdin.jsonl"))).contains(List.of("first", "second", "third").get(turn - 1));
         }
+    }
+
+    @Test void freshProfileAttachesBothTurnsAndIndependentReadersAcceptExactOriginals() throws Exception { eachTurnAttachesAndReadsBack(FRESH, TerminalReceiver.FRESH_RETAINED_PROFILE, List.of(2, 1)); }
+
+    @Test void ordinaryFreshProfileAttachesTwoTurns() throws Exception { eachTurnAttachesAndReadsBack(FRESH, TerminalReceiver.FRESH_RETAINED_ORDINARY_PROFILE, List.of(1, 2)); }
+
+    @Test void ordinaryFreshProfileAttachesEveryTurnOfAThreeTurnGeneration() throws Exception { eachTurnAttachesAndReadsBack(THREE, TerminalReceiver.FRESH_RETAINED_ORDINARY_PROFILE, List.of(3, 1, 2)); }
+
+    @Test void frozenFreshProfileRefusesThreeTurnEvidenceAndProfilesDoNotRelabelEachOther() throws Exception {
+        var ordinary = FreshRetainedClaudeAcquisition.qualify(THREE, "E3", temp.resolve("o3"), TerminalReceiver.FRESH_RETAINED_ORDINARY_PROFILE); Path ordinaryRoot = ordinary.manifest().getParent();
+        TerminalReceiver receiver = new TerminalReceiver(temp.resolve("store"), "producer", WriterOptions.defaults());
+        String frozenAck = receiver.receive(freshEnvelope(3, TerminalReceiver.FRESH_RETAINED_PROFILE), temp), frozenId = Jv.parse(frozenAck).member("bindingId").text();
+        assertThatThrownBy(() -> receiver.receiveRevision(frozenId, bytes(completeFresh(3, ordinaryRoot)), ordinaryRoot)).as("ordinary evidence under the frozen envelope").isInstanceOf(IllegalArgumentException.class);
+        Jv.Obj relabelled = (Jv.Obj) Jv.parse(Files.readString(ordinary.manifest())); relabelled.put("retained_profile", TerminalReceiver.FRESH_RETAINED_PROFILE);
+        Files.writeString(ordinary.manifest(), Jv.write(relabelled));
+        assertThatThrownBy(() -> receiver.receiveRevision(frozenId, bytes(completeFresh(3, ordinaryRoot)), ordinaryRoot)).as("three-turn generation relabelled as frozen").isInstanceOf(IllegalArgumentException.class).hasMessageContaining("exactly two turns");
+        var two = FreshRetainedClaudeAcquisition.qualify(FRESH, "E1", temp.resolve("two"), TerminalReceiver.FRESH_RETAINED_PROFILE); Path twoRoot = two.manifest().getParent();
+        TerminalReceiver other = new TerminalReceiver(temp.resolve("store2"), "producer", WriterOptions.defaults());
+        String ordinaryAck = other.receive(freshEnvelope(1, TerminalReceiver.FRESH_RETAINED_ORDINARY_PROFILE), temp), ordinaryId = Jv.parse(ordinaryAck).member("bindingId").text();
+        assertThatThrownBy(() -> other.receiveRevision(ordinaryId, bytes(completeFresh(1, twoRoot)), twoRoot)).as("frozen-profile evidence under the ordinary envelope").isInstanceOf(IllegalArgumentException.class).hasMessageContaining("retained_profile");
     }
 
     @Test void frozenAndFreshProfilesCannotBeAttachedToEachOthersGenerations() throws Exception {
         Path store = temp.resolve("store"); TerminalReceiver receiver = new TerminalReceiver(store, "producer", WriterOptions.defaults());
-        var fresh = FreshRetainedClaudeAcquisition.qualify(FRESH, "E1", temp.resolve("fresh")); Path freshRoot = fresh.manifest().getParent();
+        var fresh = FreshRetainedClaudeAcquisition.qualify(FRESH, "E1", temp.resolve("fresh"), TerminalReceiver.FRESH_RETAINED_PROFILE); Path freshRoot = fresh.manifest().getParent();
         var frozen = RetainedClaudeAcquisition.qualify(FROZEN, "E1", temp.resolve("frozen")); Path frozenRoot = frozen.manifest().getParent();
         String frozenAck = receiver.receive(retainedEnvelope(1), temp), frozenId = Jv.parse(frozenAck).member("bindingId").text();
         assertThatThrownBy(() -> receiver.receiveRevision(frozenId, bytes(completeFresh(1, freshRoot)), freshRoot)).isInstanceOf(IllegalArgumentException.class);
@@ -67,7 +92,7 @@ class TerminalFreshRetainedTest {
 
     @Test void writerRefusesRelabelledZeroPrefixMissingIdentityAndChangedJournalWithFreshHashes() throws Exception {
         for (String fault : List.of("zero-prefix", "identity", "journal", "profile")) {
-            var q = FreshRetainedClaudeAcquisition.qualify(FRESH, "E1", temp.resolve("q-" + fault)); Path root = q.manifest().getParent();
+            var q = FreshRetainedClaudeAcquisition.qualify(FRESH, "E1", temp.resolve("q-" + fault), TerminalReceiver.FRESH_RETAINED_PROFILE); Path root = q.manifest().getParent();
             Jv.Obj m = (Jv.Obj) Jv.parse(Files.readString(q.manifest())); Jv.Obj generation = (Jv.Obj) m.member("retained_generation");
             switch (fault) {
                 case "zero-prefix" -> ((Jv.Obj) generation.member("turns").elements().get(0)).put("nativePrefixBefore",
