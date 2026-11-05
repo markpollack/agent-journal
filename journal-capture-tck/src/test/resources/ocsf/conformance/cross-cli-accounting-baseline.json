@@ -1,8 +1,12 @@
 {
   "kind": "agent-journal/cross-cli-accounting-baseline",
-  "version": "0.19",
+  "version": "0.20",
   "meaning": "Exact executed accounting population and dependency snapshot. Declared checker assignments remain separate from attributed Check outcomes. Pins native occurrences and classifications, source/specification bindings, E requirements, actual assertion outcomes, comparison operand digests and non-passing findings. An edit is a reviewable implementation result, never semantic approval. Unresolved meanings and unsupported versions remain non-passing. Required unchecked comparisons cannot be frozen by this ratchet.",
   "changes": [
+    {
+      "revision": "0.20 (compatible overloads and frozen /1 acceptance restored, 2026-11-05)",
+      "summary": "Restate the journal-capture-tck/src/main, src/test/java and journal-ocsf-writer/src/main dependency digests after the Owner's bounded continuation: the af88650 public signatures are restored as overloads defaulting to the frozen /1 profiles (CodexRetainedGeneration.validate, FreshRetainedGeneration.validate, CodexRetainedAcquisition.qualify, FreshRetainedClaudeAcquisition.qualify, RetainedGeneration.projection with the boolean, three-argument packaged commands); the cumulative resumed-stdout requirement applies only to the ordinary /2 profiles in the qualifier and the writer; a thread_settings_applied record without thread_id is owned by the rollout file's one thread (session_meta) in mapper and oracle, so evidence accepted under /1 before the native probe is accepted exactly as before; the pre-probe emulated fixture is committed as syn-codex-retained-emulated-0.166.0 with frozen-/1 acceptance and /2 refusal tests, and CompatibilityOverloadsTest exercises the original signatures. No assertion outcome, comparison population, native occurrence, source, catalog, checker, non-passing check, extension or schema digest changed; the ledger is otherwise line-identical to 0.19."
+    },
     {
       "revision": "0.19 (independent review fixes, 2026-11-05)",
       "summary": "Restate the journal-capture-tck/src/main, src/test/java and journal-ocsf-writer/src/main dependency digests after the four findings of the independent read-only Codex review of 60750e4 were reproduced and fixed: writer admission now validates every turn of a retained thread or generation (TerminalCodexRetained.thread; TerminalRetainedProfile.sequential), per-turn manifest sources are contained in their own directory and relative thread paths stay under the thread directory after symlink resolution (CodexRetainedGeneration.contained/resolve), the oracle reads reasoning_effort in the mapper's order (top level, else collaboration_mode.settings), and the Codex usage controls keep native witnesses consistent so each targets the rule it names. No assertion outcome, comparison population, native occurrence, source, catalog, checker, non-passing check, extension or schema digest changed; the ledger is otherwise line-identical to 0.18."
@@ -765,12 +769,12 @@
     "comparison-population syn-codex-exec-turn-failed-0.160.1 main/stream.jsonl 217 sha256:72433f46fc0f12c0637ad0e29bb9e92c293806199df0a991a9cc029d2b624394",
     "comparison-population syn-codex-onboarding-exec-0.166.0 main/stream.jsonl 408 sha256:fa6b0f5cb023c466ceba9344981359156c012d2c4287693aefc6a3a6481dfebf",
     "comparison-population syn-codex-onboarding-rollout-0.166.0 main/stream.jsonl 1672 sha256:989c79990f3a8368cf8a938f335c8a6b0fc5e3d335d546695a4195287a51cc3b",
-    "dependency journal-capture-tck/src/main sha256:3bc58d60f95af351da1429b7fedf38ada2696c3a3574011336626caddfdfd1d4",
-    "dependency journal-capture-tck/src/test/java sha256:dade4bc789bba7590b49a25580cac01129ed0adc64d05287f415254fff5efe1e",
+    "dependency journal-capture-tck/src/main sha256:cb1e825e95c238eed6b0f925a1a1068fcd955bcc53d002c984bcbf75bd3f051d",
+    "dependency journal-capture-tck/src/test/java sha256:d926b13a86ab226fcb7dedf676a8637e850a317eb7ef5a244d8a0c8d601e9e99",
     "dependency journal-capture-tck/src/test/resources/ocsf/conformance sha256:197e677ebb73d7d22fc6a9e32f4e43ff4c82a4f8e5f5dbf9d62f2196a94c34f1",
     "dependency journal-capture-tck/src/test/resources/ocsf/fixtures sha256:64020b8236b60d5ab477b40cf44430af408658f960478939fb7c1e444c048d0b",
     "dependency journal-capture-tck/src/test/resources/ocsf/mapping-catalog sha256:3666ba8cb3cff5a7e9d6b2e1bd88fe525fd4efbf89f337f45f70389647d8546b",
-    "dependency journal-ocsf-writer/src/main sha256:70ff74ab24ec310f927f7ca8afeb709164f502ec3b089f9efdcf24f255053d59",
+    "dependency journal-ocsf-writer/src/main sha256:fb0f8d82f45e9263ea12db46bcff67d1566db0970fdc6184e2815bb71bd66e06",
     "dependency prototype/ocsf-acp/extension sha256:2239224ca7ac92f281c59b3a4b1bfa45be9721e076d2674b643e1cdbb49c6d7d",
     "dependency prototype/ocsf-acp/toolchain.lock.json sha256:d91ea93f63b0d52b3200ccfbe81dde06e991922e4ff20734fd0e83e407755fab",
     "dependency schema/vendor sha256:450077bdd6089dd72b95e07f78c565b12bbd608c8eb1c1829fff8fc736491736",

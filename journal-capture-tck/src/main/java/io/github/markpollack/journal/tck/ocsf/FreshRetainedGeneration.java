@@ -42,7 +42,10 @@ public final class FreshRetainedGeneration {
         public Verdict verdict() { return verdict; }
     }
 
-    /** Validates header, originals, turn membership, fresh launch, emitted identity and the observation journal. */
+    /** The original signature: the frozen profile {@value #PROFILE} is its default, exactly as before the ordinary profile existed. */
+    public static void validate(Json manifest, Path base) throws IOException { validate(manifest, base, PROFILE); }
+
+    /** Validates header, originals, turn membership, fresh launch, emitted identity and the observation journal under {@code profile}. */
     public static void validate(Json manifest, Path base, String profile) throws IOException {
         require(PROFILES.contains(profile), Verdict.REFUSED, "unsupported fresh retained profile");
         preliminary(manifest);

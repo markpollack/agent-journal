@@ -15,6 +15,11 @@ import java.nio.file.Path;
 public final class FreshRetainedClaudeAcquisition {
     private FreshRetainedClaudeAcquisition() { }
 
+    /** The original signature: qualifies under the frozen profile {@value FreshRetainedGeneration#PROFILE}, its default before the ordinary profile existed. */
+    public static ClaudeAcquisition.Qualified qualify(Path generationManifest, String executionId, Path newDirectory) throws IOException {
+        return qualify(generationManifest, executionId, newDirectory, FreshRetainedGeneration.PROFILE);
+    }
+
     /** Copies originals, the observation journal and exact per-turn projections to a new directory. */
     public static ClaudeAcquisition.Qualified qualify(Path generationManifest, String executionId, Path newDirectory, String profile) throws IOException {
         return RetainedClaudeAcquisition.qualify(generationManifest, executionId, newDirectory, java.util.Objects.requireNonNull(profile, "retained profile")); // the validator refuses an unsupported profile
@@ -22,7 +27,7 @@ public final class FreshRetainedClaudeAcquisition {
 
     /** Packaged command; refuses before creating output and never invokes a provider. */
     public static void main(String[] args) throws IOException {
-        if (args.length != 4) throw new IllegalArgumentException("usage: FreshRetainedClaudeAcquisition <generation-manifest> <execution-id> <new-directory> <retained-profile>");
-        qualify(Path.of(args[0]), args[1], Path.of(args[2]), args[3]);
+        if (args.length != 3 && args.length != 4) throw new IllegalArgumentException("usage: FreshRetainedClaudeAcquisition <generation-manifest> <execution-id> <new-directory> [<retained-profile>, default " + FreshRetainedGeneration.PROFILE + "]");
+        qualify(Path.of(args[0]), args[1], Path.of(args[2]), args.length == 4 ? args[3] : FreshRetainedGeneration.PROFILE);
     }
 }

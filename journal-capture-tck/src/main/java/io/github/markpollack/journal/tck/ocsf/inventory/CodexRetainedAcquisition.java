@@ -24,6 +24,11 @@ import java.util.Map;
 public final class CodexRetainedAcquisition {
     private CodexRetainedAcquisition() { }
 
+    /** The original signature: qualifies under the frozen profile {@value CodexRetainedGeneration#PROFILE}, its default before the ordinary profile existed. */
+    public static CodexAcquisition.Qualified qualify(Path threadManifest, String executionId, Path newDirectory) throws IOException {
+        return qualify(threadManifest, executionId, newDirectory, CodexRetainedGeneration.PROFILE);
+    }
+
     /** Copies originals and the exact projection to a new directory, leaving every input unchanged. */
     public static CodexAcquisition.Qualified qualify(Path threadManifest, String executionId, Path newDirectory, String profile) throws IOException {
         byte[] bytes = Files.readAllBytes(threadManifest);
@@ -131,7 +136,7 @@ public final class CodexRetainedAcquisition {
 
     /** Packaged command; refuses invalid input before creating output and never invokes a provider. */
     public static void main(String[] args) throws IOException {
-        if (args.length != 4) throw new IllegalArgumentException("usage: CodexRetainedAcquisition <codex-thread.json> <execution-id> <new-directory> <retained-profile>");
-        qualify(Path.of(args[0]), args[1], Path.of(args[2]), args[3]);
+        if (args.length != 3 && args.length != 4) throw new IllegalArgumentException("usage: CodexRetainedAcquisition <codex-thread.json> <execution-id> <new-directory> [<retained-profile>, default " + CodexRetainedGeneration.PROFILE + "]");
+        qualify(Path.of(args[0]), args[1], Path.of(args[2]), args.length == 4 ? args[3] : CodexRetainedGeneration.PROFILE);
     }
 }

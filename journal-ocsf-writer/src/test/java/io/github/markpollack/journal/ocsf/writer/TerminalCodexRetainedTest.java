@@ -24,6 +24,7 @@ class TerminalCodexRetainedTest {
     @TempDir Path temp;
     private static final Path THREAD = Path.of("../journal-capture-tck/src/test/resources/ocsf/syn-codex-retained-0.166.0/codex-thread.json");
     private static final Path THREE = Path.of("../journal-capture-tck/src/test/resources/ocsf/syn-codex-retained-3turn-0.166.0/codex-thread.json");
+    private static final Path EMULATED = Path.of("../journal-capture-tck/src/test/resources/ocsf/syn-codex-retained-emulated-0.166.0/codex-thread.json");
 
     static List<String> executions(Path thread) { return Jv.parse(read(thread)).member("turns").elements().stream().map(t -> t.member("execution_id").text()).toList(); }
     static String read(Path p) { try { return Files.readString(p); } catch (java.io.IOException e) { throw new java.io.UncheckedIOException(e); } }
@@ -81,7 +82,7 @@ class TerminalCodexRetainedTest {
             assertThat(OcsfReaderTool.acceptance(report).exit()).as(OcsfReaderTool.acceptance(report).toString()).isZero();
             String projection = Files.readString(sources.resolve("turn/transcript.jsonl"));
             assertThat(projection).contains(nativeTurn(thread, i));
-            for (int other = 0; other < executions.size(); other++) if (other != i) assertThat(projection).doesNotContain(nativeTurn(thread, other));
+            for (int other = 0; other < executions.size(); other++) if (other != i && !nativeTurn(thread, other).equals(nativeTurn(thread, i))) assertThat(projection).doesNotContain(nativeTurn(thread, other));
             assertThat(sources.resolve("generation/codex-thread.original.json")).hasSameBinaryContentAs(thread);
         }
     }
@@ -89,6 +90,9 @@ class TerminalCodexRetainedTest {
     @Test void twoTurnThreadAttachesUnderTheFrozenProfileInAnyPublicationOrder() throws Exception { eachTurnAttachesAndReadsBack(THREAD, CODEX_RETAINED_PROFILE, List.of(1, 0)); }
 
     @Test void twoTurnThreadAttachesUnderTheOrdinaryProfile() throws Exception { eachTurnAttachesAndReadsBack(THREAD, CODEX_RETAINED_ORDINARY_PROFILE, List.of(0, 1)); }
+
+    /** Owner continuation C2 (2026-11-05): frozen /1 acceptance of the pre-probe emulated thread, exactly as before, through receiver and independent readers. */
+    @Test void frozenProfileStillAttachesThePreProbeEmulatedThread() throws Exception { eachTurnAttachesAndReadsBack(EMULATED, CODEX_RETAINED_PROFILE, List.of(1, 0)); }
 
     @Test void threeTurnThreadAttachesEveryTurnToItsOwnDecisionUnderTheOrdinaryProfile() throws Exception { eachTurnAttachesAndReadsBack(THREE, CODEX_RETAINED_ORDINARY_PROFILE, List.of(2, 0, 1)); }
 

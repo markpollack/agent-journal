@@ -25,6 +25,8 @@ import static org.assertj.core.api.Assertions.*;
 class CodexRetainedAcquisitionTest {
     static final Path FIXTURE = Path.of("src/test/resources/ocsf/syn-codex-retained-0.166.0");
     static final Path THREE = Path.of("src/test/resources/ocsf/syn-codex-retained-3turn-0.166.0");
+    /** The pre-probe emulated shape (af88650 fixture bytes): per-turn resumed stdout usage and a bare thread_settings_applied; frozen /1 evidence. */
+    static final Path EMULATED = Path.of("src/test/resources/ocsf/syn-codex-retained-emulated-0.166.0");
     static final String N = "a94e0250-c7a5-4bc3-adef-fcbef96582ac";
     static final String TURN_0 = "b8d56e6a-5cfa-499c-a6e2-a33f7ebd378d", TURN_1 = "393b1549-a4cc-4cd7-aee8-1fc6d96cedcc";
 
@@ -134,6 +136,25 @@ class CodexRetainedAcquisitionTest {
         assertThatThrownBy(() -> copy.validate("client-terminal-codex-retained-0.166.0/9")).isInstanceOf(Rejection.class).hasMessageContaining("unsupported retained profile");
     }
 
+    /** Owner continuation C2 (2026-11-05): the frozen /1 profile accepts the evidence it accepted before the native probe, exactly as before;
+     * the cumulative resumed-stdout requirement belongs to the ordinary /2 profile only. */
+    @Test void frozenProfileStillAcceptsThePreProbeEmulatedThreadAndTheOrdinaryProfileRefusesIt(@TempDir Path dir) throws Exception {
+        Copy copy = new Copy(dir, EMULATED);
+        CodexRetainedGeneration.RetainedThread thread = copy.validate(PROFILE); assertThat(thread.turns()).hasSize(2);
+        for (int i = 0; i < 2; i++) {
+            String execution = thread.turns().get(i).executionId(); Path out = dir.resolve("frozen-" + i);
+            CodexRetainedAcquisition.qualify(dir.resolve("codex-thread.json"), execution, out); // the original signature: frozen /1 by default
+            Json acquisition = NeutralJson.readDocument(out.resolve("acquisition.json"));
+            assertThat(acquisition.member("retained_profile").text()).isEqualTo(PROFILE);
+            assertThat(acquisition.member("wire_usage_scope").text()).as("the emulated resumed turn reports a per-turn stdout figure").isEqualTo("per-turn");
+            CodexRetainedAcquisition.validate(acquisition, out); CodexAcquisitionReading.validate(out.resolve("acquisition.json"));
+        }
+        assertThatThrownBy(() -> copy.validate(ORDINARY_PROFILE)).isInstanceOf(Rejection.class).hasMessageContaining("resumed turn wire usage is not the thread cumulative figure");
+        Path ordinary = dir.resolve("ordinary"); String resumed = copy.execution(1);
+        assertThatThrownBy(() -> CodexRetainedAcquisition.qualify(dir.resolve("codex-thread.json"), resumed, ordinary, ORDINARY_PROFILE)).isInstanceOf(Rejection.class);
+        assertThat(ordinary).doesNotExist();
+    }
+
     @Test void threeTurnThreadQualifiesOnlyUnderTheOrdinaryProfileWithContinuityAndArithmeticAtEveryTurn(@TempDir Path dir) throws Exception {
         Copy copy = new Copy(dir, THREE);
         assertThatThrownBy(() -> copy.validate(PROFILE)).isInstanceOf(Rejection.class).hasMessageContaining("exactly two turns")
@@ -171,7 +192,7 @@ class CodexRetainedAcquisitionTest {
             c("partition gap: a region record dropped", Verdict.REFUSED, k -> k.turn(1).member("native_records").member("records").elements().remove(2)),
             c("session_meta inside a region / shared differs", Verdict.REFUSED, k -> Copy.put(k.turn(1).member("native_records").member("shared").elements().get(0), "end", Copy.num(0))),
             c("wire usage neither per-turn nor cumulative (stdout and declaration agree)", Verdict.REFUSED, io(k -> k.wire(1, k.usage(99, 3, 0, 4, 0)))),
-            c("resumed turn wire usage per-turn in stdout and declaration (codex-cli 0.166.0 emits the thread total)", Verdict.REFUSED, io(k -> k.wire(1, k.usage(11, 3, 0, 4, 0)))),
+            c("declared wire differs from stdout on the resumed turn", Verdict.REFUSED, k -> { Json w = NeutralJson.parse("{}"); for (String key : CodexRetainedGeneration.USAGE) Copy.put(w, key, k.usage(11, 3, 0, 4, 0).member(key)); Copy.put(k.turn(1), "wire_usage", w); Copy.put(k.perTurnTurn(1), "wire_usage", w); }),
             c("unsealed follow-up turn", Verdict.INCOMPLETE, k -> Copy.put(k.turn(1), "state", Copy.str("UNSEALED"))),
             c("final transcript not equal to last sealed prefix", Verdict.INCOMPLETE, k -> Copy.put(k.thread.member("transcript"), "final_equals_last_sealed_prefix", new Json.JBool(false))),
             c("closure not observed: stdout EOF missing", Verdict.INCOMPLETE, k -> Copy.put(k.turn(1), "stdout_natural_eof", new Json.JBool(false))),
@@ -188,7 +209,7 @@ class CodexRetainedAcquisitionTest {
             c("partition gap inside the third region", Verdict.REFUSED, k -> k.turn(2).member("native_records").member("records").elements().remove(4)),
             c("cross-association: third turn originals replaced by the second turn's process", Verdict.REFUSED, k -> { for (Json s : k.turn(2).member("sources").elements()) Copy.put(s, "path", Copy.str(s.member("path").text().replace("turn-2/", "turn-1/"))); }),
             c("third turn resumes another thread", Verdict.REFUSED, k -> Copy.put(k.turn(2), "resume_thread_id", Copy.str("00000000-0000-4000-8000-000000000000"))),
-            c("third turn wire usage per-turn in stdout and declaration", Verdict.REFUSED, io(k -> k.wire(2, k.usage(13, 5, 0, 6, 0)))),
+            c("third turn wire usage per-turn in stdout and declaration (ordinary profile requires the thread total)", Verdict.REFUSED, io(k -> k.wire(2, k.usage(13, 5, 0, 6, 0)))),
             c("third turn unsealed", Verdict.INCOMPLETE, k -> Copy.put(k.turn(2), "state", Copy.str("UNSEALED"))));
     }
 

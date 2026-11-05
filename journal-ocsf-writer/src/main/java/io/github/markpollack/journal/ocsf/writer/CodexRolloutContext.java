@@ -53,11 +53,11 @@ final class CodexRolloutContext {
         out.add(definition);
     }
 
-    /** Native 0.166.0 reports thread_id and thread_settings on every thread_settings_applied record, fresh and resumed (probe 2026-11-04);
-     * a record without thread identity is retained whole by the fallback and nothing is inferred about its owner. */
+    /** Native 0.166.0 reports thread_id and thread_settings on every thread_settings_applied record, fresh and resumed (probe 2026-11-04).
+     * A record without thread_id (seen only in emulated evidence accepted under the frozen /1 profile) is owned by the rollout file's one
+     * thread: the file is partitioned per thread and its session_meta names it, so the owner is read from the file, not invented. */
     private static boolean settings(NativeRecord r, SourceContext ctx, Jv p) {
-        String thread = text(p, "thread_id");
-        if (thread == null) return false;
+        String reported = text(p, "thread_id"); String thread = reported != null ? reported : ctx.run.sessionUid();
         Jv s = p.member("thread_settings");
         Jv.Obj settings = s == null ? new Jv.Obj() // the record reports no settings; nothing is invented
                 : new Jv.Obj().put("working_directory", text(s, "cwd")).put("model", text(s, "model"))
@@ -67,7 +67,8 @@ final class CodexRolloutContext {
         ctx.family("event_msg/thread_settings_applied", r.raw().length, "normalized: reported thread settings; other native settings retained exactly");
         ctx.emit(event(r, ctx, "session_context", 1, "codex.rollout.thread_settings_applied->session_context.settings", null)
                 .put("session_uid", thread).put("context_kind", "thread_settings_applied").put("settings", settings)
-                .put("basis", "codex.rollout.thread_settings_applied.v2: thread_id names the owning thread; reasoning_effort is the reported setting (top level or collaboration_mode.settings), absent when the record reports none"));
+                .put("basis", reported != null ? "codex.rollout.thread_settings_applied.v2: thread_id names the owning thread; reasoning_effort is the reported setting (top level or collaboration_mode.settings), absent when the record reports none"
+                        : "codex.rollout.thread_settings_applied.v2: the record reports no thread_id; the rollout file holds one thread (session_meta.id), which owns it; native 0.166.0 always reports thread_id, this shape is emulated evidence"));
         return true;
     }
 

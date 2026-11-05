@@ -35,7 +35,7 @@ final class TerminalCodexRetained {
         long[][] regions = partition(turns, transcript);
         projection(base, transcript, array(turns.get(0).member("native_records"), "shared").get(0), regions[index]);
         originals(base, turn);
-        thread(turns, transcript, regions, session);
+        thread(turns, transcript, regions, session, TerminalContract.CODEX_RETAINED_ORDINARY_PROFILE.equals(profile));
         prefixes(m, turns, index);
         usage(m, turns, index);
     }
@@ -55,7 +55,7 @@ final class TerminalCodexRetained {
 
     /** Every turn of the thread, not only the selected one (independent review finding 1, 2026-11-05): distinct identities, the
      * resume rule, an after-prefix at its own region end and cumulative usage arithmetic; an invalid unselected turn refuses the archive. */
-    private static void thread(List<Jv> turns, byte[] transcript, long[][] regions, String session) {
+    private static void thread(List<Jv> turns, byte[] transcript, long[][] regions, String session, boolean ordinary) {
         Set<String> identities = new HashSet<>(); Jv previous = null;
         for (int i = 0; i < turns.size(); i++) {
             Jv t = turns.get(i);
@@ -65,14 +65,15 @@ final class TerminalCodexRetained {
             else equal(t, "resume_thread_id", session);
             Jv after = t.member("native_prefix_after");
             require(number(after, "bytes") == regions[i][1] && text(after, "sha256").equals(SchemaPin.sha256(Arrays.copyOf(transcript, (int) regions[i][1]))), "Codex after-prefix differs from region end");
-            arithmetic(t, previous); previous = t.member("thread_token_usage");
+            arithmetic(t, previous, ordinary); previous = t.member("thread_token_usage");
         }
     }
 
-    private static void arithmetic(Jv turn, Jv previous) {
+    /** The frozen /1 profile admits either stdout figure (recorded as the scope observation), exactly as before; the ordinary /2 profile
+     * requires the native-observed thread total on a resumed turn (codex-cli 0.166.0 probe, 2026-11-04). */
+    private static void arithmetic(Jv turn, Jv previous, boolean ordinary) {
         for (String key : USAGE) require(number(turn.member("thread_token_usage"), key) - (previous == null ? 0 : number(previous, key)) == number(turn.member("turn_token_usage"), key), "Codex cumulative usage arithmetic fails: " + key);
-        // codex-cli 0.166.0 emits the thread total on turn.completed (native probe 2026-11-04): a resumed turn's wire usage is the cumulative figure.
-        require(previous == null || "cumulative".equals(TerminalCodexNative.scope(turn)), "Codex resumed turn wire usage is not the thread cumulative figure");
+        require(previous == null || !ordinary || "cumulative".equals(TerminalCodexNative.scope(turn)), "Codex resumed turn wire usage is not the thread cumulative figure");
     }
 
     private static void extent(byte[] bytes, Jv locator) {

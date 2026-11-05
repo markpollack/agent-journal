@@ -129,6 +129,11 @@ public final class RetainedGeneration {
     /** Produces an exact concatenation of declared record extents, after complete generation validation. */
     public static byte[] projection(Json manifest, String executionId, String source, Path base) throws IOException { return projection(manifest, executionId, source, base, null); }
 
+    /** The original signature: {@code fresh} selects the fresh-start kind under its frozen profile {@value FreshRetainedGeneration#PROFILE}. */
+    public static byte[] projection(Json manifest, String executionId, String source, Path base, boolean fresh) throws IOException {
+        return projection(manifest, executionId, source, base, fresh ? FreshRetainedGeneration.PROFILE : null);
+    }
+
     /** {@code freshProfile} selects the fresh-start kind under that profile; null reads the frozen retained kind. */
     public static byte[] projection(Json manifest, String executionId, String source, Path base, String freshProfile) throws IOException {
         if (freshProfile != null) FreshRetainedGeneration.validate(manifest, base, freshProfile); else validate(manifest, base);

@@ -72,6 +72,9 @@ public final class CodexRetainedGeneration {
         }
     }
 
+    /** The original signature: the frozen profile {@value #PROFILE} is its default, exactly as before the ordinary profile existed. */
+    public static RetainedThread validate(Json m, Path base) throws IOException { return validate(m, base, PROFILE); }
+
     public static RetainedThread validate(Json m, Path base, String profile) throws IOException {
         try { return read(m, base, profile); }
         catch (Rejection r) { throw r; }
@@ -84,7 +87,7 @@ public final class CodexRetainedGeneration {
         require(m.member("sealed") instanceof Json.JBool b && b.value(), Verdict.INCOMPLETE, "thread not sealed");
         require(m.member("overflow") instanceof Json.JBool b && !b.value(), Verdict.INCOMPLETE, "thread overflow");
         require(string(m, "native_path").endsWith("-" + string(m, "native_session_id") + ".jsonl"), Verdict.REFUSED, "native path does not name the thread");
-        Reader reader = new Reader(m, base, transcript(m, base));
+        Reader reader = new Reader(m, base, transcript(m, base), profile);
         List<Json> turns = array(m, "turns"); require(!turns.isEmpty(), Verdict.REFUSED, "retained thread without turns");
         require(!PROFILE.equals(profile) || turns.size() == 2, Verdict.REFUSED, "bounded retained profile requires exactly two turns");
         for (int i = 0; i < turns.size(); i++) reader.turn(i, turns.get(i));
@@ -95,14 +98,14 @@ public final class CodexRetainedGeneration {
     /** Sequential reading state over one thread: partition cursor, shared locator, identity sets and the previous turn. */
     private static final class Reader {
         private final Path base; private final byte[] transcript; private final RetainedSource source;
-        private final String session, cwd;
+        private final String session, cwd, profile;
         private final List<Turn> turns = new ArrayList<>();
         private final Set<String> identities = new HashSet<>();
         private Json shared, previousThreadUsage, previousAfter;
         private long covered;
 
-        Reader(Json manifest, Path base, byte[] transcript) throws IOException {
-            this.base = base; this.transcript = transcript;
+        Reader(Json manifest, Path base, byte[] transcript, String profile) throws IOException {
+            this.base = base; this.transcript = transcript; this.profile = profile;
             session = string(manifest, "native_session_id"); cwd = string(manifest, "cwd");
             source = new RetainedSource(declaration(transcript, string(manifest.member("transcript"), "path")), base);
         }
@@ -125,7 +128,7 @@ public final class CodexRetainedGeneration {
             Map<String, byte[]> originals = originals(t, base);
             Json perTurn = perTurn(t, i, originals);
             new CodexRetainedRegion(t, originals, session, cwd).read(Arrays.copyOfRange(transcript, (int) start, (int) covered));
-            usage(t, previousThreadUsage);
+            usage(t, previousThreadUsage, profile);
             previousThreadUsage = t.member("thread_token_usage"); previousAfter = t.member("native_prefix_after");
             turns.add(new Turn(i, t, perTurn, resolve(base, string(t, "per_turn_manifest")), originals, start, covered));
         }
@@ -237,7 +240,7 @@ public final class CodexRetainedGeneration {
         return originals;
     }
 
-    private static void usage(Json t, Json previousThread) {
+    private static void usage(Json t, Json previousThread, String profile) {
         Json turn = t.member("turn_token_usage"), thread = t.member("thread_token_usage");
         CodexRetainedRegion.same(t.member("total_token_usage"), thread, "total usage differs from cumulative thread usage");
         for (String key : USAGE) {
@@ -245,7 +248,9 @@ public final class CodexRetainedGeneration {
             require(number(thread, key) - before == number(turn, key), Verdict.REFUSED, "cumulative usage arithmetic fails for " + key);
         }
         require(scope(t) != null, Verdict.REFUSED, "wire usage is neither per-turn nor cumulative");
-        require(previousThread == null || "cumulative".equals(scope(t)), Verdict.REFUSED, "resumed turn wire usage is not the thread cumulative figure");
+        // The frozen /1 profile records the scope as an observation and admits either figure, exactly as the evidence accepted under it was
+        // admitted; the ordinary /2 profile requires the native-observed cumulative figure on a resumed turn (codex-cli 0.166.0 probe, 2026-11-04).
+        require(previousThread == null || !ORDINARY_PROFILE.equals(profile) || "cumulative".equals(scope(t)), Verdict.REFUSED, "resumed turn wire usage is not the thread cumulative figure");
     }
 
     /** "per-turn" when stdout usage equals the native turn usage, "cumulative" when it equals the thread usage. On the first turn both
