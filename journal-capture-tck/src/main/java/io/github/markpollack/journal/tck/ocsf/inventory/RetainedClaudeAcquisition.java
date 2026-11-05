@@ -45,13 +45,18 @@ public final class RetainedClaudeAcquisition {
         }
         String path = RetainedAcquisition.manifestPath(fresh); write(newDirectory.resolve(path), bytes);
         sources.add(source(path, "generation-manifest", bytes, executionId, fresh ? "retained-fresh-generation" : "retained-generation", true));
-        Json.JObject manifest = manifest(generation, executionId, sources);
-        if (fresh) manifest.members().put("retained_profile", new Json.JString(freshProfile));
+        Json.JObject manifest = manifest(generation, executionId, sources); stamp(manifest, generation, freshProfile);
         Path output = newDirectory.resolve("acquisition.json"); write(output, NeutralJson.write(manifest).getBytes(StandardCharsets.UTF_8));
         Path expectation = newDirectory.resolve("assembly-expectation.json");
         write(expectation, NeutralJson.write(ClaudeAcquisition.expectation()).getBytes(StandardCharsets.UTF_8));
         RetainedAcquisition.validate(manifest, newDirectory, fresh);
         return new ClaudeAcquisition.Qualified(output, expectation);
+    }
+
+    /** The fresh profile the generation was qualified under and, for the native profile, the recorded launch-argv completeness. */
+    private static void stamp(Json.JObject manifest, Json generation, String freshProfile) {
+        if (freshProfile != null) manifest.members().put("retained_profile", new Json.JString(freshProfile));
+        if (FreshRetainedGeneration.NATIVE_PROFILE.equals(freshProfile)) manifest.members().put("retained_launch_argv", new Json.JString(FreshRetainedGeneration.launchArgvObservation(generation)));
     }
 
     private static List<Json> copySources(Json generation, Path base, String execution, Path directory, String freshProfile) throws IOException {

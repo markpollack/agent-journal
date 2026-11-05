@@ -22,6 +22,24 @@ class TerminalFreshRetainedTest {
     private static final Path FRESH = Path.of("../journal-capture-tck/src/test/resources/retained-fresh-generation/retained-fresh-generation.json");
     private static final Path THREE = Path.of("../journal-capture-tck/src/test/resources/retained-fresh-generation-3turn/retained-fresh-generation.json");
     private static final Path FROZEN = Path.of("../journal-capture-tck/src/test/resources/retained-text-generation/retained-generation.json");
+    /** DERIVED-REDACTED native-shaped generation (22 and 15 native records per turn); only the native /3 profile admits it. */
+    private static final Path NATIVE = Path.of("../journal-capture-tck/src/test/resources/retained-fresh-generation-native/retained-fresh-generation.json");
+
+    /** Identity of one turn as its generation manifest records it: the synthetic fixtures carry E/D/L/G, the native-shaped one its UUIDs. */
+    record Ids(String execution, String decisionId, String session, String connection) {
+        static Ids of(Path generation, int turn) throws Exception {
+            Jv m = Jv.parse(Files.readString(generation)); Jv t = m.member("turns").elements().get(turn - 1);
+            return new Ids(t.member("executionId").text(), t.member("decisionId").text(), m.member("logicalSessionId").text(), m.member("connectionId").text());
+        }
+        Jv.Obj successful() { return decision().put("executionId", execution).put("decisionId", decisionId).put("sessionId", session).put("connectionId", connection).put("outcome", Jv.parse("{\"kind\":\"SUCCESS\",\"reason\":null,\"failure\":null}")); }
+        Jv.Obj pending(int turn) { return association().put("executionId", execution).put("decisionId", decisionId).put("clientSessionId", session).put("connectionIds", new Jv.Arr().add(new Jv.Str(connection))).put("revisionId", "initial-" + turn); }
+        byte[] envelope(int turn, String profile) { Jv.Obj p = (Jv.Obj) Jv.parse(new String(TerminalReceiverTest.envelope(successful(), pending(turn)), StandardCharsets.UTF_8)); return bytes(p.put("profile", profile)); }
+        Jv.Obj complete(int turn, Path root) throws Exception {
+            Jv.Obj a = completeFresh(turn, root).put("executionId", execution).put("decisionId", decisionId).put("clientSessionId", session).put("connectionIds", new Jv.Arr().add(new Jv.Str(connection)));
+            for (Jv source : a.member("sources").elements()) ((Jv.Obj) source).put("clientConnectionId", connection);
+            return a;
+        }
+    }
 
     static byte[] freshEnvelope(int turn) { return freshEnvelope(turn, TerminalReceiver.FRESH_RETAINED_PROFILE); }
     static byte[] freshEnvelope(int turn, String profile) {
@@ -39,23 +57,48 @@ class TerminalFreshRetainedTest {
     private void eachTurnAttachesAndReadsBack(Path generation, String profile, List<Integer> order) throws Exception {
         Path store = temp.resolve("store-" + profile.replace('/', '-')); TerminalReceiver receiver = new TerminalReceiver(store, "producer", WriterOptions.defaults());
         String[] initial = new String[order.size()];
-        for (int turn = 1; turn <= order.size(); turn++) initial[turn - 1] = receiver.receive(freshEnvelope(turn, profile), temp);
+        for (int turn = 1; turn <= order.size(); turn++) initial[turn - 1] = receiver.receive(Ids.of(generation, turn).envelope(turn, profile), temp);
         for (int turn : order) {
-            var qualified = FreshRetainedClaudeAcquisition.qualify(generation, "E" + turn, temp.resolve("q-" + profile.replace('/', '-') + turn), profile);
-            Path root = qualified.manifest().getParent(); Jv.Obj a = completeFresh(turn, root);
+            Ids ids = Ids.of(generation, turn);
+            var qualified = FreshRetainedClaudeAcquisition.qualify(generation, ids.execution(), temp.resolve("q-" + profile.replace('/', '-') + turn), profile);
+            Path root = qualified.manifest().getParent(); Jv.Obj a = ids.complete(turn, root);
             String id = Jv.parse(initial[turn - 1]).member("bindingId").text();
             String ack = receiver.receiveRevision(id, bytes(a), root);
             assertThat(receiver.receiveRevision(id, bytes(a), root)).isEqualTo(ack);
             var pkg = PackageReader.open(events(store, ack));
             assertThat(pkg.diagnostics).noneMatch(d -> d.severity().name().equals("DEFECT") || d.severity().name().equals("REFUSED"));
             var binding = TerminalBindingReader.read(pkg.declarations);
-            assertThat(binding.decision()).isEqualTo(TerminalJson.write(successful(turn)));
+            assertThat(binding.decision()).isEqualTo(TerminalJson.write(ids.successful()));
             var report = new AcquisitionVerification().verify(pkg, root, qualified.manifest(), qualified.assemblyExpectation());
             assertThat(report.defects()).isEmpty();
             assertThat(OcsfReaderTool.acceptance(report).exit()).as(OcsfReaderTool.acceptance(report).toString()).isZero();
             assertThat(Files.readAllBytes(root.resolve("generation/observations.jsonl"))).isEqualTo(Files.readAllBytes(generation.resolveSibling("observations.jsonl")));
-            assertThat(Files.readString(root.resolve("turn/stdin.jsonl"))).contains(List.of("first", "second", "third").get(turn - 1));
+            assertThat(Files.readString(root.resolve("turn/stdin.jsonl"))).contains(generation.equals(NATIVE) ? List.of("ALPHA", "you replied last time").get(turn - 1) : List.of("first", "second", "third").get(turn - 1));
         }
+    }
+
+    /** Native /3: both turns of the native-shaped generation attach through the receiver and read back on the TCK-only path. */
+    @Test void nativeFreshProfileAttachesBothTurnsOfTheNativeShapedGeneration() throws Exception { eachTurnAttachesAndReadsBack(NATIVE, TerminalReceiver.FRESH_RETAINED_NATIVE_PROFILE, List.of(2, 1)); }
+
+    /** The native-shaped generation is refused by the frozen /1 and ordinary /2 envelopes (their qualifier refuses it, and a relabelled /3 qualification is refused by profile equality). */
+    @Test void frozenAndOrdinaryFreshProfilesRefuseTheNativeShapedGenerationAndRelabelling() throws Exception {
+        for (String frozen : List.of(TerminalReceiver.FRESH_RETAINED_PROFILE, TerminalReceiver.FRESH_RETAINED_ORDINARY_PROFILE)) {
+            Path out = temp.resolve("refused-" + frozen.replace('/', '-'));
+            assertThatThrownBy(() -> FreshRetainedClaudeAcquisition.qualify(NATIVE, "8f3f9d85-c5a6-4424-a006-bfb685ebff5c", out, frozen)).as(frozen).hasMessageContaining("text profile requires one native prompt and response");
+            assertThat(out).doesNotExist();
+        }
+        Ids ids = Ids.of(NATIVE, 1);
+        var q = FreshRetainedClaudeAcquisition.qualify(NATIVE, ids.execution(), temp.resolve("n1"), TerminalReceiver.FRESH_RETAINED_NATIVE_PROFILE); Path root = q.manifest().getParent();
+        Jv.Obj m = (Jv.Obj) Jv.parse(Files.readString(q.manifest())); assertThat(m.member("retained_launch_argv").text()).isEqualTo("INCOMPLETE: truncated at --tools");
+        TerminalReceiver receiver = new TerminalReceiver(temp.resolve("store-n"), "producer", WriterOptions.defaults());
+        String frozenAck = receiver.receive(ids.envelope(1, TerminalReceiver.FRESH_RETAINED_PROFILE), temp), frozenId = Jv.parse(frozenAck).member("bindingId").text();
+        assertThatThrownBy(() -> receiver.receiveRevision(frozenId, bytes(ids.complete(1, root)), root)).as("native /3 evidence under the frozen /1 envelope").isInstanceOf(IllegalArgumentException.class).hasMessageContaining("retained_profile");
+        m.put("retained_profile", TerminalReceiver.FRESH_RETAINED_PROFILE); Files.writeString(q.manifest(), Jv.write(m));
+        // The receiver validates provenance structure and trusts the qualifier's profile stamp for the turn model (as for a /2 two-turn
+        // generation relabelled /1); the relabelling is caught where the model lives: the independent re-qualification under the stamped profile.
+        String relabelledAck = receiver.receiveRevision(frozenId, bytes(ids.complete(1, root)), root);
+        var relabelled = PackageReader.open(events(temp.resolve("store-n"), relabelledAck));
+        assertThatThrownBy(() -> new AcquisitionVerification().verify(relabelled, root, q.manifest(), q.assemblyExpectation())).as("native /3 qualification relabelled as /1, independent read").hasMessageContaining("text profile requires one native prompt and response");
     }
 
     @Test void freshProfileAttachesBothTurnsAndIndependentReadersAcceptExactOriginals() throws Exception { eachTurnAttachesAndReadsBack(FRESH, TerminalReceiver.FRESH_RETAINED_PROFILE, List.of(2, 1)); }

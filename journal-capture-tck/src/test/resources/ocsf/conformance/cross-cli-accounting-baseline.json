@@ -1,8 +1,12 @@
 {
   "kind": "agent-journal/cross-cli-accounting-baseline",
-  "version": "0.21",
+  "version": "0.22",
   "meaning": "Exact executed accounting population and dependency snapshot. Declared checker assignments remain separate from attributed Check outcomes. Pins native occurrences and classifications, source/specification bindings, E requirements, actual assertion outcomes, comparison operand digests and non-passing findings. An edit is a reviewable implementation result, never semantic approval. Unresolved meanings and unsupported versions remain non-passing. Required unchecked comparisons cannot be frozen by this ratchet.",
   "changes": [
+    {
+      "revision": "0.22",
+      "summary": "Claude fresh /3 native profile: NativeRetainedTurn, native flag in RetainedGeneration, launch-argv/cwd/sidecar rules in FreshRetainedGeneration, /3 in readers and writer (2026-11-05)"
+    },
     {
       "revision": "0.21 (follow-up review repairs and frozen /1 expectation, 2026-11-05)",
       "summary": "Restate the journal-capture-tck/src/main, src/test/java and journal-ocsf-writer/src/main dependency digests after the Owner-approved follow-up review of 782fbf0 (REJECT: unselected-turn closure unchecked in writer admission; the ownerless thread_settings_applied fallback reached /2; no conflicting-effort test) and the frozen-archive re-read were resolved: TerminalCodexRetained.closure checks every turn's closure; a thread_settings_applied without thread_id is REFUSED under the ordinary /2 profile by the qualifier (CodexRetainedRegion) and the writer (TerminalCodexNative) while /1 keeps the file-owned meaning; the frozen /1 profile pins the one-shot assembly expectation it always pinned and /2 the retained one (CodexRetainedAcquisition, AcquisitionVerification), so the af88650 offer archives read exit 0 again; CodexRolloutEffortReadingTest covers the effort precedence. No assertion outcome, comparison population, native occurrence, source, catalog, checker, non-passing check, extension or schema digest changed; the ledger is otherwise line-identical to 0.20."
@@ -773,12 +777,12 @@
     "comparison-population syn-codex-exec-turn-failed-0.160.1 main/stream.jsonl 217 sha256:72433f46fc0f12c0637ad0e29bb9e92c293806199df0a991a9cc029d2b624394",
     "comparison-population syn-codex-onboarding-exec-0.166.0 main/stream.jsonl 408 sha256:fa6b0f5cb023c466ceba9344981359156c012d2c4287693aefc6a3a6481dfebf",
     "comparison-population syn-codex-onboarding-rollout-0.166.0 main/stream.jsonl 1672 sha256:989c79990f3a8368cf8a938f335c8a6b0fc5e3d335d546695a4195287a51cc3b",
-    "dependency journal-capture-tck/src/main sha256:4046391ee711c505e9ff0bfe2f11421fe1a9fd9628b9f12e623f17b84c37c626",
-    "dependency journal-capture-tck/src/test/java sha256:f0948400210fc79e2a3b7ffab0f7038ccef9de0e8235a6893fccaf88b493eba6",
+    "dependency journal-capture-tck/src/main sha256:e8b66313c32dbea483ee6e515c39abe4b2278b7abf725f5178cf3fb57ef09d4d",
+    "dependency journal-capture-tck/src/test/java sha256:40c2cc5255b067abd99b24729155c8cb281e705b854fedc995953e3d9e6fb39a",
     "dependency journal-capture-tck/src/test/resources/ocsf/conformance sha256:197e677ebb73d7d22fc6a9e32f4e43ff4c82a4f8e5f5dbf9d62f2196a94c34f1",
     "dependency journal-capture-tck/src/test/resources/ocsf/fixtures sha256:64020b8236b60d5ab477b40cf44430af408658f960478939fb7c1e444c048d0b",
     "dependency journal-capture-tck/src/test/resources/ocsf/mapping-catalog sha256:3666ba8cb3cff5a7e9d6b2e1bd88fe525fd4efbf89f337f45f70389647d8546b",
-    "dependency journal-ocsf-writer/src/main sha256:b06c75e196aa22bcbce0d625e85d35e6771a39b36573daa44997a8e56f4c8cf4",
+    "dependency journal-ocsf-writer/src/main sha256:f5d7304c6537f420aa34a5418a6c0ddfbb5465b0e6c96f33f543e38de6836c69",
     "dependency prototype/ocsf-acp/extension sha256:2239224ca7ac92f281c59b3a4b1bfa45be9721e076d2674b643e1cdbb49c6d7d",
     "dependency prototype/ocsf-acp/toolchain.lock.json sha256:d91ea93f63b0d52b3200ccfbe81dde06e991922e4ff20734fd0e83e407755fab",
     "dependency schema/vendor sha256:450077bdd6089dd72b95e07f78c565b12bbd608c8eb1c1829fff8fc736491736",

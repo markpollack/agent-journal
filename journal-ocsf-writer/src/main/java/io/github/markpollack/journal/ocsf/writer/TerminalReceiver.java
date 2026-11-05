@@ -34,6 +34,8 @@ public final class TerminalReceiver {
     public static final String FRESH_RETAINED_PROFILE = TerminalContract.FRESH_RETAINED_PROFILE;
     /** Ordinary fresh-start retained profile: any sealed turn count; the frozen two-turn fresh profile above is unchanged. */
     public static final String FRESH_RETAINED_ORDINARY_PROFILE = TerminalContract.FRESH_RETAINED_ORDINARY_PROFILE;
+    /** Native fresh-start retained profile (2026-11-05): the text-turn model the real CLI 2.1.316 writes; /1 and /2 above are unchanged. */
+    public static final String FRESH_RETAINED_NATIVE_PROFILE = TerminalContract.FRESH_RETAINED_NATIVE_PROFILE;
     public static final String CODEX_PROFILE = TerminalCodexProfile.PROFILE;
     /** Frozen retained Codex profile: one turn of a sealed two-turn thread with its original per-process evidence. */
     public static final String CODEX_RETAINED_PROFILE = TerminalContract.CODEX_RETAINED_PROFILE;

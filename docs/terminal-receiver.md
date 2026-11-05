@@ -154,3 +154,16 @@ copies generation observations without inventing a process exit code or argv. Co
 <assembly-expectation.json>` with the independent TCK-only classpath. The reader rechecks original
 membership/prefixes and every projection before judging canonical values. A detached file still reads
 its exact decision and declarations, with unavailable external bytes reported separately.
+
+## Qualification status of the Claude fresh-start retained profiles (2026-11-05 development snapshot)
+
+`client-terminal-claude-retained-fresh-2.1.316/1` (frozen, exactly two turns) and `/2` (any sealed turn count) keep the two-record
+text-turn model and were qualified on synthetic generations only. The native Claude Code 2.1.316 transcript of a plain text turn carries
+attachment chains and request records around each prompt and response, so both profiles REFUSE a real fresh-start capture.
+`client-terminal-claude-retained-fresh-2.1.316/3` admits the native record shape (turn membership by prefix-window tiling, parent
+ancestry through admitted intermediate records, in-flight stream messages, a plain transcript tail) and was derived from the one frozen
+native two-turn probe specimen. Known qualification gaps of this snapshot: on that specimen the `/3` qualifier's sole finding is
+INCOMPLETE at exhaustive identity (the caller's depth-limited candidate scan reported skipped subtrees), so no archive of record exists
+from a native Claude fresh-start capture yet; the launch argv of that specimen was observed truncated and `/3` records argv completeness
+(`retained_launch_argv`) and falls back to native evidence for the session request. A real two-turn test with an exhaustive scan and a
+complete argv is the next-snapshot item.

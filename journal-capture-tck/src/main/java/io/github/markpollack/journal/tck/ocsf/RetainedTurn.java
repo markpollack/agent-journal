@@ -15,14 +15,7 @@ final class RetainedTurn {
 
     /** {@code absentBefore} admits only the tagged fresh-start form; it is a membership bound, never a byte witness. */
     static String validate(Json generation, Json turn, Map<String, RetainedSource> sources, String previous, boolean absentBefore) {
-        Json prompt = sources.get("STDIN").record(turn.member("prompt"));
-        Json result = sources.get("STDOUT").record(turn.member("result"));
-        expect(turn.member("prompt"), "source", "STDIN"); expect(turn.member("result"), "source", "STDOUT");
-        expect(prompt, "type", "user"); require(prompt.member("message") instanceof Json.JObject, "prompt message missing");
-        expect(prompt.member("message"), "role", "user");
-        expect(result, "type", "result"); expect(result, "subtype", "success");
-        require(result.member("is_error") instanceof Json.JBool b && !b.value(), "retained result is not successful");
-        expect(result, "session_id", string(generation, "nativeSessionId"));
+        Json[] envelope = envelope(generation, turn, sources); Json prompt = envelope[0], result = envelope[1];
         List<Json> nativeLocators = array(turn, "nativeRecords");
         require(nativeLocators.size() == 2, "text profile requires one native prompt and response");
         Json user = sources.get("TRANSCRIPT").record(nativeLocators.get(0));
@@ -41,12 +34,25 @@ final class RetainedTurn {
         return string(assistant, "uuid");
     }
 
-    private static void nativeIdentity(Json generation, Json row) {
+    /** The turn's STDIN prompt and STDOUT result records after their shared checks (user prompt; successful result of the native session). */
+    static Json[] envelope(Json generation, Json turn, Map<String, RetainedSource> sources) {
+        Json prompt = sources.get("STDIN").record(turn.member("prompt"));
+        Json result = sources.get("STDOUT").record(turn.member("result"));
+        expect(turn.member("prompt"), "source", "STDIN"); expect(turn.member("result"), "source", "STDOUT");
+        expect(prompt, "type", "user"); require(prompt.member("message") instanceof Json.JObject, "prompt message missing");
+        expect(prompt.member("message"), "role", "user");
+        expect(result, "type", "result"); expect(result, "subtype", "success");
+        require(result.member("is_error") instanceof Json.JBool b && !b.value(), "retained result is not successful");
+        expect(result, "session_id", string(generation, "nativeSessionId"));
+        return new Json[] {prompt, result};
+    }
+
+    static void nativeIdentity(Json generation, Json row) {
         expect(row, "sessionId", string(generation, "nativeSessionId"));
         expect(row, "version", "2.1.316"); string(row, "uuid");
     }
 
-    private static String response(Json assistant) {
+    static String response(Json assistant) {
         Json message = assistant.member("message"); require(message instanceof Json.JObject, "native response message missing");
         expect(message, "role", "assistant");
         string(message, "id"); List<Json> blocks = array(message, "content");
@@ -64,7 +70,7 @@ final class RetainedTurn {
         }
     }
 
-    private static long absent(Json observation) {
+    static long absent(Json observation) {
         fields(observation, "state observation"); expect(observation, "state", "ABSENT"); expect(observation, "observation", "before-first-dispatch"); return 0;
     }
 
@@ -84,7 +90,7 @@ final class RetainedTurn {
         require(results == 1, "retained turn needs exactly one result");
     }
 
-    private static void windows(Json turn, Map<String, RetainedSource> sources) {
+    static void windows(Json turn, Map<String, RetainedSource> sources) {
         for (String stream : Set.of("STDIN", "STDOUT", "STDERR")) {
             long start = number(turn.member("startOffsets"), stream), end = number(turn.member("endOffsets"), stream);
             require(start >= 0 && start <= end && end <= sources.get(stream).size(), "invalid observed stream window");
@@ -92,7 +98,7 @@ final class RetainedTurn {
         inWindow(turn, turn.member("prompt")); inWindow(turn, turn.member("result"));
     }
 
-    private static void inWindow(Json turn, Json locator) {
+    static void inWindow(Json turn, Json locator) {
         String stream = string(locator, "source");
         require(number(locator, "start") >= number(turn.member("startOffsets"), stream)
                 && number(locator, "end") <= number(turn.member("endOffsets"), stream), "prompt/result outside observation window");

@@ -5,8 +5,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 /** Opt-in qualifier for a sealed fresh-transcript-start generation ({@value FreshRetainedGeneration#KIND}) under an explicitly
- * named terminal profile: the frozen two-turn {@value FreshRetainedGeneration#PROFILE} or the ordinary
- * {@value FreshRetainedGeneration#ORDINARY_PROFILE} for any sealed turn count.
+ * named terminal profile: the frozen two-turn {@value FreshRetainedGeneration#PROFILE}, the ordinary
+ * {@value FreshRetainedGeneration#ORDINARY_PROFILE} for any sealed turn count, or the native {@value FreshRetainedGeneration#NATIVE_PROFILE}
+ * whose text-turn model admits the record classes and parent chains the real CLI writes.
  * It never launches, awaits or repairs anything; absence, emitted identity, file continuity and exhaustive
  * membership are checked from the caller's ordered observations and original bytes. Deterministic
  * qualification is fixture evidence only; native/provider admission remains separate. The frozen

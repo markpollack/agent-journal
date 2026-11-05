@@ -48,7 +48,7 @@ class FreshRetainedGenerationTest {
             StringBuilder journal = new StringBuilder(); for (Json o : observations) journal.append(NeutralJson.write(o)).append('\n');
             byte[] bytes = journal.toString().getBytes(StandardCharsets.UTF_8);
             if (m.member("observations") instanceof Json.JObject declaration) { put(declaration, "sha256", str(NativeArtifact.sha256(bytes))); put(declaration, "size", num(bytes.length)); }
-            for (Map.Entry<String, byte[]> e : sources.entrySet()) for (Json s : m.member("sources").elements()) if (s.member("source").text().equals(e.getKey())) Files.write(dir.resolve(s.member("path").text()), e.getValue());
+            for (Map.Entry<String, byte[]> e : sources.entrySet()) for (Json s : m.member("sources").elements()) if (s.member("source").text().equals(e.getKey())) { Files.createDirectories(dir.resolve(s.member("path").text()).getParent()); Files.write(dir.resolve(s.member("path").text()), e.getValue()); }
             Files.write(dir.resolve("observations.jsonl"), bytes);
             Files.writeString(dir.resolve("retained-fresh-generation.json"), NeutralJson.write(m));
         }

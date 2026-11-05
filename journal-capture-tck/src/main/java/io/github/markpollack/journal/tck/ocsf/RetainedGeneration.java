@@ -27,26 +27,37 @@ public final class RetainedGeneration {
 
     /** The fresh-start kind shares every byte/membership check; only the first before-prefix may be tagged ABSENT.
      * {@code bounded} is the frozen two-turn rule; the ordinary fresh profile reads any sealed turn count sequentially. */
-    static void validate(Json manifest, Path directory, boolean fresh, boolean bounded) throws IOException {
+    static void validate(Json manifest, Path directory, boolean fresh, boolean bounded) throws IOException { validate(manifest, directory, fresh, bounded, false); }
+
+    /** {@code nativeModel} selects the native text-turn model of {@link NativeRetainedTurn} ({@value FreshRetainedGeneration#NATIVE_PROFILE}):
+     * UUID uniqueness over identity rows, and a transcript tail of plain records after the last turn; every other check is shared. */
+    static void validate(Json manifest, Path directory, boolean fresh, boolean bounded, boolean nativeModel) throws IOException {
         header(manifest, fresh);
         Map<String, RetainedSource> sources = sources(manifest, directory);
-        List<Json> turns = array(manifest, "turns"); require(!turns.isEmpty(), "retained generation without turns");
-        require(!bounded || turns.size() == 2, "bounded retained profile requires exactly two turns");
+        List<Json> turns = turns(manifest, bounded);
         Set<String> executions = new HashSet<>(), decisions = new HashSet<>(), prompts = new HashSet<>(), uuids = new HashSet<>();
-        List<Json> membership = new ArrayList<>(); String previous = null;
+        List<Json> membership = new ArrayList<>(); String previous = null; NativeRetainedTurn.Tail tail = null; long lastAfter = 0;
         for (Json turn : turns) {
             fields(turn, "executionId decisionId prompt result stdoutRecords nativeRecords nativePrefixBefore nativePrefixAfter startOffsets endOffsets");
             require(executions.add(string(turn, "executionId")) && decisions.add(string(turn, "decisionId")), "duplicate retained execution/decision");
-            previous = RetainedTurn.validate(manifest, turn, sources, previous, fresh && previous == null);
+            if (nativeModel) tail = NativeRetainedTurn.validate(manifest, turn, sources, tail, fresh && tail == null);
+            else previous = RetainedTurn.validate(manifest, turn, sources, previous, fresh && previous == null);
+            lastAfter = number(turn.member("nativePrefixAfter"), "bytes");
             String prompt = rawString(sources.get("STDIN").record(turn.member("prompt")).member("message"), "content");
             require(prompts.add(prompt), "duplicate retained prompt is ambiguous");
-            uniqueNative(turn, sources, uuids);
+            uniqueNative(turn, sources, uuids, nativeModel);
             membership.add(turn.member("prompt")); membership.addAll(array(turn, "stdoutRecords")); membership.addAll(array(turn, "nativeRecords"));
         }
         shared(manifest, sources); membership.addAll(array(manifest, "shared"));
-        unassigned(manifest, sources); membership.addAll(array(manifest, "unassigned"));
+        unassigned(manifest, sources, nativeModel, lastAfter); membership.addAll(array(manifest, "unassigned"));
         partition(sources, membership);
         sequential(turns);
+    }
+
+    private static List<Json> turns(Json manifest, boolean bounded) {
+        List<Json> turns = array(manifest, "turns"); require(!turns.isEmpty(), "retained generation without turns");
+        require(!bounded || turns.size() == 2, "bounded retained profile requires exactly two turns");
+        return turns;
     }
 
     private static final String MEMBERS = "kind logicalSessionId connectionId nativeSessionId cliVersion captureStart sealed observedResourcesTerminated stdoutNaturalEof stderrNaturalEof overflow sources turns shared unassigned";
@@ -72,9 +83,12 @@ public final class RetainedGeneration {
         return sources;
     }
 
-    private static void uniqueNative(Json turn, Map<String, RetainedSource> sources, Set<String> ids) {
-        for (Json locator : array(turn, "nativeRecords"))
-            require(ids.add(string(sources.get("TRANSCRIPT").record(locator), "uuid")), "native UUID occurs more than once");
+    private static void uniqueNative(Json turn, Map<String, RetainedSource> sources, Set<String> ids, boolean nativeModel) {
+        for (Json locator : array(turn, "nativeRecords")) {
+            Json row = sources.get("TRANSCRIPT").record(locator);
+            if (nativeModel && !NativeRetainedTurn.IDENTITY.contains(string(row, "type"))) continue;
+            require(ids.add(string(row, "uuid")), "native UUID occurs more than once");
+        }
     }
 
     private static void shared(Json m, Map<String, RetainedSource> sources) {
@@ -92,8 +106,17 @@ public final class RetainedGeneration {
         require(init > 0, "retained generation has no init/version witness");
     }
 
-    private static void unassigned(Json m, Map<String, RetainedSource> sources) {
+    /** The native model admits a transcript tail after the last turn's after-prefix made of plain records only
+     * (observed: {@code last-prompt}, {@code cost-state}); an identity-class record there is REFUSED. Other profiles admit STDERR only. */
+    private static void unassigned(Json m, Map<String, RetainedSource> sources, boolean nativeModel, long lastAfter) {
         for (Json locator : array(m, "unassigned")) {
+            if (nativeModel && "TRANSCRIPT".equals(string(locator, "source"))) {
+                require(number(locator, "start") >= lastAfter, "unassigned native record inside a turn window");
+                Json row = sources.get("TRANSCRIPT").record(locator);
+                require(NativeRetainedTurn.PLAIN.contains(string(row, "type")), "unassigned native tail holds a non-plain record: " + string(row, "type"));
+                expect(row, "sessionId", string(m, "nativeSessionId"));
+                continue;
+            }
             expect(locator, "source", "STDERR"); sources.get("STDERR").extent(locator);
         }
     }

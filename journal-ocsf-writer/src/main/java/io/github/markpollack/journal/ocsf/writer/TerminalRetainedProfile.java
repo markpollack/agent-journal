@@ -30,7 +30,7 @@ final class TerminalRetainedProfile {
         Jv generation = acquisition.member("retained_generation");
         if (!retained) { require(generation == null, "retained generation requires its frozen initial profile"); return; }
         require(generation instanceof Jv.Obj, "retained generation declaration absent");
-        header(generation, input.decision(), fresh, !TerminalContract.FRESH_RETAINED_ORDINARY_PROFILE.equals(profile));
+        header(generation, input.decision(), fresh, !fresh || TerminalContract.FRESH_RETAINED_PROFILE.equals(profile));
         equal(generation, "nativeSessionId", text(acquisition.member("run"), "session_uid"));
         Path base = manifest.getParent();
         String name = fresh ? "generation/retained-fresh-generation.json" : "generation/retained-generation.json";
