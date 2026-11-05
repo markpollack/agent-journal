@@ -61,12 +61,13 @@ final class CodexRolloutContext {
         Jv s = p.member("thread_settings");
         Jv.Obj settings = s == null ? new Jv.Obj() // the record reports no settings; nothing is invented
                 : new Jv.Obj().put("working_directory", text(s, "cwd")).put("model", text(s, "model"))
-                .put("provider", text(s, "model_provider_id")).put("approval_policy", text(s, "approval_policy"))
-                .put("reasoning_effort", text(s, "collaboration_mode", "settings", "reasoning_effort"));
+                .put("provider", text(s, "model_provider_id")).put("approval_policy", text(s, "approval_policy"));
+        String effort = s == null ? null : text(s, "reasoning_effort") != null ? text(s, "reasoning_effort") : text(s, "collaboration_mode", "settings", "reasoning_effort");
+        if (effort != null) settings.put("reasoning_effort", effort); // native 0.166.0 nests it under collaboration_mode.settings (null when unset); nothing is reported when absent
         ctx.family("event_msg/thread_settings_applied", r.raw().length, "normalized: reported thread settings; other native settings retained exactly");
         ctx.emit(event(r, ctx, "session_context", 1, "codex.rollout.thread_settings_applied->session_context.settings", null)
                 .put("session_uid", thread).put("context_kind", "thread_settings_applied").put("settings", settings)
-                .put("basis", "codex.rollout.thread_settings_applied.v2: thread_id names the owning thread; reasoning_effort is the collaboration_mode setting in force (null when unset)"));
+                .put("basis", "codex.rollout.thread_settings_applied.v2: thread_id names the owning thread; reasoning_effort is the reported setting (top level or collaboration_mode.settings), absent when the record reports none"));
         return true;
     }
 

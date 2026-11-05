@@ -246,7 +246,7 @@
       "requirement": "Every native-derived expectation must have its own exact occurrence and canonical comparison; neither raw retention nor a different owner satisfies it."
     },
     {
-      "meaning": "codex.native.settings_owner/v1",
+      "meaning": "codex.native.settings_owner/v2",
       "revision": 1,
       "requirement": "Every native-derived expectation must have its own exact occurrence and canonical comparison; neither raw retention nor a different owner satisfies it."
     },
