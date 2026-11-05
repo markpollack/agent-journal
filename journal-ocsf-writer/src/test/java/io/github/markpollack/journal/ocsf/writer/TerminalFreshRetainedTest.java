@@ -64,6 +64,19 @@ class TerminalFreshRetainedTest {
 
     @Test void ordinaryFreshProfileAttachesEveryTurnOfAThreeTurnGeneration() throws Exception { eachTurnAttachesAndReadsBack(THREE, TerminalReceiver.FRESH_RETAINED_ORDINARY_PROFILE, List.of(3, 1, 2)); }
 
+    /** Independent review finding 1 (2026-11-05): admission must compare adjacent native boundaries of every turn, not only the selected one. */
+    @Test void receiverRefusesAGenerationWhoseUnselectedTurnBreaksContinuity() throws Exception {
+        var q = FreshRetainedClaudeAcquisition.qualify(THREE, "E1", temp.resolve("u1"), TerminalReceiver.FRESH_RETAINED_ORDINARY_PROFILE); Path root = q.manifest().getParent();
+        Jv.Obj m = (Jv.Obj) Jv.parse(Files.readString(q.manifest())); Jv.Obj generation = (Jv.Obj) m.member("retained_generation");
+        Jv.Obj third = (Jv.Obj) generation.member("turns").elements().get(2); third.put("nativePrefixBefore", generation.member("turns").elements().get(0).member("nativePrefixAfter"));
+        Files.writeString(root.resolve("generation/retained-fresh-generation.json"), Jv.write(generation));
+        for (Jv source : m.member("sources").elements()) { byte[] actual = Files.readAllBytes(root.resolve(source.member("path").text())); ((Jv.Obj) source).put("sha256", SchemaPin.sha256(actual)).put("bytes", actual.length); }
+        Files.writeString(q.manifest(), Jv.write(m));
+        TerminalReceiver receiver = new TerminalReceiver(temp.resolve("store-u1"), "producer", WriterOptions.defaults());
+        String ack = receiver.receive(freshEnvelope(1, TerminalReceiver.FRESH_RETAINED_ORDINARY_PROFILE), temp); Jv.Obj a = completeFresh(1, root);
+        assertThatThrownBy(() -> receiver.receiveRevision(Jv.parse(ack).member("bindingId").text(), bytes(a), root)).as("E3 before-prefix relabelled to E1 after-prefix").isInstanceOf(IllegalArgumentException.class);
+    }
+
     @Test void frozenFreshProfileRefusesThreeTurnEvidenceAndProfilesDoNotRelabelEachOther() throws Exception {
         var ordinary = FreshRetainedClaudeAcquisition.qualify(THREE, "E3", temp.resolve("o3"), TerminalReceiver.FRESH_RETAINED_ORDINARY_PROFILE); Path ordinaryRoot = ordinary.manifest().getParent();
         TerminalReceiver receiver = new TerminalReceiver(temp.resolve("store"), "producer", WriterOptions.defaults());

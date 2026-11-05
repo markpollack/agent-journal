@@ -31,12 +31,23 @@ final class CodexRolloutContextReading {
         Json owner = p.member("thread_id");
         if (owner == null || owner.isNull()) return false;
         f.normalized.add(index);
-        f.contexts.add(new ExpectedFacts.Context(index, 1, "thread_settings_applied", null,
-                ClaudeTranscriptProfile.settings(p.member("thread_settings"), "cwd", "working_directory", "model", "model",
-                        "model_provider_id", "provider", "approval_policy", "approval_policy", "reasoning_effort", "reasoning_effort", "collaboration_mode.settings.reasoning_effort", "reasoning_effort"), null, null));
+        Map<String, Json> settings = ClaudeTranscriptProfile.settings(p.member("thread_settings"), "cwd", "working_directory", "model", "model",
+                "model_provider_id", "provider", "approval_policy", "approval_policy");
+        Json effort = effort(p.member("thread_settings"));
+        if (effort != null) settings.put("reasoning_effort", effort);
+        f.contexts.add(new ExpectedFacts.Context(index, 1, "thread_settings_applied", null, settings, null, null));
         new SourceFacts.Target(f, index, "session_context", 1).event("/payload/thread_id", "codex.native.settings_owner/v2", Map.of(), SourceFacts.fields("/session_uid", owner));
         f.sessionOf.put(index, owner.text());
         return true;
+    }
+
+    /** The reported top-level member first, else collaboration_mode.settings (native 0.166.0 nests it, null when unset): the mapper's order. */
+    private static Json effort(Json s) {
+        if (s == null || s.isNull()) return null;
+        Json top = s.member("reasoning_effort");
+        if (top != null && !top.isNull()) return top;
+        Json nested = s.path("collaboration_mode", "settings", "reasoning_effort");
+        return nested == null || nested.isNull() ? null : nested;
     }
 
     private static boolean completedReasoning(String type, String kind, Json payload) {

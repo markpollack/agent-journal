@@ -45,8 +45,28 @@ class CodexRetainedAcquisitionTest {
         static Json str(String s) { return new Json.JString(s); }
         static Json num(long n) { return new Json.JNumber(Long.toString(n)); }
         Json usage(long in, long cached, long write, long out, long reasoning) { return NeutralJson.parse("{\"input_tokens\":" + in + ",\"cached_input_tokens\":" + cached + ",\"cache_write_input_tokens\":" + write + ",\"output_tokens\":" + out + ",\"reasoning_output_tokens\":" + reasoning + ",\"total_tokens\":" + (in + out) + "}"); }
-        /** Sets a turn's stdout usage to the given figure on the thread and per-turn declarations (the stdout original is rehashed separately). */
-        void wire(int i, Json usage) { Json w = NeutralJson.parse("{}"); for (String k : CodexRetainedGeneration.USAGE) put(w, k, usage.member(k)); put(turn(i), "wire_usage", w); put(perTurnTurn(i), "wire_usage", w); }
+        /** Sets a turn's stdout usage to the given figure in the stdout original AND the thread/per-turn declarations, so the native
+         * witness agrees with the declaration and only the rule under test can refuse (independent review finding 4, 2026-11-05). */
+        void wire(int i, Json usage) throws Exception {
+            Json w = NeutralJson.parse("{}"); for (String k : CodexRetainedGeneration.USAGE) put(w, k, usage.member(k)); put(turn(i), "wire_usage", w); put(perTurnTurn(i), "wire_usage", w);
+            Path stdout = dir.resolve("turn-" + i + "/stdout.bin"); String text = Files.readString(stdout);
+            String replacement = "\"usage\": {" + String.join(", ", CodexRetainedGeneration.USAGE.stream().map(k -> "\"" + k + "\": " + usage.member(k).text()).toList()) + "}";
+            Files.writeString(stdout, text.replaceAll("\"usage\": \\{[^}]*\\}", java.util.regex.Matcher.quoteReplacement(replacement)));
+        }
+        /** Restates a turn's native thread total in the rollout (token_usage_record and token_count), its stdout and every declaration, so the
+         * native witnesses stay consistent and only the cumulative arithmetic can refuse. */
+        void threadTotal(int i, Json from, Json to) throws Exception {
+            String old = python(from), neu = python(to);
+            transcript = swapAll(transcript, old, neu);
+            put(turn(i), "thread_token_usage", to); put(turn(i), "total_token_usage", to); put(turn(i), "cumulative_usage", to);
+            put(perTurnTurn(i), "thread_token_usage", to); put(perTurnTurn(i), "total_token_usage", to); put(perTurnTurn(i), "cumulative_usage", to);
+            wire(i, to);
+        }
+        /** The rollout lines are Python json.dumps(sort_keys=True) text: keys sorted, ", " and ": " separators. */
+        static String python(Json usage) {
+            java.util.TreeMap<String, Json> sorted = new java.util.TreeMap<>(((Json.JObject) usage).members());
+            return "{" + String.join(", ", sorted.entrySet().stream().map(e -> "\"" + e.getKey() + "\": " + e.getValue().text()).toList()) + "}";
+        }
         /** Rewrites the transcript and restates every hash/extent that an honest producer would restate. */
         void rehash() throws Exception {
             Files.write(dir.resolve("transcript.bin"), transcript);
@@ -65,6 +85,9 @@ class CodexRetainedAcquisitionTest {
                     for (Json s : perTurn[i].member("sources").elements()) if ("transcript".equals(s.member("role").text())) { put(s, "bytes", num(prefix.length)); put(s, "observed", num(prefix.length)); put(s, "sha256", str(NativeArtifact.sha256(prefix))); }
                 }
                 for (Json s : turn(i).member("sources").elements()) { byte[] b = Files.readAllBytes(dir.resolve(s.member("path").text())); put(s, "bytes", num(b.length)); put(s, "observed", num(b.length)); put(s, "sha256", str(NativeArtifact.sha256(b))); }
+                for (Json s : perTurn[i].member("sources").elements()) { String role = s.member("role").text(); if ("transcript".equals(role)) continue; // restated above when the rollout changed
+                    byte[] b = Files.readAllBytes(dir.resolve("turn-" + i + "/" + s.member("path").text())); put(s, "bytes", num(b.length)); put(s, "observed", num(b.length)); put(s, "sha256", str(NativeArtifact.sha256(b)));
+                    if ("stream".equals(role)) { long end = b.length; put(perTurnTurn(i).member("end_offsets"), "STDOUT", num(end)); } }
                 Files.writeString(dir.resolve("turn-" + i + "/codex-acquisition.json"), NeutralJson.write(perTurn[i]));
             }
             Files.writeString(dir.resolve("codex-thread.json"), NeutralJson.write(thread));
@@ -142,12 +165,13 @@ class CodexRetainedAcquisitionTest {
             c("changed original: prompt text altered after capture", Verdict.REFUSED, k -> k.transcript = swap(k.transcript, "\"text\": \"second\"", "\"text\": \"SECOND\"")),
             c("truncated original: final transcript shorter than its last record", Verdict.REFUSED, k -> k.transcript = Arrays.copyOf(k.transcript, k.transcript.length - 40)),
             c("invalid association: per-turn manifest from another connection", Verdict.REFUSED, k -> Copy.put(k.perTurn[1].member("process"), "connection_uid", Copy.str("other-connection"))),
-            c("double counting: thread usage adds the turn twice", Verdict.REFUSED, k -> { Copy.put(k.turn(1), "thread_token_usage", k.usage(33, 9, 0, 12, 0)); Copy.put(k.turn(1), "total_token_usage", k.usage(33, 9, 0, 12, 0)); }),
+            c("double counting: native thread total adds the turn twice (witnesses consistent; arithmetic refuses)", Verdict.REFUSED, io(k -> k.threadTotal(1, k.usage(22, 6, 0, 8, 0), k.usage(33, 9, 0, 12, 0)))),
+            c("double counting declared only: declaration contradicts the native record", Verdict.REFUSED, k -> { Copy.put(k.turn(1), "thread_token_usage", k.usage(33, 9, 0, 12, 0)); Copy.put(k.turn(1), "total_token_usage", k.usage(33, 9, 0, 12, 0)); }),
             c("prefix continuity: follow-up before-prefix differs from first after-prefix", Verdict.REFUSED, k -> Copy.put(k.perTurnTurn(1).member("native_prefix_before"), "bytes", Copy.num(100))),
             c("partition gap: a region record dropped", Verdict.REFUSED, k -> k.turn(1).member("native_records").member("records").elements().remove(2)),
             c("session_meta inside a region / shared differs", Verdict.REFUSED, k -> Copy.put(k.turn(1).member("native_records").member("shared").elements().get(0), "end", Copy.num(0))),
-            c("wire usage neither per-turn nor cumulative", Verdict.REFUSED, k -> k.wire(1, k.usage(99, 3, 0, 4, 0))),
-            c("resumed turn wire usage per-turn (codex-cli 0.166.0 emits the thread total)", Verdict.REFUSED, k -> k.wire(1, k.usage(11, 3, 0, 4, 0))),
+            c("wire usage neither per-turn nor cumulative (stdout and declaration agree)", Verdict.REFUSED, io(k -> k.wire(1, k.usage(99, 3, 0, 4, 0)))),
+            c("resumed turn wire usage per-turn in stdout and declaration (codex-cli 0.166.0 emits the thread total)", Verdict.REFUSED, io(k -> k.wire(1, k.usage(11, 3, 0, 4, 0)))),
             c("unsealed follow-up turn", Verdict.INCOMPLETE, k -> Copy.put(k.turn(1), "state", Copy.str("UNSEALED"))),
             c("final transcript not equal to last sealed prefix", Verdict.INCOMPLETE, k -> Copy.put(k.thread.member("transcript"), "final_equals_last_sealed_prefix", new Json.JBool(false))),
             c("closure not observed: stdout EOF missing", Verdict.INCOMPLETE, k -> Copy.put(k.turn(1), "stdout_natural_eof", new Json.JBool(false))),
@@ -159,16 +183,19 @@ class CodexRetainedAcquisitionTest {
     static List<Control> thirdTurnControls() {
         return List.of(
             c("foreign turn: third region carries the second turn's id", Verdict.REFUSED, k -> k.transcript = swap(k.transcript, "\"turn_id\": \"" + k.turn(2).member("native_turn_uid").text() + "\"", "\"turn_id\": \"" + TURN_1 + "\"")),
-            c("double counting at the third turn", Verdict.REFUSED, k -> { Copy.put(k.turn(2), "thread_token_usage", k.usage(48, 16, 0, 20, 0)); Copy.put(k.turn(2), "total_token_usage", k.usage(48, 16, 0, 20, 0)); }),
+            c("double counting at the third turn: native thread total adds the turn twice (witnesses consistent; arithmetic refuses)", Verdict.REFUSED, io(k -> k.threadTotal(2, k.usage(35, 11, 0, 14, 0), k.usage(48, 16, 0, 20, 0)))),
             c("prefix continuity broken before the third turn", Verdict.REFUSED, k -> Copy.put(k.perTurnTurn(2).member("native_prefix_before"), "bytes", Copy.num(3482))),
             c("partition gap inside the third region", Verdict.REFUSED, k -> k.turn(2).member("native_records").member("records").elements().remove(4)),
             c("cross-association: third turn originals replaced by the second turn's process", Verdict.REFUSED, k -> { for (Json s : k.turn(2).member("sources").elements()) Copy.put(s, "path", Copy.str(s.member("path").text().replace("turn-2/", "turn-1/"))); }),
             c("third turn resumes another thread", Verdict.REFUSED, k -> Copy.put(k.turn(2), "resume_thread_id", Copy.str("00000000-0000-4000-8000-000000000000"))),
-            c("third turn wire usage per-turn", Verdict.REFUSED, k -> k.wire(2, k.usage(13, 5, 0, 6, 0))),
+            c("third turn wire usage per-turn in stdout and declaration", Verdict.REFUSED, io(k -> k.wire(2, k.usage(13, 5, 0, 6, 0)))),
             c("third turn unsealed", Verdict.INCOMPLETE, k -> Copy.put(k.turn(2), "state", Copy.str("UNSEALED"))));
     }
 
     static byte[] swap(byte[] bytes, String from, String to) { String s = new String(bytes, StandardCharsets.UTF_8); assertThat(s).contains(from); return s.replace(from, to).getBytes(StandardCharsets.UTF_8); }
+    static byte[] swapAll(byte[] bytes, String from, String to) { return swap(bytes, from, to); }
+    static Consumer<Copy> io(ThrowingMutation m) { return c -> { try { m.accept(c); } catch (Exception e) { throw new RuntimeException(e); } }; }
+    interface ThrowingMutation { void accept(Copy c) throws Exception; }
 
     static void refused(Path root, Path fixture, String profile, int turn, List<Control> controls) throws Exception {
         int index = 0;
@@ -184,7 +211,7 @@ class CodexRetainedAcquisitionTest {
     }
 
     @Test void rehashedSemanticMutationsAreRefusedOrIncompleteBeforeOutput(@TempDir Path root) throws Exception {
-        refused(root.resolve("two"), FIXTURE, PROFILE, 1, controls()); assertThat(controls()).hasSize(19);
+        refused(root.resolve("two"), FIXTURE, PROFILE, 1, controls()); assertThat(controls()).hasSize(20);
         refused(root.resolve("three"), THREE, ORDINARY_PROFILE, 2, thirdTurnControls()); assertThat(thirdTurnControls()).hasSize(8);
     }
 
@@ -217,6 +244,13 @@ class CodexRetainedAcquisitionTest {
         CodexRetainedAcquisition.validate(NeutralJson.readDocument(out.resolve("acquisition.json")), out);
         assertThat(Files.readString(out.resolve("generation/codex-thread.json"))).contains("turn-1/codex-acquisition.json").doesNotContain(captures.toString());
         Path outside = Files.createDirectory(root.resolve("outside")); Files.copy(copy.dir.resolve("turn-1/stdin.bin"), outside.resolve("stdin.bin"));
+        // Independent review finding 2 (2026-11-05): a per-turn manifest source naming an outside file with identical bytes must be refused too.
+        Path perTurn = captures.resolve("codex-turn-1/codex-acquisition.json"); Json.JObject perTurnManifest = (Json.JObject) NeutralJson.readDocument(perTurn);
+        for (Json s : perTurnManifest.member("sources").elements()) if ("stdin".equals(s.member("role").text())) Copy.put(s, "path", Copy.str(outside.resolve("stdin.bin").toString()));
+        Files.writeString(perTurn, NeutralJson.write(perTurnManifest));
+        assertThatThrownBy(() -> CodexRetainedGeneration.validate(NeutralJson.readDocument(threadDir.resolve("codex-thread.json")), threadDir, ORDINARY_PROFILE))
+                .as("per-turn manifest source outside the capture root").isInstanceOf(Rejection.class).hasMessageContaining("escapes");
+        Files.copy(copy.dir.resolve("turn-1/codex-acquisition.json"), perTurn, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         for (Json s : copy.turn(1).member("sources").elements()) if ("STDIN".equals(s.member("role").text())) Copy.put(s, "path", Copy.str(outside.resolve("stdin.bin").toString()));
         Files.writeString(threadDir.resolve("codex-thread.json"), NeutralJson.write(copy.thread));
         assertThatThrownBy(() -> CodexRetainedGeneration.validate(NeutralJson.readDocument(threadDir.resolve("codex-thread.json")), threadDir, ORDINARY_PROFILE))

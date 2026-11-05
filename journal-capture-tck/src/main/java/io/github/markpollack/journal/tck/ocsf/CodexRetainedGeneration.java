@@ -156,7 +156,7 @@ public final class CodexRetainedGeneration {
 
     private static void perTurnSources(Json t, Json m, Path dir, Map<String, byte[]> originals) throws IOException {
         for (Json s : array(m, "sources")) {
-            String role = string(s, "role"); byte[] bytes = Files.readAllBytes(dir.resolve(string(s, "path")));
+            String role = string(s, "role"); byte[] bytes = Files.readAllBytes(contained(dir, string(s, "path")));
             require(string(s, "sha256").equals(NativeArtifact.sha256(bytes)), Verdict.REFUSED, "per-turn manifest original changed");
             String stream = Map.of("stdin", "STDIN", "stream", "STDOUT", "stderr", "STDERR").get(role);
             if (stream != null) require(Arrays.equals(originals.get(stream), bytes), Verdict.REFUSED, "per-turn original differs from thread source");
@@ -265,8 +265,19 @@ public final class CodexRetainedGeneration {
         Path root = real.getParent() == null ? real : real.getParent();
         Path resolved = path.isAbsolute() ? path : real.resolve(path);
         require(!path.normalize().startsWith("..") && Files.isRegularFile(resolved), Verdict.INCOMPLETE, "referenced file missing: " + text);
-        require(resolved.toRealPath().startsWith(root), Verdict.REFUSED, "referenced file escapes the capture root: " + text);
+        require(resolved.toRealPath().startsWith(path.isAbsolute() ? root : real), Verdict.REFUSED, "referenced file escapes the capture root: " + text);
         return resolved.toRealPath();
+    }
+
+    /** Per-turn manifest sources are named relative to their own directory and must stay inside it after symlink resolution
+     * (independent review finding 2, 2026-11-05: an absolute or escaping path is refused even when its bytes match). */
+    static Path contained(Path dir, String text) throws IOException {
+        Path path = Path.of(text), real = dir.toRealPath();
+        require(!path.isAbsolute() && !path.normalize().startsWith(".."), Verdict.REFUSED, "per-turn source escapes its directory: " + text);
+        Path resolved = real.resolve(path);
+        require(Files.isRegularFile(resolved), Verdict.INCOMPLETE, "referenced file missing: " + text);
+        require(resolved.toRealPath().startsWith(real), Verdict.REFUSED, "per-turn source escapes its directory: " + text);
+        return resolved;
     }
 
     private static String value(List<String> argv, String flag) { int i = argv.indexOf(flag); return i >= 0 && i + 1 < argv.size() ? argv.get(i + 1) : null; }

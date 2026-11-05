@@ -52,7 +52,18 @@ final class TerminalRetainedProfile {
             if (text(turn, "executionId").equals(text(decision, "executionId"))) selected = turn;
         }
         require(selected != null, "retained execution absent"); equal(selected, "decisionId", text(decision, "decisionId"));
+        sequential(array(generation, "turns"));
         return selected;
+    }
+
+    /** Adjacent turns never overlap in stream windows or native boundaries (independent review finding 1, 2026-11-05: every pair, not only the selected turn). */
+    private static void sequential(List<Jv> turns) {
+        for (int i = 1; i < turns.size(); i++) {
+            Jv first = turns.get(i - 1), second = turns.get(i);
+            for (String stream : List.of("STDIN", "STDOUT", "STDERR"))
+                require(number(first.member("endOffsets"), stream) <= number(second.member("startOffsets"), stream), "retained observation windows overlap");
+            require(number(first.member("nativePrefixAfter"), "bytes") <= number(second.member("nativePrefixBefore"), "bytes"), "retained native boundaries overlap");
+        }
     }
 
     private static void header(Jv generation, Jv decision, boolean fresh, boolean bounded) {

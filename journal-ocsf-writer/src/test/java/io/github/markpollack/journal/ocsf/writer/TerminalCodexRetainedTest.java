@@ -92,6 +92,34 @@ class TerminalCodexRetainedTest {
 
     @Test void threeTurnThreadAttachesEveryTurnToItsOwnDecisionUnderTheOrdinaryProfile() throws Exception { eachTurnAttachesAndReadsBack(THREE, CODEX_RETAINED_ORDINARY_PROFILE, List.of(2, 0, 1)); }
 
+    /** Rewrites the copied thread declaration (both the generation file and the manifest's mirror) and restates the manifest's own source hashes,
+     * exactly as a producer that altered an unselected turn after qualification would have to. */
+    static void mutateGeneration(Path root, java.util.function.Consumer<Jv.Obj> mutation) throws Exception {
+        Path manifest = root.resolve("acquisition.json"); Jv.Obj m = (Jv.Obj) Jv.parse(Files.readString(manifest)); Jv.Obj generation = (Jv.Obj) m.member("retained_generation");
+        mutation.accept(generation);
+        Files.writeString(root.resolve("generation/codex-thread.json"), Jv.write(generation));
+        for (Jv source : m.member("sources").elements()) { byte[] actual = Files.readAllBytes(root.resolve(source.member("path").text())); ((Jv.Obj) source).put("sha256", SchemaPin.sha256(actual)).put("bytes", actual.length).put("observed", actual.length); }
+        Files.writeString(manifest, Jv.write(m));
+    }
+
+    /** Independent review finding 1 (2026-11-05): admission must validate every turn of the thread, not only the selected one. */
+    @Test void receiverRefusesAThreadWhoseUnselectedTurnIsInvalid() throws Exception {
+        List<String> executions = executions(THREE);
+        for (String fault : List.of("usage", "resume", "prefix")) {
+            var q = CodexRetainedAcquisition.qualify(THREE, executions.get(0), temp.resolve("u-" + fault), CODEX_RETAINED_ORDINARY_PROFILE); Path root = q.manifest().getParent();
+            mutateGeneration(root, g -> { Jv.Obj third = (Jv.Obj) g.member("turns").elements().get(2);
+                switch (fault) {
+                    case "usage" -> { Jv doubled = Jv.parse("{\"input_tokens\":48,\"cached_input_tokens\":16,\"cache_write_input_tokens\":0,\"output_tokens\":20,\"reasoning_output_tokens\":0,\"total_tokens\":68}"); third.put("thread_token_usage", doubled).put("total_token_usage", doubled); }
+                    case "resume" -> third.put("resume_thread_id", "00000000-0000-4000-8000-000000000000");
+                    case "prefix" -> third.put("native_prefix_after", g.member("turns").elements().get(0).member("native_prefix_after"));
+                    default -> throw new AssertionError(fault);
+                } });
+            TerminalReceiver receiver = new TerminalReceiver(temp.resolve("store-u-" + fault), "producer", WriterOptions.defaults());
+            String ack = receiver.receive(envelopeFor(THREE, 0, CODEX_RETAINED_ORDINARY_PROFILE), temp); String id = Jv.parse(ack).member("bindingId").text();
+            assertThatThrownBy(() -> receiver.receiveRevision(id, bytes(completeFor(THREE, 0, root)), root)).as("unselected third turn: " + fault).isInstanceOf(IllegalArgumentException.class);
+        }
+    }
+
     @Test void frozenProfileRefusesThreeTurnEvidenceAndProfilesDoNotRelabelEachOther() throws Exception {
         List<String> executions = executions(THREE);
         var ordinary = CodexRetainedAcquisition.qualify(THREE, executions.get(2), temp.resolve("o2"), CODEX_RETAINED_ORDINARY_PROFILE); Path ordinaryRoot = ordinary.manifest().getParent();

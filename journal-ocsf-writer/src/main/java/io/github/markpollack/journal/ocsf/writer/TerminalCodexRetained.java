@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import static io.github.markpollack.journal.ocsf.writer.TerminalValues.*;
 import static io.github.markpollack.journal.ocsf.writer.TerminalCodexProfile.require;
 
@@ -30,23 +32,47 @@ final class TerminalCodexRetained {
         int index = (int) number(m.member("run"), "invocation_index"); require(index >= 0 && index < turns.size(), "Codex turn index outside thread");
         Jv turn = turns.get(index); equal(turn, "execution_id", text(m, "acquisition_uid")); equal(m, "retained_execution_id", text(m, "acquisition_uid"));
         equal(turn, "native_turn_uid", text(array(m, "turns").get(0), "native_turn_uid"));
-        long[] region = partition(turns, transcript, index);
-        projection(base, transcript, array(turns.get(0).member("native_records"), "shared").get(0), region);
+        long[][] regions = partition(turns, transcript);
+        projection(base, transcript, array(turns.get(0).member("native_records"), "shared").get(0), regions[index]);
         originals(base, turn);
-        prefixes(m, turns, index, transcript, region[1]);
+        thread(turns, transcript, regions, session);
+        prefixes(m, turns, index);
         usage(m, turns, index);
     }
 
-    private static long[] partition(List<Jv> turns, byte[] transcript, int index) {
+    /** Every turn's contiguous region: the partition must cover the whole rollout after the shared session_meta line. */
+    private static long[][] partition(List<Jv> turns, byte[] transcript) {
         Jv shared = array(turns.get(0).member("native_records"), "shared").get(0);
         require(number(shared, "start") == 0, "shared session_meta must start the rollout"); extent(transcript, shared);
-        long covered = number(shared, "end"); long[] region = new long[2];
+        long covered = number(shared, "end"); long[][] regions = new long[turns.size()][2];
         for (int i = 0; i < turns.size(); i++) {
-            if (i == index) region[0] = covered;
+            regions[i][0] = covered;
             for (Jv locator : array(turns.get(i).member("native_records"), "records")) { require(number(locator, "start") == covered, "rollout partition gap/overlap"); extent(transcript, locator); covered = number(locator, "end"); }
-            if (i == index) region[1] = covered;
+            regions[i][1] = covered;
         }
-        require(covered == transcript.length, "rollout partition omits original bytes"); return region;
+        require(covered == transcript.length, "rollout partition omits original bytes"); return regions;
+    }
+
+    /** Every turn of the thread, not only the selected one (independent review finding 1, 2026-11-05): distinct identities, the
+     * resume rule, an after-prefix at its own region end and cumulative usage arithmetic; an invalid unselected turn refuses the archive. */
+    private static void thread(List<Jv> turns, byte[] transcript, long[][] regions, String session) {
+        Set<String> identities = new HashSet<>(); Jv previous = null;
+        for (int i = 0; i < turns.size(); i++) {
+            Jv t = turns.get(i);
+            require(number(t, "invocation_index") == i, "Codex turn order differs from invocation index");
+            for (String key : List.of("execution_id", "connection_id", "native_turn_uid")) require(identities.add(key + "=" + text(t, key)), "Codex turn identity reused");
+            if (i == 0) require(t.member("resume_thread_id") == null || t.member("resume_thread_id").isNull(), "Codex first turn declares a resumed thread");
+            else equal(t, "resume_thread_id", session);
+            Jv after = t.member("native_prefix_after");
+            require(number(after, "bytes") == regions[i][1] && text(after, "sha256").equals(SchemaPin.sha256(Arrays.copyOf(transcript, (int) regions[i][1]))), "Codex after-prefix differs from region end");
+            arithmetic(t, previous); previous = t.member("thread_token_usage");
+        }
+    }
+
+    private static void arithmetic(Jv turn, Jv previous) {
+        for (String key : USAGE) require(number(turn.member("thread_token_usage"), key) - (previous == null ? 0 : number(previous, key)) == number(turn.member("turn_token_usage"), key), "Codex cumulative usage arithmetic fails: " + key);
+        // codex-cli 0.166.0 emits the thread total on turn.completed (native probe 2026-11-04): a resumed turn's wire usage is the cumulative figure.
+        require(previous == null || "cumulative".equals(TerminalCodexNative.scope(turn)), "Codex resumed turn wire usage is not the thread cumulative figure");
     }
 
     private static void extent(byte[] bytes, Jv locator) {
@@ -70,9 +96,8 @@ final class TerminalCodexRetained {
         }
     }
 
-    private static void prefixes(Jv m, List<Jv> turns, int index, byte[] transcript, long end) {
+    private static void prefixes(Jv m, List<Jv> turns, int index) {
         Jv after = turns.get(index).member("native_prefix_after");
-        require(number(after, "bytes") == end && text(after, "sha256").equals(SchemaPin.sha256(Arrays.copyOf(transcript, (int) end))), "Codex after-prefix differs from region end");
         Jv declared = array(m, "turns").get(0); require(Jv.write(declared.member("native_prefix_after")).equals(Jv.write(after)), "Codex turn after-prefix differs from thread");
         Jv before = declared.member("native_prefix_before");
         if (index == 0) { equal(before, "state", "ABSENT"); equal(before, "observation", "before-first-dispatch"); }
@@ -82,9 +107,5 @@ final class TerminalCodexRetained {
     private static void usage(Jv m, List<Jv> turns, int index) {
         Jv declared = array(m, "turns").get(0), turn = turns.get(index);
         for (String key : List.of("wire_usage", "turn_token_usage", "thread_token_usage", "total_token_usage")) require(Jv.write(declared.member(key)).equals(Jv.write(turn.member(key))), "Codex usage differs from thread: " + key);
-        Jv previous = index == 0 ? null : turns.get(index - 1).member("thread_token_usage");
-        for (String key : USAGE) require(number(turn.member("thread_token_usage"), key) - (previous == null ? 0 : number(previous, key)) == number(turn.member("turn_token_usage"), key), "Codex cumulative usage arithmetic fails: " + key);
-        // codex-cli 0.166.0 emits the thread total on turn.completed (native probe 2026-11-04): a resumed turn's wire usage is the cumulative figure.
-        require(previous == null || "cumulative".equals(TerminalCodexNative.scope(turn)), "Codex resumed turn wire usage is not the thread cumulative figure");
     }
 }
