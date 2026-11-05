@@ -41,7 +41,10 @@ public final class CodexRetainedAcquisition {
         sources.addAll(copyTurn(newDirectory, thread, turn, executionId));
         Json.JObject acquisition = acquisition(turn, relativized, sources, bytes, Files.readAllBytes(turn.perTurnManifestPath()), profile);
         Path output = newDirectory.resolve("acquisition.json"); write(output, NeutralJson.write(acquisition).getBytes(StandardCharsets.UTF_8));
-        Path expectation = newDirectory.resolve("assembly-expectation.json"); write(expectation, NeutralJson.write(CodexAcquisition.retainedExpectation()).getBytes(StandardCharsets.UTF_8));
+        // The frozen /1 profile pins the one-shot expectation it always pinned (stream-sourced fresh-turn totals, defective for a native
+        // thread total); the ordinary /2 profile pins the retained expectation (own final from token_usage_record).
+        Json spec = CodexRetainedGeneration.PROFILE.equals(profile) ? CodexAcquisition.expectation() : CodexAcquisition.retainedExpectation();
+        Path expectation = newDirectory.resolve("assembly-expectation.json"); write(expectation, NeutralJson.write(spec).getBytes(StandardCharsets.UTF_8));
         validate(acquisition, newDirectory);
         return new CodexAcquisition.Qualified(output, expectation);
     }

@@ -127,7 +127,7 @@ public final class CodexRetainedGeneration {
             prefix(t, transcript, covered);
             Map<String, byte[]> originals = originals(t, base);
             Json perTurn = perTurn(t, i, originals);
-            new CodexRetainedRegion(t, originals, session, cwd).read(Arrays.copyOfRange(transcript, (int) start, (int) covered));
+            new CodexRetainedRegion(t, originals, session, cwd, ORDINARY_PROFILE.equals(profile)).read(Arrays.copyOfRange(transcript, (int) start, (int) covered));
             usage(t, previousThreadUsage, profile);
             previousThreadUsage = t.member("thread_token_usage"); previousAfter = t.member("native_prefix_after");
             turns.add(new Turn(i, t, perTurn, resolve(base, string(t, "per_turn_manifest")), originals, start, covered));

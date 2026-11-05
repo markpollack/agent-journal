@@ -33,7 +33,7 @@ final class TerminalCodexProfile {
         require(occurrences.containsKey("acquisition.json"), "Codex acquisition not associated");
         require(occurrences.get("acquisition.json").member("stream").isNull(), "manifest is not a stream");
         Map<String, Jv> roles = sources(m, d, occurrences, retained);
-        TerminalCodexNative.validate(manifest.getParent(), m, roles, retained);
+        TerminalCodexNative.validate(manifest.getParent(), m, roles, retained, TerminalContract.CODEX_RETAINED_ORDINARY_PROFILE.equals(profile));
         if (retained) TerminalCodexRetained.validate(manifest.getParent(), m, profile); else require(m.member("retained_generation") == null, "one-shot Codex profile carries no thread");
     }
 

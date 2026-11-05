@@ -54,10 +54,11 @@ public final class CodexAcquisition {
      * because codex-cli 0.166.0 turn.completed carries the thread's cumulative usage on a resumed turn (native probe 2026-11-04). */
     static Json retainedExpectation() throws IOException { return resource("/ocsf/qualification/codex-cli-0.166.0-retained.json"); }
 
-    /** Exact historical text and current singleton/retained profiles remain separate verification contracts. */
-    static Json expectation(String profileVersion, String extensionVersion, boolean retained) throws IOException {
-        if ("0.2.0-prototype".equals(profileVersion) && "0.16.0-prototype".equals(extensionVersion)) return retained ? retainedExpectation() : expectation();
-        if (!retained && "0.1.0-prototype".equals(profileVersion) && "0.15.0-prototype".equals(extensionVersion)) {
+    /** Exact historical text and current singleton/retained profiles remain separate verification contracts; {@code ordinaryRetained}
+     * selects the retained expectation of the /2 profile, while the one-shot and the frozen retained /1 profile keep the original. */
+    static Json expectation(String profileVersion, String extensionVersion, boolean ordinaryRetained) throws IOException {
+        if ("0.2.0-prototype".equals(profileVersion) && "0.16.0-prototype".equals(extensionVersion)) return ordinaryRetained ? retainedExpectation() : expectation();
+        if (!ordinaryRetained && "0.1.0-prototype".equals(profileVersion) && "0.15.0-prototype".equals(extensionVersion)) {
             return resource("/ocsf/qualification/codex-cli-0.166.0-profile-0.1.json");
         }
         throw new IllegalArgumentException("unsupported Codex profile/schema combination");

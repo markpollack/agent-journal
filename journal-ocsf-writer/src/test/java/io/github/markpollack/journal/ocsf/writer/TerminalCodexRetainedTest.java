@@ -87,12 +87,25 @@ class TerminalCodexRetainedTest {
         }
     }
 
-    @Test void twoTurnThreadAttachesUnderTheFrozenProfileInAnyPublicationOrder() throws Exception { eachTurnAttachesAndReadsBack(THREAD, CODEX_RETAINED_PROFILE, List.of(1, 0)); }
+    /** Frozen /1: the pre-probe emulated thread (af88650 fixture bytes) attaches in any publication order and reads exit 0, exactly as before. */
+    @Test void frozenProfileAttachesThePreProbeEmulatedThreadInAnyPublicationOrder() throws Exception { eachTurnAttachesAndReadsBack(EMULATED, CODEX_RETAINED_PROFILE, List.of(1, 0)); }
+
+    /** Frozen /1 pins the one-shot expectation it always pinned: a native-shaped resumed turn (thread total on stdout) is admitted by the
+     * receiver but its fresh-turn accounting reads DEFECTIVE, the af88650 loud failure; the ordinary /2 profile is where native shapes belong. */
+    @Test void frozenProfileReadsANativeShapedResumedTurnAsDefectiveAccountingAsAtAf88650() throws Exception {
+        Path store = temp.resolve("store-native-under-frozen"); TerminalReceiver receiver = new TerminalReceiver(store, "producer", WriterOptions.defaults());
+        String initial = receiver.receive(envelopeFor(THREAD, 1, CODEX_RETAINED_PROFILE), temp);
+        var qualified = CodexRetainedAcquisition.qualify(THREAD, executions(THREAD).get(1), temp.resolve("q-native-frozen"), CODEX_RETAINED_PROFILE); Path root = qualified.manifest().getParent();
+        assertThat(Files.readString(qualified.assemblyExpectation())).doesNotContain("Retained Codex turn");
+        String ack = receiver.receiveRevision(Jv.parse(initial).member("bindingId").text(), bytes(completeFor(THREAD, 1, root)), root);
+        var pkg = PackageReader.open(events(store, ack)); Path sources = events(store, ack).getParent().resolve("sources");
+        var report = new AcquisitionVerification().verify(pkg, sources, sources.resolve("acquisition.json"), qualified.assemblyExpectation());
+        assertThat(report.defects()).anyMatch(d -> d.toString().contains("assembly.accounting.fresh-turn"));
+        assertThat(OcsfReaderTool.acceptance(report).exit()).isNotZero();
+    }
 
     @Test void twoTurnThreadAttachesUnderTheOrdinaryProfile() throws Exception { eachTurnAttachesAndReadsBack(THREAD, CODEX_RETAINED_ORDINARY_PROFILE, List.of(0, 1)); }
 
-    /** Owner continuation C2 (2026-11-05): frozen /1 acceptance of the pre-probe emulated thread, exactly as before, through receiver and independent readers. */
-    @Test void frozenProfileStillAttachesThePreProbeEmulatedThread() throws Exception { eachTurnAttachesAndReadsBack(EMULATED, CODEX_RETAINED_PROFILE, List.of(1, 0)); }
 
     @Test void threeTurnThreadAttachesEveryTurnToItsOwnDecisionUnderTheOrdinaryProfile() throws Exception { eachTurnAttachesAndReadsBack(THREE, CODEX_RETAINED_ORDINARY_PROFILE, List.of(2, 0, 1)); }
 
@@ -109,13 +122,14 @@ class TerminalCodexRetainedTest {
     /** Independent review finding 1 (2026-11-05): admission must validate every turn of the thread, not only the selected one. */
     @Test void receiverRefusesAThreadWhoseUnselectedTurnIsInvalid() throws Exception {
         List<String> executions = executions(THREE);
-        for (String fault : List.of("usage", "resume", "prefix")) {
+        for (String fault : List.of("usage", "resume", "prefix", "closure")) {
             var q = CodexRetainedAcquisition.qualify(THREE, executions.get(0), temp.resolve("u-" + fault), CODEX_RETAINED_ORDINARY_PROFILE); Path root = q.manifest().getParent();
             mutateGeneration(root, g -> { Jv.Obj third = (Jv.Obj) g.member("turns").elements().get(2);
                 switch (fault) {
                     case "usage" -> { Jv doubled = Jv.parse("{\"input_tokens\":48,\"cached_input_tokens\":16,\"cache_write_input_tokens\":0,\"output_tokens\":20,\"reasoning_output_tokens\":0,\"total_tokens\":68}"); third.put("thread_token_usage", doubled).put("total_token_usage", doubled); }
                     case "resume" -> third.put("resume_thread_id", "00000000-0000-4000-8000-000000000000");
                     case "prefix" -> third.put("native_prefix_after", g.member("turns").elements().get(0).member("native_prefix_after"));
+                    case "closure" -> third.put("stdout_natural_eof", false);
                     default -> throw new AssertionError(fault);
                 } });
             TerminalReceiver receiver = new TerminalReceiver(temp.resolve("store-u-" + fault), "producer", WriterOptions.defaults());

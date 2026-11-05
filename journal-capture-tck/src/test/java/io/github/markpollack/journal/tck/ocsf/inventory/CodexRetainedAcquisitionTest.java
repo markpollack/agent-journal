@@ -116,6 +116,8 @@ class CodexRetainedAcquisitionTest {
         assertThat(turn.member("thread_token_usage").member("input_tokens").text()).isEqualTo(Long.toString(threadInput));
         assertThat(turn.member("turn_token_usage").member("input_tokens").text()).isEqualTo(Long.toString(turnInput));
         CodexRetainedAcquisition.validate(acquisition, out); CodexAcquisitionReading.validate(out.resolve("acquisition.json"));
+        String expectation = Files.readString(out.resolve("assembly-expectation.json")); // frozen /1 pins the one-shot expectation, ordinary /2 the retained one
+        if (PROFILE.equals(profile)) assertThat(expectation).doesNotContain("Retained Codex turn"); else assertThat(expectation).contains("Retained Codex turn");
         assertThat(out.resolve("generation/codex-thread.original.json")).hasSameBinaryContentAs(copy.dir.resolve("codex-thread.json"));
         assertThat(Json.sameValue(NeutralJson.readDocument(out.resolve("generation/codex-thread.json")), NeutralJson.readDocument(copy.dir.resolve("codex-thread.json")))).isTrue(); // already relative
         assertThat(out.resolve("generation/turn-" + i + "/native.bin")).hasSameBinaryContentAs(copy.dir.resolve("turn-" + i + "/native.bin"));
@@ -134,6 +136,11 @@ class CodexRetainedAcquisitionTest {
         assertThatThrownBy(() -> CodexAcquisition.qualify(dir.resolve("turn-1/codex-acquisition.json"), oneShot)).isInstanceOf(IllegalArgumentException.class);
         assertThat(oneShot).doesNotExist();
         assertThatThrownBy(() -> copy.validate("client-terminal-codex-retained-0.166.0/9")).isInstanceOf(Rejection.class).hasMessageContaining("unsupported retained profile");
+        // Follow-up review finding 2 (2026-11-05): an ownerless thread_settings_applied is refused under /2 (native 0.166.0 always reports thread_id) and admitted under frozen /1.
+        Copy ownerless = new Copy(Files.createDirectory(dir.resolve("ownerless")), FIXTURE);
+        ownerless.transcript = swap(ownerless.transcript, "\"thread_id\": \"" + N + "\", \"thread_settings\"", "\"thread_ix\": \"" + N + "\", \"thread_settings\""); ownerless.rehash(); // same length: locators stay whole records
+        assertThatThrownBy(() -> ownerless.validate(ORDINARY_PROFILE)).isInstanceOf(Rejection.class).hasMessageContaining("requires thread_id on thread_settings_applied");
+        assertThat(ownerless.validate(PROFILE).turns()).hasSize(2);
     }
 
     /** Owner continuation C2 (2026-11-05): the frozen /1 profile accepts the evidence it accepted before the native probe, exactly as before;
@@ -149,7 +156,7 @@ class CodexRetainedAcquisitionTest {
             assertThat(acquisition.member("wire_usage_scope").text()).as("the emulated resumed turn reports a per-turn stdout figure").isEqualTo("per-turn");
             CodexRetainedAcquisition.validate(acquisition, out); CodexAcquisitionReading.validate(out.resolve("acquisition.json"));
         }
-        assertThatThrownBy(() -> copy.validate(ORDINARY_PROFILE)).isInstanceOf(Rejection.class).hasMessageContaining("resumed turn wire usage is not the thread cumulative figure");
+        assertThatThrownBy(() -> copy.validate(ORDINARY_PROFILE)).isInstanceOf(Rejection.class).hasMessageContaining("ordinary profile requires thread_id on thread_settings_applied"); // the first /2 rule the emulated shape breaks; its per-turn resumed usage is refused by the /2 wire rule in the third-turn controls
         Path ordinary = dir.resolve("ordinary"); String resumed = copy.execution(1);
         assertThatThrownBy(() -> CodexRetainedAcquisition.qualify(dir.resolve("codex-thread.json"), resumed, ordinary, ORDINARY_PROFILE)).isInstanceOf(Rejection.class);
         assertThat(ordinary).doesNotExist();

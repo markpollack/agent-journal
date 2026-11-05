@@ -12,11 +12,12 @@ import static io.github.markpollack.journal.tck.ocsf.TerminalReading.*;
 
 /** One turn's contiguous rollout region: lifecycle population, foreign identities, prompt membership and usage witnesses. */
 final class CodexRetainedRegion {
-    private final Json t; private final Map<String, byte[]> originals; private final String session, cwd, turn, prompt;
+    private final Json t; private final Map<String, byte[]> originals; private final String session, cwd, turn, prompt; private final boolean ordinary;
     private int started, completed, contexts, prompts; private Json usageRecord, lastTotal;
 
-    CodexRetainedRegion(Json t, Map<String, byte[]> originals, String session, String cwd) {
-        this.t = t; this.originals = originals; this.session = session; this.cwd = cwd;
+    /** {@code ordinary} applies the native-observed shapes of the /2 profile (codex-cli 0.166.0 probe, 2026-11-04); the frozen /1 profile admits what it admitted. */
+    CodexRetainedRegion(Json t, Map<String, byte[]> originals, String session, String cwd, boolean ordinary) {
+        this.t = t; this.originals = originals; this.session = session; this.cwd = cwd; this.ordinary = ordinary;
         turn = string(t, "native_turn_uid"); prompt = new String(originals.get("STDIN"), StandardCharsets.UTF_8);
         require(!prompt.isBlank(), Verdict.REFUSED, "blank prompt");
     }
@@ -59,6 +60,7 @@ final class CodexRetainedRegion {
             case "task_started" -> { started++; expect(p, "turn_id", turn); }
             case "task_complete" -> { completed++; expect(p, "turn_id", turn); require(p.member("error") == null || p.member("error").isNull(), Verdict.REFUSED, "native completion error"); }
             case "token_count" -> lastTotal = p.path("info", "total_token_usage");
+            case "thread_settings_applied" -> require(!ordinary || present(p, "thread_id"), Verdict.REFUSED, "ordinary profile requires thread_id on thread_settings_applied (codex-cli 0.166.0 reports it)");
             case "turn_aborted", "task_failed", "error" -> throw new Rejection(Verdict.REFUSED, "failed native turn", null);
             default -> { }
         }

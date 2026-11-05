@@ -63,10 +63,18 @@ final class TerminalCodexRetained {
             for (String key : List.of("execution_id", "connection_id", "native_turn_uid")) require(identities.add(key + "=" + text(t, key)), "Codex turn identity reused");
             if (i == 0) require(t.member("resume_thread_id") == null || t.member("resume_thread_id").isNull(), "Codex first turn declares a resumed thread");
             else equal(t, "resume_thread_id", session);
+            closure(t);
             Jv after = t.member("native_prefix_after");
             require(number(after, "bytes") == regions[i][1] && text(after, "sha256").equals(SchemaPin.sha256(Arrays.copyOf(transcript, (int) regions[i][1]))), "Codex after-prefix differs from region end");
             arithmetic(t, previous, ordinary); previous = t.member("thread_token_usage");
         }
+    }
+
+    /** Every turn's own closure (follow-up review finding 1, 2026-11-05), not only the selected acquisition's process. */
+    private static void closure(Jv t) {
+        for (String key : List.of("complete", "stdin_closed", "stdout_natural_eof", "stderr_natural_eof", "observed_resources_terminated"))
+            require(t.member(key) instanceof Jv.Bool b && b.value(), "Codex turn closure not observed: " + key);
+        require(number(t, "exit_code") == 0 && t.member("pids") instanceof Jv.Arr, "Codex turn process failed");
     }
 
     /** The frozen /1 profile admits either stdout figure (recorded as the scope observation), exactly as before; the ordinary /2 profile

@@ -17,11 +17,12 @@ import static io.github.markpollack.journal.ocsf.writer.TerminalCodexProfile.req
 final class TerminalCodexNative {
     private static final List<String> COMPONENTS = List.of("input_tokens", "cached_input_tokens", "cache_write_input_tokens", "output_tokens", "reasoning_output_tokens");
     private TerminalCodexNative() { }
-    static void validate(Path base, Jv m, Map<String, Jv> roles) throws IOException { validate(base, m, roles, false); }
+    static void validate(Path base, Jv m, Map<String, Jv> roles) throws IOException { validate(base, m, roles, false, false); }
 
     /** A retained turn's projection is one turn's rollout view; its stdout usage is compared with the declared
-     * per-turn and cumulative native usage, never assumed equal to the thread total. */
-    static void validate(Path base, Jv m, Map<String, Jv> roles, boolean retained) throws IOException {
+     * per-turn and cumulative native usage, never assumed equal to the thread total. {@code ordinary} applies the native-observed
+     * shapes of the /2 profile (a thread_settings_applied record must carry thread_id); the frozen /1 profile admits what it admitted. */
+    static void validate(Path base, Jv m, Map<String, Jv> roles, boolean retained, boolean ordinary) throws IOException {
         Jv declared = array(m, "turns").get(0);
         String session = text(m.member("run"), "session_uid"), turn = text(declared, "native_turn_uid");
         List<Jv> stream = rows(base, roles.get("stream")), nativeRows = rows(base, roles.get("transcript"));
@@ -32,6 +33,7 @@ final class TerminalCodexNative {
         usage(declared.member("wire_usage"), usage);
         require(scope(declared) != null && scope(declared).equals(text(m, "wire_usage_scope")), "Codex wire usage scope differs from declaration");
         nativeSource(nativeRows, session, turn, text(m.member("process"), "cwd"), prompt, declared.member("thread_token_usage"));
+        if (ordinary) for (Jv row : nativeRows) if ("thread_settings_applied".equals(optional(row.member("payload"), "type"))) require(row.member("payload").member("thread_id") != null && !row.member("payload").member("thread_id").isNull(), "Codex ordinary profile requires thread_id on thread_settings_applied");
     }
     static String scope(Jv turn) {
         Jv wire = turn.member("wire_usage");

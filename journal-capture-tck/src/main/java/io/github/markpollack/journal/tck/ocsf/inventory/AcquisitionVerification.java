@@ -1,5 +1,6 @@
 package io.github.markpollack.journal.tck.ocsf.inventory;
 
+import io.github.markpollack.journal.tck.ocsf.CodexRetainedGeneration;
 import io.github.markpollack.journal.tck.ocsf.AcquisitionVerifier;
 import io.github.markpollack.journal.tck.ocsf.ExpectedSources;
 import io.github.markpollack.journal.tck.ocsf.NativeArtifact;
@@ -61,8 +62,8 @@ public final class AcquisitionVerification implements AcquisitionVerifier {
             if (CodexAcquisition.PROFILE_ID.equals(text(inputs.manifest, "profile_id"))) {
                 Json profile = pkg.declarations == null ? null : pkg.declarations.assembly();
                 String revision = RawInventory.text(profile, "profile", "version");
-                boolean retained = inputs.manifest.member("retained_generation") != null;
-                require(Json.sameValue(spec, CodexAcquisition.expectation(revision, pkg.manifest.extensionVersion(), retained)), "qualified Codex expectation changed");
+                boolean ordinary = inputs.manifest.member("retained_generation") != null && CodexRetainedGeneration.ORDINARY_PROFILE.equals(text(inputs.manifest, "retained_profile"));
+                require(Json.sameValue(spec, CodexAcquisition.expectation(revision, pkg.manifest.extensionVersion(), ordinary)), "qualified Codex expectation changed");
             }
             if (ClaudeAcquisition.PROFILE_ID.equals(text(inputs.manifest, "profile_id"))) {
                 require(Json.sameValue(spec, ClaudeAcquisition.expectation()), "qualified assembly expectation changed");
