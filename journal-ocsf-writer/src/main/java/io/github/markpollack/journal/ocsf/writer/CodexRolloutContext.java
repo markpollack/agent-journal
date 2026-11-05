@@ -15,7 +15,7 @@ final class CodexRolloutContext {
             declarations(record, ctx, p, turn); return true;
         }
         if ("event_msg".equals(type) && "thread_settings_applied".equals(kind)) {
-            settings(record, ctx, p); return true;
+            return settings(record, ctx, p);
         }
         boolean response = "response_item".equals(type) && "reasoning".equals(kind);
         boolean completed = "event_msg".equals(type) && "item_completed".equals(kind) && "Reasoning".equals(text(p, "item", "type"));
@@ -53,17 +53,21 @@ final class CodexRolloutContext {
         out.add(definition);
     }
 
-    private static void settings(NativeRecord r, SourceContext ctx, Jv p) {
+    /** Native 0.166.0 reports thread_id and thread_settings on every thread_settings_applied record, fresh and resumed (probe 2026-11-04);
+     * a record without thread identity is retained whole by the fallback and nothing is inferred about its owner. */
+    private static boolean settings(NativeRecord r, SourceContext ctx, Jv p) {
+        String thread = text(p, "thread_id");
+        if (thread == null) return false;
         Jv s = p.member("thread_settings");
         Jv.Obj settings = s == null ? new Jv.Obj() // the record reports no settings; nothing is invented
                 : new Jv.Obj().put("working_directory", text(s, "cwd")).put("model", text(s, "model"))
-                .put("provider", text(s, "model_provider_id")).put("approval_policy", text(s, "approval_policy")).put("reasoning_effort", text(s, "reasoning_effort"));
+                .put("provider", text(s, "model_provider_id")).put("approval_policy", text(s, "approval_policy"))
+                .put("reasoning_effort", text(s, "collaboration_mode", "settings", "reasoning_effort"));
         ctx.family("event_msg/thread_settings_applied", r.raw().length, "normalized: reported thread settings; other native settings retained exactly");
-        String thread = text(p, "thread_id"); // PROVISIONAL (fixture-observed only, pending the native resume probe): a payload without thread_id belongs to the file's one thread
-        Jv.Obj ev = event(r, ctx, "session_context", 1, "codex.rollout.thread_settings_applied->session_context.settings", null)
-                .put("session_uid", thread != null ? thread : ctx.run.sessionUid()).put("context_kind", "thread_settings_applied").put("settings", settings);
-        if (thread == null) ev.put("basis", "codex.rollout.thread_settings_applied.v1 PROVISIONAL: payload carries no thread_id; the rollout file's session identity applies; shape observed only in a synthetic resume, pending the native probe");
-        ctx.emit(ev);
+        ctx.emit(event(r, ctx, "session_context", 1, "codex.rollout.thread_settings_applied->session_context.settings", null)
+                .put("session_uid", thread).put("context_kind", "thread_settings_applied").put("settings", settings)
+                .put("basis", "codex.rollout.thread_settings_applied.v2: thread_id names the owning thread; reasoning_effort is the collaboration_mode setting in force (null when unset)"));
+        return true;
     }
 
     private static void reasoning(NativeRecord r, SourceContext ctx, Jv p, boolean response) {

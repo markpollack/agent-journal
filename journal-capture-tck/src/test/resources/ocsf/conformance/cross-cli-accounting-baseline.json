@@ -1,8 +1,12 @@
 {
   "kind": "agent-journal/cross-cli-accounting-baseline",
-  "version": "0.16",
+  "version": "0.17",
   "meaning": "Exact executed accounting population and dependency snapshot. Declared checker assignments remain separate from attributed Check outcomes. Pins native occurrences and classifications, source/specification bindings, E requirements, actual assertion outcomes, comparison operand digests and non-passing findings. An edit is a reviewable implementation result, never semantic approval. Unresolved meanings and unsupported versions remain non-passing. Required unchecked comparisons cannot be frozen by this ratchet.",
   "changes": [
+    {
+      "revision": "0.17 (Codex retained ordinary profile and native-probe corrections, 2026-11-05)",
+      "summary": "Restate the journal-capture-tck/src/main, src/test/java and journal-ocsf-writer/src/main dependency digests after: the ordinary Codex retained profile client-terminal-codex-retained-0.166.0/2 (any sealed turn count; the frozen /1 keeps exactly two turns) in CodexRetainedGeneration, CodexRetainedAcquisition (explicit profile argument), CodexRetainedReading, the TCK terminal readers and the writer TerminalContract/TerminalCodexProfile/TerminalCodexRetained; the qualifier containment root widened to the capture root holding the thread directory (Client per-turn directories are siblings); the explicit reasoning-effort launch requirement removed from CodexAcquisitionReading and TerminalCodexProfile (the native settings records report effort, null when unset); the two formerly PROVISIONAL rollout rules decided by the frozen native codex-cli 0.166.0 resume probe of 2026-11-04 (bare thread_settings_applied ownership removed, a record without thread_id stays an unresolved fallback; own-turn final with thread-scope totals confirmed); the resumed-turn wire usage required to be the thread cumulative figure; the retained assembly expectation codex-cli-0.166.0-retained.json taking the turn's own final from token_usage_record; the corrected two-turn fixture and the new labelled SYNTHETIC three-turn fixture syn-codex-retained-3turn-0.166.0. One-shot output is unchanged: no assertion, comparison population, native occurrence, source, catalog, checker, non-passing check, extension or schema digest changed; the ledger is otherwise line-identical to 0.16. A restated dependency digest is not semantic approval; native qualification of the probe specimen is recorded separately in the steward."
+    },
     {
       "revision": "0.16 (Codex retained thread qualification, 2026-11-04)",
       "summary": "Restate the journal-capture-tck/src/main, src/test/java and journal-ocsf-writer/src/main dependency digests after the Codex retained thread kind/profile (CodexRetainedGeneration, CodexRetainedAcquisition, writer TerminalCodexRetained and retained admission in TerminalCodexProfile/TerminalCodexNative/CodexOriginalQualification, TCK readers) and its labelled synthetic fixture syn-codex-retained-0.166.0 were added, together with two PROVISIONAL data-driven rollout rules exercised only by a resumed thread (bare thread_settings_applied ownership with empty settings; own-turn final usage with thread-scope totals when the thread total differs from the turn's own usage), mirrored in the rollout oracle. One-shot output is unchanged: no assertion, comparison population, native occurrence, source, catalog, checker, non-passing check, extension or schema digest changed; the ledger is otherwise line-identical to 0.15. A restated dependency digest is not semantic approval and no native/provider qualification is implied."
@@ -753,12 +757,12 @@
     "comparison-population syn-codex-exec-turn-failed-0.160.1 main/stream.jsonl 217 sha256:72433f46fc0f12c0637ad0e29bb9e92c293806199df0a991a9cc029d2b624394",
     "comparison-population syn-codex-onboarding-exec-0.166.0 main/stream.jsonl 408 sha256:fa6b0f5cb023c466ceba9344981359156c012d2c4287693aefc6a3a6481dfebf",
     "comparison-population syn-codex-onboarding-rollout-0.166.0 main/stream.jsonl 1672 sha256:2a996718d030f3b1882b5915df2f88267d0d8501a27700dfbae6c842129d74cb",
-    "dependency journal-capture-tck/src/main sha256:74e4a2e172894f73987e298b0d3dd17bd75f19b28c0311047f0de9a84bc842a5",
-    "dependency journal-capture-tck/src/test/java sha256:3e665dee13025dbb1bbe0676520b1be67c45f0ab1690c9018c732c30e9c1c53a",
+    "dependency journal-capture-tck/src/main sha256:f5715ca8517b818ea0898767b0e3755034ed1c93523978c8fce2b10a67013566",
+    "dependency journal-capture-tck/src/test/java sha256:a8b1b282830e164606e9ce7d543aad34728a06495882d57449a94e6f844e2462",
     "dependency journal-capture-tck/src/test/resources/ocsf/conformance sha256:197e677ebb73d7d22fc6a9e32f4e43ff4c82a4f8e5f5dbf9d62f2196a94c34f1",
     "dependency journal-capture-tck/src/test/resources/ocsf/fixtures sha256:64020b8236b60d5ab477b40cf44430af408658f960478939fb7c1e444c048d0b",
     "dependency journal-capture-tck/src/test/resources/ocsf/mapping-catalog sha256:3666ba8cb3cff5a7e9d6b2e1bd88fe525fd4efbf89f337f45f70389647d8546b",
-    "dependency journal-ocsf-writer/src/main sha256:20eea0a8d5adaab6023bf1120da68a22d69fec9e6d9d298e3d8eb2e47062e966",
+    "dependency journal-ocsf-writer/src/main sha256:d2857cfed7e902a6e26d1298de2d1935dc51416ceff3fcc187431251d7162488",
     "dependency prototype/ocsf-acp/extension sha256:2239224ca7ac92f281c59b3a4b1bfa45be9721e076d2674b643e1cdbb49c6d7d",
     "dependency prototype/ocsf-acp/toolchain.lock.json sha256:d91ea93f63b0d52b3200ccfbe81dde06e991922e4ff20734fd0e83e407755fab",
     "dependency schema/vendor sha256:b49621bb95b76fe39cb4dacc29fd4316d1348f4eeb226d7dba143e840e61d304",

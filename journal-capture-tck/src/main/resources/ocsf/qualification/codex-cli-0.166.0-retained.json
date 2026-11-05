@@ -1,0 +1,172 @@
+{
+  "kind": "agent-journal/assembly-expectation",
+  "version": "0.1",
+  "written": {
+    "basis": "Retained Codex turn (one turn of a sealed thread read through its single-turn projection): the turn's own final usage is the rollout token_usage_record turn_token_usage, because codex-cli 0.166.0 turn.completed carries the thread's cumulative usage on a resumed turn (native probe 2026-11-04); the stream figure is checked as the thread total. The thread total (stream turn.completed usage == thread_token_usage == token_count total) is enforced by the retained qualifier and receiver before assembly; the stream observation is superseded by the transcript authority in the assembled file, so it has no canonical counterpart here."
+  },
+  "profile_id": "codex-cli/0.166.0/exec-stdio+rollout",
+  "precedence": [
+    "transcript",
+    "stream"
+  ],
+  "sources": [
+    {
+      "role": "stream",
+      "requirement": "required",
+      "session": [
+        {
+          "select": {
+            "/type": "thread.started"
+          },
+          "pointer": "/thread_id"
+        }
+      ]
+    },
+    {
+      "role": "transcript",
+      "requirement": "required",
+      "session": [
+        {
+          "select": {
+            "/type": "session_meta"
+          },
+          "pointer": "/payload/id"
+        }
+      ]
+    }
+  ],
+  "entities": [
+    {
+      "name": "qualified-fresh-completion",
+      "class": "prompt_turn",
+      "activities": [
+        2
+      ],
+      "locators": {
+        "stream": {
+          "select": {
+            "/type": "turn.completed"
+          },
+          "constant": "qualified-fresh-turn"
+        },
+        "transcript": {
+          "select": {
+            "/type": "event_msg",
+            "/payload/type": "task_complete"
+          },
+          "constant": "qualified-fresh-turn"
+        }
+      }
+    }
+  ],
+  "totals": [
+    {
+      "name": "fresh-turn-cache_read_tokens",
+      "native": {
+        "transcript": {
+          "locator": {
+            "select": {
+              "/type": "token_usage_record"
+            },
+            "constant": "qualified-fresh-turn"
+          },
+          "value": "/payload/turn_token_usage/cached_input_tokens"
+        }
+      },
+      "canonical": {
+        "class": "prompt_turn",
+        "constant": "qualified-fresh-turn",
+        "array": "usage_observations",
+        "where": {
+          "scope_id": 3,
+          "usage_status_id": 2
+        },
+        "member": "cache_read_tokens",
+        "reject_duplicate_identity": true
+      }
+    },
+    {
+      "name": "fresh-turn-cache_write_tokens",
+      "native": {
+        "transcript": {
+          "locator": {
+            "select": {
+              "/type": "token_usage_record"
+            },
+            "constant": "qualified-fresh-turn"
+          },
+          "value": "/payload/turn_token_usage/cache_write_input_tokens"
+        }
+      },
+      "canonical": {
+        "class": "prompt_turn",
+        "constant": "qualified-fresh-turn",
+        "array": "usage_observations",
+        "where": {
+          "scope_id": 3,
+          "usage_status_id": 2
+        },
+        "member": "cache_write_tokens",
+        "reject_duplicate_identity": true
+      }
+    },
+    {
+      "name": "fresh-turn-output_tokens",
+      "native": {
+        "transcript": {
+          "locator": {
+            "select": {
+              "/type": "token_usage_record"
+            },
+            "constant": "qualified-fresh-turn"
+          },
+          "value": "/payload/turn_token_usage/output_tokens"
+        }
+      },
+      "canonical": {
+        "class": "prompt_turn",
+        "constant": "qualified-fresh-turn",
+        "array": "usage_observations",
+        "where": {
+          "scope_id": 3,
+          "usage_status_id": 2
+        },
+        "member": "output_tokens",
+        "reject_duplicate_identity": true
+      }
+    },
+    {
+      "name": "fresh-turn-reasoning_tokens",
+      "native": {
+        "transcript": {
+          "locator": {
+            "select": {
+              "/type": "token_usage_record"
+            },
+            "constant": "qualified-fresh-turn"
+          },
+          "value": "/payload/turn_token_usage/reasoning_output_tokens"
+        }
+      },
+      "canonical": {
+        "class": "prompt_turn",
+        "constant": "qualified-fresh-turn",
+        "array": "usage_observations",
+        "where": {
+          "scope_id": 3,
+          "usage_status_id": 2
+        },
+        "member": "reasoning_tokens",
+        "reject_duplicate_identity": true
+      }
+    }
+  ],
+  "authorities": [
+    {
+      "class": "prompt_turn",
+      "pointer": "/usage_observations",
+      "role": "transcript",
+      "mode": "whole-field"
+    }
+  ]
+}

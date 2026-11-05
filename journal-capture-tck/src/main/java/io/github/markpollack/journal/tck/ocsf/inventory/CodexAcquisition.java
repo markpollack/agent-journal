@@ -50,11 +50,14 @@ public final class CodexAcquisition {
 
     static void validate(Json manifest, Path base) throws IOException { CodexAcquisitionReading.read(manifest, base); }
     static Json expectation() throws IOException { return resource("/ocsf/qualification/codex-cli-0.166.0.json"); }
+    /** One retained turn read through its single-turn projection: the turn's own final usage comes from the rollout token_usage_record,
+     * because codex-cli 0.166.0 turn.completed carries the thread's cumulative usage on a resumed turn (native probe 2026-11-04). */
+    static Json retainedExpectation() throws IOException { return resource("/ocsf/qualification/codex-cli-0.166.0-retained.json"); }
 
-    /** Exact historical text and current singleton profiles remain separate verification contracts. */
-    static Json expectation(String profileVersion, String extensionVersion) throws IOException {
-        if ("0.2.0-prototype".equals(profileVersion) && "0.16.0-prototype".equals(extensionVersion)) return expectation();
-        if ("0.1.0-prototype".equals(profileVersion) && "0.15.0-prototype".equals(extensionVersion)) {
+    /** Exact historical text and current singleton/retained profiles remain separate verification contracts. */
+    static Json expectation(String profileVersion, String extensionVersion, boolean retained) throws IOException {
+        if ("0.2.0-prototype".equals(profileVersion) && "0.16.0-prototype".equals(extensionVersion)) return retained ? retainedExpectation() : expectation();
+        if (!retained && "0.1.0-prototype".equals(profileVersion) && "0.15.0-prototype".equals(extensionVersion)) {
             return resource("/ocsf/qualification/codex-cli-0.166.0-profile-0.1.json");
         }
         throw new IllegalArgumentException("unsupported Codex profile/schema combination");

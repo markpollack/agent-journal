@@ -17,8 +17,10 @@ import java.util.Set;
 import static io.github.markpollack.journal.tck.ocsf.TerminalReading.*;
 
 /** Independent validation of a Client thread-level Codex retained generation
- * ({@value #KIND}): one rollout, exactly two sealed exec turns, each turn its own process
+ * ({@value #KIND}): one rollout, sealed exec turns read sequentially, each turn its own process
  * (a replacement process resumes the same native thread; PID continuity is never the identity).
+ * The frozen profile {@value #PROFILE} bounds the thread to exactly two turns; the ordinary profile
+ * {@value #ORDINARY_PROFILE} admits any turn count under the same per-turn rules.
  * Every rollout byte is partitioned into the shared {@code session_meta} line and per-turn
  * regions by whole-line locators; per-turn originals, prefix continuity, emitted identity,
  * region membership and cumulative usage arithmetic are checked from original bytes.
@@ -26,8 +28,12 @@ import static io.github.markpollack.journal.tck.ocsf.TerminalReading.*;
  */
 public final class CodexRetainedGeneration {
     public static final String KIND = "journal-codex-retained-generation/1";
+    /** Frozen bounded profile: exactly two sealed turns; its rules do not change. */
     public static final String PROFILE = "client-terminal-codex-retained-0.166.0/1";
-    static final List<String> USAGE = List.of("input_tokens", "cached_input_tokens", "cache_write_input_tokens", "output_tokens", "reasoning_output_tokens");
+    /** Ordinary retained profile: a sealed thread of any turn count, the same rules applied per turn. */
+    public static final String ORDINARY_PROFILE = "client-terminal-codex-retained-0.166.0/2";
+    public static final Set<String> PROFILES = Set.of(PROFILE, ORDINARY_PROFILE);
+    public static final List<String> USAGE = List.of("input_tokens", "cached_input_tokens", "cache_write_input_tokens", "output_tokens", "reasoning_output_tokens");
     private static final Set<String> FORBIDDEN = Set.of("fork", "--ephemeral", "--last");
     private CodexRetainedGeneration() { }
 
@@ -66,19 +72,21 @@ public final class CodexRetainedGeneration {
         }
     }
 
-    public static RetainedThread validate(Json m, Path base) throws IOException {
-        try { return read(m, base); }
+    public static RetainedThread validate(Json m, Path base, String profile) throws IOException {
+        try { return read(m, base, profile); }
         catch (Rejection r) { throw r; }
         catch (IllegalArgumentException e) { throw new Rejection(Verdict.REFUSED, e.getMessage(), e); }
     }
 
-    private static RetainedThread read(Json m, Path base) throws IOException {
+    private static RetainedThread read(Json m, Path base, String profile) throws IOException {
+        require(PROFILES.contains(profile), Verdict.REFUSED, "unsupported retained profile");
         expect(m, "kind", KIND); expect(m, "cli_version", "0.166.0");
         require(m.member("sealed") instanceof Json.JBool b && b.value(), Verdict.INCOMPLETE, "thread not sealed");
         require(m.member("overflow") instanceof Json.JBool b && !b.value(), Verdict.INCOMPLETE, "thread overflow");
         require(string(m, "native_path").endsWith("-" + string(m, "native_session_id") + ".jsonl"), Verdict.REFUSED, "native path does not name the thread");
         Reader reader = new Reader(m, base, transcript(m, base));
-        List<Json> turns = array(m, "turns"); require(turns.size() == 2, Verdict.REFUSED, "bounded retained profile requires exactly two turns");
+        List<Json> turns = array(m, "turns"); require(!turns.isEmpty(), Verdict.REFUSED, "retained thread without turns");
+        require(!PROFILE.equals(profile) || turns.size() == 2, Verdict.REFUSED, "bounded retained profile requires exactly two turns");
         for (int i = 0; i < turns.size(); i++) reader.turn(i, turns.get(i));
         require(reader.covered == reader.transcript.length, Verdict.REFUSED, "rollout partition omits original bytes");
         return new RetainedThread(m, base, reader.transcript, reader.shared, List.copyOf(reader.turns));
@@ -237,9 +245,11 @@ public final class CodexRetainedGeneration {
             require(number(thread, key) - before == number(turn, key), Verdict.REFUSED, "cumulative usage arithmetic fails for " + key);
         }
         require(scope(t) != null, Verdict.REFUSED, "wire usage is neither per-turn nor cumulative");
+        require(previousThread == null || "cumulative".equals(scope(t)), Verdict.REFUSED, "resumed turn wire usage is not the thread cumulative figure");
     }
 
-    /** "per-turn" when stdout usage equals the native turn usage, "cumulative" when it equals the thread usage; an observation, not a claim. */
+    /** "per-turn" when stdout usage equals the native turn usage, "cumulative" when it equals the thread usage. On the first turn both
+     * coincide; on a resumed turn codex-cli 0.166.0 emits the thread total (native probe 2026-11-04), so only "cumulative" qualifies. */
     public static String scope(Json t) {
         Json wire = t.member("wire_usage");
         if (equal(wire, t.member("turn_token_usage"))) return "per-turn";
@@ -248,12 +258,14 @@ public final class CodexRetainedGeneration {
 
     private static boolean equal(Json a, Json b) { return USAGE.stream().allMatch(k -> number(a, k) == number(b, k)); }
 
-    /** Relative paths stay under the base; absolute paths are admitted only when they resolve inside the base. */
+    /** Relative paths resolve under the thread directory; absolute paths are admitted only inside the capture root that
+     * holds the thread directory, where the Client places the per-turn directories beside it. */
     static Path resolve(Path base, String text) throws IOException {
         Path real = base.toRealPath(), path = Path.of(text);
+        Path root = real.getParent() == null ? real : real.getParent();
         Path resolved = path.isAbsolute() ? path : real.resolve(path);
         require(!path.normalize().startsWith("..") && Files.isRegularFile(resolved), Verdict.INCOMPLETE, "referenced file missing: " + text);
-        require(resolved.toRealPath().startsWith(real), Verdict.REFUSED, "referenced file escapes the generation: " + text);
+        require(resolved.toRealPath().startsWith(root), Verdict.REFUSED, "referenced file escapes the capture root: " + text);
         return resolved.toRealPath();
     }
 

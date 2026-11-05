@@ -29,7 +29,10 @@ final class CodexOriginalQualification {
                     && number(turn.member("end_offsets"), span.getValue()) == number(roles.get(span.getKey()), "bytes"), "Codex whole stream scope required");
         }
         TerminalCodexNative.validate(base, m, roles, retained);
-        if (retained) TerminalCodexRetained.validate(base, m);
+        if (retained) {
+            String profile = text(m, "retained_profile"); require(TerminalContract.CODEX_RETAINED_PROFILES.contains(profile), "unsupported Codex retained profile");
+            TerminalCodexRetained.validate(base, m, profile);
+        }
     }
     private static Map<String, Jv> sources(Jv m, boolean retained) {
         Map<String, Jv> roles = new HashMap<>();

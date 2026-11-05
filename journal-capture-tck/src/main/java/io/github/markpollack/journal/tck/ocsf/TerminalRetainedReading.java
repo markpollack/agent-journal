@@ -25,7 +25,7 @@ final class TerminalRetainedReading {
         Json acquisition = file.run().path("launch_settings", "acquired_execution");
         Json generation = acquisition == null ? null : acquisition.member("retained_generation");
         if (!retained(envelope)) {
-            require(generation == null || CodexRetainedGeneration.PROFILE.equals(string(envelope, "profile")), "retained generation under wrong frozen profile"); return;
+            require(generation == null || CodexRetainedGeneration.PROFILES.contains(string(envelope, "profile")), "retained generation under wrong frozen profile"); return;
         }
         boolean fresh = FreshRetainedGeneration.PROFILE.equals(string(envelope, "profile"));
         require(generation instanceof Json.JObject, "retained generation missing");

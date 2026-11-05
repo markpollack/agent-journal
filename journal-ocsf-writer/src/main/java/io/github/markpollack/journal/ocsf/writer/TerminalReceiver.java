@@ -33,8 +33,10 @@ public final class TerminalReceiver {
     /** Opt-in fresh-transcript-start retained profile; the frozen retained profile above is unchanged. */
     public static final String FRESH_RETAINED_PROFILE = TerminalContract.FRESH_RETAINED_PROFILE;
     public static final String CODEX_PROFILE = TerminalCodexProfile.PROFILE;
-    /** Opt-in retained Codex profile: one turn of a sealed two-turn thread with its original per-process evidence. */
+    /** Frozen retained Codex profile: one turn of a sealed two-turn thread with its original per-process evidence. */
     public static final String CODEX_RETAINED_PROFILE = TerminalContract.CODEX_RETAINED_PROFILE;
+    /** Ordinary retained Codex profile: one turn of a sealed thread of any turn count, the same per-turn rules. */
+    public static final String CODEX_RETAINED_ORDINARY_PROFILE = TerminalContract.CODEX_RETAINED_ORDINARY_PROFILE;
     private final Path root;
     private final String namespace;
     private final WriterOptions options;

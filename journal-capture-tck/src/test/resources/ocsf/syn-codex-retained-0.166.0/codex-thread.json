@@ -10,11 +10,11 @@
   "role": "transcript",
   "path": "transcript.bin",
   "origin": "/home/mark/.local/state/client-retained-20261104/caller/proof-b74a262/sessions/rollout-fixture-a94e0250-c7a5-4bc3-adef-fcbef96582ac.jsonl",
-  "bytes": 6657,
-  "sha256": "99fb7c29134db7a9ba8f8d410d04d00ced28b708389893cf4abca7b31f659c75",
+  "bytes": 7397,
+  "sha256": "039462e41fc44b8d9d7dfaf047a534ff28a831b2f57c03ca9424864a801eda53",
   "last_sealed_prefix": {
-   "bytes": 6657,
-   "sha256": "99fb7c29134db7a9ba8f8d410d04d00ced28b708389893cf4abca7b31f659c75"
+   "bytes": 7397,
+   "sha256": "039462e41fc44b8d9d7dfaf047a534ff28a831b2f57c03ca9424864a801eda53"
   },
   "final_equals_last_sealed_prefix": true
  },
@@ -239,7 +239,7 @@
      "observed": 373,
      "role": "STDOUT",
      "natural_eof": true,
-     "sha256": "c59d1891a17f327f602f6ec70a8657073e54ddca84ab0488fb89038d6fa76062"
+     "sha256": "9fe6778599821735087dd3aaacc1a6f95eda8bb3981b69662ae231314bd50728"
     },
     {
      "path": "turn-1/stderr.bin",
@@ -253,15 +253,15 @@
    "per_turn_directory": "turn-1",
    "per_turn_manifest": "turn-1/codex-acquisition.json",
    "wire_usage": {
-    "input_tokens": 11,
-    "cached_input_tokens": 3,
+    "input_tokens": 22,
+    "cached_input_tokens": 6,
     "cache_write_input_tokens": 0,
-    "output_tokens": 4,
+    "output_tokens": 8,
     "reasoning_output_tokens": 0
    },
    "native_prefix_after": {
-    "bytes": 6657,
-    "sha256": "99fb7c29134db7a9ba8f8d410d04d00ced28b708389893cf4abca7b31f659c75"
+    "bytes": 7397,
+    "sha256": "039462e41fc44b8d9d7dfaf047a534ff28a831b2f57c03ca9424864a801eda53"
    },
    "native_records": {
     "first_line": 8,
@@ -271,49 +271,49 @@
      {
       "source": "TRANSCRIPT",
       "start": 3482,
-      "end": 3603,
-      "sha256": "c5ddb49c302f64b132ce6b2473f4527999789081c9384e21ae4a86d39bbdb645"
+      "end": 4343,
+      "sha256": "1ee52c942895fcc0c4aefa8390e694aaa9af8a533f641660b01a7f7506c9b333"
      },
      {
       "source": "TRANSCRIPT",
-      "start": 3603,
-      "end": 4124,
+      "start": 4343,
+      "end": 4864,
       "sha256": "b378568023f1712d2fea8c6cc02b761608bd0ec122dddd1ec4fcd009f8bba8b2"
      },
      {
       "source": "TRANSCRIPT",
-      "start": 4124,
-      "end": 4316,
+      "start": 4864,
+      "end": 5056,
       "sha256": "4842b0f0d39d330ba10f612b7cb52bb0cec81004ff6c1f8f46dd7d25b4c14f04"
      },
      {
       "source": "TRANSCRIPT",
-      "start": 4316,
-      "end": 4706,
+      "start": 5056,
+      "end": 5446,
       "sha256": "7370eaffca03ab47c0a200d3762a61da1b814da8d151fac679b398e55c5d3154"
      },
      {
       "source": "TRANSCRIPT",
-      "start": 4706,
-      "end": 4950,
+      "start": 5446,
+      "end": 5690,
       "sha256": "c5e5a286459ff11491048d4cb2cefb81aefd71ca2d306a80ebe8802e1d3c31cd"
      },
      {
       "source": "TRANSCRIPT",
-      "start": 4950,
-      "end": 5796,
-      "sha256": "a7224a2318b6ed2a011308d00a4f3795712d668fb6ab0f2b1b51c4c4b0c1ccfd"
+      "start": 5690,
+      "end": 6536,
+      "sha256": "6fb8c0e28e3e8b370b1435b4223aee7da9e81d1d53a820428045ac7406256bcc"
      },
      {
       "source": "TRANSCRIPT",
-      "start": 5796,
-      "end": 6346,
-      "sha256": "f13dc0ece63c9af362ea30093f83c7a4f704d0ade760c019d51c16cc1226cd7f"
+      "start": 6536,
+      "end": 7086,
+      "sha256": "33d16cbf0a7ff1b1b652405d5cd66c4d243cccb6acf0ec1baf02b8d4ac10a68c"
      },
      {
       "source": "TRANSCRIPT",
-      "start": 6346,
-      "end": 6657,
+      "start": 7086,
+      "end": 7397,
       "sha256": "ab835e33f8c0d73bcce0115953fe08336d25162ef04e51125764e4ddc7d254c0"
      }
     ],

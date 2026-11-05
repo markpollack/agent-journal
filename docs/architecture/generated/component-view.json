@@ -173,7 +173,7 @@
   {"from": "final-assembly", "to": "capture", "drawn": true,
    "class_pairs": ["AcquiredExecution -> Replay", "FinalAssembly -> Replay"]},
   {"from": "final-assembly", "to": "terminal-receiver", "drawn": true,
-   "class_pairs": ["CodexOriginalQualification -> TerminalCodexNative", "CodexOriginalQualification -> TerminalCodexProfile", "CodexOriginalQualification -> TerminalCodexRetained", "CodexOriginalQualification -> TerminalValues"]},
+   "class_pairs": ["CodexOriginalQualification -> TerminalCodexNative", "CodexOriginalQualification -> TerminalCodexProfile", "CodexOriginalQualification -> TerminalCodexRetained", "CodexOriginalQualification -> TerminalContract", "CodexOriginalQualification -> TerminalValues"]},
   {"from": "final-assembly", "to": "run-writer", "drawn": true,
    "class_pairs": ["AcquiredExecution -> OcsfRunWriter", "FinalAssembly -> OcsfRunWriter"]},
   {"from": "final-assembly", "to": "run-input", "drawn": true,

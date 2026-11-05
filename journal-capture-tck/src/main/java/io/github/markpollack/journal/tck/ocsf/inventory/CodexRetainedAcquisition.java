@@ -13,8 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/** Opt-in qualifier for one turn of a sealed Codex retained thread ({@value CodexRetainedGeneration#KIND},
- * terminal profile {@value CodexRetainedGeneration#PROFILE}). It validates the whole thread, then writes a
+/** Opt-in qualifier for one turn of a sealed Codex retained thread ({@value CodexRetainedGeneration#KIND}) under an
+ * explicitly named terminal profile: the frozen two-turn {@value CodexRetainedGeneration#PROFILE} or the ordinary
+ * {@value CodexRetainedGeneration#ORDINARY_PROFILE}. It validates the whole thread, then writes a
  * single-turn rollout projection (shared {@code session_meta} plus exactly this turn's region) beside the
  * turn's own process originals so the existing Codex assembly reads one turn with its original decision.
  * Cumulative native usage is preserved on the turn and never summed again. Deterministic qualification of
@@ -24,18 +25,18 @@ public final class CodexRetainedAcquisition {
     private CodexRetainedAcquisition() { }
 
     /** Copies originals and the exact projection to a new directory, leaving every input unchanged. */
-    public static CodexAcquisition.Qualified qualify(Path threadManifest, String executionId, Path newDirectory) throws IOException {
+    public static CodexAcquisition.Qualified qualify(Path threadManifest, String executionId, Path newDirectory, String profile) throws IOException {
         byte[] bytes = Files.readAllBytes(threadManifest);
         Json manifest = NeutralJson.parse(new String(bytes, StandardCharsets.UTF_8));
-        CodexRetainedGeneration.RetainedThread thread = CodexRetainedGeneration.validate(manifest, threadManifest.toAbsolutePath().getParent());
+        CodexRetainedGeneration.RetainedThread thread = CodexRetainedGeneration.validate(manifest, threadManifest.toAbsolutePath().getParent(), profile);
         CodexRetainedGeneration.Turn turn = thread.turn(executionId);
         Files.createDirectory(newDirectory);
         Json relativized = relativize(manifest); byte[] declaration = NeutralJson.write(relativized).getBytes(StandardCharsets.UTF_8);
         List<Json> sources = copyGeneration(newDirectory, thread, executionId, bytes, declaration);
         sources.addAll(copyTurn(newDirectory, thread, turn, executionId));
-        Json.JObject acquisition = acquisition(turn, relativized, sources, bytes, Files.readAllBytes(turn.perTurnManifestPath()));
+        Json.JObject acquisition = acquisition(turn, relativized, sources, bytes, Files.readAllBytes(turn.perTurnManifestPath()), profile);
         Path output = newDirectory.resolve("acquisition.json"); write(output, NeutralJson.write(acquisition).getBytes(StandardCharsets.UTF_8));
-        Path expectation = newDirectory.resolve("assembly-expectation.json"); write(expectation, NeutralJson.write(CodexAcquisition.expectation()).getBytes(StandardCharsets.UTF_8));
+        Path expectation = newDirectory.resolve("assembly-expectation.json"); write(expectation, NeutralJson.write(CodexAcquisition.retainedExpectation()).getBytes(StandardCharsets.UTF_8));
         validate(acquisition, newDirectory);
         return new CodexAcquisition.Qualified(output, expectation);
     }
@@ -85,12 +86,12 @@ public final class CodexRetainedAcquisition {
         return copy;
     }
 
-    private static Json.JObject acquisition(CodexRetainedGeneration.Turn turn, Json thread, List<Json> sources, byte[] threadBytes, byte[] perTurnBytes) {
+    private static Json.JObject acquisition(CodexRetainedGeneration.Turn turn, Json thread, List<Json> sources, byte[] threadBytes, byte[] perTurnBytes, String profile) {
         Json.JObject m = (Json.JObject) NeutralJson.parse(NeutralJson.write(turn.perTurnManifest()));
         Json.JObject t = (Json.JObject) array(m, "turns").get(0);
         for (String key : CodexRetainedReading.COPIED) t.members().put(key, turn.declaration().member(key));
         m.members().put("sources", new Json.JArray(sources));
-        m.members().put("retained_generation", thread); m.members().put("retained_profile", new Json.JString(CodexRetainedGeneration.PROFILE));
+        m.members().put("retained_generation", thread); m.members().put("retained_profile", new Json.JString(profile));
         m.members().put("retained_execution_id", new Json.JString(turn.executionId()));
         m.members().put("wire_usage_scope", new Json.JString(CodexRetainedGeneration.scope(turn.declaration())));
         m.members().put("qualification", object("original_thread_manifest_sha256", NativeArtifact.sha256(threadBytes), "per_turn_manifest_sha256", NativeArtifact.sha256(perTurnBytes),
@@ -130,7 +131,7 @@ public final class CodexRetainedAcquisition {
 
     /** Packaged command; refuses invalid input before creating output and never invokes a provider. */
     public static void main(String[] args) throws IOException {
-        if (args.length != 3) throw new IllegalArgumentException("usage: CodexRetainedAcquisition <codex-thread.json> <execution-id> <new-directory>");
-        qualify(Path.of(args[0]), args[1], Path.of(args[2]));
+        if (args.length != 4) throw new IllegalArgumentException("usage: CodexRetainedAcquisition <codex-thread.json> <execution-id> <new-directory> <retained-profile>");
+        qualify(Path.of(args[0]), args[1], Path.of(args[2]), args[3]);
     }
 }

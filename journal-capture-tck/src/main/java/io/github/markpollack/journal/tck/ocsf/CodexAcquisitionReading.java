@@ -97,7 +97,7 @@ public final class CodexAcquisitionReading {
         for (List<String> flags : List.of(List.of("--sandbox", "-s"), List.of("--ask-for-approval", "-a"), List.of("--model", "-m"))) {
             require(flags.stream().anyMatch(f -> value(argv, f) != null), "explicit launch option missing");
         }
-        require(argv.stream().anyMatch(v -> v.startsWith("model_reasoning_effort=")), "explicit effort missing");
+        // Reasoning effort is not a launch requirement: the native thread_settings_applied/turn_context records report the effort in force (null when unset).
     }
 
     private static boolean option(List<String> argv, String flag, String expected) { return expected.equals(value(argv, flag)); }

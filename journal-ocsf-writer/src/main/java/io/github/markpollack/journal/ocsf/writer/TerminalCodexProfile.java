@@ -15,11 +15,12 @@ final class TerminalCodexProfile {
     static final String PROFILE = "client-terminal-codex-0.166.0/1";
     private TerminalCodexProfile() { }
     static boolean complete(TerminalContract.Input input, Jv a) {
-        return Set.of(PROFILE, TerminalContract.CODEX_RETAINED_PROFILE).contains(text(Jv.parse(input.envelope()), "profile")) && "COMPLETED".equals(text(a, "acquisition"));
+        String profile = text(Jv.parse(input.envelope()), "profile");
+        return (PROFILE.equals(profile) || TerminalContract.CODEX_RETAINED_PROFILES.contains(profile)) && "COMPLETED".equals(text(a, "acquisition"));
     }
     /** The retained profile admits one turn of a sealed thread; the one-shot profile refuses any thread declaration. */
     static void validate(Path manifest, TerminalContract.Input input, Jv a) throws IOException {
-        boolean retained = TerminalContract.CODEX_RETAINED_PROFILE.equals(text(Jv.parse(input.envelope()), "profile"));
+        String profile = text(Jv.parse(input.envelope()), "profile"); boolean retained = TerminalContract.CODEX_RETAINED_PROFILES.contains(profile);
         Jv d = input.decision();
         Jv m = Jv.parse(Files.readString(manifest)); header(m, d, a, retained);
         Map<String, Jv> occurrences = new HashMap<>();
@@ -33,7 +34,7 @@ final class TerminalCodexProfile {
         require(occurrences.get("acquisition.json").member("stream").isNull(), "manifest is not a stream");
         Map<String, Jv> roles = sources(m, d, occurrences, retained);
         TerminalCodexNative.validate(manifest.getParent(), m, roles, retained);
-        if (retained) TerminalCodexRetained.validate(manifest.getParent(), m); else require(m.member("retained_generation") == null, "one-shot Codex profile carries no thread");
+        if (retained) TerminalCodexRetained.validate(manifest.getParent(), m, profile); else require(m.member("retained_generation") == null, "one-shot Codex profile carries no thread");
     }
 
     private static Map<String, Jv> sources(Jv m, Jv d, Map<String, Jv> occurrences, boolean retained) {
@@ -89,7 +90,7 @@ final class TerminalCodexProfile {
         else require(resume && argv.subList(exec + 2, argv.size()).contains(resumed), "Codex follow-up must resume the emitted thread");
         require(option(argv, "-C", text(p, "cwd")) || option(argv, "--cd", text(p, "cwd")), "Codex argv cwd differs");
         for (List<String> flags : List.of(List.of("--sandbox", "-s"), List.of("--ask-for-approval", "-a"), List.of("--model", "-m"))) require(flags.stream().anyMatch(argv::contains), "Codex explicit launch option missing");
-        require(argv.stream().anyMatch(s -> s != null && s.startsWith("model_reasoning_effort=")), "Codex effort missing");
+        // Reasoning effort is reported by the native settings records (null when unset) and is not required on the command line.
     }
     private static boolean option(List<String> argv, String flag, String value) { int i = argv.indexOf(flag); return i >= 0 && i + 1 < argv.size() && value.equals(argv.get(i + 1)); }
 
