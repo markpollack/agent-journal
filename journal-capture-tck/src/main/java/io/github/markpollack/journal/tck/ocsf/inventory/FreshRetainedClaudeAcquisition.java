@@ -17,12 +17,12 @@ public final class FreshRetainedClaudeAcquisition {
     private FreshRetainedClaudeAcquisition() { }
 
     /** The original signature: qualifies under the frozen profile {@value FreshRetainedGeneration#PROFILE}, its default before the ordinary profile existed. */
-    public static ClaudeAcquisition.Qualified qualify(Path generationManifest, String executionId, Path newDirectory) throws IOException {
+    public static AcquisitionQualifier.Qualified qualify(Path generationManifest, String executionId, Path newDirectory) throws IOException {
         return qualify(generationManifest, executionId, newDirectory, FreshRetainedGeneration.PROFILE);
     }
 
     /** Copies originals, the observation journal and exact per-turn projections to a new directory. */
-    public static ClaudeAcquisition.Qualified qualify(Path generationManifest, String executionId, Path newDirectory, String profile) throws IOException {
+    public static AcquisitionQualifier.Qualified qualify(Path generationManifest, String executionId, Path newDirectory, String profile) throws IOException {
         return RetainedClaudeAcquisition.qualify(generationManifest, executionId, newDirectory, java.util.Objects.requireNonNull(profile, "retained profile")); // the validator refuses an unsupported profile
     }
 

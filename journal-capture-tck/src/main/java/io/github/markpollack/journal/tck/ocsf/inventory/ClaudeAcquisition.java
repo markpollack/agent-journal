@@ -21,16 +21,17 @@ import java.util.Set;
 public final class ClaudeAcquisition {
     public static final String PROFILE = "claude-code-2.1.316-sdk-stdio-session-file";
     public static final String PROFILE_ID = "claude-code/2.1.316/sdk-stdio+session-file";
+    /** The terminal binding profile, as its wire identifier, for a qualified Claude one-shot. */
+    public static final String TERMINAL_PROFILE = "client-terminal-claude-2.1.316/1";
+    /** This qualifier as the {@link AcquisitionQualifier} for {@link #PROFILE}; it runs {@link #qualify(Path, Path)}. */
+    public static final AcquisitionQualifier QUALIFIER = new ProfileQualifier(PROFILE, TERMINAL_PROFILE, ClaudeAcquisition::qualify);
     private static final String VERSION = "2.1.316";
     private static final String EXPECTATION = "/ocsf/qualification/claude-code-2.1.316.json";
-
-    /** New immutable derivative inputs for FinalAssembly and the independent packaged verifier. */
-    public record Qualified(Path manifest, Path assemblyExpectation) { }
 
     private ClaudeAcquisition() { }
 
     /** Copies validated, frozen bytes into a directory that must not exist. No vendor parsing is needed by callers. */
-    public static Qualified qualify(Path sealedManifest, Path newDirectory) throws IOException {
+    public static AcquisitionQualifier.Qualified qualify(Path sealedManifest, Path newDirectory) throws IOException {
         byte[] original = Files.readAllBytes(sealedManifest);
         Json manifest = NeutralJson.parse(new String(original, StandardCharsets.UTF_8));
         List<Frozen> sources = validated(manifest, sealedManifest.toAbsolutePath().getParent());
@@ -48,7 +49,7 @@ public final class ClaudeAcquisition {
         write(output, NeutralJson.write(manifest).getBytes(StandardCharsets.UTF_8));
         Path expectation = newDirectory.resolve("assembly-expectation.json");
         write(expectation, NeutralJson.write(resource(EXPECTATION)).getBytes(StandardCharsets.UTF_8));
-        return new Qualified(output, expectation);
+        return new AcquisitionQualifier.Qualified(output, expectation);
     }
 
     /** The same native checks are executed again by the independent verifier; no candidate supplies identity. */

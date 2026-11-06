@@ -33,7 +33,7 @@ class PersistedToolOutputTest {
             "usage":{"input_tokens":7,"cache_creation_input_tokens":2,"cache_read_input_tokens":3,"output_tokens":5},"content":[{"type":"tool_use","id":"call","name":"Bash","input":{"command":"printf output"}}]}}
             """;
 
-    private ClaudeAcquisition.Qualified assemble() throws Exception {
+    private io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.Qualified assemble() throws Exception {
         String request = NeutralJson.write(NeutralJson.parse(REQUEST));
         String result = NeutralJson.write(NeutralJson.parse(RESULT));
         Files.writeString(work.resolve("stream"), "{\"type\":\"system\",\"subtype\":\"init\",\"session_id\":\"session\",\"claude_code_version\":\"2.1.316\"}\n" + request + "\n" + result + "\n");
@@ -71,7 +71,7 @@ class PersistedToolOutputTest {
         return new Json.JObject(fields);
     }
 
-    private OracleReport verify(Path file, ClaudeAcquisition.Qualified q) throws Exception {
+    private OracleReport verify(Path file, io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.Qualified q) throws Exception {
         return new AcquisitionVerification().verify(PackageReader.open(file), q.manifest().getParent(), q.manifest(), q.assemblyExpectation());
     }
 

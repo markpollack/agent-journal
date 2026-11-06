@@ -3,7 +3,7 @@
  "format_version": "0.1",
  "status": "extracted structure (components and dependencies); declared flows and drawing choices are labelled",
  "produced_by": "ComponentViewTest (journal-ocsf-writer test scope) with ArchUnit 1.5.0 over compiled production classes",
- "scope": {"packages": ["io.github.markpollack.journal.ocsf.writer", "io.github.markpollack.journal.tck"], "classes": "production classes only (test classes excluded); nested and anonymous classes belong to their top-level class", "top_level_classes": 211},
+ "scope": {"packages": ["io.github.markpollack.journal.ocsf.writer", "io.github.markpollack.journal.tck"], "classes": "production classes only (test classes excluded); nested and anonymous classes belong to their top-level class", "top_level_classes": 213},
  "relationship": "A depends on B when a class of A refers directly to a class of B in bytecode: a call, field access, construction, inheritance, member or parameter type, or annotation. It is a static reference, not evidence that the path executed.",
  "components": [
   {"id": "capture", "name": "Capture and replay entry points", "module": "journal-ocsf-writer",
@@ -99,7 +99,7 @@
   {"id": "inventory", "name": "Native inventory tools", "module": "journal-capture-tck",
    "membership": "package io.github.markpollack.journal.tck.ocsf.inventory",
    "responsibility": "Empirical variant/path inventories of native artifacts and their comparison with the accepted source specifications (findings are proposals, never applied); source joins and the independent assembly oracle, which judges a finally assembled file from native identities alone.",
-   "classes": ["ocsf.inventory.AcquisitionVerification", "ocsf.inventory.AssemblyAccounting", "ocsf.inventory.AssemblyConsolidation", "ocsf.inventory.AssemblyMembership", "ocsf.inventory.AssemblyOracle", "ocsf.inventory.AssemblyPartition", "ocsf.inventory.ClaudeAcquisition", "ocsf.inventory.ClaudeToolOutput", "ocsf.inventory.CodexAcquisition", "ocsf.inventory.CodexRetainedAcquisition", "ocsf.inventory.ExternalSchemaPaths", "ocsf.inventory.FreshRetainedClaudeAcquisition", "ocsf.inventory.InventoryComparison", "ocsf.inventory.NativeInventoryTool", "ocsf.inventory.RawInventory", "ocsf.inventory.RetainedClaudeAcquisition", "ocsf.inventory.SourceAvailability", "ocsf.inventory.SourceJoin", "ocsf.inventory.SourceLocator", "ocsf.inventory.SourceSpecification", "ocsf.inventory.ToolOutputVerification"],
+   "classes": ["ocsf.inventory.AcquisitionQualifier", "ocsf.inventory.AcquisitionVerification", "ocsf.inventory.AssemblyAccounting", "ocsf.inventory.AssemblyConsolidation", "ocsf.inventory.AssemblyMembership", "ocsf.inventory.AssemblyOracle", "ocsf.inventory.AssemblyPartition", "ocsf.inventory.ClaudeAcquisition", "ocsf.inventory.ClaudeToolOutput", "ocsf.inventory.CodexAcquisition", "ocsf.inventory.CodexRetainedAcquisition", "ocsf.inventory.ExternalSchemaPaths", "ocsf.inventory.FreshRetainedClaudeAcquisition", "ocsf.inventory.InventoryComparison", "ocsf.inventory.NativeInventoryTool", "ocsf.inventory.ProfileQualifier", "ocsf.inventory.RawInventory", "ocsf.inventory.RetainedClaudeAcquisition", "ocsf.inventory.SourceAvailability", "ocsf.inventory.SourceJoin", "ocsf.inventory.SourceLocator", "ocsf.inventory.SourceSpecification", "ocsf.inventory.ToolOutputVerification"],
    "external_packages": ["com.fasterxml.jackson.databind"]},
   {"id": "prototype", "name": "Prototype candidate support", "module": "journal-capture-tck",
    "membership": "package io.github.markpollack.journal.tck.ocsf.prototype",

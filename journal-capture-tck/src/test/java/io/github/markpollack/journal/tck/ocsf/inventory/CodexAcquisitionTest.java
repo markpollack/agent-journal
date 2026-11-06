@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 /** Labelled synthetic acquisition: no native/model execution. */
 class CodexAcquisitionTest {
@@ -32,6 +33,21 @@ class CodexAcquisitionTest {
             assertThat(Files.readAllBytes(q.manifest().getParent().resolve(s.member("path").text()))).isEqualTo(Files.readAllBytes(work.resolve(s.member("path").text())));
         }
         assertThatThrownBy(() -> CodexAcquisition.qualify(input, work.resolve("qualified"))).isInstanceOf(IOException.class);
+    }
+    @Test void theRegisteredQualifierWritesTheSameBytesAndRefusesTheSameInputsAsTheStaticEntryPoint() throws Exception {
+        Path input = fixture();
+        AcquisitionQualifier qualifier = AcquisitionQualifier.forProfile(NeutralJson.readDocument(input).member("profile").text()).orElseThrow();
+        var viaQualifier = qualifier.qualify(input, work.resolve("via-qualifier"));
+        var viaStatic = CodexAcquisition.qualify(input, work.resolve("via-static"));
+        assertThat(AcquisitionQualifierTest.tree(work.resolve("via-qualifier"))).isNotEmpty().isEqualTo(AcquisitionQualifierTest.tree(work.resolve("via-static")));
+        assertThat(work.resolve("via-qualifier").relativize(viaQualifier.manifest())).isEqualTo(work.resolve("via-static").relativize(viaStatic.manifest()));
+        assertThat(work.resolve("via-qualifier").relativize(viaQualifier.assemblyExpectation())).isEqualTo(work.resolve("via-static").relativize(viaStatic.assemblyExpectation()));
+        String sealed = Files.readString(input), changed = sealed.replace("\"exit_code\":0", "\"exit_code\":1");
+        assertThat(changed).isNotEqualTo(sealed);
+        Files.writeString(input, changed);
+        String verdict = catchThrowable(() -> CodexAcquisition.qualify(input, work.resolve("rejected-static"))).getMessage();
+        assertThatThrownBy(() -> qualifier.qualify(input, work.resolve("rejected"))).isInstanceOf(IllegalArgumentException.class).hasMessage(verdict);
+        assertThat(work.resolve("rejected")).doesNotExist();
     }
     @Test void refusesMissingClosureWrongRouteIdentityAndExtentsBeforeOutput() throws Exception {
         Path input = fixture(); String original = Files.readString(input);

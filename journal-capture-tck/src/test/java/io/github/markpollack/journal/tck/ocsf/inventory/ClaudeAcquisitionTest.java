@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 /** Synthetic identity and integrity controls, not live source evidence. */
 class ClaudeAcquisitionTest {
@@ -66,6 +67,22 @@ class ClaudeAcquisitionTest {
         assertThat(NeutralJson.readDocument(qualified.assemblyExpectation()).member("profile_id").text()).isEqualTo(ClaudeAcquisition.PROFILE_ID);
         assertThat(Files.readAllBytes(work.resolve("qualified/stdout.bin"))).isEqualTo(Files.readAllBytes(work.resolve("stdout.bin")));
         assertThatThrownBy(() -> ClaudeAcquisition.qualify(input, work.resolve("qualified"))).isInstanceOf(IOException.class);
+    }
+
+    @Test void theRegisteredQualifierWritesTheSameBytesAndRefusesTheSameInputsAsTheStaticEntryPoint() throws IOException {
+        Path input = manifest();
+        AcquisitionQualifier qualifier = AcquisitionQualifier.forProfile(NeutralJson.readDocument(input).member("profile").text()).orElseThrow();
+        var viaQualifier = qualifier.qualify(input, work.resolve("via-qualifier"));
+        var viaStatic = ClaudeAcquisition.qualify(input, work.resolve("via-static"));
+        assertThat(AcquisitionQualifierTest.tree(work.resolve("via-qualifier"))).isNotEmpty().isEqualTo(AcquisitionQualifierTest.tree(work.resolve("via-static")));
+        assertThat(work.resolve("via-qualifier").relativize(viaQualifier.manifest())).isEqualTo(work.resolve("via-static").relativize(viaStatic.manifest()));
+        assertThat(work.resolve("via-qualifier").relativize(viaQualifier.assemblyExpectation())).isEqualTo(work.resolve("via-static").relativize(viaStatic.assemblyExpectation()));
+        String sealed = Files.readString(input), changed = sealed.replace("\"version\":\"2.1.316\"", "\"version\":\"2.1.317\"");
+        assertThat(changed).isNotEqualTo(sealed);
+        Files.writeString(input, changed);
+        String verdict = catchThrowable(() -> ClaudeAcquisition.qualify(input, work.resolve("rejected-static"))).getMessage();
+        assertThatThrownBy(() -> qualifier.qualify(input, work.resolve("rejected"))).isInstanceOf(IllegalArgumentException.class).hasMessage(verdict);
+        assertThat(work.resolve("rejected")).doesNotExist();
     }
 
     @Test void rejectsWrongManifestVersionRouteSessionAndHashBeforeCreatingOutput() throws IOException {

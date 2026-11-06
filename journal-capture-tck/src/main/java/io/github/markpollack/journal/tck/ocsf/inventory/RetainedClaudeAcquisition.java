@@ -24,12 +24,12 @@ public final class RetainedClaudeAcquisition {
     private RetainedClaudeAcquisition() { }
 
     /** Copies originals and exact per-turn projections to a new directory, leaving every input unchanged. */
-    public static ClaudeAcquisition.Qualified qualify(Path generationManifest, String executionId, Path newDirectory) throws IOException {
+    public static AcquisitionQualifier.Qualified qualify(Path generationManifest, String executionId, Path newDirectory) throws IOException {
         return qualify(generationManifest, executionId, newDirectory, null);
     }
 
     /** {@code freshProfile} names the fresh-start profile the generation is qualified under; null is the frozen retained kind. */
-    static ClaudeAcquisition.Qualified qualify(Path generationManifest, String executionId, Path newDirectory, String freshProfile) throws IOException {
+    static AcquisitionQualifier.Qualified qualify(Path generationManifest, String executionId, Path newDirectory, String freshProfile) throws IOException {
         boolean fresh = freshProfile != null;
         byte[] bytes = Files.readAllBytes(generationManifest);
         Json generation = NeutralJson.parse(new String(bytes, StandardCharsets.UTF_8));
@@ -50,7 +50,7 @@ public final class RetainedClaudeAcquisition {
         Path expectation = newDirectory.resolve("assembly-expectation.json");
         write(expectation, NeutralJson.write(ClaudeAcquisition.expectation()).getBytes(StandardCharsets.UTF_8));
         RetainedAcquisition.validate(manifest, newDirectory, fresh);
-        return new ClaudeAcquisition.Qualified(output, expectation);
+        return new AcquisitionQualifier.Qualified(output, expectation);
     }
 
     /** The fresh profile the generation was qualified under and, for the native profile, the recorded launch-argv completeness. */

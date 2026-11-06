@@ -105,6 +105,32 @@ Distinct, repeated or absent tool identifiers do not collapse separate array ent
 only identifies the entry within the native record; tool attribution still requires the identifier
 that entry reports. Dropped, duplicated or misattributed denials fail validation.
 
+## Qualifier lookup
+
+`AcquisitionQualifier`, in the TCK's `io.github.markpollack.journal.tck.ocsf.inventory` package, lets
+a producer qualify a sealed one-shot acquisition without naming its CLI:
+
+```java
+AcquisitionQualifier qualifier = AcquisitionQualifier.forProfile(manifestProfile).orElseThrow();
+AcquisitionQualifier.Qualified qualified = qualifier.qualify(sealedManifest, newDirectory);
+// bind qualified.manifest()'s sources and deliver one initial binding under qualifier.terminalProfile()
+```
+
+`manifestProfile` is the sealed manifest's own `profile` member. The registry is fixed, not discovered:
+
+| Acquisition profile | Qualifier | Terminal profile |
+|---|---|---|
+| `claude-code-2.1.316-sdk-stdio-session-file` | `ClaudeAcquisition.QUALIFIER` | `client-terminal-claude-2.1.316/1` |
+| `codex-cli-0.166.0-exec-stdio-rollout` | `CodexAcquisition.QUALIFIER` | `client-terminal-codex-0.166.0/1` |
+
+Any other profile returns empty. A qualifier refuses an acquisition with `IllegalArgumentException`,
+whose message is its verdict, before creating the new directory. `IOException` means an input could
+not be read or the directory exists or could not be written. Each qualifier runs exactly the checks of
+its static `qualify(Path, Path)` and writes the same bytes. Selection uses the acquisition profile
+alone: a Codex turn manifest from a retained thread may declare the same profile as a fresh turn, and
+the one-shot qualifier refuses its resumed history ("existing history forbidden for a fresh turn"). Both implementations stay producer-independent, so the
+terminal profile is a wire identifier and not a writer constant.
+
 ## Retained two-text-turn profile
 
 `TerminalReceiver.RETAINED_PROFILE` selects `client-terminal-claude-retained-2.1.316/1` in the
@@ -117,7 +143,7 @@ latency or delivery-order guarantee.
 After the generation is sealed with observed resource cessation and natural stdout/stderr EOF, call
 `RetainedClaudeAcquisition.qualify(generationManifest, executionId, newDirectory)` in the TCK's
 `io.github.markpollack.journal.tck.ocsf.inventory` package for each execution. It returns
-`ClaudeAcquisition.Qualified`, whose `manifest()` and `assemblyExpectation()` paths supply the
+`AcquisitionQualifier.Qualified`, whose `manifest()` and `assemblyExpectation()` paths supply the
 existing writer and packaged independent reader. The destination must not exist. It preserves the
 whole originals under `generation/` and writes explicit per-turn selected-record projections under
 `turn/`. No provider or transport is started, retried or awaited.

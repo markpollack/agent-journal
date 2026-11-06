@@ -1,7 +1,9 @@
 # Experimental Codex 0.166.0 acquisition
 
 `io.github.markpollack.journal.tck.ocsf.inventory.CodexAcquisition.qualify(Path sealedManifest,
-Path newDirectory)` returns `Qualified(Path manifest, Path assemblyExpectation)`. The destination
+Path newDirectory)` returns `AcquisitionQualifier.Qualified(Path manifest, Path assemblyExpectation)`.
+`CodexAcquisition.QUALIFIER` runs the same qualification as the registered `AcquisitionQualifier` for
+this profile, with terminal profile `client-terminal-codex-0.166.0/1`. The destination
 must not exist. This read/copy operation launches no process. `validate(Path manifest)` performs
 read-only original-byte checks. Both the qualifier and packaged reader are independent of the writer.
 

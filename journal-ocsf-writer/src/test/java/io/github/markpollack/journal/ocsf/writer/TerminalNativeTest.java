@@ -18,12 +18,13 @@ class TerminalNativeTest {
     @TempDir Path temp;
 
     private Path qualified() throws IOException {
+        return qualified("{\"type\":\"result\",\"subtype\":\"success\",\"session_id\":\"native-1\",\"result\":\"hello\",\"is_error\":false}");
+    }
+
+    private Path qualified(String result) throws IOException {
         Path raw = Files.createDirectory(temp.resolve("raw"));
         Files.writeString(raw.resolve("stdin.bin"), "{\"type\":\"user\",\"message\":{\"role\":\"user\",\"content\":\"hello\"}}\n");
-        Files.writeString(raw.resolve("stdout.bin"), """
-                {"type":"system","subtype":"init","session_id":"native-1","claude_code_version":"2.1.316"}
-                {"type":"result","subtype":"success","session_id":"native-1","result":"hello","is_error":false}
-                """);
+        Files.writeString(raw.resolve("stdout.bin"), "{\"type\":\"system\",\"subtype\":\"init\",\"session_id\":\"native-1\",\"claude_code_version\":\"2.1.316\"}\n" + result + "\n");
         Files.writeString(raw.resolve("stderr.bin"), "");
         Files.writeString(raw.resolve("native.jsonl"), """
                 {"type":"user","uuid":"u1","sessionId":"native-1","version":"2.1.316","message":{"role":"user","content":"hello"}}
@@ -53,6 +54,32 @@ class TerminalNativeTest {
         }
         Path sealed = raw.resolve("sealed.json"); Files.writeString(sealed, Jv.write(m));
         return ClaudeAcquisition.qualify(sealed, temp.resolve("qualified")).manifest().getParent();
+    }
+
+    /** The same sealed input, qualified through the registered qualifier its own profile selects. */
+    private io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.Qualified qualifiedThroughTheRegistry() throws IOException {
+        Path sealed = qualified("{\"type\":\"result\",\"subtype\":\"success\",\"session_id\":\"native-1\",\"result\":\"hello\",\"is_error\":false,"
+                + "\"usage\":{\"input_tokens\":11,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":3,\"output_tokens\":4}}").resolve("client-acquisition.json");
+        var qualifier = io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.forProfile(Jv.parse(Files.readString(sealed)).member("profile").text()).orElseThrow();
+        assertThat(qualifier.terminalProfile()).isEqualTo(TerminalReceiver.CLAUDE_PROFILE);
+        Path copy = Files.createDirectory(temp.resolve("sealed-copy"));
+        for (String name : List.of("stdin.bin", "stdout.bin", "stderr.bin", "native.jsonl")) Files.copy(temp.resolve("raw").resolve(name), copy.resolve(name));
+        Files.copy(sealed, copy.resolve("sealed.json"));
+        return qualifier.qualify(copy.resolve("sealed.json"), temp.resolve("registry-qualified"));
+    }
+
+    @Test void theRegisteredQualifierDeliversOneInitialBindingUnderItsTerminalProfile() throws Exception {
+        var q = qualifiedThroughTheRegistry(); Path base = q.manifest().getParent(), store = temp.resolve("store");
+        TerminalReceiver receiver = new TerminalReceiver(store, "producer", WriterOptions.defaults());
+        Path file = events(store, receiver.receive(nativeEnvelope(completeAssociation(base)), base));
+        assertThat(Files.readString(file)).as("the archived terminal envelope").contains("\\\"profile\\\":\\\"" + TerminalReceiver.CLAUDE_PROFILE + "\\\"");
+        assertThat(Files.readAllBytes(base.resolve("client-acquisition.json"))).isEqualTo(Files.readAllBytes(temp.resolve("raw/sealed.json")));
+        var pkg = PackageReader.open(file);
+        assertThat(pkg.diagnostics).noneMatch(d -> d.severity().name().equals("DEFECT") || d.severity().name().equals("REFUSED"));
+        var report = new io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionVerification().verify(pkg, file.getParent().resolve("sources"),
+                file.getParent().resolve("sources/acquisition.json"), q.assemblyExpectation());
+        assertThat(report.defects()).isEmpty();
+        assertThat(io.github.markpollack.journal.tck.ocsf.OcsfReaderTool.acceptance(report).exit()).as(io.github.markpollack.journal.tck.ocsf.OcsfReaderTool.acceptance(report).toString()).isZero();
     }
 
     private static Jv.Obj completeAssociation(Path base) throws IOException {

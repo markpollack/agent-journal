@@ -18,13 +18,14 @@ import java.util.Map;
 public final class CodexAcquisition {
     public static final String PROFILE = "codex-cli-0.166.0-exec-stdio-rollout";
     public static final String PROFILE_ID = "codex-cli/0.166.0/exec-stdio+rollout";
+    /** The terminal binding profile, as its wire identifier, for a qualified Codex one-shot. */
+    public static final String TERMINAL_PROFILE = "client-terminal-codex-0.166.0/1";
+    /** This qualifier as the {@link AcquisitionQualifier} for {@link #PROFILE}; it runs {@link #qualify(Path, Path)}. */
+    public static final AcquisitionQualifier QUALIFIER = new ProfileQualifier(PROFILE, TERMINAL_PROFILE, CodexAcquisition::qualify);
     private CodexAcquisition() { }
 
-    /** Separate immutable derivative inputs for final assembly and the independent packaged reader. */
-    public record Qualified(Path manifest, Path assemblyExpectation) { }
-
     /** Validates before creating the new directory; copies originals without modifying caller files. */
-    public static Qualified qualify(Path sealedManifest, Path newDirectory) throws IOException {
+    public static AcquisitionQualifier.Qualified qualify(Path sealedManifest, Path newDirectory) throws IOException {
         byte[] original = Files.readAllBytes(sealedManifest);
         Json m = NeutralJson.parse(new String(original, StandardCharsets.UTF_8));
         Map<String, CodexAcquisitionReading.Source> sources = CodexAcquisitionReading.read(m, sealedManifest.toAbsolutePath().getParent());
@@ -40,7 +41,7 @@ public final class CodexAcquisition {
         Path manifest = newDirectory.resolve("acquisition.json"), expectation = newDirectory.resolve("assembly-expectation.json");
         write(manifest, NeutralJson.write(m).getBytes(StandardCharsets.UTF_8));
         write(expectation, NeutralJson.write(expectation()).getBytes(StandardCharsets.UTF_8));
-        return new Qualified(manifest, expectation);
+        return new AcquisitionQualifier.Qualified(manifest, expectation);
     }
 
     /** Read-only original-byte checks, also used by the independent packaged terminal reader. */

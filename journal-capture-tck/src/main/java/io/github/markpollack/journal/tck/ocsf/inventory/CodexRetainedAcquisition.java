@@ -25,12 +25,12 @@ public final class CodexRetainedAcquisition {
     private CodexRetainedAcquisition() { }
 
     /** The original signature: qualifies under the frozen profile {@value CodexRetainedGeneration#PROFILE}, its default before the ordinary profile existed. */
-    public static CodexAcquisition.Qualified qualify(Path threadManifest, String executionId, Path newDirectory) throws IOException {
+    public static AcquisitionQualifier.Qualified qualify(Path threadManifest, String executionId, Path newDirectory) throws IOException {
         return qualify(threadManifest, executionId, newDirectory, CodexRetainedGeneration.PROFILE);
     }
 
     /** Copies originals and the exact projection to a new directory, leaving every input unchanged. */
-    public static CodexAcquisition.Qualified qualify(Path threadManifest, String executionId, Path newDirectory, String profile) throws IOException {
+    public static AcquisitionQualifier.Qualified qualify(Path threadManifest, String executionId, Path newDirectory, String profile) throws IOException {
         byte[] bytes = Files.readAllBytes(threadManifest);
         Json manifest = NeutralJson.parse(new String(bytes, StandardCharsets.UTF_8));
         CodexRetainedGeneration.RetainedThread thread = CodexRetainedGeneration.validate(manifest, threadManifest.toAbsolutePath().getParent(), profile);
@@ -46,7 +46,7 @@ public final class CodexRetainedAcquisition {
         Json spec = CodexRetainedGeneration.PROFILE.equals(profile) ? CodexAcquisition.expectation() : CodexAcquisition.retainedExpectation();
         Path expectation = newDirectory.resolve("assembly-expectation.json"); write(expectation, NeutralJson.write(spec).getBytes(StandardCharsets.UTF_8));
         validate(acquisition, newDirectory);
-        return new CodexAcquisition.Qualified(output, expectation);
+        return new AcquisitionQualifier.Qualified(output, expectation);
     }
 
     /** Byte-exact thread manifest, its relativized declaration, the final transcript and every turn's originals, all archive-only. */

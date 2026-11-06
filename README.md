@@ -84,6 +84,10 @@ observed closure and matching cumulative terminal usage. Select
 An already qualified acquisition supports an initially complete one-shot association; pending initial
 acquisition can instead receive an explicit final revision. Both preserve the original accepted
 Client decision and exact retry ACK. Qualification/recording belongs on an independent optional lane.
+A producer need not name the CLI: `AcquisitionQualifier.forProfile(profile)` returns the qualifier for
+the sealed manifest's `profile`, whose `terminalProfile()` is the envelope profile to select. The two
+registered one-shot qualifiers are Claude 2.1.316 and Codex 0.166.0; see
+[the terminal receiver](docs/terminal-receiver.md#qualifier-lookup).
 
 See [the acquisition contract](docs/codex-acquisition.md). Deterministic synthetic tests establish
 the acquisition boundary and the observed command/declaration/settings/reasoning mappings. The current

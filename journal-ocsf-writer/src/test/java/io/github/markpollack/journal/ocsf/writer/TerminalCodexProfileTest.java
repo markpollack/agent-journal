@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class TerminalCodexProfileTest {
     @TempDir Path work;
     private Path fixture() { return Path.of("../journal-capture-tck/src/test/resources/ocsf/syn-codex-acquisition-0.166.0"); }
-    private Jv.Obj association(CodexAcquisition.Qualified qualified) throws Exception {
+    private Jv.Obj association(io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.Qualified qualified) throws Exception {
         Path root = qualified.manifest().getParent(); Jv m = Jv.parse(Files.readString(qualified.manifest()));
         Jv.Obj a = (Jv.Obj) Jv.parse(Files.readString(fixture().resolve("A-initial.json")));
         a.put("acquisition", "COMPLETED").put("missing", new Jv.Arr()).put("revisionId", "final").put("priorRevisionId", "initial");
@@ -64,6 +64,23 @@ class TerminalCodexProfileTest {
         Path file = events(store, ack); var pkg = PackageReader.open(file);
         var binding = TerminalBindingReader.read(pkg.declarations);
         assertThat(binding.originalBindingId()).isNull(); assertThat(binding.decision()).isEqualTo(Files.readString(fixture().resolve("D.json")));
+        var report = new AcquisitionVerification().verify(pkg, file.getParent().resolve("sources"), file.getParent().resolve("sources/acquisition.json"), q.assemblyExpectation());
+        assertThat(report.defects()).isEmpty();
+        assertThat(io.github.markpollack.journal.tck.ocsf.OcsfReaderTool.acceptance(report).exit()).as(io.github.markpollack.journal.tck.ocsf.OcsfReaderTool.acceptance(report).toString()).isZero();
+    }
+    @Test void theRegisteredQualifierDeliversOneInitialBindingUnderItsTerminalProfile() throws Exception {
+        Path sealed = fixture().resolve("codex-acquisition.json");
+        var qualifier = io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.forProfile(Jv.parse(Files.readString(sealed)).member("profile").text()).orElseThrow();
+        assertThat(qualifier.terminalProfile()).isEqualTo(TerminalReceiver.CODEX_PROFILE);
+        var q = qualifier.qualify(sealed, work.resolve("qualified"));
+        Jv.Obj p = (Jv.Obj) Jv.parse(Files.readString(fixture().resolve("P.json")));
+        p.put("profile", qualifier.terminalProfile()).put("associationBytes", java.util.Base64.getEncoder().encodeToString(
+                TerminalJson.write(association(q).put("priorRevisionId", Jv.Null.INSTANCE).put("revisionId", "initial")).getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        Path store = work.resolve("store"); var receiver = new TerminalReceiver(store, "codex-example", WriterOptions.defaults());
+        Path file = events(store, receiver.receive(TerminalJson.write(p).getBytes(java.nio.charset.StandardCharsets.UTF_8), q.manifest().getParent()));
+        assertThat(Files.readString(file)).as("the archived terminal envelope").contains("\\\"profile\\\":\\\"" + qualifier.terminalProfile() + "\\\"");
+        var pkg = PackageReader.open(file);
+        assertThat(TerminalBindingReader.read(pkg.declarations).decision()).isEqualTo(Files.readString(fixture().resolve("D.json")));
         var report = new AcquisitionVerification().verify(pkg, file.getParent().resolve("sources"), file.getParent().resolve("sources/acquisition.json"), q.assemblyExpectation());
         assertThat(report.defects()).isEmpty();
         assertThat(io.github.markpollack.journal.tck.ocsf.OcsfReaderTool.acceptance(report).exit()).as(io.github.markpollack.journal.tck.ocsf.OcsfReaderTool.acceptance(report).toString()).isZero();
