@@ -13,7 +13,8 @@ import static io.github.markpollack.journal.ocsf.writer.MapperSupport.text;
  * settings, the result record completes the turn with run/model final usage, cost and run-scope denials, and every
  * other record is retained whole, except that child-run usage the parent's records report (an Agent result, task
  * progress and notification) is also an accounting event ({@link ClaudeChildUsage}). A record whose
- * {@code parent_tool_use_id} names a tool call is routed to that child core.
+ * {@code parent_tool_use_id} names a tool call is routed to that child core, except a {@code tool_progress} record,
+ * whose {@code parent_tool_use_id} names the tool call in progress ({@link MapperSupport#claudeOwner}).
  */
 final class ClaudeStreamMapper implements SourceMapper {
 
@@ -45,7 +46,7 @@ final class ClaudeStreamMapper implements SourceMapper {
         String ts = text(o, "timestamp");
         String uid = text(o, "uuid");
         String sess = text(o, "session_id");
-        String owner = text(o, "parent_tool_use_id");
+        String owner = MapperSupport.claudeOwner(o);
         String family = subtype == null ? String.valueOf(type) : type + "/" + subtype;
         if ("assistant".equals(type) && o.member("message") instanceof Jv.Obj m) {
             ctx.family(family, r.raw().length, "normalized: model_response (+ tool_call Requested per tool_use block)");

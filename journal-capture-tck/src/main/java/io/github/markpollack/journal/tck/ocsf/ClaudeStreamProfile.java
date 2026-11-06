@@ -12,7 +12,8 @@ import java.util.Map;
  * {@code tool_result} blocks are results whose owner is the block's own {@code tool_use_id} (a permission decision
  * is taken from the {@code tool_result_meta} entry with that id), and the {@code result} line completes the turn with
  * run and per-model final usage, a cost total and run-scope denials. Everything else is retained whole. An owner
- * scope ({@code parent_tool_use_id}) selects the main thread or one sub-agent.
+ * scope ({@code parent_tool_use_id}) selects the main thread or one sub-agent ({@link ClaudeOwnerScope}: a
+ * {@code tool_progress} record names the call in progress, not an owner).
  */
 final class ClaudeStreamProfile implements SourceProfile {
 
@@ -36,7 +37,7 @@ final class ClaudeStreamProfile implements SourceProfile {
             if (ts != null) {
                 f.nativeTime.put(r.index(), ts);
             }
-            if (!SourceProfile.owned(o, scope)) {
+            if (!SourceProfile.owned(ClaudeOwnerScope.owner(o) == null ? null : o, scope)) {
                 continue;
             }
             f.owned.add(r.index());

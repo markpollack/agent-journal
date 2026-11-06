@@ -62,7 +62,7 @@ record OriginComparisons(
                             List.of(facts.artifact + ":record=" + index + "#/parent_tool_use_id"),
                             "declaration:run.source_scope",
                             FactComparison.value(
-                                    SourceProfile.text(record.json(), "parent_tool_use_id")),
+                                    ClaudeOwnerScope.owner(record.json())),
                             FactComparison.value(
                                     SourceProfile.text(
                                             core.manifest.sourceScope(), "owner_value"))));

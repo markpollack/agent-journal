@@ -21,10 +21,21 @@ class TerminalNativeTest {
         return qualified("{\"type\":\"result\",\"subtype\":\"success\",\"session_id\":\"native-1\",\"result\":\"hello\",\"is_error\":false}");
     }
 
+    private static final String INIT = "{\"type\":\"system\",\"subtype\":\"init\",\"session_id\":\"native-1\",\"claude_code_version\":\"2.1.316\"}";
+
     private Path qualified(String result) throws IOException {
+        return qualifiedStream(List.of(INIT, result)).manifest().getParent();
+    }
+
+    /** A sealed one-turn acquisition whose stream is {@code lines}, qualified by the Claude one-shot qualifier. */
+    private io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.Qualified qualifiedStream(List<String> lines) throws IOException {
+        return qualifiedStream(temp, lines);
+    }
+
+    private static io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.Qualified qualifiedStream(Path temp, List<String> lines) throws IOException {
         Path raw = Files.createDirectory(temp.resolve("raw"));
         Files.writeString(raw.resolve("stdin.bin"), "{\"type\":\"user\",\"message\":{\"role\":\"user\",\"content\":\"hello\"}}\n");
-        Files.writeString(raw.resolve("stdout.bin"), "{\"type\":\"system\",\"subtype\":\"init\",\"session_id\":\"native-1\",\"claude_code_version\":\"2.1.316\"}\n" + result + "\n");
+        Files.writeString(raw.resolve("stdout.bin"), String.join("\n", lines) + "\n");
         Files.writeString(raw.resolve("stderr.bin"), "");
         Files.writeString(raw.resolve("native.jsonl"), """
                 {"type":"user","uuid":"u1","sessionId":"native-1","version":"2.1.316","message":{"role":"user","content":"hello"}}
@@ -47,13 +58,13 @@ class TerminalNativeTest {
             if (role.equals("stream") || role.equals("transcript")) {
                 s.put("profile", role.equals("stream") ? "claude_stream" : "claude_transcript")
                         .put("route", role.equals("stream") ? "sdk_stdio" : "native_session_file")
-                        .put("framing", "lines").put("records", role.equals("stream") ? 2 : 1).put("owner_session_uid", "native-1");
+                        .put("framing", "lines").put("records", role.equals("stream") ? lines.size() : 1).put("owner_session_uid", "native-1");
             } else s.put("archive_only", true);
             sources.add(s);
             if (!role.equals("transcript")) ((Jv.Obj) m.member("turns").elements().get(0).member("end_offsets")).put(role.equals("stream") ? "STDOUT" : role.toUpperCase(java.util.Locale.ROOT), content.length);
         }
         Path sealed = raw.resolve("sealed.json"); Files.writeString(sealed, Jv.write(m));
-        return ClaudeAcquisition.qualify(sealed, temp.resolve("qualified")).manifest().getParent();
+        return ClaudeAcquisition.qualify(sealed, temp.resolve("qualified"));
     }
 
     /** The same sealed input, qualified through the registered qualifier its own profile selects. */
@@ -69,17 +80,107 @@ class TerminalNativeTest {
     }
 
     @Test void theRegisteredQualifierDeliversOneInitialBindingUnderItsTerminalProfile() throws Exception {
-        var q = qualifiedThroughTheRegistry(); Path base = q.manifest().getParent(), store = temp.resolve("store");
-        TerminalReceiver receiver = new TerminalReceiver(store, "producer", WriterOptions.defaults());
-        Path file = events(store, receiver.receive(nativeEnvelope(completeAssociation(base)), base));
+        var q = qualifiedThroughTheRegistry(); Path file = assertAccepted(q);
         assertThat(Files.readString(file)).as("the archived terminal envelope").contains("\\\"profile\\\":\\\"" + TerminalReceiver.CLAUDE_PROFILE + "\\\"");
-        assertThat(Files.readAllBytes(base.resolve("client-acquisition.json"))).isEqualTo(Files.readAllBytes(temp.resolve("raw/sealed.json")));
+        assertThat(Files.readAllBytes(q.manifest().getParent().resolve("client-acquisition.json"))).isEqualTo(Files.readAllBytes(temp.resolve("raw/sealed.json")));
+    }
+
+    /** Delivers {@code q} through the shipped receiver and requires the independent reader's full acceptance; returns the archive. */
+    private Path assertAccepted(io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.Qualified q) throws IOException {
+        Delivered d = deliver(q);
+        assertThat(d.acceptance().exit()).as(d.acceptance().toString()).isZero();
+        return d.file();
+    }
+
+    private record Delivered(Path file, io.github.markpollack.journal.tck.ocsf.OcsfReaderTool.Acceptance acceptance) { }
+
+    /** Delivers {@code q} through the shipped receiver; the independent reader reports no defect and returns its acceptance. */
+    private Delivered deliver(io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.Qualified q) throws IOException {
+        return deliver(temp, q);
+    }
+
+    /** Seals {@code q} through the shipped receiver into {@code temp/store}; returns the root event file. */
+    private static Path seal(Path temp, io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.Qualified q) throws IOException {
+        Path base = q.manifest().getParent(), store = temp.resolve("store");
+        TerminalReceiver receiver = new TerminalReceiver(store, "producer", WriterOptions.defaults());
+        return events(store, receiver.receive(nativeEnvelope(completeAssociation(base)), base));
+    }
+
+    private static Delivered deliver(Path temp, io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.Qualified q) throws IOException {
+        Path file = seal(temp, q);
         var pkg = PackageReader.open(file);
         assertThat(pkg.diagnostics).noneMatch(d -> d.severity().name().equals("DEFECT") || d.severity().name().equals("REFUSED"));
         var report = new io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionVerification().verify(pkg, file.getParent().resolve("sources"),
                 file.getParent().resolve("sources/acquisition.json"), q.assemblyExpectation());
         assertThat(report.defects()).isEmpty();
-        assertThat(io.github.markpollack.journal.tck.ocsf.OcsfReaderTool.acceptance(report).exit()).as(io.github.markpollack.journal.tck.ocsf.OcsfReaderTool.acceptance(report).toString()).isZero();
+        return new Delivered(file, io.github.markpollack.journal.tck.ocsf.OcsfReaderTool.acceptance(report));
+    }
+
+    private static final String USAGE = "\"usage\":{\"input_tokens\":11,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":3,\"output_tokens\":4}";
+    private static final String RESULT = "{\"type\":\"result\",\"subtype\":\"success\",\"session_id\":\"native-1\",\"result\":\"done\",\"is_error\":false," + USAGE + "}";
+
+    private static String toolUse(String parent, String id, String name, String uuid) {
+        return "{\"type\":\"assistant\",\"message\":{\"id\":\"msg_" + uuid + "\",\"type\":\"message\",\"role\":\"assistant\",\"model\":\"claude-opus-5-5\",\"content\":[{\"type\":\"tool_use\",\"id\":\""
+                + id + "\",\"name\":\"" + name + "\",\"input\":{}}],\"stop_reason\":\"tool_use\"},\"parent_tool_use_id\":" + parent + ",\"session_id\":\"native-1\",\"uuid\":\"" + uuid + "\"}";
+    }
+
+    private static String toolResult(String parent, String id, String uuid) {
+        return "{\"type\":\"user\",\"message\":{\"role\":\"user\",\"content\":[{\"tool_use_id\":\"" + id + "\",\"type\":\"tool_result\",\"content\":\"done\"}]},\"parent_tool_use_id\":"
+                + parent + ",\"session_id\":\"native-1\",\"uuid\":\"" + uuid + "\"}";
+    }
+
+    private static final String HEARTBEAT = "{\"type\":\"tool_progress\",\"tool_use_id\":\"toolu_MCP-heartbeat-0\",\"tool_name\":\"mcp__slow__wait\",\"parent_tool_use_id\":\"toolu_MCP\","
+            + "\"elapsed_time_seconds\":30,\"heartbeat\":true,\"session_id\":\"native-1\",\"uuid\":\"p1\"}";
+    private static final String CHILD_PROMPT = "{\"type\":\"user\",\"message\":{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"read beta\"}]},\"parent_tool_use_id\":\"toolu_AGENT\","
+            + "\"agent_id\":\"a1\",\"session_id\":\"native-1\",\"uuid\":\"c1\",\"subagent_type\":\"general-purpose\"}";
+    private static final List<String> HEARTBEAT_STREAM = List.of(INIT, toolUse("null", "toolu_MCP", "mcp__slow__wait", "a1"), HEARTBEAT, toolResult("null", "toolu_MCP", "u1"), RESULT);
+    private static final List<String> SUB_AGENT_STREAM = List.of(INIT, toolUse("null", "toolu_AGENT", "Agent", "a1"), CHILD_PROMPT, toolUse("\"toolu_AGENT\"", "toolu_READ", "Read", "c2"),
+            toolResult("\"toolu_AGENT\"", "toolu_READ", "c3"), toolResult("null", "toolu_AGENT", "u1"), RESULT);
+
+    /**
+     * Regenerates the TCK's sealed terminal child-scope cases ({@code -Dterminal.child.regenerate=<directory>}): each
+     * case's store as the shipped receiver writes it, with the qualifier's assembly expectation beside it.
+     */
+    @Test void regenerateTckTerminalChildCases() throws Exception {
+        String target = System.getProperty("terminal.child.regenerate");
+        org.junit.jupiter.api.Assumptions.assumeTrue(target != null, "set terminal.child.regenerate to regenerate");
+        for (var c : java.util.Map.of("claude-heartbeat", HEARTBEAT_STREAM, "claude-sub-agent", SUB_AGENT_STREAM).entrySet()) {
+            Path base = Files.createDirectory(temp.resolve(c.getKey())), out = Path.of(target, c.getKey());
+            var q = qualifiedStream(base, c.getValue());
+            seal(base, q);
+            copyTree(base.resolve("store"), out.resolve("store"));
+            Files.copy(q.assemblyExpectation(), out.resolve("assembly-expectation.json"));
+        }
+    }
+
+    private static void copyTree(Path from, Path to) throws IOException {
+        try (var paths = Files.walk(from)) {
+            for (Path p : paths.toList()) {
+                Path t = to.resolve(from.relativize(p).toString());
+                if (Files.isDirectory(p)) Files.createDirectories(t); else Files.copy(p, t);
+            }
+        }
+    }
+
+    /**
+     * Claude Code 2.1.316 writes a heartbeat every 30 s while any tool call runs, naming the running call in
+     * {@code parent_tool_use_id} (record shape as in the 2.1.316 bundle's {@code tool_heartbeat} -> {@code tool_progress} emitter).
+     */
+    @Test void aLongMcpCallsHeartbeatKeepsTheArchiveAccepted() throws Exception {
+        Path file = assertAccepted(qualifiedStream(HEARTBEAT_STREAM));
+        assertThat(file.getParent().resolve("children")).as("no child core for a heartbeat").doesNotExist();
+    }
+
+    /**
+     * A real sub-agent's records carry the spawning Agent call in {@code parent_tool_use_id} and become a child run that
+     * reads without a defect. Its final-assembly assertions are not yet checked by the assembly oracle, which walks the
+     * root core only, so the archive is INCOMPLETE for exactly those and nothing else.
+     */
+    @Test void aSubAgentChildRunReadsWithoutDefectAndOnlyItsAssemblyIsUnchecked() throws Exception {
+        Delivered d = deliver(qualifiedStream(SUB_AGENT_STREAM));
+        assertThat(d.file().getParent().resolve("children/toolu_AGENT/events.jsonl")).as("the sub-agent child run").isRegularFile();
+        assertThat(d.acceptance().verdict()).isEqualTo("INCOMPLETE");
+        assertThat(d.acceptance().reasons()).isNotEmpty().allMatch(r -> r.matches("actual assertion unchecked: child:toolu_AGENT/stdout\\.bin:line=\\d+#/assembly/(assembly_role_id|entity_uid|occurrence_uid)"));
     }
 
     private static Jv.Obj completeAssociation(Path base) throws IOException {

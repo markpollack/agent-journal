@@ -58,6 +58,16 @@ final class MapperSupport {
         return RFC3339_MS.format(Instant.ofEpochMilli(ms));
     }
 
+    /**
+     * The Claude Code split core that owns a stream record: its {@code parent_tool_use_id}, except on a
+     * {@code tool_progress} record, where that member names the tool call in progress (a heartbeat every 30 s,
+     * Bash progress or an Agent API retry), so the record stays with records that name no owner
+     * (claude.stream.progress_owner.v1).
+     */
+    static String claudeOwner(Jv record) {
+        return "tool_progress".equals(text(record, "type")) ? null : text(record, "parent_tool_use_id");
+    }
+
     static String text(Jv v, String... path) {
         Jv x = v == null ? null : v.path(path);
         return x == null || x.isNull() ? null : x.text();

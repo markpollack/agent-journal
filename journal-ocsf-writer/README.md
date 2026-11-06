@@ -20,7 +20,9 @@ uses it.
   counts). `complete()` finalizes (`COMPLETED`), `interrupt()` ends open sources and finalizes (`INTERRUPTED`), and a
   persistence failure leaves a `FAILED` manifest naming the confirmed persisted boundary. Finalization is idempotent.
 - Routes records whose owner path (`parent_tool_use_id`) names a tool call to a child core under
-  `children/<id>/`, each core independently portable with its own definition closure.
+  `children/<id>/`, each core independently portable with its own definition closure. A Claude `tool_progress`
+  record (a heartbeat every 30 s, Bash progress, an Agent API retry) is the exception: its `parent_tool_use_id`
+  names the tool call in progress, so it stays with the records that name no owner.
 - Combines several sources of one execution only by final assembly (`OcsfRunWriter.openAssembly`, `FinalAssembly`
   with a reviewed profile), whose identity gate decides which sources belong together. A writer from
   `OcsfRunWriter.open` records one source and refuses a second; `OcsfRunWriter.openEvidenceLog` records several

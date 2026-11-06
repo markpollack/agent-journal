@@ -105,6 +105,17 @@ Distinct, repeated or absent tool identifiers do not collapse separate array ent
 only identifies the entry within the native record; tool attribution still requires the identifier
 that entry reports. Dropped, duplicated or misattributed denials fail validation.
 
+**Heartbeats and sub-agents.** A tool call that runs past 30 s makes Claude Code write a `tool_progress`
+record every 30 s. Its `parent_tool_use_id` names the running call, not a sub-agent, so it stays in the root
+core and creates no child run. A sub-agent's records carry the spawning `Agent` call in
+`parent_tool_use_id` and form a child core under `children/<id>/`. The reader works out the expected split
+cores from the acquired stream itself and checks a child's binding by its link to the bound execution
+(`run.parent.run_uid` is the `executionId`, and `run.run_uid` is `<executionId>/child/<spawning call>`); the
+root-only acquisition checks apply to the root.
+
+Archives with sub-agents are not yet accepted. A child core reads without a defect, but its
+final-assembly assertions are not checked yet, so such an archive is INCOMPLETE.
+
 ## Qualifier lookup
 
 `AcquisitionQualifier`, in the TCK's `io.github.markpollack.journal.tck.ocsf.inventory` package, lets

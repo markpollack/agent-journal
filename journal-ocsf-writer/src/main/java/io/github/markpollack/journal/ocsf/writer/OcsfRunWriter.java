@@ -709,6 +709,9 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         });
     }
 
+    /** Appended to a Claude root's scope basis: tool_progress records stay in the root whatever their parent_tool_use_id names. */
+    private static final String PROGRESS_OWNER = "; a tool_progress record names the tool call in progress in parent_tool_use_id and is owned here (claude.stream.progress_owner.v1)";
+
     private static final String CHILD_BASIS = "records whose owner path (parent_tool_use_id) equals the spawning tool call id, routed by the mapper as they arrived (labelled split; not live child support)";
 
     /** The owner scope of a core: {@code ownerValue} null for the root (records without an owner). */
@@ -959,7 +962,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         }
         else if (!children.isEmpty() && ownerArtifact() != null) {
             runObj.put("source_scope", new Jv.Obj().put("artifact", ownerArtifact()).put("owner_path", "parent_tool_use_id").put("owner_value", Jv.Null.INSTANCE)
-                    .put("basis", "this core owns the records of the artifact whose owner_path member equals owner_value (null: records without one)"));
+                    .put("basis", "this core owns the records of the artifact whose owner_path member equals owner_value (null: records without one)" + PROGRESS_OWNER));
         }
         m.put("run", runObj);
 

@@ -771,7 +771,7 @@ public final class CliCapture {
                 }
                 try {
                     Jv o = Jv.parse(line);
-                    String owner = o instanceof Jv.Obj ? MapperSupport.text(o, "parent_tool_use_id") : null;
+                    String owner = o instanceof Jv.Obj ? MapperSupport.claudeOwner(o) : null;
                     if (owner != null && !seen.contains(owner)) {
                         seen.add(owner);
                         children.add(new Jv.Obj().put("spawn_tool_call_uid", owner).put("artifact", "stream.jsonl").put("owner_path", "parent_tool_use_id"));
@@ -788,7 +788,7 @@ public final class CliCapture {
                     + compatibilityInForce.get("detail").text() + "); the expected behavior is retention flagged untested, with no split core and no nearest-entry normalization");
         }
         Jv.Obj m = new Jv.Obj().put("kind", "agent-journal/expected-sources").put("version", "0.1").put("run_uid", runUid).put("complete", complete)
-                .put("frozen", new Jv.Obj().put("at", "after acquisition, before judging").put("by", "sha256, bytes and line count of the independent byte copy of the CLI's standard output (written before the writer saw each chunk); split cores from the copy's distinct non-null parent_tool_use_id values")
+                .put("frozen", new Jv.Obj().put("at", "after acquisition, before judging").put("by", "sha256, bytes and line count of the independent byte copy of the CLI's standard output (written before the writer saw each chunk); split cores from the copy's distinct non-null parent_tool_use_id values, tool_progress records excepted (claude.stream.progress_owner.v1)")
                         .put("basis", "LIVE launch by CliCapture; the capture's own package output was not consulted").put("process", process))
                 .put("sources", new Jv.Arr(List.of(source)))
                 .put("children", children);

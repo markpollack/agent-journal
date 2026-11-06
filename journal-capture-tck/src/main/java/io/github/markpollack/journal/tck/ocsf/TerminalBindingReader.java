@@ -34,10 +34,24 @@ public final class TerminalBindingReader {
         String associationText = string(binding, "association"); Json a = exact(associationText); TerminalAssociationReading.check(a, d);
         String parent = binding.member("originalBindingId").isNull() ? null : string(binding, "originalBindingId");
         revision(initial, a, associationText, parent);
-        TerminalRetainedReading.check(file, p, d, a);
-        TerminalNativeReading.check(file, p, d, a);
-        TerminalCodexReading.check(file, p, d, a);
+        Json spawn = file.run().member("parent");
+        if (spawn != null) child(file, spawn, d);
+        else {
+            TerminalRetainedReading.check(file, p, d, a);
+            TerminalNativeReading.check(file, p, d, a);
+            TerminalCodexReading.check(file, p, d, a);
+        }
         return new Binding(string(p, "producerNamespace"), canonical(d), associationText, parent);
+    }
+
+    /**
+     * A split child core repeats its root's binding. The root-only acquisition checks belong to the root file; a
+     * child is bound by being the executionId's child of the call that spawned it.
+     */
+    private static void child(DeclaredFile file, Json spawn, Json d) {
+        String execution = string(d, "executionId");
+        expect(spawn, "run_uid", execution);
+        expect(file.run(), "run_uid", execution + "/child/" + string(spawn, "spawn_tool_call_uid"));
     }
 
     private static void revision(Json initial, Json a, String associationText, String parent) {

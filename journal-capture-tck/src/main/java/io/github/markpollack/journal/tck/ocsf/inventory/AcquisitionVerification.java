@@ -2,6 +2,7 @@ package io.github.markpollack.journal.tck.ocsf.inventory;
 
 import io.github.markpollack.journal.tck.ocsf.CodexRetainedGeneration;
 import io.github.markpollack.journal.tck.ocsf.AcquisitionVerifier;
+import io.github.markpollack.journal.tck.ocsf.ClaudeOwnerScope;
 import io.github.markpollack.journal.tck.ocsf.ExpectedSources;
 import io.github.markpollack.journal.tck.ocsf.NativeArtifact;
 import io.github.markpollack.journal.tck.ocsf.OcsfPackage;
@@ -132,7 +133,21 @@ public final class AcquisitionVerification implements AcquisitionVerifier {
             frozen.members().put("complete", new Json.JBool(complete));
             frozen.members().put("sources", new Json.JArray(expected));
             if (manifest.member("children") != null) { frozen.members().put("children", manifest.member("children")); }
+            else if (ClaudeAcquisition.PROFILE_ID.equals(text(manifest, "profile_id"))) { frozen.members().put("children", splitCores()); }
             return ExpectedSources.parse(frozen);
+        }
+
+        /** A sealed Claude acquisition names no split cores; the acquired stream's own owner paths require them. */
+        private Json splitCores() {
+            List<Json> children = new ArrayList<>();
+            for (AssemblyOracle.Supplied source : supplied) {
+                if (!"stream".equals(source.role())) { continue; }
+                for (String owner : ClaudeOwnerScope.splitCores(source.bytes())) {
+                    children.add(new Json.JObject(new LinkedHashMap<>(java.util.Map.of("spawn_tool_call_uid", new Json.JString(owner),
+                            "artifact", new Json.JString(source.name()), "owner_path", new Json.JString(ClaudeOwnerScope.OWNER_PATH)))));
+                }
+            }
+            return new Json.JArray(children);
         }
 
         private void sourceBindings(OracleReport report) {
