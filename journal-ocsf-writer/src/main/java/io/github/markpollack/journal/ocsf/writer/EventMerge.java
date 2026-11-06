@@ -285,9 +285,26 @@ final class EventMerge {
         return k.toString();
     }
 
+    /**
+     * A member only one observation reports makes that observation the richer one, unless it states provenance alone
+     * (such as the {@code mcp} member of an MCP tool result, which states only its {@code basis}): provenance is never a
+     * fact, so it neither enriches its observation nor takes field evidence, as with a top-level provenance member.
+     */
     private void single(String pointer, Contribution c) {
+        if (!carriesFact(c.value())) {
+            return;
+        }
         contributors.add(c.occurrence());
         evidence.add(evidence(pointer, 7, List.of(c), "only this occurrence reports it"));
+    }
+
+    /** Whether {@code v} states anything beyond provenance: a non-object, an empty object, or an object with a fact member. */
+    static boolean carriesFact(Jv v) {
+        if (!(v instanceof Jv.Obj o) || o.members().isEmpty()) {
+            return true;
+        }
+        boolean observation = o.members().containsKey("basis") || o.members().containsKey("source_ref");
+        return o.members().keySet().stream().anyMatch(k -> !PROVENANCE.contains(k) && !(observation && "data".equals(k)));
     }
 
     /** Records a conflict; returns the value a declared authority selects, else {@code null} (the field stays absent). */

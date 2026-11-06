@@ -1,8 +1,9 @@
 {
   "kind": "agent-journal/cross-cli-accounting-baseline",
-  "version": "0.24",
+  "version": "0.25",
   "meaning": "Exact executed accounting population and dependency snapshot. Declared checker assignments remain separate from attributed Check outcomes. Pins native occurrences and classifications, source/specification bindings, E requirements, actual assertion outcomes, comparison operand digests and non-passing findings. An edit is a reviewable implementation result, never semantic approval. Unresolved meanings and unsupported versions remain non-passing. Required unchecked comparisons cannot be frozen by this ratchet.",
   "changes": [
+    {"revision": "0.25 (provenance is not a richer fact, 2026-11-06)", "summary": "Restate the journal-capture-tck/src/test/java and journal-ocsf-writer/src/main dependency digests: a member only one observation reports no longer makes that observation the richer one, nor takes Single source field evidence, when it states provenance alone (EventMerge.single, carriesFact), as with the mcp member of a Claude stream MCP tool result, which states only its basis. The TCK gains the sealed terminal-mcp cases (claude-mcp by this writer, claude-mcp-aa75c02 by the unfixed writer) and TerminalMcpRelationTest; TerminalChildScopeTest shares its readers. No assertion, comparison population, source, catalog classification, checker, non-passing check, extension, contract or TCK main digest changed: the ledger is otherwise line-identical to 0.24."},
     {"revision": "0.24 (Claude progress owner and terminal child scope, 2026-11-06)", "summary": "Restate the journal-capture-tck/src/main, src/test/java and journal-ocsf-writer/src/main dependency digests: a Claude tool_progress record's parent_tool_use_id names the tool call in progress, not an owning scope (ClaudeOwnerScope, MapperSupport.claudeOwner; the new Claude stream contract rule claude.stream.progress_owner.v1, owner_routing unchanged), a split child core repeating its root's terminal binding is checked by its link to the bound execution instead of the root-only acquisition checks, and a sealed Claude acquisition's expected split cores are derived from its acquired stream. The executed accounting population is unchanged."},
     {"revision": "0.23 (acquisition qualifier SPI, 2026-11-05)", "summary": "Restate the journal-capture-tck/src/main and src/test/java dependency digests for the AcquisitionQualifier SPI: the Claude 2.1.316 and Codex 0.166.0 one-shot qualifiers become its two registered implementations and every qualifier returns the one shared Qualified record. Qualification checks and qualified bytes are unchanged; no assertion, comparison population, source, catalog classification, checker, non-passing check, extension or writer digest changed."},
     {
@@ -780,11 +781,11 @@
     "comparison-population syn-codex-onboarding-exec-0.166.0 main/stream.jsonl 408 sha256:fa6b0f5cb023c466ceba9344981359156c012d2c4287693aefc6a3a6481dfebf",
     "comparison-population syn-codex-onboarding-rollout-0.166.0 main/stream.jsonl 1672 sha256:989c79990f3a8368cf8a938f335c8a6b0fc5e3d335d546695a4195287a51cc3b",
     "dependency journal-capture-tck/src/main sha256:47dbca8a8ef9ca734566739241dc090c95ea86efb4e5c6619afce8f581381c07",
-    "dependency journal-capture-tck/src/test/java sha256:12590efb555273e7a68c45bc3a035193b16173e1e5ae35de9bef702a93a5391c",
+    "dependency journal-capture-tck/src/test/java sha256:517a743bc43f1bf22e9c867723b25050d0bf12f449870026bfd0bbb6f32a68ef",
     "dependency journal-capture-tck/src/test/resources/ocsf/conformance sha256:197e677ebb73d7d22fc6a9e32f4e43ff4c82a4f8e5f5dbf9d62f2196a94c34f1",
     "dependency journal-capture-tck/src/test/resources/ocsf/fixtures sha256:64020b8236b60d5ab477b40cf44430af408658f960478939fb7c1e444c048d0b",
     "dependency journal-capture-tck/src/test/resources/ocsf/mapping-catalog sha256:3666ba8cb3cff5a7e9d6b2e1bd88fe525fd4efbf89f337f45f70389647d8546b",
-    "dependency journal-ocsf-writer/src/main sha256:13f7e0fbcda6c8a093db92e140fb0055f4ee9451b84d311208fd86db016c8ee2",
+    "dependency journal-ocsf-writer/src/main sha256:d073e5a0e4d073d6522778e6ac53c2141d2a19b691b84b055fafc31de1243a72",
     "dependency prototype/ocsf-acp/extension sha256:2239224ca7ac92f281c59b3a4b1bfa45be9721e076d2674b643e1cdbb49c6d7d",
     "dependency prototype/ocsf-acp/toolchain.lock.json sha256:d91ea93f63b0d52b3200ccfbe81dde06e991922e4ff20734fd0e83e407755fab",
     "dependency schema/vendor sha256:450077bdd6089dd72b95e07f78c565b12bbd608c8eb1c1829fff8fc736491736",

@@ -32,14 +32,19 @@ class TerminalNativeTest {
         return qualifiedStream(temp, lines);
     }
 
+    private static final String TRANSCRIPT_PROMPT = "{\"type\":\"user\",\"uuid\":\"u1\",\"sessionId\":\"native-1\",\"version\":\"2.1.316\",\"message\":{\"role\":\"user\",\"content\":\"hello\"}}";
+
     private static io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.Qualified qualifiedStream(Path temp, List<String> lines) throws IOException {
+        return qualifiedStream(temp, lines, List.of(TRANSCRIPT_PROMPT));
+    }
+
+    /** As {@link #qualifiedStream(Path, List)}, with the session file's records {@code transcript}. */
+    private static io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.Qualified qualifiedStream(Path temp, List<String> lines, List<String> transcript) throws IOException {
         Path raw = Files.createDirectory(temp.resolve("raw"));
         Files.writeString(raw.resolve("stdin.bin"), "{\"type\":\"user\",\"message\":{\"role\":\"user\",\"content\":\"hello\"}}\n");
         Files.writeString(raw.resolve("stdout.bin"), String.join("\n", lines) + "\n");
         Files.writeString(raw.resolve("stderr.bin"), "");
-        Files.writeString(raw.resolve("native.jsonl"), """
-                {"type":"user","uuid":"u1","sessionId":"native-1","version":"2.1.316","message":{"role":"user","content":"hello"}}
-                """);
+        Files.writeString(raw.resolve("native.jsonl"), String.join("\n", transcript) + "\n");
         Jv.Obj m = (Jv.Obj) Jv.parse("""
                 {"kind":"agent-journal/acquired-execution","version":"0.1","profile":"claude-code-2.1.316-sdk-stdio-session-file",
                 "profile_id":"claude-code/2.1.316/sdk-stdio+session-file","acquisition_uid":"execution-1","complete":true,"capture_errors":[],
@@ -58,7 +63,7 @@ class TerminalNativeTest {
             if (role.equals("stream") || role.equals("transcript")) {
                 s.put("profile", role.equals("stream") ? "claude_stream" : "claude_transcript")
                         .put("route", role.equals("stream") ? "sdk_stdio" : "native_session_file")
-                        .put("framing", "lines").put("records", role.equals("stream") ? lines.size() : 1).put("owner_session_uid", "native-1");
+                        .put("framing", "lines").put("records", role.equals("stream") ? lines.size() : transcript.size()).put("owner_session_uid", "native-1");
             } else s.put("archive_only", true);
             sources.add(s);
             if (!role.equals("transcript")) ((Jv.Obj) m.member("turns").elements().get(0).member("end_offsets")).put(role.equals("stream") ? "STDOUT" : role.toUpperCase(java.util.Locale.ROOT), content.length);
@@ -137,16 +142,56 @@ class TerminalNativeTest {
     private static final List<String> SUB_AGENT_STREAM = List.of(INIT, toolUse("null", "toolu_AGENT", "Agent", "a1"), CHILD_PROMPT, toolUse("\"toolu_AGENT\"", "toolu_READ", "Read", "c2"),
             toolResult("\"toolu_AGENT\"", "toolu_READ", "c3"), toolResult("null", "toolu_AGENT", "u1"), RESULT);
 
+    private static final String MCP_INIT = "{\"type\":\"system\",\"subtype\":\"init\",\"session_id\":\"native-1\",\"claude_code_version\":\"2.1.316\",\"tools\":[\"mcp__ide__probe\"],"
+            + "\"mcp_servers\":[{\"name\":\"ide\",\"status\":\"connected\",\"source\":\"project\"}]}";
+    private static final String MCP_MESSAGE = "{\"id\":\"msg_a1\",\"type\":\"message\",\"role\":\"assistant\",\"model\":\"claude-opus-5-5\",\"content\":[{\"type\":\"tool_use\",\"id\":\"toolu_MCP\","
+            + "\"name\":\"mcp__ide__probe\",\"input\":{\"symbol\":\"demo.A\"}}],\"stop_reason\":\"tool_use\"}";
+    private static final String MCP_CONTENT = "[{\"tool_use_id\":\"toolu_MCP\",\"type\":\"tool_result\",\"content\":[{\"type\":\"text\",\"text\":\"demo.A calls demo.B\"}]}]";
+    /** One MCP call, its request and result in both the stream and the session file, shaped as Claude Code 2.1.316 writes them. */
+    private static final List<String> MCP_STREAM = List.of(MCP_INIT,
+            "{\"type\":\"assistant\",\"message\":" + MCP_MESSAGE + ",\"parent_tool_use_id\":null,\"session_id\":\"native-1\",\"uuid\":\"a1\"}",
+            "{\"type\":\"user\",\"message\":{\"role\":\"user\",\"content\":" + MCP_CONTENT + "},\"parent_tool_use_id\":null,\"session_id\":\"native-1\",\"uuid\":\"r1\","
+                    + "\"tool_use_result\":[{\"type\":\"text\",\"text\":\"demo.A calls demo.B\"}]}",
+            RESULT);
+    private static final List<String> MCP_TRANSCRIPT = List.of(TRANSCRIPT_PROMPT,
+            "{\"parentUuid\":\"u1\",\"type\":\"assistant\",\"uuid\":\"a1\",\"sessionId\":\"native-1\",\"version\":\"2.1.316\",\"message\":" + MCP_MESSAGE + "}",
+            "{\"parentUuid\":\"a1\",\"type\":\"user\",\"uuid\":\"r1\",\"sessionId\":\"native-1\",\"version\":\"2.1.316\",\"message\":{\"role\":\"user\",\"content\":" + MCP_CONTENT + "},"
+                    + "\"toolUseResult\":[{\"type\":\"text\",\"text\":\"demo.A calls demo.B\"}],\"sourceToolAssistantUUID\":\"a1\"}");
+
+    /**
+     * The stream's observation of an MCP tool result states only the basis of its {@code mcp} member, which the session
+     * file's observation lacks. Provenance is not a fact, so the consolidated result is not "One richer" for it.
+     */
+    @Test void anMcpToolResultsProvenanceDoesNotMakeItsStreamObservationRicher() throws Exception {
+        Path file = assertAccepted(qualifiedStream(temp, MCP_STREAM, MCP_TRANSCRIPT));
+        List<Jv> results = Files.readAllLines(file).stream().map(Jv::parse)
+                .filter(e -> e.member("tool_result") != null && e.member("assembly") != null && e.member("assembly").member("relation_class_id") != null).toList();
+        assertThat(results).as("one consolidated MCP tool result").hasSize(1);
+        assertThat(results.get(0).member("mcp")).as("its mcp member, kept").isNotNull();
+        assertThat(Jv.write(results.get(0).member("assembly"))).doesNotContain("\"field_pointer\":\"/mcp\"");
+    }
+
     /**
      * Regenerates the TCK's sealed terminal child-scope cases ({@code -Dterminal.child.regenerate=<directory>}): each
      * case's store as the shipped receiver writes it, with the qualifier's assembly expectation beside it.
      */
     @Test void regenerateTckTerminalChildCases() throws Exception {
-        String target = System.getProperty("terminal.child.regenerate");
-        org.junit.jupiter.api.Assumptions.assumeTrue(target != null, "set terminal.child.regenerate to regenerate");
-        for (var c : java.util.Map.of("claude-heartbeat", HEARTBEAT_STREAM, "claude-sub-agent", SUB_AGENT_STREAM).entrySet()) {
+        regenerate("terminal.child.regenerate", java.util.Map.of("claude-heartbeat", List.of(HEARTBEAT_STREAM, List.of(TRANSCRIPT_PROMPT)),
+                "claude-sub-agent", List.of(SUB_AGENT_STREAM, List.of(TRANSCRIPT_PROMPT))));
+    }
+
+    /** Regenerates the TCK's sealed MCP one-shot case ({@code -Dterminal.mcp.regenerate=<directory>}), as above. */
+    @Test void regenerateTckTerminalMcpCases() throws Exception {
+        regenerate("terminal.mcp.regenerate", java.util.Map.of("claude-mcp", List.of(MCP_STREAM, MCP_TRANSCRIPT)));
+    }
+
+    /** Seals each case (its stream, then its session file) into the directory {@code property} names. */
+    private void regenerate(String property, java.util.Map<String, List<List<String>>> cases) throws IOException {
+        String target = System.getProperty(property);
+        org.junit.jupiter.api.Assumptions.assumeTrue(target != null, "set " + property + " to regenerate");
+        for (var c : cases.entrySet()) {
             Path base = Files.createDirectory(temp.resolve(c.getKey())), out = Path.of(target, c.getKey());
-            var q = qualifiedStream(base, c.getValue());
+            var q = qualifiedStream(base, c.getValue().get(0), c.getValue().get(1));
             seal(base, q);
             copyTree(base.resolve("store"), out.resolve("store"));
             Files.copy(q.assemblyExpectation(), out.resolve("assembly-expectation.json"));

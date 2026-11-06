@@ -18,16 +18,26 @@ class TerminalChildScopeTest {
     @TempDir Path temp;
 
     private static Path root(String name) throws IOException {
-        try (Stream<Path> files = Files.walk(CASES.resolve(name).resolve("store/prepared"))) {
+        return root(CASES, name);
+    }
+
+    /** The root event file of the sealed case {@code name} under {@code cases}. */
+    static Path root(Path cases, String name) throws IOException {
+        try (Stream<Path> files = Files.walk(cases.resolve(name).resolve("store/prepared"))) {
             return files.filter(p -> p.getFileName().toString().equals("events.jsonl") && !p.toString().contains("/children/")).findFirst().orElseThrow();
         }
     }
 
     private static OcsfReaderTool.Acceptance acceptance(String name) throws IOException {
-        Path events = root(name);
+        return acceptance(CASES, name);
+    }
+
+    /** The independent reader's combined acceptance of the sealed case {@code name} under {@code cases}. */
+    static OcsfReaderTool.Acceptance acceptance(Path cases, String name) throws IOException {
+        Path events = root(cases, name);
         OcsfPackage pkg = PackageReader.open(events);
         OracleReport report = new AcquisitionVerification().verify(pkg, events.getParent().resolve("sources"), events.getParent().resolve("sources/acquisition.json"),
-                CASES.resolve(name).resolve("assembly-expectation.json"));
+                cases.resolve(name).resolve("assembly-expectation.json"));
         return OcsfReaderTool.acceptance(report);
     }
 
