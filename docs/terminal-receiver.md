@@ -135,7 +135,11 @@ again. A file that does not bind stays preserved but unread, and the archive is 
 The binding also requires every record the stream reports for the sub-agent to be in the session file, so a stale
 prefix of the file does not bind. Every shown spawn owes a bound session file (`acquisition.child_session`): Claude
 Code 2.1.316 saves one for each sub-agent, so an archive without it is INCOMPLETE, whether the file was omitted, declared
-missing or stale. Beyond that, freshness rests on the acquisition's own EOF and extent assertions. The qualifier and the
+missing or stale. The spawns are the stream's `Agent` tool requests, whether or not any record was forwarded for the
+sub-agent. The sub-agent must also have finished: Claude Code writes `"finished": true` into the meta file when it ends.
+A background sub-agent still running when the parent wrote its result has no such flag, and its session file is a
+prefix of what it went on to write, so that archive is INCOMPLETE too; its session file is still read into the child
+core. Beyond that, freshness rests on the acquisition's own EOF and extent assertions. The qualifier and the
 reader share `ClaudeSubAgentSession.bindings()`. The reader derives the binding again from the native bytes and
 compares it with the recorded one, which catches an altered declaration but cannot independently falsify the rule
 itself.

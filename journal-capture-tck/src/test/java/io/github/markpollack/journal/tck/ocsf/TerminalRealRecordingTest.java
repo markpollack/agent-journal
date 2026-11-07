@@ -278,7 +278,9 @@ class TerminalRealRecordingTest {
         restateIndex(events.getParent());
         OcsfReaderTool.Acceptance a = acceptance(cases, "claude-sub-agent");
         assertThat(a.verdict()).isEqualTo("DEFECTIVE");
-        assertThat(a.reasons()).anyMatch(r -> r.contains("[main/stdout.jsonl]") && r.contains("is not owned by this core but retained here"));
+        assertThat(a.reasons()).anyMatch(r -> r.contains("[main/stdout.jsonl]") && r.contains("is not owned by this core but retained here"))
+                .as("the child side too: the record it owns has no event there").anyMatch(r -> r.contains("[child:" + SPAWN + "/stdout.jsonl]")
+                        && (r.contains("whole_record.coverage") || r.contains("reconstruction.coverage")));
     }
 
     /** Main review F3: a child observation given another entity's uid is defective: the child's partition is checked like the root's. */
@@ -352,6 +354,13 @@ class TerminalRealRecordingTest {
         OcsfReaderTool.Acceptance a = acceptance(cases, "claude-mcp");
         assertThat(a.verdict()).isEqualTo("DEFECTIVE");
         assertThat(a.reasons()).anyMatch(r -> r.contains("UNKNOWN_ATTRIBUTE") && r.matches("(?s).*line \\d+ .*mcp_call_tool_result\\.mcp_meta.*"));
+    }
+
+    /** A real background sub-agent still running when the parent's result was written is INCOMPLETE: its session file is a prefix. */
+    @Test void aBackgroundSubAgentStillRunningAtCaptureIsIncomplete() throws IOException {
+        OcsfReaderTool.Acceptance a = acceptance("claude-sub-agent-background");
+        assertThat(a.verdict()).isEqualTo("INCOMPLETE");
+        assertThat(a.reasons()).singleElement().asString().contains("acquisition.child_session").contains("had not finished");
     }
 
     /** Re-review F1: real MCP arguments whose keys are basis and data are a payload the reader judges like any fact. */

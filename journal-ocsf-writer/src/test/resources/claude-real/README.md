@@ -11,3 +11,4 @@ are the original's, and other strings are hash tokens. `RealRecordingTest` seals
 | `heartbeat` | one 40 s IntelliJ MCP call; Claude Code writes `tool_progress` heartbeats naming it |
 | `mcp` | IntelliJ MCP calls whose requests and results the stream and the session file both write |
 | `sub-agent` | one `Agent` call; the sub-agent's records in the stream and its own `subagents/agent-<id>.jsonl` |
+| `sub-agent-background` | one background `Agent` call; the parent's result is written while the sub-agent still runs (its meta file states no `finished`), so the archive is INCOMPLETE |

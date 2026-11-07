@@ -32,6 +32,29 @@ public final class ClaudeOwnerScope {
     }
 
     /**
+     * The sub-agent spawns the stream requests: the ids of the assistant {@code tool_use} blocks naming Claude Code
+     * 2.1.316's sub-agent tool ({@link ClaudeChildUsageReading#AGENT_TOOL}), whether or not any record names the spawn
+     * as its owner.
+     */
+    public static List<String> spawnRequests(NativeArtifact stream) {
+        List<String> ids = new ArrayList<>();
+        for (NativeArtifact.Record r : stream.records()) {
+            for (Json b : toolUses(r)) {
+                String id = SourceProfile.text(b, "id");
+                if (ClaudeChildUsageReading.AGENT_TOOL.equals(SourceProfile.text(b, "name")) && id != null && !ids.contains(id)) { ids.add(id); }
+            }
+        }
+        return ids;
+    }
+
+    /** The {@code tool_use} content blocks of a parsed record's message; empty for anything else. */
+    private static List<Json> toolUses(NativeArtifact.Record r) {
+        Json content = r.parsed() && r.json().member("message") instanceof Json.JObject m ? m.member("content") : null;
+        return content instanceof Json.JArray blocks
+                ? blocks.elements().stream().filter(b -> "tool_use".equals(SourceProfile.text(b, "type"))).toList() : List.of();
+    }
+
+    /**
      * Whether a record of {@code stream} requests the tool call {@code owner} (an assistant message's {@code tool_use}
      * content block with that id). An owner scope alone is only what records name: without such a request in the
      * native bytes, nothing shows that a sub-agent was spawned.

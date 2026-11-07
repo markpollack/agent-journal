@@ -70,6 +70,18 @@ final class ClaudeSubAgentSession {
         return new Json.JObject(binding);
     }
 
+    /**
+     * Whether the sub-agent of {@code binding} had finished when its files were acquired: Claude Code 2.1.316 writes
+     * {@code "finished": true} into the meta file when the sub-agent ends. A background sub-agent still running when the
+     * parent wrote its result has no such flag, and its session file is a prefix of what it went on to write.
+     */
+    static boolean finished(Json manifest, Path base, Json binding) {
+        String meta = RawInventory.text(binding, "meta_artifact");
+        Json source = manifest.member("sources").elements().stream().filter(s -> meta.equals(RawInventory.text(s, "artifact"))).findFirst().orElse(null);
+        Json document = source == null ? null : document(base, source);
+        return document != null && document.member("finished") instanceof Json.JBool b && b.value();
+    }
+
     /** Whether the stream's records owned by {@code spawn} that state an agent id all state {@code agent}, and one does. */
     private static boolean streamAgent(NativeArtifact stream, String spawn, String agent) {
         int stated = 0;

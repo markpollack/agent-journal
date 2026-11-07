@@ -3,12 +3,17 @@ name: CI Build
 on:
   push:
     branches: [main]
+    # Markdown-only pushes build and publish nothing.
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
   pull_request:
     branches: [main]
   # Lets a release candidate be built at its exact SHA on its own branch, without
   # pushing to main and without publishing a snapshot. Dispatch with
   # `gh workflow run ci.yml --ref <branch>`; GitHub only offers workflow_dispatch
-  # once this trigger is present on the default branch.
+  # once this trigger is present on the default branch. Dispatched on main, it also
+  # publishes a snapshot through the gated publish job below.
   workflow_dispatch:
 
 jobs:
@@ -36,16 +41,18 @@ jobs:
       - name: Verify standalone consumer dependency floors
         run: ./scripts/check-consumer-resolution.py
 
-  # main is the 2.0 development line: a push to it publishes a 2.0.0-SNAPSHOT, but only once this run's build and
-  # standalone consumer resolution have both passed for the same commit. A newer push cancels an older in-progress
-  # publication (the latest main wins); cancellation cannot withdraw artifacts an earlier run already uploaded.
+  # main is the 2.0 development line: a push to it publishes a 2.0.0-SNAPSHOT, and so does a manual dispatch of this
+  # workflow on main (`gh workflow run ci.yml --ref main`), but only once this run's build and standalone consumer
+  # resolution have both passed for the same commit. This is the only publication path. Markdown-only pushes are
+  # skipped; a running deploy is never cancelled, because a cancellation cannot withdraw artifacts it already uploaded;
+  # while one deploys, only the newest waiting publication is kept.
   publish:
     name: Publish snapshot
     needs: [build, consumer-resolution]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     concurrency:
       group: publish-${{ github.ref }}
-      cancel-in-progress: true
+      cancel-in-progress: false
     uses: markpollack/build-tools/.github/workflows/publish-snapshot.yml@35297f1ade5f47c2925d6dab42a7e2d43bd734d0
     with:
       java-version: '21'

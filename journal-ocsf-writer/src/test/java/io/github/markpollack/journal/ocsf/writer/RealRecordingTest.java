@@ -165,6 +165,7 @@ class RealRecordingTest {
             byte[] bytes = Files.readAllBytes(dir.resolve(text(src, "path")));
             ((Jv.Obj) src).put("bytes", bytes.length).put("sha256", SchemaPin.sha256(bytes));
             if (src.member("records") != null) { ((Jv.Obj) src).put("records", (int) new String(bytes, java.nio.charset.StandardCharsets.UTF_8).lines().filter(l -> !l.isBlank()).count()); }
+            if ("stream".equals(text(src, "role"))) { ((Jv.Obj) manifest.member("turns").elements().get(0).member("end_offsets")).put("STDOUT", bytes.length); }
         }
         Files.writeString(dir.resolve("client-acquisition.json"), Jv.write(manifest));
         return into;
@@ -207,6 +208,49 @@ class RealRecordingTest {
         assertThat(s.acceptance().reasons()).anyMatch(r -> r.contains("acquisition.child_session"));
     }
 
+    /**
+     * Batch review (2): a shown spawn owes a session file even when no record is forwarded for the sub-agent. The real
+     * sub-agent run with its forwarded child records and its session and meta files removed, the Agent request kept, is
+     * INCOMPLETE, not accepted.
+     */
+    @Test void aShownSpawnWithNoForwardedRecordsAndNoSessionFileIsNotAccepted() throws IOException {
+        Path run = editedSubAgent(temp.resolve("unforwarded"), (dir, m) -> {
+            Jv.Arr kept = new Jv.Arr();
+            for (Jv src : m.member("sources").elements()) {
+                try {
+                    if (text(src, "path").contains("/subagents/")) { Files.delete(dir.resolve(text(src, "path"))); continue; }
+                    if ("stream".equals(text(src, "role"))) {
+                        Path stdout = dir.resolve(text(src, "path"));
+                        List<Jv> records = RealRecording.lines(stdout);
+                        String spawn = records.stream().filter(r -> "assistant".equals(text(r, "type"))).flatMap(r -> r.member("message").member("content").elements().stream())
+                                .filter(b -> "tool_use".equals(text(b, "type")) && "Agent".equals(text(b, "name"))).map(b -> text(b, "id")).findFirst().orElseThrow();
+                        Files.writeString(stdout, records.stream().filter(r -> !spawn.equals(text(r, "parent_tool_use_id"))).map(Jv::write)
+                                .collect(Collectors.joining("\n", "", "\n")));
+                    }
+                }
+                catch (IOException e) { throw new java.io.UncheckedIOException(e); }
+                kept.add(src);
+            }
+            m.put("sources", kept);
+        });
+        RealRecording.Sealed s = RealRecording.seal(run, temp.resolve("unforwarded-sealed"));
+        assertThat(s.events().getParent().resolve("children")).as("no forwarded child records, no child core").doesNotExist();
+        assertThat(s.acceptance().verdict()).isEqualTo("INCOMPLETE");
+        assertThat(s.acceptance().reasons()).anyMatch(r -> r.contains("acquisition.child_session") && r.contains("no acquired session file"));
+    }
+
+    /**
+     * A real background sub-agent still running when the parent's result was written (its meta file states no
+     * finished flag; its session file ends at an unanswered API request) is INCOMPLETE: its session file is read into
+     * the child core, but it is a prefix of what the sub-agent went on to write.
+     */
+    @Test void aRealBackgroundSubAgentStillRunningIsIncomplete() throws IOException {
+        RealRecording.Sealed s = RealRecording.seal(RealRecording.PUBLIC.resolve("sub-agent-background"), temp.resolve("background"));
+        assertThat(s.acceptance().verdict()).isEqualTo("INCOMPLETE");
+        assertThat(s.acceptance().reasons()).singleElement().asString().contains("acquisition.child_session").contains("had not finished");
+        assertThat(s.events().getParent().resolve("children")).isDirectory();
+    }
+
     /** Main review F4: a session file declared acquired but absent is a refusal of the acquisition, naming the file. */
     @Test void aSubAgentSessionFileDeclaredAcquiredButAbsentIsRefused() throws IOException {
         Path run = editedSubAgent(temp.resolve("deleted"), (dir, m) -> {
@@ -244,6 +288,11 @@ class RealRecordingTest {
             Files.copy(s.qualified().resolve("assembly-expectation.json"), out.resolve("assembly-expectation.json"));
             Files.copy(RealRecording.PUBLIC.resolve(name).resolve("SCRUBBED.md"), out.resolve("SCRUBBED.md"));
         }
+        RealRecording.Sealed background = RealRecording.seal(RealRecording.PUBLIC.resolve("sub-agent-background"), temp.resolve("background"));
+        Path bg = Path.of(target, "claude-sub-agent-background");
+        copyTree(background.store(), bg.resolve("store"));
+        Files.copy(background.qualified().resolve("assembly-expectation.json"), bg.resolve("assembly-expectation.json"));
+        Files.copy(RealRecording.PUBLIC.resolve("sub-agent-background").resolve("SCRUBBED.md"), bg.resolve("SCRUBBED.md"));
         var edited = withPayloadKeyArguments(temp.resolve("payload-keys"));
         RealRecording.Sealed s = RealRecording.seal(edited.getKey(), temp.resolve("payload-keys-sealed"));
         assertThat(s.acceptance().verdict()).as(s.acceptance().toString()).isEqualTo("ACCEPTED");
