@@ -118,8 +118,17 @@ to the root.
 A split core is only what records name. The reader also requires the stream to request the spawning call
 (`acquisition.child_spawn`); records naming an owner no call spawned leave the archive INCOMPLETE. The assembly
 oracle partitions every core's observations together, so a child core's assembly assertions are checked like the
-root's. The sub-agent's own session file (`subagents/agent-<id>.jsonl` and its `.meta.json`) is preserved but not
-yet read, so an archive that carries one is INCOMPLETE for exactly those two files.
+root's.
+
+**A sub-agent's session file.** Claude Code saves a sub-agent's own session file as
+`<session>/subagents/agent-<agentId>.jsonl`, beside an `.meta.json` that names the spawning call (`toolUseId`). The
+qualifier binds the file to that call from the native bytes alone. The meta file must name a call the stream requests,
+the stream's records of that call must carry the same `agent_id`, and every record of the file must be that agent's
+side chain of the run's session. A bound file is read, as role `child_transcript`, into the spawning call's child core,
+and that core's `source_scope.artifacts` lists it. Its records join the stream's records of the same uuid there, as the
+root session file's do in the root. So the sub-agent's model responses carry the session file's final usage, and the
+thinking and text records the stream omits are kept. The meta file stays preserved, and the reader checks the binding
+again. A file that does not bind stays preserved but unread, and the archive is INCOMPLETE for it.
 
 ## Qualifier lookup
 

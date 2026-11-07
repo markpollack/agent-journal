@@ -20,12 +20,15 @@ final class ToolOutputVerification {
 
     static void check(OcsfPackage pkg, Json manifest, Path base, OracleReport report) throws IOException {
         Map<String, Json> bindings = ClaudeToolOutput.bindings(manifest, base);
+        Map<String, Json> children = ClaudeSubAgentSession.bindings(manifest, base);
         for (Json source : manifest.member("sources").elements()) {
             if (!Set.of("child_transcript", "sidecar").contains(RawInventory.text(source, "role"))
                     || !"acquired".equals(RawInventory.text(source, "state"))) { continue; }
             String artifact = RawInventory.text(source, "artifact");
             Json expected = bindings.get(artifact);
-            if (expected == null) {
+            Json child = children.get(artifact);
+            if (child != null) { subAgent(pkg, source, child, report); }
+            else if (expected == null) {
                 report.add(Check.Category.COMPLETENESS, "acquisition.additional_native", artifact, Check.Outcome.UNRESOLVED,
                         "preserved input has no uniquely established native persisted-tool-output binding; child/other sidecar obligations remain unqualified");
             }
@@ -42,6 +45,24 @@ final class ToolOutputVerification {
                     count == 1 ? Check.Outcome.VERIFIED : Check.Outcome.UNRESOLVED,
                     "each native persistedOutputPath owes exactly one acquired sidecar, observed " + count);
         }
+    }
+
+    /**
+     * A sub-agent's session file or its meta file: the binding the native bytes establish is the one recorded, and the
+     * session file's records are written in the spawning call's child core and nowhere else.
+     */
+    private static void subAgent(OcsfPackage pkg, Json source, Json expected, OracleReport report) {
+        String artifact = RawInventory.text(source, "artifact");
+        Json recorded = recordedSource(pkg, artifact);
+        boolean binding = recorded != null && Json.sameValue(expected, recorded.member("child_binding"));
+        boolean placed = true;
+        if (ClaudeSubAgentSession.ROLE.equals(RawInventory.text(source, "role"))) {
+            String core = "child:" + RawInventory.text(expected, "spawn_tool_call_uid");
+            List<OcsfPackage> holding = pkg.all().stream().filter(c -> c.events.stream().anyMatch(e -> artifact.equals(e.artifact()))).toList();
+            placed = holding.size() == 1 && core.equals(holding.get(0).label());
+        }
+        check(report, "acquisition.additional_native", artifact, binding && placed,
+                "sub-agent session obligations: the meta file names a spawning call the stream requests, the agent id and side chain match, and the session file is read into that call's child core only");
     }
 
     private static void compare(OcsfPackage pkg, Json source, Path base, Json expected, OracleReport report) throws IOException {

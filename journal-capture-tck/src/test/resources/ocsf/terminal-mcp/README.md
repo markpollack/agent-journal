@@ -15,4 +15,5 @@ for that member.
 | `claude-mcp-aa75c02` | `aa75c02` (before the fix) | "One richer" for the basis-only `mcp` member; the oracle disagrees |
 
 Regenerate the first with `-Dterminal.mcp.regenerate=<directory>` on `TerminalNativeTest` in
-`journal-ocsf-writer`. The second is historical evidence and must not be regenerated.
+`journal-ocsf-writer`. The second is historical evidence and must not be regenerated. The assembly expectation beside it is the current
+qualifier's: it is the reader's input, not part of the sealed archive.

@@ -38,6 +38,7 @@ public final class ClaudeAcquisition {
         Json bindings = resource("/ocsf/source-meaning-bindings.json");
         for (Frozen source : sources) { bind(source.source(), bindings); }
         qualifyOutputs(manifest, sealedManifest.toAbsolutePath().getParent());
+        qualifySubAgents(manifest, sealedManifest.toAbsolutePath().getParent(), bindings);
         Json.JObject qualification = new Json.JObject(java.util.Map.of(
                 "original_manifest_sha256", new Json.JString(NativeArtifact.sha256(original)),
                 "basis", new Json.JString("exact native version/session and original-byte extent checks; canonical verification is separate")));
@@ -124,7 +125,9 @@ public final class ClaudeAcquisition {
             return;
         }
         if ("sidecar".equals(role) && "opaque_text".equals(RawInventory.text(source, "profile"))) { return; }
-        require(Set.of("stream", "transcript").contains(role) && roles.add(role), "unsupported or duplicate selected role");
+        boolean child = ClaudeSubAgentSession.ROLE.equals(role);
+        require(child || (Set.of("stream", "transcript").contains(role) && roles.add(role)), "unsupported or duplicate selected role");
+        require(!child || source.member("child_binding") instanceof Json.JObject, "selected sub-agent session file needs its child binding");
         boolean stream = "stream".equals(role);
         require((stream ? "claude_stream" : "claude_transcript").equals(text(source, "profile")), "wrong source profile");
         require((stream ? "sdk_stdio" : "native_session_file").equals(text(source, "route")), "wrong source route");
@@ -173,6 +176,24 @@ public final class ClaudeAcquisition {
             fields.put("framing", new Json.JString("document"));
             fields.put("records", new Json.JNumber("1"));
             fields.put("tool_result_binding", binding);
+        }
+    }
+
+    /** A sub-agent session file that binds to its spawning call is read into that call's child core; its meta file stays preserved. */
+    private static void qualifySubAgents(Json manifest, Path base, Json meanings) {
+        java.util.Map<String, Json> bindings = ClaudeSubAgentSession.bindings(manifest, base);
+        for (Json source : manifest.member("sources").elements()) {
+            Json binding = bindings.get(RawInventory.text(source, "artifact"));
+            if (binding == null) { continue; }
+            java.util.Map<String, Json> fields = ((Json.JObject) source).members();
+            fields.put("child_binding", binding);
+            if (!ClaudeSubAgentSession.ROLE.equals(RawInventory.text(source, "role"))) { continue; }
+            fields.put("archive_only", new Json.JBool(false));
+            fields.put("profile", new Json.JString("claude_transcript"));
+            fields.put("route", new Json.JString("native_session_file"));
+            fields.put("framing", new Json.JString("lines"));
+            fields.put("records", new Json.JNumber(Integer.toString(NativeArtifact.read(base.resolve(RawInventory.text(source, "path"))).records().size())));
+            bind(source, meanings);
         }
     }
 

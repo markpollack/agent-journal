@@ -17,6 +17,10 @@ are synthetic, but their shapes match 2.1.316:
 | `claude-sub-agent-heartbeat` | this revision | as `claude-sub-agent`, with a heartbeat naming the sub-agent's `Read`: stored in the root |
 | `claude-sub-agent-nested` | this revision | a sub-agent that spawns a sub-agent: two child cores beside each other, each linked by its spawning call |
 | `claude-dangling-owner` | this revision | records naming an owner no call in the stream spawned: a child core, but no spawn |
+| `claude-sub-agent-session` | this revision | a sub-agent with its own session file and meta file, read into its child core |
+
+The assembly expectation beside `claude-heartbeat-bd04735` is the current qualifier's: it is the reader's input, not
+part of the sealed archive.
 
 Regenerate every case but `claude-heartbeat-bd04735` with `-Dterminal.child.regenerate=<directory>` on `TerminalNativeTest`
 in `journal-ocsf-writer`. `claude-heartbeat-bd04735` is historical evidence and must not be regenerated.

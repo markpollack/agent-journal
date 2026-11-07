@@ -130,8 +130,9 @@ final class AcquiredExecution {
     private void feed(OcsfRunWriter writer, WriterOptions options, Acquired input) {
         Jv s = input.source();
         AssemblyProfile.Role role = profile.role(text(s, "role"));
+        String owner = s.member("child_binding") == null ? null : optional(s.member("child_binding"), "spawn_tool_call_uid");
         SourceInput target = writer.source(new SourceDescriptor(text(s, "artifact"), role.kind(), role.profile(), role.route(),
-                "frozen acquisition from " + text(s, "origin"), text(s, "path"), role.framing()));
+                "frozen acquisition from " + text(s, "origin"), text(s, "path"), role.framing(), owner));
         Replay.feedBytes(target, input.bytes(), 65536, options.clock(), input.bytes().length, false);
         target.end(SourceInput.End.valueOf(text(s, "end")), options.clock().instant());
     }

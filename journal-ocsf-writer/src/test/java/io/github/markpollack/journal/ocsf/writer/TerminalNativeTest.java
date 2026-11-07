@@ -40,6 +40,15 @@ class TerminalNativeTest {
 
     /** As {@link #qualifiedStream(Path, List)}, with the session file's records {@code transcript}. */
     private static io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.Qualified qualifiedStream(Path temp, List<String> lines, List<String> transcript) throws IOException {
+        return qualifiedStream(temp, lines, transcript, List.of());
+    }
+
+    /** A further acquired native file the Client preserves beside the session file (archive only, as Client seals it). */
+    private record Extra(String path, String role, String membershipBasis, String content) { }
+
+    /** As {@link #qualifiedStream(Path, List, List)}, with further acquired native files. */
+    private static io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.Qualified qualifiedStream(Path temp, List<String> lines, List<String> transcript,
+            List<Extra> extras) throws IOException {
         Path raw = Files.createDirectory(temp.resolve("raw"));
         Files.writeString(raw.resolve("stdin.bin"), "{\"type\":\"user\",\"message\":{\"role\":\"user\",\"content\":\"hello\"}}\n");
         Files.writeString(raw.resolve("stdout.bin"), String.join("\n", lines) + "\n");
@@ -67,6 +76,13 @@ class TerminalNativeTest {
             } else s.put("archive_only", true);
             sources.add(s);
             if (!role.equals("transcript")) ((Jv.Obj) m.member("turns").elements().get(0).member("end_offsets")).put(role.equals("stream") ? "STDOUT" : role.toUpperCase(java.util.Locale.ROOT), content.length);
+        }
+        for (Extra x : extras) {
+            Path file = raw.resolve(x.path()); Files.createDirectories(file.getParent()); Files.writeString(file, x.content());
+            byte[] content = Files.readAllBytes(file);
+            sources.add(new Jv.Obj().put("artifact", x.path()).put("role", x.role()).put("path", x.path()).put("origin", "observed/" + x.path()).put("acquisition", "execution-1")
+                    .put("state", "acquired").put("bytes", content.length).put("sha256", SchemaPin.sha256(content)).put("owner_session_uid", "native-1").put("end", "EOF")
+                    .put("archive_only", true).put("required", true).put("membership_basis", x.membershipBasis()));
         }
         Path sealed = raw.resolve("sealed.json"); Files.writeString(sealed, Jv.write(m));
         return ClaudeAcquisition.qualify(sealed, temp.resolve("qualified"));
@@ -215,6 +231,50 @@ class TerminalNativeTest {
         assertThat(d.acceptance().reasons()).singleElement().asString().contains("acquisition.child_spawn").contains("a sub-agent spawn is not shown");
     }
 
+    private static final String CHILD_STREAM_REQUEST = "{\"type\":\"assistant\",\"message\":{\"id\":\"msg_c2\",\"type\":\"message\",\"role\":\"assistant\",\"model\":\"claude-opus-5-5\","
+            + "\"content\":[{\"type\":\"tool_use\",\"id\":\"toolu_READ\",\"name\":\"Read\",\"input\":{}}],\"stop_reason\":null,"
+            + "\"usage\":{\"input_tokens\":5,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":2,\"output_tokens\":2}},"
+            + "\"parent_tool_use_id\":\"toolu_AGENT\",\"session_id\":\"native-1\",\"uuid\":\"c2\"}";
+    /** A sub-agent as Claude Code 2.1.316 reports it in the stream: its records carry the spawning call and its agent id. */
+    private static final List<String> SUB_AGENT_SESSION_STREAM = List.of(INIT, toolUse("null", "toolu_AGENT", "Agent", "a1"), CHILD_PROMPT, CHILD_STREAM_REQUEST,
+            toolResult("\"toolu_AGENT\"", "toolu_READ", "c3"), toolResult("null", "toolu_AGENT", "u1"), RESULT);
+    /** One content block of the sub-agent's API message msg_c2, as its session file writes it: each block its own record, all with the final usage. */
+    private static String childAssistant(String parent, String uuid, String block) {
+        return "{\"parentUuid\":\"" + parent + "\",\"isSidechain\":true,\"agentId\":\"a1\",\"type\":\"assistant\",\"message\":{\"id\":\"msg_c2\",\"type\":\"message\",\"role\":\"assistant\","
+                + "\"model\":\"claude-opus-5-5\",\"content\":[" + block + "],\"stop_reason\":\"tool_use\","
+                + "\"usage\":{\"input_tokens\":5,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":2,\"output_tokens\":9}},\"uuid\":\"" + uuid + "\",\"sessionId\":\"native-1\",\"version\":\"2.1.316\"}";
+    }
+
+    /** The same sub-agent in its own session file: the same record uuids, the final usage and the thinking record the stream omits. */
+    private static final String CHILD_SESSION = String.join("\n",
+            "{\"parentUuid\":null,\"isSidechain\":true,\"agentId\":\"a1\",\"type\":\"user\",\"message\":{\"role\":\"user\",\"content\":\"read beta\"},\"uuid\":\"c1\",\"sessionId\":\"native-1\",\"version\":\"2.1.316\"}",
+            childAssistant("c1", "t1", "{\"type\":\"thinking\",\"thinking\":\"read it\",\"signature\":\"s1\"}"),
+            childAssistant("t1", "c2", "{\"type\":\"tool_use\",\"id\":\"toolu_READ\",\"name\":\"Read\",\"input\":{}}"),
+            "{\"parentUuid\":\"c2\",\"isSidechain\":true,\"agentId\":\"a1\",\"type\":\"user\",\"message\":{\"role\":\"user\",\"content\":[{\"tool_use_id\":\"toolu_READ\",\"type\":\"tool_result\",\"content\":\"done\"}]},"
+                    + "\"uuid\":\"c3\",\"toolUseResult\":\"done\",\"sourceToolAssistantUUID\":\"c2\",\"sessionId\":\"native-1\",\"version\":\"2.1.316\"}") + "\n";
+    private static final List<Extra> SUB_AGENT_SESSION = List.of(
+            new Extra("native/native-1/subagents/agent-a1.jsonl", "child_transcript", "exact_parent_session_directory_and_sessionId", CHILD_SESSION),
+            new Extra("native/native-1/subagents/agent-a1.meta.json", "sidecar", "exact_parent_session_directory",
+                    "{\"agentType\":\"general-purpose\",\"isBuiltIn\":true,\"description\":\"read beta\",\"toolUseId\":\"toolu_AGENT\",\"spawnDepth\":1,"
+                            + "\"requestShape\":\"foreground\",\"requestNonInteractive\":true,\"finished\":true}"));
+
+    /**
+     * A sub-agent's own session file is read into its child core: its records join the stream's records of the same
+     * uuid there, so the child's model response carries the final usage and the thinking only the session file reports.
+     */
+    @Test void aSubAgentsSessionFileIsReadIntoItsChildCore() throws Exception {
+        Path file = assertAccepted(qualifiedStream(temp, SUB_AGENT_SESSION_STREAM, List.of(TRANSCRIPT_PROMPT), SUB_AGENT_SESSION));
+        List<Jv> child = Files.readAllLines(file.getParent().resolve("children/toolu_AGENT/events.jsonl")).stream().map(Jv::parse).toList();
+        assertThat(child).as("observations of the session file, in the child core")
+                .anyMatch(e -> e.member("source_ref") != null && "native/native-1/subagents/agent-a1.jsonl".equals(e.member("source_ref").member("artifact").text()));
+        Jv response = child.stream().filter(e -> e.member("class_name") != null && "Model Response".equals(e.member("class_name").text())
+                && e.member("assembly") != null && Integer.valueOf(3).equals(e.member("assembly").member("assembly_role_id") instanceof Jv.Num n ? n.value().intValue() : null)).findFirst().orElseThrow();
+        assertThat(Jv.write(response)).as("the stream's tool request, with the session file's final usage").contains("toolu_READ").contains("\"output_tokens\":9");
+        assertThat(child).as("the thinking only the session file reports").anyMatch(e -> Jv.write(e).contains("read it"));
+        assertThat(Files.readAllLines(file).stream().map(Jv::parse)).as("nothing of the sub-agent in the root")
+                .noneMatch(e -> e.member("source_ref") != null && e.member("source_ref").member("artifact") != null && e.member("source_ref").member("artifact").text().contains("subagents/"));
+    }
+
     /**
      * Regenerates the TCK's sealed terminal child-scope cases ({@code -Dterminal.child.regenerate=<directory>}): each
      * case's store as the shipped receiver writes it, with the qualifier's assembly expectation beside it.
@@ -225,6 +285,7 @@ class TerminalNativeTest {
                 "claude-sub-agent-heartbeat", List.of(SUB_AGENT_HEARTBEAT_STREAM, List.of(TRANSCRIPT_PROMPT)),
                 "claude-sub-agent-nested", List.of(NESTED_SUB_AGENT_STREAM, List.of(TRANSCRIPT_PROMPT)),
                 "claude-dangling-owner", List.of(DANGLING_PARENT_STREAM, List.of(TRANSCRIPT_PROMPT))));
+        regenerate("terminal.child.regenerate", java.util.Map.of("claude-sub-agent-session", List.of(SUB_AGENT_SESSION_STREAM, List.of(TRANSCRIPT_PROMPT))), SUB_AGENT_SESSION);
     }
 
     /** Regenerates the TCK's sealed MCP one-shot case ({@code -Dterminal.mcp.regenerate=<directory>}), as above. */
@@ -234,11 +295,16 @@ class TerminalNativeTest {
 
     /** Seals each case (its stream, then its session file) into the directory {@code property} names. */
     private void regenerate(String property, java.util.Map<String, List<List<String>>> cases) throws IOException {
+        regenerate(property, cases, List.of());
+    }
+
+    /** As above, each case with the further acquired native files {@code extras}. */
+    private void regenerate(String property, java.util.Map<String, List<List<String>>> cases, List<Extra> extras) throws IOException {
         String target = System.getProperty(property);
         org.junit.jupiter.api.Assumptions.assumeTrue(target != null, "set " + property + " to regenerate");
         for (var c : cases.entrySet()) {
             Path base = Files.createDirectory(temp.resolve(c.getKey())), out = Path.of(target, c.getKey());
-            var q = qualifiedStream(base, c.getValue().get(0), c.getValue().get(1));
+            var q = qualifiedStream(base, c.getValue().get(0), c.getValue().get(1), extras);
             seal(base, q);
             copyTree(base.resolve("store"), out.resolve("store"));
             Files.copy(q.assemblyExpectation(), out.resolve("assembly-expectation.json"));

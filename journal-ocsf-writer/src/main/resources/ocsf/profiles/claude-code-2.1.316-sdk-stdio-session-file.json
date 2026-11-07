@@ -32,6 +32,17 @@
       "establishes": "the native session file the same launch saved: the main prompt, injected context, per-request metadata and the session cost state beside the same assistant and user records"
     },
     {
+      "role": "child_transcript",
+      "profile": "claude_transcript",
+      "route": "native_session_file",
+      "kind": 2,
+      "requirement": "optional",
+      "framing": "lines",
+      "identity": "events",
+      "artifact": "native/<session>/subagents/agent-<agentId>.jsonl",
+      "establishes": "a sub-agent's own session file, bound to its spawning call by its meta file: the sub-agent's records with their final usage and the thinking and text the stream omits, read into that call's child core"
+    },
+    {
       "role": "sidecar",
       "profile": "opaque_text",
       "route": "native_tool_result",
@@ -45,11 +56,13 @@
   "feed_order": [
     "stream",
     "transcript",
+    "child_transcript",
     "sidecar"
   ],
   "precedence": [
     "stream",
     "transcript",
+    "child_transcript",
     "sidecar"
   ],
   "joins": [
@@ -62,7 +75,8 @@
       "namespace": "claude.record_uuid",
       "roles": [
         "stream",
-        "transcript"
+        "transcript",
+        "child_transcript"
       ],
       "basis": "the stream and the session file write the same assistant record under the same uuid; the stream shows it before its stop reason is known (Partial) and the session file with it (Completed), so the record is one entity whose consolidated stage is the most advanced the sources report",
       "stage_order": [
@@ -83,7 +97,8 @@
       "namespace": "anthropic.tool_use_id",
       "roles": [
         "stream",
-        "transcript"
+        "transcript",
+        "child_transcript"
       ],
       "basis": "a tool_use block's id names the model's tool call in both sources"
     },
@@ -99,7 +114,8 @@
       "namespace": "anthropic.tool_use_id",
       "roles": [
         "stream",
-        "transcript"
+        "transcript",
+        "child_transcript"
       ],
       "basis": "a tool_result block names its call by tool_use_id in both sources"
     },
@@ -115,7 +131,8 @@
       "namespace": "claude.record_uuid",
       "roles": [
         "stream",
-        "transcript"
+        "transcript",
+        "child_transcript"
       ],
       "basis": "a user prompt record written by both sources under the same uuid"
     }
@@ -130,6 +147,12 @@
       "pointer": "/tool_result/structured_result",
       "role": "stream",
       "basis": "Prefer the stream structured tool result when sources report distinct representations, retaining the native observation and conflict. In the qualified Read capture both sources report the same structured file result; fresh MCP result variants remain unexercised."
+    },
+    {
+      "class": "prompt_turn",
+      "pointer": "/content_blocks/0/block_type",
+      "role": "stream",
+      "basis": "A sub-agent's prompt is a content block array in the stream and a plain string in its session file; a string has no native block type, so the stream's block type is kept, retaining the conflict and each observation."
     }
   ]
 }

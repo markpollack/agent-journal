@@ -24,7 +24,8 @@ import java.util.List;
  *  "complete": true,
  *  "frozen": {"at": "...", "basis": "..."},
  *  "sources": [{"artifact": "stream.jsonl", "profile": "claude_stream", "sha256": "...", "bytes": 1, "records": 1, "required": true}],
- *  "children": [{"spawn_tool_call_uid": "...", "artifact": "stream.jsonl", "owner_path": "parent_tool_use_id"}]}
+ *  "children": [{"spawn_tool_call_uid": "...", "artifact": "stream.jsonl", "owner_path": "parent_tool_use_id", "artifacts": ["..."]}]}
+ * (a child's optional {@code artifacts} are whole artifacts it owns: a sub-agent's own session file)
  * </pre>
  *
  * {@code complete} states that the frozen set is the whole run (every source acquired to its natural end); a prefix
@@ -48,7 +49,14 @@ public final class ExpectedSources {
     }
 
     /** One expected split core: the owner value under {@code ownerPath} of {@code artifact} that the child owns. */
-    public record Child(String spawnToolCallUid, String artifact, String ownerPath) {
+    public record Child(String spawnToolCallUid, String artifact, String ownerPath, List<String> artifacts) {
+        public Child {
+            artifacts = List.copyOf(artifacts);
+        }
+
+        public Child(String spawnToolCallUid, String artifact, String ownerPath) {
+            this(spawnToolCallUid, artifact, ownerPath, List.of());
+        }
     }
 
     private final Json json;
@@ -63,7 +71,8 @@ public final class ExpectedSources {
                     Event.integer(s.member("bytes")), Event.integer(s.member("records")), !(req instanceof Json.JBool b) || b.value(), SchemaCatalog.text(s, "compatibility")));
         }
         for (Json c : json.member("children") == null ? List.<Json>of() : json.member("children").elements()) {
-            children.add(new Child(SchemaCatalog.text(c, "spawn_tool_call_uid"), SchemaCatalog.text(c, "artifact"), SchemaCatalog.text(c, "owner_path")));
+            List<String> whole = c.member("artifacts") == null ? List.of() : c.member("artifacts").elements().stream().map(Json::text).toList();
+            children.add(new Child(SchemaCatalog.text(c, "spawn_tool_call_uid"), SchemaCatalog.text(c, "artifact"), SchemaCatalog.text(c, "owner_path"), whole));
         }
     }
 

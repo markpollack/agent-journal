@@ -151,14 +151,21 @@ public final class AcquisitionVerification implements AcquisitionVerifier {
             return ExpectedSources.parse(frozen);
         }
 
-        /** A sealed Claude acquisition names no split cores; the acquired stream's own owner paths require them. */
+        /**
+         * A sealed Claude acquisition names no split cores; the acquired stream's own owner paths require them, and each
+         * owns the sub-agent session files the native bytes bind to its spawning call.
+         */
         private Json splitCores() {
+            java.util.Map<String, Json> bound = ClaudeSubAgentSession.bindings(manifest, base);
             List<Json> children = new ArrayList<>();
             for (AssemblyOracle.Supplied source : supplied) {
                 if (!"stream".equals(source.role())) { continue; }
                 for (String owner : ClaudeOwnerScope.splitCores(source.bytes())) {
+                    List<Json> whole = new ArrayList<>();
+                    supplied.stream().filter(s -> ClaudeSubAgentSession.ROLE.equals(s.role()) && bound.get(s.name()) != null
+                            && owner.equals(RawInventory.text(bound.get(s.name()), "spawn_tool_call_uid"))).forEach(s -> whole.add(new Json.JString(s.name())));
                     children.add(new Json.JObject(new LinkedHashMap<>(java.util.Map.of("spawn_tool_call_uid", new Json.JString(owner),
-                            "artifact", new Json.JString(source.name()), "owner_path", new Json.JString(ClaudeOwnerScope.OWNER_PATH)))));
+                            "artifact", new Json.JString(source.name()), "owner_path", new Json.JString(ClaudeOwnerScope.OWNER_PATH), "artifacts", new Json.JArray(whole)))));
                 }
             }
             return new Json.JArray(children);

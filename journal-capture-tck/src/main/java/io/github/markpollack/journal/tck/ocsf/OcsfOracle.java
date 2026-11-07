@@ -221,7 +221,21 @@ public final class OcsfOracle {
                 };
             }
             Json scope = core.manifest.sourceScope();
-            if (scope != null && core.manifest.parent() == null && !artifact.equals(SchemaCatalog.text(scope, "artifact"))) {
+            ExpectedSources.Child wholeOwner = expected == null ? null : expected.children().stream().filter(c -> c.artifacts().contains(artifact)).findFirst().orElse(null);
+            if (wholeOwner != null) {
+                // a sub-agent's own session file is wholly its child core's: judged there with every record owned, never in another core
+                if (core.manifest.parent() != null && wholeOwner.spawnToolCallUid().equals(SchemaCatalog.text(core.manifest.parent(), "spawn_tool_call_uid"))) {
+                    scope = null;
+                }
+                else {
+                    boolean stray = core.events.stream().anyMatch(e -> e.className != null && e.observation() && artifact.equals(e.artifact()));
+                    report.add(Category.COMPLETENESS, "source.scope", owner, stray ? Outcome.DEFECTIVE : Outcome.NOT_APPLICABLE,
+                            stray ? "this core carries events of " + artifact + ", which is wholly the child core of " + wholeOwner.spawnToolCallUid()
+                                    : "artifact wholly owned by the child core of " + wholeOwner.spawnToolCallUid() + "; judged there");
+                    continue;
+                }
+            }
+            else if (scope != null && core.manifest.parent() == null && !artifact.equals(SchemaCatalog.text(scope, "artifact"))) {
                 scope = null; // the root core owns every record of an artifact that is not split
             }
             if (scope != null && !artifact.equals(SchemaCatalog.text(scope, "artifact"))) {
@@ -430,8 +444,9 @@ public final class OcsfOracle {
                 continue;
             }
             Json scope = child.manifest.sourceScope();
+            List<String> whole = scope == null || scope.member("artifacts") == null ? List.of() : scope.member("artifacts").elements().stream().map(Json::text).toList();
             if (scope == null || !e.artifact().equals(SchemaCatalog.text(scope, "artifact")) || !e.ownerPath().equals(SchemaCatalog.text(scope, "owner_path"))
-                    || !spawn.equals(SchemaCatalog.text(scope, "owner_value"))) {
+                    || !spawn.equals(SchemaCatalog.text(scope, "owner_value")) || !whole.equals(e.artifacts())) {
                 problems.add("child " + spawn + " declares scope " + (scope == null ? "none" : NeutralJson.write(scope)) + "; expected " + e.artifact() + "." + e.ownerPath() + " = " + spawn);
             }
         }

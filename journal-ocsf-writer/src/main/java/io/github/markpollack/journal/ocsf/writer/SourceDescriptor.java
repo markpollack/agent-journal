@@ -16,7 +16,7 @@ package io.github.markpollack.journal.ocsf.writer;
  * @param pathAtCapture where the bytes came from, for the inventory, or {@code null}
  * @param framing {@code lines} (one record per line) or {@code document} (the whole artifact is one record)
  */
-public record SourceDescriptor(String artifact, int kind, String profile, String route, String surface, String pathAtCapture, String framing) {
+public record SourceDescriptor(String artifact, int kind, String profile, String route, String surface, String pathAtCapture, String framing, String owner) {
 
     private static final java.util.Map<Integer, String> KINDS = java.util.Map.of(1, "Live output", 2, "Saved session file", 3, "Telemetry export", 4, "CLI report file",
             5, "CLI log file");
@@ -24,6 +24,11 @@ public record SourceDescriptor(String artifact, int kind, String profile, String
     /** A source framed into lines (one record per line), the usual case. */
     public SourceDescriptor(String artifact, int kind, String profile, String route, String surface, String pathAtCapture) {
         this(artifact, kind, profile, route, surface, pathAtCapture, "lines");
+    }
+
+    /** A source whose records name their own owner (or belong to the root core). */
+    public SourceDescriptor(String artifact, int kind, String profile, String route, String surface, String pathAtCapture, String framing) {
+        this(artifact, kind, profile, route, surface, pathAtCapture, framing, null);
     }
 
     public String kindCaption() {

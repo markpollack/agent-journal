@@ -60,19 +60,22 @@ public final class FinalComparisons {
         List<Check> nativeChecks = List.copyOf(sourceReport.checks());
         List<AssertionAccounting.Assertion> assertions =
                 AssertionAccounting.inspect(pkg, sourceReport);
-        Map<String, Event> observations = new LinkedHashMap<>();
-        pkg.observations().forEach(e -> observations.put(e.text("assembly", "occurrence_uid"), e));
-        Context context =
-                new Context(
-                        pkg,
-                        sourceReport,
-                        specification,
-                        inputs,
-                        partition,
-                        nativeChecks,
-                        assertions,
-                        observations);
-        pkg.events.forEach(context::event);
+        // each core's consolidated events are composed from that core's observations (a sub-agent's child core holds its own)
+        for (OcsfPackage core : pkg.all()) {
+            Map<String, Event> observations = new LinkedHashMap<>();
+            core.observations().forEach(e -> observations.put(e.text("assembly", "occurrence_uid"), e));
+            Context context =
+                    new Context(
+                            core,
+                            sourceReport,
+                            specification,
+                            inputs,
+                            partition,
+                            nativeChecks,
+                            assertions,
+                            observations);
+            core.events.forEach(context::event);
+        }
     }
 
     private record Context(

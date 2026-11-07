@@ -8,6 +8,7 @@
   "precedence": [
     "stream",
     "transcript",
+    "child_transcript",
     "sidecar"
   ],
   "sources": [
@@ -22,6 +23,15 @@
     },
     {
       "role": "transcript",
+      "requirement": "optional",
+      "session": [
+        {
+          "pointer": "/sessionId"
+        }
+      ]
+    },
+    {
+      "role": "child_transcript",
       "requirement": "optional",
       "session": [
         {
@@ -61,6 +71,17 @@
             "null": "streamed (stop_reason null)",
             "otherwise": "final (stop_reason reported)"
           }
+        },
+        "child_transcript": {
+          "select": {
+            "/type": "assistant"
+          },
+          "pointer": "/uuid",
+          "stage": {
+            "pointer": "/message/stop_reason",
+            "null": "streamed (stop_reason null)",
+            "otherwise": "final (stop_reason reported)"
+          }
         }
       },
       "basis": "both sources write each assistant record under its uuid; the lifecycle stage of each record is read from its own stop_reason (streamed or final), never from the candidate (ACCT-1)"
@@ -83,6 +104,16 @@
           "pointer": "/id"
         },
         "transcript": {
+          "select": {
+            "/type": "assistant"
+          },
+          "each": "/message/content",
+          "element_select": {
+            "/type": "tool_use"
+          },
+          "pointer": "/id"
+        },
+        "child_transcript": {
           "select": {
             "/type": "assistant"
           },
@@ -121,9 +152,46 @@
             "/type": "tool_result"
           },
           "pointer": "/tool_use_id"
+        },
+        "child_transcript": {
+          "select": {
+            "/type": "user"
+          },
+          "each": "/message/content",
+          "element_select": {
+            "/type": "tool_result"
+          },
+          "pointer": "/tool_use_id"
         }
       },
       "basis": "a tool_result block names its call by tool_use_id"
+    },
+    {
+      "name": "user prompt record",
+      "class": "prompt_turn",
+      "activities": [
+        1
+      ],
+      "locators": {
+        "stream": {
+          "select": {
+            "/type": "user"
+          },
+          "pointer": "/uuid"
+        },
+        "transcript": {
+          "select": {
+            "/type": "user"
+          },
+          "pointer": "/uuid"
+        },
+        "child_transcript": {
+          "select": {
+            "/type": "user"
+          },
+          "pointer": "/uuid"
+        }
+      }
     }
   ],
   "totals": [
@@ -185,6 +253,13 @@
       "role": "stream",
       "native_pointer": "/tool_use_result",
       "basis": "The stream reports the CLI structured result object. The session file toolUseResult can be rendered text; that distinct representation stays on its source observation."
+    },
+    {
+      "class": "prompt_turn",
+      "pointer": "/content_blocks/0/block_type",
+      "role": "stream",
+      "native_pointer": "/message/content/0/type",
+      "basis": "A sub-agent's prompt is a content block array in the stream and a plain string in its session file; a string has no native block type, so the stream's is kept and the session file's representation stays on its observation."
     }
   ]
 }

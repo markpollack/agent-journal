@@ -641,7 +641,9 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         }
 
         @Override
-        public void emit(String owner, Jv.Obj event) {
+        public void emit(String recordOwner, Jv.Obj event) {
+            // a source with a declared owner (a sub-agent's own session file) is wholly that child core's
+            String owner = descriptor.owner() != null ? descriptor.owner() : recordOwner;
             if (event.get("session_uid") instanceof Jv.Str s && sessionUid == null) {
                 sessionUid = s.value();
             }
@@ -716,8 +718,16 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
 
     /** The owner scope of a core: {@code ownerValue} null for the root (records without an owner). */
     private Jv.Obj scope(String ownerValue) {
-        return new Jv.Obj().put("artifact", ownerArtifact()).put("owner_path", "parent_tool_use_id").put("owner_value", ownerValue == null ? Jv.Null.INSTANCE : new Jv.Str(ownerValue))
+        Jv.Obj scope = new Jv.Obj().put("artifact", ownerArtifact()).put("owner_path", "parent_tool_use_id").put("owner_value", ownerValue == null ? Jv.Null.INSTANCE : new Jv.Str(ownerValue))
                 .put("basis", "this core owns the records of the artifact whose owner_path member equals owner_value (null: records without one)");
+        Jv.Arr whole = new Jv.Arr();
+        if (ownerValue != null) {
+            sources.values().stream().filter(s -> ownerValue.equals(s.descriptor.owner())).forEach(s -> whole.add(new Jv.Str(s.descriptor.artifact())));
+        }
+        if (!whole.elements().isEmpty()) {
+            scope.put("artifacts", whole).put("artifacts_basis", "every record of these artifacts is this core's: a sub-agent's own session file, bound to the spawning call");
+        }
+        return scope;
     }
 
     // ------------------------------------------------------------------------------------------ lifecycle

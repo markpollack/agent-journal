@@ -89,6 +89,19 @@ class TerminalChildScopeTest {
         assertThat(a.reasons()).singleElement().asString().contains("acquisition.child_spawn").contains("child:toolu_GHOST").contains("a sub-agent spawn is not shown");
     }
 
+    /**
+     * A sub-agent's own session file is read into its child core, beside the stream's records of the sub-agent; the
+     * root holds none of it, and the archive is accepted.
+     */
+    @Test void aSubAgentsSessionFileIsReadIntoItsChildCoreAndTheArchiveIsAccepted() throws IOException {
+        Path events = root("claude-sub-agent-session");
+        String artifact = "native/native-1/subagents/agent-a1.jsonl";
+        assertThat(PackageReader.open(events.getParent().resolve("children/toolu_AGENT/events.jsonl")).events).anyMatch(e -> artifact.equals(e.artifact()));
+        assertThat(PackageReader.open(events).events).noneMatch(e -> artifact.equals(e.artifact()));
+        OcsfReaderTool.Acceptance a = acceptance("claude-sub-agent-session");
+        assertThat(a.verdict()).as(a.toString()).isEqualTo("ACCEPTED");
+    }
+
     @Test void aSpawnIsTheRequestOfItsToolCall() {
         NativeArtifact stream = NativeArtifact.ofBytes(Path.of("stdout.bin"), (String.join("\n",
                 "{\"type\":\"assistant\",\"message\":{\"content\":[{\"type\":\"text\",\"text\":\"toolu_X\"},{\"type\":\"tool_use\",\"id\":\"toolu_AGENT\",\"name\":\"Agent\"}]}}",
