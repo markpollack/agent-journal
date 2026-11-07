@@ -1,13 +1,8 @@
 name: Publish Snapshot
 
-# main is the development line of 2.0: every push to it that changes more than docs publishes a
-# 2.0.0-SNAPSHOT, so consumers get each fix as it lands. A dispatch publishes the branch head on demand.
+# Manual publication on demand. A push to main publishes through ci.yml's publish job, gated on that run's build
+# and standalone consumer resolution passing for the same commit.
 on:
-  push:
-    branches: [main]
-    paths-ignore:
-      - 'docs/**'
-      - '*.md'
   workflow_dispatch:
 
 concurrency:

@@ -56,6 +56,47 @@ class EventMergePayloadTest {
         assertThat(Jv.write(r.conflicts())).contains("\"field_pointer\":\"/arguments/content_blocks\"").doesNotContain("/arguments/content_blocks/0");
     }
 
+    /** Re-review cleanup: a model_ref inside a payload is a plain fact; Journal's reported-provider selection does not apply. */
+    @Test void aModelRefInsideArgumentsConflictsRatherThanSelectingTheReportedProvider() {
+        EventMerge.Result r = EventMerge.merge(List.of(request("stdout.jsonl", 1, "{\"model_ref\":{\"provider_basis\":\"x\"}}"),
+                request("transcript.jsonl", 2, "{\"model_ref\":{\"provider_basis\":\"y\",\"provider_kind\":\"k\"}}")));
+        assertThat(r.relation()).isEqualTo(5);
+        assertThat(Jv.write(r.conflicts())).contains("/arguments/model_ref");
+    }
+
+    /** Re-review cleanup: usage observations inside a payload are compared whole; Journal's finality does not supersede one of them. */
+    @Test void usageObservationsInsideArgumentsConflictRatherThanSuperseding() {
+        EventMerge.Result r = EventMerge.merge(List.of(
+                request("stdout.jsonl", 1, "{\"usage_observations\":[{\"scope_id\":1,\"aggregation_id\":1,\"usage_status_id\":1,\"output_tokens\":2}]}"),
+                request("transcript.jsonl", 2, "{\"usage_observations\":[{\"scope_id\":1,\"aggregation_id\":1,\"usage_status_id\":2,\"output_tokens\":9}]}")));
+        assertThat(r.relation()).isEqualTo(5);
+        assertThat(Jv.write(r.conflicts())).contains("\"field_pointer\":\"/arguments/usage_observations\"");
+        assertThat(Jv.write(r.evidence())).doesNotContain("Superseded");
+    }
+
+    /**
+     * Re-review cleanup: the writer's payload set and the reader's boundary agree. For every core of the real cases, the
+     * reader's boundary (from that core's own declared closure) is the writer's payload set restricted to the json_t
+     * attributes the closure declares.
+     */
+    @Test void theReaderAndWriterPayloadBoundariesAgreeOnTheRealCases() throws java.io.IOException {
+        for (String name : List.of("claude-heartbeat", "claude-mcp", "claude-sub-agent")) {
+            java.nio.file.Path events;
+            try (var files = java.nio.file.Files.walk(java.nio.file.Path.of("../journal-capture-tck/src/test/resources/ocsf/terminal-real").resolve(name).resolve("store/prepared"))) {
+                events = files.filter(f -> f.getFileName().toString().equals("events.jsonl") && !f.toString().contains("/children/")).findFirst().orElseThrow();
+            }
+            for (var core : io.github.markpollack.journal.tck.ocsf.PackageReader.open(events).all()) {
+                java.util.Set<String> declared = new java.util.TreeSet<>();
+                for (var definitions : List.of(core.catalog.classes(), core.catalog.objects())) {
+                    definitions.values().forEach(d -> d.attributes().values().forEach(a -> { if ("json_t".equals(a.type())) { declared.add(a.name()); } }));
+                }
+                java.util.Set<String> writer = new java.util.TreeSet<>(EventMerge.PAYLOADS);
+                writer.retainAll(declared);
+                assertThat(io.github.markpollack.journal.tck.ocsf.PayloadBoundary.of(core.catalog).names()).as(name + " " + core.label()).isEqualTo(writer);
+            }
+        }
+    }
+
     /** Payloads are recognized by attribute name, which is sound while no payload name is declared with another type. */
     @Test void noPayloadNameIsDeclaredWithAnotherType() {
         Jv compiled = SchemaPin.bundled().compiled();

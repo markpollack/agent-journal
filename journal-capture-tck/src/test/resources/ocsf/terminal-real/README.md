@@ -15,7 +15,7 @@ conflicts and MCP targets. Each case's `SCRUBBED.md` names its original files by
 | `claude-heartbeat` | this revision | one 40 s IntelliJ MCP call with heartbeats |
 | `claude-mcp` | this revision | a run of IntelliJ MCP calls, seen by the stream and the session file |
 | `claude-sub-agent` | this revision | one general-purpose sub-agent, with its own session file and meta file |
-| `claude-mcp-payload-keys` | this revision | the MCP run with one request's input set, in both sources, to `{"basis":…,"data":42}` (an edited real run; see EDITED.md) |
+| `claude-mcp-payload-keys` | this revision | the MCP run with one request's input set, in both sources, to arguments named like Journal members (`basis`, `data`, `content_blocks`, `missing_required`; an edited real run, see EDITED.md) |
 | `claude-heartbeat-bd04735` | `bd04735` | the heartbeat run: the writer made the heartbeat a child core |
 | `claude-mcp-aa75c02` | `aa75c02` | the MCP run: MCP results called "One richer" for a basis-only member |
 | `claude-sub-agent-397ec12` | `397ec12` | the sub-agent run: its own session file preserved but unread |

@@ -229,6 +229,77 @@ class TerminalRealRecordingTest {
         assertThat(a.reasons()).anyMatch(r -> r.contains("mcp_arguments"));
     }
 
+    /** The real sub-agent case copied, its child core's lines rewritten by {@code edit} and its index restated; returns the cases directory. */
+    private Path editedChild(String label, java.util.function.UnaryOperator<List<String>> edit) throws IOException {
+        Path cases = temp.resolve(label);
+        copyTree(CASES.resolve("claude-sub-agent"), cases.resolve("claude-sub-agent"));
+        Path child = root(cases, "claude-sub-agent").getParent().resolve("children").resolve(SPAWN);
+        List<String> lines = edit.apply(new java.util.ArrayList<>(Files.readAllLines(child.resolve("events.jsonl"))));
+        Files.write(child.resolve("events.jsonl"), lines);
+        restateIndex(child);
+        return cases;
+    }
+
+    /** Whether the line is an event (not a declaration): it states a top-level class_uid. */
+    private static boolean event(String line) {
+        return NeutralJson.parse(line).member("class_uid") != null;
+    }
+
+    private static boolean observation(String line) {
+        return event(line) && NeutralJson.parse(line).member("assembly") instanceof Json.JObject a && a.member("assembly_role_id") instanceof Json.JNumber n
+                && n.value().intValue() != 3;
+    }
+
+    /** Main review F3: the real sub-agent child emptied of its observations is defective: the records it owns have no events. */
+    @Test void aChildEmptiedOfItsObservationsIsDefective() throws IOException {
+        Path cases = editedChild("empty", lines -> lines.stream().filter(l -> !event(l)).collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new)));
+        OcsfReaderTool.Acceptance a = acceptance(cases, "claude-sub-agent");
+        assertThat(a.verdict()).isEqualTo("DEFECTIVE");
+        assertThat(a.reasons()).anyMatch(r -> r.contains("[child:" + SPAWN + "/") && (r.contains("whole_record.coverage") || r.contains("reconstruction.coverage")));
+    }
+
+    /** Main review F3: a child observation moved into the root core is defective in both: the root retains a record it does not own. */
+    @Test void aChildObservationMovedToTheRootIsDefective() throws IOException {
+        Path cases = temp.resolve("moved");
+        copyTree(CASES.resolve("claude-sub-agent"), cases.resolve("claude-sub-agent"));
+        Path events = root(cases, "claude-sub-agent");
+        Path child = events.getParent().resolve("children").resolve(SPAWN);
+        List<String> childLines = new java.util.ArrayList<>(Files.readAllLines(child.resolve("events.jsonl")));
+        int at = 0;
+        while (!(observation(childLines.get(at)) && "stdout.jsonl".equals(SourceProfile.text(NeutralJson.parse(childLines.get(at)).member("source_ref"), "artifact")))) { at++; }
+        String moved = childLines.remove(at);
+        Files.write(child.resolve("events.jsonl"), childLines);
+        restateIndex(child);
+        List<String> rootLines = new java.util.ArrayList<>(Files.readAllLines(events));
+        int recording = rootLines.size() - 1;
+        while (!rootLines.get(recording).contains("\"kind\":\"recording\"")) { recording--; }
+        rootLines.add(recording, moved);
+        Files.write(events, rootLines);
+        restateIndex(events.getParent());
+        OcsfReaderTool.Acceptance a = acceptance(cases, "claude-sub-agent");
+        assertThat(a.verdict()).isEqualTo("DEFECTIVE");
+        assertThat(a.reasons()).anyMatch(r -> r.contains("[main/stdout.jsonl]") && r.contains("is not owned by this core but retained here"));
+    }
+
+    /** Main review F3: a child observation given another entity's uid is defective: the child's partition is checked like the root's. */
+    @Test void aChildObservationWithAnotherEntitysUidIsDefective() throws IOException {
+        Path cases = editedChild("entity", lines -> {
+            for (int i = 0; i < lines.size(); i++) {
+                if (observation(lines.get(i)) && lines.get(i).contains("\"entity_uid\"")) {
+                    Json.JObject e = (Json.JObject) NeutralJson.parse(lines.get(i));
+                    ((Json.JObject) e.member("assembly")).members().put("entity_uid", new Json.JString(SPAWN + ">tool_call/1/anthropic.tool_use_id:toolu_OTHER"));
+                    lines.set(i, NeutralJson.write(e));
+                    break;
+                }
+            }
+            return lines;
+        });
+        OcsfReaderTool.Acceptance a = acceptance(cases, "claude-sub-agent");
+        assertThat(a.verdict()).isEqualTo("DEFECTIVE");
+        assertThat(a.reasons()).anyMatch(r -> r.contains("assembly.partition.association [child:" + SPAWN + "/"))
+                .anyMatch(r -> r.contains("assembly.references [assembly/child:" + SPAWN + "]"));
+    }
+
     /** The real sub-agent case whose child conflict record's first observed value carries an invented basis member. */
     private Path withInventedObservedBasis() throws IOException {
         Path cases = temp.resolve("observed");
@@ -255,6 +326,8 @@ class TerminalRealRecordingTest {
         byte[] bytes = Files.readAllBytes(core.resolve("events.jsonl"));
         Json.JObject manifest = (Json.JObject) NeutralJson.parse(Files.readString(core.resolve("run.json")));
         Json.JObject pkg = (Json.JObject) manifest.member("package");
+        long events = Files.readAllLines(core.resolve("events.jsonl")).stream().filter(TerminalRealRecordingTest::event).count();
+        pkg.members().put("events_count", new Json.JNumber(Long.toString(events)));
         pkg.members().put("events_bytes", new Json.JNumber(Integer.toString(bytes.length)));
         pkg.members().put("events_jsonl_sha256", new Json.JString(NativeArtifact.sha256(bytes)));
         ((Json.JObject) pkg.member("persisted_prefix")).members().put("bytes", new Json.JNumber(Integer.toString(bytes.length)));

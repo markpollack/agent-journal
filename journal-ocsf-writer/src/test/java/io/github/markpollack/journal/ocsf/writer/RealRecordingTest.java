@@ -100,8 +100,14 @@ class RealRecordingTest {
      * arguments whose keys are {@code basis} and {@code data} (an edited real run: an MCP tool may take parameters of
      * those names). The sealed manifest's extents are restated. Returns the edited run and the call's id.
      */
+    /**
+     * Arguments whose keys are named like Journal members: provenance ({@code basis}), residual ({@code data}), an
+     * identified array ({@code content_blocks}) and a partial projection list ({@code missing_required}).
+     */
+    static final String PAYLOAD_KEY_INPUT = "{\"basis\":\"business input\",\"data\":42,\"content_blocks\":[{\"block_index\":0,\"text\":\"x\"}],\"missing_required\":[\"a\"]}";
+
     Map.Entry<Path, String> withPayloadKeyArguments(Path into) throws IOException {
-        Jv input = Jv.parse("{\"basis\":\"business input\",\"data\":42}");
+        Jv input = Jv.parse(PAYLOAD_KEY_INPUT);
         copyTree(RealRecording.PUBLIC.resolve("mcp"), into);
         Path dir = RealRecording.nativeDir(into);
         Jv.Obj manifest = (Jv.Obj) Jv.parse(Files.readString(dir.resolve("client-acquisition.json")));
@@ -145,7 +151,7 @@ class RealRecordingTest {
         assertThat(s.acceptance().verdict()).as(s.acceptance().toString()).isEqualTo("ACCEPTED");
         Jv request = RealRecording.lines(s.events()).stream().filter(e -> Integer.valueOf(3).equals(integer(e, "assembly", "assembly_role_id"))
                 && Integer.valueOf(1).equals(integer(e, "activity_id")) && edited.getValue().equals(text(e, "tool_call_uid"))).findFirst().orElseThrow();
-        assertThat(Jv.write(request.member("arguments"))).isEqualTo("{\"basis\":\"business input\",\"data\":42}");
+        assertThat(Jv.write(request.member("arguments"))).isEqualTo(Jv.write(Jv.parse(PAYLOAD_KEY_INPUT)));
     }
 
     /** The real sub-agent run copied into {@code into}, edited by {@code edit} (its native directory and sealed manifest), extents restated. */
@@ -245,7 +251,7 @@ class RealRecordingTest {
         copyTree(s.store(), out.resolve("store"));
         Files.copy(s.qualified().resolve("assembly-expectation.json"), out.resolve("assembly-expectation.json"));
         Files.writeString(out.resolve("EDITED.md"), "# Edited real run\n\nThe scrubbed real MCP run (`claude-mcp`) with tool request `" + edited.getValue()
-                + "`'s input replaced, identically in the stream and the session file, by `{\"basis\":\"business input\",\"data\":42}`; "
+                + "`'s input replaced, identically in the stream and the session file, by `" + PAYLOAD_KEY_INPUT + "`; "
                 + "the sealed manifest's extents restated. Made by `RealRecordingTest.withPayloadKeyArguments`.\n");
     }
 
