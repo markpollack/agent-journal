@@ -61,6 +61,7 @@ public final class FinalComparisons {
         List<AssertionAccounting.Assertion> assertions =
                 AssertionAccounting.inspect(pkg, sourceReport);
         // each core's consolidated events are composed from that core's observations (a sub-agent's child core holds its own)
+        PayloadBoundary payloads = PayloadBoundary.of(pkg.catalog);
         for (OcsfPackage core : pkg.all()) {
             Map<String, Event> observations = new LinkedHashMap<>();
             core.observations().forEach(e -> observations.put(e.text("assembly", "occurrence_uid"), e));
@@ -73,7 +74,8 @@ public final class FinalComparisons {
                             partition,
                             nativeChecks,
                             assertions,
-                            observations);
+                            observations,
+                            payloads);
             core.events.forEach(context::event);
         }
     }
@@ -86,7 +88,8 @@ public final class FinalComparisons {
             boolean partition,
             List<Check> nativeChecks,
             List<AssertionAccounting.Assertion> assertions,
-            Map<String, Event> observations) {
+            Map<String, Event> observations,
+            PayloadBoundary payloads) {
         private void event(Event finalEvent) {
             if (!Integer.valueOf(3).equals(finalEvent.assemblyRole())) {
                 return;
@@ -140,7 +143,7 @@ public final class FinalComparisons {
                     finalEvent,
                     group,
                     assertions,
-                    FinalSelection.wholeFieldDifference(group, specification) ? 5 : FinalRelation.relation(expected, group.size()));
+                    FinalSelection.wholeFieldDifference(group, specification) ? 5 : FinalRelation.relation(expected, group.size(), payloads));
             Set<String> keys = new java.util.LinkedHashSet<>(expected.keySet());
             keys.addAll(byKey.keySet());
             keys.forEach(key -> compare(finalEvent, key, expected, byKey));
@@ -178,7 +181,7 @@ public final class FinalComparisons {
             List<Supported> candidates = expected.getOrDefault(key, List.of());
             boolean whole = FinalSelection.wholeField(finalEvent, key, specification);
             List<Supported> supported = whole ? FinalSelection.authority(candidates, finalEvent, specification, inputs)
-                    : FinalSelection.authority(FinalSelection.selected(candidates, expected), finalEvent, specification, inputs);
+                    : FinalSelection.authority(FinalSelection.selected(candidates, expected, payloads), finalEvent, specification, inputs);
             if (supported.isEmpty()) {
                 unsupported(whole, values, key);
                 return; // remains UNCHECKED in the output census; no source comparison exists to

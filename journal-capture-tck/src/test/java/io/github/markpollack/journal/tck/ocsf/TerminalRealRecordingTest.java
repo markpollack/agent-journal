@@ -123,6 +123,60 @@ class TerminalRealRecordingTest {
         assertThat(a.reasons()).anyMatch(r -> r.contains("assembly.references [assembly/child:" + SPAWN + "]") && r.contains("named by 2"));
     }
 
+    /**
+     * The payload-key case with its consolidated MCP request (the one whose arguments carry a basis key) rewritten by
+     * {@code edit}, the root index restated; returns the cases directory holding the copy.
+     */
+    private Path editedRequest(java.util.function.Consumer<Json.JObject> edit) throws IOException {
+        Path cases = temp.resolve("edited");
+        copyTree(CASES.resolve("claude-mcp-payload-keys"), cases.resolve("claude-mcp-payload-keys"));
+        Path events = root(cases, "claude-mcp-payload-keys");
+        List<String> lines = new java.util.ArrayList<>(Files.readAllLines(events));
+        int edited = 0;
+        for (int i = 0; i < lines.size(); i++) {
+            Json.JObject e = (Json.JObject) NeutralJson.parse(lines.get(i));
+            if (e.member("arguments") instanceof Json.JObject args && args.member("basis") != null && e.member("assembly") instanceof Json.JObject a
+                    && a.member("assembly_role_id") instanceof Json.JNumber n && n.value().intValue() == 3) {
+                edit.accept(args);
+                lines.set(i, NeutralJson.write(e));
+                edited++;
+            }
+        }
+        assertThat(edited).as("one consolidated request with payload-key arguments").isEqualTo(1);
+        Files.write(events, lines);
+        byte[] bytes = Files.readAllBytes(events);
+        Json.JObject manifest = (Json.JObject) NeutralJson.parse(Files.readString(events.resolveSibling("run.json")));
+        Json.JObject pkg = (Json.JObject) manifest.member("package");
+        pkg.members().put("events_bytes", new Json.JNumber(Integer.toString(bytes.length)));
+        pkg.members().put("events_jsonl_sha256", new Json.JString(NativeArtifact.sha256(bytes)));
+        ((Json.JObject) pkg.member("persisted_prefix")).members().put("bytes", new Json.JNumber(Integer.toString(bytes.length)));
+        ((Json.JObject) pkg.member("persisted_prefix")).members().put("sha256", new Json.JString(NativeArtifact.sha256(bytes)));
+        Files.writeString(events.resolveSibling("run.json"), NeutralJson.write(manifest));
+        return cases;
+    }
+
+    /** Re-review F1: real MCP arguments whose keys are basis and data are a payload the reader judges like any fact. */
+    @Test void argumentsWithBasisAndDataKeysAreAccepted() throws IOException {
+        OcsfReaderTool.Acceptance a = acceptance("claude-mcp-payload-keys");
+        assertThat(a.verdict()).as(a.toString()).isEqualTo("ACCEPTED");
+    }
+
+    /** Re-review F1: a consolidated request that drops its arguments' basis member is defective; the key is a fact there. */
+    @Test void aConsolidatedRequestDroppingAPayloadMemberIsDefective() throws IOException {
+        Path cases = editedRequest(args -> args.members().remove("basis"));
+        OcsfReaderTool.Acceptance a = acceptance(cases, "claude-mcp-payload-keys");
+        assertThat(a.verdict()).isEqualTo("DEFECTIVE");
+        assertThat(a.reasons()).anyMatch(r -> r.contains("/arguments/basis"));
+    }
+
+    /** Re-review F1: a consolidated request whose arguments' data differs from every observation's is defective. */
+    @Test void aConsolidatedRequestCarryingAnUnreportedPayloadValueIsDefective() throws IOException {
+        Path cases = editedRequest(args -> args.members().put("data", new Json.JNumber("99")));
+        OcsfReaderTool.Acceptance a = acceptance(cases, "claude-mcp-payload-keys");
+        assertThat(a.verdict()).isEqualTo("DEFECTIVE");
+        assertThat(a.reasons()).anyMatch(r -> r.contains("/arguments/data"));
+    }
+
     private static void copyTree(Path from, Path to) throws IOException {
         try (Stream<Path> paths = Files.walk(from)) {
             for (Path p : paths.toList()) {

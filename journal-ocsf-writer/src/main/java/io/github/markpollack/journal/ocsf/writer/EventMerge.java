@@ -184,12 +184,16 @@ final class EventMerge {
         return selection != null && selection.length > 2 && "whole-field".equals(selection[2]) && !exactlyEqual(entries);
     }
 
-    /** Objects merge member by member and identified arrays element by element; anything else that differs conflicts. */
+    /**
+     * Objects merge member by member and Journal's identified arrays element by element; anything else that differs
+     * conflicts. Inside a native payload no Journal rule applies: an array there is compared whole, and a member named
+     * like a Journal one ({@code model_ref}, {@code missing_required}, {@code content_blocks}) is a plain fact.
+     */
     private Jv structured(String pointer, String name, List<Contribution> entries) {
         if (entries.stream().allMatch(c -> c.value() instanceof Jv.Obj)) {
             return object(pointer, entries);
         }
-        Jv merged = entries.stream().allMatch(c -> c.value() instanceof Jv.Arr) && ARRAY_KEYS.containsKey(name) ? array(pointer, name, entries) : null;
+        Jv merged = entries.stream().allMatch(c -> c.value() instanceof Jv.Arr) && ARRAY_KEYS.containsKey(name) && !inPayload(pointer) ? array(pointer, name, entries) : null;
         return merged != null ? merged : conflict(pointer, entries);
     }
 
@@ -215,17 +219,22 @@ final class EventMerge {
             if (observation && "data".equals(name)) {
                 return Jv.copy(values.get(0).value());
             }
-            else if (pointer.endsWith("/model_ref") && ("provider_basis_id".equals(name) || "provider_basis".equals(name))) {
+            else if (providerBasis(pointer, name)) {
                 List<Contribution> reported = entries.stream().filter(c -> c.value().member("provider_kind") != null)
                         .map(c -> new Contribution(c.occurrence(), c.value().member(name))).filter(c -> c.value() != null).toList();
                 return at(pointer + "/" + name, name, reported.isEmpty() ? values : reported);
             }
-            else if (MISSING.equals(name)) {
+            else if (MISSING.equals(name) && !inPayload(pointer)) {
                 return stillMissing(pointer + "/" + MISSING, entries);
             }
             else {
                 return at(pointer + "/" + escape(name), name, values);
             }
+    }
+
+    /** A model reference's provider basis, outside any payload: the reported provider's basis is selected. */
+    private static boolean providerBasis(String pointer, String name) {
+        return ("provider_basis_id".equals(name) || "provider_basis".equals(name)) && pointer.endsWith("/model_ref") && !inPayload(pointer);
     }
 
     /** Merges arrays element by element by the declared identity; {@code null} when an identity repeats within one array. */

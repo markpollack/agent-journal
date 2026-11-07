@@ -103,9 +103,14 @@ public final class AssemblyOracle {
         List<Supplied> accepted = new ArrayList<>();
         expected.values().stream().filter(Expected::accepted).forEach(e -> accepted.add(e.source()));
         AssemblyPartition.check(report, pkg, spec, accepted);
-        // every core's consolidated events and quantities are its own: each is checked, reported under the core's owner
+        // Per core: every core's consolidated events and quantities are its own, so consolidation and the distinct-quantity
+        // check run for each, reported under the core's owner. The partition (above) spans every core. Root-only, each for
+        // its own reason: the declaration, gate and required roles are the file's assembly declaration, which only the root
+        // carries; the session comparison reads the supplied sources' session identity, one per run; the totals' native
+        // locators name the root's sources (the session file and the stream's result), which no child core holds.
+        io.github.markpollack.journal.tck.ocsf.PayloadBoundary payloads = io.github.markpollack.journal.tck.ocsf.PayloadBoundary.of(pkg.catalog);
         for (OcsfPackage core : pkg.all()) {
-            AssemblyConsolidation.check(report, core, owner(core));
+            AssemblyConsolidation.check(report, core, owner(core), payloads);
             AssemblyAccounting.distinct(report, core, owner(core));
         }
         AssemblyAccounting.totals(report, pkg, spec, accepted);

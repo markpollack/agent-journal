@@ -13,11 +13,11 @@ import java.util.Set;
 final class FinalRelation {
     private FinalRelation() {}
 
-    static int relation(Map<String, List<Supported>> expected, int groupSize) {
-        Comparison comparison = new Comparison(groupSize);
+    static int relation(Map<String, List<Supported>> expected, int groupSize, PayloadBoundary payloads) {
+        Comparison comparison = new Comparison(groupSize, payloads);
         for (Map.Entry<String, List<Supported>> entry : expected.entrySet()) {
             if (!comparison.add(
-                    entry.getKey(), FinalSelection.selected(entry.getValue(), expected))) {
+                    entry.getKey(), FinalSelection.selected(entry.getValue(), expected, payloads))) {
                 return 5;
             }
         }
@@ -29,15 +29,17 @@ final class FinalRelation {
 
     private static final class Comparison {
         private final int groupSize;
+        private final PayloadBoundary payloads;
         private final Set<Event> unique = new java.util.HashSet<>();
         private boolean representation;
 
-        private Comparison(int groupSize) {
+        private Comparison(int groupSize, PayloadBoundary payloads) {
             this.groupSize = groupSize;
+            this.payloads = payloads;
         }
 
         private boolean add(String key, List<Supported> selected) {
-            if (excluded(key) || selected.isEmpty() || metadata(key, selected.get(0))) {
+            if (excluded(key, payloads) || selected.isEmpty() || metadata(key, selected.get(0), payloads)) {
                 return true;
             }
             Json first = selected.get(0).value();
@@ -77,7 +79,7 @@ final class FinalRelation {
                                                                             v.check(),
                                                                             v.finality(),
                                                                             v.event()))));
-            int relation = relation(nested, groupSize);
+            int relation = relation(nested, groupSize, payloads);
             if (relation == 5) {
                 return false;
             }
@@ -90,17 +92,20 @@ final class FinalRelation {
         }
     }
 
-    private static boolean excluded(String key) {
-        return FinalComparisons.ENVELOPE.contains(key.split("/", 3)[1])
-                || key.contains("/source_ref/")
+    /** Envelope members and Journal's provenance members are not facts of the relation; inside a payload every member is. */
+    private static boolean excluded(String key, PayloadBoundary payloads) {
+        if (FinalComparisons.ENVELOPE.contains(key.split("/", 3)[1])) {
+            return true;
+        }
+        return !payloads.contains(key) && (key.contains("/source_ref/")
                 || key.contains("/components/")
                 || key.contains("/native_pointers/")
                 || key.contains("/provider_basis")
-                || key.contains("/missing_required/");
+                || key.contains("/missing_required/"));
     }
 
-    private static boolean metadata(String key, Supported selected) {
-        if (!key.endsWith("/data")) {
+    private static boolean metadata(String key, Supported selected, PayloadBoundary payloads) {
+        if (!key.endsWith("/data") || payloads.contains(key)) {
             return false;
         }
         String pointer = selected.pointer();

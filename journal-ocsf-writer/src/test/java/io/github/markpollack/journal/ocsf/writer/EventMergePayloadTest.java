@@ -37,6 +37,39 @@ class EventMergePayloadTest {
         assertThat(r.event().member("arguments").member("data")).isNull();
     }
 
+    /**
+     * Re-review F1: a payload member named like Journal's partial-projection list is a plain fact. Differing
+     * {@code /arguments/missing_required} arrays conflict; they are not intersected.
+     */
+    @Test void aMissingRequiredArrayInsideArgumentsConflictsRatherThanIntersecting() {
+        EventMerge.Result r = EventMerge.merge(List.of(request("stdout.jsonl", 1, "{\"missing_required\":[\"a\",\"b\"]}"),
+                request("transcript.jsonl", 2, "{\"missing_required\":[\"a\"]}")));
+        assertThat(r.relation()).isEqualTo(5);
+        assertThat(Jv.write(r.conflicts())).contains("\"field_pointer\":\"/arguments/missing_required\"");
+    }
+
+    /** Re-review F1: an array inside a payload named like a Journal identified array is compared whole, not by Journal's identity. */
+    @Test void anIdentifiedArrayNameInsideArgumentsIsComparedWhole() {
+        EventMerge.Result r = EventMerge.merge(List.of(request("stdout.jsonl", 1, "{\"content_blocks\":[{\"block_index\":0,\"x\":1}]}"),
+                request("transcript.jsonl", 2, "{\"content_blocks\":[{\"block_index\":0,\"x\":2}]}")));
+        assertThat(r.relation()).isEqualTo(5);
+        assertThat(Jv.write(r.conflicts())).contains("\"field_pointer\":\"/arguments/content_blocks\"").doesNotContain("/arguments/content_blocks/0");
+    }
+
+    /** Payloads are recognized by attribute name, which is sound while no payload name is declared with another type. */
+    @Test void noPayloadNameIsDeclaredWithAnotherType() {
+        Jv compiled = SchemaPin.bundled().compiled();
+        java.util.Map<String, java.util.Set<String>> types = new java.util.TreeMap<>();
+        for (String scope : List.of("objects", "classes")) {
+            for (Jv definition : ((Jv.Obj) compiled.member(scope)).members().values()) {
+                if (!(definition.member("attributes") instanceof Jv.Obj attributes)) { continue; }
+                attributes.members().forEach((name, attribute) -> types.computeIfAbsent(name, k -> new java.util.TreeSet<>())
+                        .add(attribute.member("type") == null ? "object" : attribute.member("type").text()));
+            }
+        }
+        assertThat(EventMerge.PAYLOADS).allSatisfy(name -> assertThat(types.get(name)).as(name).containsExactly("json_t"));
+    }
+
     @Test void journalsOwnBasisOnlyMemberStillTakesNoEvidence() {
         Assembler.Observation a = request("stdout.jsonl", 1, null), b = request("transcript.jsonl", 2, null);
         ((Jv.Obj) a.event()).put("mcp", Jv.parse("{\"basis\":\"claude.stream.mcp.v1: the result of the MCP call\"}"));

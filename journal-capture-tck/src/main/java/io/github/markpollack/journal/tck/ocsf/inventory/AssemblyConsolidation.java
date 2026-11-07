@@ -45,7 +45,7 @@ final class AssemblyConsolidation {
     }
 
     /** The consolidated events of one core against that core's own supporting observations, reported under {@code owner}. */
-    static void check(OracleReport report, OcsfPackage pkg, String owner) {
+    static void check(OracleReport report, OcsfPackage pkg, String owner, io.github.markpollack.journal.tck.ocsf.PayloadBoundary payloads) {
         Map<String, Event> byOccurrence = new LinkedHashMap<>();
         for (Event e : pkg.observations()) {
             if (e.assemblyRole() != null) {
@@ -57,7 +57,7 @@ final class AssemblyConsolidation {
         Map<String, Integer> named = new LinkedHashMap<>();
         List<Event> consolidated = pkg.events.stream().filter(e -> Integer.valueOf(3).equals(e.assemblyRole())).toList();
         for (Event c : consolidated) {
-            fieldProblems.addAll(fields(c, supporting(c, byOccurrence, named, refProblems)));
+            fieldProblems.addAll(fields(c, supporting(c, byOccurrence, named, refProblems), payloads));
         }
         byOccurrence.forEach((occ, e) -> {
             int n = named.getOrDefault(occ, 0);
@@ -90,11 +90,11 @@ final class AssemblyConsolidation {
 
     // ------------------------------------------------------------------------------------------ fields
 
-    private static List<String> fields(Event c, List<Event> supporting) {
+    private static List<String> fields(Event c, List<Event> supporting, io.github.markpollack.journal.tck.ocsf.PayloadBoundary payloads) {
         List<String> problems = new ArrayList<>(envelope(c, supporting));
-        Map<String, List<Json>> carried = leaves(c.json);
+        Map<String, List<Json>> carried = leaves(c.json, payloads);
         Map<String, List<Json>> reported = new LinkedHashMap<>();
-        supporting.forEach(s -> leaves(s.json).forEach((p, vs) -> reported.computeIfAbsent(p, k -> new ArrayList<>()).addAll(vs)));
+        supporting.forEach(s -> leaves(s.json, payloads).forEach((p, vs) -> reported.computeIfAbsent(p, k -> new ArrayList<>()).addAll(vs)));
         Set<String> excused = excused(c);
         carried.forEach((p, vs) -> vs.forEach(v -> {
             if (!contains(reported.get(p), v)) {
@@ -102,9 +102,9 @@ final class AssemblyConsolidation {
             }
         }));
         for (Event s : supporting) {
-            leaves(s.json).forEach((p, vs) -> vs.forEach(v -> {
-                // a merged partial projection lacks only what every projection lacked (the final-assembly contract)
-                if (!contains(carried.get(p), v) && !under(p, excused) && !p.endsWith("/missing_required/*")) {
+            leaves(s.json, payloads).forEach((p, vs) -> vs.forEach(v -> {
+                // a merged partial projection lacks only what every projection lacked (the final-assembly contract); inside a payload that name is a plain fact
+                if (!contains(carried.get(p), v) && !under(p, excused) && (payloads.contains(p) || !p.endsWith("/missing_required/*"))) {
                     problems.add(c + " drops " + p + " = " + AssemblyOracle.write(v) + " of " + s.text("assembly", "occurrence_uid") + " without a conflict or supersession");
                 }
             }));
@@ -158,32 +158,36 @@ final class AssemblyConsolidation {
         return values != null && values.stream().anyMatch(x -> Json.sameValue(x, v));
     }
 
-    /** Fact leaves by wildcarded pointer: envelope, own and provenance members left out. */
-    static Map<String, List<Json>> leaves(Json event) {
+    /**
+     * Fact leaves by wildcarded pointer: envelope, own and provenance members left out. Inside a declared native payload
+     * nothing is left out: every member is a fact, whatever its key.
+     */
+    static Map<String, List<Json>> leaves(Json event, io.github.markpollack.journal.tck.ocsf.PayloadBoundary payloads) {
         Map<String, List<Json>> out = new LinkedHashMap<>();
         if (event instanceof Json.JObject o) {
             o.members().forEach((k, v) -> {
                 if (!ENVELOPE.contains(k) && !PROVENANCE.contains(k)) {
-                    walk(v, "/" + k, out);
+                    walk(v, "/" + k, out, payloads);
                 }
             });
         }
         return out;
     }
 
-    private static void walk(Json v, String path, Map<String, List<Json>> out) {
+    private static void walk(Json v, String path, Map<String, List<Json>> out, io.github.markpollack.journal.tck.ocsf.PayloadBoundary payloads) {
         if (v instanceof Json.JObject o && !o.members().isEmpty()) {
-            boolean observation = o.members().containsKey("basis") || o.members().containsKey("source_ref");
+            boolean payload = payloads.contains(path);
+            boolean observation = !payload && (o.members().containsKey("basis") || o.members().containsKey("source_ref"));
             o.members().forEach((k, x) -> {
                 // an observation's nested data is its native residual (provenance), as the final-assembly contract states
-                if (!PROVENANCE.contains(k) && !(observation && "data".equals(k))) {
-                    walk(x, path + "/" + k.replace("~", "~0").replace("/", "~1"), out);
+                if (payload || (!PROVENANCE.contains(k) && !(observation && "data".equals(k)))) {
+                    walk(x, path + "/" + k.replace("~", "~0").replace("/", "~1"), out, payloads);
                 }
             });
             return;
         }
         if (v instanceof Json.JArray a && !a.elements().isEmpty()) {
-            a.elements().forEach(x -> walk(x, path + "/*", out));
+            a.elements().forEach(x -> walk(x, path + "/*", out, payloads));
             return;
         }
         out.computeIfAbsent(path, k -> new ArrayList<>()).add(v);

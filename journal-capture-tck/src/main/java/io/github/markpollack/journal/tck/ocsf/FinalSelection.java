@@ -33,13 +33,20 @@ final class FinalSelection {
         return false;
     }
 
-    static List<Supported> selected(List<Supported> values, Map<String, List<Supported>> all) {
+    /**
+     * The supporting values a final field is composed from. Inside a declared native payload ({@code payloads}) no
+     * Journal selection applies (provider basis, origin, residual data): every value is a fact of its member.
+     */
+    static List<Supported> selected(List<Supported> values, Map<String, List<Supported>> all, PayloadBoundary payloads) {
         if (values.isEmpty()) {
             return values;
         }
         int finality = values.stream().mapToInt(Supported::finality).max().orElse(0);
         values = values.stream().filter(s -> s.finality() == finality).toList();
         String key = values.get(0).key();
+        if (payloads.contains(key)) {
+            return values;
+        }
         if (key.contains("/model_ref/provider_basis")) {
             List<Supported> reported =
                     values.stream()
