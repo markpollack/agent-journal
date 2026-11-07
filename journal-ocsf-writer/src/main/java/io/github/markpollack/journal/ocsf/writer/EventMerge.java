@@ -44,6 +44,38 @@ final class EventMerge {
             "errors", List.of("error_layer_id"),
             "permission_decisions", List.of("decision_id", "scope_id"));
 
+    /**
+     * Members the schema declares free-form ({@code json_t}): each holds a native payload (tool arguments, a structured
+     * tool result, MCP members) copied as the source reported it. Inside one, every member is a fact whatever its key, so
+     * a payload member named {@code basis}, {@code source_ref} or {@code data} is compared like any other. The
+     * {@code data} member is excluded here: outside a payload it is a Journal object's native residual, which each
+     * observation keeps and the consolidated event takes from the primary.
+     */
+    static final Set<String> PAYLOADS = payloads(SchemaPin.bundled().compiled());
+
+    static Set<String> payloads(Jv compiled) {
+        Set<String> out = new java.util.TreeSet<>();
+        for (String scope : List.of("objects", "classes")) {
+            if (!(compiled.member(scope) instanceof Jv.Obj definitions)) { continue; }
+            for (Jv definition : definitions.members().values()) {
+                if (!(definition.member("attributes") instanceof Jv.Obj attributes)) { continue; }
+                attributes.members().forEach((name, attribute) -> {
+                    if (attribute.member("type") != null && "json_t".equals(attribute.member("type").text())) { out.add(name); }
+                });
+            }
+        }
+        out.remove("data");
+        return java.util.Collections.unmodifiableSet(out);
+    }
+
+    /** Whether {@code pointer} lies inside a declared native payload (a segment names a {@link #PAYLOADS} member). */
+    static boolean inPayload(String pointer) {
+        for (String segment : pointer.split("/")) {
+            if (PAYLOADS.contains(segment.replace("~1", "/").replace("~0", "~"))) { return true; }
+        }
+        return false;
+    }
+
     /** A partial protocol projection's list of required members it lacks. */
     static final String MISSING = "missing_required";
     static final Map<Integer, String> RELATION = Map.of(1, "Identical", 2, "Representation only", 3, "One richer", 4, "Each richer", 5, "Conflicting", 6, "Ambiguous",
@@ -137,7 +169,7 @@ final class EventMerge {
         if (wholeFieldSelection(selection, entries)) {
             return conflict(pointer, entries);
         }
-        if (PROVENANCE.contains(name) || exactlyEqual(entries)) {
+        if ((PROVENANCE.contains(name) && !inPayload(pointer)) || exactlyEqual(entries)) {
             return Jv.copy(entries.get(0).value());
         }
         if (entries.stream().allMatch(c -> McpAlternatives.sameJson(c.value(), entries.get(0).value()))) {
@@ -169,7 +201,7 @@ final class EventMerge {
             }
         }
         Jv.Obj out = new Jv.Obj();
-        boolean observation = members.containsKey("basis") || members.containsKey("source_ref");
+        boolean observation = !inPayload(pointer) && (members.containsKey("basis") || members.containsKey("source_ref"));
         for (Map.Entry<String, List<Contribution>> m : members.entrySet()) {
             Jv v = member(pointer, m.getKey(), m.getValue(), entries, observation);
             if (v != null) {
@@ -291,7 +323,7 @@ final class EventMerge {
      * fact, so it neither enriches its observation nor takes field evidence, as with a top-level provenance member.
      */
     private void single(String pointer, Contribution c) {
-        if (!carriesFact(c.value())) {
+        if (!inPayload(pointer) && !carriesFact(c.value())) {
             return;
         }
         contributors.add(c.occurrence());

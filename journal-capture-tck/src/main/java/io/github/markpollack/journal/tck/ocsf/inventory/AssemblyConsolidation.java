@@ -44,7 +44,8 @@ final class AssemblyConsolidation {
         return out;
     }
 
-    static void check(OracleReport report, OcsfPackage pkg) {
+    /** The consolidated events of one core against that core's own supporting observations, reported under {@code owner}. */
+    static void check(OracleReport report, OcsfPackage pkg, String owner) {
         Map<String, Event> byOccurrence = new LinkedHashMap<>();
         for (Event e : pkg.observations()) {
             if (e.assemblyRole() != null) {
@@ -64,9 +65,9 @@ final class AssemblyConsolidation {
                 refProblems.add(occ + " is role " + e.assemblyRole() + " and named by " + n + " consolidated event(s)");
             }
         });
-        report.add(Category.NORMALIZATION, "assembly.references", AssemblyOracle.OWNER, refProblems.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
+        report.add(Category.NORMALIZATION, "assembly.references", owner, refProblems.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
                 refProblems.isEmpty() ? consolidated.size() + " consolidated event(s); every reference resolves to a supporting observation of its entity, each named once" : limit(refProblems));
-        report.add(Category.EXPLANATION, "assembly.consolidation", AssemblyOracle.OWNER, fieldProblems.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
+        report.add(Category.EXPLANATION, "assembly.consolidation", owner, fieldProblems.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
                 fieldProblems.isEmpty() ? "every consolidated value is reported by a supporting observation, and every supporting value is carried, listed as a conflict or superseded" : limit(fieldProblems));
     }
 

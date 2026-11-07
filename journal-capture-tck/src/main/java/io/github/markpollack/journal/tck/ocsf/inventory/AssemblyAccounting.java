@@ -29,14 +29,22 @@ final class AssemblyAccounting {
     private AssemblyAccounting() {
     }
 
-    static void check(OracleReport report, OcsfPackage pkg, Json spec, List<Supplied> accepted) {
+    /** No canonical event of one core carries one quantity twice; reported under {@code owner}. */
+    static void distinct(OracleReport report, OcsfPackage pkg, String owner) {
         List<String> duplicates = new ArrayList<>();
         for (Event e : pkg.canonical()) {
             duplicates.addAll(repeated(e, "usage_observations", List.of("scope_id", "aggregation_id", "model_ref")));
             duplicates.addAll(repeated(e, "cost_observations", List.of("quantity_kind_id", "scope_id", "currency", "quantity_unit", "model_ref")));
         }
-        report.add(Category.NORMALIZATION, "assembly.accounting.distinct", AssemblyOracle.OWNER, duplicates.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
+        report.add(Category.NORMALIZATION, "assembly.accounting.distinct", owner, duplicates.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
                 duplicates.isEmpty() ? "no canonical event carries one quantity twice" : AssemblyConsolidation.limit(duplicates));
+    }
+
+    /**
+     * The declared run totals, from the root core: each total's native locators name the root's sources (the session
+     * file's final output tokens), which a child core does not hold.
+     */
+    static void totals(OracleReport report, OcsfPackage pkg, Json spec, List<Supplied> accepted) {
         for (Json total : spec.member("totals") == null ? List.<Json>of() : spec.member("totals").elements()) {
             total(report, pkg, total, accepted);
         }

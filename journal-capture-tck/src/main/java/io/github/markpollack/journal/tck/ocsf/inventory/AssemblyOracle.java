@@ -103,9 +103,19 @@ public final class AssemblyOracle {
         List<Supplied> accepted = new ArrayList<>();
         expected.values().stream().filter(Expected::accepted).forEach(e -> accepted.add(e.source()));
         AssemblyPartition.check(report, pkg, spec, accepted);
-        AssemblyConsolidation.check(report, pkg);
-        AssemblyAccounting.check(report, pkg, spec, accepted);
+        // every core's consolidated events and quantities are its own: each is checked, reported under the core's owner
+        for (OcsfPackage core : pkg.all()) {
+            AssemblyConsolidation.check(report, core, owner(core));
+            AssemblyAccounting.distinct(report, core, owner(core));
+        }
+        AssemblyAccounting.totals(report, pkg, spec, accepted);
         return report;
+    }
+
+    /** {@link #OWNER} for the root core, {@code assembly/child:<spawn>} for a linked child core. */
+    static String owner(OcsfPackage core) {
+        String label = core.label();
+        return "main".equals(label) ? OWNER : OWNER + "/" + label;
     }
 
     private static void sessions(OracleReport report, OcsfPackage pkg, Map<String, Expected> expected, Json spec) {

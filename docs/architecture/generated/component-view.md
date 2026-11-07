@@ -72,7 +72,7 @@ Each row is one extracted component dependency and the class pairs that establis
 | Final assembly | Source input and run facts | `AcquiredExecution -> RunDescriptor`<br>`AcquiredExecution -> SourceDescriptor`<br>`AcquiredExecution -> SourceInput`<br>`AcquiredExecution -> WriterOptions`<br>`FinalAssembly -> RunDescriptor`<br>`FinalAssembly -> SourceDescriptor`<br>`FinalAssembly -> WriterOptions` |
 | Final assembly | Source mappers | `Assembler -> MappingContracts` |
 | Final assembly | MCP protocol binding | `EventMerge -> McpAlternatives` |
-| Final assembly | Schema and toolchain pins | `AcquiredExecution -> SchemaPin`<br>`FinalAssembly -> SchemaPin` |
+| Final assembly | Schema and toolchain pins | `AcquiredExecution -> SchemaPin`<br>`EventMerge -> SchemaPin`<br>`FinalAssembly -> SchemaPin` |
 | Final assembly | Lexically exact JSON (writer) *(not drawn)* | `AcquiredExecution -> Jv`<br>`Assembler -> Jv`<br>`AssemblyDeclaration -> Jv`<br>`AssemblyGate -> Jv`<br>`AssemblyGrouping -> Jv`<br>`AssemblyPlan -> Jv`<br>`AssemblyProfile -> Jv`<br>`CodexOriginalQualification -> Jv`<br>`EventMerge -> Jv`<br>`FinalAssembly -> Jv` |
 | MCP protocol binding | Lexically exact JSON (writer) *(not drawn)* | `McpAllOf -> Jv`<br>`McpAlternatives -> Jv`<br>`McpBinding -> Jv`<br>`McpBindingGenerator -> Jv`<br>`McpCoverage -> Jv`<br>`McpEmbedder -> Jv`<br>`McpGeneratedFiles -> Jv`<br>`McpNode -> Jv`<br>`McpSchemaModel -> Jv`<br>`McpUnionMatch -> Jv` |
 | Core persistence | Source input and run facts | `CoreWriter -> RunDescriptor`<br>`CoreWriter -> WriterOptions` |

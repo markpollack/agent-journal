@@ -183,7 +183,7 @@
   {"from": "final-assembly", "to": "mcp-binding", "drawn": true,
    "class_pairs": ["EventMerge -> McpAlternatives"]},
   {"from": "final-assembly", "to": "schema", "drawn": true,
-   "class_pairs": ["AcquiredExecution -> SchemaPin", "FinalAssembly -> SchemaPin"]},
+   "class_pairs": ["AcquiredExecution -> SchemaPin", "EventMerge -> SchemaPin", "FinalAssembly -> SchemaPin"]},
   {"from": "final-assembly", "to": "json-writer", "drawn": false,
    "class_pairs": ["AcquiredExecution -> Jv", "Assembler -> Jv", "AssemblyDeclaration -> Jv", "AssemblyGate -> Jv", "AssemblyGrouping -> Jv", "AssemblyPlan -> Jv", "AssemblyProfile -> Jv", "CodexOriginalQualification -> Jv", "EventMerge -> Jv", "FinalAssembly -> Jv"]},
   {"from": "mcp-binding", "to": "json-writer", "drawn": false,
