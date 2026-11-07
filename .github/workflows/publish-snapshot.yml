@@ -1,9 +1,13 @@
 name: Publish Snapshot
 
-# Manual only. main is the development line of 2.0; pushing to it builds (ci.yml) but
-# publishes nothing. A snapshot is published by an explicit dispatch of this workflow
-# (`gh workflow run publish-snapshot.yml --ref main`) after the documented publication checks.
+# main is the development line of 2.0: every push to it that changes more than docs publishes a
+# 2.0.0-SNAPSHOT, so consumers get each fix as it lands. A dispatch publishes the branch head on demand.
 on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
   workflow_dispatch:
 
 concurrency:
