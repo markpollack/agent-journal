@@ -14,6 +14,9 @@ are synthetic, but their shapes match 2.1.316:
 | `claude-heartbeat` | this revision | one MCP call, one heartbeat naming it, its result |
 | `claude-sub-agent` | this revision | one `Agent` call whose sub-agent runs one `Read` |
 | `claude-heartbeat-bd04735` | `bd04735` (before the fix) | as `claude-heartbeat`; the writer made the heartbeat a child core |
+| `claude-sub-agent-heartbeat` | this revision | as `claude-sub-agent`, with a heartbeat naming the sub-agent's `Read`: stored in the root |
+| `claude-sub-agent-nested` | this revision | a sub-agent that spawns a sub-agent: two child cores beside each other, each linked by its spawning call |
+| `claude-dangling-owner` | this revision | records naming an owner no call in the stream spawned: a child core, but no spawn |
 
-Regenerate the first two with `-Dterminal.child.regenerate=<directory>` on `TerminalNativeTest` in
-`journal-ocsf-writer`. The third is historical evidence and must not be regenerated.
+Regenerate every case but `claude-heartbeat-bd04735` with `-Dterminal.child.regenerate=<directory>` on `TerminalNativeTest`
+in `journal-ocsf-writer`. `claude-heartbeat-bd04735` is historical evidence and must not be regenerated.

@@ -41,6 +41,10 @@ final class AssemblyPartition {
 
     private OcsfPackage pkg;
     private final List<Event> observations;
+    /** The core each observation is written in: {@code main}, or {@code child:<spawn>} for a linked child core. */
+    private final List<String> cores;
+    /** The consolidated events of every core, with the core each is written in. */
+    private final Map<Event, OcsfPackage> canonical = new LinkedHashMap<>();
     private final int[] parent;
     private final Set<Integer> ambiguous = new LinkedHashSet<>();
     private final List<String> unmatched = new ArrayList<>();
@@ -49,25 +53,39 @@ final class AssemblyPartition {
     /** Entity and role pairs whose records carry no native stage rule, so the candidate's activity stood in. */
     private final Set<String> candidateStages = new LinkedHashSet<>();
 
-    private AssemblyPartition(List<Event> observations) {
+    private AssemblyPartition(List<Event> observations, List<String> cores) {
         this.observations = observations;
+        this.cores = cores;
         this.parent = new int[observations.size()];
         for (int i = 0; i < parent.length; i++) {
             parent[i] = i;
         }
     }
 
+    /**
+     * The partition over the observations of every core: the root's and each linked child core's (a sub-agent's records
+     * are written in its own core, and their native identities partition with the rest of the supplied bytes).
+     */
     static void check(OracleReport report, OcsfPackage pkg, Json spec, List<Supplied> accepted) {
-        partition(report, pkg.observations().stream().filter(e -> e.className != null).toList(), spec, accepted, AssemblyConsolidation.refsByEntity(pkg), pkg);
+        List<Event> observations = new ArrayList<>();
+        List<String> cores = new ArrayList<>();
+        Map<String, Set<String>> refs = new LinkedHashMap<>();
+        for (OcsfPackage core : pkg.all()) {
+            core.observations().stream().filter(e -> e.className != null).forEach(e -> { observations.add(e); cores.add(core.label()); });
+            AssemblyConsolidation.refsByEntity(core).forEach((entity, r) -> refs.computeIfAbsent(entity, k -> new java.util.TreeSet<>()).addAll(r));
+        }
+        AssemblyPartition p = partition(observations, cores, spec, accepted, pkg);
+        pkg.all().forEach(core -> core.canonical().stream().filter(e -> Integer.valueOf(3).equals(e.assemblyRole())).forEach(e -> p.canonical.put(e, core)));
+        p.compare(report, refs);
     }
 
     /** The partition over given observations and consolidated references (the seam the package-free controls use). */
     static void check(OracleReport report, List<Event> observations, Json spec, List<Supplied> accepted, Map<String, Set<String>> consolidatedRefs) {
-        partition(report, observations, spec, accepted, consolidatedRefs, null);
+        partition(observations, java.util.Collections.nCopies(observations.size(), "main"), spec, accepted, null).compare(report, consolidatedRefs);
     }
 
-    private static void partition(OracleReport report, List<Event> observations, Json spec, List<Supplied> accepted, Map<String, Set<String>> consolidatedRefs, OcsfPackage pkg) {
-        AssemblyPartition p = new AssemblyPartition(observations);
+    private static AssemblyPartition partition(List<Event> observations, List<String> cores, Json spec, List<Supplied> accepted, OcsfPackage pkg) {
+        AssemblyPartition p = new AssemblyPartition(observations, cores);
         p.pkg = pkg;
         for (Json entity : spec.member("entities").elements()) {
             for (Supplied s : accepted) {
@@ -77,7 +95,7 @@ final class AssemblyPartition {
             }
         }
         p.copies(accepted);
-        p.compare(report, consolidatedRefs);
+        return p;
     }
 
     private static List<Json> locators(Json entity, String role) {
@@ -275,8 +293,8 @@ final class AssemblyPartition {
                 if (event.artifact().equals(prior.artifact()) && java.util.Objects.equals(event.recordIndex(), prior.recordIndex())) { ordinal++; }
             }
             String occurrence = event.artifact() + "#" + event.recordIndex() + "/" + ordinal;
-            field(report, event, "/assembly/occurrence_uid", FactComparison.value(occurrence), support);
-            field(report, event, "/assembly/assembly_role_id", FactComparison.value(group.size() == 1 ? 1 : 2), support);
+            field(report, cores.get(i), event, "/assembly/occurrence_uid", FactComparison.value(occurrence), support);
+            field(report, cores.get(i), event, "/assembly/assembly_role_id", FactComparison.value(group.size() == 1 ? 1 : 2), support);
             String alias = event.text("assembly", "entity_uid");
             if (alias != null) { aliases.add(alias); }
             coordinates.add(new Json.JObject(Map.of("artifact", FactComparison.value(event.artifact()), "record_index", FactComparison.value(event.recordIndex()),
@@ -288,36 +306,38 @@ final class AssemblyPartition {
         for (int i : group) {
             Event event = observations.get(i);
             if (event.json.path("assembly", "entity_uid") != null) {
-                predicate(report, event, "/assembly/entity_uid", partition, support);
+                predicate(report, cores.get(i), event, "/assembly/entity_uid", partition, support);
             }
         }
         if (group.size() > 1 && aliases.size() == 1) {
             String alias = aliases.iterator().next();
-            for (Event event : pkg.canonical()) {
-                if (Integer.valueOf(3).equals(event.assemblyRole()) && alias.equals(event.text("assembly", "entity_uid"))) {
-                    field(report, event, "/assembly/assembly_role_id", FactComparison.value(3), support);
-                    field(report, event, "/assembly/assembly_role", FactComparison.value("Consolidated canonical"), support);
-                    predicate(report, event, "/assembly/entity_uid", partition, support);
+            for (Map.Entry<Event, OcsfPackage> written : canonical.entrySet()) {
+                Event event = written.getKey();
+                String core = written.getValue().label();
+                if (alias.equals(event.text("assembly", "entity_uid"))) {
+                    field(report, core, event, "/assembly/assembly_role_id", FactComparison.value(3), support);
+                    field(report, core, event, "/assembly/assembly_role", FactComparison.value("Consolidated canonical"), support);
+                    predicate(report, core, event, "/assembly/entity_uid", partition, support);
                     Json actual = event.json.path("assembly", "observation_refs");
                     List<Json> actualRefs = actual == null ? List.of() : actual.elements();
                     boolean equal = actualRefs.size() == coordinates.size() && coordinates.stream().allMatch(c -> actualRefs.stream().filter(a -> Json.sameValue(a, c)).count() == 1);
-                    predicate(report, event, "/assembly/observation_refs", equal, support);
-                    field(report, event, "/journal/sequence", FactComparison.value(pkg.events.indexOf(event) + 1), support);
-                    field(report, event, "/journal/contract_uid", FactComparison.value("0.16.0-prototype".equals(pkg.manifest.extensionVersion()) ? "agent-journal/final-assembly/0.2.0-prototype" : "agent-journal/final-assembly/0.1.0-prototype"), support);
-                    field(report, event, "/journal/rule_uid", FactComparison.value("assembly.consolidate->canonical"), support);
+                    predicate(report, core, event, "/assembly/observation_refs", equal, support);
+                    field(report, core, event, "/journal/sequence", FactComparison.value(written.getValue().events.indexOf(event) + 1), support);
+                    field(report, core, event, "/journal/contract_uid", FactComparison.value("0.16.0-prototype".equals(pkg.manifest.extensionVersion()) ? "agent-journal/final-assembly/0.2.0-prototype" : "agent-journal/final-assembly/0.1.0-prototype"), support);
+                    field(report, core, event, "/journal/rule_uid", FactComparison.value("assembly.consolidate->canonical"), support);
                 }
             }
         }
     }
 
-    private static void field(OracleReport report, Event event, String pointer, Json expected, List<String> support) {
-        String owner = "main/" + event.artifact();
+    private static void field(OracleReport report, String core, Event event, String pointer, Json expected, List<String> support) {
+        String owner = core + "/" + event.artifact();
         FactComparison.compare(report, "assembly.partition.value", owner,
                 new Check.Evidence("assembly.native_partition/v1", event.line + pointer, support, owner + ":line=" + event.line + "#" + pointer, expected, FactComparison.at(event.json, pointer)));
     }
 
-    private static void predicate(OracleReport report, Event event, String pointer, boolean pass, List<String> support) {
-        String owner = "main/" + event.artifact();
+    private static void predicate(OracleReport report, String core, Event event, String pointer, boolean pass, List<String> support) {
+        String owner = core + "/" + event.artifact();
         report.add(new Check(Category.NORMALIZATION, "assembly.partition.association", owner, pass ? Outcome.VERIFIED : Outcome.DEFECTIVE,
                 "the alias/reference set must represent exactly one independently derived native partition", 1,
                 new Check.Evidence("assembly.native_partition/v1", event.line + pointer, support, owner + ":line=" + event.line + "#" + pointer,

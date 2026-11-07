@@ -171,13 +171,60 @@ class TerminalNativeTest {
         assertThat(Jv.write(results.get(0).member("assembly"))).doesNotContain("\"field_pointer\":\"/mcp\"");
     }
 
+    private static final String CHILD_HEARTBEAT = "{\"type\":\"tool_progress\",\"tool_use_id\":\"toolu_READ-heartbeat-0\",\"tool_name\":\"Read\",\"parent_tool_use_id\":\"toolu_READ\","
+            + "\"elapsed_time_seconds\":30,\"heartbeat\":true,\"session_id\":\"native-1\",\"uuid\":\"p2\"}";
+    /** A sub-agent whose Read runs long enough for a heartbeat naming it (review F1). */
+    private static final List<String> SUB_AGENT_HEARTBEAT_STREAM = List.of(INIT, toolUse("null", "toolu_AGENT", "Agent", "a1"), CHILD_PROMPT, toolUse("\"toolu_AGENT\"", "toolu_READ", "Read", "c2"),
+            CHILD_HEARTBEAT, toolResult("\"toolu_AGENT\"", "toolu_READ", "c3"), toolResult("null", "toolu_AGENT", "u1"), RESULT);
+    private static final String INNER_PROMPT = "{\"type\":\"user\",\"message\":{\"role\":\"user\",\"content\":[{\"type\":\"text\",\"text\":\"read gamma\"}]},\"parent_tool_use_id\":\"toolu_INNER\","
+            + "\"agent_id\":\"a2\",\"session_id\":\"native-1\",\"uuid\":\"n1\",\"subagent_type\":\"general-purpose\"}";
+    /** A sub-agent that spawns its own sub-agent (review F3, nested). */
+    private static final List<String> NESTED_SUB_AGENT_STREAM = List.of(INIT, toolUse("null", "toolu_AGENT", "Agent", "a1"), CHILD_PROMPT, toolUse("\"toolu_AGENT\"", "toolu_INNER", "Agent", "c2"),
+            INNER_PROMPT, toolUse("\"toolu_INNER\"", "toolu_READ", "Read", "n2"), toolResult("\"toolu_INNER\"", "toolu_READ", "n3"), toolResult("\"toolu_AGENT\"", "toolu_INNER", "c3"),
+            toolResult("null", "toolu_AGENT", "u1"), RESULT);
+    /** A record naming an owner no Agent call in the stream spawned (review F3, dangling). */
+    private static final List<String> DANGLING_PARENT_STREAM = List.of(INIT, toolUse("\"toolu_GHOST\"", "toolu_READ", "Read", "g1"), toolResult("\"toolu_GHOST\"", "toolu_READ", "g2"), RESULT);
+
+    /**
+     * A heartbeat of a call inside a sub-agent names that call, not an owner, so it is stored in the root core with
+     * every other record that names no owner; the sub-agent's own records stay in its child core (review F1).
+     */
+    @Test void aHeartbeatOfACallInsideASubAgentIsStoredInTheRoot() throws Exception {
+        Path file = assertAccepted(qualifiedStream(SUB_AGENT_HEARTBEAT_STREAM));
+        assertThat(file.getParent().resolve("children/toolu_READ")).as("no child core for the heartbeat").doesNotExist();
+        assertThat(file.getParent().resolve("children/toolu_AGENT/events.jsonl")).isRegularFile();
+        assertThat(Files.readString(file)).as("the heartbeat record, in the root").contains("toolu_READ-heartbeat-0");
+        assertThat(Files.readString(file.getParent().resolve("children/toolu_AGENT/events.jsonl"))).doesNotContain("toolu_READ-heartbeat-0");
+    }
+
+    /**
+     * A sub-agent a sub-agent spawned is a child core beside its spawner's, linked by its spawning call, whose request is
+     * written in the spawner's core (review F3).
+     */
+    @Test void aNestedSubAgentIsAChildCoreLinkedByItsSpawningCall() throws Exception {
+        Path file = assertAccepted(qualifiedStream(NESTED_SUB_AGENT_STREAM));
+        Path inner = file.getParent().resolve("children/toolu_INNER/events.jsonl");
+        assertThat(Files.readString(inner)).contains("\"spawn_tool_call_uid\":\"toolu_INNER\"");
+        assertThat(Files.readString(file.getParent().resolve("children/toolu_AGENT/events.jsonl"))).as("the spawning request").contains("anthropic.tool_use_id:toolu_INNER");
+    }
+
+    /** Records naming an owner whose spawn the stream never requests are a child core the reader cannot accept as a spawn (review F3). */
+    @Test void anOwnerNoCallSpawnedIsNotAcceptedAsASubAgent() throws Exception {
+        Delivered d = deliver(qualifiedStream(DANGLING_PARENT_STREAM));
+        assertThat(d.acceptance().verdict()).isEqualTo("INCOMPLETE");
+        assertThat(d.acceptance().reasons()).singleElement().asString().contains("acquisition.child_spawn").contains("a sub-agent spawn is not shown");
+    }
+
     /**
      * Regenerates the TCK's sealed terminal child-scope cases ({@code -Dterminal.child.regenerate=<directory>}): each
      * case's store as the shipped receiver writes it, with the qualifier's assembly expectation beside it.
      */
     @Test void regenerateTckTerminalChildCases() throws Exception {
         regenerate("terminal.child.regenerate", java.util.Map.of("claude-heartbeat", List.of(HEARTBEAT_STREAM, List.of(TRANSCRIPT_PROMPT)),
-                "claude-sub-agent", List.of(SUB_AGENT_STREAM, List.of(TRANSCRIPT_PROMPT))));
+                "claude-sub-agent", List.of(SUB_AGENT_STREAM, List.of(TRANSCRIPT_PROMPT)),
+                "claude-sub-agent-heartbeat", List.of(SUB_AGENT_HEARTBEAT_STREAM, List.of(TRANSCRIPT_PROMPT)),
+                "claude-sub-agent-nested", List.of(NESTED_SUB_AGENT_STREAM, List.of(TRANSCRIPT_PROMPT)),
+                "claude-dangling-owner", List.of(DANGLING_PARENT_STREAM, List.of(TRANSCRIPT_PROMPT))));
     }
 
     /** Regenerates the TCK's sealed MCP one-shot case ({@code -Dterminal.mcp.regenerate=<directory>}), as above. */
@@ -218,14 +265,11 @@ class TerminalNativeTest {
 
     /**
      * A real sub-agent's records carry the spawning Agent call in {@code parent_tool_use_id} and become a child run that
-     * reads without a defect. Its final-assembly assertions are not yet checked by the assembly oracle, which walks the
-     * root core only, so the archive is INCOMPLETE for exactly those and nothing else.
+     * reads without a defect; the assembly oracle partitions its observations with the root's, so the archive is accepted.
      */
-    @Test void aSubAgentChildRunReadsWithoutDefectAndOnlyItsAssemblyIsUnchecked() throws Exception {
-        Delivered d = deliver(qualifiedStream(SUB_AGENT_STREAM));
-        assertThat(d.file().getParent().resolve("children/toolu_AGENT/events.jsonl")).as("the sub-agent child run").isRegularFile();
-        assertThat(d.acceptance().verdict()).isEqualTo("INCOMPLETE");
-        assertThat(d.acceptance().reasons()).isNotEmpty().allMatch(r -> r.matches("actual assertion unchecked: child:toolu_AGENT/stdout\\.bin:line=\\d+#/assembly/(assembly_role_id|entity_uid|occurrence_uid)"));
+    @Test void aSubAgentChildRunIsAccepted() throws Exception {
+        Path file = assertAccepted(qualifiedStream(SUB_AGENT_STREAM));
+        assertThat(file.getParent().resolve("children/toolu_AGENT/events.jsonl")).as("the sub-agent child run").isRegularFile();
     }
 
     private static Jv.Obj completeAssociation(Path base) throws IOException {

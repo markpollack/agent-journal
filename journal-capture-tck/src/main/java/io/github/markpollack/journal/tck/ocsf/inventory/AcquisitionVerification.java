@@ -80,6 +80,20 @@ public final class AcquisitionVerification implements AcquisitionVerifier {
         private void additionalNative(OcsfPackage pkg, OracleReport report) throws IOException {
             if (ClaudeAcquisition.PROFILE_ID.equals(text(manifest, "profile_id"))) {
                 ToolOutputVerification.check(pkg, manifest, base, report);
+                spawns(report);
+            }
+        }
+
+        /** Each split core a Claude stream's owner paths require is backed by the native request of its spawning call. */
+        private void spawns(OracleReport report) {
+            for (AssemblyOracle.Supplied source : supplied) {
+                if (!"stream".equals(source.role())) { continue; }
+                for (String owner : ClaudeOwnerScope.splitCores(source.bytes())) {
+                    boolean spawned = ClaudeOwnerScope.spawned(source.bytes(), owner);
+                    report.add(Check.Category.COMPLETENESS, "acquisition.child_spawn", "child:" + owner, spawned ? Check.Outcome.VERIFIED : Check.Outcome.UNRESOLVED,
+                            spawned ? "the stream requests the spawning tool call " + owner
+                                    : "records name the owner " + owner + " but no record of " + source.name() + " requests that tool call: a sub-agent spawn is not shown");
+                }
             }
         }
 
