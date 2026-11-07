@@ -108,9 +108,8 @@ public final class AssemblyOracle {
         // its own reason: the declaration, gate and required roles are the file's assembly declaration, which only the root
         // carries; the session comparison reads the supplied sources' session identity, one per run; the totals' native
         // locators name the root's sources (the session file and the stream's result), which no child core holds.
-        io.github.markpollack.journal.tck.ocsf.PayloadBoundary payloads = io.github.markpollack.journal.tck.ocsf.PayloadBoundary.of(pkg.catalog);
         for (OcsfPackage core : pkg.all()) {
-            AssemblyConsolidation.check(report, core, owner(core), payloads);
+            AssemblyConsolidation.check(report, core, owner(core), io.github.markpollack.journal.tck.ocsf.PayloadBoundary.of(core.catalog));
             AssemblyAccounting.distinct(report, core, owner(core));
         }
         AssemblyAccounting.totals(report, pkg, spec, accepted);

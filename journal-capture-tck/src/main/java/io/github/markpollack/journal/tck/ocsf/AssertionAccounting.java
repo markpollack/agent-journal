@@ -47,10 +47,10 @@ public final class AssertionAccounting {
         List<Assertion> out = new ArrayList<>();
         Map<String, List<Check>> attributed = new java.util.HashMap<>();
         report.checks().forEach(check -> index(check, attributed));
-        PayloadBoundary payloads = PayloadBoundary.of(pkg.catalog);
-        Set<String> whole = new java.util.HashSet<>(RESIDUALS);
-        whole.addAll(payloads.names().isEmpty() ? UNDECLARED_PAYLOADS : payloads.names());
         for (OcsfPackage core : pkg.all()) {
+            // each core's own declared closure bounds its payloads (a child may declare a slot its root does not)
+            Set<String> whole = new java.util.HashSet<>(RESIDUALS);
+            whole.addAll(core.catalog == null ? UNDECLARED_PAYLOADS : PayloadBoundary.of(core.catalog).names());
             for (Event event : core.events) {
                 if (event.className != null) {
                     String prefix =

@@ -61,8 +61,9 @@ public final class FinalComparisons {
         List<AssertionAccounting.Assertion> assertions =
                 AssertionAccounting.inspect(pkg, sourceReport);
         // each core's consolidated events are composed from that core's observations (a sub-agent's child core holds its own)
-        PayloadBoundary payloads = PayloadBoundary.of(pkg.catalog);
         for (OcsfPackage core : pkg.all()) {
+            // each core's own declared closure bounds its payloads (a child may declare a slot its root does not)
+            PayloadBoundary payloads = PayloadBoundary.of(core.catalog);
             Map<String, Event> observations = new LinkedHashMap<>();
             core.observations().forEach(e -> observations.put(e.text("assembly", "occurrence_uid"), e));
             Context context =

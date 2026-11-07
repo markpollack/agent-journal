@@ -187,6 +187,48 @@ class TerminalRealRecordingTest {
         });
     }
 
+    /**
+     * Final F1 re-review: each core's own declared closure bounds its payloads. The real sub-agent's child declares
+     * {@code mcp_arguments} (it made the MCP call) and the root does not; in the child that slot is one whole-value
+     * assertion, never descended into as the root's boundary would.
+     */
+    @Test void aPayloadOnlyTheChildDeclaresIsOneWholeAssertionInTheChild() throws IOException {
+        List<AssertionAccounting.Assertion> slots = AssertionAccounting.inspect(PackageReader.open(root("claude-sub-agent")), new OracleReport()).stream()
+                .filter(x -> x.address().startsWith("child:") && x.path().contains("/mcp_arguments")).toList();
+        assertThat(slots).isNotEmpty().allSatisfy(x -> assertThat(x.path()).endsWith("/mcp_arguments"));
+    }
+
+    /**
+     * Final F1 re-review: in the real child, the consolidated MCP request with an invented basis inside the child-only
+     * payload mcp_arguments is defective, naming that slot; under the root's boundary the basis was exempt as provenance.
+     */
+    @Test void anUnreportedMemberInAPayloadOnlyTheChildDeclaresIsDefective() throws IOException {
+        Path cases = temp.resolve("child-payload");
+        copyTree(CASES.resolve("claude-sub-agent"), cases.resolve("claude-sub-agent"));
+        Path child = root(cases, "claude-sub-agent").getParent().resolve("children").resolve(SPAWN);
+        List<String> lines = new java.util.ArrayList<>(Files.readAllLines(child.resolve("events.jsonl")));
+        int edited = 0;
+        for (int i = 0; i < lines.size() && edited == 0; i++) {
+            Json.JObject e = (Json.JObject) NeutralJson.parse(lines.get(i));
+            if (e.member("assembly") instanceof Json.JObject a && a.member("assembly_role_id") instanceof Json.JNumber n && n.value().intValue() == 3
+                    && e.member("mcp") instanceof Json.JObject m && m.member("protocol_objects") instanceof Json.JArray po) {
+                for (Json o : po.elements()) {
+                    if (o.member("mcp_call_tool_request_params") instanceof Json.JObject params && params.member("mcp_arguments") instanceof Json.JObject args) {
+                        args.members().put("basis", new Json.JString("invented"));
+                        edited++;
+                    }
+                }
+                if (edited > 0) { lines.set(i, NeutralJson.write(e)); }
+            }
+        }
+        assertThat(edited).isEqualTo(1);
+        Files.write(child.resolve("events.jsonl"), lines);
+        restateIndex(child);
+        OcsfReaderTool.Acceptance a = acceptance(cases, "claude-sub-agent");
+        assertThat(a.verdict()).isEqualTo("DEFECTIVE");
+        assertThat(a.reasons()).anyMatch(r -> r.contains("mcp_arguments"));
+    }
+
     /** The real sub-agent case whose child conflict record's first observed value carries an invented basis member. */
     private Path withInventedObservedBasis() throws IOException {
         Path cases = temp.resolve("observed");
@@ -218,6 +260,25 @@ class TerminalRealRecordingTest {
         ((Json.JObject) pkg.member("persisted_prefix")).members().put("bytes", new Json.JNumber(Integer.toString(bytes.length)));
         ((Json.JObject) pkg.member("persisted_prefix")).members().put("sha256", new Json.JString(NativeArtifact.sha256(bytes)));
         Files.writeString(core.resolve("run.json"), NeutralJson.write(manifest));
+    }
+
+    /**
+     * An event attribute its own declared definition does not define is a defect, named by event line and attribute:
+     * otherwise its meaning, and whether it is a payload, is unknown to the reader. The control is the real MCP case
+     * whose consolidated result carries an mcp_meta member its declared mcp_call_tool_result definition lacks.
+     */
+    @Test void anAttributeTheDeclaredClosureDoesNotDefineIsDefective() throws IOException {
+        Path cases = edited("claude-mcp", e -> e.member("mcp") instanceof Json.JObject m && m.member("protocol_objects") instanceof Json.JArray po
+                && po.elements().stream().anyMatch(o -> o.member("mcp_call_tool_result") != null), e -> {
+                    for (Json o : e.member("mcp").member("protocol_objects").elements()) {
+                        if (o.member("mcp_call_tool_result") instanceof Json.JObject r) {
+                            r.members().put("mcp_meta", NeutralJson.parse("{\"basis\":\"invented\"}"));
+                        }
+                    }
+                });
+        OcsfReaderTool.Acceptance a = acceptance(cases, "claude-mcp");
+        assertThat(a.verdict()).isEqualTo("DEFECTIVE");
+        assertThat(a.reasons()).anyMatch(r -> r.contains("UNKNOWN_ATTRIBUTE") && r.matches("(?s).*line \\d+ .*mcp_call_tool_result\\.mcp_meta.*"));
     }
 
     /** Re-review F1: real MCP arguments whose keys are basis and data are a payload the reader judges like any fact. */

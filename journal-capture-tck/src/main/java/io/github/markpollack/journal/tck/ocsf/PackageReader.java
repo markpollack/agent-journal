@@ -462,6 +462,7 @@ public final class PackageReader {
         Map<String, Integer> unknownClasses = new TreeMap<>();
         Map<String, Integer> findings = new TreeMap<>();
         Map<String, String> firstFinding = new TreeMap<>();
+        List<String> undeclared = new ArrayList<>();
         int extensionMismatch = 0;
         int early = 0;
         String firstEarly = null;
@@ -496,6 +497,9 @@ public final class PackageReader {
                     for (SchemaCatalog.Finding f : catalog.check(json, def)) {
                         findings.merge(f.kind().name(), 1, Integer::sum);
                         firstFinding.putIfAbsent(f.kind().name(), "line " + number + " " + f);
+                        if (f.kind() == SchemaCatalog.Finding.Kind.UNKNOWN_ATTRIBUTE) {
+                            undeclared.add("line " + number + " " + f.path() + " (" + f.detail() + ")");
+                        }
                     }
                     if (declared != null) {
                         List<String> problems = new ArrayList<>();
@@ -528,8 +532,14 @@ public final class PackageReader {
                     extensionMismatch + " event(s) declare an extension uid/version different from the manifest pin"));
         }
         for (Map.Entry<String, Integer> f : findings.entrySet()) {
-            Diagnostic.Severity sev = f.getKey().equals("UNKNOWN_ATTRIBUTE") ? Diagnostic.Severity.WARNING : Diagnostic.Severity.DEFECT;
-            diags.add(new Diagnostic(sev, f.getKey(), f.getValue() + " occurrence(s); first: " + firstFinding.get(f.getKey())));
+            if (f.getKey().equals("UNKNOWN_ATTRIBUTE")) {
+                // an attribute the package's own declared definitions do not define has no known meaning, and whether it
+                // is a native payload is unknowable: a defect, naming each event line and attribute
+                diags.add(new Diagnostic(Diagnostic.Severity.DEFECT, "UNKNOWN_ATTRIBUTE", f.getValue() + " event attribute(s) not defined by the declared definitions: "
+                        + String.join("; ", undeclared.subList(0, Math.min(20, undeclared.size()))) + (undeclared.size() > 20 ? "; ... " + undeclared.size() + " in all" : "")));
+                continue;
+            }
+            diags.add(new Diagnostic(Diagnostic.Severity.DEFECT, f.getKey(), f.getValue() + " occurrence(s); first: " + firstFinding.get(f.getKey())));
         }
         if (early > 0) {
             diags.add(new Diagnostic(Diagnostic.Severity.DEFECT, "REFERENCE_BEFORE_DECLARATION",
@@ -568,7 +578,7 @@ public final class PackageReader {
         for (Map.Entry<String, Json> m : o.members().entrySet()) {
             SchemaCatalog.AttributeDef attr = def.attributes().get(m.getKey());
             if (attr == null) {
-                continue; // unknown attribute: reported by the shape check, retained
+                continue; // unknown attribute: a DEFECT reported by the shape check (UNKNOWN_ATTRIBUTE), naming the event line and attribute
             }
             Integer at = declared.attributeLine(def.key(), m.getKey());
             if (at == null || at >= line) {
