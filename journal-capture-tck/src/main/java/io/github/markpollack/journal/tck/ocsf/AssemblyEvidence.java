@@ -45,7 +45,8 @@ final class AssemblyEvidence {
             int relation) {
         List<String> support =
                 group.stream().map(e -> e.artifact() + ":record=" + e.recordIndex() + "#").toList();
-        new Comparison(report, pkg, target, group, assertions, support).check(relation);
+        // the core's own declared closure (each core, a child included, declares its definitions) bounds its payloads
+        new Comparison(report, pkg, target, group, assertions, support, PayloadBoundary.of(pkg.catalog)).check(relation);
     }
 
     private record Comparison(
@@ -54,7 +55,8 @@ final class AssemblyEvidence {
             Event target,
             List<Event> group,
             List<AssertionAccounting.Assertion> assertions,
-            List<String> support) {
+            List<String> support,
+            PayloadBoundary payloads) {
         private void check(int relation) {
             compare("/assembly/relation_class_id", FactComparison.value(relation));
             compare("/assembly/relation_class", FactComparison.value(RELATION.get(relation)));
@@ -70,7 +72,7 @@ final class AssemblyEvidence {
 
         private void field(int i, Json entry) {
             String pointer = SourceProfile.text(entry, "field_pointer");
-            List<Contribution> values = contributions(pkg, target, group, assertions, pointer);
+            List<Contribution> values = contributions(pkg, target, group, assertions, pointer, payloads);
             int id = Event.integer(entry.member("relation_class_id"));
             List<Contribution> expected = selected(values, id);
             boolean meanings =
@@ -132,7 +134,8 @@ final class AssemblyEvidence {
                             target,
                             group,
                             assertions,
-                            SourceProfile.text(conflict, "field_pointer"));
+                            SourceProfile.text(conflict, "field_pointer"),
+                            payloads);
             List<Json> expected =
                     values.stream()
                             .filter(v -> v.value() != null)
@@ -265,13 +268,14 @@ final class AssemblyEvidence {
             Event target,
             List<Event> group,
             List<AssertionAccounting.Assertion> assertions,
-            String pointer) {
+            String pointer,
+            PayloadBoundary payloads) {
         List<Contribution> out = new ArrayList<>();
         if (pointer == null) {
             return out;
         }
         for (Event event : group) {
-            String own = corresponding(target, event, pointer);
+            String own = corresponding(target, event, pointer, payloads);
             if (own == null) {
                 continue;
             }
@@ -308,7 +312,7 @@ final class AssemblyEvidence {
      * Locate array members by the same declared member identity used by the source/final
      * comparisons.
      */
-    private static String corresponding(Event target, Event source, String pointer) {
+    private static String corresponding(Event target, Event source, String pointer, PayloadBoundary payloads) {
         String[] parts = pointer.substring(1).split("/");
         String own = "";
         String targetPath = "";
@@ -316,8 +320,8 @@ final class AssemblyEvidence {
             Json parent = FactComparison.at(source.json, own);
             targetPath += "/" + part;
             if (parent instanceof Json.JArray array) {
-                String wanted = FinalComparisons.key(target.json, targetPath);
-                String found = member(source, array, own, wanted);
+                String wanted = FinalComparisons.key(target.json, targetPath, payloads);
+                String found = member(source, array, own, wanted, payloads);
                 if (found == null) {
                     return null;
                 }
@@ -329,10 +333,10 @@ final class AssemblyEvidence {
         return own;
     }
 
-    private static String member(Event source, Json.JArray array, String own, String wanted) {
+    private static String member(Event source, Json.JArray array, String own, String wanted, PayloadBoundary payloads) {
         String found = null;
         for (int i = 0; i < array.elements().size(); i++) {
-            if (wanted.equals(FinalComparisons.key(source.json, own + "/" + i))) {
+            if (wanted.equals(FinalComparisons.key(source.json, own + "/" + i, payloads))) {
                 if (found != null) {
                     return null;
                 }

@@ -128,21 +128,26 @@ class TerminalRealRecordingTest {
      * {@code edit}, the root index restated; returns the cases directory holding the copy.
      */
     private Path editedRequest(java.util.function.Consumer<Json.JObject> edit) throws IOException {
+        return edited("claude-mcp-payload-keys", e -> e.member("arguments") instanceof Json.JObject args && args.member("basis") != null,
+                e -> edit.accept((Json.JObject) e.member("arguments")));
+    }
+
+    /** Case {@code name} with its first consolidated event matching {@code which} rewritten by {@code edit}, the root index restated. */
+    private Path edited(String name, java.util.function.Predicate<Json.JObject> which, java.util.function.Consumer<Json.JObject> edit) throws IOException {
         Path cases = temp.resolve("edited");
-        copyTree(CASES.resolve("claude-mcp-payload-keys"), cases.resolve("claude-mcp-payload-keys"));
-        Path events = root(cases, "claude-mcp-payload-keys");
+        copyTree(CASES.resolve(name), cases.resolve(name));
+        Path events = root(cases, name);
         List<String> lines = new java.util.ArrayList<>(Files.readAllLines(events));
         int edited = 0;
-        for (int i = 0; i < lines.size(); i++) {
+        for (int i = 0; i < lines.size() && edited == 0; i++) {
             Json.JObject e = (Json.JObject) NeutralJson.parse(lines.get(i));
-            if (e.member("arguments") instanceof Json.JObject args && args.member("basis") != null && e.member("assembly") instanceof Json.JObject a
-                    && a.member("assembly_role_id") instanceof Json.JNumber n && n.value().intValue() == 3) {
-                edit.accept(args);
+            if (e.member("assembly") instanceof Json.JObject a && a.member("assembly_role_id") instanceof Json.JNumber n && n.value().intValue() == 3 && which.test(e)) {
+                edit.accept(e);
                 lines.set(i, NeutralJson.write(e));
                 edited++;
             }
         }
-        assertThat(edited).as("one consolidated request with payload-key arguments").isEqualTo(1);
+        assertThat(edited).as("one consolidated event edited").isEqualTo(1);
         Files.write(events, lines);
         byte[] bytes = Files.readAllBytes(events);
         Json.JObject manifest = (Json.JObject) NeutralJson.parse(Files.readString(events.resolveSibling("run.json")));
@@ -153,6 +158,66 @@ class TerminalRealRecordingTest {
         ((Json.JObject) pkg.member("persisted_prefix")).members().put("sha256", new Json.JString(NativeArtifact.sha256(bytes)));
         Files.writeString(events.resolveSibling("run.json"), NeutralJson.write(manifest));
         return cases;
+    }
+
+    /**
+     * Re-review of f6c54da, F1: {@code observed_values} is a declared payload slot (json_t) the earlier hard-coded list
+     * missed. In the real sub-agent child's conflict record, an observed value given a provenance-shaped member no
+     * observation reports is not accepted: inside the slot {@code basis} is a fact, not explanatory text.
+     */
+    @Test void anUnreportedProvenanceShapedMemberInADeclaredSlotIsNotAccepted() throws IOException {
+        Path cases = withInventedObservedBasis();
+        OcsfReaderTool.Acceptance a = acceptance(cases, "claude-sub-agent");
+        assertThat(a.verdict()).isEqualTo("DEFECTIVE");
+        assertThat(a.reasons()).anyMatch(r -> r.contains("assembly.evidence.association") && r.contains("invented"));
+    }
+
+    /**
+     * Re-review of f6c54da, F1: assertion accounting stops at a declared payload slot. The edited child's
+     * {@code observed_values} is one whole-value assertion; nothing inside it, the invented {@code basis} included, is
+     * classified as explanatory text and so exempt from checking.
+     */
+    @Test void aDeclaredSlotIsOneWholeAssertionNotExplanatoryText() throws IOException {
+        Path cases = withInventedObservedBasis();
+        List<AssertionAccounting.Assertion> slots = AssertionAccounting.inspect(PackageReader.open(root(cases, "claude-sub-agent")), new OracleReport()).stream()
+                .filter(x -> x.path().contains("/observed_values")).toList();
+        assertThat(slots).isNotEmpty().allSatisfy(x -> {
+            assertThat(x.path()).endsWith("/observed_values");
+            assertThat(x.status()).isNotEqualTo("EXPLANATORY_TEXT");
+        });
+    }
+
+    /** The real sub-agent case whose child conflict record's first observed value carries an invented basis member. */
+    private Path withInventedObservedBasis() throws IOException {
+        Path cases = temp.resolve("observed");
+        copyTree(CASES.resolve("claude-sub-agent"), cases.resolve("claude-sub-agent"));
+        Path child = root(cases, "claude-sub-agent").getParent().resolve("children").resolve(SPAWN);
+        List<String> lines = new java.util.ArrayList<>(Files.readAllLines(child.resolve("events.jsonl")));
+        int edited = 0;
+        for (int i = 0; i < lines.size() && edited == 0; i++) {
+            Json.JObject e = (Json.JObject) NeutralJson.parse(lines.get(i));
+            if (e.member("assembly") instanceof Json.JObject a && a.member("assembly_conflicts") instanceof Json.JArray conflicts && !conflicts.elements().isEmpty()) {
+                Json.JObject value = (Json.JObject) conflicts.elements().get(0).member("observed_values").elements().get(0);
+                value.members().put("basis", new Json.JString("invented"));
+                lines.set(i, NeutralJson.write(e));
+                edited++;
+            }
+        }
+        assertThat(edited).isEqualTo(1);
+        Files.write(child.resolve("events.jsonl"), lines);
+        restateIndex(child);
+        return cases;
+    }
+
+    private static void restateIndex(Path core) throws IOException {
+        byte[] bytes = Files.readAllBytes(core.resolve("events.jsonl"));
+        Json.JObject manifest = (Json.JObject) NeutralJson.parse(Files.readString(core.resolve("run.json")));
+        Json.JObject pkg = (Json.JObject) manifest.member("package");
+        pkg.members().put("events_bytes", new Json.JNumber(Integer.toString(bytes.length)));
+        pkg.members().put("events_jsonl_sha256", new Json.JString(NativeArtifact.sha256(bytes)));
+        ((Json.JObject) pkg.member("persisted_prefix")).members().put("bytes", new Json.JNumber(Integer.toString(bytes.length)));
+        ((Json.JObject) pkg.member("persisted_prefix")).members().put("sha256", new Json.JString(NativeArtifact.sha256(bytes)));
+        Files.writeString(core.resolve("run.json"), NeutralJson.write(manifest));
     }
 
     /** Re-review F1: real MCP arguments whose keys are basis and data are a payload the reader judges like any fact. */

@@ -44,7 +44,7 @@ final class FinalRelation {
             }
             Json first = selected.get(0).value();
             if (selected.stream().anyMatch(v -> !Json.sameValue(first, v.value()))) {
-                return nested(selected);
+                return nested(key, selected);
             }
             if (selected.stream().anyMatch(v -> !java.util.Objects.equals(first, v.value()))) {
                 representation = true;
@@ -57,7 +57,8 @@ final class FinalRelation {
             return true;
         }
 
-        private boolean nested(List<Supported> selected) {
+        /** Compares differing objects member by member, keeping each member's real escaped path so the payload boundary still applies. */
+        private boolean nested(String key, List<Supported> selected) {
             if (!selected.stream().allMatch(v -> v.value() instanceof Json.JObject)) {
                 return false;
             }
@@ -69,12 +70,12 @@ final class FinalRelation {
                                     .forEach(
                                             (name, value) ->
                                                     nested.computeIfAbsent(
-                                                                    "/payload/" + name,
+                                                                    key + "/" + escape(name),
                                                                     k -> new ArrayList<>())
                                                             .add(
                                                                     new Supported(
-                                                                            "/payload/" + name,
-                                                                            v.pointer(),
+                                                                            key + "/" + escape(name),
+                                                                            v.pointer() + "/" + escape(name),
                                                                             value,
                                                                             v.check(),
                                                                             v.finality(),
@@ -102,6 +103,10 @@ final class FinalRelation {
                 || key.contains("/native_pointers/")
                 || key.contains("/provider_basis")
                 || key.contains("/missing_required/"));
+    }
+
+    private static String escape(String name) {
+        return name.replace("~", "~0").replace("/", "~1");
     }
 
     private static boolean metadata(String key, Supported selected, PayloadBoundary payloads) {

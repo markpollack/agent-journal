@@ -40,14 +40,18 @@ final class FinalIdentity {
                             "protocol_objects", List.of("protocol_definition", "binding_revision")),
                     Map.entry("errors", List.of("error_layer_id")));
 
-    static String key(Json event, String path) {
+    /**
+     * The comparison key of {@code path}: an array element of a Journal collection is keyed by its identity members.
+     * Inside a declared native payload no collection identity applies; elements keep their index.
+     */
+    static String key(Json event, String path, PayloadBoundary payloads) {
         StringBuilder key = new StringBuilder();
         StringBuilder pointer = new StringBuilder();
         Json parent = event;
         for (String part : path.substring(1).split("/")) {
             pointer.append('/').append(part);
             Json value = FactComparison.at(event, pointer.toString());
-            if (parent instanceof Json.JArray && value instanceof Json.JObject) {
+            if (parent instanceof Json.JArray && value instanceof Json.JObject && !payloads.contains(pointer.toString())) {
                 String collection = key.substring(key.lastIndexOf("/") + 1);
                 List<String> members = MEMBERS.getOrDefault(collection, List.of());
                 if (!members.isEmpty()) {

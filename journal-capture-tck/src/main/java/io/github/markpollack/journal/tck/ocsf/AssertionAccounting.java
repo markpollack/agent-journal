@@ -14,16 +14,11 @@ import java.util.Set;
  */
 public final class AssertionAccounting {
 
-    private static final Set<String> PAYLOADS =
-            Set.of(
-                    "data",
-                    "raw_data",
-                    "raw_bytes_b64",
-                    "arguments",
-                    "structured_result",
-                    "schema_document",
-                    "mcp_arguments",
-                    "mcp_structured_content");
+    /** Members asserted as one whole value: the native residuals, plus every declared payload slot ({@link PayloadBoundary}). */
+    private static final Set<String> RESIDUALS = Set.of("data", "raw_data", "raw_bytes_b64");
+    /** The payload slots used when a package declares no definition closure to read them from. */
+    private static final Set<String> UNDECLARED_PAYLOADS =
+            Set.of("arguments", "structured_result", "schema_document", "mcp_arguments", "mcp_structured_content");
     private static final Set<String> EXPLANATORY =
             Set.of(
                     "basis",
@@ -52,6 +47,9 @@ public final class AssertionAccounting {
         List<Assertion> out = new ArrayList<>();
         Map<String, List<Check>> attributed = new java.util.HashMap<>();
         report.checks().forEach(check -> index(check, attributed));
+        PayloadBoundary payloads = PayloadBoundary.of(pkg.catalog);
+        Set<String> whole = new java.util.HashSet<>(RESIDUALS);
+        whole.addAll(payloads.names().isEmpty() ? UNDECLARED_PAYLOADS : payloads.names());
         for (OcsfPackage core : pkg.all()) {
             for (Event event : core.events) {
                 if (event.className != null) {
@@ -62,7 +60,8 @@ public final class AssertionAccounting {
                                     event.canonical(),
                                     event.className,
                                     attributed.getOrDefault(prefix, List.of()),
-                                    out)
+                                    out,
+                                    whole)
                             .walk(event.json, "");
                 }
             }
@@ -91,7 +90,9 @@ public final class AssertionAccounting {
             boolean canonical,
             String className,
             List<Check> checks,
-            List<Assertion> out) {
+            List<Assertion> out,
+            Set<String> whole) {
+        /** One assertion per leaf; a declared payload slot or a native residual is one whole-value assertion, never descended into. */
         private void walk(Json value, String pointer) {
             String member = pointer.substring(pointer.lastIndexOf('/') + 1);
             if (EXPLANATORY.contains(member)) {
@@ -106,7 +107,7 @@ public final class AssertionAccounting {
                                 List.of()));
                 return;
             }
-            if (!PAYLOADS.contains(member) && children(value, pointer)) {
+            if (!whole.contains(member) && children(value, pointer)) {
                 return;
             }
             String address = prefix + pointer;

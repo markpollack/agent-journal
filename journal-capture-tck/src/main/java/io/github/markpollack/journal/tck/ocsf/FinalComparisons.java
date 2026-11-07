@@ -39,8 +39,8 @@ public final class FinalComparisons {
     record Supported(
             String key, String pointer, Json value, Check check, int finality, Event event) {}
 
-    static String key(Json event, String path) {
-        return FinalIdentity.key(event, path);
+    static String key(Json event, String path, PayloadBoundary payloads) {
+        return FinalIdentity.key(event, path, payloads);
     }
 
     private FinalComparisons() {}
@@ -134,7 +134,7 @@ public final class FinalComparisons {
             actual.forEach(
                     a ->
                             byKey.computeIfAbsent(
-                                            FinalSelection.wholeField(finalEvent, a.path(), specification) ? a.path() : FinalIdentity.key(finalEvent.json, a.path()),
+                                            FinalSelection.wholeField(finalEvent, a.path(), specification) ? a.path() : FinalIdentity.key(finalEvent.json, a.path(), payloads),
                                             k -> new ArrayList<>())
                                     .add(a));
             AssemblyEvidence.check(
@@ -155,7 +155,7 @@ public final class FinalComparisons {
                 if (!contributing(assertion, prefix, primary)) {
                     continue;
                 }
-                Supported support = support(source, assertion, nativeChecks);
+                Supported support = support(source, assertion, nativeChecks, payloads);
                 if (support != null) {
                     if (FinalSelection.wholeField(source, support.pointer(), specification)) support = new Supported(support.pointer(), support.pointer(), support.value(), support.check(), support.finality(), support.event());
                     expected.computeIfAbsent(support.key(), k -> new ArrayList<>()).add(support);
@@ -255,7 +255,8 @@ public final class FinalComparisons {
     }
 
     private static Supported support(
-            Event source, AssertionAccounting.Assertion assertion, List<Check> checks) {
+            Event source, AssertionAccounting.Assertion assertion, List<Check> checks,
+            PayloadBoundary payloads) {
         for (Check check : checks) {
             Check.Evidence e = check.evidence();
             if (e == null
@@ -275,7 +276,7 @@ public final class FinalComparisons {
                 if (!Json.sameValue(e.assertionValue(), e.actual())) {
                     value = FactComparison.at(e.assertionValue(), suffix);
                 }
-                String key = FinalIdentity.key(source.json, assertion.path());
+                String key = FinalIdentity.key(source.json, assertion.path(), payloads);
                 int finality = finality(source, assertion.path());
                 return new Supported(key, assertion.path(), value, check, finality, source);
             }
