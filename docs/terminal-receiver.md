@@ -107,18 +107,17 @@ that entry reports. Dropped, duplicated or misattributed denials fail validation
 
 **Heartbeats and sub-agents.** A tool call that runs past 30 s makes Claude Code write a `tool_progress`
 record every 30 s. Its `parent_tool_use_id` names the running call, not a sub-agent, so the record is stored in
-the root core and creates no child run, even when the call it names runs inside a sub-agent. A sub-agent's
-records carry the spawning `Agent` call in `parent_tool_use_id` and form a child core under `children/<id>/`. A
-sub-agent spawned by a sub-agent is a child core beside its spawner's, linked by its own spawning call, whose
-request is written in the spawner's core. The reader works out the expected split cores from the acquired stream
-itself and checks a child's binding by its link to the bound execution (`run.parent.run_uid` is the
-`executionId`, and `run.run_uid` is `<executionId>/child/<spawning call>`); the root-only acquisition checks apply
-to the root.
+the root core and creates no child run. A sub-agent's records carry the spawning `Agent` call in
+`parent_tool_use_id` and form a child core under `children/<id>/`. The reader works out the expected split cores
+from the acquired stream itself and checks a child's binding by its link to the bound execution
+(`run.parent.run_uid` is the `executionId`, and `run.run_uid` is `<executionId>/child/<spawning call>`); the
+root-only acquisition checks apply to the root. The reader also requires the stream to request each spawning call
+(`acquisition.child_spawn`), because a split core alone is only what records name. The assembly oracle partitions
+every core's observations together, so a child core's assembly assertions are checked like the root's.
 
-A split core is only what records name. The reader also requires the stream to request the spawning call
-(`acquisition.child_spawn`); records naming an owner no call spawned leave the archive INCOMPLETE. The assembly
-oracle partitions every core's observations together, so a child core's assembly assertions are checked like the
-root's.
+These rules are tested on real Claude Code 2.1.316 runs (`ocsf/terminal-real` in the TCK): a long MCP call with
+heartbeats, and one sub-agent with its own session file. A heartbeat of a call made inside a sub-agent, and a
+sub-agent spawned by a sub-agent, have not been observed in a recorded run; how they are stored is not yet shown.
 
 **A sub-agent's session file.** Claude Code saves a sub-agent's own session file as
 `<session>/subagents/agent-<agentId>.jsonl`, beside an `.meta.json` that names the spawning call (`toolUseId`). The

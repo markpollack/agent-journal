@@ -1,15 +1,9 @@
 package io.github.markpollack.journal.ocsf.writer;
 
 import io.github.markpollack.journal.tck.ocsf.OcsfReaderTool;
-import io.github.markpollack.journal.tck.ocsf.PackageReader;
-import io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier;
-import io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionVerification;
 import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Base64;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Assumptions;
@@ -41,43 +35,7 @@ class RealCorpusTest {
     }
 
     private void accepted(Path run) throws IOException {
-        Path files = run.resolve("files");
-        Path nativeDir = only(files, "native-");
-        Path marker = Files.isDirectory(files.resolve("terminal")) ? only(files.resolve("terminal"), "") : null;
-        Jv stored = Jv.parse(Files.readString(marker));
-        Jv.Obj envelope = (Jv.Obj) Jv.parse(stored.member("payload").member("terminalEnvelope").text());
-        Path sealed = nativeDir.resolve("client-acquisition.json");
-        String profile = Jv.parse(Files.readString(sealed)).member("profile").text();
-        Path work = Files.createDirectories(temp.resolve(run.getFileName().toString()));
-        Path qualified = work.resolve("qualified");
-        AcquisitionQualifier.forProfile(profile).orElseThrow().qualify(sealed, qualified);
-        Jv association = Jv.parse(new String(Base64.getDecoder().decode(envelope.member("associationBytes").text()), StandardCharsets.UTF_8));
-        for (Jv source : association.member("sources").elements()) {
-            byte[] bytes = Files.readAllBytes(qualified.resolve(source.member("relativePath").text()));
-            ((Jv.Obj) source).put("sha256", SchemaPin.sha256(bytes)).put("size", bytes.length).put("end", bytes.length);
-        }
-        envelope.put("associationBytes", Base64.getEncoder().encodeToString(Jv.write(association).getBytes(StandardCharsets.UTF_8)));
-        Path store = work.resolve("store");
-        new TerminalReceiver(store, stored.member("ack").member("producerNamespace").text(), WriterOptions.defaults())
-                .receive(Jv.write(envelope).getBytes(StandardCharsets.UTF_8), qualified);
-        Path events;
-        try (Stream<Path> found = Files.walk(store.resolve("prepared"))) {
-            events = found.filter(p -> p.getFileName().toString().equals("events.jsonl") && !p.toString().contains("/children/")).findFirst().orElseThrow();
-        }
-        var report = new AcquisitionVerification().verify(PackageReader.open(events), events.getParent().resolve("sources"),
-                events.getParent().resolve("sources/acquisition.json"), qualified.resolve("assembly-expectation.json"));
-        OcsfReaderTool.Acceptance acceptance = OcsfReaderTool.acceptance(report);
+        OcsfReaderTool.Acceptance acceptance = RealRecording.seal(run, temp.resolve(run.getFileName().toString())).acceptance();
         assertThat(acceptance.verdict()).as(acceptance.toString()).isEqualTo("ACCEPTED");
-    }
-
-    private static Path only(Path dir, String prefix) {
-        try (Stream<Path> entries = Files.list(dir)) {
-            List<Path> found = entries.filter(p -> p.getFileName().toString().startsWith(prefix)).toList();
-            assertThat(found).as(prefix + "* in " + dir).hasSize(1);
-            return found.get(0);
-        }
-        catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
     }
 }

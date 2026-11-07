@@ -1,4 +1,0 @@
-{"type":"system","subtype":"init","session_id":"native-1","claude_code_version":"2.1.316","tools":["mcp__ide__probe"],"mcp_servers":[{"name":"ide","status":"connected","source":"project"}]}
-{"type":"assistant","message":{"id":"msg_a1","type":"message","role":"assistant","model":"claude-opus-5-5","content":[{"type":"tool_use","id":"toolu_MCP","name":"mcp__ide__probe","input":{"symbol":"demo.A"}}],"stop_reason":"tool_use"},"parent_tool_use_id":null,"session_id":"native-1","uuid":"a1"}
-{"type":"user","message":{"role":"user","content":[{"tool_use_id":"toolu_MCP","type":"tool_result","content":[{"type":"text","text":"demo.A calls demo.B"}]}]},"parent_tool_use_id":null,"session_id":"native-1","uuid":"r1","tool_use_result":[{"type":"text","text":"demo.A calls demo.B"}]}
-{"type":"result","subtype":"success","session_id":"native-1","result":"done","is_error":false,"usage":{"input_tokens":11,"cache_creation_input_tokens":0,"cache_read_input_tokens":3,"output_tokens":4}}
