@@ -15,9 +15,11 @@ import static io.github.markpollack.journal.tck.ocsf.TerminalReading.*;
 
 /** Independent terminal-to-native association checks; assembly semantic acceptance remains separate. */
 final class TerminalNativeReading {
+    /** The one-shot Claude terminal profile this reader accepts. */
+    static final String PROFILE = "client-terminal-claude-2.1.316/1";
     private TerminalNativeReading() { }
     private static boolean selected(Json p, Json a) {
-        return Set.of("client-terminal-claude-2.1.316/1", RetainedAcquisition.PROFILE, FreshRetainedGeneration.PROFILE).contains(string(p, "profile")) && "COMPLETED".equals(string(a, "acquisition"));
+        return Set.of(PROFILE, RetainedAcquisition.PROFILE, FreshRetainedGeneration.PROFILE).contains(string(p, "profile")) && "COMPLETED".equals(string(a, "acquisition"));
     }
 
     static void check(DeclaredFile file, Json envelope, Json decision, Json association) {

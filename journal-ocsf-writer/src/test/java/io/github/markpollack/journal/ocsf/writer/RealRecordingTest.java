@@ -96,6 +96,19 @@ class RealRecordingTest {
     }
 
     /**
+     * The archived envelope carries the terminal profile of the qualifier the acquisition's own profile selects (Stage A
+     * review F4: read from the qualifier, not the receiver's constant), and qualification leaves the Client's sealed
+     * manifest byte-identical.
+     */
+    @Test void theRegisteredQualifiersTerminalProfileIsArchivedAndTheSealedManifestIsKept() throws IOException {
+        RealRecording.Sealed s = sealed("heartbeat");
+        Path sealedManifest = RealRecording.nativeDir(RealRecording.PUBLIC.resolve("heartbeat")).resolve("client-acquisition.json");
+        var qualifier = io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.forProfile(Jv.parse(Files.readString(sealedManifest)).member("profile").text()).orElseThrow();
+        assertThat(Files.readString(s.events())).as("the archived terminal envelope").contains("\\\"profile\\\":\\\"" + qualifier.terminalProfile() + "\\\"");
+        assertThat(Files.readAllBytes(s.qualified().resolve("client-acquisition.json"))).isEqualTo(Files.readAllBytes(sealedManifest));
+    }
+
+    /**
      * Regenerates the TCK's sealed real-recording cases ({@code -Dterminal.real.regenerate=<directory>}): each scrubbed
      * run's store as the shipped receiver writes it, with the qualifier's assembly expectation beside it.
      */

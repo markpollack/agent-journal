@@ -67,56 +67,6 @@ class TerminalNativeTest {
         return ClaudeAcquisition.qualify(sealed, temp.resolve("qualified"));
     }
 
-    /** The same sealed input, qualified through the registered qualifier its own profile selects. */
-    private io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.Qualified qualifiedThroughTheRegistry() throws IOException {
-        Path sealed = qualified("{\"type\":\"result\",\"subtype\":\"success\",\"session_id\":\"native-1\",\"result\":\"hello\",\"is_error\":false,"
-                + "\"usage\":{\"input_tokens\":11,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":3,\"output_tokens\":4}}").resolve("client-acquisition.json");
-        var qualifier = io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.forProfile(Jv.parse(Files.readString(sealed)).member("profile").text()).orElseThrow();
-        assertThat(qualifier.terminalProfile()).isEqualTo(TerminalReceiver.CLAUDE_PROFILE);
-        Path copy = Files.createDirectory(temp.resolve("sealed-copy"));
-        for (String name : List.of("stdin.bin", "stdout.bin", "stderr.bin", "native.jsonl")) Files.copy(temp.resolve("raw").resolve(name), copy.resolve(name));
-        Files.copy(sealed, copy.resolve("sealed.json"));
-        return qualifier.qualify(copy.resolve("sealed.json"), temp.resolve("registry-qualified"));
-    }
-
-    @Test void theRegisteredQualifierDeliversOneInitialBindingUnderItsTerminalProfile() throws Exception {
-        var q = qualifiedThroughTheRegistry(); Path file = assertAccepted(q);
-        assertThat(Files.readString(file)).as("the archived terminal envelope").contains("\\\"profile\\\":\\\"" + TerminalReceiver.CLAUDE_PROFILE + "\\\"");
-        assertThat(Files.readAllBytes(q.manifest().getParent().resolve("client-acquisition.json"))).isEqualTo(Files.readAllBytes(temp.resolve("raw/sealed.json")));
-    }
-
-    /** Delivers {@code q} through the shipped receiver and requires the independent reader's full acceptance; returns the archive. */
-    private Path assertAccepted(io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.Qualified q) throws IOException {
-        Delivered d = deliver(q);
-        assertThat(d.acceptance().exit()).as(d.acceptance().toString()).isZero();
-        return d.file();
-    }
-
-    private record Delivered(Path file, io.github.markpollack.journal.tck.ocsf.OcsfReaderTool.Acceptance acceptance) { }
-
-    /** Delivers {@code q} through the shipped receiver; the independent reader reports no defect and returns its acceptance. */
-    private Delivered deliver(io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.Qualified q) throws IOException {
-        return deliver(temp, q);
-    }
-
-    /** Seals {@code q} through the shipped receiver into {@code temp/store}; returns the root event file. */
-    private static Path seal(Path temp, io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.Qualified q) throws IOException {
-        Path base = q.manifest().getParent(), store = temp.resolve("store");
-        TerminalReceiver receiver = new TerminalReceiver(store, "producer", WriterOptions.defaults());
-        return events(store, receiver.receive(nativeEnvelope(completeAssociation(base)), base));
-    }
-
-    private static Delivered deliver(Path temp, io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionQualifier.Qualified q) throws IOException {
-        Path file = seal(temp, q);
-        var pkg = PackageReader.open(file);
-        assertThat(pkg.diagnostics).noneMatch(d -> d.severity().name().equals("DEFECT") || d.severity().name().equals("REFUSED"));
-        var report = new io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionVerification().verify(pkg, file.getParent().resolve("sources"),
-                file.getParent().resolve("sources/acquisition.json"), q.assemblyExpectation());
-        assertThat(report.defects()).isEmpty();
-        return new Delivered(file, io.github.markpollack.journal.tck.ocsf.OcsfReaderTool.acceptance(report));
-    }
-
-
     private static Jv.Obj completeAssociation(Path base) throws IOException {
         Jv m = Jv.parse(Files.readString(base.resolve("acquisition.json")));
         Jv.Arr sources = new Jv.Arr();

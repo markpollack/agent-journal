@@ -151,9 +151,12 @@ Any other profile returns empty. A qualifier refuses an acquisition with `Illega
 whose message is its verdict, before creating the new directory. `IOException` means an input could
 not be read or the directory exists or could not be written. Each qualifier runs exactly the checks of
 its static `qualify(Path, Path)` and writes the same bytes. Selection uses the acquisition profile
-alone: a Codex turn manifest from a retained thread may declare the same profile as a fresh turn, and
-the one-shot qualifier refuses its resumed history ("existing history forbidden for a fresh turn"). Both implementations stay producer-independent, so the
-terminal profile is a wire identifier and not a writer constant.
+alone: a Codex turn manifest from a retained thread may declare the same profile as a fresh turn. The one-shot
+qualifier refuses a follow-up turn of such a thread. Its manifest states `fresh_session` false, refused as "invalid
+fresh_session", and an argv that resumes history is refused as "existing history forbidden for a fresh turn". The
+thread's first turn is fresh, so it qualifies as a one-shot under `/1`. These behaviours are read from
+`CodexAcquisitionReading`; no real retained Codex recording has exercised them yet. Both implementations stay
+producer-independent, so the terminal profile is a wire identifier and not a writer constant.
 
 ## Retained two-text-turn profile
 

@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -34,6 +35,50 @@ class AcquisitionQualifierTest {
             assertThat(AcquisitionQualifier.forProfile(profile)).as(profile).isEmpty();
         }
         assertThatThrownBy(() -> AcquisitionQualifier.forProfile(null)).isInstanceOf(NullPointerException.class);
+    }
+
+    /** The real heartbeat run's qualified sources, copied: a sealed acquisition the Claude qualifier accepts. */
+    private static Path realSealed(Path temp) throws IOException {
+        Path from;
+        try (Stream<Path> walk = Files.walk(Path.of("src/test/resources/ocsf/terminal-real/claude-heartbeat/store/prepared"))) {
+            from = walk.filter(p -> p.endsWith("sources/acquisition.json")).findFirst().orElseThrow().getParent();
+        }
+        Path to = temp.resolve("sealed");
+        try (Stream<Path> walk = Files.walk(from)) {
+            for (Path p : walk.toList()) {
+                Path t = to.resolve(from.relativize(p).toString());
+                if (Files.isDirectory(p)) Files.createDirectories(t); else Files.copy(p, t);
+            }
+        }
+        return to.resolve("acquisition.json");
+    }
+
+    private static final AcquisitionQualifier CLAUDE = AcquisitionQualifier.forProfile(ClaudeAcquisition.PROFILE).orElseThrow();
+
+    @Test void theRealSealedAcquisitionQualifies(@TempDir Path temp) throws IOException {
+        assertThat(CLAUDE.qualify(realSealed(temp), temp.resolve("out")).manifest()).isRegularFile();
+    }
+
+    /** Stage A review F1: a fractional extent is a refusal, as the SPI says, not an ArithmeticException. */
+    @Test void aFractionalExtentIsARefusal(@TempDir Path temp) throws IOException {
+        Path sealed = realSealed(temp);
+        String manifest = Files.readString(sealed);
+        java.util.regex.Matcher bytes = java.util.regex.Pattern.compile("\"bytes\":(\\d+)").matcher(manifest);
+        assertThat(bytes.find()).isTrue();
+        Files.writeString(sealed, manifest.substring(0, bytes.end()) + ".5" + manifest.substring(bytes.end()));
+        assertThatThrownBy(() -> CLAUDE.qualify(sealed, temp.resolve("out"))).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("not an exact integer");
+    }
+
+    /** Stage A review F5: a declared source whose file is absent is a refusal, not an I/O failure. */
+    @Test void aDeclaredSourceThatIsAbsentIsARefusal(@TempDir Path temp) throws IOException {
+        Path sealed = realSealed(temp);
+        Files.delete(sealed.resolveSibling("stderr.bin"));
+        assertThatThrownBy(() -> CLAUDE.qualify(sealed, temp.resolve("out"))).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("stderr.bin");
+    }
+
+    /** An unreadable sealed manifest is still an I/O failure. */
+    @Test void anAbsentSealedManifestIsAnIoFailure(@TempDir Path temp) {
+        assertThatThrownBy(() -> CLAUDE.qualify(temp.resolve("none/acquisition.json"), temp.resolve("out"))).isInstanceOf(IOException.class);
     }
 
     /** Every file a qualification wrote, by relative path, with its sha256. */
