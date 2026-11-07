@@ -84,17 +84,30 @@ public final class AcquisitionVerification implements AcquisitionVerifier {
             }
         }
 
-        /** Each split core a Claude stream's owner paths require is backed by the native request of its spawning call. */
+        /**
+         * Each split core a Claude stream's owner paths require is backed by the native request of its spawning call, and
+         * a shown spawn by the sub-agent's own session file bound to it: Claude Code 2.1.316 saves one for every sub-agent,
+         * so a spawn without one is a sub-agent whose final usage and session-only records were not acquired.
+         */
         private void spawns(OracleReport report) {
+            java.util.Map<String, Json> bound = ClaudeSubAgentSession.bindings(manifest, base);
             for (AssemblyOracle.Supplied source : supplied) {
-                if (!"stream".equals(source.role())) { continue; }
-                for (String owner : ClaudeOwnerScope.splitCores(source.bytes())) {
-                    boolean spawned = ClaudeOwnerScope.spawned(source.bytes(), owner);
-                    report.add(Check.Category.COMPLETENESS, "acquisition.child_spawn", "child:" + owner, spawned ? Check.Outcome.VERIFIED : Check.Outcome.UNRESOLVED,
-                            spawned ? "the stream requests the spawning tool call " + owner
-                                    : "records name the owner " + owner + " but no record of " + source.name() + " requests that tool call: a sub-agent spawn is not shown");
+                if ("stream".equals(source.role())) {
+                    ClaudeOwnerScope.splitCores(source.bytes()).forEach(owner -> spawn(report, source, owner, bound));
                 }
             }
+        }
+
+        private static void spawn(OracleReport report, AssemblyOracle.Supplied stream, String owner, java.util.Map<String, Json> bound) {
+            boolean spawned = ClaudeOwnerScope.spawned(stream.bytes(), owner);
+            report.add(Check.Category.COMPLETENESS, "acquisition.child_spawn", "child:" + owner, spawned ? Check.Outcome.VERIFIED : Check.Outcome.UNRESOLVED,
+                    spawned ? "the stream requests the spawning tool call " + owner
+                            : "records name the owner " + owner + " but no record of " + stream.name() + " requests that tool call: a sub-agent spawn is not shown");
+            if (!spawned) { return; }
+            boolean session = bound.values().stream().anyMatch(b -> owner.equals(RawInventory.text(b, "spawn_tool_call_uid")));
+            report.add(Check.Category.COMPLETENESS, "acquisition.child_session", "child:" + owner, session ? Check.Outcome.VERIFIED : Check.Outcome.UNRESOLVED,
+                    session ? "the sub-agent's own session file is acquired and bound to " + owner
+                            : "no acquired session file of the sub-agent spawned by " + owner + " binds to it (absent, declared missing, or a stale prefix)");
         }
 
         private void readSources() throws IOException {

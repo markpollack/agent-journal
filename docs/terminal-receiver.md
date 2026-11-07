@@ -132,6 +132,22 @@ root session file's do in the root. So the sub-agent's model responses carry the
 thinking and text records the stream omits are kept. The meta file stays preserved, and the reader checks the binding
 again. A file that does not bind stays preserved but unread, and the archive is INCOMPLETE for it.
 
+The binding also requires every record the stream reports for the sub-agent to be in the session file, so a stale
+prefix of the file does not bind. Every shown spawn owes a bound session file (`acquisition.child_session`): Claude
+Code 2.1.316 saves one for each sub-agent, so an archive without it is INCOMPLETE, whether the file was omitted, declared
+missing or stale. Beyond that, freshness rests on the acquisition's own EOF and extent assertions. The qualifier and the
+reader share `ClaudeSubAgentSession.bindings()`. The reader derives the binding again from the native bytes and
+compares it with the recorded one, which catches an altered declaration but cannot independently falsify the rule
+itself.
+
+These archives carry three fields that archives before J3 did not: a child core's `source_scope.artifacts` with its
+`artifacts_basis`, and the qualified acquisition's `child_binding` on the sub-agent's session and meta files. Claude
+archives qualified before main `17e8084` carry the earlier assembly expectation and must be qualified again.
+
+`RealCorpusTest` (writer module) seals every recording of the private real-recording corpus again and requires
+acceptance. It runs only with `-Djournal.corpus=<checkout>`, so ordinary CI records it as skipped, not as passed.
+`RealRecordingTest` and the TCK's `ocsf/terminal-real` cases are the real-recording coverage that every build runs.
+
 ## Qualifier lookup
 
 `AcquisitionQualifier`, in the TCK's `io.github.markpollack.journal.tck.ocsf.inventory` package, lets

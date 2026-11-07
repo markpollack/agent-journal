@@ -148,6 +148,69 @@ class RealRecordingTest {
         assertThat(Jv.write(request.member("arguments"))).isEqualTo("{\"basis\":\"business input\",\"data\":42}");
     }
 
+    /** The real sub-agent run copied into {@code into}, edited by {@code edit} (its native directory and sealed manifest), extents restated. */
+    private Path editedSubAgent(Path into, java.util.function.BiConsumer<Path, Jv.Obj> edit) throws IOException {
+        copyTree(RealRecording.PUBLIC.resolve("sub-agent"), into);
+        Path dir = RealRecording.nativeDir(into);
+        Jv.Obj manifest = (Jv.Obj) Jv.parse(Files.readString(dir.resolve("client-acquisition.json")));
+        edit.accept(dir, manifest);
+        for (Jv src : manifest.member("sources").elements()) {
+            if (!"acquired".equals(text(src, "state")) || !Files.exists(dir.resolve(text(src, "path")))) { continue; }
+            byte[] bytes = Files.readAllBytes(dir.resolve(text(src, "path")));
+            ((Jv.Obj) src).put("bytes", bytes.length).put("sha256", SchemaPin.sha256(bytes));
+            if (src.member("records") != null) { ((Jv.Obj) src).put("records", (int) new String(bytes, java.nio.charset.StandardCharsets.UTF_8).lines().filter(l -> !l.isBlank()).count()); }
+        }
+        Files.writeString(dir.resolve("client-acquisition.json"), Jv.write(manifest));
+        return into;
+    }
+
+    private static Jv.Obj subAgentSessionSource(Jv.Obj manifest) {
+        return (Jv.Obj) manifest.member("sources").elements().stream().filter(s -> "child_transcript".equals(text(s, "role"))).findFirst().orElseThrow();
+    }
+
+    /** Main review F4: a stale prefix of the real sub-agent's session file does not bind, so the archive is INCOMPLETE, not accepted. */
+    @Test void aStalePrefixOfTheSubAgentsSessionFileIsNotAccepted() throws IOException {
+        Path run = editedSubAgent(temp.resolve("stale"), (dir, m) -> {
+            Path file = dir.resolve(text(subAgentSessionSource(m), "path"));
+            try {
+                List<String> lines = Files.readAllLines(file);
+                Files.write(file, lines.subList(0, lines.size() / 2));
+            }
+            catch (IOException e) { throw new java.io.UncheckedIOException(e); }
+        });
+        RealRecording.Sealed s = RealRecording.seal(run, temp.resolve("stale-sealed"));
+        assertThat(s.acceptance().verdict()).isEqualTo("INCOMPLETE");
+        assertThat(s.acceptance().reasons()).anyMatch(r -> r.contains("acquisition.child_session")).anyMatch(r -> r.contains("acquisition.additional_native"));
+    }
+
+    /** Main review F4: the real sub-agent run without its session file and meta file (never acquired) is INCOMPLETE, not accepted. */
+    @Test void aSubAgentWhoseSessionFileWasNotAcquiredIsNotAccepted() throws IOException {
+        Path run = editedSubAgent(temp.resolve("omitted"), (dir, m) -> {
+            Jv.Arr kept = new Jv.Arr();
+            for (Jv src : m.member("sources").elements()) {
+                if (text(src, "path").contains("/subagents/")) {
+                    try { Files.delete(dir.resolve(text(src, "path"))); }
+                    catch (IOException e) { throw new java.io.UncheckedIOException(e); }
+                }
+                else { kept.add(src); }
+            }
+            m.put("sources", kept);
+        });
+        RealRecording.Sealed s = RealRecording.seal(run, temp.resolve("omitted-sealed"));
+        assertThat(s.acceptance().verdict()).isEqualTo("INCOMPLETE");
+        assertThat(s.acceptance().reasons()).anyMatch(r -> r.contains("acquisition.child_session"));
+    }
+
+    /** Main review F4: a session file declared acquired but absent is a refusal of the acquisition, naming the file. */
+    @Test void aSubAgentSessionFileDeclaredAcquiredButAbsentIsRefused() throws IOException {
+        Path run = editedSubAgent(temp.resolve("deleted"), (dir, m) -> {
+            try { Files.delete(dir.resolve(text(subAgentSessionSource(m), "path"))); }
+            catch (IOException e) { throw new java.io.UncheckedIOException(e); }
+        });
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> RealRecording.seal(run, temp.resolve("deleted-sealed")))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("subagents/agent-");
+    }
+
     /**
      * The archived envelope carries the terminal profile of the qualifier the acquisition's own profile selects (Stage A
      * review F4: read from the qualifier, not the receiver's constant), and qualification leaves the Client's sealed

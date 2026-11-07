@@ -62,6 +62,14 @@ class ClaudeSubAgentSessionTest {
         assertThat(bindingsWith(SESSION, s -> "not json\n" + s)).as("an unreadable record").isEmpty();
     }
 
+    /** Main review F4: a stale prefix of the session file lacks records the stream already reported, so it binds nothing. */
+    @Test void aStalePrefixOfTheSessionFileBindsNothing() throws IOException {
+        assertThat(bindingsWith(SESSION, s -> {
+            String[] lines = s.split("\n");
+            return String.join("\n", java.util.Arrays.copyOf(lines, lines.length / 2)) + "\n";
+        })).isEmpty();
+    }
+
     @Test void aStreamWhoseSubAgentStatesAnotherAgentIdBindsNothing() throws IOException {
         assertThat(bindingsWith("stdout.bin", s -> s.replace("\"agent_id\":\"a1ca6a454512b0b01\"", "\"agent_id\":\"a9\""))).isEmpty();
         assertThat(bindingsWith("stdout.bin", s -> s.replaceAll(",?\"agent_id\":\"a1ca6a454512b0b01\"", ""))).as("no agent id stated").isEmpty();

@@ -18,8 +18,11 @@ import java.util.regex.Pattern;
  * A Claude Code 2.1.316 sub-agent's own session file, bound to its child core from the native bytes alone. Claude Code
  * saves a sub-agent under {@code <session>/subagents/agent-<agentId>.jsonl}, beside an {@code .meta.json} naming the
  * spawning call ({@code toolUseId}). The binding holds when the meta file names a call the stream requests, the
- * stream's records owned by that call carry the same {@code agent_id}, and every record of the session file is that
- * agent's ({@code agentId}) side chain of the run's session.
+ * stream's records owned by that call carry the same {@code agent_id}, every record of the session file is that
+ * agent's ({@code agentId}) side chain of the run's session, and every record the stream reports for the sub-agent is
+ * in the session file (a stale prefix of the file lacks the later ones). The qualifier and the verifier both call
+ * {@link #bindings}: the verifier re-derives the binding from the native bytes and compares it with the recorded one,
+ * which catches an altered declaration but cannot independently falsify this rule itself.
  */
 final class ClaudeSubAgentSession {
     static final String ROLE = "child_transcript";
@@ -55,7 +58,9 @@ final class ClaudeSubAgentSession {
         String spawn = document == null ? null : RawInventory.text(document, "toolUseId");
         if (spawn == null) { return null; }
         NativeArtifact streamBytes = read(base, stream);
-        if (!ClaudeOwnerScope.spawned(streamBytes, spawn) || !streamAgent(streamBytes, spawn, agent) || !sideChain(read(base, source), agent, session)) { return null; }
+        NativeArtifact file = read(base, source);
+        if (!ClaudeOwnerScope.spawned(streamBytes, spawn) || !streamAgent(streamBytes, spawn, agent) || !sideChain(file, agent, session)
+                || !covers(file, streamBytes, spawn)) { return null; }
         Map<String, Json> binding = new LinkedHashMap<>();
         binding.put("spawn_tool_call_uid", new Json.JString(spawn));
         binding.put("agent_id", new Json.JString(agent));
@@ -77,6 +82,14 @@ final class ClaudeSubAgentSession {
             }
         }
         return stated > 0;
+    }
+
+    /** Whether every stream record owned by {@code spawn} that states a uuid has a record of that uuid in the session file. */
+    private static boolean covers(NativeArtifact file, NativeArtifact stream, String spawn) {
+        java.util.Set<String> uuids = new java.util.HashSet<>();
+        file.records().forEach(r -> { if (r.parsed() && RawInventory.text(r.json(), "uuid") != null) { uuids.add(RawInventory.text(r.json(), "uuid")); } });
+        return stream.records().stream().filter(r -> r.parsed() && spawn.equals(ClaudeOwnerScope.owner(r.json())))
+                .map(r -> RawInventory.text(r.json(), "uuid")).filter(java.util.Objects::nonNull).allMatch(uuids::contains);
     }
 
     /** Whether every record is parsed and states {@code agentId}, and any session identity or side-chain flag it states is this agent's. */

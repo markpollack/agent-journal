@@ -48,10 +48,15 @@ final class RealRecording {
         Path qualified = work.resolve("qualified");
         AcquisitionQualifier.forProfile(profile).orElseThrow().qualify(sealed, qualified);
         Jv association = Jv.parse(new String(Base64.getDecoder().decode(envelope.member("associationBytes").text()), StandardCharsets.UTF_8));
+        Jv.Arr kept = new Jv.Arr();
         for (Jv source : association.member("sources").elements()) {
-            byte[] bytes = Files.readAllBytes(qualified.resolve(source.member("relativePath").text()));
+            Path file = qualified.resolve(source.member("relativePath").text());
+            if (!Files.exists(file)) { continue; } // a source the (edited) acquisition does not hold is not associated
+            byte[] bytes = Files.readAllBytes(file);
             ((Jv.Obj) source).put("sha256", SchemaPin.sha256(bytes)).put("size", bytes.length).put("end", bytes.length);
+            kept.add(source);
         }
+        ((Jv.Obj) association).put("sources", kept);
         envelope.put("associationBytes", Base64.getEncoder().encodeToString(Jv.write(association).getBytes(StandardCharsets.UTF_8)));
         Path store = work.resolve("store");
         new TerminalReceiver(store, stored.member("ack").member("producerNamespace").text(), WriterOptions.defaults())
