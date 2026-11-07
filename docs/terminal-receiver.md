@@ -111,7 +111,10 @@ the root core and creates no child run. A sub-agent's records carry the spawning
 `parent_tool_use_id` and form a child core under `children/<id>/`. The reader works out the expected split cores
 from the acquired stream itself and checks a child's binding by its link to the bound execution
 (`run.parent.run_uid` is the `executionId`, and `run.run_uid` is `<executionId>/child/<spawning call>`); the
-root-only acquisition checks apply to the root. The reader also requires the stream to request each spawning call
+root-only acquisition checks apply to the root. Owner routing is unchanged for every record that is not
+`tool_progress` (`claude.stream.progress_owner.v1` takes precedence over `owner_routing` only for those). An archive the
+earlier writer split on a heartbeat stays DEFECTIVE when read again, and one with a genuine sub-agent reads ACCEPTED
+since the child-core checks. The reader also requires the stream to request each spawning call
 (`acquisition.child_spawn`), because a split core alone is only what records name. The assembly oracle partitions
 every core's observations together, so a child core's assembly assertions are checked like the root's.
 

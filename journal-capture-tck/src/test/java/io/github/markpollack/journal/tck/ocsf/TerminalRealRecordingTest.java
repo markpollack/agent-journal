@@ -149,6 +149,29 @@ class TerminalRealRecordingTest {
         }
     }
 
+    /**
+     * Heartbeat review F2: a child core whose terminal binding is a valid-looking binding of another real run (the
+     * heartbeat run's) is refused, so a child cannot be passed off under a foreign execution.
+     */
+    @Test void aChildCarryingAnotherRunsTerminalBindingIsRefused() throws IOException {
+        Json foreign = runDeclaration(Files.readAllLines(root("claude-heartbeat"))).member("run").member("terminal_binding");
+        assertThat(foreign).isNotNull();
+        Path child = root("claude-sub-agent").getParent().resolve("children").resolve(SPAWN).resolve("events.jsonl");
+        List<String> lines = Files.readAllLines(child);
+        int at = 0;
+        while (!lines.get(at).contains("\"kind\":\"run\"")) { at++; }
+        Json.JObject declaration = (Json.JObject) NeutralJson.parse(lines.get(at));
+        ((Json.JObject) declaration.member("run")).members().put("terminal_binding", foreign);
+        lines.set(at, NeutralJson.write(declaration));
+        Path detached = Files.createDirectories(temp.resolve("foreign")).resolve("events.jsonl");
+        Files.write(detached, lines);
+        assertThat(PackageReader.open(detached).diagnosticsWithCode("TERMINAL_BINDING_INVALID")).hasSize(1);
+    }
+
+    private static Json runDeclaration(List<String> lines) {
+        return lines.stream().filter(l -> l.contains("\"kind\":\"run\"")).map(NeutralJson::parse).findFirst().orElseThrow();
+    }
+
     @Test void aRealHeartbeatNamesTheCallInProgressAndASubAgentsRecordsNameTheirSpawn() throws IOException {
         List<Json> heartbeats = stream("claude-heartbeat").records().stream().filter(NativeArtifact.Record::parsed).map(NativeArtifact.Record::json)
                 .filter(r -> "tool_progress".equals(SourceProfile.text(r, "type"))).toList();
