@@ -5,10 +5,10 @@
   "property_scopes": {
     "meaning": "the owner an oracle property is reported for: root (once, by the root core), core (each core: main and every child), otherwise source (each core's artifacts, '<core>/<artifact>'); the coverage summary owes a result for every such owner the frozen expected sources establish",
     "root": [
-      "package.children",
-      "combination.policy"
+      "package.children"
     ],
     "core": [
+      "combination.policy",
       "package.readable",
       "package.state",
       "acquisition.complete",

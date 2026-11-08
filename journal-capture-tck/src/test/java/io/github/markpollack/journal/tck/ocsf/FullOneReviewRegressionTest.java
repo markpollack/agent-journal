@@ -58,7 +58,7 @@ class FullOneReviewRegressionTest {
         // as one combined execution (CombinedSourceAdmissionTest)
         OcsfReaderTool.Acceptance acceptance = OcsfReaderTool.acceptance(report);
         assertThat(acceptance.exit()).isEqualTo(OcsfReaderTool.EXIT_INCOMPLETE);
-        assertThat(acceptance.reasons()).singleElement().asString().contains("combination.policy");
+        assertThat(acceptance.reasons()).as("the root's and its child core's combination policy").hasSize(2).allMatch(r -> r.contains("combination.policy"));
     }
 
     @Nested

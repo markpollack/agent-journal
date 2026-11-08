@@ -695,6 +695,9 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         }
     }
 
+    /** The final assembly's declaration, once declared: every child core of the assembly declares it too. */
+    private Jv.Obj assemblyDeclaration;
+
     private CoreWriter childFor(String owner) {
         return children.computeIfAbsent(owner, o -> {
             try {
@@ -702,6 +705,10 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
                 String childRunUid = run.runUid() + "/child/" + o;
                 Jv.Obj parent = new Jv.Obj().put("run_uid", run.runUid()).put("spawn_tool_call_uid", o).put("invocation_index", run.invocationIndex());
                 CoreWriter c = new CoreWriter(dir.resolve(path), childRunUid, this, runDeclaration(childRunUid, parent, scope(o)));
+                if (assemblyDeclaration != null) {
+                    // a child core of a final assembly is part of it: it declares the same assembly, before its events
+                    c.declareAssembly(assemblyDeclaration);
+                }
                 root.declareChild(childRunUid, path, o, CHILD_BASIS, scope(null));
                 return c;
             }
@@ -830,6 +837,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
             @Override
             public void declare(Jv.Obj assembly) {
                 root.declareAssembly(assembly);
+                assemblyDeclaration = assembly;
             }
 
             @Override

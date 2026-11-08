@@ -25,6 +25,8 @@ class RealRecordingTest {
     private RealRecording.Sealed sealed(String name) throws IOException {
         RealRecording.Sealed s = RealRecording.seal(RealRecording.PUBLIC.resolve(name), temp.resolve(name));
         assertThat(s.acceptance().verdict()).as(s.acceptance().toString()).isEqualTo("ACCEPTED");
+        // an accepted archive exports: the reader and the canonical export agree on every core
+        io.github.markpollack.journal.tck.ocsf.CanonicalExport.write(io.github.markpollack.journal.tck.ocsf.PackageReader.open(s.events()), new java.io.StringWriter());
         return s;
     }
 

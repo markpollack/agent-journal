@@ -116,7 +116,9 @@ root-only acquisition checks apply to the root. Owner routing is unchanged for e
 earlier writer split on a heartbeat stays DEFECTIVE when read again, and one with a genuine sub-agent reads ACCEPTED
 since the child-core checks. The reader also requires the stream to request each spawning call
 (`acquisition.child_spawn`), because a split core alone is only what records name. The assembly oracle partitions
-every core's observations together, so a child core's assembly assertions are checked like the root's.
+every core's observations together, so a child core's assembly assertions are checked like the root's. Every child core of a final assembly declares that assembly too, and the
+reader judges each core's combination policy: a core that combines sources without a declared assembly is not
+accepted, just as the canonical export refuses it.
 
 These rules are tested on real Claude Code 2.1.316 runs (`ocsf/terminal-real` in the TCK): a long MCP call with
 heartbeats, and one sub-agent with its own session file. A heartbeat of a call made inside a sub-agent, and a

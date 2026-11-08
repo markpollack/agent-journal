@@ -37,8 +37,13 @@ class RealCorpusTest {
 
     private void accepted(Path run) throws IOException {
         java.util.Map<String, String> front = frontMatter(run.resolve("README.md"));
-        OcsfReaderTool.Acceptance acceptance = RealRecording.seal(run, temp.resolve(run.getFileName().toString())).acceptance();
+        RealRecording.Sealed sealed = RealRecording.seal(run, temp.resolve(run.getFileName().toString()));
+        OcsfReaderTool.Acceptance acceptance = sealed.acceptance();
         assertThat(acceptance.verdict()).as(acceptance.toString()).isEqualTo(front.getOrDefault("expected_verdict", "ACCEPTED"));
+        if ("ACCEPTED".equals(acceptance.verdict())) {
+            // an accepted archive exports: the reader and the canonical export agree on every core
+            io.github.markpollack.journal.tck.ocsf.CanonicalExport.write(io.github.markpollack.journal.tck.ocsf.PackageReader.open(sealed.events()), new java.io.StringWriter());
+        }
         if (front.containsKey("expected_reason")) {
             assertThat(acceptance.reasons()).as(acceptance.toString()).anyMatch(r -> r.contains(front.get("expected_reason")));
         }

@@ -143,7 +143,8 @@ class WriterAcquisitionRegressionTest {
         assertThat(report.outcome("combination.policy", "main")).isEqualTo(Check.Outcome.UNRESOLVED);
         OcsfReaderTool.Acceptance acceptance = OcsfReaderTool.acceptance(report);
         assertThat(acceptance.exit()).isEqualTo(OcsfReaderTool.EXIT_INCOMPLETE);
-        assertThat(acceptance.reasons()).singleElement().asString().contains("combination.policy").contains("unvalidated evidence log");
+        assertThat(acceptance.reasons()).as("the root's and its child core's combination policy").hasSize(2)
+                .allMatch(r -> r.contains("combination.policy") && r.contains("unvalidated evidence log"));
         assertThat(cli("verify", core.toString(), nat.toString(), work.resolve("report.json").toString())).isEqualTo(OcsfReaderTool.EXIT_INCOMPLETE);
         assertThat(Files.readString(work.resolve("report.json"))).contains("\"missingRequired\" : [ ]");
     }

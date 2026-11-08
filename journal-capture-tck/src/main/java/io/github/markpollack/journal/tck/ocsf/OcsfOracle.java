@@ -78,7 +78,11 @@ public final class OcsfOracle {
         for (OcsfPackage core : pkg.all()) {
             o.core(core);
         }
-        o.combination(pkg);
+        // every core states its own combination policy; a child core that combines sources without a declared
+        // assembly is no final execution either, and the canonical export refuses it alike
+        for (OcsfPackage core : pkg.all()) {
+            o.combination(core);
+        }
         return o.report;
     }
 

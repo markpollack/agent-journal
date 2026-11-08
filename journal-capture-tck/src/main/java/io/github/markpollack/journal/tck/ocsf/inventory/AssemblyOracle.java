@@ -68,7 +68,10 @@ public final class AssemblyOracle {
             catch (java.io.IOException ex) { throw new java.io.UncheckedIOException(ex); }
         }
         OracleReport assembly = verifyQualified(pkg, assemblySpecification, inputs, qualified);
-        source = source.replaced(c -> "combination.policy".equals(c.property()), c -> new io.github.markpollack.journal.tck.verify.Check(c.category(), c.property(), c.owner(),
+        // the assembly oracle settles the combination policy of the cores that declare the final assembly, and of no other
+        java.util.Set<String> assembled = new java.util.HashSet<>();
+        pkg.all().stream().filter(core -> core.combination() == OcsfPackage.Combination.ASSEMBLED).forEach(core -> assembled.add(core.label()));
+        source = source.replaced(c -> "combination.policy".equals(c.property()) && assembled.contains(c.owner()), c -> new io.github.markpollack.journal.tck.verify.Check(c.category(), c.property(), c.owner(),
                 assembly.checks().stream().allMatch(a -> a.outcome() == Outcome.VERIFIED || a.outcome() == Outcome.NOT_APPLICABLE) ? Outcome.VERIFIED : Outcome.UNRESOLVED,
                 "independent assembly comparison executed; its individual results are included"));
         assembly.checks().forEach(source::add);

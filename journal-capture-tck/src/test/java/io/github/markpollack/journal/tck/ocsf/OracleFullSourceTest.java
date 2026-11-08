@@ -39,8 +39,8 @@ class OracleFullSourceTest {
         Path fixture = copy(PAIR, work);
         OracleReport report = verify(fixture);
         assertThat(report.defects()).as(report.toString()).isEmpty();
-        assertThat(report.withOutcome(Outcome.UNRESOLVED)).as("only the combination: the pair is an unvalidated evidence log, never a final combined execution")
-                .singleElement().satisfies(c -> assertThat(c.property()).isEqualTo("combination.policy"));
+        assertThat(report.withOutcome(Outcome.UNRESOLVED)).as("only the combination, of the root and its child core: the pair is an unvalidated evidence log, never a final combined execution")
+                .hasSize(2).allSatisfy(c -> assertThat(c.property()).isEqualTo("combination.policy"));
         assertThat(report.outcome("package.state", "main")).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("whole_record.coverage", TRANSCRIPT)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.check("whole_record.coverage", TRANSCRIPT).detail()).startsWith("17 owned record(s) each retained exactly once");

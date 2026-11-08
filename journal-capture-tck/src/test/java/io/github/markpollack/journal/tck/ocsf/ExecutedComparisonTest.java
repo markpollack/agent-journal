@@ -80,7 +80,7 @@ class ExecutedComparisonTest {
                                     "syn-codex-counterexamples",
                                     3,
                                     "syn-claude-pair-transcript",
-                                    1,
+                                    2, // the evidence-log combination, of the root and of its child core
                                     "copilot-live-1.0.100-otel",
                                     5,
                                     "junie-live-3813.7-view",
