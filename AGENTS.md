@@ -44,3 +44,14 @@ Follow `/home/mark/projects/agento-forge/guides/java-library-quality.md`. The pr
 customized source license; see `LICENSE`. Commit messages contain no AI attribution.
 
 Do not copy private planning, roadmap, checkpoint, or dirty-tree state into public files.
+
+## When the preferred path hits a separate defect
+
+If the preferred path in a work order runs into a defect outside its scope, aim for the smallest change that can ship
+with the full gate green:
+
+1. Where a quick check can establish it, check whether the defect also occurs on the baseline.
+2. If a smaller change still meets the work order's acceptance criteria and passes the full gate, continue within the
+   existing authorization, and record the separate defect with its owning repository.
+3. Bring the Owner a decision instead if proceeding would change the acceptance criteria, weaken the gate, or expand
+   the work into another repository.
