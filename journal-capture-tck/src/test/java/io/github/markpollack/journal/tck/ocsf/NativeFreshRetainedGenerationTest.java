@@ -139,6 +139,39 @@ class NativeFreshRetainedGenerationTest {
 
     static void argv(Copy c, List<String> tail) { Json.JArray a = (Json.JArray) c.m.member("freshStart").member("launchArgv"); for (String s : tail) a.elements().add(Copy.str(s)); }
 
+    /** {@code c} relabelled CLI {@code version}: its generation manifest and stream init, and with {@code transcript} every session-file record. */
+    static void relabel(Copy c, String version, boolean transcript) {
+        Copy.put(c.m, "cliVersion", Copy.str(version));
+        Rows stdout = new Rows(c, "STDOUT");
+        for (Json r : stdout.rows) if (r.member("claude_code_version") != null) Copy.put(r, "claude_code_version", Copy.str(version));
+        stdout.relayout();
+        if (!transcript) return;
+        Rows t = new Rows(c, "TRANSCRIPT");
+        for (Json r : t.rows) if (r.member("version") != null) Copy.put(r, "version", Copy.str(version));
+        t.relayout();
+    }
+
+    /**
+     * Owner, 2026-11-08: the CLI version is recorded, not gated. The real-derived native generation relabelled 2.1.317 (its
+     * generation manifest, the stream's init and every session-file record) qualifies under the version-neutral native
+     * profile and states 2.1.317 in its acquisition; with its session file left at 2.1.316 the versions disagree and it is refused.
+     */
+    @Test void anotherCliVersionIsRecordedNotGatedUnderTheNeutralNativeProfile(@TempDir Path dir, @TempDir Path mixed) throws Exception {
+        Copy copy = copy(dir); relabel(copy, "2.1.317", true); copy.rehash();
+        copy.validate(NATIVE_PROFILE);
+        String execution = copy.turn(0).member("executionId").text(); Path out = dir.resolve("q");
+        FreshRetainedClaudeAcquisition.qualify(dir.resolve("retained-fresh-generation.json"), execution, out, ClaudeSdkFamily.FRESH_RETAINED_NATIVE_TERMINAL_PROFILE);
+        Json acquisition = NeutralJson.readDocument(out.resolve("acquisition.json"));
+        assertThat(acquisition.member("retained_profile").text()).isEqualTo(ClaudeSdkFamily.FRESH_RETAINED_NATIVE_TERMINAL_PROFILE);
+        assertThat(acquisition.path("run", "cli", "version").text()).isEqualTo("2.1.317");
+        assertThat(acquisition.member("profile").text()).isEqualTo("claude-code-2.1.317-sdk-stdio-session-file");
+        RetainedAcquisition.validate(acquisition, out, true);
+        Copy partial = copy(mixed); relabel(partial, "2.1.317", false); partial.rehash();
+        assertThatThrownBy(() -> partial.validate(NATIVE_PROFILE)).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("mismatched version");
+        assertThat(ClaudeSdkFamily.admittedUnder(NATIVE_PROFILE, "2.1.317")).as("the versioned native profile admits 2.1.316 only").isFalse();
+        assertThat(ClaudeSdkFamily.admittedUnder(ClaudeSdkFamily.FRESH_RETAINED_NATIVE_TERMINAL_PROFILE, "2.1.317")).isTrue();
+    }
+
     @Test void nativeShapedGenerationQualifiesOnlyUnderTheNativeProfile(@TempDir Path dir) throws Exception {
         Copy copy = copy(dir); copy.rehash();
         if (!specimen()) assertThat(NeutralJson.write(copy.m)).isEqualTo(NeutralJson.write(NeutralJson.readDocument(FIXTURE.resolve("retained-fresh-generation.json")))); // rehash is a no-op on the committed fixture

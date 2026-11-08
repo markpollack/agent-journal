@@ -81,6 +81,11 @@ class TerminalFreshRetainedTest {
     @Test void nativeFreshProfileAttachesBothTurnsOfTheNativeShapedGeneration() throws Exception { eachTurnAttachesAndReadsBack(NATIVE, TerminalReceiver.FRESH_RETAINED_NATIVE_PROFILE, List.of(2, 1)); }
 
     /** The native-shaped generation is refused by the frozen /1 and ordinary /2 envelopes (their qualifier refuses it, and a relabelled /3 qualification is refused by profile equality). */
+    /** The versioned 2.1.316 native profile earlier recordings carry stays readable: it attaches the same real-derived generation. */
+    @Test void theVersionedNativeProfileStillAttachesThe2_1_316Generation() throws Exception {
+        eachTurnAttachesAndReadsBack(NATIVE, TerminalReceiver.LEGACY_FRESH_RETAINED_NATIVE_PROFILE, List.of(1, 2));
+    }
+
     @Test void frozenAndOrdinaryFreshProfilesRefuseTheNativeShapedGenerationAndRelabelling() throws Exception {
         for (String frozen : List.of(TerminalReceiver.FRESH_RETAINED_PROFILE, TerminalReceiver.FRESH_RETAINED_ORDINARY_PROFILE)) {
             Path out = temp.resolve("refused-" + frozen.replace('/', '-'));

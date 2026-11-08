@@ -20,8 +20,10 @@ final class TerminalCodexRetained {
     private static final List<String> USAGE = List.of("input_tokens", "cached_input_tokens", "cache_write_input_tokens", "output_tokens", "reasoning_output_tokens");
     private TerminalCodexRetained() { }
 
-    static void validate(Path base, Jv m, String profile) throws IOException {
-        equal(m, "retained_profile", profile);
+    /** {@code wireProfile} is the terminal profile as delivered; a version-neutral one names its versioned predecessor's contract. */
+    static void validate(Path base, Jv m, String wireProfile) throws IOException {
+        equal(m, "retained_profile", wireProfile);
+        String profile = CodexExecFamily.contract(wireProfile);
         Jv thread = m.member("retained_generation"); require(thread instanceof Jv.Obj, "Codex thread declaration absent");
         require(Jv.write(thread).equals(Jv.write(Jv.parse(Files.readString(base.resolve("generation/codex-thread.json"))))), "Codex thread declaration differs from copy");
         equal(thread, "kind", KIND); String session = text(m.member("run"), "session_uid"); equal(thread, "native_session_id", session);

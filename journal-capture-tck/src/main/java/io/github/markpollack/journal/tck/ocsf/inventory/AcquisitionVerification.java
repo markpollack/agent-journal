@@ -67,7 +67,7 @@ public final class AcquisitionVerification implements AcquisitionVerifier {
             if (CodexExecFamily.admits(text(inputs.manifest, "profile_id"))) {
                 Json profile = pkg.declarations == null ? null : pkg.declarations.assembly();
                 String revision = RawInventory.text(profile, "profile", "version");
-                boolean ordinary = inputs.manifest.member("retained_generation") != null && CodexRetainedGeneration.ORDINARY_PROFILE.equals(text(inputs.manifest, "retained_profile"));
+                boolean ordinary = inputs.manifest.member("retained_generation") != null && CodexRetainedGeneration.ORDINARY_PROFILE.equals(CodexExecFamily.contract(text(inputs.manifest, "retained_profile")));
                 require(Json.sameValue(spec, CodexAcquisition.stated(CodexAcquisition.expectation(revision, pkg.manifest.extensionVersion(), ordinary),
                         CodexExecFamily.versionOfProfileId(text(inputs.manifest, "profile_id")))), "qualified Codex expectation changed");
             }

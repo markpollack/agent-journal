@@ -49,7 +49,7 @@ final class RetainedTurn {
 
     static void nativeIdentity(Json generation, Json row) {
         expect(row, "sessionId", string(generation, "nativeSessionId"));
-        expect(row, "version", "2.1.316"); string(row, "uuid");
+        expect(row, "version", string(generation, "cliVersion")); string(row, "uuid");
     }
 
     static String response(Json assistant) {

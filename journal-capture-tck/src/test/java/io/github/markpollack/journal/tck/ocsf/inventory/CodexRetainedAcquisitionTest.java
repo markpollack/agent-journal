@@ -150,9 +150,11 @@ class CodexRetainedAcquisitionTest {
         CodexRetainedGeneration.RetainedThread thread = copy.validate(PROFILE); assertThat(thread.turns()).hasSize(2);
         for (int i = 0; i < 2; i++) {
             String execution = thread.turns().get(i).executionId(); Path out = dir.resolve("frozen-" + i);
-            CodexRetainedAcquisition.qualify(dir.resolve("codex-thread.json"), execution, out); // the original signature: frozen /1 by default
+            CodexRetainedAcquisition.qualify(dir.resolve("codex-thread.json"), execution, out); // the original signature: the frozen /1 contract by default
             Json acquisition = NeutralJson.readDocument(out.resolve("acquisition.json"));
-            assertThat(acquisition.member("retained_profile").text()).isEqualTo(PROFILE);
+            // new recordings carry the version-neutral name of the frozen /1 contract
+            assertThat(acquisition.member("retained_profile").text()).isEqualTo(io.github.markpollack.journal.tck.ocsf.CodexExecFamily.RETAINED_TERMINAL_PROFILE);
+            assertThat(io.github.markpollack.journal.tck.ocsf.CodexExecFamily.contract(acquisition.member("retained_profile").text())).isEqualTo(PROFILE);
             assertThat(acquisition.member("wire_usage_scope").text()).as("the emulated resumed turn reports a per-turn stdout figure").isEqualTo("per-turn");
             CodexRetainedAcquisition.validate(acquisition, out); CodexAcquisitionReading.validate(out.resolve("acquisition.json"));
         }

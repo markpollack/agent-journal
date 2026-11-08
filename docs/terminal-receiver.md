@@ -161,6 +161,16 @@ archives qualified before main `17e8084` carry the earlier assembly expectation 
 acceptance. It runs only with `-Djournal.corpus=<checkout>`, so ordinary CI records it as skipped, not as passed.
 `RealRecordingTest` and the TCK's `ocsf/terminal-real` cases are the real-recording coverage that every build runs.
 
+
+### Version-neutral retained profiles
+
+The retained profiles record the CLI version without gating it (Owner, 2026-11-08). New recordings are delivered under
+`client-terminal-claude-sdk-retained/1`, `client-terminal-claude-sdk-retained-fresh/1` to `/3`,
+`client-terminal-codex-exec-retained/1` and `/2`. Each names the same contract, and runs the same checks, as its versioned
+predecessor (`client-terminal-claude-retained-2.1.316/1`, `client-terminal-claude-retained-fresh-2.1.316/1` to `/3`,
+`client-terminal-codex-retained-0.166.0/1` and `/2`), which stays readable for that one version. The generation's own
+version (`cliVersion`, Codex `cli_version`) must be well formed, and every init, session-file and session_meta record must
+state it.
 ## Qualifier lookup
 
 `AcquisitionQualifier`, in the TCK's `io.github.markpollack.journal.tck.ocsf.inventory` package, lets
@@ -195,7 +205,8 @@ producer-independent, so the terminal profile is a wire identifier and not a wri
 
 ## Retained two-text-turn profile
 
-`TerminalReceiver.RETAINED_PROFILE` selects `client-terminal-claude-retained-2.1.316/1` in the
+`TerminalReceiver.RETAINED_PROFILE` selects `client-terminal-claude-sdk-retained/1` (the contract of the versioned
+`client-terminal-claude-retained-2.1.316/1`, which stays readable for 2.1.316 only) in the
 initial envelope. Its initial association is PENDING with no sources and its decision is SUCCESS.
 Two distinct successful text turns may share one Client logical session and one connection generation.
 Each decision retains those Client identities; native session identity belongs to the evidence.
@@ -245,10 +256,10 @@ its exact decision and declarations, with unavailable external bytes reported se
 
 ## Qualification status of the Claude fresh-start retained profiles (2026-11-05 development snapshot)
 
-`client-terminal-claude-retained-fresh-2.1.316/1` (frozen, exactly two turns) and `/2` (any sealed turn count) keep the two-record
+`client-terminal-claude-sdk-retained-fresh/1` (frozen, exactly two turns) and `/2` (any sealed turn count) keep the two-record
 text-turn model and were qualified on synthetic generations only. The native Claude Code 2.1.316 transcript of a plain text turn carries
 attachment chains and request records around each prompt and response, so both profiles REFUSE a real fresh-start capture.
-`client-terminal-claude-retained-fresh-2.1.316/3` admits the native record shape (turn membership by prefix-window tiling, parent
+`client-terminal-claude-sdk-retained-fresh/3` admits the native record shape (turn membership by prefix-window tiling, parent
 ancestry through admitted intermediate records, in-flight stream messages, a plain transcript tail) and was derived from the one frozen
 native two-turn probe specimen. Known qualification gaps of this snapshot: on that specimen the `/3` qualifier's sole finding is
 INCOMPLETE at exhaustive identity (the caller's depth-limited candidate scan reported skipped subtrees), so no archive of record exists

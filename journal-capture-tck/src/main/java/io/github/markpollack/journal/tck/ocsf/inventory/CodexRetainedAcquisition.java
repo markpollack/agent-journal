@@ -1,5 +1,7 @@
 package io.github.markpollack.journal.tck.ocsf.inventory;
 
+import io.github.markpollack.journal.tck.ocsf.CodexExecFamily;
+
 import io.github.markpollack.journal.tck.ocsf.CodexRetainedGeneration;
 import io.github.markpollack.journal.tck.ocsf.CodexRetainedReading;
 import io.github.markpollack.journal.tck.ocsf.NativeArtifact;
@@ -26,14 +28,14 @@ public final class CodexRetainedAcquisition {
 
     /** The original signature: qualifies under the frozen profile {@value CodexRetainedGeneration#PROFILE}, its default before the ordinary profile existed. */
     public static AcquisitionQualifier.Qualified qualify(Path threadManifest, String executionId, Path newDirectory) throws IOException {
-        return qualify(threadManifest, executionId, newDirectory, CodexRetainedGeneration.PROFILE);
+        return qualify(threadManifest, executionId, newDirectory, CodexExecFamily.RETAINED_TERMINAL_PROFILE);
     }
 
     /** Copies originals and the exact projection to a new directory, leaving every input unchanged. */
     public static AcquisitionQualifier.Qualified qualify(Path threadManifest, String executionId, Path newDirectory, String profile) throws IOException {
         byte[] bytes = Files.readAllBytes(threadManifest);
         Json manifest = NeutralJson.parse(new String(bytes, StandardCharsets.UTF_8));
-        CodexRetainedGeneration.RetainedThread thread = CodexRetainedGeneration.validate(manifest, threadManifest.toAbsolutePath().getParent(), profile);
+        CodexRetainedGeneration.RetainedThread thread = CodexRetainedGeneration.validate(manifest, threadManifest.toAbsolutePath().getParent(), CodexExecFamily.contract(profile));
         CodexRetainedGeneration.Turn turn = thread.turn(executionId);
         Files.createDirectory(newDirectory);
         Json relativized = relativize(manifest); byte[] declaration = NeutralJson.write(relativized).getBytes(StandardCharsets.UTF_8);
@@ -43,7 +45,8 @@ public final class CodexRetainedAcquisition {
         Path output = newDirectory.resolve("acquisition.json"); write(output, NeutralJson.write(acquisition).getBytes(StandardCharsets.UTF_8));
         // The frozen /1 profile pins the one-shot expectation it always pinned (stream-sourced fresh-turn totals, defective for a native
         // thread total); the ordinary /2 profile pins the retained expectation (own final from token_usage_record).
-        Json spec = CodexRetainedGeneration.PROFILE.equals(profile) ? CodexAcquisition.expectation() : CodexAcquisition.retainedExpectation();
+        Json spec = CodexAcquisition.stated(CodexRetainedGeneration.PROFILE.equals(CodexExecFamily.contract(profile)) ? CodexAcquisition.expectation() : CodexAcquisition.retainedExpectation(),
+                CodexExecFamily.versionOfProfileId(text(acquisition, "profile_id")));
         Path expectation = newDirectory.resolve("assembly-expectation.json"); write(expectation, NeutralJson.write(spec).getBytes(StandardCharsets.UTF_8));
         validate(acquisition, newDirectory);
         return new AcquisitionQualifier.Qualified(output, expectation);
@@ -139,7 +142,7 @@ public final class CodexRetainedAcquisition {
 
     /** Packaged command; refuses invalid input before creating output and never invokes a provider. */
     public static void main(String[] args) throws IOException {
-        if (args.length != 3 && args.length != 4) throw new IllegalArgumentException("usage: CodexRetainedAcquisition <codex-thread.json> <execution-id> <new-directory> [<retained-profile>, default " + CodexRetainedGeneration.PROFILE + "]");
-        qualify(Path.of(args[0]), args[1], Path.of(args[2]), args.length == 4 ? args[3] : CodexRetainedGeneration.PROFILE);
+        if (args.length != 3 && args.length != 4) throw new IllegalArgumentException("usage: CodexRetainedAcquisition <codex-thread.json> <execution-id> <new-directory> [<retained-profile>, default " + CodexExecFamily.RETAINED_TERMINAL_PROFILE + "]");
+        qualify(Path.of(args[0]), args[1], Path.of(args[2]), args.length == 4 ? args[3] : CodexExecFamily.RETAINED_TERMINAL_PROFILE);
     }
 }

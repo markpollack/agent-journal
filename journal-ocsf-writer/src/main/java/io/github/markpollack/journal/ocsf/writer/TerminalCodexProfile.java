@@ -19,11 +19,11 @@ final class TerminalCodexProfile {
     private TerminalCodexProfile() { }
     static boolean complete(TerminalContract.Input input, Jv a) {
         String profile = text(Jv.parse(input.envelope()), "profile");
-        return (PROFILE.equals(profile) || LEGACY_PROFILE.equals(profile) || TerminalContract.CODEX_RETAINED_PROFILES.contains(profile)) && "COMPLETED".equals(text(a, "acquisition"));
+        return (LEGACY_PROFILE.equals(CodexExecFamily.contract(profile)) || TerminalContract.CODEX_RETAINED_PROFILES.contains(CodexExecFamily.contract(profile))) && "COMPLETED".equals(text(a, "acquisition"));
     }
     /** The retained profile admits one turn of a sealed thread; the one-shot profile refuses any thread declaration. */
     static void validate(Path manifest, TerminalContract.Input input, Jv a) throws IOException {
-        String profile = text(Jv.parse(input.envelope()), "profile"); boolean retained = TerminalContract.CODEX_RETAINED_PROFILES.contains(profile);
+        String profile = text(Jv.parse(input.envelope()), "profile"); boolean retained = TerminalContract.CODEX_RETAINED_PROFILES.contains(CodexExecFamily.contract(profile));
         Jv d = input.decision();
         Jv m = Jv.parse(Files.readString(manifest)); header(m, d, a, retained, profile);
         Map<String, Jv> occurrences = new HashMap<>();
@@ -36,7 +36,7 @@ final class TerminalCodexProfile {
         require(occurrences.containsKey("acquisition.json"), "Codex acquisition not associated");
         require(occurrences.get("acquisition.json").member("stream").isNull(), "manifest is not a stream");
         Map<String, Jv> roles = sources(m, d, occurrences, retained);
-        TerminalCodexNative.validate(manifest.getParent(), m, roles, retained, TerminalContract.CODEX_RETAINED_ORDINARY_PROFILE.equals(profile));
+        TerminalCodexNative.validate(manifest.getParent(), m, roles, retained, TerminalContract.CODEX_RETAINED_ORDINARY_PROFILE.equals(CodexExecFamily.contract(profile)));
         if (retained) TerminalCodexRetained.validate(manifest.getParent(), m, profile); else require(m.member("retained_generation") == null, "one-shot Codex profile carries no thread");
     }
 

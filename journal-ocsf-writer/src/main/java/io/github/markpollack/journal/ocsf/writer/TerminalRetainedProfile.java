@@ -25,17 +25,17 @@ final class TerminalRetainedProfile {
 
     static void validate(TerminalContract.Input input, Path manifest) throws IOException {
         Jv acquisition = Jv.parse(Files.readString(manifest));
-        String profile = text(Jv.parse(input.envelope()), "profile");
+        String wire = text(Jv.parse(input.envelope()), "profile"), profile = ClaudeSdkFamily.contract(wire);
         boolean fresh = TerminalContract.FRESH_RETAINED_PROFILES.contains(profile), retained = fresh || TerminalContract.RETAINED_PROFILE.equals(profile);
         Jv generation = acquisition.member("retained_generation");
         if (!retained) { require(generation == null, "retained generation requires its frozen initial profile"); return; }
         require(generation instanceof Jv.Obj, "retained generation declaration absent");
-        header(generation, input.decision(), fresh, !fresh || TerminalContract.FRESH_RETAINED_PROFILE.equals(profile));
+        header(generation, input.decision(), fresh, !fresh || TerminalContract.FRESH_RETAINED_PROFILE.equals(profile), wire);
         equal(generation, "nativeSessionId", text(acquisition.member("run"), "session_uid"));
         Path base = manifest.getParent();
         String name = fresh ? "generation/retained-fresh-generation.json" : "generation/retained-generation.json";
         require(Jv.write(generation).equals(Jv.write(Jv.parse(Files.readString(base.resolve(name))))), "retained original manifest differs");
-        if (fresh) freshness(acquisition, generation, base, profile); else require(acquisition.member("retained_profile") == null, "frozen retained profile carries no fresh profile");
+        if (fresh) freshness(acquisition, generation, base, wire); else require(acquisition.member("retained_profile") == null, "frozen retained profile carries no fresh profile");
         Map<String, byte[]> sources = originals(generation, base);
         Jv selected = turns(generation, sources, input.decision(), fresh);
         equal(acquisition, "retained_execution_id", text(input.decision(), "executionId"));
@@ -66,8 +66,10 @@ final class TerminalRetainedProfile {
         }
     }
 
-    private static void header(Jv generation, Jv decision, boolean fresh, boolean bounded) {
-        equal(generation, "kind", fresh ? FRESH_KIND : "journal-retained-generation/1"); equal(generation, "cliVersion", "2.1.316");
+    private static void header(Jv generation, Jv decision, boolean fresh, boolean bounded, String terminalProfile) {
+        equal(generation, "kind", fresh ? FRESH_KIND : "journal-retained-generation/1");
+        String version = text(generation, "cliVersion");
+        require(ClaudeSdkFamily.admittedUnder(terminalProfile, version), "Claude Code CLI version " + version + " is not admitted under terminal profile " + terminalProfile);
         equal(generation, "logicalSessionId", text(decision, "sessionId")); equal(generation, "connectionId", text(decision, "connectionId"));
         equal(decision.member("outcome"), "kind", "SUCCESS");
         for (String key : List.of("sealed", "observedResourcesTerminated", "stdoutNaturalEof", "stderrNaturalEof"))

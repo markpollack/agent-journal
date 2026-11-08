@@ -39,7 +39,8 @@ final class TerminalContract {
         equal(p, "codec", "journal-terminal-envelope/1");
         equal(p, "producerNamespace", namespace);
         equal(p, "receiverContract", CONTRACT); equal(p, "route", ROUTE);
-        if (!Set.of(PROFILE, CLAUDE_PROFILE, LEGACY_CLAUDE_PROFILE, RETAINED_PROFILE, TerminalCodexProfile.PROFILE, TerminalCodexProfile.LEGACY_PROFILE).contains(text(p, "profile")) && !FRESH_RETAINED_PROFILES.contains(text(p, "profile")) && !CODEX_RETAINED_PROFILES.contains(text(p, "profile"))) throw new IllegalArgumentException("unsupported terminal profile");
+        String contract = contract(text(p, "profile"));
+        if (!Set.of(PROFILE, LEGACY_CLAUDE_PROFILE, RETAINED_PROFILE, TerminalCodexProfile.LEGACY_PROFILE).contains(contract) && !FRESH_RETAINED_PROFILES.contains(contract) && !CODEX_RETAINED_PROFILES.contains(contract)) throw new IllegalArgumentException("unsupported terminal profile");
         equal(p, "decisionCodec", "client-decision/1"); equal(p, "associationCodec", "journal-association/1");
         Jv d = decoded(p, "decisionBytes"); TerminalDecision.check(d);
         Jv a = decoded(p, "associationBytes"); TerminalAssociation.check(a, d);
@@ -50,8 +51,17 @@ final class TerminalContract {
         return new Input(new String(bytes, StandardCharsets.UTF_8), d, a);
     }
 
+    /**
+     * The contract a terminal profile names, as its versioned profile's wire identifier: each version-neutral profile names
+     * its versioned predecessor's contract (the CLI version is recorded, not gated), any other profile its own.
+     */
+    static String contract(String profile) {
+        return CodexExecFamily.contract(ClaudeSdkFamily.contract(profile));
+    }
+
     private static void retainedInitial(Jv p, Jv d, Jv a) {
-        if (!RETAINED_PROFILE.equals(text(p, "profile")) && !FRESH_RETAINED_PROFILES.contains(text(p, "profile")) && !CODEX_RETAINED_PROFILES.contains(text(p, "profile"))) return;
+        String contract = contract(text(p, "profile"));
+        if (!RETAINED_PROFILE.equals(contract) && !FRESH_RETAINED_PROFILES.contains(contract) && !CODEX_RETAINED_PROFILES.contains(contract)) return;
         equal(a, "acquisition", "PENDING"); equal(d.member("outcome"), "kind", "SUCCESS");
         if (!array(a, "sources").isEmpty()) throw new IllegalArgumentException("retained initial evidence must be pending");
     }

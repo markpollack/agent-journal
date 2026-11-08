@@ -36,10 +36,12 @@ public final class RetainedClaudeAcquisition {
         byte[] bytes = Files.readAllBytes(generationManifest);
         Json generation = NeutralJson.parse(new String(bytes, StandardCharsets.UTF_8));
         Path base = generationManifest.toAbsolutePath().getParent();
-        if (fresh) FreshRetainedGeneration.validate(generation, base, freshProfile); else RetainedGeneration.validate(generation, base);
+        // a version-neutral profile names its predecessor's contract; the delivered name itself is stamped below
+        String contract = ClaudeSdkFamily.contract(freshProfile);
+        if (fresh) FreshRetainedGeneration.validate(generation, base, contract); else RetainedGeneration.validate(generation, base);
         RetainedGeneration.turn(generation, executionId);
         Files.createDirectory(newDirectory);
-        List<Json> sources = copySources(generation, base, executionId, newDirectory, freshProfile);
+        List<Json> sources = copySources(generation, base, executionId, newDirectory, contract);
         if (fresh) {
             String observations = text(generation.member("observations"), "path"); byte[] journal = Files.readAllBytes(base.resolve(observations));
             write(newDirectory.resolve("generation/" + observations), journal);
@@ -50,7 +52,7 @@ public final class RetainedClaudeAcquisition {
         Json.JObject manifest = manifest(generation, executionId, sources); stamp(manifest, generation, freshProfile);
         Path output = newDirectory.resolve("acquisition.json"); write(output, NeutralJson.write(manifest).getBytes(StandardCharsets.UTF_8));
         Path expectation = newDirectory.resolve("assembly-expectation.json");
-        write(expectation, NeutralJson.write(ClaudeAcquisition.expectation(ClaudeSdkFamily.LEGACY_VERSION)).getBytes(StandardCharsets.UTF_8));
+        write(expectation, NeutralJson.write(ClaudeAcquisition.expectation(text(generation, "cliVersion"))).getBytes(StandardCharsets.UTF_8));
         RetainedAcquisition.validate(manifest, newDirectory, fresh);
         return new AcquisitionQualifier.Qualified(output, expectation);
     }
@@ -58,7 +60,7 @@ public final class RetainedClaudeAcquisition {
     /** The fresh profile the generation was qualified under and, for the native profile, the recorded launch-argv completeness. */
     private static void stamp(Json.JObject manifest, Json generation, String freshProfile) {
         if (freshProfile != null) manifest.members().put("retained_profile", new Json.JString(freshProfile));
-        if (FreshRetainedGeneration.NATIVE_PROFILE.equals(freshProfile)) manifest.members().put("retained_launch_argv", new Json.JString(FreshRetainedGeneration.launchArgvObservation(generation)));
+        if (FreshRetainedGeneration.NATIVE_PROFILE.equals(ClaudeSdkFamily.contract(freshProfile))) manifest.members().put("retained_launch_argv", new Json.JString(FreshRetainedGeneration.launchArgvObservation(generation)));
     }
 
     private static List<Json> copySources(Json generation, Path base, String execution, Path directory, String freshProfile) throws IOException {
@@ -94,9 +96,9 @@ public final class RetainedClaudeAcquisition {
         Json.JObject end = object("STDIN", extent(sources, "stdin"), "STDOUT", extent(sources, "stream"), "STDERR", 0);
         Json turn = object("invocation_uid", execution, "start_offsets", object("STDIN", 0, "STDOUT", 0, "STDERR", 0), "end_offsets", end);
         Json run = object("run_uid", execution, "invocation_index", 0, "session_uid", session, "capture_start", text(generation, "captureStart"),
-                "cli", object("name", "Claude Code", "version", "2.1.316", "vendor_name", "Anthropic"), "launch_settings", object("route", "sdk_stdio"));
-        return object("kind", "agent-journal/acquired-execution", "version", "0.1", "profile", ClaudeSdkFamily.profile(ClaudeSdkFamily.LEGACY_VERSION),
-                "profile_id", ClaudeSdkFamily.profileId(ClaudeSdkFamily.LEGACY_VERSION), "acquisition_uid", execution, "complete", true, "capture_errors", new Json.JArray(List.of()),
+                "cli", object("name", "Claude Code", "version", text(generation, "cliVersion"), "vendor_name", "Anthropic"), "launch_settings", object("route", "sdk_stdio"));
+        return object("kind", "agent-journal/acquired-execution", "version", "0.1", "profile", ClaudeSdkFamily.profile(text(generation, "cliVersion")),
+                "profile_id", ClaudeSdkFamily.profileId(text(generation, "cliVersion")), "acquisition_uid", execution, "complete", true, "capture_errors", new Json.JArray(List.of()),
                 "run", run, "process", object("connection_uid", text(generation, "connectionId"), "observed_resources_terminated", true,
                         "stdout_natural_eof", true, "stderr_natural_eof", true, "basis", "generation observations; projection EOF is not per-turn transport EOF"),
                 "turns", new Json.JArray(List.of(turn)), "sources", new Json.JArray(sources), "retained_generation", generation, "retained_execution_id", execution);

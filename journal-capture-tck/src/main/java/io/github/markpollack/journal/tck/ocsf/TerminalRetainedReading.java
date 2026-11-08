@@ -11,7 +11,7 @@ final class TerminalRetainedReading {
 
     private static boolean retained(Json envelope) {
         String profile = string(envelope, "profile");
-        return RetainedAcquisition.PROFILE.equals(profile) || FreshRetainedGeneration.PROFILES.contains(profile);
+        return RetainedAcquisition.PROFILE.equals(ClaudeSdkFamily.contract(profile)) || FreshRetainedGeneration.PROFILES.contains(ClaudeSdkFamily.contract(profile));
     }
 
     static void initial(Json envelope, Json decision, Json association) {
@@ -25,9 +25,9 @@ final class TerminalRetainedReading {
         Json acquisition = file.run().path("launch_settings", "acquired_execution");
         Json generation = acquisition == null ? null : acquisition.member("retained_generation");
         if (!retained(envelope)) {
-            require(generation == null || CodexRetainedGeneration.PROFILES.contains(string(envelope, "profile")), "retained generation under wrong frozen profile"); return;
+            require(generation == null || CodexRetainedGeneration.PROFILES.contains(CodexExecFamily.contract(string(envelope, "profile"))), "retained generation under wrong frozen profile"); return;
         }
-        boolean fresh = FreshRetainedGeneration.PROFILES.contains(string(envelope, "profile"));
+        boolean fresh = FreshRetainedGeneration.PROFILES.contains(ClaudeSdkFamily.contract(string(envelope, "profile")));
         require(generation instanceof Json.JObject, "retained generation missing");
         expect(generation, "kind", fresh ? FreshRetainedGeneration.KIND : "journal-retained-generation/1");
         if (fresh) expect(acquisition, "retained_profile", string(envelope, "profile"));

@@ -16,6 +16,18 @@ final class ClaudeSdkFamily {
     static final String LEGACY_VERSION = "2.1.316";
     /** The bundled final-assembly profile every version is assembled with, stated under each version's own id. */
     static final String ASSEMBLY_RESOURCE = "claude-code-2.1.316-sdk-stdio-session-file";
+    /** Version-neutral retained-generation profiles, each the contract of its versioned 2.1.316 predecessor. */
+    static final String RETAINED_TERMINAL_PROFILE = "client-terminal-claude-sdk-retained/1";
+    static final String FRESH_RETAINED_TERMINAL_PROFILE = "client-terminal-claude-sdk-retained-fresh/1";
+    static final String FRESH_RETAINED_ORDINARY_TERMINAL_PROFILE = "client-terminal-claude-sdk-retained-fresh/2";
+    static final String FRESH_RETAINED_NATIVE_TERMINAL_PROFILE = "client-terminal-claude-sdk-retained-fresh/3";
+    /** Each version-neutral terminal profile and the versioned profile whose contract it names. */
+    private static final TerminalProfiles NAMES = new TerminalProfiles(java.util.Map.of(
+            TERMINAL_PROFILE, LEGACY_TERMINAL_PROFILE,
+            RETAINED_TERMINAL_PROFILE, "client-terminal-claude-retained-2.1.316/1",
+            FRESH_RETAINED_TERMINAL_PROFILE, "client-terminal-claude-retained-fresh-2.1.316/1",
+            FRESH_RETAINED_ORDINARY_TERMINAL_PROFILE, "client-terminal-claude-retained-fresh-2.1.316/2",
+            FRESH_RETAINED_NATIVE_TERMINAL_PROFILE, "client-terminal-claude-retained-fresh-2.1.316/3"), LEGACY_VERSION);
     private static final Pattern PROFILE = CliVersions.named("claude-code-", "-sdk-stdio-session-file");
 
     private ClaudeSdkFamily() { }
@@ -37,8 +49,14 @@ final class ClaudeSdkFamily {
         return CliVersions.version(PROFILE, profile);
     }
 
-    /** Whether a recording delivered under {@code terminalProfile} admits {@code version}: any version under the neutral profile, 2.1.316 alone otherwise. */
+    /** The contract a terminal profile names: a version-neutral profile names its versioned predecessor's. */
+    static String contract(String terminalProfile) {
+        return NAMES.contract(terminalProfile);
+    }
+
+
+    /** Whether a recording delivered under {@code terminalProfile} admits {@code version}: any version under a neutral profile, 2.1.316 alone otherwise. */
     static boolean admittedUnder(String terminalProfile, String version) {
-        return TERMINAL_PROFILE.equals(terminalProfile) ? wellFormed(version) : LEGACY_VERSION.equals(version);
+        return NAMES.admits(terminalProfile, version);
     }
 }

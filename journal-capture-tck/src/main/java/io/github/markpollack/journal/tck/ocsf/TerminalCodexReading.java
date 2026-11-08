@@ -18,7 +18,7 @@ final class TerminalCodexReading {
     private static void require(boolean pass, String reason) { if (!pass) throw new IllegalArgumentException(reason); }
     private static boolean selected(Json p, Json a) {
         return (Set.of(CodexExecFamily.TERMINAL_PROFILE, CodexExecFamily.LEGACY_TERMINAL_PROFILE).contains(string(p, "profile")) || retained(p)) && "COMPLETED".equals(string(a, "acquisition")); }
-    private static boolean retained(Json p) { return CodexRetainedGeneration.PROFILES.contains(string(p, "profile")); }
+    private static boolean retained(Json p) { return CodexRetainedGeneration.PROFILES.contains(CodexExecFamily.contract(string(p, "profile"))); }
     static void check(DeclaredFile file, Json p, Json d, Json a) {
         if (!selected(p, a)) return;
         Json m = file.run().path("launch_settings", "acquired_execution"); require(m != null, "Codex acquisition declaration absent");

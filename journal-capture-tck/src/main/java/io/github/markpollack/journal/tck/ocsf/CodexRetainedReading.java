@@ -21,7 +21,7 @@ public final class CodexRetainedReading {
         Json declared = acquisition.member("retained_generation");
         Json original = NeutralJson.readDocument(base.resolve("generation/codex-thread.json"));
         require(Json.sameValue(declared, original), "retained thread declaration changed");
-        String profile = text(acquisition, "retained_profile"); require(CodexRetainedGeneration.PROFILES.contains(profile), "unsupported retained profile");
+        String profile = CodexExecFamily.contract(text(acquisition, "retained_profile")); require(CodexRetainedGeneration.PROFILES.contains(profile), "unsupported retained profile");
         CodexRetainedGeneration.RetainedThread thread = CodexRetainedGeneration.validate(original, base.resolve("generation"), profile);
         String execution = text(acquisition, "acquisition_uid"); expect(acquisition, "retained_execution_id", execution);
         CodexRetainedGeneration.Turn turn = thread.turn(execution);

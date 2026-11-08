@@ -64,7 +64,9 @@ public final class RetainedGeneration {
 
     private static void header(Json m, boolean fresh) {
         fields(m, fresh ? MEMBERS + " freshStart observedNativeIdentity observations" : MEMBERS);
-        expect(m, "kind", fresh ? FreshRetainedGeneration.KIND : "journal-retained-generation/1"); expect(m, "cliVersion", "2.1.316");
+        expect(m, "kind", fresh ? FreshRetainedGeneration.KIND : "journal-retained-generation/1");
+        // the CLI version is recorded, not gated: well-formed, and every init and native record states it
+        require(ClaudeSdkFamily.wellFormed(string(m, "cliVersion")), "malformed Claude Code CLI version");
         for (String key : List.of("logicalSessionId", "connectionId", "nativeSessionId", "captureStart")) string(m, key);
         java.time.Instant.parse(string(m, "captureStart"));
         for (String key : List.of("sealed", "observedResourcesTerminated", "stdoutNaturalEof", "stderrNaturalEof"))
@@ -99,7 +101,7 @@ public final class RetainedGeneration {
             Json row = sources.get(source).record(locator); String type = string(row, "type");
             if (source.equals("STDOUT") && type.equals("system")) {
                 expect(row, "subtype", "init"); expect(row, "session_id", string(m, "nativeSessionId"));
-                expect(row, "claude_code_version", "2.1.316"); init++;
+                expect(row, "claude_code_version", string(m, "cliVersion")); init++;
             }
             else require(Set.of("control_request", "control_response").contains(type), "execution record cannot be generation shared");
         }

@@ -16,6 +16,14 @@ final class CodexExecFamily {
     static final String LEGACY_VERSION = "0.166.0";
     /** The bundled final-assembly profile every version is assembled with, stated under each version's own id. */
     static final String ASSEMBLY_RESOURCE = "codex-cli-0.166.0-exec-stdio-rollout";
+    /** Version-neutral retained-thread profiles, each the contract of its versioned 0.166.0 predecessor. */
+    static final String RETAINED_TERMINAL_PROFILE = "client-terminal-codex-exec-retained/1";
+    static final String RETAINED_ORDINARY_TERMINAL_PROFILE = "client-terminal-codex-exec-retained/2";
+    /** Each version-neutral terminal profile and the versioned profile whose contract it names. */
+    private static final TerminalProfiles NAMES = new TerminalProfiles(java.util.Map.of(
+            TERMINAL_PROFILE, LEGACY_TERMINAL_PROFILE,
+            RETAINED_TERMINAL_PROFILE, "client-terminal-codex-retained-0.166.0/1",
+            RETAINED_ORDINARY_TERMINAL_PROFILE, "client-terminal-codex-retained-0.166.0/2"), LEGACY_VERSION);
     private static final Pattern PROFILE = CliVersions.named("codex-cli-", "-exec-stdio-rollout");
     private static final Pattern PROFILE_ID = CliVersions.named("codex-cli/", "/exec-stdio+rollout");
 
@@ -43,9 +51,15 @@ final class CodexExecFamily {
         return CliVersions.version(PROFILE_ID, profileId) != null;
     }
 
-    /** Whether a recording delivered under {@code terminalProfile} admits {@code version}: any version under the neutral profile, 0.166.0 alone otherwise. */
+    /** The contract a terminal profile names: a version-neutral profile names its versioned predecessor's. */
+    static String contract(String terminalProfile) {
+        return NAMES.contract(terminalProfile);
+    }
+
+
+    /** Whether a recording delivered under {@code terminalProfile} admits {@code version}: any version under a neutral profile, 0.166.0 alone otherwise. */
     static boolean admittedUnder(String terminalProfile, String version) {
-        return TERMINAL_PROFILE.equals(terminalProfile) ? wellFormed(version) : LEGACY_VERSION.equals(version);
+        return NAMES.admits(terminalProfile, version);
     }
 
 }

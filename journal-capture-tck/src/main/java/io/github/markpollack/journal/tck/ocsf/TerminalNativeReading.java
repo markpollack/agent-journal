@@ -18,7 +18,7 @@ import static io.github.markpollack.journal.tck.ocsf.TerminalReading.*;
 final class TerminalNativeReading {
     private TerminalNativeReading() { }
     private static boolean selected(Json p, Json a) {
-        return Set.of(ClaudeSdkFamily.TERMINAL_PROFILE, ClaudeSdkFamily.LEGACY_TERMINAL_PROFILE, RetainedAcquisition.PROFILE, FreshRetainedGeneration.PROFILE).contains(string(p, "profile"))
+        return Set.of(ClaudeSdkFamily.LEGACY_TERMINAL_PROFILE, RetainedAcquisition.PROFILE, FreshRetainedGeneration.PROFILE).contains(ClaudeSdkFamily.contract(string(p, "profile")))
                 && "COMPLETED".equals(string(a, "acquisition"));
     }
 

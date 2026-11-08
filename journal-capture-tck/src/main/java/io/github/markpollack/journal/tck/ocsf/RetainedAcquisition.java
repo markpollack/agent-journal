@@ -26,7 +26,7 @@ public final class RetainedAcquisition {
         require(Files.isRegularFile(base.resolve(manifestPath(fresh))), "retained generation manifest absent for this profile");
         Json original = NeutralJson.readDocument(base.resolve(manifestPath(fresh)));
         require(Json.sameValue(declared, original), "retained generation declaration changed");
-        String profile = fresh ? string(acquisition, "retained_profile") : null;
+        String profile = fresh ? ClaudeSdkFamily.contract(string(acquisition, "retained_profile")) : null;
         if (fresh) { require(FreshRetainedGeneration.PROFILES.contains(profile), "unsupported fresh retained profile"); FreshRetainedGeneration.validate(original, base.resolve("generation"), profile); }
         else { require(acquisition.member("retained_profile") == null, "frozen /1 profile carries no fresh profile"); RetainedGeneration.validate(original, base.resolve("generation")); }
         String execution = string(acquisition, "acquisition_uid");

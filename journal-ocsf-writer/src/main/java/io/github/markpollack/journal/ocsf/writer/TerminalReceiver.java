@@ -32,21 +32,33 @@ public final class TerminalReceiver {
     public static final String CLAUDE_PROFILE = TerminalContract.CLAUDE_PROFILE;
     /** The versioned profile earlier 2.1.316 one-shot recordings carry; still received, for 2.1.316 only. */
     public static final String LEGACY_CLAUDE_PROFILE = TerminalContract.LEGACY_CLAUDE_PROFILE;
-    public static final String RETAINED_PROFILE = TerminalContract.RETAINED_PROFILE;
+    /**
+     * The version-neutral retained profiles new recordings are delivered under (the CLI version is recorded, not gated);
+     * each names the contract of its versioned 2.1.316 predecessor below, which stays readable for 2.1.316 only.
+     */
+    public static final String RETAINED_PROFILE = ClaudeSdkFamily.RETAINED_TERMINAL_PROFILE;
     /** Opt-in fresh-transcript-start retained profile; the frozen retained profile above is unchanged. */
-    public static final String FRESH_RETAINED_PROFILE = TerminalContract.FRESH_RETAINED_PROFILE;
+    public static final String FRESH_RETAINED_PROFILE = ClaudeSdkFamily.FRESH_RETAINED_TERMINAL_PROFILE;
     /** Ordinary fresh-start retained profile: any sealed turn count; the frozen two-turn fresh profile above is unchanged. */
-    public static final String FRESH_RETAINED_ORDINARY_PROFILE = TerminalContract.FRESH_RETAINED_ORDINARY_PROFILE;
-    /** Native fresh-start retained profile (2026-11-05): the text-turn model the real CLI 2.1.316 writes; /1 and /2 above are unchanged. */
-    public static final String FRESH_RETAINED_NATIVE_PROFILE = TerminalContract.FRESH_RETAINED_NATIVE_PROFILE;
+    public static final String FRESH_RETAINED_ORDINARY_PROFILE = ClaudeSdkFamily.FRESH_RETAINED_ORDINARY_TERMINAL_PROFILE;
+    /** Native fresh-start retained profile (2026-11-05): the text-turn model the real CLI writes; /1 and /2 above are unchanged. */
+    public static final String FRESH_RETAINED_NATIVE_PROFILE = ClaudeSdkFamily.FRESH_RETAINED_NATIVE_TERMINAL_PROFILE;
+    /** The versioned retained profiles earlier 2.1.316 recordings carry; still received, for 2.1.316 only. */
+    public static final String LEGACY_RETAINED_PROFILE = TerminalContract.RETAINED_PROFILE;
+    public static final String LEGACY_FRESH_RETAINED_PROFILE = TerminalContract.FRESH_RETAINED_PROFILE;
+    public static final String LEGACY_FRESH_RETAINED_ORDINARY_PROFILE = TerminalContract.FRESH_RETAINED_ORDINARY_PROFILE;
+    public static final String LEGACY_FRESH_RETAINED_NATIVE_PROFILE = TerminalContract.FRESH_RETAINED_NATIVE_PROFILE;
     /** The version-neutral Codex exec one-shot profile: any Codex CLI version. */
     public static final String CODEX_PROFILE = TerminalCodexProfile.PROFILE;
     /** The versioned profile earlier 0.166.0 Codex one-shot recordings carry; still received, for 0.166.0 only. */
     public static final String LEGACY_CODEX_PROFILE = TerminalCodexProfile.LEGACY_PROFILE;
-    /** Frozen retained Codex profile: one turn of a sealed two-turn thread with its original per-process evidence. */
-    public static final String CODEX_RETAINED_PROFILE = TerminalContract.CODEX_RETAINED_PROFILE;
-    /** Ordinary retained Codex profile: one turn of a sealed thread of any turn count, the same per-turn rules. */
-    public static final String CODEX_RETAINED_ORDINARY_PROFILE = TerminalContract.CODEX_RETAINED_ORDINARY_PROFILE;
+    /** Frozen retained Codex profile, version-neutral: one turn of a sealed two-turn thread with its original per-process evidence. */
+    public static final String CODEX_RETAINED_PROFILE = CodexExecFamily.RETAINED_TERMINAL_PROFILE;
+    /** Ordinary retained Codex profile, version-neutral: one turn of a sealed thread of any turn count, the same per-turn rules. */
+    public static final String CODEX_RETAINED_ORDINARY_PROFILE = CodexExecFamily.RETAINED_ORDINARY_TERMINAL_PROFILE;
+    /** The versioned retained Codex profiles earlier 0.166.0 recordings carry; still received, for 0.166.0 only. */
+    public static final String LEGACY_CODEX_RETAINED_PROFILE = TerminalContract.CODEX_RETAINED_PROFILE;
+    public static final String LEGACY_CODEX_RETAINED_ORDINARY_PROFILE = TerminalContract.CODEX_RETAINED_ORDINARY_PROFILE;
     private final Path root;
     private final String namespace;
     private final WriterOptions options;

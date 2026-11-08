@@ -83,7 +83,9 @@ public final class CodexRetainedGeneration {
 
     private static RetainedThread read(Json m, Path base, String profile) throws IOException {
         require(PROFILES.contains(profile), Verdict.REFUSED, "unsupported retained profile");
-        expect(m, "kind", KIND); expect(m, "cli_version", "0.166.0");
+        expect(m, "kind", KIND);
+        // the CLI version is recorded, not gated: well-formed, and every native session_meta states it
+        require(CodexExecFamily.wellFormed(optional(m, "cli_version")), Verdict.REFUSED, "malformed Codex CLI version");
         require(m.member("sealed") instanceof Json.JBool b && b.value(), Verdict.INCOMPLETE, "thread not sealed");
         require(m.member("overflow") instanceof Json.JBool b && !b.value(), Verdict.INCOMPLETE, "thread overflow");
         require(string(m, "native_path").endsWith("-" + string(m, "native_session_id") + ".jsonl"), Verdict.REFUSED, "native path does not name the thread");
@@ -98,7 +100,7 @@ public final class CodexRetainedGeneration {
     /** Sequential reading state over one thread: partition cursor, shared locator, identity sets and the previous turn. */
     private static final class Reader {
         private final Path base; private final byte[] transcript; private final RetainedSource source;
-        private final String session, cwd, profile;
+        private final String session, cwd, profile, version;
         private final List<Turn> turns = new ArrayList<>();
         private final Set<String> identities = new HashSet<>();
         private Json shared, previousThreadUsage, previousAfter;
@@ -106,7 +108,7 @@ public final class CodexRetainedGeneration {
 
         Reader(Json manifest, Path base, byte[] transcript, String profile) throws IOException {
             this.base = base; this.transcript = transcript; this.profile = profile;
-            session = string(manifest, "native_session_id"); cwd = string(manifest, "cwd");
+            session = string(manifest, "native_session_id"); cwd = string(manifest, "cwd"); version = string(manifest, "cli_version");
             source = new RetainedSource(declaration(transcript, string(manifest.member("transcript"), "path")), base);
         }
 
@@ -115,7 +117,7 @@ public final class CodexRetainedGeneration {
             require(number(t, "invocation_index") == i, Verdict.REFUSED, "turn order differs from invocation index");
             for (String key : List.of("execution_id", "connection_id", "native_turn_uid")) require(identities.add(key + "=" + string(t, key)), Verdict.REFUSED, "turn identity reused");
             closure(t, i); launch(t, i, session, cwd);
-            Json sharedHere = sharedLocator(t, source, session, cwd);
+            Json sharedHere = sharedLocator(t, source, session, cwd, version);
             if (shared == null) { shared = sharedHere; covered = number(shared, "end"); }
             else require(Json.sameValue(shared, sharedHere), Verdict.REFUSED, "shared session_meta locator differs between turns");
             long start = covered;
@@ -213,11 +215,11 @@ public final class CodexRetainedGeneration {
         }
     }
 
-    private static Json sharedLocator(Json t, RetainedSource source, String session, String cwd) {
+    private static Json sharedLocator(Json t, RetainedSource source, String session, String cwd, String version) {
         List<Json> shared = array(t.member("native_records"), "shared");
         require(shared.size() == 1 && number(shared.get(0), "start") == 0, Verdict.REFUSED, "exactly one shared session_meta locator at offset 0 required");
         Json meta = source.record(shared.get(0)); expect(meta, "type", "session_meta"); Json payload = meta.member("payload");
-        expect(payload, "id", session); expect(payload, "cli_version", "0.166.0"); expect(payload, "cwd", cwd); expect(payload, "source", "exec");
+        expect(payload, "id", session); expect(payload, "cli_version", version); expect(payload, "cwd", cwd); expect(payload, "source", "exec");
         require(payload.member("forked_from_id") == null || payload.member("forked_from_id").isNull(), Verdict.REFUSED, "forked native history");
         return shared.get(0);
     }
