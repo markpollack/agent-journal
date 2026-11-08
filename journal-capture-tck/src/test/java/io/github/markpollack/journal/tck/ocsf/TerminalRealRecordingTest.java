@@ -67,6 +67,14 @@ class TerminalRealRecordingTest {
         assertThat(java.nio.file.Files.readString(root("claude-heartbeat"))).contains("\\\"profile\\\":\\\"client-terminal-claude-2.1.316/1\\\"");
     }
 
+    /** A real Client Codex 0.166.0 one-read run, delivered under the version-neutral client-terminal-codex-exec/1 with its own version recorded. */
+    @Test void aRealCodexRunUnderTheVersionNeutralProfileIsAccepted() throws IOException {
+        OcsfReaderTool.Acceptance a = acceptance("codex-one-read");
+        assertThat(a.verdict()).as(a.toString()).isEqualTo("ACCEPTED");
+        assertThat(java.nio.file.Files.readString(root("codex-one-read"))).contains("\\\"profile\\\":\\\"client-terminal-codex-exec/1\\\"")
+                .contains("\"product\":{\"name\":\"Codex CLI\",\"version\":\"0.166.0\"");
+    }
+
     @Test void theWriterBeforeTheProgressOwnerFixMadeAHeartbeatAChildCore() throws IOException {
         OcsfReaderTool.Acceptance a = acceptance("claude-heartbeat-bd04735");
         assertThat(a.verdict()).isEqualTo("DEFECTIVE");

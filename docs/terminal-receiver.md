@@ -177,9 +177,12 @@ AcquisitionQualifier.Qualified qualified = qualifier.qualify(sealedManifest, new
 | Acquisition profile | Qualifier | Terminal profile |
 |---|---|---|
 | `claude-code-<version>-sdk-stdio-session-file`, any version | `ClaudeAcquisition.qualifier(version)` | `client-terminal-claude-sdk/1` |
-| `codex-cli-0.166.0-exec-stdio-rollout` | `CodexAcquisition.QUALIFIER` | `client-terminal-codex-0.166.0/1` |
+| `codex-cli-<version>-exec-stdio-rollout`, any version | `CodexAcquisition.qualifier(version)` | `client-terminal-codex-exec/1` |
 
-Any other profile returns empty. A qualifier refuses an acquisition with `IllegalArgumentException`,
+Both families record the CLI version without gating it (Owner, 2026-11-08): each version's profile selects its qualifier,
+the native witnesses must state the manifest's own version, and the version stays in every record. Recordings delivered
+earlier under `client-terminal-claude-2.1.316/1` or `client-terminal-codex-0.166.0/1` stay readable for that version
+only. Any other profile returns empty. A qualifier refuses an acquisition with `IllegalArgumentException`,
 whose message is its verdict, before creating the new directory. `IOException` means an input could
 not be read or the directory exists or could not be written. Each qualifier runs exactly the checks of
 its static `qualify(Path, Path)` and writes the same bytes. Selection uses the acquisition profile

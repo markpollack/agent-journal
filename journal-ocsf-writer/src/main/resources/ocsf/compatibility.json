@@ -629,8 +629,7 @@
       "routes": [
         "stdout"
       ],
-      "min_version": "0.166.0",
-      "max_version": "0.166.0",
+      "versions": "any",
       "source_specification": {
         "path": "schema/vendor/codex-cli/exec-json-stream/0.166.0.json",
         "specification_version": "0.1.0",
@@ -650,7 +649,7 @@
           "evidence": "Labelled synthetic syn-codex-acquisition-0.166.0; exact current vendor source inspection; no live qualification"
         }
       ],
-      "note": "Exact current-version experimental fresh text route; explicitly shared existing mapping rules, not version substitution for untested input. Native source families not implemented remain unresolved.",
+      "note": "Exact current-version experimental fresh text route; explicitly shared existing mapping rules, not version substitution for untested input. Native source families not implemented remain unresolved. Version-neutral since 2026-11-08 (Owner: CLI versions are recorded, not gated): any Codex CLI version on this route selects this entry unless an exact entry covers it; the id keeps the version it was first registered at, and its onboarding registration names it.",
       "onboarding_inventory": "schema/vendor/codex-cli/exec-json-stream/0.166.0-vendor-inventory.json"
     },
     {
@@ -661,8 +660,7 @@
       "routes": [
         "native_session_file"
       ],
-      "min_version": "0.166.0",
-      "max_version": "0.166.0",
+      "versions": "any",
       "source_specification": {
         "path": "schema/vendor/codex-cli/rollout/0.166.0.json",
         "specification_version": "0.1.0",
@@ -682,7 +680,7 @@
           "evidence": "Labelled synthetic syn-codex-acquisition-0.166.0; exact current vendor source inspection; no live qualification"
         }
       ],
-      "note": "Exact current-version experimental fresh text route; explicitly shared existing mapping rules, not version substitution for untested input. Native source families not implemented remain unresolved.",
+      "note": "Exact current-version experimental fresh text route; explicitly shared existing mapping rules, not version substitution for untested input. Native source families not implemented remain unresolved. Version-neutral since 2026-11-08 (Owner: CLI versions are recorded, not gated): any Codex CLI version on this route selects this entry unless an exact entry covers it; the id keeps the version it was first registered at, and its onboarding registration names it.",
       "onboarding_inventory": "schema/vendor/codex-cli/rollout/0.166.0-vendor-inventory.json"
     }
   ],

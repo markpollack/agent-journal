@@ -1,6 +1,5 @@
 package io.github.markpollack.journal.tck.ocsf;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -17,16 +16,14 @@ public final class ClaudeSdkFamily {
     public static final String LEGACY_TERMINAL_PROFILE = "client-terminal-claude-2.1.316/1";
     /** The only version the versioned 2.1.316 terminal profiles admit. */
     public static final String LEGACY_VERSION = "2.1.316";
-    /** A Claude Code version as the CLI reports it: dotted numbers with an optional pre-release or build suffix. */
-    private static final String VERSION = "[0-9]+(?:\\.[0-9]+)+(?:[-+][0-9A-Za-z.-]+)?";
-    private static final Pattern PROFILE = Pattern.compile("claude-code-(" + VERSION + ")-sdk-stdio-session-file");
-    private static final Pattern PROFILE_ID = Pattern.compile("claude-code/(" + VERSION + ")/sdk-stdio\\+session-file");
+    private static final Pattern PROFILE = CliVersions.named("claude-code-", "-sdk-stdio-session-file");
+    private static final Pattern PROFILE_ID = CliVersions.named("claude-code/", "/sdk-stdio+session-file");
 
     private ClaudeSdkFamily() { }
 
     /** Whether {@code version} is a well-formed Claude Code version. */
     public static boolean wellFormed(String version) {
-        return version != null && version.matches(VERSION);
+        return CliVersions.wellFormed(version);
     }
 
     /** The acquisition profile a sealed manifest of {@code version} declares. */
@@ -41,12 +38,12 @@ public final class ClaudeSdkFamily {
 
     /** The version an acquisition profile of this family names, or null when it is not one. */
     public static String versionOfProfile(String profile) {
-        return group(PROFILE, profile);
+        return CliVersions.version(PROFILE, profile);
     }
 
     /** The version a profile id of this family names, or null when it is not one. */
     public static String versionOfProfileId(String profileId) {
-        return group(PROFILE_ID, profileId);
+        return CliVersions.version(PROFILE_ID, profileId);
     }
 
     /** Whether {@code profileId} is a profile id of this family. */
@@ -59,9 +56,4 @@ public final class ClaudeSdkFamily {
         return TERMINAL_PROFILE.equals(terminalProfile) ? wellFormed(version) : LEGACY_VERSION.equals(version);
     }
 
-    private static String group(Pattern pattern, String text) {
-        if (text == null) { return null; }
-        Matcher m = pattern.matcher(text);
-        return m.matches() ? m.group(1) : null;
-    }
 }

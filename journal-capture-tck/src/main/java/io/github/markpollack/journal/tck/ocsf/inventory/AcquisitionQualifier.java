@@ -1,5 +1,7 @@
 package io.github.markpollack.journal.tck.ocsf.inventory;
 
+import io.github.markpollack.journal.tck.ocsf.CodexExecFamily;
+
 import io.github.markpollack.journal.tck.ocsf.ClaudeSdkFamily;
 
 import java.io.IOException;
@@ -22,9 +24,10 @@ import java.util.Optional;
  * <ul>
  * <li>{@link ClaudeAcquisition#qualifier(String)}: the acquisition profile of any Claude Code version on the SDK route
  * ({@link ClaudeSdkFamily}; the version is recorded, not gated) to {@value ClaudeSdkFamily#TERMINAL_PROFILE};</li>
- * <li>{@link CodexAcquisition#QUALIFIER}: {@value CodexAcquisition#PROFILE} to {@value CodexAcquisition#TERMINAL_PROFILE}.</li>
+ * <li>{@link CodexAcquisition#qualifier(String)}: the acquisition profile of any Codex CLI version on the exec route
+ * ({@link CodexExecFamily}; the version is recorded, not gated) to {@value CodexExecFamily#TERMINAL_PROFILE}.</li>
  * </ul>
- * Selection uses the acquisition profile alone. A Codex 0.166.0 turn manifest from a retained thread may declare the same
+ * Selection uses the acquisition profile alone. A Codex turn manifest from a retained thread may declare the same
  * acquisition profile as a fresh turn, and the one-shot qualifier refuses its resumed history; select a retained qualifier
  * before reaching this lookup for a retained generation.
  */
@@ -55,7 +58,9 @@ public interface AcquisitionQualifier {
         Objects.requireNonNull(acquisitionProfile, "acquisitionProfile");
         String claude = ClaudeSdkFamily.versionOfProfile(acquisitionProfile);
         if (claude != null) { return Optional.of(ClaudeAcquisition.qualifier(claude)); }
-        return java.util.stream.Stream.of(CodexAcquisition.QUALIFIER)
+        String codex = CodexExecFamily.versionOfProfile(acquisitionProfile);
+        if (codex != null) { return Optional.of(CodexAcquisition.qualifier(codex)); }
+        return java.util.stream.Stream.<AcquisitionQualifier>empty()
                 .filter(qualifier -> qualifier.acquisitionProfile().equals(acquisitionProfile)).findFirst();
     }
 

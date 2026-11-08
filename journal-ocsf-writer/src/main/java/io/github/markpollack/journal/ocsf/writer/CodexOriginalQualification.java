@@ -10,16 +10,17 @@ import static io.github.markpollack.journal.ocsf.writer.TerminalCodexProfile.*;
 
 /** Original acquisition prerequisites for the fresh singleton assembly, also without a terminal envelope. */
 final class CodexOriginalQualification {
-    static final String PROFILE = "codex-cli/0.166.0/exec-stdio+rollout";
     private CodexOriginalQualification() { }
 
     static void validate(Jv m, Path base) throws IOException {
         boolean retained = m.member("retained_generation") != null;
-        equal(m, "profile_id", PROFILE); equal(m, "profile", "codex-cli-0.166.0-exec-stdio-rollout");
+        String version = text(m.path("run", "cli"), "version");
+        require(CodexExecFamily.wellFormed(version), "malformed Codex CLI version");
+        equal(m, "profile_id", CodexExecFamily.profileId(version)); equal(m, "profile", CodexExecFamily.profile(version));
         flag(m, "complete", true); require(array(m, "capture_errors").isEmpty(), "Codex capture errors");
         Jv run = m.member("run"), process = m.member("process");
         equal(run, "run_uid", text(m, "acquisition_uid")); text(run, "session_uid");
-        equal(run.member("cli"), "name", "Codex CLI"); equal(run.member("cli"), "version", "0.166.0");
+        equal(run.member("cli"), "name", "Codex CLI");
         process(m, process, run, retained);
         Jv turn = array(m, "turns").get(0); equal(turn, "invocation_uid", text(m, "acquisition_uid")); text(turn, "decision_uid"); text(turn, "native_turn_uid");
         Map<String, Jv> roles = sources(m, retained);

@@ -283,9 +283,9 @@ class RealRecordingTest {
     @Test void regenerateTckRealRecordingCases() throws IOException {
         String target = System.getProperty("terminal.real.regenerate");
         Assumptions.assumeTrue(target != null, "set terminal.real.regenerate to regenerate");
-        for (String name : List.of("heartbeat", "mcp", "sub-agent", "txbench-2.1.319")) {
+        for (String name : List.of("heartbeat", "mcp", "sub-agent", "txbench-2.1.319", "codex-one-read")) {
             RealRecording.Sealed s = sealed(name);
-            Path out = Path.of(target, "claude-" + name);
+            Path out = Path.of(target, name.startsWith("codex-") ? name : "claude-" + name);
             copyTree(s.store(), out.resolve("store"));
             Files.copy(s.qualified().resolve("assembly-expectation.json"), out.resolve("assembly-expectation.json"));
             Files.copy(RealRecording.PUBLIC.resolve(name).resolve("SCRUBBED.md"), out.resolve("SCRUBBED.md"));

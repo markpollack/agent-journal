@@ -1,5 +1,7 @@
 package io.github.markpollack.journal.tck.ocsf.inventory;
 
+import io.github.markpollack.journal.tck.ocsf.CodexExecFamily;
+
 import io.github.markpollack.journal.tck.ocsf.NativeArtifact;
 import io.github.markpollack.journal.tck.ocsf.CodexAcquisitionReading;
 import io.github.markpollack.journal.tck.verify.Json;
@@ -12,17 +14,31 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Map;
 
-/** Independent qualification of original bytes from one successful fresh Codex 0.166.0 exec turn.
+/** Independent qualification of original bytes from one successful fresh Codex exec turn, at any CLI version ({@link CodexExecFamily}).
+ * The manifest's CLI version names its profile and profile id, and the native session_meta must state the same version.
  * Qualification does not establish semantic archive acceptance or native/provider qualification.
  */
 public final class CodexAcquisition {
-    public static final String PROFILE = "codex-cli-0.166.0-exec-stdio-rollout";
-    public static final String PROFILE_ID = "codex-cli/0.166.0/exec-stdio+rollout";
-    /** The terminal binding profile, as its wire identifier, for a qualified Codex one-shot. */
-    public static final String TERMINAL_PROFILE = "client-terminal-codex-0.166.0/1";
-    /** This qualifier as the {@link AcquisitionQualifier} for {@link #PROFILE}; it runs {@link #qualify(Path, Path)}. */
-    public static final AcquisitionQualifier QUALIFIER = new ProfileQualifier(PROFILE, TERMINAL_PROFILE, CodexAcquisition::qualify);
     private CodexAcquisition() { }
+
+    /**
+     * The qualifier for one version's acquisition profile, delivered under {@link CodexExecFamily#TERMINAL_PROFILE}; it runs
+     * {@link #qualify(Path, Path)} and refuses a manifest declaring any other profile.
+     */
+    public static AcquisitionQualifier qualifier(String version) {
+        return new ProfileQualifier(CodexExecFamily.profile(version), CodexExecFamily.TERMINAL_PROFILE, (manifest, directory) -> {
+            if (!CodexExecFamily.profile(version).equals(RawInventory.text(NeutralJson.parse(Files.readString(manifest)), "profile"))) {
+                throw new IllegalArgumentException("unqualified profile");
+            }
+            return qualify(manifest, directory);
+        });
+    }
+
+    /** {@code expectation} stated under the profile id of CLI {@code version}: one set of native locators for the whole family. */
+    static Json stated(Json expectation, String version) {
+        ((Json.JObject) expectation).members().put("profile_id", new Json.JString(CodexExecFamily.profileId(version)));
+        return expectation;
+    }
 
     /** Validates before creating the new directory; copies originals without modifying caller files. */
     public static AcquisitionQualifier.Qualified qualify(Path sealedManifest, Path newDirectory) throws IOException {
@@ -40,7 +56,7 @@ public final class CodexAcquisition {
         write(newDirectory.resolve("client-acquisition.json"), original);
         Path manifest = newDirectory.resolve("acquisition.json"), expectation = newDirectory.resolve("assembly-expectation.json");
         write(manifest, NeutralJson.write(m).getBytes(StandardCharsets.UTF_8));
-        write(expectation, NeutralJson.write(expectation()).getBytes(StandardCharsets.UTF_8));
+        write(expectation, NeutralJson.write(stated(expectation(), RawInventory.text(m.path("run", "cli"), "version"))).getBytes(StandardCharsets.UTF_8));
         return new AcquisitionQualifier.Qualified(manifest, expectation);
     }
 
@@ -68,7 +84,8 @@ public final class CodexAcquisition {
     private static void bind(Json source) throws IOException {
         if (source.member("archive_only") instanceof Json.JBool b && b.value()) return;
         for (Json binding : resource("/ocsf/source-meaning-bindings.json").member("bindings").elements()) {
-            if (Json.sameValue(source.member("profile"), binding.member("profile")) && "0.166.0".equals(binding.member("version").text())) {
+            // the version-neutral binding of the profile (no version): the version is recorded, not gated
+            if (Json.sameValue(source.member("profile"), binding.member("profile")) && binding.member("version") == null) {
                 ((Json.JObject) source).members().put("binding", binding); return;
             }
         }

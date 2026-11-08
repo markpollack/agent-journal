@@ -19,10 +19,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class AcquisitionQualifierTest {
 
     @Test void eachRegisteredOneShotProfileSelectsItsOwnQualifierAndWireProfile() {
-        AcquisitionQualifier codex = AcquisitionQualifier.forProfile("codex-cli-0.166.0-exec-stdio-rollout").orElseThrow();
-        assertThat(codex).isSameAs(CodexAcquisition.QUALIFIER);
-        assertThat(List.of(codex.acquisitionProfile(), codex.terminalProfile()))
-                .containsExactly("codex-cli-0.166.0-exec-stdio-rollout", "client-terminal-codex-0.166.0/1");
+        // one Codex exec family: any version's profile selects its qualifier (recorded, not gated), all delivered version-neutrally
+        for (String version : List.of("0.166.0", "0.166.1", "0.170.0")) {
+            AcquisitionQualifier codex = AcquisitionQualifier.forProfile("codex-cli-" + version + "-exec-stdio-rollout").orElseThrow();
+            assertThat(List.of(codex.acquisitionProfile(), codex.terminalProfile()))
+                    .containsExactly("codex-cli-" + version + "-exec-stdio-rollout", "client-terminal-codex-exec/1");
+        }
         // one Claude Code SDK family: any version's profile selects its qualifier (recorded, not gated), all delivered version-neutrally
         for (String version : List.of("2.1.316", "2.1.317", "2.1.319", "3.0.0-beta.1")) {
             AcquisitionQualifier claude = AcquisitionQualifier.forProfile("claude-code-" + version + "-sdk-stdio-session-file").orElseThrow();
@@ -35,7 +37,7 @@ class AcquisitionQualifierTest {
     @Test void anyOtherProfileHasNoQualifierAndNullIsRefused() {
         // any well-formed version is admitted; a malformed or absent one, or another route, is not
         for (String profile : List.of("", "claude-code-sdk-stdio-session-file", "claude-code-latest-sdk-stdio-session-file", "claude-code-2-sdk-stdio-session-file",
-                "claude-code-2.1.319-stdout-session-file", "claude-code-2.1.319-sdk-stdio", "codex-cli-0.166.1-exec-stdio-rollout",
+                "claude-code-2.1.319-stdout-session-file", "claude-code-2.1.319-sdk-stdio", "codex-cli-exec-stdio-rollout", "codex-cli-0.166.0-exec-stdio",
                 "CODEX-CLI-0.166.0-EXEC-STDIO-ROLLOUT", "codex-cli/0.166.0/exec-stdio+rollout", "client-terminal-codex-0.166.0/1",
                 "client-terminal-claude-retained-fresh-2.1.316/3", "client-terminal-codex-retained-0.166.0/2", "antigravity")) {
             assertThat(AcquisitionQualifier.forProfile(profile)).as(profile).isEmpty();

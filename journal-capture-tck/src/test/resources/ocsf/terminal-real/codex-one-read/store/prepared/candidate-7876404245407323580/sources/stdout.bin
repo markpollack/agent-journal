@@ -1,0 +1,6 @@
+{"type":"thread.started","thread_id":"01a1bd0d-3183-7330-95e8-3b0f8468b7df"}
+{"type":"turn.started"}
+{"type":"item.started","item":{"id":"item_0","type":"command_execution","command":"scrubbed:be0dfd146ee4","aggregated_output":"scrubbed:e3b0c44298fc","exit_code":null,"status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item_0","type":"command_execution","command":"scrubbed:be0dfd146ee4","aggregated_output":"scrubbed:5fcd0e550973","exit_code":0,"status":"completed"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"scrubbed:c6526cc81d68"}}
+{"type":"turn.completed","usage":{"input_tokens":31096,"cached_input_tokens":27520,"cache_write_input_tokens":0,"output_tokens":46,"reasoning_output_tokens":0}}

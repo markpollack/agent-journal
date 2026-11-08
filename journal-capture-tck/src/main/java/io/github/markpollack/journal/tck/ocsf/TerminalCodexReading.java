@@ -14,15 +14,15 @@ import static io.github.markpollack.journal.tck.ocsf.TerminalReading.*;
 
 /** Independent identity/whole-source association reading for the opt-in fresh Codex terminal profile. */
 final class TerminalCodexReading {
-    static final String PROFILE = "client-terminal-codex-0.166.0/1";
     private TerminalCodexReading() { }
     private static void require(boolean pass, String reason) { if (!pass) throw new IllegalArgumentException(reason); }
-    private static boolean selected(Json p, Json a) { return (PROFILE.equals(string(p, "profile")) || retained(p)) && "COMPLETED".equals(string(a, "acquisition")); }
+    private static boolean selected(Json p, Json a) {
+        return (Set.of(CodexExecFamily.TERMINAL_PROFILE, CodexExecFamily.LEGACY_TERMINAL_PROFILE).contains(string(p, "profile")) || retained(p)) && "COMPLETED".equals(string(a, "acquisition")); }
     private static boolean retained(Json p) { return CodexRetainedGeneration.PROFILES.contains(string(p, "profile")); }
     static void check(DeclaredFile file, Json p, Json d, Json a) {
         if (!selected(p, a)) return;
         Json m = file.run().path("launch_settings", "acquired_execution"); require(m != null, "Codex acquisition declaration absent");
-        header(file, m, d, a);
+        header(file, m, d, a, string(p, "profile"));
         Map<String, Json> occurrences = occurrences(m, d, a);
         Set<String> paths = new HashSet<>(); paths.add("acquisition.json"); Set<String> roles = new HashSet<>();
         boolean retained = retained(p);
@@ -50,8 +50,10 @@ final class TerminalCodexReading {
         require(occurrences.get("acquisition.json").member("stream").isNull(), "Codex manifest labelled stream");
         return occurrences;
     }
-    private static void header(DeclaredFile file, Json m, Json d, Json a) {
-        expect(m, "profile", "codex-cli-0.166.0-exec-stdio-rollout"); expect(m, "profile_id", "codex-cli/0.166.0/exec-stdio+rollout");
+    private static void header(DeclaredFile file, Json m, Json d, Json a, String terminalProfile) {
+        String version = string(m.path("run", "cli"), "version");
+        require(CodexExecFamily.admittedUnder(terminalProfile, version), "Codex CLI version " + version + " is not admitted under terminal profile " + terminalProfile);
+        expect(m, "profile", CodexExecFamily.profile(version)); expect(m, "profile_id", CodexExecFamily.profileId(version));
         expect(m, "acquisition_uid", string(d, "executionId")); expect(m.member("run"), "run_uid", string(d, "executionId"));
         expect(file.run(), "run_uid", string(d, "executionId"));
         require(file.assembly() != null && file.sessions().equals(List.of(string(m.member("run"), "session_uid"))), "Codex assembly/session differs");

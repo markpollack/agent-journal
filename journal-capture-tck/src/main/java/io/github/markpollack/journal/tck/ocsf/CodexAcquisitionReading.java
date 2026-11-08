@@ -61,11 +61,13 @@ public final class CodexAcquisitionReading {
 
     private static void header(Json m, boolean retained) {
         equal(m, "kind", "agent-journal/acquired-execution"); equal(m, "version", "0.1");
-        equal(m, "profile", "codex-cli-0.166.0-exec-stdio-rollout"); equal(m, "profile_id", "codex-cli/0.166.0/exec-stdio+rollout");
+        String version = text(m.path("run", "cli"), "version");
+        require(CodexExecFamily.wellFormed(version), "malformed Codex CLI version");
+        equal(m, "profile", CodexExecFamily.profile(version)); equal(m, "profile_id", CodexExecFamily.profileId(version));
         truth(m, "complete", true); require(array(m, "capture_errors").isEmpty(), "capture errors present");
         Json run = m.member("run"), process = m.member("process");
         equal(run, "run_uid", text(m, "acquisition_uid")); text(run, "session_uid"); text(run, "capture_start");
-        equal(run.member("cli"), "name", "Codex CLI"); equal(run.member("cli"), "version", "0.166.0");
+        equal(run.member("cli"), "name", "Codex CLI");
         equal(run.member("launch_settings"), "route", "exec_stdio");
         equal(run.member("launch_settings"), "working_directory", text(process, "cwd"));
         text(process, "connection_uid"); text(process, "client_session_uid");

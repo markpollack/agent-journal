@@ -29,10 +29,10 @@ final class TerminalCodexNative {
         String prompt = utf8(bytes(base, roles.get("stdin")));
         require(!prompt.isBlank() && !prompt.startsWith("\uFEFF"), "Codex prompt must be nonblank UTF-8 without BOM");
         Jv usage = wire(stream, session, retained && !"stdout".equals(text(declared, "identity_source")));
-        if (!retained) { nativeSource(nativeRows, session, turn, text(m.member("process"), "cwd"), prompt, usage); return; }
+        if (!retained) { nativeSource(nativeRows, session, turn, m, prompt, usage); return; }
         usage(declared.member("wire_usage"), usage);
         require(scope(declared) != null && scope(declared).equals(text(m, "wire_usage_scope")), "Codex wire usage scope differs from declaration");
-        nativeSource(nativeRows, session, turn, text(m.member("process"), "cwd"), prompt, declared.member("thread_token_usage"));
+        nativeSource(nativeRows, session, turn, m, prompt, declared.member("thread_token_usage"));
         if (ordinary) for (Jv row : nativeRows) if ("thread_settings_applied".equals(optional(row.member("payload"), "type"))) require(row.member("payload").member("thread_id") != null && !row.member("payload").member("thread_id").isNull(), "Codex ordinary profile requires thread_id on thread_settings_applied");
     }
     static String scope(Jv turn) {
@@ -68,9 +68,11 @@ final class TerminalCodexNative {
         require(rows.stream().anyMatch(r -> "item.completed".equals(optional(r, "type")) && "agent_message".equals(optional(r.member("item"), "type"))), "Codex text response absent");
         Jv usage = rows.get(rows.size() - 1).member("usage"); usage(usage, usage); return usage;
     }
-    private static void nativeSource(List<Jv> rows, String session, String turn, String cwd, String prompt, Jv usage) {
+    /** The native rollout of the turn under manifest {@code m}: its session_meta states the manifest's working directory and own CLI version. */
+    private static void nativeSource(List<Jv> rows, String session, String turn, Jv m, String prompt, Jv usage) {
+        String cwd = text(m.member("process"), "cwd"), version = text(m.path("run", "cli"), "version");
         require(!rows.isEmpty(), "Codex native source missing"); equal(rows.get(0), "type", "session_meta"); Jv meta = rows.get(0).member("payload");
-        equal(meta, "id", session); equal(meta, "cli_version", "0.166.0"); equal(meta, "cwd", cwd); equal(meta, "source", "exec");
+        equal(meta, "id", session); equal(meta, "cli_version", version); equal(meta, "cwd", cwd); equal(meta, "source", "exec");
         require(meta.member("forked_from_id") == null || meta.member("forked_from_id").isNull(), "Codex native fork history");
         for (String type : List.of("session_meta", "turn_context")) require(count(rows, type, false) == 1, "Codex native context repeated");
         for (String type : List.of("task_started", "task_complete")) require(count(rows, type, true) == 1, "Codex native lifecycle repeated");

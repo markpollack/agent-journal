@@ -12,17 +12,20 @@ import static io.github.markpollack.journal.ocsf.writer.TerminalValues.*;
 
 /** Admission of the explicitly selected successful fresh Codex terminal acquisition. */
 final class TerminalCodexProfile {
-    static final String PROFILE = "client-terminal-codex-0.166.0/1";
+    /** The version-neutral Codex one-shot profile: any Codex CLI version on the exec route. */
+    static final String PROFILE = CodexExecFamily.TERMINAL_PROFILE;
+    /** The versioned profile earlier 0.166.0 one-shot recordings carry; still received, for 0.166.0 only. */
+    static final String LEGACY_PROFILE = CodexExecFamily.LEGACY_TERMINAL_PROFILE;
     private TerminalCodexProfile() { }
     static boolean complete(TerminalContract.Input input, Jv a) {
         String profile = text(Jv.parse(input.envelope()), "profile");
-        return (PROFILE.equals(profile) || TerminalContract.CODEX_RETAINED_PROFILES.contains(profile)) && "COMPLETED".equals(text(a, "acquisition"));
+        return (PROFILE.equals(profile) || LEGACY_PROFILE.equals(profile) || TerminalContract.CODEX_RETAINED_PROFILES.contains(profile)) && "COMPLETED".equals(text(a, "acquisition"));
     }
     /** The retained profile admits one turn of a sealed thread; the one-shot profile refuses any thread declaration. */
     static void validate(Path manifest, TerminalContract.Input input, Jv a) throws IOException {
         String profile = text(Jv.parse(input.envelope()), "profile"); boolean retained = TerminalContract.CODEX_RETAINED_PROFILES.contains(profile);
         Jv d = input.decision();
-        Jv m = Jv.parse(Files.readString(manifest)); header(m, d, a, retained);
+        Jv m = Jv.parse(Files.readString(manifest)); header(m, d, a, retained, profile);
         Map<String, Jv> occurrences = new HashMap<>();
         for (Jv s : array(a, "sources")) {
             require(occurrences.put(text(s, "relativePath"), s) == null, "duplicate Codex occurrence");
@@ -52,13 +55,15 @@ final class TerminalCodexProfile {
         return roles;
     }
 
-    private static void header(Jv m, Jv d, Jv a, boolean retained) {
+    private static void header(Jv m, Jv d, Jv a, boolean retained, String terminalProfile) {
         equal(m, "kind", "agent-journal/acquired-execution"); equal(m, "version", "0.1");
-        equal(m, "profile", "codex-cli-0.166.0-exec-stdio-rollout"); equal(m, "profile_id", "codex-cli/0.166.0/exec-stdio+rollout");
+        String version = text(m.path("run", "cli"), "version");
+        require(CodexExecFamily.admittedUnder(terminalProfile, version), "Codex CLI version " + version + " is not admitted under terminal profile " + terminalProfile);
+        equal(m, "profile", CodexExecFamily.profile(version)); equal(m, "profile_id", CodexExecFamily.profileId(version));
         flag(m, "complete", true); require(array(m, "capture_errors").isEmpty() && array(a, "missing").isEmpty(), "Codex capture incomplete");
         equal(d.member("outcome"), "kind", "SUCCESS"); equal(d.member("provider"), "kind", "REPORTED_SUCCESS");
         equal(m, "acquisition_uid", text(d, "executionId")); equal(m.member("run"), "run_uid", text(d, "executionId"));
-        equal(m.path("run", "cli"), "name", "Codex CLI"); equal(m.path("run", "cli"), "version", "0.166.0");
+        equal(m.path("run", "cli"), "name", "Codex CLI");
         equal(m.path("run", "launch_settings"), "route", "exec_stdio");
         process(m, d, a, retained);
     }

@@ -39,7 +39,10 @@ public final class TerminalReceiver {
     public static final String FRESH_RETAINED_ORDINARY_PROFILE = TerminalContract.FRESH_RETAINED_ORDINARY_PROFILE;
     /** Native fresh-start retained profile (2026-11-05): the text-turn model the real CLI 2.1.316 writes; /1 and /2 above are unchanged. */
     public static final String FRESH_RETAINED_NATIVE_PROFILE = TerminalContract.FRESH_RETAINED_NATIVE_PROFILE;
+    /** The version-neutral Codex exec one-shot profile: any Codex CLI version. */
     public static final String CODEX_PROFILE = TerminalCodexProfile.PROFILE;
+    /** The versioned profile earlier 0.166.0 Codex one-shot recordings carry; still received, for 0.166.0 only. */
+    public static final String LEGACY_CODEX_PROFILE = TerminalCodexProfile.LEGACY_PROFILE;
     /** Frozen retained Codex profile: one turn of a sealed two-turn thread with its original per-process evidence. */
     public static final String CODEX_RETAINED_PROFILE = TerminalContract.CODEX_RETAINED_PROFILE;
     /** Ordinary retained Codex profile: one turn of a sealed thread of any turn count, the same per-turn rules. */

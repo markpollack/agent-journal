@@ -1,5 +1,7 @@
 package io.github.markpollack.journal.tck.ocsf.inventory;
 
+import io.github.markpollack.journal.tck.ocsf.CodexExecFamily;
+
 import io.github.markpollack.journal.tck.ocsf.ClaudeSdkFamily;
 
 import io.github.markpollack.journal.tck.ocsf.CodexRetainedGeneration;
@@ -57,16 +59,17 @@ public final class AcquisitionVerification implements AcquisitionVerifier {
                 else io.github.markpollack.journal.tck.ocsf.RetainedAcquisition.validate(inputs.manifest, inputs.base, inputs.manifest.member("retained_profile") != null);
             }
             inputs.readSources();
-            if (CodexAcquisition.PROFILE_ID.equals(text(inputs.manifest, "profile_id"))) {
+            if (CodexExecFamily.admits(text(inputs.manifest, "profile_id"))) {
                 CodexAcquisition.validate(inputs.manifest, inputs.base);
                 if (inputs.manifest.member("retained_generation") != null) CodexRetainedAcquisition.validate(inputs.manifest, inputs.base);
             }
             Json spec = NeutralJson.readDocument(assembly);
-            if (CodexAcquisition.PROFILE_ID.equals(text(inputs.manifest, "profile_id"))) {
+            if (CodexExecFamily.admits(text(inputs.manifest, "profile_id"))) {
                 Json profile = pkg.declarations == null ? null : pkg.declarations.assembly();
                 String revision = RawInventory.text(profile, "profile", "version");
                 boolean ordinary = inputs.manifest.member("retained_generation") != null && CodexRetainedGeneration.ORDINARY_PROFILE.equals(text(inputs.manifest, "retained_profile"));
-                require(Json.sameValue(spec, CodexAcquisition.expectation(revision, pkg.manifest.extensionVersion(), ordinary)), "qualified Codex expectation changed");
+                require(Json.sameValue(spec, CodexAcquisition.stated(CodexAcquisition.expectation(revision, pkg.manifest.extensionVersion(), ordinary),
+                        CodexExecFamily.versionOfProfileId(text(inputs.manifest, "profile_id")))), "qualified Codex expectation changed");
             }
             if (ClaudeSdkFamily.admits(text(inputs.manifest, "profile_id"))) {
                 require(Json.sameValue(spec, ClaudeAcquisition.expectation(ClaudeSdkFamily.versionOfProfileId(text(inputs.manifest, "profile_id")))), "qualified assembly expectation changed");

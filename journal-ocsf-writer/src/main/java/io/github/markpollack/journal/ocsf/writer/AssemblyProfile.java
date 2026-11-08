@@ -47,16 +47,23 @@ public record AssemblyProfile(Jv document) {
     }
 
     /**
-     * The bundled profile named {@code id}. A Claude Code SDK acquisition profile of any version ({@link ClaudeSdkFamily})
-     * is the one family assembly profile, stated under that version's profile id and CLI version.
+     * The bundled profile named {@code id}. A Claude Code SDK ({@link ClaudeSdkFamily}) or Codex exec ({@link CodexExecFamily})
+     * acquisition profile of any version is its family's one assembly profile, stated under that version's profile id
+     * and CLI version.
      */
     public static AssemblyProfile bundled(String id) {
-        String version = ClaudeSdkFamily.versionOfProfile(id);
-        AssemblyProfile profile = load(version == null ? id : ClaudeSdkFamily.ASSEMBLY_RESOURCE);
-        if (version != null) {
-            ((Jv.Obj) profile.document()).put("profile_id", ClaudeSdkFamily.profileId(version));
-            ((Jv.Obj) profile.document().member("cli")).put("version", version);
+        String claude = ClaudeSdkFamily.versionOfProfile(id);
+        String codex = CodexExecFamily.versionOfProfile(id);
+        if (claude != null) {
+            return stated(load(ClaudeSdkFamily.ASSEMBLY_RESOURCE), ClaudeSdkFamily.profileId(claude), claude);
         }
+        return codex != null ? stated(load(CodexExecFamily.ASSEMBLY_RESOURCE), CodexExecFamily.profileId(codex), codex) : load(id);
+    }
+
+    /** A family's one assembly profile, stated under one version's profile id and CLI version. */
+    private static AssemblyProfile stated(AssemblyProfile profile, String profileId, String version) {
+        ((Jv.Obj) profile.document()).put("profile_id", profileId);
+        ((Jv.Obj) profile.document().member("cli")).put("version", version);
         return profile;
     }
 

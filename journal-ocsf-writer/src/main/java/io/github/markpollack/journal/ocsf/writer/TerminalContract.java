@@ -39,7 +39,7 @@ final class TerminalContract {
         equal(p, "codec", "journal-terminal-envelope/1");
         equal(p, "producerNamespace", namespace);
         equal(p, "receiverContract", CONTRACT); equal(p, "route", ROUTE);
-        if (!Set.of(PROFILE, CLAUDE_PROFILE, LEGACY_CLAUDE_PROFILE, RETAINED_PROFILE, TerminalCodexProfile.PROFILE).contains(text(p, "profile")) && !FRESH_RETAINED_PROFILES.contains(text(p, "profile")) && !CODEX_RETAINED_PROFILES.contains(text(p, "profile"))) throw new IllegalArgumentException("unsupported terminal profile");
+        if (!Set.of(PROFILE, CLAUDE_PROFILE, LEGACY_CLAUDE_PROFILE, RETAINED_PROFILE, TerminalCodexProfile.PROFILE, TerminalCodexProfile.LEGACY_PROFILE).contains(text(p, "profile")) && !FRESH_RETAINED_PROFILES.contains(text(p, "profile")) && !CODEX_RETAINED_PROFILES.contains(text(p, "profile"))) throw new IllegalArgumentException("unsupported terminal profile");
         equal(p, "decisionCodec", "client-decision/1"); equal(p, "associationCodec", "journal-association/1");
         Jv d = decoded(p, "decisionBytes"); TerminalDecision.check(d);
         Jv a = decoded(p, "associationBytes"); TerminalAssociation.check(a, d);

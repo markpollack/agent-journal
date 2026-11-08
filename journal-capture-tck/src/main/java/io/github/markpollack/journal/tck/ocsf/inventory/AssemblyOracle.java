@@ -60,7 +60,7 @@ public final class AssemblyOracle {
     public static OracleReport verifyAll(OcsfPackage pkg, java.nio.file.Path nativeDir, io.github.markpollack.journal.tck.ocsf.ExpectedSources expected, Json assemblySpecification,
             List<io.github.markpollack.journal.tck.ocsf.inventory.AssemblyOracle.Supplied> inputs) {
         OracleReport source = io.github.markpollack.journal.tck.ocsf.OcsfOracle.verify(pkg, nativeDir, expected);
-        boolean qualified = CodexAcquisition.PROFILE_ID.equals(RawInventory.text(assemblySpecification, "profile_id"));
+        boolean qualified = io.github.markpollack.journal.tck.ocsf.CodexExecFamily.admits(RawInventory.text(assemblySpecification, "profile_id"));
         if (qualified) {
             Json manifest = pkg.declarations == null ? null : pkg.declarations.run().path("launch_settings", "acquired_execution");
             if (manifest == null) throw new IllegalArgumentException("Codex singleton requires original acquisition manifest");
@@ -86,7 +86,7 @@ public final class AssemblyOracle {
     }
 
     private static OracleReport verifyQualified(OcsfPackage pkg, Json spec, List<Supplied> supplied, boolean qualified) {
-        if (CodexAcquisition.PROFILE_ID.equals(RawInventory.text(spec, "profile_id")) && !qualified) {
+        if (io.github.markpollack.journal.tck.ocsf.CodexExecFamily.admits(RawInventory.text(spec, "profile_id")) && !qualified) {
             throw new IllegalArgumentException("Codex singleton requires original acquisition verification");
         }
         if (!SPECIFICATION_KIND.equals(RawInventory.text(spec, "kind"))) {

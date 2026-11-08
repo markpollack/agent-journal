@@ -1,5 +1,7 @@
 package io.github.markpollack.journal.tck.ocsf.inventory;
 
+import io.github.markpollack.journal.tck.ocsf.CodexExecFamily;
+
 import io.github.markpollack.journal.tck.ocsf.NativeArtifact;
 import io.github.markpollack.journal.tck.verify.Json;
 import io.github.markpollack.journal.tck.verify.NeutralJson;
@@ -28,7 +30,7 @@ class CodexAcquisitionTest {
         assertThat(Files.readAllBytes(q.manifest().getParent().resolve("client-acquisition.json"))).isEqualTo(before);
         CodexAcquisition.validate(q.manifest());
         Json m = NeutralJson.readDocument(q.manifest());
-        assertThat(m.member("profile_id").text()).isEqualTo(CodexAcquisition.PROFILE_ID);
+        assertThat(m.member("profile_id").text()).isEqualTo(CodexExecFamily.profileId("0.166.0"));
         for (Json s : m.member("sources").elements()) {
             assertThat(Files.readAllBytes(q.manifest().getParent().resolve(s.member("path").text()))).isEqualTo(Files.readAllBytes(work.resolve(s.member("path").text())));
         }

@@ -32,7 +32,7 @@ final class AcquiredExecution {
         complete = bool(document, "complete");
         Path base = manifest.toAbsolutePath().getParent().toRealPath();
         readSources(base);
-        if (CodexOriginalQualification.PROFILE.equals(profile.id())) CodexOriginalQualification.validate(document, base);
+        if (CodexExecFamily.admits(profile.id())) CodexOriginalQualification.validate(document, base);
     }
 
     private static void validateRun(Jv run) {

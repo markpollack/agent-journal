@@ -1,6 +1,5 @@
 package io.github.markpollack.journal.ocsf.writer;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -17,13 +16,12 @@ final class ClaudeSdkFamily {
     static final String LEGACY_VERSION = "2.1.316";
     /** The bundled final-assembly profile every version is assembled with, stated under each version's own id. */
     static final String ASSEMBLY_RESOURCE = "claude-code-2.1.316-sdk-stdio-session-file";
-    private static final String VERSION = "[0-9]+(?:\\.[0-9]+)+(?:[-+][0-9A-Za-z.-]+)?";
-    private static final Pattern PROFILE = Pattern.compile("claude-code-(" + VERSION + ")-sdk-stdio-session-file");
+    private static final Pattern PROFILE = CliVersions.named("claude-code-", "-sdk-stdio-session-file");
 
     private ClaudeSdkFamily() { }
 
     static boolean wellFormed(String version) {
-        return version != null && version.matches(VERSION);
+        return CliVersions.wellFormed(version);
     }
 
     static String profile(String version) {
@@ -36,9 +34,7 @@ final class ClaudeSdkFamily {
 
     /** The version an acquisition profile of this family names, or null when it is not one. */
     static String versionOfProfile(String profile) {
-        if (profile == null) { return null; }
-        Matcher m = PROFILE.matcher(profile);
-        return m.matches() ? m.group(1) : null;
+        return CliVersions.version(PROFILE, profile);
     }
 
     /** Whether a recording delivered under {@code terminalProfile} admits {@code version}: any version under the neutral profile, 2.1.316 alone otherwise. */

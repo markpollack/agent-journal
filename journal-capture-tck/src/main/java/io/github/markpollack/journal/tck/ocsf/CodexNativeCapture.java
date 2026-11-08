@@ -61,7 +61,8 @@ final class CodexNativeCapture {
 
     private static void nativeRows(Json m, List<Json> rows, String session, String turn, String prompt, Json usage) {
         require(!rows.isEmpty(), "native source empty"); equal(rows.get(0), "type", "session_meta");
-        Json meta = rows.get(0).member("payload"); equal(meta, "id", session); equal(meta, "cli_version", "0.166.0");
+        // the native session_meta states the manifest's own CLI version
+        Json meta = rows.get(0).member("payload"); equal(meta, "id", session); equal(meta, "cli_version", text(m.path("run", "cli"), "version"));
         equal(meta, "cwd", text(m.member("process"), "cwd")); equal(meta, "source", "exec");
         require(meta.member("forked_from_id") == null || meta.member("forked_from_id").isNull(), "forked native history");
         for (String kind : List.of("session_meta", "turn_context")) require(count(rows, kind, false) == 1, "native context population differs");

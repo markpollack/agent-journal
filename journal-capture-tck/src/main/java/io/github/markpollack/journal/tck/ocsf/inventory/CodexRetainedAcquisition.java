@@ -126,7 +126,7 @@ public final class CodexRetainedAcquisition {
         try (var in = CodexRetainedAcquisition.class.getResourceAsStream("/ocsf/source-meaning-bindings.json")) {
             if (in == null) throw new IOException("source bindings unavailable");
             Json bindings = NeutralJson.parse(new String(in.readAllBytes(), StandardCharsets.UTF_8));
-            return bindings.member("bindings").elements().stream().filter(b -> profile.equals(b.member("profile").text()) && "0.166.0".equals(b.member("version").text())).findFirst().orElseThrow();
+            return bindings.member("bindings").elements().stream().filter(b -> profile.equals(b.member("profile").text()) && b.member("version") == null).findFirst().orElseThrow();
         }
     }
 

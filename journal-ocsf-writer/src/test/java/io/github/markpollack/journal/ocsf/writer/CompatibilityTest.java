@@ -149,8 +149,14 @@ class CompatibilityTest {
             assertThat(s.contractName("claude-code-2.1.303-stream")).isEqualTo(Compatibility.UNTESTED_CONTRACT);
             assertThat(s.detail()).contains("nearest entry is not selected").contains("claude-code/stream-json/2.1.304-stdout [2.1.304, 2.1.304]");
         }
-        assertThat(c.select(CODEX, "codex_stream", "stdout", "0.160.2").status()).isEqualTo(Compatibility.Status.NO_MATCH);
-        assertThat(c.select(CODEX, "codex_stream", "stdout", "0.160.0").status()).isEqualTo(Compatibility.Status.NO_MATCH);
+        // the Codex exec stdout route is version-neutral (Owner, 2026-11-08): an untested version selects its neutral entry, recorded not gated
+        for (String v : new String[] {"0.160.0", "0.160.2", "0.170.0"}) {
+            Compatibility.Selection codex = c.select(CODEX, "codex_stream", "stdout", v);
+            assertThat(codex.status()).as(v).isEqualTo(Compatibility.Status.IN_RANGE);
+            assertThat(codex.entry().id()).isEqualTo("codex-cli/exec-json-stream/0.166.0");
+            assertThat(codex.detail()).contains("recorded, not gated");
+        }
+        assertThat(c.select(CODEX, "codex_stream", "stdout", "0.160.1").entry().id()).as("an exact entry still wins").isEqualTo("codex-cli/exec-json-stream/0.160.1");
         // a route the entry does not cover is a no match even at a tested version
         Compatibility.Selection route = c.select(CODEX, "codex_stream", "sdk", "0.160.1");
         assertThat(route.status()).isEqualTo(Compatibility.Status.NO_MATCH);

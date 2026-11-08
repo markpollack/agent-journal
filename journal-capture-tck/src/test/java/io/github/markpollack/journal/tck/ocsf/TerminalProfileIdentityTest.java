@@ -10,6 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class TerminalProfileIdentityTest {
     @Test void eachQualifiersTerminalProfileIsTheReadersOwn() {
         assertThat(ClaudeAcquisition.qualifier("2.1.319").terminalProfile()).isEqualTo(ClaudeSdkFamily.TERMINAL_PROFILE);
-        assertThat(CodexAcquisition.TERMINAL_PROFILE).isEqualTo(TerminalCodexReading.PROFILE);
+        assertThat(CodexAcquisition.qualifier("0.166.0").terminalProfile()).isEqualTo(CodexExecFamily.TERMINAL_PROFILE);
     }
 }

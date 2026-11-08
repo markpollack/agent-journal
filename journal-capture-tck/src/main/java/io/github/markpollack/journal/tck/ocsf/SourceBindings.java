@@ -29,6 +29,9 @@ final class SourceBindings {
         Json binding = implemented.size() == 1 ? implemented.get(0) : null;
         for (String member :
                 List.of("version", "route", "source_specification", "specification_sha256")) {
+            if ("version".equals(member) && binding != null && binding.member("version") == null) {
+                continue; // a version-neutral binding: the version is recorded, not gated
+            }
             String id = "reader-binding:" + artifact + ":" + member;
             List<String> support = List.of("expected-sources.json#binding/" + member);
             Json expected = frozen.member(member);
