@@ -54,6 +54,19 @@ class TerminalRealRecordingTest {
         assertThat(a.verdict()).as(a.toString()).isEqualTo("ACCEPTED");
     }
 
+    /**
+     * Claude Code 2.1.319 (the retained TX Bench capture): the CLI version is recorded, not gated (Owner, 2026-11-08). It is
+     * delivered under the version-neutral terminal profile and states its own version; the 2.1.316 cases above stay
+     * sealed under the versioned profile they were delivered under, and stay readable.
+     */
+    @Test void aClaude2_1_319RunUnderTheVersionNeutralProfileIsAccepted() throws IOException {
+        OcsfReaderTool.Acceptance a = acceptance("claude-txbench-2.1.319");
+        assertThat(a.verdict()).as(a.toString()).isEqualTo("ACCEPTED");
+        String events = java.nio.file.Files.readString(root("claude-txbench-2.1.319"));
+        assertThat(events).contains("\\\"profile\\\":\\\"client-terminal-claude-sdk/1\\\"").contains("\"product\":{\"name\":\"Claude Code\",\"version\":\"2.1.319\"");
+        assertThat(java.nio.file.Files.readString(root("claude-heartbeat"))).contains("\\\"profile\\\":\\\"client-terminal-claude-2.1.316/1\\\"");
+    }
+
     @Test void theWriterBeforeTheProgressOwnerFixMadeAHeartbeatAChildCore() throws IOException {
         OcsfReaderTool.Acceptance a = acceptance("claude-heartbeat-bd04735");
         assertThat(a.verdict()).isEqualTo("DEFECTIVE");

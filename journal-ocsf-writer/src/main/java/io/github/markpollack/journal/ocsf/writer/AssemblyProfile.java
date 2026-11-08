@@ -46,7 +46,21 @@ public record AssemblyProfile(Jv document) {
         public Authority(String className, String pointer, String role, String basis) { this(className, pointer, role, basis, "conflict"); }
     }
 
+    /**
+     * The bundled profile named {@code id}. A Claude Code SDK acquisition profile of any version ({@link ClaudeSdkFamily})
+     * is the one family assembly profile, stated under that version's profile id and CLI version.
+     */
     public static AssemblyProfile bundled(String id) {
+        String version = ClaudeSdkFamily.versionOfProfile(id);
+        AssemblyProfile profile = load(version == null ? id : ClaudeSdkFamily.ASSEMBLY_RESOURCE);
+        if (version != null) {
+            ((Jv.Obj) profile.document()).put("profile_id", ClaudeSdkFamily.profileId(version));
+            ((Jv.Obj) profile.document().member("cli")).put("version", version);
+        }
+        return profile;
+    }
+
+    private static AssemblyProfile load(String id) {
         String resource = "/ocsf/profiles/" + id + ".json";
         try (InputStream in = AssemblyProfile.class.getResourceAsStream(resource)) {
             if (in == null) {

@@ -1,5 +1,7 @@
 package io.github.markpollack.journal.tck.ocsf.inventory;
 
+import io.github.markpollack.journal.tck.ocsf.ClaudeSdkFamily;
+
 import io.github.markpollack.journal.tck.ocsf.NativeArtifact;
 import io.github.markpollack.journal.tck.verify.Json;
 import io.github.markpollack.journal.tck.verify.NeutralJson;
@@ -64,7 +66,7 @@ class ClaudeAcquisitionTest {
         Json m = NeutralJson.readDocument(qualified.manifest());
         assertThat(m.path("process", "exit_code").isNull()).isTrue();
         assertThat(m.member("sources").elements()).allSatisfy(s -> assertThat(s.member("binding")).isNotNull());
-        assertThat(NeutralJson.readDocument(qualified.assemblyExpectation()).member("profile_id").text()).isEqualTo(ClaudeAcquisition.PROFILE_ID);
+        assertThat(NeutralJson.readDocument(qualified.assemblyExpectation()).member("profile_id").text()).isEqualTo(ClaudeSdkFamily.profileId("2.1.316"));
         assertThat(Files.readAllBytes(work.resolve("qualified/stdout.bin"))).isEqualTo(Files.readAllBytes(work.resolve("stdout.bin")));
         assertThatThrownBy(() -> ClaudeAcquisition.qualify(input, work.resolve("qualified"))).isInstanceOf(IOException.class);
     }

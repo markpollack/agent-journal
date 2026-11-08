@@ -7,7 +7,6 @@ import io.github.markpollack.journal.tck.ocsf.OcsfPackage;
 import io.github.markpollack.journal.tck.ocsf.OcsfOracle;
 import io.github.markpollack.journal.tck.verify.Check;
 import io.github.markpollack.journal.tck.ocsf.PackageReader;
-import io.github.markpollack.journal.tck.ocsf.inventory.ClaudeAcquisition;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Files;
@@ -142,7 +141,7 @@ class SessionCanonicalReaderTest {
                         .put("conversation_uid", "conversation").put("turn_uid", "bud-" + id).put("connection_uid", connection)))
                 .put("synthetic", new Jv.Obj().put("label", "deterministic per-turn identity example; not Client evidence"));
         Jv.Obj manifest = new Jv.Obj().put("kind", "agent-journal/acquired-execution").put("version", "0.1")
-                .put("profile", ClaudeAcquisition.PROFILE).put("profile_id", ClaudeAcquisition.PROFILE_ID)
+                .put("profile", ClaudeSdkFamily.profile("2.1.316")).put("profile_id", ClaudeSdkFamily.profileId("2.1.316"))
                 .put("acquisition_uid", "invocation-" + id).put("complete", complete).put("run", run)
                 .put("process", new Jv.Obj().put("status", "unknown").put("exit_code", Jv.Null.INSTANCE)
                         .put("argv", Jv.arr("claude", "--input-format", "stream-json", "--output-format", "stream-json")))
@@ -150,7 +149,7 @@ class SessionCanonicalReaderTest {
                         .add(source(root, "native.jsonl", "transcript", "claude_transcript", "native_session_file", id, 3)));
         Path input = root.resolve("acquisition.json");
         Files.writeString(input, Jv.write(manifest));
-        var qualified = ClaudeAcquisition.qualify(input, root.resolve("qualified"));
+        var qualified = io.github.markpollack.journal.tck.ocsf.inventory.ClaudeAcquisition.qualify(input, root.resolve("qualified"));
         Path output = root.resolve("package");
         FinalAssembly.assemble(qualified.manifest(), output);
         Path detached = Files.createDirectories(root.resolve("detached"));

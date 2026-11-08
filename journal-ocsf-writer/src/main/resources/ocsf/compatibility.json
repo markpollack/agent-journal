@@ -2,7 +2,7 @@
   "kind": "agent-journal/compatibility-registry",
   "version": "0.2",
   "reviewed": "2026-10-23 (Antigravity 1.4.6 stdout entry; admission states); 2026-10-21 (ACCEPT-1; narrowed to exact tested version/route combinations in the ACCEPT-1 follow-up, Owner disposition 4); 2026-10-23 (selection before normalization: version bootstrap, retain-only pending records, contradictory assertions)",
-  "selection_rule": "exactly one entry whose cli, profile and route match and whose inclusive [min_version, max_version] contains the CLI version selects the source description, contract and mapper; overlapping entries are a configuration error rejected at load; no match retains the acquired input under the untested-compatibility contract and flags it, never the numerically nearest entry; a version inside the range that is not listed under tested is reported in_range (reviewed range, not individually tested; no bundled entry currently has such a range: every entry is one exactly tested version on its tested route, and 2.1.300 to 2.1.302, 2.1.299 or 2.1.303 on stdout and 2.1.304 on sdk match no entry); a version not yet known is reported version_unknown, and every record that arrives meanwhile is retained whole and unnormalized; vendor normalization of a record requires a selected entry (tested or in_range): the version bootstrap below reads only the version and its location, selects, and then the record that carried the version is normalized under that selection; contradictory version assertions within one capture (the launch declaration and the stream, or two records) are status conflict: every assertion is kept with its origin, and normalization stops for the rest of the capture",
+  "selection_rule": "exactly one entry whose cli, profile and route match and whose inclusive [min_version, max_version] contains the CLI version selects the source description, contract and mapper; when no such exact entry exists, the route's version-neutral entry (versions any, no range; at most one per cli, profile and route) selects, and the CLI version is recorded, not gated (Owner, 2026-11-08); overlapping entries are a configuration error rejected at load; no match retains the acquired input under the untested-compatibility contract and flags it, never the numerically nearest entry; a version inside the range that is not listed under tested is reported in_range (reviewed range, not individually tested; no bundled entry currently has such a range: every entry is one exactly tested version on its tested route, and 2.1.300 to 2.1.302, 2.1.299 or 2.1.303 on stdout and 2.1.304 on sdk match no entry); a version not yet known is reported version_unknown, and every record that arrives meanwhile is retained whole and unnormalized; vendor normalization of a record requires a selected entry (tested or in_range): the version bootstrap below reads only the version and its location, selects, and then the record that carried the version is normalized under that selection; contradictory version assertions within one capture (the launch declaration and the stream, or two records) are status conflict: every assertion is kept with its origin, and normalization stops for the rest of the capture",
   "routes": {
     "stdout": "the CLI's raw standard output read by the capture process (no SDK stage)",
     "sdk_stdio": "Original transport stdout bytes observed before SDK decoding; distinct from filtered sdk rawJson.",
@@ -552,15 +552,14 @@
       "note": "experimental: a recorded rollout route, not admitted (no disposition catalog of its own); no final-assembly profile names it yet"
     },
     {
-      "id": "claude-code/stream-json/2.1.316-sdk-stdio",
+      "id": "claude-code/stream-json/sdk-stdio",
       "admission": "experimental",
       "cli": "Claude Code",
       "profile": "claude_stream",
       "routes": [
         "sdk_stdio"
       ],
-      "min_version": "2.1.316",
-      "max_version": "2.1.316",
+      "versions": "any",
       "source_specification": {
         "path": "schema/vendor/claude-code/stream-json/2.1.316.json",
         "specification_version": "0.1.0",
@@ -578,20 +577,24 @@
           "version": "2.1.316",
           "route": "sdk_stdio",
           "evidence": "Exact original-byte single Read capture; ClaudeAcquisitionTest identity/rejection controls. Broader scenarios unexercised."
+        },
+        {
+          "version": "2.1.319",
+          "route": "sdk_stdio",
+          "evidence": "Retained TX Bench SDK capture of 2026-11-08 (one Read of message.txt), accepted with no format difference (steward evidence 2026-11-08-txbench-2.1.319-replay); RealRecordingTest replays its scrubbed copy."
         }
       ],
-      "note": "Exact original-byte route only; unknown native families retained conservatively. No proximity or filtered-SDK admission."
+      "note": "Version-neutral (Owner, 2026-11-08: CLI versions are recorded, not gated): any Claude Code version on this route selects this entry unless an exact entry of the route covers it; the tested list names the versions exercised on recorded evidence. Exact original-byte route only; unknown native families retained conservatively."
     },
     {
-      "id": "claude-code/session-transcript/2.1.316-session-file",
+      "id": "claude-code/session-transcript/session-file",
       "admission": "experimental",
       "cli": "Claude Code",
       "profile": "claude_transcript",
       "routes": [
         "native_session_file"
       ],
-      "min_version": "2.1.316",
-      "max_version": "2.1.316",
+      "versions": "any",
       "source_specification": {
         "path": "schema/vendor/claude-code/session-transcript/2.1.316.json",
         "specification_version": "0.1.0",
@@ -609,9 +612,14 @@
           "version": "2.1.316",
           "route": "native_session_file",
           "evidence": "Exact original-byte single Read capture; ClaudeAcquisitionTest identity/rejection controls. Broader scenarios unexercised."
+        },
+        {
+          "version": "2.1.319",
+          "route": "native_session_file",
+          "evidence": "Retained TX Bench SDK capture of 2026-11-08 (one Read of message.txt), accepted with no format difference (steward evidence 2026-11-08-txbench-2.1.319-replay); RealRecordingTest replays its scrubbed copy."
         }
       ],
-      "note": "Exact original-byte route only; unknown native families retained conservatively. No proximity or filtered-SDK admission."
+      "note": "Version-neutral (Owner, 2026-11-08: CLI versions are recorded, not gated): any Claude Code version on this route selects this entry unless an exact entry of the route covers it; the tested list names the versions exercised on recorded evidence. Exact original-byte route only; unknown native families retained conservatively."
     },
     {
       "id": "codex-cli/exec-json-stream/0.166.0",
@@ -735,12 +743,12 @@
       "reason": "Pre-existing experimental route; source specification exists, full ten-area vendor registration remains unexercised. This gap grants no admission."
     },
     {
-      "route": "claude-code/stream-json/2.1.316-sdk-stdio",
-      "reason": "Pre-existing experimental route; source specification exists, full ten-area vendor registration remains unexercised. This gap grants no admission."
+      "route": "claude-code/stream-json/sdk-stdio",
+      "reason": "Version-neutral Claude Code SDK route (Owner, 2026-11-08: CLI versions are recorded, not gated; the gate weakening is approved): source specification exists, full ten-area vendor registration remains unexercised. This gap grants no admission."
     },
     {
-      "route": "claude-code/session-transcript/2.1.316-session-file",
-      "reason": "Pre-existing experimental route; source specification exists, full ten-area vendor registration remains unexercised. This gap grants no admission."
+      "route": "claude-code/session-transcript/session-file",
+      "reason": "Version-neutral Claude Code SDK route (Owner, 2026-11-08: CLI versions are recorded, not gated; the gate weakening is approved): source specification exists, full ten-area vendor registration remains unexercised. This gap grants no admission."
     }
   ]
 }

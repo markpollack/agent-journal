@@ -17,10 +17,12 @@ conflicts and MCP targets. Each case's `SCRUBBED.md` names its original files by
 | `claude-sub-agent` | this revision | one general-purpose sub-agent, with its own session file and meta file |
 | `claude-mcp-payload-keys` | this revision | the MCP run with one request's input set, in both sources, to arguments named like Journal members (`basis`, `data`, `content_blocks`, `missing_required`; an edited real run, see EDITED.md) |
 | `claude-sub-agent-background` | this revision | a background sub-agent still running when the parent's result was written: INCOMPLETE (`acquisition.child_session`) |
+| `claude-txbench-2.1.319` | this revision | Claude Code 2.1.319, one `Read` (the retained TX Bench capture): delivered under the version-neutral `client-terminal-claude-sdk/1`, its own version recorded |
 | `claude-heartbeat-bd04735` | `bd04735` | the heartbeat run: the writer made the heartbeat a child core |
 | `claude-mcp-aa75c02` | `aa75c02` | the MCP run: MCP results called "One richer" for a basis-only member |
 | `claude-sub-agent-397ec12` | `397ec12` | the sub-agent run: its own session file preserved but unread |
 
-Regenerate the first five with `-Dterminal.real.regenerate=<directory>` on `RealRecordingTest` in
-`journal-ocsf-writer`. The other three are historical evidence and must not be regenerated; the expectation beside
+Regenerate them with `-Dterminal.real.regenerate=<directory>` on `RealRecordingTest` in `journal-ocsf-writer`. The
+2.1.316 cases among them were delivered under the versioned `client-terminal-claude-2.1.316/1` and are kept as sealed,
+so they show that such recordings stay readable; a regeneration delivers every run under `client-terminal-claude-sdk/1`. The other three are historical evidence and must not be regenerated; the expectation beside
 each is the current qualifier's, the reader's input rather than part of the sealed archive.

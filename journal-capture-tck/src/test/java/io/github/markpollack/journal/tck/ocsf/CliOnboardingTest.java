@@ -23,7 +23,10 @@ class CliOnboardingTest {
             "claude-code/session-transcript/2.1.304-session-file", "github-copilot-cli/events/1.0.100-stdout",
             "github-copilot-cli/events/1.0.100-session-file", "github-copilot-cli/otel/1.0.100", "github-copilot-cli/usage-report/1.0.100",
             "junie/session-summary/3813.7", "junie/session-events/3813.7", "junie/json-stream/3813.7-stdout",
-            "codex-cli/rollout/0.160.1", "claude-code/stream-json/2.1.316-sdk-stdio", "claude-code/session-transcript/2.1.316-session-file");
+            "codex-cli/rollout/0.160.1",
+            // reviewed 2026-11-08 (Owner: CLI versions are recorded, not gated; the gate weakening is approved): the 2.1.316
+            // SDK routes became version-neutral and keep their debt
+            "claude-code/stream-json/sdk-stdio", "claude-code/session-transcript/session-file");
 
     private static JsonNode read(Path file) { return LiveScenarioTest.readFile(file); }
     private static JsonNode registry() { return read(MappingCatalogTest.COMPATIBILITY); }

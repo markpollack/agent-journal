@@ -5,12 +5,12 @@
     "version": "2.1.303",
     "launch": "Exact registry routes: historical sdk rawJson, raw stdout, and original SDK transport bytes on sdk_stdio.",
     "source_kind": "Live output",
-    "versions": "Selected only through the listed exact compatibility entries. The 2.1.316 sdk_stdio entry reuses these meanings with exact native qualification; it does not admit filtered sdk or stdout at that version.",
+    "versions": "Selected only through the listed exact compatibility entries. The version-neutral sdk_stdio entry (any Claude Code version; the version is recorded, not gated) reuses these meanings with exact native qualification; it does not admit filtered sdk or stdout at that version.",
     "compatibility_entries": [
       "claude-code/stream-json/2.1.299-sdk",
       "claude-code/stream-json/2.1.303-sdk",
       "claude-code/stream-json/2.1.304-stdout",
-      "claude-code/stream-json/2.1.316-sdk-stdio"
+      "claude-code/stream-json/sdk-stdio"
     ]
   },
   "executor": "journal-ocsf-writer ClaudeStreamMapper (direct Java over the lexically exact Jv tree); one record at a time; state: artifact time fallback, and the MCP registration of the init record with the tool_use ids it established as MCP calls (claude.stream.mcp.v1), and the tool_use ids of Agent requests, whose results report child-run usage (claude.stream.agent_result_usage.v1)",

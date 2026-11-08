@@ -1,5 +1,7 @@
 package io.github.markpollack.journal.tck.ocsf.inventory;
 
+import io.github.markpollack.journal.tck.ocsf.ClaudeSdkFamily;
+
 import io.github.markpollack.journal.tck.ocsf.CodexRetainedGeneration;
 import io.github.markpollack.journal.tck.ocsf.AcquisitionVerifier;
 import io.github.markpollack.journal.tck.ocsf.ClaudeOwnerScope;
@@ -50,7 +52,7 @@ public final class AcquisitionVerification implements AcquisitionVerifier {
 
         static OracleReport verify(OcsfPackage pkg, Path directory, Path acquisition, Path assembly) throws IOException {
             Inputs inputs = new Inputs(acquisition, directory);
-            if (ClaudeAcquisition.PROFILE_ID.equals(text(inputs.manifest, "profile_id"))) {
+            if (ClaudeSdkFamily.admits(text(inputs.manifest, "profile_id"))) {
                 if (inputs.manifest.member("retained_generation") == null) ClaudeAcquisition.validate(inputs.manifest, inputs.base);
                 else io.github.markpollack.journal.tck.ocsf.RetainedAcquisition.validate(inputs.manifest, inputs.base, inputs.manifest.member("retained_profile") != null);
             }
@@ -66,8 +68,8 @@ public final class AcquisitionVerification implements AcquisitionVerifier {
                 boolean ordinary = inputs.manifest.member("retained_generation") != null && CodexRetainedGeneration.ORDINARY_PROFILE.equals(text(inputs.manifest, "retained_profile"));
                 require(Json.sameValue(spec, CodexAcquisition.expectation(revision, pkg.manifest.extensionVersion(), ordinary)), "qualified Codex expectation changed");
             }
-            if (ClaudeAcquisition.PROFILE_ID.equals(text(inputs.manifest, "profile_id"))) {
-                require(Json.sameValue(spec, ClaudeAcquisition.expectation()), "qualified assembly expectation changed");
+            if (ClaudeSdkFamily.admits(text(inputs.manifest, "profile_id"))) {
+                require(Json.sameValue(spec, ClaudeAcquisition.expectation(ClaudeSdkFamily.versionOfProfileId(text(inputs.manifest, "profile_id")))), "qualified assembly expectation changed");
             }
             require(text(inputs.manifest, "profile_id").equals(text(spec, "profile_id")), "acquisition/expectation profile mismatch");
             OracleReport report = AssemblyOracle.verifyAll(pkg, inputs.base, inputs.expected(), spec, inputs.supplied);
@@ -78,7 +80,7 @@ public final class AcquisitionVerification implements AcquisitionVerifier {
         }
 
         private void additionalNative(OcsfPackage pkg, OracleReport report) throws IOException {
-            if (ClaudeAcquisition.PROFILE_ID.equals(text(manifest, "profile_id"))) {
+            if (ClaudeSdkFamily.admits(text(manifest, "profile_id"))) {
                 ToolOutputVerification.check(pkg, manifest, base, report);
                 spawns(report);
             }
@@ -165,7 +167,7 @@ public final class AcquisitionVerification implements AcquisitionVerifier {
             frozen.members().put("complete", new Json.JBool(complete));
             frozen.members().put("sources", new Json.JArray(expected));
             if (manifest.member("children") != null) { frozen.members().put("children", manifest.member("children")); }
-            else if (ClaudeAcquisition.PROFILE_ID.equals(text(manifest, "profile_id"))) { frozen.members().put("children", splitCores()); }
+            else if (ClaudeSdkFamily.admits(text(manifest, "profile_id"))) { frozen.members().put("children", splitCores()); }
             return ExpectedSources.parse(frozen);
         }
 

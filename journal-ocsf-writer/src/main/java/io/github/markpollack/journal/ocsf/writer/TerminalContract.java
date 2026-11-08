@@ -14,7 +14,8 @@ final class TerminalContract {
     static final String CONTRACT = "journal-terminal-receiver/1";
     static final String ROUTE = "client-terminal-evidence/1";
     static final String PROFILE = "client-terminal-evidence-only/1";
-    static final String CLAUDE_PROFILE = "client-terminal-claude-2.1.316/1";
+    static final String CLAUDE_PROFILE = ClaudeSdkFamily.TERMINAL_PROFILE;
+    static final String LEGACY_CLAUDE_PROFILE = ClaudeSdkFamily.LEGACY_TERMINAL_PROFILE;
     static final String RETAINED_PROFILE = "client-terminal-claude-retained-2.1.316/1";
     /** Frozen: exactly two sealed fresh-start Claude turns. */
     static final String FRESH_RETAINED_PROFILE = "client-terminal-claude-retained-fresh-2.1.316/1";
@@ -38,7 +39,7 @@ final class TerminalContract {
         equal(p, "codec", "journal-terminal-envelope/1");
         equal(p, "producerNamespace", namespace);
         equal(p, "receiverContract", CONTRACT); equal(p, "route", ROUTE);
-        if (!Set.of(PROFILE, CLAUDE_PROFILE, RETAINED_PROFILE, TerminalCodexProfile.PROFILE).contains(text(p, "profile")) && !FRESH_RETAINED_PROFILES.contains(text(p, "profile")) && !CODEX_RETAINED_PROFILES.contains(text(p, "profile"))) throw new IllegalArgumentException("unsupported terminal profile");
+        if (!Set.of(PROFILE, CLAUDE_PROFILE, LEGACY_CLAUDE_PROFILE, RETAINED_PROFILE, TerminalCodexProfile.PROFILE).contains(text(p, "profile")) && !FRESH_RETAINED_PROFILES.contains(text(p, "profile")) && !CODEX_RETAINED_PROFILES.contains(text(p, "profile"))) throw new IllegalArgumentException("unsupported terminal profile");
         equal(p, "decisionCodec", "client-decision/1"); equal(p, "associationCodec", "journal-association/1");
         Jv d = decoded(p, "decisionBytes"); TerminalDecision.check(d);
         Jv a = decoded(p, "associationBytes"); TerminalAssociation.check(a, d);

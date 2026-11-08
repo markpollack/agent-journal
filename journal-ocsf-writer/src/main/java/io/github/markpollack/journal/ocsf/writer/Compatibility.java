@@ -89,8 +89,13 @@ final class Compatibility {
             return this.cli.equals(cli) && this.profile.equals(profile) && route != null && routes.contains(route);
         }
 
+        /** A version-neutral entry ({@code "versions": "any"}, no range) applies at every CLI version of its route. */
+        boolean neutral() {
+            return minVersion == null && maxVersion == null;
+        }
+
         boolean inRange(String version) {
-            return compare(minVersion, version) <= 0 && compare(version, maxVersion) <= 0;
+            return neutral() || (compare(minVersion, version) <= 0 && compare(version, maxVersion) <= 0);
         }
 
         boolean tested(String version, String route) {
@@ -141,13 +146,7 @@ final class Compatibility {
         this.document = document;
         List<Entry> list = new ArrayList<>();
         for (Jv e : document.member("entries").elements()) {
-            List<String> routes = new ArrayList<>();
-            for (Jv r : e.member("routes").elements()) {
-                routes.add(r.text());
-            }
-            List<Jv> tested = new ArrayList<>(e.member("tested") == null ? List.of() : e.member("tested").elements());
-            list.add(new Entry(required(e, "id"), required(e, "cli"), required(e, "profile"), List.copyOf(routes), required(e, "min_version"), required(e, "max_version"),
-                    e.member("source_specification"), e.member("schema"), required(e, "contract"), required(e, "mapper"), List.copyOf(tested), MapperSupport.text(e, "note"), MapperSupport.text(e, "retired"), e));
+            list.add(entry(e));
         }
         this.entries = List.copyOf(list);
         if (document.member("not_version_scoped") instanceof Jv.Obj n) {
@@ -157,6 +156,22 @@ final class Compatibility {
         }
         this.bootstrap = VersionBootstrap.of(document.member("version_bootstrap"));
         validate();
+    }
+
+    /** One registry entry; a version-neutral one ({@code "versions": "any"}) states no range. */
+    private static Entry entry(Jv e) {
+        List<String> routes = new ArrayList<>();
+        for (Jv r : e.member("routes").elements()) {
+            routes.add(r.text());
+        }
+        List<Jv> tested = new ArrayList<>(e.member("tested") == null ? List.of() : e.member("tested").elements());
+        boolean neutral = "any".equals(MapperSupport.text(e, "versions"));
+        if (neutral && (e.member("min_version") != null || e.member("max_version") != null)) {
+            throw new IllegalStateException("compatibility entry " + MapperSupport.text(e, "id") + " is version-neutral and also states a range");
+        }
+        return new Entry(required(e, "id"), required(e, "cli"), required(e, "profile"), List.copyOf(routes), neutral ? null : required(e, "min_version"),
+                neutral ? null : required(e, "max_version"),
+                e.member("source_specification"), e.member("schema"), required(e, "contract"), required(e, "mapper"), List.copyOf(tested), MapperSupport.text(e, "note"), MapperSupport.text(e, "retired"), e);
     }
 
     private static String required(Jv e, String member) {
@@ -197,7 +212,7 @@ final class Compatibility {
     private void validate() {
         List<String> problems = new ArrayList<>();
         for (Entry e : entries) {
-            if (compare(e.minVersion, e.maxVersion) > 0) {
+            if (!e.neutral() && compare(e.minVersion, e.maxVersion) > 0) {
                 problems.add(e.id + ": min_version " + e.minVersion + " is above max_version " + e.maxVersion);
             }
             if (e.routes.isEmpty()) {
@@ -232,7 +247,11 @@ final class Compatibility {
                     continue;
                 }
                 for (String route : a.routes) {
-                    if (b.routes.contains(route) && compare(a.minVersion, b.maxVersion) <= 0 && compare(b.minVersion, a.maxVersion) <= 0) {
+                    if (b.routes.contains(route) && a.neutral() && b.neutral()) {
+                        problems.add("entries " + a.id + " and " + b.id + " are both version-neutral for " + a.cli + " " + a.profile + " route " + route);
+                    }
+                    // a version-neutral entry yields to an exact entry of its route, so the two never overlap
+                    if (b.routes.contains(route) && !a.neutral() && !b.neutral() && compare(a.minVersion, b.maxVersion) <= 0 && compare(b.minVersion, a.maxVersion) <= 0) {
                         problems.add("entries " + a.id + " and " + b.id + " overlap for " + a.cli + " " + a.profile + " route " + route + ": ["
                                 + a.minVersion + ", " + a.maxVersion + "] and [" + b.minVersion + ", " + b.maxVersion + "]");
                     }
@@ -270,9 +289,13 @@ final class Compatibility {
         }
         List<Entry> matches = new ArrayList<>();
         for (Entry e : keyed) {
-            if (e.inRange(version)) {
+            if (!e.neutral() && e.inRange(version)) {
                 matches.add(e);
             }
+        }
+        if (matches.isEmpty()) {
+            // no exact entry: the route's version-neutral entry, if any, applies; the version is recorded, not gated
+            keyed.stream().filter(Entry::neutral).forEach(matches::add);
         }
         if (matches.size() > 1) {
             List<String> ids = new ArrayList<>();
@@ -303,6 +326,10 @@ final class Compatibility {
         if (e.testedAtAnyRoute(version)) {
             return new Selection(Status.IN_RANGE, e, cli, profile, route, version,
                     "version " + version + " is tested under " + e.id + " on another route, not on route " + route + "; inside the reviewed range [" + e.minVersion + ", " + e.maxVersion + "]");
+        }
+        if (e.neutral()) {
+            return new Selection(Status.IN_RANGE, e, cli, profile, route, version,
+                    "version " + version + " is recorded, not gated: " + e.id + " is version-neutral on route " + route + " (not individually tested at this version)");
         }
         return new Selection(Status.IN_RANGE, e, cli, profile, route, version,
                 "version " + version + " lies inside the reviewed range [" + e.minVersion + ", " + e.maxVersion + "] of " + e.id + " but is not individually tested");
@@ -358,7 +385,11 @@ final class Compatibility {
 
     /** The selected entry's own facts: identity, range, specification, schema, mapper, contract, tested evidence, note and retirement. */
     private static void describe(Jv.Obj d, Entry e) {
-        d.put("entry_id", e.id()).put("min_version", e.minVersion()).put("max_version", e.maxVersion()).put("source_specification", e.sourceSpecification())
+        d.put("entry_id", e.id());
+        if (!e.neutral()) {
+            d.put("min_version", e.minVersion()).put("max_version", e.maxVersion());
+        }
+        d.put("source_specification", e.sourceSpecification())
                 .put("schema", e.schema()).put("mapper", e.mapper()).put("contract", e.contract()).put("tested", new Jv.Arr(e.tested()));
         if (e.note() != null) {
             d.put("note", e.note());

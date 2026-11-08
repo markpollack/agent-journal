@@ -1,5 +1,7 @@
 package io.github.markpollack.journal.tck.ocsf.inventory;
 
+import io.github.markpollack.journal.tck.ocsf.ClaudeSdkFamily;
+
 import io.github.markpollack.journal.tck.ocsf.NativeArtifact;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,19 +19,23 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class AcquisitionQualifierTest {
 
     @Test void eachRegisteredOneShotProfileSelectsItsOwnQualifierAndWireProfile() {
-        AcquisitionQualifier claude = AcquisitionQualifier.forProfile("claude-code-2.1.316-sdk-stdio-session-file").orElseThrow();
         AcquisitionQualifier codex = AcquisitionQualifier.forProfile("codex-cli-0.166.0-exec-stdio-rollout").orElseThrow();
-        assertThat(claude).isSameAs(ClaudeAcquisition.QUALIFIER);
         assertThat(codex).isSameAs(CodexAcquisition.QUALIFIER);
-        assertThat(List.of(claude.acquisitionProfile(), claude.terminalProfile()))
-                .containsExactly("claude-code-2.1.316-sdk-stdio-session-file", "client-terminal-claude-2.1.316/1");
         assertThat(List.of(codex.acquisitionProfile(), codex.terminalProfile()))
                 .containsExactly("codex-cli-0.166.0-exec-stdio-rollout", "client-terminal-codex-0.166.0/1");
-        assertThat(claude).hasToString("claude-code-2.1.316-sdk-stdio-session-file -> client-terminal-claude-2.1.316/1");
+        // one Claude Code SDK family: any version's profile selects its qualifier (recorded, not gated), all delivered version-neutrally
+        for (String version : List.of("2.1.316", "2.1.317", "2.1.319", "3.0.0-beta.1")) {
+            AcquisitionQualifier claude = AcquisitionQualifier.forProfile("claude-code-" + version + "-sdk-stdio-session-file").orElseThrow();
+            assertThat(List.of(claude.acquisitionProfile(), claude.terminalProfile()))
+                    .containsExactly("claude-code-" + version + "-sdk-stdio-session-file", "client-terminal-claude-sdk/1");
+            assertThat(claude).hasToString("claude-code-" + version + "-sdk-stdio-session-file -> client-terminal-claude-sdk/1");
+        }
     }
 
     @Test void anyOtherProfileHasNoQualifierAndNullIsRefused() {
-        for (String profile : List.of("", "claude-code-2.1.317-sdk-stdio-session-file", "codex-cli-0.166.1-exec-stdio-rollout",
+        // any well-formed version is admitted; a malformed or absent one, or another route, is not
+        for (String profile : List.of("", "claude-code-sdk-stdio-session-file", "claude-code-latest-sdk-stdio-session-file", "claude-code-2-sdk-stdio-session-file",
+                "claude-code-2.1.319-stdout-session-file", "claude-code-2.1.319-sdk-stdio", "codex-cli-0.166.1-exec-stdio-rollout",
                 "CODEX-CLI-0.166.0-EXEC-STDIO-ROLLOUT", "codex-cli/0.166.0/exec-stdio+rollout", "client-terminal-codex-0.166.0/1",
                 "client-terminal-claude-retained-fresh-2.1.316/3", "client-terminal-codex-retained-0.166.0/2", "antigravity")) {
             assertThat(AcquisitionQualifier.forProfile(profile)).as(profile).isEmpty();
@@ -53,7 +59,7 @@ class AcquisitionQualifierTest {
         return to.resolve("acquisition.json");
     }
 
-    private static final AcquisitionQualifier CLAUDE = AcquisitionQualifier.forProfile(ClaudeAcquisition.PROFILE).orElseThrow();
+    private static final AcquisitionQualifier CLAUDE = AcquisitionQualifier.forProfile(ClaudeSdkFamily.profile("2.1.316")).orElseThrow();
 
     @Test void theRealSealedAcquisitionQualifies(@TempDir Path temp) throws IOException {
         assertThat(CLAUDE.qualify(realSealed(temp), temp.resolve("out")).manifest()).isRegularFile();

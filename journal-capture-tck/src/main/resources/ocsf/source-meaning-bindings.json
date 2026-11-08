@@ -124,9 +124,23 @@
       "specification_sha256": "a9a6ada2c894c2524c9956502656b3991af1f98dc82414deb3a1c3fba6d49f7c"
     },
     {
+      "profile": "claude_stream",
+      "entry_id": "claude-code/stream-json/sdk-stdio",
+      "route": "sdk_stdio",
+      "source_specification": "schema/vendor/claude-code/stream-json/2.1.316.json",
+      "specification_sha256": "a9a6ada2c894c2524c9956502656b3991af1f98dc82414deb3a1c3fba6d49f7c"
+    },
+    {
       "profile": "claude_transcript",
       "entry_id": "claude-code/session-transcript/2.1.316-session-file",
       "version": "2.1.316",
+      "route": "native_session_file",
+      "source_specification": "schema/vendor/claude-code/session-transcript/2.1.316.json",
+      "specification_sha256": "85ed151681fb42a40b8a9df657b1afb54717e70cc704cdb04215348abf093f80"
+    },
+    {
+      "profile": "claude_transcript",
+      "entry_id": "claude-code/session-transcript/session-file",
       "route": "native_session_file",
       "source_specification": "schema/vendor/claude-code/session-transcript/2.1.316.json",
       "specification_sha256": "85ed151681fb42a40b8a9df657b1afb54717e70cc704cdb04215348abf093f80"

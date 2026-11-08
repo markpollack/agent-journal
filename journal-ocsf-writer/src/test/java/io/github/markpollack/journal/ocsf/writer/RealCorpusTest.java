@@ -42,7 +42,13 @@ class RealCorpusTest {
         assertThat(acceptance.verdict()).as(acceptance.toString()).isEqualTo(front.getOrDefault("expected_verdict", "ACCEPTED"));
         if ("ACCEPTED".equals(acceptance.verdict())) {
             // an accepted archive exports: the reader and the canonical export agree on every core
-            io.github.markpollack.journal.tck.ocsf.CanonicalExport.write(io.github.markpollack.journal.tck.ocsf.PackageReader.open(sealed.events()), new java.io.StringWriter());
+            java.io.StringWriter canonical = new java.io.StringWriter();
+            io.github.markpollack.journal.tck.ocsf.CanonicalExport.write(io.github.markpollack.journal.tck.ocsf.PackageReader.open(sealed.events()), canonical);
+            String export = System.getProperty("journal.corpus.export"); // opt-in: keep each accepted run's canonical readback
+            if (export != null) {
+                Files.createDirectories(Path.of(export));
+                Files.writeString(Path.of(export).resolve(run.getFileName() + ".canonical.jsonl"), canonical.toString());
+            }
         }
         if (front.containsKey("expected_reason")) {
             assertThat(acceptance.reasons()).as(acceptance.toString()).anyMatch(r -> r.contains(front.get("expected_reason")));

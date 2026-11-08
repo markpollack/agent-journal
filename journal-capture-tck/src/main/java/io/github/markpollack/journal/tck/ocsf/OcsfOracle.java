@@ -474,6 +474,9 @@ public final class OcsfOracle {
         CompatibilityHistory.Step selected = history.inForce();
         Json actual = selected == null ? null : selected.declaration();
         for (String member : List.of("entry_id", "version", "route")) {
+            if ("version".equals(member) && binding.member(member) == null) {
+                continue; // a version-neutral binding: the version is recorded, not gated
+            }
             Json want = binding.member(member);
             Json have = actual == null ? null : actual.member(member);
             if ("route".equals(member)) {
@@ -738,10 +741,11 @@ public final class OcsfOracle {
                 }
                 String min = SchemaCatalog.text(c, "min_version");
                 String max = SchemaCatalog.text(c, "max_version");
-                if (version == null || min == null || max == null) {
+                if (version == null || (min == null) != (max == null)) {
                     problems.add("status " + status + " without version, min_version and max_version");
                 }
-                else if (compareVersions(min, version) > 0 || compareVersions(version, max) > 0) {
+                // a version-neutral entry (no min or max) claims no range: the version is recorded, not gated
+                else if (min != null && (compareVersions(min, version) > 0 || compareVersions(version, max) > 0)) {
                     problems.add("version " + version + " lies outside the declared range [" + min + ", " + max + "]");
                 }
                 int normalizedUnderOther = 0;

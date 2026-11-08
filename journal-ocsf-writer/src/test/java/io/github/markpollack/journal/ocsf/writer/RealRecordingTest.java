@@ -15,7 +15,7 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Real Claude Code 2.1.316 runs recorded through Client (scrubbed derivatives of the private corpus, see each case's
+ * Real Claude Code runs (2.1.316, and 2.1.319 in {@link ClaudeSdkVersionTest}) recorded through Client (scrubbed derivatives of the private corpus, see each case's
  * SCRUBBED.md), sealed through this writer and read by the independent reader. Every expectation is read from the run's
  * own native bytes.
  */
@@ -283,7 +283,7 @@ class RealRecordingTest {
     @Test void regenerateTckRealRecordingCases() throws IOException {
         String target = System.getProperty("terminal.real.regenerate");
         Assumptions.assumeTrue(target != null, "set terminal.real.regenerate to regenerate");
-        for (String name : List.of("heartbeat", "mcp", "sub-agent")) {
+        for (String name : List.of("heartbeat", "mcp", "sub-agent", "txbench-2.1.319")) {
             RealRecording.Sealed s = sealed(name);
             Path out = Path.of(target, "claude-" + name);
             copyTree(s.store(), out.resolve("store"));

@@ -1109,8 +1109,13 @@ final class CanonicalObligations {
         return registry.member("entries").elements().stream().filter(e -> id.equals(SourceProfile.text(e, "id"))).findFirst().orElseThrow();
     }
 
+    /** Whether an entry is version-neutral ({@code "versions": "any"}): it applies at every version its route has no exact entry for. */
+    static boolean neutral(Json entry) {
+        return "any".equals(SourceProfile.text(entry, "versions"));
+    }
+
     static boolean inRange(String version, Json entry) {
-        return version != null && Compare.version(SourceProfile.text(entry, "min_version"), version) <= 0 && Compare.version(version, SourceProfile.text(entry, "max_version")) <= 0;
+        return version != null && !neutral(entry) && Compare.version(SourceProfile.text(entry, "min_version"), version) <= 0 && Compare.version(version, SourceProfile.text(entry, "max_version")) <= 0;
     }
 
     /** Profile name to the compatibility entries its field-disposition catalogs list. */

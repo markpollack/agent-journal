@@ -1,5 +1,7 @@
 package io.github.markpollack.journal.tck.ocsf.inventory;
 
+import io.github.markpollack.journal.tck.ocsf.ClaudeSdkFamily;
+
 import io.github.markpollack.journal.tck.ocsf.NativeArtifact;
 import io.github.markpollack.journal.tck.verify.Json;
 import io.github.markpollack.journal.tck.verify.NeutralJson;
@@ -14,27 +16,34 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/** Qualifies a sealed original-byte Claude 2.1.316 acquisition without changing the producer's files.
- * Native identity/version checks are independent of the writer. This does not claim semantic completeness:
+/** Qualifies a sealed original-byte Claude Code SDK acquisition ({@link ClaudeSdkFamily}) without changing the producer's files.
+ * The manifest's CLI version must be one the family lists, and every native version witness must state that same
+ * version. Native identity/version checks are independent of the writer. This does not claim semantic completeness:
  * assemble the returned manifest and run the independent verifier with the returned expectation.
  */
 public final class ClaudeAcquisition {
-    public static final String PROFILE = "claude-code-2.1.316-sdk-stdio-session-file";
-    public static final String PROFILE_ID = "claude-code/2.1.316/sdk-stdio+session-file";
-    /** The terminal binding profile, as its wire identifier, for a qualified Claude one-shot. */
-    public static final String TERMINAL_PROFILE = "client-terminal-claude-2.1.316/1";
-    /** This qualifier as the {@link AcquisitionQualifier} for {@link #PROFILE}; it runs {@link #qualify(Path, Path)}. */
-    public static final AcquisitionQualifier QUALIFIER = new ProfileQualifier(PROFILE, TERMINAL_PROFILE, ClaudeAcquisition::qualify);
-    private static final String VERSION = "2.1.316";
     private static final String EXPECTATION = "/ocsf/qualification/claude-code-2.1.316.json";
 
     private ClaudeAcquisition() { }
+
+    /**
+     * The qualifier for one version's acquisition profile, delivered under {@link ClaudeSdkFamily#TERMINAL_PROFILE}; it runs
+     * {@link #qualify(Path, Path)} and refuses a manifest declaring any other profile.
+     */
+    public static AcquisitionQualifier qualifier(String version) {
+        return new ProfileQualifier(ClaudeSdkFamily.profile(version), ClaudeSdkFamily.TERMINAL_PROFILE, (manifest, directory) -> {
+            String declared = RawInventory.text(NeutralJson.parse(Files.readString(manifest)), "profile");
+            require(ClaudeSdkFamily.profile(version).equals(declared), "unqualified profile");
+            return qualify(manifest, directory);
+        });
+    }
 
     /** Copies validated, frozen bytes into a directory that must not exist. No vendor parsing is needed by callers. */
     public static AcquisitionQualifier.Qualified qualify(Path sealedManifest, Path newDirectory) throws IOException {
         byte[] original = Files.readAllBytes(sealedManifest);
         Json manifest = NeutralJson.parse(new String(original, StandardCharsets.UTF_8));
         List<Frozen> sources = validated(manifest, sealedManifest.toAbsolutePath().getParent());
+        String version = version(manifest);
         Json bindings = resource("/ocsf/source-meaning-bindings.json");
         for (Frozen source : sources) { bind(source.source(), bindings); }
         qualifyOutputs(manifest, sealedManifest.toAbsolutePath().getParent());
@@ -49,7 +58,7 @@ public final class ClaudeAcquisition {
         Path output = newDirectory.resolve("acquisition.json");
         write(output, NeutralJson.write(manifest).getBytes(StandardCharsets.UTF_8));
         Path expectation = newDirectory.resolve("assembly-expectation.json");
-        write(expectation, NeutralJson.write(resource(EXPECTATION)).getBytes(StandardCharsets.UTF_8));
+        write(expectation, NeutralJson.write(expectation(version)).getBytes(StandardCharsets.UTF_8));
         return new AcquisitionQualifier.Qualified(output, expectation);
     }
 
@@ -81,14 +90,15 @@ public final class ClaudeAcquisition {
 
     private static void header(Json m) {
         require("agent-journal/acquired-execution".equals(text(m, "kind")) && "0.1".equals(text(m, "version")), "unsupported acquisition");
-        require(PROFILE.equals(text(m, "profile")) && PROFILE_ID.equals(text(m, "profile_id")), "unqualified profile");
+        String version = text(m.path("run", "cli"), "version");
+        require(ClaudeSdkFamily.wellFormed(version), "malformed CLI version");
+        require(ClaudeSdkFamily.profile(version).equals(text(m, "profile")) && ClaudeSdkFamily.profileId(version).equals(text(m, "profile_id")), "unqualified profile");
         require(m.member("complete") instanceof Json.JBool && m.member("process") instanceof Json.JObject, "explicit acquisition/process status required");
         require(m.member("sources") instanceof Json.JArray, "source inventory required");
         Json run = m.member("run");
         require(text(m, "acquisition_uid").equals(text(run, "run_uid")), "run/acquisition mismatch");
         text(run, "session_uid");
         require("Claude Code".equals(text(run.member("cli"), "name")), "unqualified CLI");
-        require(VERSION.equals(text(run.member("cli"), "version")), "unqualified CLI version");
         require("sdk_stdio".equals(text(run.member("launch_settings"), "route")), "unqualified launch route");
         Json argv = m.path("process", "argv");
         require(argv instanceof Json.JArray, "observed process argv required");
@@ -140,6 +150,7 @@ public final class ClaudeAcquisition {
 
     private static void nativeIdentity(Json manifest, Json source, NativeArtifact artifact, boolean stream) {
         String session = text(manifest.member("run"), "session_uid");
+        String expected = version(manifest);
         if (!stream) { require(session.equals(text(source, "owner_session_uid")), "wrong native owner"); }
         int identities = 0;
         int versions = 0;
@@ -149,7 +160,7 @@ public final class ClaudeAcquisition {
             Json identity = row.member(stream ? "session_id" : "sessionId");
             if (identity != null) { require(session.equals(identity.text()), "native session mismatch"); identities++; }
             Json version = nativeVersion(row, stream);
-            if (version != null) { require(VERSION.equals(version.text()), "native version mismatch"); versions++; }
+            if (version != null) { require(expected.equals(version.text()), "native version mismatch"); versions++; }
         }
         require(identities > 0 && versions > 0, "native identity/version evidence absent");
     }
@@ -197,11 +208,21 @@ public final class ClaudeAcquisition {
         }
     }
 
+    /** The CLI version the manifest declares; the header has checked it is one the family lists. */
+    private static String version(Json manifest) {
+        return text(manifest.member("run").member("cli"), "version");
+    }
+
+    private static String route(String profile) {
+        return "claude_stream".equals(profile) ? "sdk_stdio" : "native_session_file";
+    }
+
     private static void bind(Json source, Json bindings) {
         String profile = RawInventory.text(source, "profile");
         if (profile == null || "opaque_text".equals(profile)) { return; }
         for (Json binding : bindings.member("bindings").elements()) {
-            if (profile.equals(RawInventory.text(binding, "profile")) && VERSION.equals(RawInventory.text(binding, "version"))) {
+            // the version-neutral binding of the profile's SDK route: the version is recorded, not gated
+            if (profile.equals(RawInventory.text(binding, "profile")) && binding.member("version") == null && route(profile).equals(RawInventory.text(binding, "route"))) {
                 ((Json.JObject) source).members().put("binding", binding);
                 return;
             }
@@ -216,8 +237,14 @@ public final class ClaudeAcquisition {
         }
     }
 
-    static Json expectation() throws IOException {
-        return resource(EXPECTATION);
+    /**
+     * The assembly expectation for an admitted version: one set of independent native locators for the whole family,
+     * stated under that version's profile id.
+     */
+    static Json expectation(String version) throws IOException {
+        Json expectation = resource(EXPECTATION);
+        ((Json.JObject) expectation).members().put("profile_id", new Json.JString(ClaudeSdkFamily.profileId(version)));
+        return expectation;
     }
 
     private static String text(Json value, String key) {

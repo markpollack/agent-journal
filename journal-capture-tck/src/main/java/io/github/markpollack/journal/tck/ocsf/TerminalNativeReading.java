@@ -1,5 +1,6 @@
 package io.github.markpollack.journal.tck.ocsf;
 
+
 import io.github.markpollack.journal.tck.verify.Json;
 import io.github.markpollack.journal.tck.verify.NeutralJson;
 import java.io.IOException;
@@ -15,11 +16,10 @@ import static io.github.markpollack.journal.tck.ocsf.TerminalReading.*;
 
 /** Independent terminal-to-native association checks; assembly semantic acceptance remains separate. */
 final class TerminalNativeReading {
-    /** The one-shot Claude terminal profile this reader accepts. */
-    static final String PROFILE = "client-terminal-claude-2.1.316/1";
     private TerminalNativeReading() { }
     private static boolean selected(Json p, Json a) {
-        return Set.of(PROFILE, RetainedAcquisition.PROFILE, FreshRetainedGeneration.PROFILE).contains(string(p, "profile")) && "COMPLETED".equals(string(a, "acquisition"));
+        return Set.of(ClaudeSdkFamily.TERMINAL_PROFILE, ClaudeSdkFamily.LEGACY_TERMINAL_PROFILE, RetainedAcquisition.PROFILE, FreshRetainedGeneration.PROFILE).contains(string(p, "profile"))
+                && "COMPLETED".equals(string(a, "acquisition"));
     }
 
     static void check(DeclaredFile file, Json envelope, Json decision, Json association) {
@@ -27,7 +27,7 @@ final class TerminalNativeReading {
         Json manifest = file.run().path("launch_settings", "acquired_execution");
         require(manifest != null, "complete native terminal has no acquisition declaration");
         structure(manifest);
-        headers(file, manifest, decision, association);
+        headers(file, manifest, decision, association, string(envelope, "profile"));
         Map<String, Json> occurrences = new HashMap<>();
         for (Json occurrence : array(association, "sources")) {
             String path = string(occurrence, "relativePath");
@@ -60,15 +60,17 @@ final class TerminalNativeReading {
         }
     }
 
-    private static void headers(DeclaredFile file, Json m, Json d, Json a) {
+    private static void headers(DeclaredFile file, Json m, Json d, Json a, String terminalProfile) {
         expect(m, "kind", "agent-journal/acquired-execution"); expect(m, "version", "0.1");
-        expect(m, "profile", "claude-code-2.1.316-sdk-stdio-session-file");
-        expect(m, "profile_id", "claude-code/2.1.316/sdk-stdio+session-file");
+        String version = string(m.path("run", "cli"), "version");
+        require(ClaudeSdkFamily.admittedUnder(terminalProfile, version), "native CLI version " + version + " is not admitted under terminal profile " + terminalProfile);
+        expect(m, "profile", ClaudeSdkFamily.profile(version));
+        expect(m, "profile_id", ClaudeSdkFamily.profileId(version));
         expect(m, "acquisition_uid", string(d, "executionId")); expect(m.member("run"), "run_uid", string(d, "executionId"));
         expect(file.run(), "run_uid", string(d, "executionId"));
         require(file.sessions().equals(List.of(string(m.member("run"), "session_uid"))), "native session declarations differ");
         require(file.assembly() != null, "native archive lacks final assembly");
-        expect(m.path("run", "cli"), "version", "2.1.316"); expect(m.path("run", "launch_settings"), "route", "sdk_stdio");
+        expect(m.path("run", "launch_settings"), "route", "sdk_stdio");
         require(m.member("complete") instanceof Json.JBool b && b.value(), "declared native acquisition incomplete");
         require(array(m, "capture_errors").isEmpty() && array(a, "missing").isEmpty(), "native capture gaps");
         String connection = string(m.member("process"), "connection_uid"); expect(d, "connectionId", connection);
@@ -117,7 +119,7 @@ final class TerminalNativeReading {
         for (Json source : array(manifest, "sources")) {
             String role = string(source, "role");
             if (Set.of("stdin", "stream", "transcript").contains(role)) {
-                NativeSource read = scan(base.resolve(string(source, "path")), role, session);
+                NativeSource read = scan(base.resolve(string(source, "path")), role, session, string(manifest.path("run", "cli"), "version"));
                 require(sources.put(role, read) == null, "repeated native stream role");
             }
         }
@@ -127,7 +129,7 @@ final class TerminalNativeReading {
         require(Json.sameValue(input.get(0), nativeInput.get(0)), "native one-turn message differs");
     }
 
-    private static NativeSource scan(Path path, String role, String session) throws IOException {
+    private static NativeSource scan(Path path, String role, String session, String version) throws IOException {
         List<Json> prompts = new java.util.ArrayList<>();
         int results = 0, identities = 0, versions = 0;
         for (NativeArtifact.Record record : NativeArtifact.read(path).records()) {
@@ -135,7 +137,7 @@ final class TerminalNativeReading {
             Json row = record.json();
             if (isPrompt(role, row)) prompts.add(row.member("message"));
             if ("result".equals(text(row, "type"))) results++;
-            int witnessed = witness(row, session, role);
+            int witnessed = witness(row, session, role, version);
             identities += witnessed & 1; versions += (witnessed & 2) / 2;
         }
         if (!role.equals("stdin")) require(identities > 0 && versions > 0, "native version/session witness absent");
@@ -147,13 +149,14 @@ final class TerminalNativeReading {
         return role.equals("stdin") || (role.equals("transcript") && row.path("message", "content") instanceof Json.JString);
     }
 
-    private static int witness(Json row, String session, String role) {
+    /** Session identity and version witnesses of one native record; every version it states is the manifest's own. */
+    private static int witness(Json row, String session, String role, String declared) {
         if (role.equals("stdin")) return 0;
         String identity = role.equals("stream") ? "session_id" : "sessionId";
         String version = role.equals("stream") ? "claude_code_version" : "version";
         int observed = 0;
         if (row.member(identity) != null) { expect(row, identity, session); observed |= 1; }
-        if (row.member(version) != null) { expect(row, version, "2.1.316"); observed |= 2; }
+        if (row.member(version) != null) { expect(row, version, declared); observed |= 2; }
         return observed;
     }
     private static String text(Json value, String name) { Json v = value.member(name); return v == null ? null : v.text(); }

@@ -1,5 +1,7 @@
 package io.github.markpollack.journal.tck.ocsf.inventory;
 
+import io.github.markpollack.journal.tck.ocsf.ClaudeSdkFamily;
+
 import io.github.markpollack.journal.tck.ocsf.FreshRetainedGeneration;
 import io.github.markpollack.journal.tck.ocsf.NativeArtifact;
 import io.github.markpollack.journal.tck.ocsf.RetainedAcquisition;
@@ -48,7 +50,7 @@ public final class RetainedClaudeAcquisition {
         Json.JObject manifest = manifest(generation, executionId, sources); stamp(manifest, generation, freshProfile);
         Path output = newDirectory.resolve("acquisition.json"); write(output, NeutralJson.write(manifest).getBytes(StandardCharsets.UTF_8));
         Path expectation = newDirectory.resolve("assembly-expectation.json");
-        write(expectation, NeutralJson.write(ClaudeAcquisition.expectation()).getBytes(StandardCharsets.UTF_8));
+        write(expectation, NeutralJson.write(ClaudeAcquisition.expectation(ClaudeSdkFamily.LEGACY_VERSION)).getBytes(StandardCharsets.UTF_8));
         RetainedAcquisition.validate(manifest, newDirectory, fresh);
         return new AcquisitionQualifier.Qualified(output, expectation);
     }
@@ -93,8 +95,8 @@ public final class RetainedClaudeAcquisition {
         Json turn = object("invocation_uid", execution, "start_offsets", object("STDIN", 0, "STDOUT", 0, "STDERR", 0), "end_offsets", end);
         Json run = object("run_uid", execution, "invocation_index", 0, "session_uid", session, "capture_start", text(generation, "captureStart"),
                 "cli", object("name", "Claude Code", "version", "2.1.316", "vendor_name", "Anthropic"), "launch_settings", object("route", "sdk_stdio"));
-        return object("kind", "agent-journal/acquired-execution", "version", "0.1", "profile", ClaudeAcquisition.PROFILE,
-                "profile_id", ClaudeAcquisition.PROFILE_ID, "acquisition_uid", execution, "complete", true, "capture_errors", new Json.JArray(List.of()),
+        return object("kind", "agent-journal/acquired-execution", "version", "0.1", "profile", ClaudeSdkFamily.profile(ClaudeSdkFamily.LEGACY_VERSION),
+                "profile_id", ClaudeSdkFamily.profileId(ClaudeSdkFamily.LEGACY_VERSION), "acquisition_uid", execution, "complete", true, "capture_errors", new Json.JArray(List.of()),
                 "run", run, "process", object("connection_uid", text(generation, "connectionId"), "observed_resources_terminated", true,
                         "stdout_natural_eof", true, "stderr_natural_eof", true, "basis", "generation observations; projection EOF is not per-turn transport EOF"),
                 "turns", new Json.JArray(List.of(turn)), "sources", new Json.JArray(sources), "retained_generation", generation, "retained_execution_id", execution);
@@ -106,7 +108,8 @@ public final class RetainedClaudeAcquisition {
         try (var input = RetainedClaudeAcquisition.class.getResourceAsStream("/ocsf/source-meaning-bindings.json")) {
             if (input == null) throw new IOException("source bindings unavailable");
             Json bindings = NeutralJson.parse(new String(input.readAllBytes(), StandardCharsets.UTF_8));
-            return bindings.member("bindings").elements().stream().filter(b -> profile.equals(text(b, "profile")) && "2.1.316".equals(text(b, "version"))).findFirst().orElseThrow();
+            return bindings.member("bindings").elements().stream().filter(b -> profile.equals(text(b, "profile")) && b.member("version") == null
+                    && ("claude_stream".equals(profile) ? "sdk_stdio" : "native_session_file").equals(text(b, "route"))).findFirst().orElseThrow();
         }
     }
 

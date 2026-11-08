@@ -28,7 +28,10 @@ public final class TerminalReceiver {
     public static final String CONTRACT = TerminalContract.CONTRACT;
     public static final String ROUTE = TerminalContract.ROUTE;
     public static final String PROFILE = TerminalContract.PROFILE;
+    /** The version-neutral Claude Code SDK one-shot profile: every version the family lists. */
     public static final String CLAUDE_PROFILE = TerminalContract.CLAUDE_PROFILE;
+    /** The versioned profile earlier 2.1.316 one-shot recordings carry; still received, for 2.1.316 only. */
+    public static final String LEGACY_CLAUDE_PROFILE = TerminalContract.LEGACY_CLAUDE_PROFILE;
     public static final String RETAINED_PROFILE = TerminalContract.RETAINED_PROFILE;
     /** Opt-in fresh-transcript-start retained profile; the frozen retained profile above is unchanged. */
     public static final String FRESH_RETAINED_PROFILE = TerminalContract.FRESH_RETAINED_PROFILE;
@@ -129,7 +132,7 @@ public final class TerminalReceiver {
         if (TerminalNativeProfile.complete(input, association)) {
             Path manifest = candidate.resolve("sources/acquisition.json");
             TerminalRetainedProfile.validate(input, manifest);
-            TerminalNativeProfile.validate(manifest, input.decision(), association);
+            TerminalNativeProfile.validate(manifest, input, association);
             AcquiredExecution.assembleTerminal(manifest, candidate, payload, options);
             return candidate.resolve("events.jsonl");
         }

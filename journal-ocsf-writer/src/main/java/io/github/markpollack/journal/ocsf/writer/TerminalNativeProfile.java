@@ -12,19 +12,19 @@ import static io.github.markpollack.journal.ocsf.writer.TerminalValues.*;
 
 /** Admission for one closed Claude SDK execution. Storage completeness does not assert process cessation. */
 final class TerminalNativeProfile {
-    private static final String VERSION = "2.1.316";
     private TerminalNativeProfile() { }
 
     static boolean complete(TerminalContract.Input input, Jv association) {
         Jv envelope = Jv.parse(input.envelope());
-        return (Set.of(TerminalContract.CLAUDE_PROFILE, TerminalContract.RETAINED_PROFILE).contains(text(envelope, "profile")) || TerminalContract.FRESH_RETAINED_PROFILES.contains(text(envelope, "profile")))
+        return (Set.of(TerminalContract.CLAUDE_PROFILE, TerminalContract.LEGACY_CLAUDE_PROFILE, TerminalContract.RETAINED_PROFILE).contains(text(envelope, "profile")) || TerminalContract.FRESH_RETAINED_PROFILES.contains(text(envelope, "profile")))
                 && "COMPLETED".equals(text(association, "acquisition"));
     }
 
-    static void validate(Path manifest, Jv decision, Jv association) throws IOException {
+    static void validate(Path manifest, TerminalContract.Input input, Jv association) throws IOException {
+        Jv decision = input.decision();
         Jv m = Jv.parse(Files.readString(manifest));
         structure(m);
-        header(m, decision, association);
+        header(m, decision, association, text(Jv.parse(input.envelope()), "profile"));
         Map<String, Jv> declared = inventory(association);
         require(declared.containsKey("acquisition.json"), "native manifest not associated");
         Jv receipt = declared.get("acquisition.json");
@@ -44,7 +44,7 @@ final class TerminalNativeProfile {
         }
         require(declared.keySet().equals(paths), "native association inventory differs");
         require(roles.keySet().containsAll(Set.of("stdin", "stream", "stderr", "transcript")), "required native role absent");
-        nativeRecords(manifest.getParent(), roles, text(m.member("run"), "session_uid"));
+        nativeRecords(manifest.getParent(), roles, text(m.member("run"), "session_uid"), text(m.path("run", "cli"), "version"));
     }
 
     private static void structure(Jv m) {
@@ -55,14 +55,16 @@ final class TerminalNativeProfile {
         }
     }
 
-    private static void header(Jv m, Jv d, Jv a) {
+    private static void header(Jv m, Jv d, Jv a, String terminalProfile) {
         equal(m, "kind", "agent-journal/acquired-execution"); equal(m, "version", "0.1");
-        equal(m, "profile", "claude-code-2.1.316-sdk-stdio-session-file");
-        equal(m, "profile_id", "claude-code/2.1.316/sdk-stdio+session-file");
+        String version = text(m.path("run", "cli"), "version");
+        require(ClaudeSdkFamily.admittedUnder(terminalProfile, version), "native CLI version " + version + " is not admitted under terminal profile " + terminalProfile);
+        equal(m, "profile", ClaudeSdkFamily.profile(version));
+        equal(m, "profile_id", ClaudeSdkFamily.profileId(version));
         require(m.member("complete") instanceof Jv.Bool b && b.value(), "native acquisition incomplete");
         require(array(m, "capture_errors").isEmpty() && array(a, "missing").isEmpty(), "native capture has gaps");
         String execution = text(d, "executionId"); equal(m, "acquisition_uid", execution); equal(m.member("run"), "run_uid", execution);
-        equal(m.path("run", "cli"), "version", VERSION); equal(m.path("run", "launch_settings"), "route", "sdk_stdio");
+        equal(m.path("run", "launch_settings"), "route", "sdk_stdio");
         String connection = text(m.member("process"), "connection_uid"); equal(d, "connectionId", connection);
         require(array(a, "connectionIds").size() == 1 && connection.equals(array(a, "connectionIds").get(0).text()), "native connection differs");
         List<Jv> turns = array(m, "turns"); require(turns.size() == 1, "native profile requires one turn");
@@ -97,25 +99,26 @@ final class TerminalNativeProfile {
         return Files.readAllLines(path).stream().filter(line -> !line.isBlank()).map(Jv::parse).toList();
     }
 
-    private static void nativeRecords(Path base, Map<String, Jv> roles, String session) throws IOException {
+    private static void nativeRecords(Path base, Map<String, Jv> roles, String session, String version) throws IOException {
         List<Jv> stdin = records(base, roles.get("stdin"));
         List<Jv> prompts = stdin.stream().filter(r -> "user".equals(optional(r, "type"))).toList();
         require(prompts.size() == 1, "native profile needs one stdin prompt");
         List<Jv> stream = records(base, roles.get("stream"));
         List<Jv> transcript = records(base, roles.get("transcript"));
-        identity(stream, session, true); identity(transcript, session, false);
+        identity(stream, session, version, true); identity(transcript, session, version, false);
         require(stream.stream().filter(r -> "result".equals(optional(r, "type"))).count() == 1, "native profile needs one result");
         List<Jv> nativePrompts = transcript.stream().filter(r -> "user".equals(optional(r, "type")) && r.path("message", "content") instanceof Jv.Str).toList();
         require(nativePrompts.size() == 1 && Jv.write(nativePrompts.get(0).member("message")).equals(Jv.write(prompts.get(0).member("message"))), "native prompt membership differs");
     }
 
-    private static void identity(List<Jv> rows, String session, boolean stream) {
+    /** Every version witness states the manifest's own version; a listed version is admitted, never a neighbour. */
+    private static void identity(List<Jv> rows, String session, String version, boolean stream) {
         int identities = 0, versions = 0;
         for (Jv row : rows) {
             String key = stream ? "session_id" : "sessionId";
             if (row.member(key) != null) { equal(row, key, session); identities++; }
-            if (stream && "system".equals(optional(row, "type")) && "init".equals(optional(row, "subtype"))) { equal(row, "claude_code_version", VERSION); versions++; }
-            if (!stream && row.member("version") != null) { equal(row, "version", VERSION); versions++; }
+            if (stream && "system".equals(optional(row, "type")) && "init".equals(optional(row, "subtype"))) { equal(row, "claude_code_version", version); versions++; }
+            if (!stream && row.member("version") != null) { equal(row, "version", version); versions++; }
         }
         require(identities > 0 && versions > 0, "native version/session witness absent");
     }

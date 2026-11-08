@@ -41,17 +41,27 @@ class CompatibilityTest {
     }
 
     @Test
-    void originalSdkBytesAreBoundOnlyAtTheQualifiedVersionAndRoute() {
+    void originalSdkBytesSelectTheVersionNeutralEntryOnTheirRouteAtAnyVersion() {
         Compatibility c = Compatibility.bundled();
-        var selected = c.select(CLAUDE, "claude_stream", "sdk_stdio", "2.1.316");
-        assertThat(selected.status()).isEqualTo(Compatibility.Status.TESTED);
-        assertThat(selected.entry().id()).isEqualTo("claude-code/stream-json/2.1.316-sdk-stdio");
+        // Owner, 2026-11-08: CLI versions are recorded, not gated; the tested list says which ones were exercised
+        for (String version : java.util.List.of("2.1.316", "2.1.319")) {
+            var selected = c.select(CLAUDE, "claude_stream", "sdk_stdio", version);
+            assertThat(selected.status()).as(version).isEqualTo(Compatibility.Status.TESTED);
+            assertThat(selected.entry().id()).isEqualTo("claude-code/stream-json/sdk-stdio");
+        }
+        for (String version : java.util.List.of("2.1.304", "2.1.315", "2.1.317", "3.0.0")) {
+            var selected = c.select(CLAUDE, "claude_stream", "sdk_stdio", version);
+            assertThat(selected.normalizes()).as(version).isTrue();
+            assertThat(selected.status()).as(version).isEqualTo(Compatibility.Status.IN_RANGE);
+            assertThat(selected.detail()).contains("recorded, not gated");
+        }
+        // the route still decides: original SDK bytes are never admitted on another route
         for (String route : java.util.List.of("sdk", "stdout")) {
             assertThat(c.select(CLAUDE, "claude_stream", route, "2.1.316").normalizes()).isFalse();
         }
-        for (String version : java.util.List.of("2.1.304", "2.1.315", "2.1.317")) {
-            assertThat(c.select(CLAUDE, "claude_stream", "sdk_stdio", version).normalizes()).isFalse();
-        }
+        // a version-neutral session-file entry yields to the exact entries of its route
+        assertThat(c.select(CLAUDE, "claude_transcript", "native_session_file", "2.1.303").entry().id()).isEqualTo("claude-code/session-transcript/2.1.303-session-file");
+        assertThat(c.select(CLAUDE, "claude_transcript", "native_session_file", "2.1.319").entry().id()).isEqualTo("claude-code/session-transcript/session-file");
     }
 
     private static org.assertj.core.api.AbstractThrowableAssert<?, ? extends Throwable> assertThatCode(org.assertj.core.api.ThrowableAssert.ThrowingCallable c) {
@@ -84,7 +94,10 @@ class CompatibilityTest {
         assertThat(codex.contractName("codex-cli-0.160.1-exec-stream")).isEqualTo("codex-cli-0.160.1-exec-stream");
     }
 
-    /** Owner disposition 4 (2026-10-21): the bundled registry names exact tested combinations only; an untested neighbour or another route is no match. */
+    /**
+     * Owner disposition 4 (2026-10-21): the bundled registry's exact entries name tested combinations only; an untested
+     * neighbour or another route is no match. The version-neutral SDK routes (Owner, 2026-11-08) are the exception.
+     */
     @Test
     void anUntestedIntermediateVersionOrAnotherRouteIsNoMatchInTheBundledRegistry() {
         Compatibility c = Compatibility.bundled();
@@ -97,8 +110,15 @@ class CompatibilityTest {
         assertThat(c.select(CLAUDE, "claude_stream", "stdout", "2.1.299").detail()).as("the keyed entries on stdout").contains("claude-code/stream-json/2.1.304-stdout [2.1.304, 2.1.304]").doesNotContain("2.1.299-sdk");
         assertThat(c.select(CLAUDE, "claude_stream", "sdk", "2.1.301").detail()).contains("claude-code/stream-json/2.1.299-sdk [2.1.299, 2.1.299]").contains("claude-code/stream-json/2.1.303-sdk [2.1.303, 2.1.303]");
         for (Compatibility.Entry e : c.entries()) {
-            assertThat(e.minVersion()).as(e.id() + " is one exactly tested version").isEqualTo(e.maxVersion());
             assertThat(e.routes()).as(e.id() + " names one route").hasSize(1);
+            if (e.neutral()) {
+                // version-neutral (Owner, 2026-11-08): no range, and at least one version tested on its route
+                assertThat(e.minVersion()).isNull();
+                assertThat(e.tested()).as(e.id() + " is tested on its route").isNotEmpty()
+                        .allSatisfy(t -> assertThat(e.tested(t.member("version").text(), e.routes().get(0))).isTrue());
+                continue;
+            }
+            assertThat(e.minVersion()).as(e.id() + " is one exactly tested version").isEqualTo(e.maxVersion());
             assertThat(e.tested(e.minVersion(), e.routes().get(0))).as(e.id() + " is tested on its route").isTrue();
         }
     }

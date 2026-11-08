@@ -1,5 +1,7 @@
 package io.github.markpollack.journal.tck.ocsf.inventory;
 
+import io.github.markpollack.journal.tck.ocsf.ClaudeSdkFamily;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -18,7 +20,8 @@ import java.util.Optional;
  *
  * <p>Registered qualifiers are fixed, not discovered. Each one qualifies a fresh one-shot execution only:
  * <ul>
- * <li>{@link ClaudeAcquisition#QUALIFIER}: {@value ClaudeAcquisition#PROFILE} to {@value ClaudeAcquisition#TERMINAL_PROFILE};</li>
+ * <li>{@link ClaudeAcquisition#qualifier(String)}: the acquisition profile of any Claude Code version on the SDK route
+ * ({@link ClaudeSdkFamily}; the version is recorded, not gated) to {@value ClaudeSdkFamily#TERMINAL_PROFILE};</li>
  * <li>{@link CodexAcquisition#QUALIFIER}: {@value CodexAcquisition#PROFILE} to {@value CodexAcquisition#TERMINAL_PROFILE}.</li>
  * </ul>
  * Selection uses the acquisition profile alone. A Codex 0.166.0 turn manifest from a retained thread may declare the same
@@ -50,7 +53,9 @@ public interface AcquisitionQualifier {
      */
     static Optional<AcquisitionQualifier> forProfile(String acquisitionProfile) {
         Objects.requireNonNull(acquisitionProfile, "acquisitionProfile");
-        return List.of(ClaudeAcquisition.QUALIFIER, CodexAcquisition.QUALIFIER).stream()
+        String claude = ClaudeSdkFamily.versionOfProfile(acquisitionProfile);
+        if (claude != null) { return Optional.of(ClaudeAcquisition.qualifier(claude)); }
+        return java.util.stream.Stream.of(CodexAcquisition.QUALIFIER)
                 .filter(qualifier -> qualifier.acquisitionProfile().equals(acquisitionProfile)).findFirst();
     }
 

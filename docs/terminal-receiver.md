@@ -57,18 +57,25 @@ must be protected from external mutation while used. Content force and atomic pu
 establish directory persistence after power loss, a durable Client outcome ledger or eventual success
 after process death. There is no fallback to replacement rename, database, broker or repair operation.
 
-## Claude 2.1.316 native archive profile
+## Claude Code SDK native archive profile
 
-`TerminalReceiver.CLAUDE_PROFILE` selects `client-terminal-claude-2.1.316/1` under the same
-receiver contract and route. The existing evidence-only profile is unchanged. Pending or incomplete
+`TerminalReceiver.CLAUDE_PROFILE` selects `client-terminal-claude-sdk/1` under the same receiver
+contract and route. It is version-neutral: the Claude Code version is recorded, not gated. Any
+well-formed version on the SDK route is admitted, and the route, format, identity, completeness and
+integrity checks below decide acceptance. Recordings delivered earlier under
+`TerminalReceiver.LEGACY_CLAUDE_PROFILE` (`client-terminal-claude-2.1.316/1`) stay readable, and that
+profile admits 2.1.316 only. The existing evidence-only profile is unchanged. Pending or incomplete
 associations remain evidence; they make no complete-native claim. A later `receiveRevision` may
 supply the completed archive while retaining the initial envelope and accepted decision.
 
 For a COMPLETED association, sourceRoot contains `acquisition.json`, the immutable output of the
 exact Claude source qualifier, and every source it names. Include the manifest and every acquired
 source in A.sources with original origin, full `[0,size)` span and exact whole-file hash. The manifest
-has profile `claude-code-2.1.316-sdk-stdio-session-file`, profile_id
-`claude-code/2.1.316/sdk-stdio+session-file`, and one closed SDK stdio turn. Its acquisition_uid and
+has profile `claude-code-<version>-sdk-stdio-session-file`, profile_id
+`claude-code/<version>/sdk-stdio+session-file`, `run.cli.version` `<version>`, and one closed SDK stdio
+turn. The version named by those three members is the actual CLI version. Every native version witness
+(the stream's init `claude_code_version`, each session-file record's `version`) must state that same
+version, and it stays in the manifest, the run declaration and every event. Its acquisition_uid and
 run.run_uid equal D.executionId; process.connection_uid equals the single Client connection ID in
 D/A. Native session identity comes from the native sources, separately from Client session identity.
 All A sources carry that nativeSessionId and clientConnectionId; nativeTurnId/nativeConnectionId are
@@ -169,7 +176,7 @@ AcquisitionQualifier.Qualified qualified = qualifier.qualify(sealedManifest, new
 
 | Acquisition profile | Qualifier | Terminal profile |
 |---|---|---|
-| `claude-code-2.1.316-sdk-stdio-session-file` | `ClaudeAcquisition.QUALIFIER` | `client-terminal-claude-2.1.316/1` |
+| `claude-code-<version>-sdk-stdio-session-file`, any version | `ClaudeAcquisition.qualifier(version)` | `client-terminal-claude-sdk/1` |
 | `codex-cli-0.166.0-exec-stdio-rollout` | `CodexAcquisition.QUALIFIER` | `client-terminal-codex-0.166.0/1` |
 
 Any other profile returns empty. A qualifier refuses an acquisition with `IllegalArgumentException`,

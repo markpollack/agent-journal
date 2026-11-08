@@ -171,6 +171,14 @@ final class OccurrenceLedger {
                 matches.add(e);
             }
         }
+        if (matches.isEmpty() && version != null) {
+            // no exact entry: the route's version-neutral entry applies (the version is recorded, not gated)
+            for (Json e : registry.member("entries").elements()) {
+                if (Objects.equals(profile, SourceProfile.text(e, "profile")) && CanonicalObligations.texts(e.member("routes")).contains(route) && CanonicalObligations.neutral(e)) {
+                    matches.add(e);
+                }
+            }
+        }
         if (matches.size() == 1) {
             return new String[] {SourceProfile.text(matches.get(0), "id"), SourceProfile.text(matches.get(0), "admission"), null};
         }
