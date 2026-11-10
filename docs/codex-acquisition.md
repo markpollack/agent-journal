@@ -1,14 +1,16 @@
-# Experimental Codex 0.166.0 acquisition
+# Experimental Codex CLI exec acquisition
 
 `io.github.markpollack.journal.tck.ocsf.inventory.CodexAcquisition.qualify(Path sealedManifest,
 Path newDirectory)` returns `AcquisitionQualifier.Qualified(Path manifest, Path assemblyExpectation)`.
-`CodexAcquisition.QUALIFIER` runs the same qualification as the registered `AcquisitionQualifier` for
-this profile, with terminal profile `client-terminal-codex-0.166.0/1`. The destination
+`CodexAcquisition.qualifier(version)` runs the same qualification as the registered `AcquisitionQualifier` for
+that version's profile, with terminal profile `client-terminal-codex-exec/1`; the CLI version is recorded, not
+gated. Recordings delivered earlier under `client-terminal-codex-0.166.0/1` stay readable for 0.166.0. The destination
 must not exist. This read/copy operation launches no process. `validate(Path manifest)` performs
 read-only original-byte checks. Both the qualifier and packaged reader are independent of the writer.
 
 The immutable input is `agent-journal/acquired-execution` version0.1, profile
-`codex-cli-0.166.0-exec-stdio-rollout`, profile_id `codex-cli/0.166.0/exec-stdio+rollout`.
+`codex-cli-<version>-exec-stdio-rollout`, profile_id `codex-cli/<version>/exec-stdio+rollout`; the example
+below is the tested version 0.166.0 (`codex-cli-0.166.0-exec-stdio-rollout`).
 The complete labelled synthetic example is in
 `journal-capture-tck/src/test/resources/ocsf/syn-codex-acquisition-0.166.0/`.
 It carries four originals: stdin/stderr archive-only, stdout and native rollout selected required
