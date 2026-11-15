@@ -22,13 +22,13 @@ final class CodexNativeCapture {
      * per-turn and cumulative native usage instead of being assumed equal to the thread total. */
     static void validate(Json m, Map<String, CodexAcquisitionReading.Source> sources, boolean retained) throws CharacterCodingException {
         String session = text(m.member("run"), "session_uid");
-        Json declared = array(m, "turns").get(0); String turn = text(declared, "native_turn_uid");
+        Json declared = array(m, "turns").get(0);
         List<Json> stream = records(sources.get("stream")); List<Json> nativeRows = records(sources.get("transcript"));
         Json usage = stream(stream, session, retained && !"stdout".equals(text(declared, "identity_source")));
-        if (!retained) { nativeRows(m, nativeRows, session, turn, prompt(sources.get("stdin").bytes()), usage); return; }
+        if (!retained) { nativeRows(m, nativeRows, prompt(sources.get("stdin").bytes()), usage, true); return; }
         sameUsage(declared.member("wire_usage"), usage);
         require(CodexRetainedGeneration.scope(declared) != null && CodexRetainedGeneration.scope(declared).equals(text(m, "wire_usage_scope")), "wire usage scope differs from declaration");
-        nativeRows(m, nativeRows, session, turn, prompt(sources.get("stdin").bytes()), declared.member("thread_token_usage"));
+        nativeRows(m, nativeRows, prompt(sources.get("stdin").bytes()), declared.member("thread_token_usage"), false);
     }
 
     private static List<Json> records(CodexAcquisitionReading.Source source) {
@@ -59,7 +59,8 @@ final class CodexNativeCapture {
         return usage;
     }
 
-    private static void nativeRows(Json m, List<Json> rows, String session, String turn, String prompt, Json usage) {
+    private static void nativeRows(Json m, List<Json> rows, String prompt, Json usage, boolean oneShot) {
+        String session = text(m.member("run"), "session_uid"), turn = text(array(m, "turns").get(0), "native_turn_uid");
         require(!rows.isEmpty(), "native source empty"); equal(rows.get(0), "type", "session_meta");
         // the native session_meta states the manifest's own CLI version
         Json meta = rows.get(0).member("payload"); equal(meta, "id", session); equal(meta, "cli_version", text(m.path("run", "cli"), "version"));
@@ -68,7 +69,7 @@ final class CodexNativeCapture {
         for (String kind : List.of("session_meta", "turn_context")) require(count(rows, kind, false) == 1, "native context population differs");
         for (String kind : List.of("task_started", "task_complete")) require(count(rows, kind, true) == 1, "native turn population differs");
         equal(rows.get(rows.size() - 1).member("payload"), "type", "task_complete");
-        Scan scan = new Scan(session, turn, text(m.member("process"), "cwd"), prompt);
+        Scan scan = new Scan(session, turn, text(m.member("process"), "cwd"), prompt, oneShot);
         rows.forEach(scan::read);
         require(scan.matches == 1, "exact original prompt membership missing or ambiguous");
         sameUsage(usage, scan.lastUsage); if (scan.lastRecord != null) sameUsage(usage, scan.lastRecord);
@@ -78,8 +79,9 @@ final class CodexNativeCapture {
         private final String session, turn, cwd, prompt;
         private Json lastUsage, lastRecord;
         private int matches;
-        private boolean started;
-        Scan(String session, String turn, String cwd, String prompt) { this.session = session; this.turn = turn; this.cwd = cwd; this.prompt = prompt; }
+        private boolean started, reportedContextSeen;
+        private final boolean oneShot;
+        Scan(String session, String turn, String cwd, String prompt, boolean oneShot) { this.session = session; this.turn = turn; this.cwd = cwd; this.prompt = prompt; this.oneShot = oneShot; }
         void read(Json row) {
             Json p = row.member("payload"); require(p instanceof Json.JObject, "native payload missing"); identities(p, session, turn);
             switch (text(row, "type")) {
@@ -93,6 +95,10 @@ final class CodexNativeCapture {
         private void user(Json p) {
             if (!"message".equals(optional(p, "type")) || !"user".equals(optional(p, "role"))) return;
             if (matches(p, prompt)) { require(started, "prompt before native turn"); matches++; }
+            else if (oneShot && reportedContext(p)) {
+                require(started && matches == 0 && !reportedContextSeen, "misplaced or repeated native context");
+                reportedContextSeen = true;
+            }
             else require(context(p), "unassigned native user history");
         }
         private void event(Json p) {
@@ -105,6 +111,24 @@ final class CodexNativeCapture {
             }
         }
     }
+    /** Source-labelled two-block context observed on the fresh exec route; not submitted user history. */
+    private static boolean reportedContext(Json p) {
+        List<Json> content = array(p, "content");
+        Json metadata = p.member("internal_chat_message_metadata_passthrough");
+        if (metadata == null || optional(metadata, "turn_id") == null || content.size() != 2) return false;
+        Json kinds = metadata.member("content_item_kinds"), details = metadata.member("content_item_metadata");
+        if (!(kinds instanceof Json.JArray) || !(details instanceof Json.JArray)
+                || kinds.elements().size() != 2 || details.elements().size() != 2) return false;
+        return "input_text".equals(optional(content.get(0), "type")) && "input_text".equals(optional(content.get(1), "type"))
+                && text(content.get(0), "text").startsWith("# AGENTS.md instructions\n")
+                && text(content.get(1), "text").startsWith("<environment_context>")
+                && "agents_md.instructions".equals(kinds.elements().get(0).text())
+                && "environments.environment_context".equals(kinds.elements().get(1).text())
+                && "agents_md".equals(optional(details.elements().get(0).member("provenance"), "type"))
+                && "harness".equals(optional(details.elements().get(1).member("provenance"), "type"))
+                && details.elements().get(1).path("provenance", "hook") instanceof Json.JBool hook && !hook.value();
+    }
+
     private static boolean context(Json p) {
         return array(p, "content").stream().allMatch(b -> "input_text".equals(optional(b, "type"))
                 && (text(b, "text").startsWith("<environment_context>") || text(b, "text").startsWith("# AGENTS.md instructions for ")));

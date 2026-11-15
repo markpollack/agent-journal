@@ -24,15 +24,15 @@ final class TerminalCodexNative {
      * shapes of the /2 profile (a thread_settings_applied record must carry thread_id); the frozen /1 profile admits what it admitted. */
     static void validate(Path base, Jv m, Map<String, Jv> roles, boolean retained, boolean ordinary) throws IOException {
         Jv declared = array(m, "turns").get(0);
-        String session = text(m.member("run"), "session_uid"), turn = text(declared, "native_turn_uid");
+        String session = text(m.member("run"), "session_uid");
         List<Jv> stream = rows(base, roles.get("stream")), nativeRows = rows(base, roles.get("transcript"));
         String prompt = utf8(bytes(base, roles.get("stdin")));
         require(!prompt.isBlank() && !prompt.startsWith("\uFEFF"), "Codex prompt must be nonblank UTF-8 without BOM");
         Jv usage = wire(stream, session, retained && !"stdout".equals(text(declared, "identity_source")));
-        if (!retained) { nativeSource(nativeRows, session, turn, m, prompt, usage); return; }
+        if (!retained) { nativeSource(nativeRows, m, prompt, usage, true); return; }
         usage(declared.member("wire_usage"), usage);
         require(scope(declared) != null && scope(declared).equals(text(m, "wire_usage_scope")), "Codex wire usage scope differs from declaration");
-        nativeSource(nativeRows, session, turn, m, prompt, declared.member("thread_token_usage"));
+        nativeSource(nativeRows, m, prompt, declared.member("thread_token_usage"), false);
         if (ordinary) for (Jv row : nativeRows) if ("thread_settings_applied".equals(optional(row.member("payload"), "type"))) require(row.member("payload").member("thread_id") != null && !row.member("payload").member("thread_id").isNull(), "Codex ordinary profile requires thread_id on thread_settings_applied");
     }
     static String scope(Jv turn) {
@@ -69,7 +69,8 @@ final class TerminalCodexNative {
         Jv usage = rows.get(rows.size() - 1).member("usage"); usage(usage, usage); return usage;
     }
     /** The native rollout of the turn under manifest {@code m}: its session_meta states the manifest's working directory and own CLI version. */
-    private static void nativeSource(List<Jv> rows, String session, String turn, Jv m, String prompt, Jv usage) {
+    private static void nativeSource(List<Jv> rows, Jv m, String prompt, Jv usage, boolean oneShot) {
+        String session = text(m.member("run"), "session_uid"), turn = text(array(m, "turns").get(0), "native_turn_uid");
         String cwd = text(m.member("process"), "cwd"), version = text(m.path("run", "cli"), "version");
         require(!rows.isEmpty(), "Codex native source missing"); equal(rows.get(0), "type", "session_meta"); Jv meta = rows.get(0).member("payload");
         equal(meta, "id", session); equal(meta, "cli_version", version); equal(meta, "cwd", cwd); equal(meta, "source", "exec");
@@ -77,15 +78,16 @@ final class TerminalCodexNative {
         for (String type : List.of("session_meta", "turn_context")) require(count(rows, type, false) == 1, "Codex native context repeated");
         for (String type : List.of("task_started", "task_complete")) require(count(rows, type, true) == 1, "Codex native lifecycle repeated");
         equal(rows.get(rows.size() - 1).member("payload"), "type", "task_complete");
-        Scan scan = new Scan(session, turn, cwd, prompt); rows.forEach(scan::read);
+        Scan scan = new Scan(session, turn, cwd, prompt, oneShot); rows.forEach(scan::read);
         require(scan.prompts == 1, "Codex original prompt membership differs"); usage(usage, scan.total); if (scan.recorded != null) usage(usage, scan.recorded);
     }
     private static final class Scan {
         private final String session, turn, cwd, prompt;
         private Jv total, recorded;
         private int prompts;
-        private boolean started;
-        Scan(String session, String turn, String cwd, String prompt) { this.session = session; this.turn = turn; this.cwd = cwd; this.prompt = prompt; }
+        private boolean started, contextSeen;
+        private final boolean oneShot;
+        Scan(String session, String turn, String cwd, String prompt, boolean oneShot) { this.session = session; this.turn = turn; this.cwd = cwd; this.prompt = prompt; this.oneShot = oneShot; }
         void read(Jv row) {
             Jv p = row.member("payload"); require(p instanceof Jv.Obj, "Codex native payload missing"); identities(p, session, turn);
             switch (text(row, "type")) {
@@ -100,6 +102,10 @@ final class TerminalCodexNative {
             Jv p = row.member("payload");
             if (!"message".equals(optional(p, "type")) || !"user".equals(optional(p, "role"))) return;
             if (matches(row, prompt)) { require(started, "Codex prompt precedes start"); prompts++; }
+            else if (oneShot && attributedContext(p)) {
+                require(started && prompts == 0 && !contextSeen, "Codex misplaced or repeated native context");
+                contextSeen = true;
+            }
             else require(context(p), "Codex unassigned native user history");
         }
         private void event(Jv p) {
@@ -112,6 +118,24 @@ final class TerminalCodexNative {
             }
         }
     }
+    /** The observed AGENTS/environment pair is context only on a fresh one-shot, before its one submitted prompt. */
+    private static boolean attributedContext(Jv p) {
+        List<Jv> blocks = array(p, "content");
+        Jv meta = p.member("internal_chat_message_metadata_passthrough");
+        if (blocks.size() != 2 || meta == null || optional(meta, "turn_id") == null) return false;
+        if (!(meta.member("content_item_kinds") instanceof Jv.Arr kinds)
+                || !(meta.member("content_item_metadata") instanceof Jv.Arr details)
+                || kinds.elements().size() != 2 || details.elements().size() != 2) return false;
+        List<String> expected = List.of("agents_md.instructions", "environments.environment_context");
+        if (!kinds.elements().stream().map(Jv::text).toList().equals(expected)) return false;
+        Jv agents = details.elements().get(0).member("provenance"), environment = details.elements().get(1).member("provenance");
+        return "agents_md".equals(optional(agents, "type")) && "harness".equals(optional(environment, "type"))
+                && environment.member("hook") instanceof Jv.Bool hook && !hook.value()
+                && blocks.stream().allMatch(b -> "input_text".equals(optional(b, "type")))
+                && text(blocks.get(0), "text").startsWith("# AGENTS.md instructions\n")
+                && text(blocks.get(1), "text").startsWith("<environment_context>");
+    }
+
     private static boolean context(Jv p) {
         return array(p, "content").stream().allMatch(b -> "input_text".equals(optional(b, "type"))
                 && (text(b, "text").startsWith("<environment_context>") || text(b, "text").startsWith("# AGENTS.md instructions for ")));
