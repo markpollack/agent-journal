@@ -1,8 +1,9 @@
 {
   "kind": "agent-journal/cross-cli-accounting-baseline",
-  "version": "0.42",
+  "version": "0.43",
   "meaning": "Exact executed accounting population and dependency snapshot. Declared checker assignments remain separate from attributed Check outcomes. Pins native occurrences and classifications, source/specification bindings, E requirements, actual assertion outcomes, comparison operand digests and non-passing findings. An edit is a reviewable implementation result, never semantic approval. Unresolved meanings and unsupported versions remain non-passing. Required unchecked comparisons cannot be frozen by this ratchet.",
   "changes": [
+    {"revision": "0.43 (report member order; no support labels, 2026-11-15)", "summary": "Restate the journal-capture-tck/src/main, src/test/java, journal-ocsf-writer/src/main and schema/vendor dependency digests. EventOrigin writes the expected extension object in the writer's member order (name, uid, version) instead of Map.of order, which changed from one JVM to the next; ReportDeterminismTest verifies one real archive in 8 JVMs. The writer Javadoc and the schema/vendor README drop the non-production labels. No assertion, comparison population, source, catalog classification, checker or non-passing check changed: the ledger is otherwise line-identical to 0.42."},
     {
       "revision": "0.42 (Codex one-shot source-attributed context, 2026-11-15)",
       "summary": "Restate only the writer and TCK main-source dependency digests for the independently checked, source-attributed two-block AGENTS/environment context on the fresh Codex exec route. Exact submitted-prompt membership, native identities, custody, lifecycle and usage checks remain; retained profiles are unchanged. No comparison population, assertion outcome, native occurrence, classification, source hash, semantic definition or approval changed."
@@ -801,15 +802,15 @@
     "comparison-population syn-codex-exec-turn-failed-0.160.1 main/stream.jsonl 217 sha256:72433f46fc0f12c0637ad0e29bb9e92c293806199df0a991a9cc029d2b624394",
     "comparison-population syn-codex-onboarding-exec-0.166.0 main/stream.jsonl 407 sha256:c61e9d79e31c96ad7febb07546596efea392e1da8c14539a2869bcdfc4ed7bd5",
     "comparison-population syn-codex-onboarding-rollout-0.166.0 main/stream.jsonl 1671 sha256:fbb74b48cb3d8251faccde23ab56eca7745ababaa04d33862fccafccdac72327",
-    "dependency journal-capture-tck/src/main sha256:1f33d776286bc5214f04ad209338c51cd170ac99426641952ef6681047bb35e4",
-    "dependency journal-capture-tck/src/test/java sha256:9317ac100a06a3992dbde697ebd0a2d53aac3a38dd3ba311f8882760ea50e524",
+    "dependency journal-capture-tck/src/main sha256:5efd9fc644aa6ed00646790e160997ddfac5b04f4aa7a823864e6d51ec713c4c",
+    "dependency journal-capture-tck/src/test/java sha256:b887f206aba5972f0200288678bed5fd013c153fb0585acce4537839e3c3f062",
     "dependency journal-capture-tck/src/test/resources/ocsf/conformance sha256:197e677ebb73d7d22fc6a9e32f4e43ff4c82a4f8e5f5dbf9d62f2196a94c34f1",
     "dependency journal-capture-tck/src/test/resources/ocsf/fixtures sha256:64020b8236b60d5ab477b40cf44430af408658f960478939fb7c1e444c048d0b",
     "dependency journal-capture-tck/src/test/resources/ocsf/mapping-catalog sha256:d8533daae255895a769bbb7e485a2c3fcf519e59476ca394b33de067ef66517e",
-    "dependency journal-ocsf-writer/src/main sha256:2d40b0ef320c6195eaff0b4fc1a4c54719835c751a1409e7f5f6e4df4c92ba63",
+    "dependency journal-ocsf-writer/src/main sha256:bb83178ae94922d8425e29dd70538927e4ac910d251574a7f7d2dbafaa4eaccd",
     "dependency prototype/ocsf-acp/extension sha256:2239224ca7ac92f281c59b3a4b1bfa45be9721e076d2674b643e1cdbb49c6d7d",
     "dependency prototype/ocsf-acp/toolchain.lock.json sha256:d91ea93f63b0d52b3200ccfbe81dde06e991922e4ff20734fd0e83e407755fab",
-    "dependency schema/vendor sha256:450077bdd6089dd72b95e07f78c565b12bbd608c8eb1c1829fff8fc736491736",
+    "dependency schema/vendor sha256:39143dc84f525e1b63212d6462ceb64dae9b835ba86cb7000bc38e5f3f552e0b",
     "families sha256 00ea9f4fa6b2251b8d2371facb4778d11845fc0e114589d5f885e88167001db2",
     "source antigravity-live-1.4.6-denial/stream.jsonl content canonical paths 1 occurrences 1",
     "source antigravity-live-1.4.6-denial/stream.jsonl failures canonical paths 1 occurrences 1",

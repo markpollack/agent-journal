@@ -2,6 +2,7 @@ package io.github.markpollack.journal.tck.ocsf;
 
 import io.github.markpollack.journal.tck.verify.Json;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,15 +39,12 @@ record EventOrigin(
         field("/type_uid", ((long) uid) * 100 + event.activityId, "journal.type/v1");
         field("/type_name", cls.caption() + ": " + activity, "journal.type/v1");
         field("/metadata/profiles", List.of("datetime"), "journal.datetime_profile/v1");
-        Json extension =
-                new Json.JObject(
-                        Map.of(
-                                "name",
-                                FactComparison.value(core.manifest.extensionName()),
-                                "uid",
-                                FactComparison.value(String.valueOf(core.manifest.extensionUid())),
-                                "version",
-                                FactComparison.value(core.manifest.extensionVersion())));
+        // In the writer's member order. Map.of iteration order changes from one JVM to the next, so the report's bytes did.
+        Map<String, Json> members = new LinkedHashMap<>();
+        members.put("name", FactComparison.value(core.manifest.extensionName()));
+        members.put("uid", FactComparison.value(String.valueOf(core.manifest.extensionUid())));
+        members.put("version", FactComparison.value(core.manifest.extensionVersion()));
+        Json extension = new Json.JObject(members);
         field("/metadata/extensions", new Json.JArray(List.of(extension)), "journal.extension/v1");
         int position = core.events.indexOf(event);
         long previous = position == 0 ? 0 : core.events.get(position - 1).sequence;
