@@ -2,7 +2,7 @@ package io.github.markpollack.journal.tck.ocsf;
 
 /**
  * The identifiers of the package format this reader implements and the writer writes. The reader states them
- * independently of the writer; earlier formats it still accepts are in {@link LegacyFormats}.
+ * independently of the writer and refuses every other package kind, layout and extension version.
  */
 public final class Formats {
     /** The package kind. */

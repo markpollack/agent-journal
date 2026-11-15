@@ -69,7 +69,7 @@
     "package": "io.github.markpollack.journal.tck.ocsf",
     "reader_contract": "agent-journal/ocsf-reader 0.3 and 0.4 (0.4 reads a terminal binding)",
     "semantic_operations": "0.3",
-    "package_layout": "1.0.0 (standalone events.jsonl with declaration records; run.json ancillary) and 1.1.0 (the same with a terminal binding); earlier layouts are accepted on input (LegacyFormats)"
+    "package_layout": "1.0.0 (standalone events.jsonl with declaration records; run.json ancillary) and 1.1.0 (the same with a terminal binding); every earlier layout is refused as an unsupported format"
   },
   "not_adopted": [
     "ocsf-server (Elixir) and JSON Schema export",
