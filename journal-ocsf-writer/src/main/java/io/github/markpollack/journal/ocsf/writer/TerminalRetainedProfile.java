@@ -30,7 +30,7 @@ final class TerminalRetainedProfile {
         Jv generation = acquisition.member("retained_generation");
         if (!retained) { require(generation == null, "retained generation requires its frozen initial profile"); return; }
         require(generation instanceof Jv.Obj, "retained generation declaration absent");
-        header(generation, input.decision(), fresh, !fresh || TerminalContract.FRESH_RETAINED_PROFILE.equals(profile), wire);
+        header(generation, input.decision(), fresh, wire);
         equal(generation, "nativeSessionId", text(acquisition.member("run"), "session_uid"));
         Path base = manifest.getParent();
         String name = fresh ? "generation/retained-fresh-generation.json" : "generation/retained-generation.json";
@@ -66,7 +66,7 @@ final class TerminalRetainedProfile {
         }
     }
 
-    private static void header(Jv generation, Jv decision, boolean fresh, boolean bounded, String terminalProfile) {
+    private static void header(Jv generation, Jv decision, boolean fresh, String terminalProfile) {
         equal(generation, "kind", fresh ? FRESH_KIND : "journal-retained-generation/1");
         String version = text(generation, "cliVersion");
         require(ClaudeSdkFamily.admittedUnder(terminalProfile, version), "Claude Code CLI version " + version + " is not admitted under terminal profile " + terminalProfile);
@@ -76,7 +76,7 @@ final class TerminalRetainedProfile {
             require(generation.member(key) instanceof Jv.Bool b && b.value(), "retained generation not sealed/EOF");
         require(generation.member("overflow") instanceof Jv.Bool b && !b.value(), "retained overflow");
         require(!array(generation, "turns").isEmpty(), "retained generation without turns");
-        require(!bounded || array(generation, "turns").size() == 2, "frozen retained profile requires exactly two turns");
+        require(fresh || array(generation, "turns").size() == 2, "frozen retained profile requires exactly two turns");
     }
 
     private static void freshness(Jv acquisition, Jv generation, Path base, String profile) throws IOException {

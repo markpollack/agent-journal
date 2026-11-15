@@ -19,8 +19,7 @@ import static io.github.markpollack.journal.tck.ocsf.TerminalReading.*;
 /** Independent validation of a Client thread-level Codex retained generation
  * ({@value #KIND}): one rollout, sealed exec turns read sequentially, each turn its own process
  * (a replacement process resumes the same native thread; PID continuity is never the identity).
- * The frozen profile {@value #PROFILE} bounds the thread to exactly two turns; the ordinary profile
- * {@value #ORDINARY_PROFILE} admits any turn count under the same per-turn rules.
+ * The ordinary profile {@value #ORDINARY_PROFILE} admits any turn count under the same per-turn rules.
  * Every rollout byte is partitioned into the shared {@code session_meta} line and per-turn
  * regions by whole-line locators; per-turn originals, prefix continuity, emitted identity,
  * region membership and cumulative usage arithmetic are checked from original bytes.
@@ -28,11 +27,9 @@ import static io.github.markpollack.journal.tck.ocsf.TerminalReading.*;
  */
 public final class CodexRetainedGeneration {
     public static final String KIND = "journal-codex-retained-generation/1";
-    /** Frozen bounded profile: exactly two sealed turns; its rules do not change. */
-    public static final String PROFILE = "client-terminal-codex-retained-0.166.0/1";
     /** Ordinary retained profile: a sealed thread of any turn count, the same rules applied per turn. */
     public static final String ORDINARY_PROFILE = "client-terminal-codex-retained-0.166.0/2";
-    public static final Set<String> PROFILES = Set.of(PROFILE, ORDINARY_PROFILE);
+    public static final Set<String> PROFILES = Set.of(ORDINARY_PROFILE);
     public static final List<String> USAGE = List.of("input_tokens", "cached_input_tokens", "cache_write_input_tokens", "output_tokens", "reasoning_output_tokens");
     private static final Set<String> FORBIDDEN = Set.of("fork", "--ephemeral", "--last");
     private CodexRetainedGeneration() { }
@@ -72,9 +69,6 @@ public final class CodexRetainedGeneration {
         }
     }
 
-    /** The original signature: the frozen profile {@value #PROFILE} is its default, exactly as before the ordinary profile existed. */
-    public static RetainedThread validate(Json m, Path base) throws IOException { return validate(m, base, PROFILE); }
-
     public static RetainedThread validate(Json m, Path base, String profile) throws IOException {
         try { return read(m, base, profile); }
         catch (Rejection r) { throw r; }
@@ -89,9 +83,8 @@ public final class CodexRetainedGeneration {
         require(m.member("sealed") instanceof Json.JBool b && b.value(), Verdict.INCOMPLETE, "thread not sealed");
         require(m.member("overflow") instanceof Json.JBool b && !b.value(), Verdict.INCOMPLETE, "thread overflow");
         require(string(m, "native_path").endsWith("-" + string(m, "native_session_id") + ".jsonl"), Verdict.REFUSED, "native path does not name the thread");
-        Reader reader = new Reader(m, base, transcript(m, base), profile);
+        Reader reader = new Reader(m, base, transcript(m, base));
         List<Json> turns = array(m, "turns"); require(!turns.isEmpty(), Verdict.REFUSED, "retained thread without turns");
-        require(!PROFILE.equals(profile) || turns.size() == 2, Verdict.REFUSED, "bounded retained profile requires exactly two turns");
         for (int i = 0; i < turns.size(); i++) reader.turn(i, turns.get(i));
         require(reader.covered == reader.transcript.length, Verdict.REFUSED, "rollout partition omits original bytes");
         return new RetainedThread(m, base, reader.transcript, reader.shared, List.copyOf(reader.turns));
@@ -100,14 +93,14 @@ public final class CodexRetainedGeneration {
     /** Sequential reading state over one thread: partition cursor, shared locator, identity sets and the previous turn. */
     private static final class Reader {
         private final Path base; private final byte[] transcript; private final RetainedSource source;
-        private final String session, cwd, profile, version;
+        private final String session, cwd, version;
         private final List<Turn> turns = new ArrayList<>();
         private final Set<String> identities = new HashSet<>();
         private Json shared, previousThreadUsage, previousAfter;
         private long covered;
 
-        Reader(Json manifest, Path base, byte[] transcript, String profile) throws IOException {
-            this.base = base; this.transcript = transcript; this.profile = profile;
+        Reader(Json manifest, Path base, byte[] transcript) throws IOException {
+            this.base = base; this.transcript = transcript;
             session = string(manifest, "native_session_id"); cwd = string(manifest, "cwd"); version = string(manifest, "cli_version");
             source = new RetainedSource(declaration(transcript, string(manifest.member("transcript"), "path")), base);
         }
@@ -129,8 +122,8 @@ public final class CodexRetainedGeneration {
             prefix(t, transcript, covered);
             Map<String, byte[]> originals = originals(t, base);
             Json perTurn = perTurn(t, i, originals);
-            new CodexRetainedRegion(t, originals, session, cwd, ORDINARY_PROFILE.equals(profile)).read(Arrays.copyOfRange(transcript, (int) start, (int) covered));
-            usage(t, previousThreadUsage, profile);
+            new CodexRetainedRegion(t, originals, session, cwd).read(Arrays.copyOfRange(transcript, (int) start, (int) covered));
+            usage(t, previousThreadUsage);
             previousThreadUsage = t.member("thread_token_usage"); previousAfter = t.member("native_prefix_after");
             turns.add(new Turn(i, t, perTurn, resolve(base, string(t, "per_turn_manifest")), originals, start, covered));
         }
@@ -242,7 +235,7 @@ public final class CodexRetainedGeneration {
         return originals;
     }
 
-    private static void usage(Json t, Json previousThread, String profile) {
+    private static void usage(Json t, Json previousThread) {
         Json turn = t.member("turn_token_usage"), thread = t.member("thread_token_usage");
         CodexRetainedRegion.same(t.member("total_token_usage"), thread, "total usage differs from cumulative thread usage");
         for (String key : USAGE) {
@@ -250,9 +243,8 @@ public final class CodexRetainedGeneration {
             require(number(thread, key) - before == number(turn, key), Verdict.REFUSED, "cumulative usage arithmetic fails for " + key);
         }
         require(scope(t) != null, Verdict.REFUSED, "wire usage is neither per-turn nor cumulative");
-        // The frozen /1 profile records the scope as an observation and admits either figure, exactly as the evidence accepted under it was
-        // admitted; the ordinary /2 profile requires the native-observed cumulative figure on a resumed turn (codex-cli 0.166.0 probe, 2026-11-04).
-        require(previousThread == null || !ORDINARY_PROFILE.equals(profile) || "cumulative".equals(scope(t)), Verdict.REFUSED, "resumed turn wire usage is not the thread cumulative figure");
+        // A resumed turn's wire usage must be the native-observed cumulative figure (codex-cli 0.166.0 probe, 2026-11-04).
+        require(previousThread == null || "cumulative".equals(scope(t)), Verdict.REFUSED, "resumed turn wire usage is not the thread cumulative figure");
     }
 
     /** "per-turn" when stdout usage equals the native turn usage, "cumulative" when it equals the thread usage. On the first turn both

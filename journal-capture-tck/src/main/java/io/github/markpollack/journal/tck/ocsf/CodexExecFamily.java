@@ -16,13 +16,11 @@ public final class CodexExecFamily {
     public static final String LEGACY_TERMINAL_PROFILE = "client-terminal-codex-0.166.0/1";
     /** The only version the versioned 0.166.0 terminal profiles admit. */
     public static final String LEGACY_VERSION = "0.166.0";
-    /** Version-neutral retained-thread profiles, each the contract of its versioned 0.166.0 predecessor. */
-    public static final String RETAINED_TERMINAL_PROFILE = "client-terminal-codex-exec-retained/1";
+    /** The version-neutral retained-thread profile, the contract of its versioned 0.166.0 predecessor. */
     public static final String RETAINED_ORDINARY_TERMINAL_PROFILE = "client-terminal-codex-exec-retained/2";
     /** Each version-neutral terminal profile and the versioned profile whose contract it names. */
     private static final TerminalProfiles NAMES = new TerminalProfiles(java.util.Map.of(
             TERMINAL_PROFILE, LEGACY_TERMINAL_PROFILE,
-            RETAINED_TERMINAL_PROFILE, "client-terminal-codex-retained-0.166.0/1",
             RETAINED_ORDINARY_TERMINAL_PROFILE, "client-terminal-codex-retained-0.166.0/2"), LEGACY_VERSION);
     private static final Pattern PROFILE = CliVersions.named("codex-cli-", "-exec-stdio-rollout");
     private static final Pattern PROFILE_ID = CliVersions.named("codex-cli/", "/exec-stdio+rollout");

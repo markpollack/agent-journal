@@ -41,7 +41,7 @@ class TerminalFreshRetainedTest {
         }
     }
 
-    static byte[] freshEnvelope(int turn) { return freshEnvelope(turn, TerminalReceiver.FRESH_RETAINED_PROFILE); }
+    static byte[] freshEnvelope(int turn) { return freshEnvelope(turn, TerminalReceiver.FRESH_RETAINED_NATIVE_PROFILE); }
     static byte[] freshEnvelope(int turn, String profile) {
         Jv.Obj p = (Jv.Obj) Jv.parse(new String(envelope(successful(turn), pending(turn)), StandardCharsets.UTF_8));
         return bytes(p.put("profile", profile));
@@ -80,68 +80,33 @@ class TerminalFreshRetainedTest {
     /** Native /3: both turns of the native-shaped generation attach through the receiver and read back on the TCK-only path. */
     @Test void nativeFreshProfileAttachesBothTurnsOfTheNativeShapedGeneration() throws Exception { eachTurnAttachesAndReadsBack(NATIVE, TerminalReceiver.FRESH_RETAINED_NATIVE_PROFILE, List.of(2, 1)); }
 
-    /** The native-shaped generation is refused by the frozen /1 and ordinary /2 envelopes (their qualifier refuses it, and a relabelled /3 qualification is refused by profile equality). */
     /** The versioned 2.1.316 native profile earlier recordings carry stays readable: it attaches the same real-derived generation. */
     @Test void theVersionedNativeProfileStillAttachesThe2_1_316Generation() throws Exception {
         eachTurnAttachesAndReadsBack(NATIVE, TerminalReceiver.LEGACY_FRESH_RETAINED_NATIVE_PROFILE, List.of(1, 2));
     }
 
-    @Test void frozenAndOrdinaryFreshProfilesRefuseTheNativeShapedGenerationAndRelabelling() throws Exception {
-        for (String frozen : List.of(TerminalReceiver.FRESH_RETAINED_PROFILE, TerminalReceiver.FRESH_RETAINED_ORDINARY_PROFILE)) {
-            Path out = temp.resolve("refused-" + frozen.replace('/', '-'));
-            assertThatThrownBy(() -> FreshRetainedClaudeAcquisition.qualify(NATIVE, "8f3f9d85-c5a6-4424-a006-bfb685ebff5c", out, frozen)).as(frozen).hasMessageContaining("text profile requires one native prompt and response");
-            assertThat(out).doesNotExist();
-        }
-        Ids ids = Ids.of(NATIVE, 1);
-        var q = FreshRetainedClaudeAcquisition.qualify(NATIVE, ids.execution(), temp.resolve("n1"), TerminalReceiver.FRESH_RETAINED_NATIVE_PROFILE); Path root = q.manifest().getParent();
-        Jv.Obj m = (Jv.Obj) Jv.parse(Files.readString(q.manifest())); assertThat(m.member("retained_launch_argv").text()).isEqualTo("INCOMPLETE: truncated at --tools");
-        TerminalReceiver receiver = new TerminalReceiver(temp.resolve("store-n"), "producer", WriterOptions.defaults());
-        String frozenAck = receiver.receive(ids.envelope(1, TerminalReceiver.FRESH_RETAINED_PROFILE), temp), frozenId = Jv.parse(frozenAck).member("bindingId").text();
-        assertThatThrownBy(() -> receiver.receiveRevision(frozenId, bytes(ids.complete(1, root)), root)).as("native /3 evidence under the frozen /1 envelope").isInstanceOf(IllegalArgumentException.class).hasMessageContaining("retained_profile");
-        m.put("retained_profile", TerminalReceiver.FRESH_RETAINED_PROFILE); Files.writeString(q.manifest(), Jv.write(m));
-        // The receiver validates provenance structure and trusts the qualifier's profile stamp for the turn model (as for a /2 two-turn
-        // generation relabelled /1); the relabelling is caught where the model lives: the independent re-qualification under the stamped profile.
-        String relabelledAck = receiver.receiveRevision(frozenId, bytes(ids.complete(1, root)), root);
-        var relabelled = PackageReader.open(events(temp.resolve("store-n"), relabelledAck));
-        assertThatThrownBy(() -> new AcquisitionVerification().verify(relabelled, root, q.manifest(), q.assemblyExpectation())).as("native /3 qualification relabelled as /1, independent read").hasMessageContaining("text profile requires one native prompt and response");
-    }
+    @Test void freshProfileAttachesBothTurnsAndIndependentReadersAcceptExactOriginals() throws Exception { eachTurnAttachesAndReadsBack(FRESH, TerminalReceiver.FRESH_RETAINED_NATIVE_PROFILE, List.of(2, 1)); }
 
-    @Test void freshProfileAttachesBothTurnsAndIndependentReadersAcceptExactOriginals() throws Exception { eachTurnAttachesAndReadsBack(FRESH, TerminalReceiver.FRESH_RETAINED_PROFILE, List.of(2, 1)); }
+    @Test void freshProfileAttachesTwoTurnsInPublicationOrder() throws Exception { eachTurnAttachesAndReadsBack(FRESH, TerminalReceiver.FRESH_RETAINED_NATIVE_PROFILE, List.of(1, 2)); }
 
-    @Test void ordinaryFreshProfileAttachesTwoTurns() throws Exception { eachTurnAttachesAndReadsBack(FRESH, TerminalReceiver.FRESH_RETAINED_ORDINARY_PROFILE, List.of(1, 2)); }
-
-    @Test void ordinaryFreshProfileAttachesEveryTurnOfAThreeTurnGeneration() throws Exception { eachTurnAttachesAndReadsBack(THREE, TerminalReceiver.FRESH_RETAINED_ORDINARY_PROFILE, List.of(3, 1, 2)); }
+    @Test void freshProfileAttachesEveryTurnOfAThreeTurnGeneration() throws Exception { eachTurnAttachesAndReadsBack(THREE, TerminalReceiver.FRESH_RETAINED_NATIVE_PROFILE, List.of(3, 1, 2)); }
 
     /** Independent review finding 1 (2026-11-05): admission must compare adjacent native boundaries of every turn, not only the selected one. */
     @Test void receiverRefusesAGenerationWhoseUnselectedTurnBreaksContinuity() throws Exception {
-        var q = FreshRetainedClaudeAcquisition.qualify(THREE, "E1", temp.resolve("u1"), TerminalReceiver.FRESH_RETAINED_ORDINARY_PROFILE); Path root = q.manifest().getParent();
+        var q = FreshRetainedClaudeAcquisition.qualify(THREE, "E1", temp.resolve("u1"), TerminalReceiver.FRESH_RETAINED_NATIVE_PROFILE); Path root = q.manifest().getParent();
         Jv.Obj m = (Jv.Obj) Jv.parse(Files.readString(q.manifest())); Jv.Obj generation = (Jv.Obj) m.member("retained_generation");
         Jv.Obj third = (Jv.Obj) generation.member("turns").elements().get(2); third.put("nativePrefixBefore", generation.member("turns").elements().get(0).member("nativePrefixAfter"));
         Files.writeString(root.resolve("generation/retained-fresh-generation.json"), Jv.write(generation));
         for (Jv source : m.member("sources").elements()) { byte[] actual = Files.readAllBytes(root.resolve(source.member("path").text())); ((Jv.Obj) source).put("sha256", SchemaPin.sha256(actual)).put("bytes", actual.length); }
         Files.writeString(q.manifest(), Jv.write(m));
         TerminalReceiver receiver = new TerminalReceiver(temp.resolve("store-u1"), "producer", WriterOptions.defaults());
-        String ack = receiver.receive(freshEnvelope(1, TerminalReceiver.FRESH_RETAINED_ORDINARY_PROFILE), temp); Jv.Obj a = completeFresh(1, root);
+        String ack = receiver.receive(freshEnvelope(1), temp); Jv.Obj a = completeFresh(1, root);
         assertThatThrownBy(() -> receiver.receiveRevision(Jv.parse(ack).member("bindingId").text(), bytes(a), root)).as("E3 before-prefix relabelled to E1 after-prefix").isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test void frozenFreshProfileRefusesThreeTurnEvidenceAndProfilesDoNotRelabelEachOther() throws Exception {
-        var ordinary = FreshRetainedClaudeAcquisition.qualify(THREE, "E3", temp.resolve("o3"), TerminalReceiver.FRESH_RETAINED_ORDINARY_PROFILE); Path ordinaryRoot = ordinary.manifest().getParent();
-        TerminalReceiver receiver = new TerminalReceiver(temp.resolve("store"), "producer", WriterOptions.defaults());
-        String frozenAck = receiver.receive(freshEnvelope(3, TerminalReceiver.FRESH_RETAINED_PROFILE), temp), frozenId = Jv.parse(frozenAck).member("bindingId").text();
-        assertThatThrownBy(() -> receiver.receiveRevision(frozenId, bytes(completeFresh(3, ordinaryRoot)), ordinaryRoot)).as("ordinary evidence under the frozen envelope").isInstanceOf(IllegalArgumentException.class);
-        Jv.Obj relabelled = (Jv.Obj) Jv.parse(Files.readString(ordinary.manifest())); relabelled.put("retained_profile", TerminalReceiver.FRESH_RETAINED_PROFILE);
-        Files.writeString(ordinary.manifest(), Jv.write(relabelled));
-        assertThatThrownBy(() -> receiver.receiveRevision(frozenId, bytes(completeFresh(3, ordinaryRoot)), ordinaryRoot)).as("three-turn generation relabelled as frozen").isInstanceOf(IllegalArgumentException.class).hasMessageContaining("exactly two turns");
-        var two = FreshRetainedClaudeAcquisition.qualify(FRESH, "E1", temp.resolve("two"), TerminalReceiver.FRESH_RETAINED_PROFILE); Path twoRoot = two.manifest().getParent();
-        TerminalReceiver other = new TerminalReceiver(temp.resolve("store2"), "producer", WriterOptions.defaults());
-        String ordinaryAck = other.receive(freshEnvelope(1, TerminalReceiver.FRESH_RETAINED_ORDINARY_PROFILE), temp), ordinaryId = Jv.parse(ordinaryAck).member("bindingId").text();
-        assertThatThrownBy(() -> other.receiveRevision(ordinaryId, bytes(completeFresh(1, twoRoot)), twoRoot)).as("frozen-profile evidence under the ordinary envelope").isInstanceOf(IllegalArgumentException.class).hasMessageContaining("retained_profile");
     }
 
     @Test void frozenAndFreshProfilesCannotBeAttachedToEachOthersGenerations() throws Exception {
         Path store = temp.resolve("store"); TerminalReceiver receiver = new TerminalReceiver(store, "producer", WriterOptions.defaults());
-        var fresh = FreshRetainedClaudeAcquisition.qualify(FRESH, "E1", temp.resolve("fresh"), TerminalReceiver.FRESH_RETAINED_PROFILE); Path freshRoot = fresh.manifest().getParent();
+        var fresh = FreshRetainedClaudeAcquisition.qualify(FRESH, "E1", temp.resolve("fresh"), TerminalReceiver.FRESH_RETAINED_NATIVE_PROFILE); Path freshRoot = fresh.manifest().getParent();
         var frozen = RetainedClaudeAcquisition.qualify(FROZEN, "E1", temp.resolve("frozen")); Path frozenRoot = frozen.manifest().getParent();
         String frozenAck = receiver.receive(retainedEnvelope(1), temp), frozenId = Jv.parse(frozenAck).member("bindingId").text();
         assertThatThrownBy(() -> receiver.receiveRevision(frozenId, bytes(completeFresh(1, freshRoot)), freshRoot)).isInstanceOf(IllegalArgumentException.class);
@@ -153,7 +118,7 @@ class TerminalFreshRetainedTest {
 
     @Test void writerRefusesRelabelledZeroPrefixMissingIdentityAndChangedJournalWithFreshHashes() throws Exception {
         for (String fault : List.of("zero-prefix", "identity", "journal", "profile")) {
-            var q = FreshRetainedClaudeAcquisition.qualify(FRESH, "E1", temp.resolve("q-" + fault), TerminalReceiver.FRESH_RETAINED_PROFILE); Path root = q.manifest().getParent();
+            var q = FreshRetainedClaudeAcquisition.qualify(FRESH, "E1", temp.resolve("q-" + fault), TerminalReceiver.FRESH_RETAINED_NATIVE_PROFILE); Path root = q.manifest().getParent();
             Jv.Obj m = (Jv.Obj) Jv.parse(Files.readString(q.manifest())); Jv.Obj generation = (Jv.Obj) m.member("retained_generation");
             switch (fault) {
                 case "zero-prefix" -> ((Jv.Obj) generation.member("turns").elements().get(0)).put("nativePrefixBefore",

@@ -31,7 +31,7 @@ final class CodexOriginalQualification {
         }
         String profile = retained ? CodexExecFamily.contract(text(m, "retained_profile")) : null;
         if (retained) require(TerminalContract.CODEX_RETAINED_PROFILES.contains(profile), "unsupported Codex retained profile");
-        TerminalCodexNative.validate(base, m, roles, retained, TerminalContract.CODEX_RETAINED_ORDINARY_PROFILE.equals(profile));
+        TerminalCodexNative.validate(base, m, roles, retained);
         if (retained) TerminalCodexRetained.validate(base, m, text(m, "retained_profile"));
     }
     private static Map<String, Jv> sources(Jv m, boolean retained) {

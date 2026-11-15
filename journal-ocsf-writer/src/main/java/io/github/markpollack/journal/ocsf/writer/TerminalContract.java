@@ -17,18 +17,12 @@ final class TerminalContract {
     static final String CLAUDE_PROFILE = ClaudeSdkFamily.TERMINAL_PROFILE;
     static final String LEGACY_CLAUDE_PROFILE = ClaudeSdkFamily.LEGACY_TERMINAL_PROFILE;
     static final String RETAINED_PROFILE = "client-terminal-claude-retained-2.1.316/1";
-    /** Frozen: exactly two sealed fresh-start Claude turns. */
-    static final String FRESH_RETAINED_PROFILE = "client-terminal-claude-retained-fresh-2.1.316/1";
-    /** Ordinary: a sealed fresh-start Claude generation of any turn count under the same per-turn rules. */
-    static final String FRESH_RETAINED_ORDINARY_PROFILE = "client-terminal-claude-retained-fresh-2.1.316/2";
     /** Native (2026-11-05): a sealed fresh-start Claude generation of any turn count under the native text-turn model; the TCK qualifier decides membership and ancestry. */
     static final String FRESH_RETAINED_NATIVE_PROFILE = "client-terminal-claude-retained-fresh-2.1.316/3";
-    static final Set<String> FRESH_RETAINED_PROFILES = Set.of(FRESH_RETAINED_PROFILE, FRESH_RETAINED_ORDINARY_PROFILE, FRESH_RETAINED_NATIVE_PROFILE);
-    /** Frozen: exactly two sealed Codex turns. */
-    static final String CODEX_RETAINED_PROFILE = "client-terminal-codex-retained-0.166.0/1";
+    static final Set<String> FRESH_RETAINED_PROFILES = Set.of(FRESH_RETAINED_NATIVE_PROFILE);
     /** Ordinary: a sealed Codex thread of any turn count under the same per-turn rules. */
     static final String CODEX_RETAINED_ORDINARY_PROFILE = "client-terminal-codex-retained-0.166.0/2";
-    static final Set<String> CODEX_RETAINED_PROFILES = Set.of(CODEX_RETAINED_PROFILE, CODEX_RETAINED_ORDINARY_PROFILE);
+    static final Set<String> CODEX_RETAINED_PROFILES = Set.of(CODEX_RETAINED_ORDINARY_PROFILE);
     private TerminalContract() { }
 
     record Input(String envelope, Jv decision, Jv association) { }

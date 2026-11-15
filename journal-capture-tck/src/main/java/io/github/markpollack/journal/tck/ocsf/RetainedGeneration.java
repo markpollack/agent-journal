@@ -14,8 +14,8 @@ import java.util.Set;
 import static io.github.markpollack.journal.tck.ocsf.TerminalReading.*;
 import static io.github.markpollack.journal.tck.ocsf.RetainedSource.require;
 
-/** Independent original-byte validation for successful retained Claude text turns (the frozen kinds and profiles
- * bound a generation to exactly two turns; the ordinary fresh profile admits any sealed turn count).
+/** Independent original-byte validation for successful retained Claude text turns (the frozen retained kind bounds a
+ * generation to exactly two turns; the native fresh profile admits any sealed turn count).
  * A caller's observed boundary is checked for consistency, never recreated as an observation.
  * This finite experimental profile does not admit tools, children, compaction or reconnect.
  */
@@ -23,33 +23,31 @@ public final class RetainedGeneration {
     private RetainedGeneration() { }
 
     /** Validates every generation member, source byte, prefix and explicit ownership partition. */
-    public static void validate(Json manifest, Path directory) throws IOException { validate(manifest, directory, false, true); }
+    public static void validate(Json manifest, Path directory) throws IOException { validate(manifest, directory, false); }
 
-    /** The fresh-start kind shares every byte/membership check; only the first before-prefix may be tagged ABSENT.
-     * {@code bounded} is the frozen two-turn rule; the ordinary fresh profile reads any sealed turn count sequentially. */
-    static void validate(Json manifest, Path directory, boolean fresh, boolean bounded) throws IOException { validate(manifest, directory, fresh, bounded, false); }
-
-    /** {@code nativeModel} selects the native text-turn model of {@link NativeRetainedTurn} ({@value FreshRetainedGeneration#NATIVE_PROFILE}):
-     * UUID uniqueness over identity rows, and a transcript tail of plain records after the last turn; every other check is shared. */
-    static void validate(Json manifest, Path directory, boolean fresh, boolean bounded, boolean nativeModel) throws IOException {
+    /** The fresh-start kind shares every byte/membership check; only the first before-prefix may be tagged ABSENT. The frozen
+     * retained kind is bounded to exactly two turns; the fresh kind reads any sealed turn count sequentially under the native
+     * text-turn model of {@link NativeRetainedTurn} ({@value FreshRetainedGeneration#NATIVE_PROFILE}): UUID uniqueness over
+     * identity rows, and a transcript tail of plain records after the last turn; every other check is shared. */
+    static void validate(Json manifest, Path directory, boolean fresh) throws IOException {
         header(manifest, fresh);
         Map<String, RetainedSource> sources = sources(manifest, directory);
-        List<Json> turns = turns(manifest, bounded);
+        List<Json> turns = turns(manifest, !fresh);
         Set<String> executions = new HashSet<>(), decisions = new HashSet<>(), prompts = new HashSet<>(), uuids = new HashSet<>();
         List<Json> membership = new ArrayList<>(); String previous = null; NativeRetainedTurn.Tail tail = null; long lastAfter = 0;
         for (Json turn : turns) {
             fields(turn, "executionId decisionId prompt result stdoutRecords nativeRecords nativePrefixBefore nativePrefixAfter startOffsets endOffsets");
             require(executions.add(string(turn, "executionId")) && decisions.add(string(turn, "decisionId")), "duplicate retained execution/decision");
-            if (nativeModel) tail = NativeRetainedTurn.validate(manifest, turn, sources, tail, fresh && tail == null);
-            else previous = RetainedTurn.validate(manifest, turn, sources, previous, fresh && previous == null);
+            if (fresh) tail = NativeRetainedTurn.validate(manifest, turn, sources, tail, tail == null);
+            else previous = RetainedTurn.validate(manifest, turn, sources, previous);
             lastAfter = number(turn.member("nativePrefixAfter"), "bytes");
             String prompt = rawString(sources.get("STDIN").record(turn.member("prompt")).member("message"), "content");
             require(prompts.add(prompt), "duplicate retained prompt is ambiguous");
-            uniqueNative(turn, sources, uuids, nativeModel);
+            uniqueNative(turn, sources, uuids, fresh);
             membership.add(turn.member("prompt")); membership.addAll(array(turn, "stdoutRecords")); membership.addAll(array(turn, "nativeRecords"));
         }
         shared(manifest, sources); membership.addAll(array(manifest, "shared"));
-        unassigned(manifest, sources, nativeModel, lastAfter); membership.addAll(array(manifest, "unassigned"));
+        unassigned(manifest, sources, fresh, lastAfter); membership.addAll(array(manifest, "unassigned"));
         partition(sources, membership);
         sequential(turns);
     }
@@ -153,11 +151,6 @@ public final class RetainedGeneration {
 
     /** Produces an exact concatenation of declared record extents, after complete generation validation. */
     public static byte[] projection(Json manifest, String executionId, String source, Path base) throws IOException { return projection(manifest, executionId, source, base, null); }
-
-    /** The original signature: {@code fresh} selects the fresh-start kind under its frozen profile {@value FreshRetainedGeneration#PROFILE}. */
-    public static byte[] projection(Json manifest, String executionId, String source, Path base, boolean fresh) throws IOException {
-        return projection(manifest, executionId, source, base, fresh ? FreshRetainedGeneration.PROFILE : null);
-    }
 
     /** {@code freshProfile} selects the fresh-start kind under that profile; null reads the frozen retained kind. */
     public static byte[] projection(Json manifest, String executionId, String source, Path base, String freshProfile) throws IOException {

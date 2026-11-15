@@ -18,15 +18,11 @@ public final class ClaudeSdkFamily {
     public static final String LEGACY_VERSION = "2.1.316";
     /** Version-neutral retained-generation profiles, each the contract of its versioned 2.1.316 predecessor. */
     public static final String RETAINED_TERMINAL_PROFILE = "client-terminal-claude-sdk-retained/1";
-    public static final String FRESH_RETAINED_TERMINAL_PROFILE = "client-terminal-claude-sdk-retained-fresh/1";
-    public static final String FRESH_RETAINED_ORDINARY_TERMINAL_PROFILE = "client-terminal-claude-sdk-retained-fresh/2";
     public static final String FRESH_RETAINED_NATIVE_TERMINAL_PROFILE = "client-terminal-claude-sdk-retained-fresh/3";
     /** Each version-neutral terminal profile and the versioned profile whose contract it names. */
     private static final TerminalProfiles NAMES = new TerminalProfiles(java.util.Map.of(
             TERMINAL_PROFILE, LEGACY_TERMINAL_PROFILE,
             RETAINED_TERMINAL_PROFILE, "client-terminal-claude-retained-2.1.316/1",
-            FRESH_RETAINED_TERMINAL_PROFILE, "client-terminal-claude-retained-fresh-2.1.316/1",
-            FRESH_RETAINED_ORDINARY_TERMINAL_PROFILE, "client-terminal-claude-retained-fresh-2.1.316/2",
             FRESH_RETAINED_NATIVE_TERMINAL_PROFILE, "client-terminal-claude-retained-fresh-2.1.316/3"), LEGACY_VERSION);
     private static final Pattern PROFILE = CliVersions.named("claude-code-", "-sdk-stdio-session-file");
     private static final Pattern PROFILE_ID = CliVersions.named("claude-code/", "/sdk-stdio+session-file");

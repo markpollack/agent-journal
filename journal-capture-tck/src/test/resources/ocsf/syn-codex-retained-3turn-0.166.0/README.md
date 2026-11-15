@@ -11,4 +11,4 @@ codex-cli 0.166.0, gpt-6.1-sol, 2026-11-04T23:58Z): `thread_settings_applied` ca
 
 Thread a94e0250-…; turn 0 fresh exec, turns 1 and 2 `exec resume` by replacement processes with distinct usage (turn 2 own
 13/5/0/6/0, thread 35/11/0/14/0) so cumulative arithmetic and double counting are distinguishable at the third turn. Qualifies
-only under the ordinary profile `client-terminal-codex-retained-0.166.0/2`; the frozen `/1` profile refuses it. Fixture evidence only.
+under the ordinary profile `client-terminal-codex-retained-0.166.0/2`. Fixture evidence only.

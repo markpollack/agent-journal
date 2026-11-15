@@ -18,8 +18,6 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import static io.github.markpollack.journal.tck.ocsf.FreshRetainedGeneration.NATIVE_PROFILE;
-import static io.github.markpollack.journal.tck.ocsf.FreshRetainedGeneration.ORDINARY_PROFILE;
-import static io.github.markpollack.journal.tck.ocsf.FreshRetainedGeneration.PROFILE;
 import static org.assertj.core.api.Assertions.*;
 
 /** Native text-turn model of the fresh profile {@code /3}: the DERIVED-REDACTED native-shaped generation (22 and 15 native records per turn,
@@ -172,12 +170,10 @@ class NativeFreshRetainedGenerationTest {
         assertThat(ClaudeSdkFamily.admittedUnder(ClaudeSdkFamily.FRESH_RETAINED_NATIVE_TERMINAL_PROFILE, "2.1.317")).isTrue();
     }
 
-    @Test void nativeShapedGenerationQualifiesOnlyUnderTheNativeProfile(@TempDir Path dir) throws Exception {
+    @Test void nativeShapedGenerationQualifiesUnderTheNativeProfile(@TempDir Path dir) throws Exception {
         Copy copy = copy(dir); copy.rehash();
         if (!specimen()) assertThat(NeutralJson.write(copy.m)).isEqualTo(NeutralJson.write(NeutralJson.readDocument(FIXTURE.resolve("retained-fresh-generation.json")))); // rehash is a no-op on the committed fixture
         copy.validate(NATIVE_PROFILE);
-        for (String frozen : List.of(PROFILE, ORDINARY_PROFILE))
-            assertThatThrownBy(() -> copy.validate(frozen)).as(frozen).isInstanceOf(Rejection.class).hasMessageContaining("text profile requires one native prompt and response");
         List<Json> turns = copy.m.member("turns").elements(); assertThat(turns).hasSize(2);
         assertThat(turns.get(0).member("nativeRecords").elements()).hasSize(22); assertThat(turns.get(1).member("nativeRecords").elements()).hasSize(15);
         for (int i = 0; i < 2; i++) {
@@ -189,9 +185,6 @@ class NativeFreshRetainedGenerationTest {
             assertThat(Files.readString(out.resolve("turn/transcript.jsonl")).lines().count()).isEqualTo(i == 0 ? 22 : 15);
             RetainedAcquisition.validate(acquisition, out, true);
             assertThatThrownBy(() -> RetainedAcquisition.validate(acquisition, out)).isInstanceOf(IllegalArgumentException.class);
-            Path frozen = dir.resolve("frozen" + i);
-            assertThatThrownBy(() -> FreshRetainedClaudeAcquisition.qualify(dir.resolve("retained-fresh-generation.json"), execution, frozen, PROFILE)).isInstanceOf(Rejection.class);
-            assertThat(frozen).doesNotExist();
         }
     }
 

@@ -17,16 +17,13 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import static io.github.markpollack.journal.tck.ocsf.CodexRetainedGeneration.ORDINARY_PROFILE;
-import static io.github.markpollack.journal.tck.ocsf.CodexRetainedGeneration.PROFILE;
 import static org.assertj.core.api.Assertions.*;
 
-/** Labelled synthetic Codex retained threads: every turn qualifies under its profile, the frozen two-turn profile refuses a third turn,
- * the one-shot qualifier refuses resumed turns, and rehashed semantic mutations are refused through the ten-area rejection classes. */
+/** Labelled synthetic Codex retained threads: every turn qualifies under the ordinary profile, the one-shot qualifier refuses
+ * resumed turns, and rehashed semantic mutations are refused through the ten-area rejection classes. */
 class CodexRetainedAcquisitionTest {
     static final Path FIXTURE = Path.of("src/test/resources/ocsf/syn-codex-retained-0.166.0");
     static final Path THREE = Path.of("src/test/resources/ocsf/syn-codex-retained-3turn-0.166.0");
-    /** The pre-probe emulated shape (af88650 fixture bytes): per-turn resumed stdout usage and a bare thread_settings_applied; frozen /1 evidence. */
-    static final Path EMULATED = Path.of("src/test/resources/ocsf/syn-codex-retained-emulated-0.166.0");
     static final String N = "a94e0250-c7a5-4bc3-adef-fcbef96582ac";
     static final String TURN_0 = "b8d56e6a-5cfa-499c-a6e2-a33f7ebd378d", TURN_1 = "393b1549-a4cc-4cd7-aee8-1fc6d96cedcc";
 
@@ -116,61 +113,31 @@ class CodexRetainedAcquisitionTest {
         assertThat(turn.member("thread_token_usage").member("input_tokens").text()).isEqualTo(Long.toString(threadInput));
         assertThat(turn.member("turn_token_usage").member("input_tokens").text()).isEqualTo(Long.toString(turnInput));
         CodexRetainedAcquisition.validate(acquisition, out); CodexAcquisitionReading.validate(out.resolve("acquisition.json"));
-        String expectation = Files.readString(out.resolve("assembly-expectation.json")); // frozen /1 pins the one-shot expectation, ordinary /2 the retained one
-        if (PROFILE.equals(profile)) assertThat(expectation).doesNotContain("Retained Codex turn"); else assertThat(expectation).contains("Retained Codex turn");
+        assertThat(Files.readString(out.resolve("assembly-expectation.json"))).contains("Retained Codex turn"); // the retained expectation, never the one-shot
         assertThat(out.resolve("generation/codex-thread.original.json")).hasSameBinaryContentAs(copy.dir.resolve("codex-thread.json"));
         assertThat(Json.sameValue(NeutralJson.readDocument(out.resolve("generation/codex-thread.json")), NeutralJson.readDocument(copy.dir.resolve("codex-thread.json")))).isTrue(); // already relative
         assertThat(out.resolve("generation/turn-" + i + "/native.bin")).hasSameBinaryContentAs(copy.dir.resolve("turn-" + i + "/native.bin"));
     }
 
-    @Test void bothTurnsQualifyUnderEitherProfileWithProjectionsOriginalsAndPreservedCumulativeUsage(@TempDir Path dir) throws Exception {
+    @Test void bothTurnsQualifyWithProjectionsOriginalsAndPreservedCumulativeUsage(@TempDir Path dir) throws Exception {
         Copy copy = new Copy(dir, FIXTURE);
-        for (String profile : List.of(PROFILE, ORDINARY_PROFILE)) {
-            CodexRetainedGeneration.RetainedThread thread = copy.validate(profile);
-            assertThat(thread.turns()).hasSize(2); assertThat(thread.session()).isEqualTo(N);
-            qualified(copy, thread, 0, profile, 11, 11); qualified(copy, thread, 1, profile, 11, 22);
-            assertThatThrownBy(() -> thread.turn("missing")).isInstanceOf(Rejection.class);
-        }
+        CodexRetainedGeneration.RetainedThread thread = copy.validate(ORDINARY_PROFILE);
+        assertThat(thread.turns()).hasSize(2); assertThat(thread.session()).isEqualTo(N);
+        qualified(copy, thread, 0, ORDINARY_PROFILE, 11, 11); qualified(copy, thread, 1, ORDINARY_PROFILE, 11, 22);
+        assertThatThrownBy(() -> thread.turn("missing")).isInstanceOf(Rejection.class);
         // The one-shot qualifier refuses the resumed turn and never creates output; the fresh first turn is a legitimate one-shot.
         Path oneShot = dir.resolve("one-shot-turn-1");
         assertThatThrownBy(() -> CodexAcquisition.qualify(dir.resolve("turn-1/codex-acquisition.json"), oneShot)).isInstanceOf(IllegalArgumentException.class);
         assertThat(oneShot).doesNotExist();
         assertThatThrownBy(() -> copy.validate("client-terminal-codex-retained-0.166.0/9")).isInstanceOf(Rejection.class).hasMessageContaining("unsupported retained profile");
-        // Follow-up review finding 2 (2026-11-05): an ownerless thread_settings_applied is refused under /2 (native 0.166.0 always reports thread_id) and admitted under frozen /1.
+        // Follow-up review finding 2 (2026-11-05): an ownerless thread_settings_applied is refused (native 0.166.0 always reports thread_id).
         Copy ownerless = new Copy(Files.createDirectory(dir.resolve("ownerless")), FIXTURE);
         ownerless.transcript = swap(ownerless.transcript, "\"thread_id\": \"" + N + "\", \"thread_settings\"", "\"thread_ix\": \"" + N + "\", \"thread_settings\""); ownerless.rehash(); // same length: locators stay whole records
         assertThatThrownBy(() -> ownerless.validate(ORDINARY_PROFILE)).isInstanceOf(Rejection.class).hasMessageContaining("requires thread_id on thread_settings_applied");
-        assertThat(ownerless.validate(PROFILE).turns()).hasSize(2);
     }
 
-    /** Owner continuation C2 (2026-11-05): the frozen /1 profile accepts the evidence it accepted before the native probe, exactly as before;
-     * the cumulative resumed-stdout requirement belongs to the ordinary /2 profile only. */
-    @Test void frozenProfileStillAcceptsThePreProbeEmulatedThreadAndTheOrdinaryProfileRefusesIt(@TempDir Path dir) throws Exception {
-        Copy copy = new Copy(dir, EMULATED);
-        CodexRetainedGeneration.RetainedThread thread = copy.validate(PROFILE); assertThat(thread.turns()).hasSize(2);
-        for (int i = 0; i < 2; i++) {
-            String execution = thread.turns().get(i).executionId(); Path out = dir.resolve("frozen-" + i);
-            CodexRetainedAcquisition.qualify(dir.resolve("codex-thread.json"), execution, out); // the original signature: the frozen /1 contract by default
-            Json acquisition = NeutralJson.readDocument(out.resolve("acquisition.json"));
-            // new recordings carry the version-neutral name of the frozen /1 contract
-            assertThat(acquisition.member("retained_profile").text()).isEqualTo(io.github.markpollack.journal.tck.ocsf.CodexExecFamily.RETAINED_TERMINAL_PROFILE);
-            assertThat(io.github.markpollack.journal.tck.ocsf.CodexExecFamily.contract(acquisition.member("retained_profile").text())).isEqualTo(PROFILE);
-            assertThat(acquisition.member("wire_usage_scope").text()).as("the emulated resumed turn reports a per-turn stdout figure").isEqualTo("per-turn");
-            CodexRetainedAcquisition.validate(acquisition, out); CodexAcquisitionReading.validate(out.resolve("acquisition.json"));
-        }
-        assertThatThrownBy(() -> copy.validate(ORDINARY_PROFILE)).isInstanceOf(Rejection.class).hasMessageContaining("ordinary profile requires thread_id on thread_settings_applied"); // the first /2 rule the emulated shape breaks; its per-turn resumed usage is refused by the /2 wire rule in the third-turn controls
-        Path ordinary = dir.resolve("ordinary"); String resumed = copy.execution(1);
-        assertThatThrownBy(() -> CodexRetainedAcquisition.qualify(dir.resolve("codex-thread.json"), resumed, ordinary, ORDINARY_PROFILE)).isInstanceOf(Rejection.class);
-        assertThat(ordinary).doesNotExist();
-    }
-
-    @Test void threeTurnThreadQualifiesOnlyUnderTheOrdinaryProfileWithContinuityAndArithmeticAtEveryTurn(@TempDir Path dir) throws Exception {
+    @Test void threeTurnThreadQualifiesWithContinuityAndArithmeticAtEveryTurn(@TempDir Path dir) throws Exception {
         Copy copy = new Copy(dir, THREE);
-        assertThatThrownBy(() -> copy.validate(PROFILE)).isInstanceOf(Rejection.class).hasMessageContaining("exactly two turns")
-                .extracting(e -> ((Rejection) e).verdict()).isEqualTo(Verdict.REFUSED);
-        Path frozen = dir.resolve("frozen"); String last = copy.execution(2);
-        assertThatThrownBy(() -> CodexRetainedAcquisition.qualify(dir.resolve("codex-thread.json"), last, frozen, PROFILE)).isInstanceOf(Rejection.class);
-        assertThat(frozen).doesNotExist();
         CodexRetainedGeneration.RetainedThread thread = copy.validate(ORDINARY_PROFILE);
         assertThat(thread.turns()).hasSize(3);
         assertThat(thread.turns().stream().map(CodexRetainedGeneration.Turn::nativeTurnId).distinct()).hasSize(3);
@@ -209,7 +176,7 @@ class CodexRetainedAcquisitionTest {
             c("forbidden history option", Verdict.REFUSED, k -> ((Json.JArray) k.turn(1).member("argv")).elements().add(1, Copy.str("--last"))));
     }
 
-    /** Third-turn controls: the same classes must bite at a turn the frozen profile never reads. */
+    /** Third-turn controls: the same classes must bite at a turn beyond the second. */
     static List<Control> thirdTurnControls() {
         return List.of(
             c("foreign turn: third region carries the second turn's id", Verdict.REFUSED, k -> k.transcript = swap(k.transcript, "\"turn_id\": \"" + k.turn(2).member("native_turn_uid").text() + "\"", "\"turn_id\": \"" + TURN_1 + "\"")),
@@ -241,7 +208,7 @@ class CodexRetainedAcquisitionTest {
     }
 
     @Test void rehashedSemanticMutationsAreRefusedOrIncompleteBeforeOutput(@TempDir Path root) throws Exception {
-        refused(root.resolve("two"), FIXTURE, PROFILE, 1, controls()); assertThat(controls()).hasSize(20);
+        refused(root.resolve("two"), FIXTURE, ORDINARY_PROFILE, 1, controls()); assertThat(controls()).hasSize(20);
         refused(root.resolve("three"), THREE, ORDINARY_PROFILE, 2, thirdTurnControls()); assertThat(thirdTurnControls()).hasSize(8);
     }
 

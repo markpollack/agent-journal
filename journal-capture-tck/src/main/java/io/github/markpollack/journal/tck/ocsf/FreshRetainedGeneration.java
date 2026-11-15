@@ -13,8 +13,8 @@ import java.util.Map;
 import java.util.Set;
 import static io.github.markpollack.journal.tck.ocsf.TerminalReading.*;
 
-/** Independent check of a fresh-transcript-start retained generation (text turns, Claude Code 2.1.316): the frozen profile
- * {@value #PROFILE} bounds it to exactly two turns, the ordinary profile {@value #ORDINARY_PROFILE} admits any sealed turn count.
+/** Independent check of a fresh-transcript-start retained generation (text turns, Claude Code 2.1.316) under the native profile
+ * {@value #NATIVE_PROFILE}: any sealed turn count under the native text-turn model of {@link NativeRetainedTurn}.
  * The first turn's before-prefix is the tagged ABSENT observation, never an invented empty-file witness.
  * Ordered caller observations (absence probes, candidate scan, dispatch, readable prefixes, final singleton)
  * are trusted evidence checked for consistency; nothing here claims OS containment between probes.
@@ -22,15 +22,11 @@ import static io.github.markpollack.journal.tck.ocsf.TerminalReading.*;
  */
 public final class FreshRetainedGeneration {
     public static final String KIND = "journal-retained-fresh-generation/1";
-    /** Frozen bounded profile: exactly two sealed turns; its rules do not change. */
-    public static final String PROFILE = "client-terminal-claude-retained-fresh-2.1.316/1";
-    /** Ordinary fresh-start profile: any sealed turn count under the same per-turn rules. */
-    public static final String ORDINARY_PROFILE = "client-terminal-claude-retained-fresh-2.1.316/2";
     /** Native profile (2026-11-05): any sealed turn count under the native text-turn model of {@link NativeRetainedTurn}, derived from the frozen
      * native 2.1.316 probe specimen. Its launch-argv rule is stated in {@link #launchArgvObservation}; the fresh-start observation rules
-     * (two ENOENT probes, complete scan with no skipped or unreadable entry, dispatch, readable prefixes, final singleton) are those of /1. */
+     * are two ENOENT probes, a complete scan with no skipped or unreadable entry, dispatch, readable prefixes and a final singleton. */
     public static final String NATIVE_PROFILE = "client-terminal-claude-retained-fresh-2.1.316/3";
-    public static final Set<String> PROFILES = Set.of(PROFILE, ORDINARY_PROFILE, NATIVE_PROFILE);
+    public static final Set<String> PROFILES = Set.of(NATIVE_PROFILE);
     /** Value-taking options of the SDK launch argv; an argv ending in one of them was truncated at an empty argument (observed 2026-11-05: {@code --tools ""}). */
     private static final Set<String> VALUE_OPTIONS = Set.of("--tools", "--permission-mode", "--max-budget-usd", "--session-id", "--input-format", "--output-format");
     private static final Set<String> HISTORY_FLAGS = Set.of("--resume", "-r", "--continue", "-c", "--fork-session");
@@ -48,20 +44,16 @@ public final class FreshRetainedGeneration {
         public Verdict verdict() { return verdict; }
     }
 
-    /** The original signature: the frozen profile {@value #PROFILE} is its default, exactly as before the ordinary profile existed. */
-    public static void validate(Json manifest, Path base) throws IOException { validate(manifest, base, PROFILE); }
-
     /** Validates header, originals, turn membership, fresh launch, emitted identity and the observation journal under {@code profile}. */
     public static void validate(Json manifest, Path base, String profile) throws IOException {
         require(PROFILES.contains(profile), Verdict.REFUSED, "unsupported fresh retained profile");
         preliminary(manifest);
-        boolean nativeModel = NATIVE_PROFILE.equals(profile);
-        try { RetainedGeneration.validate(manifest, base, true, PROFILE.equals(profile), nativeModel); }
+        try { RetainedGeneration.validate(manifest, base, true); }
         catch (Rejection rejection) { throw rejection; }
         catch (IllegalArgumentException contradiction) { throw new Rejection(Verdict.REFUSED, contradiction.getMessage(), contradiction); }
         Map<String, RetainedSource> sources = RetainedGeneration.sources(manifest, base);
-        Json fresh = freshStart(manifest, sources, nativeModel);
-        Observations observations = new Observations(manifest, base, sources, fresh, nativeModel);
+        Json fresh = freshStart(manifest, sources);
+        Observations observations = new Observations(manifest, base, sources, fresh);
         identity(manifest, sources, observations.dispatchStdout);
     }
 
@@ -77,7 +69,7 @@ public final class FreshRetainedGeneration {
         require(!m.member("observations").isNull(), Verdict.INCOMPLETE, "fresh start not observed");
     }
 
-    private static Json freshStart(Json m, Map<String, RetainedSource> sources, boolean nativeModel) {
+    private static Json freshStart(Json m, Map<String, RetainedSource> sources) {
         Json f = m.member("freshStart");
         fields(f, "requestedSessionId expectedNativePath launchArgv processIdentity cwd");
         String session = string(m, "nativeSessionId");
@@ -86,17 +78,17 @@ public final class FreshRetainedGeneration {
         require(string(f, "expectedNativePath").endsWith("/" + session + ".jsonl"), Verdict.REFUSED, "expected native path does not name the requested session");
         List<String> argv = array(f, "launchArgv").stream().map(Json::text).toList();
         require(argv.stream().noneMatch(HISTORY_FLAGS::contains), Verdict.REFUSED, "fresh-launch/membership contradiction: history reuse option");
-        if (!nativeModel || launchArgvComplete(argv)) require(argv.contains(session), Verdict.REFUSED, "launch argv does not request the session");
+        if (launchArgvComplete(argv)) require(argv.contains(session), Verdict.REFUSED, "launch argv does not request the session");
         String cwd = string(f, "cwd");
         for (Json turn : array(m, "turns")) for (Json locator : array(turn, "nativeRecords")) {
             Json row = sources.get("TRANSCRIPT").record(locator);
-            if (nativeModel && !NativeRetainedTurn.IDENTITY.contains(string(row, "type"))) continue;
+            if (!NativeRetainedTurn.IDENTITY.contains(string(row, "type"))) continue;
             require(cwd.equals(string(row, "cwd")), Verdict.REFUSED, "native cwd differs from fresh launch");
         }
         return f;
     }
 
-    /** Native-profile launch-argv rule, a stated weakening relative to /1: a complete argv must name the requested session and carries no
+    /** Native-profile launch-argv rule, a stated weakening relative to a complete-argv rule: a complete argv must name the requested session and carries no
      * history flag; a history flag present in any argv is refused, but its absence is never claimed from a truncated one. When the argv is
      * INCOMPLETE (its last element is a value-taking option left without a value, the observed truncation at an empty argument), freshness and
      * no-history rest only on native evidence that this validator requires elsewhere: the expected native path ENOENT at both probes before
@@ -127,7 +119,6 @@ public final class FreshRetainedGeneration {
     /** Ordered trusted observations; sequence and monotonic time must advance and every stage must be present. */
     private static final class Observations {
         private final String expected;
-        private final boolean nativeModel;
         private final RetainedSource transcript;
         private final List<Json> prefixes = new ArrayList<>();
         private long seq = -1, nanos = -1, dispatchStdout = -1;
@@ -135,8 +126,8 @@ public final class FreshRetainedGeneration {
         private String fileKey;
         private boolean dispatched;
 
-        Observations(Json m, Path base, Map<String, RetainedSource> sources, Json fresh, boolean nativeModel) throws IOException {
-            expected = string(fresh, "expectedNativePath"); transcript = sources.get("TRANSCRIPT"); this.nativeModel = nativeModel;
+        Observations(Json m, Path base, Map<String, RetainedSource> sources, Json fresh) throws IOException {
+            expected = string(fresh, "expectedNativePath"); transcript = sources.get("TRANSCRIPT");
             Json declaration = m.member("observations"); fields(declaration, "path sha256 size");
             Path path = base.resolve(string(declaration, "path"));
             require(Files.isRegularFile(path), Verdict.INCOMPLETE, "observation journal missing");
@@ -218,9 +209,8 @@ public final class FreshRetainedGeneration {
 
         /** Sidecar decision of the native profile (2026-11-05): Journal reads the caller's final enumeration, never the file system. An empty
          * directory beside the transcript (observed: {@code memory/}) yields no candidate and is admitted; a second candidate under the
-         * transcript's own project directory is a sidecar file and is REFUSED. Candidates elsewhere remain the /1 ambiguity (INCOMPLETE). */
+         * transcript's own project directory is a sidecar file and is REFUSED. Candidates elsewhere remain ambiguous (INCOMPLETE). */
         private void sidecars(List<Json> candidates) {
-            if (!nativeModel) return;
             String directory = expected.substring(0, expected.lastIndexOf('/') + 1);
             for (Json candidate : candidates)
                 require(expected.equals(candidate.text()) || !candidate.text().startsWith(directory), Verdict.REFUSED, "sidecar file beside the native transcript: " + candidate.text());

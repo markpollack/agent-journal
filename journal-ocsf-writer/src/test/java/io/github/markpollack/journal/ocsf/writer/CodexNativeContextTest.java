@@ -53,7 +53,7 @@ class CodexNativeContextTest {
         Jv m = Jv.parse(Files.readString(manifest));
         var roles = new HashMap<String, Jv>();
         m.member("sources").elements().forEach(s -> roles.put(s.member("role").text(), s));
-        TerminalCodexNative.validate(manifest.getParent(), m, roles, retained, false);
+        TerminalCodexNative.validate(manifest.getParent(), m, roles, retained);
     }
 
     private void refused(String name, Consumer<List<Jv>> edit) throws IOException {

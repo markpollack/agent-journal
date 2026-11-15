@@ -9,5 +9,5 @@ codex-cli 0.166.0, gpt-6.1-sol, 2026-11-04T23:58Z): `thread_settings_applied` ca
 (native rollout line 18), and the resumed turn's stdout `turn.completed.usage` is the thread-cumulative figure equal to
 `token_count.info.total_token_usage` (native resumed stdout line 4). Values stay synthetic (`synthetic-model`, tiny token counts).
 
-Thread a94e0250-…; turn 0 fresh exec, turn 1 `exec resume` by a replacement process. Qualifies under the frozen two-turn
-profile `client-terminal-codex-retained-0.166.0/1` and the ordinary profile `/2`. Fixture evidence only: it is not a native capture.
+Thread a94e0250-…; turn 0 fresh exec, turn 1 `exec resume` by a replacement process. Qualifies under the ordinary
+profile `client-terminal-codex-retained-0.166.0/2`. Fixture evidence only: it is not a native capture.

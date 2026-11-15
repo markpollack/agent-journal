@@ -14,17 +14,15 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import static io.github.markpollack.journal.ocsf.writer.TerminalReceiver.CODEX_RETAINED_ORDINARY_PROFILE;
-import static io.github.markpollack.journal.ocsf.writer.TerminalReceiver.CODEX_RETAINED_PROFILE;
 import static io.github.markpollack.journal.ocsf.writer.TerminalReceiverTest.*;
 import static org.assertj.core.api.Assertions.*;
 
-/** Labelled synthetic Codex threads through the receiver: each turn attaches to its own frozen decision under the profile that admits
- * the thread, the one-shot, frozen and ordinary profiles refuse each other's evidence, and independent readers accept exact originals. */
+/** Labelled synthetic Codex threads through the receiver: each turn attaches to its own frozen decision under the ordinary retained
+ * profile, the one-shot and retained profiles refuse each other's evidence, and independent readers accept exact originals. */
 class TerminalCodexRetainedTest {
     @TempDir Path temp;
     private static final Path THREAD = Path.of("../journal-capture-tck/src/test/resources/ocsf/syn-codex-retained-0.166.0/codex-thread.json");
     private static final Path THREE = Path.of("../journal-capture-tck/src/test/resources/ocsf/syn-codex-retained-3turn-0.166.0/codex-thread.json");
-    private static final Path EMULATED = Path.of("../journal-capture-tck/src/test/resources/ocsf/syn-codex-retained-emulated-0.166.0/codex-thread.json");
 
     static List<String> executions(Path thread) { return Jv.parse(read(thread)).member("turns").elements().stream().map(t -> t.member("execution_id").text()).toList(); }
     static String read(Path p) { try { return Files.readString(p); } catch (java.io.IOException e) { throw new java.io.UncheckedIOException(e); } }
@@ -87,25 +85,7 @@ class TerminalCodexRetainedTest {
         }
     }
 
-    /** Frozen /1: the pre-probe emulated thread (af88650 fixture bytes) attaches in any publication order and reads exit 0, exactly as before. */
-    @Test void frozenProfileAttachesThePreProbeEmulatedThreadInAnyPublicationOrder() throws Exception { eachTurnAttachesAndReadsBack(EMULATED, CODEX_RETAINED_PROFILE, List.of(1, 0)); }
-
-    /** Frozen /1 pins the one-shot expectation it always pinned: a native-shaped resumed turn (thread total on stdout) is admitted by the
-     * receiver but its fresh-turn accounting reads DEFECTIVE, the af88650 loud failure; the ordinary /2 profile is where native shapes belong. */
-    @Test void frozenProfileReadsANativeShapedResumedTurnAsDefectiveAccountingAsAtAf88650() throws Exception {
-        Path store = temp.resolve("store-native-under-frozen"); TerminalReceiver receiver = new TerminalReceiver(store, "producer", WriterOptions.defaults());
-        String initial = receiver.receive(envelopeFor(THREAD, 1, CODEX_RETAINED_PROFILE), temp);
-        var qualified = CodexRetainedAcquisition.qualify(THREAD, executions(THREAD).get(1), temp.resolve("q-native-frozen"), CODEX_RETAINED_PROFILE); Path root = qualified.manifest().getParent();
-        assertThat(Files.readString(qualified.assemblyExpectation())).doesNotContain("Retained Codex turn");
-        String ack = receiver.receiveRevision(Jv.parse(initial).member("bindingId").text(), bytes(completeFor(THREAD, 1, root)), root);
-        var pkg = PackageReader.open(events(store, ack)); Path sources = events(store, ack).getParent().resolve("sources");
-        var report = new AcquisitionVerification().verify(pkg, sources, sources.resolve("acquisition.json"), qualified.assemblyExpectation());
-        assertThat(report.defects()).anyMatch(d -> d.toString().contains("assembly.accounting.fresh-turn"));
-        assertThat(OcsfReaderTool.acceptance(report).exit()).isNotZero();
-    }
-
     @Test void twoTurnThreadAttachesUnderTheOrdinaryProfile() throws Exception { eachTurnAttachesAndReadsBack(THREAD, CODEX_RETAINED_ORDINARY_PROFILE, List.of(0, 1)); }
-
 
     @Test void threeTurnThreadAttachesEveryTurnToItsOwnDecisionUnderTheOrdinaryProfile() throws Exception { eachTurnAttachesAndReadsBack(THREE, CODEX_RETAINED_ORDINARY_PROFILE, List.of(2, 0, 1)); }
 
@@ -138,33 +118,19 @@ class TerminalCodexRetainedTest {
         }
     }
 
-    @Test void frozenProfileRefusesThreeTurnEvidenceAndProfilesDoNotRelabelEachOther() throws Exception {
-        List<String> executions = executions(THREE);
-        var ordinary = CodexRetainedAcquisition.qualify(THREE, executions.get(2), temp.resolve("o2"), CODEX_RETAINED_ORDINARY_PROFILE); Path ordinaryRoot = ordinary.manifest().getParent();
-        TerminalReceiver receiver = new TerminalReceiver(temp.resolve("store"), "producer", WriterOptions.defaults());
-        String frozenAck = receiver.receive(envelopeFor(THREE, 2, CODEX_RETAINED_PROFILE), temp), frozenId = Jv.parse(frozenAck).member("bindingId").text();
-        assertThatThrownBy(() -> receiver.receiveRevision(frozenId, bytes(completeFor(THREE, 2, ordinaryRoot)), ordinaryRoot)).as("ordinary evidence under the frozen envelope").isInstanceOf(IllegalArgumentException.class);
-        Jv.Obj relabelled = (Jv.Obj) Jv.parse(Files.readString(ordinary.manifest())); relabelled.put("retained_profile", CODEX_RETAINED_PROFILE);
-        Files.writeString(ordinary.manifest(), Jv.write(relabelled));
-        assertThatThrownBy(() -> receiver.receiveRevision(frozenId, bytes(completeFor(THREE, 2, ordinaryRoot)), ordinaryRoot)).as("three-turn thread relabelled as frozen").isInstanceOf(IllegalArgumentException.class).hasMessageContaining("exactly two turns");
-    }
-
     @Test void oneShotAndRetainedProfilesRefuseEachOthersEvidenceAndForeignTurns() throws Exception {
         List<String> executions = executions(THREAD);
-        var retained0 = CodexRetainedAcquisition.qualify(THREAD, executions.get(0), temp.resolve("r0"), CODEX_RETAINED_PROFILE); Path retainedRoot0 = retained0.manifest().getParent();
-        var retained1 = CodexRetainedAcquisition.qualify(THREAD, executions.get(1), temp.resolve("r1"), CODEX_RETAINED_PROFILE); Path retainedRoot1 = retained1.manifest().getParent();
+        var retained0 = CodexRetainedAcquisition.qualify(THREAD, executions.get(0), temp.resolve("r0"), CODEX_RETAINED_ORDINARY_PROFILE); Path retainedRoot0 = retained0.manifest().getParent();
+        var retained1 = CodexRetainedAcquisition.qualify(THREAD, executions.get(1), temp.resolve("r1"), CODEX_RETAINED_ORDINARY_PROFILE); Path retainedRoot1 = retained1.manifest().getParent();
         var oneShot = CodexAcquisition.qualify(THREAD.resolveSibling("turn-0/codex-acquisition.json"), temp.resolve("o0")); Path oneShotRoot = oneShot.manifest().getParent();
         TerminalReceiver receiver = new TerminalReceiver(temp.resolve("store"), "producer", WriterOptions.defaults());
         String oneShotAck = receiver.receive(envelopeFor(THREAD, 0, TerminalReceiver.CODEX_PROFILE), temp), oneShotId = Jv.parse(oneShotAck).member("bindingId").text();
         assertThatThrownBy(() -> receiver.receiveRevision(oneShotId, bytes(completeFor(THREAD, 0, retainedRoot0)), retainedRoot0)).as("thread evidence under the one-shot profile").isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> receiver.receive(envelopeFor(THREAD, 0, CODEX_RETAINED_PROFILE), temp)).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("conflict");
+        assertThatThrownBy(() -> receiver.receive(envelopeFor(THREAD, 0, CODEX_RETAINED_ORDINARY_PROFILE), temp)).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("conflict");
         TerminalReceiver other = new TerminalReceiver(temp.resolve("store2"), "producer", WriterOptions.defaults());
-        String ack0 = other.receive(envelopeFor(THREAD, 0, CODEX_RETAINED_PROFILE), temp), id0 = Jv.parse(ack0).member("bindingId").text();
+        String ack0 = other.receive(envelopeFor(THREAD, 0, CODEX_RETAINED_ORDINARY_PROFILE), temp), id0 = Jv.parse(ack0).member("bindingId").text();
         assertThatThrownBy(() -> other.receiveRevision(id0, bytes(completeFor(THREAD, 0, oneShotRoot)), oneShotRoot)).as("one-shot evidence under the retained profile").isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> other.receiveRevision(id0, bytes(completeFor(THREAD, 1, retainedRoot1)), retainedRoot1)).as("foreign turn attached to the first decision").isInstanceOfAny(IllegalArgumentException.class, TerminalIntegrityException.class);
-        TerminalReceiver third = new TerminalReceiver(temp.resolve("store3"), "producer", WriterOptions.defaults());
-        String ordinaryAck = third.receive(envelopeFor(THREAD, 0, CODEX_RETAINED_ORDINARY_PROFILE), temp), ordinaryId = Jv.parse(ordinaryAck).member("bindingId").text();
-        assertThatThrownBy(() -> third.receiveRevision(ordinaryId, bytes(completeFor(THREAD, 0, retainedRoot0)), retainedRoot0)).as("frozen-profile evidence under the ordinary envelope").isInstanceOf(IllegalArgumentException.class).hasMessageContaining("retained_profile");
         Jv.Obj forged = (Jv.Obj) Jv.parse(Files.readString(retained0.manifest())); forged.put("wire_usage_scope", "cumulative");
         Files.writeString(retained0.manifest(), Jv.write(forged));
         assertThatThrownBy(() -> other.receiveRevision(id0, bytes(completeFor(THREAD, 0, retainedRoot0)), retainedRoot0)).as("forged usage scope").isInstanceOf(IllegalArgumentException.class);

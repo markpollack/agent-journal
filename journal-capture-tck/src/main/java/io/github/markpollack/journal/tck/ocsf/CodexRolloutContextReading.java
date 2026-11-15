@@ -26,12 +26,10 @@ final class CodexRolloutContextReading {
         return false;
     }
     /** Native 0.166.0 reports {@code thread_id} and {@code thread_settings} on every thread_settings_applied record (fresh and resumed,
-     * observed 2026-11-04). A record without thread_id (emulated evidence accepted under the frozen /1 profile) is owned by the rollout
-     * file's one thread, read from its session_meta exactly as the mapper reads the run's session; nothing beyond the file is inferred. */
+     * observed 2026-11-04). A record without thread_id names no owning thread; no owner is inferred. */
     private static boolean settings(ExpectedFacts f, int index, Json p) {
-        Json reported = p.member("thread_id");
-        Json owner = reported != null && !reported.isNull() ? reported : f.sessionOf.containsKey(index) ? new Json.JString(f.sessionOf.get(index)) : null;
-        if (owner == null) return false; // no thread identity anywhere: no declared meaning, stays non-passing
+        Json owner = p.member("thread_id");
+        if (owner == null || owner.isNull()) return false; // no thread identity: no declared meaning, stays non-passing
         f.normalized.add(index);
         Map<String, Json> settings = ClaudeTranscriptProfile.settings(p.member("thread_settings"), "cwd", "working_directory", "model", "model",
                 "model_provider_id", "provider", "approval_policy", "approval_policy");

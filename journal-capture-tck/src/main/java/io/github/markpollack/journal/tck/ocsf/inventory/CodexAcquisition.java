@@ -73,10 +73,10 @@ public final class CodexAcquisition {
      * because codex-cli 0.166.0 turn.completed carries the thread's cumulative usage on a resumed turn (native probe 2026-11-04). */
     static Json retainedExpectation() throws IOException { return resource("/ocsf/qualification/codex-cli-0.166.0-retained.json"); }
 
-    /** The verification expectation of the current profile and extension; {@code ordinaryRetained} selects the retained
-     * expectation of the /2 profile, while the one-shot and the frozen retained /1 profile keep the original. */
-    static Json expectation(String profileVersion, String extensionVersion, boolean ordinaryRetained) throws IOException {
-        if (Formats.CODEX_PROFILE.equals(profileVersion) && Formats.EXTENSION.equals(extensionVersion)) return ordinaryRetained ? retainedExpectation() : expectation();
+    /** The verification expectation of the current profile and extension; {@code retained} selects the retained expectation,
+     * while the one-shot keeps the original. */
+    static Json expectation(String profileVersion, String extensionVersion, boolean retained) throws IOException {
+        if (Formats.CODEX_PROFILE.equals(profileVersion) && Formats.EXTENSION.equals(extensionVersion)) return retained ? retainedExpectation() : expectation();
         throw new IllegalArgumentException("unsupported Codex profile/schema combination");
     }
 

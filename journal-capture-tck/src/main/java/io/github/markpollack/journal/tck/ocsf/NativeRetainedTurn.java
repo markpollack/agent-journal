@@ -12,8 +12,8 @@ import static io.github.markpollack.journal.tck.ocsf.TerminalReading.*;
 import static io.github.markpollack.journal.tck.ocsf.RetainedSource.require;
 
 /** The native text-turn model of the fresh profile {@value FreshRetainedGeneration#NATIVE_PROFILE}, derived from the frozen native
- * Claude Code 2.1.316 probe specimen of 2026-11-05 (two text turns, no tools). The frozen {@code /1} and ordinary {@code /2}
- * profiles keep {@link RetainedTurn} unchanged. Rule text:
+ * Claude Code 2.1.316 probe specimen of 2026-11-05 (two text turns, no tools). The frozen non-fresh retained
+ * profile keeps {@link RetainedTurn}. Rule text:
  * <ol>
  * <li><b>Turn membership.</b> The turn's native records tile its prefix window exactly: sorted by offset they start at the
  * before-prefix, are contiguous and end at the after-prefix, so every record in the window belongs to exactly one turn.

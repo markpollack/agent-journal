@@ -16,8 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 /** Opt-in qualifier for one turn of a sealed Codex retained thread ({@value CodexRetainedGeneration#KIND}) under an
- * explicitly named terminal profile: the frozen two-turn {@value CodexRetainedGeneration#PROFILE} or the ordinary
- * {@value CodexRetainedGeneration#ORDINARY_PROFILE}. It validates the whole thread, then writes a
+ * explicitly named terminal profile, the ordinary {@value CodexRetainedGeneration#ORDINARY_PROFILE}. It validates the whole thread, then writes a
  * single-turn rollout projection (shared {@code session_meta} plus exactly this turn's region) beside the
  * turn's own process originals so the existing Codex assembly reads one turn with its original decision.
  * Cumulative native usage is preserved on the turn and never summed again. Deterministic qualification of
@@ -25,11 +24,6 @@ import java.util.Map;
  */
 public final class CodexRetainedAcquisition {
     private CodexRetainedAcquisition() { }
-
-    /** The original signature: qualifies under the frozen profile {@value CodexRetainedGeneration#PROFILE}, its default before the ordinary profile existed. */
-    public static AcquisitionQualifier.Qualified qualify(Path threadManifest, String executionId, Path newDirectory) throws IOException {
-        return qualify(threadManifest, executionId, newDirectory, CodexExecFamily.RETAINED_TERMINAL_PROFILE);
-    }
 
     /** Copies originals and the exact projection to a new directory, leaving every input unchanged. */
     public static AcquisitionQualifier.Qualified qualify(Path threadManifest, String executionId, Path newDirectory, String profile) throws IOException {
@@ -43,9 +37,8 @@ public final class CodexRetainedAcquisition {
         sources.addAll(copyTurn(newDirectory, thread, turn, executionId));
         Json.JObject acquisition = acquisition(turn, relativized, sources, bytes, Files.readAllBytes(turn.perTurnManifestPath()), profile);
         Path output = newDirectory.resolve("acquisition.json"); write(output, NeutralJson.write(acquisition).getBytes(StandardCharsets.UTF_8));
-        // The frozen /1 profile pins the one-shot expectation it always pinned (stream-sourced fresh-turn totals, defective for a native
-        // thread total); the ordinary /2 profile pins the retained expectation (own final from token_usage_record).
-        Json spec = CodexAcquisition.stated(CodexRetainedGeneration.PROFILE.equals(CodexExecFamily.contract(profile)) ? CodexAcquisition.expectation() : CodexAcquisition.retainedExpectation(),
+        // The retained expectation: the turn's own final usage comes from token_usage_record, never the stream's thread total.
+        Json spec = CodexAcquisition.stated(CodexAcquisition.retainedExpectation(),
                 CodexExecFamily.versionOfProfileId(text(acquisition, "profile_id")));
         Path expectation = newDirectory.resolve("assembly-expectation.json"); write(expectation, NeutralJson.write(spec).getBytes(StandardCharsets.UTF_8));
         validate(acquisition, newDirectory);
@@ -142,7 +135,7 @@ public final class CodexRetainedAcquisition {
 
     /** Packaged command; refuses invalid input before creating output and never invokes a provider. */
     public static void main(String[] args) throws IOException {
-        if (args.length != 3 && args.length != 4) throw new IllegalArgumentException("usage: CodexRetainedAcquisition <codex-thread.json> <execution-id> <new-directory> [<retained-profile>, default " + CodexExecFamily.RETAINED_TERMINAL_PROFILE + "]");
-        qualify(Path.of(args[0]), args[1], Path.of(args[2]), args.length == 4 ? args[3] : CodexExecFamily.RETAINED_TERMINAL_PROFILE);
+        if (args.length != 4) throw new IllegalArgumentException("usage: CodexRetainedAcquisition <codex-thread.json> <execution-id> <new-directory> <retained-profile>");
+        qualify(Path.of(args[0]), args[1], Path.of(args[2]), args[3]);
     }
 }
