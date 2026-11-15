@@ -46,9 +46,10 @@ public final class CodexAcquisition {
         Json m = NeutralJson.parse(new String(original, StandardCharsets.UTF_8));
         Map<String, CodexAcquisitionReading.Source> sources = CodexAcquisitionReading.read(m, sealedManifest.toAbsolutePath().getParent());
         for (CodexAcquisitionReading.Source source : sources.values()) bind(source.declaration());
-        ((Json.JObject) m).members().put("qualification", new Json.JObject(Map.of(
+        // in a fixed member order: Map.of order changes from one JVM to the next, and so did the qualified manifest's bytes
+        ((Json.JObject) m).members().put("qualification", RetainedClaudeAcquisition.object(
                 "original_manifest_sha256", new Json.JString(NativeArtifact.sha256(original)),
-                "basis", new Json.JString("independent original-byte identity, fresh turn, closure and usage witnesses; semantic acceptance is separate"))));
+                "basis", new Json.JString("independent original-byte identity, fresh turn, closure and usage witnesses; semantic acceptance is separate")));
         Files.createDirectory(newDirectory);
         for (CodexAcquisitionReading.Source source : sources.values()) {
             Path output = newDirectory.resolve(source.relative()); Files.createDirectories(output.getParent()); write(output, source.bytes());

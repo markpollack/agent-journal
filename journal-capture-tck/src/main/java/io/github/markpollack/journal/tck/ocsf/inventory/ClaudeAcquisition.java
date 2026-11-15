@@ -48,9 +48,10 @@ public final class ClaudeAcquisition {
         for (Frozen source : sources) { bind(source.source(), bindings); }
         qualifyOutputs(manifest, sealedManifest.toAbsolutePath().getParent());
         qualifySubAgents(manifest, sealedManifest.toAbsolutePath().getParent(), bindings);
-        Json.JObject qualification = new Json.JObject(java.util.Map.of(
+        // in a fixed member order: Map.of order changes from one JVM to the next, and so did the qualified manifest's bytes
+        Json.JObject qualification = RetainedClaudeAcquisition.object(
                 "original_manifest_sha256", new Json.JString(NativeArtifact.sha256(original)),
-                "basis", new Json.JString("exact native version/session and original-byte extent checks; canonical verification is separate")));
+                "basis", new Json.JString("exact native version/session and original-byte extent checks; canonical verification is separate"));
         ((Json.JObject) manifest).members().put("qualification", qualification);
         Files.createDirectory(newDirectory);
         for (Frozen source : sources) { source.write(newDirectory); }

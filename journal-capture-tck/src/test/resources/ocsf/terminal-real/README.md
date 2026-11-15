@@ -26,4 +26,6 @@ conflicts and MCP targets. Each case's `SCRUBBED.md` names its original files by
 Regenerate them with `-Dterminal.real.regenerate=<directory>` on `RealRecordingTest` in `journal-ocsf-writer`. The
 2.1.316 cases among them were delivered under the versioned `client-terminal-claude-2.1.316/1` and are kept as sealed,
 so they show that such recordings stay readable; a regeneration delivers every run under `client-terminal-claude-sdk/1`. The other three are historical evidence and must not be regenerated; the expectation beside
-each is the current qualifier's, the reader's input rather than part of the sealed archive.
+each is the current qualifier's, the reader's input rather than part of the sealed archive. Their qualified manifests keep the
+`qualification` member order those writers' qualifier wrote, which changed from one JVM to the next before `Map.of`
+was replaced; readers compare it by value.
